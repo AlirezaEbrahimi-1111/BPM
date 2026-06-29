@@ -2,3 +2,4 @@ error_log
 *.log
 debug.txt
 config/config.php
+includes/sms.php
