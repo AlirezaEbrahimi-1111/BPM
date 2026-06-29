@@ -1,4 +1,4 @@
-<?php require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php'; 
+<?php require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
 require_once '../includes/version.php';
 ?>
 <!DOCTYPE html>
@@ -75,8 +75,15 @@ require_once '../includes/version.php';
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
         }
 
         #lastUpdate {
@@ -92,8 +99,17 @@ require_once '../includes/version.php';
             margin-bottom: 1.75rem;
         }
 
-        @media (max-width: 992px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 480px)  { .stats-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 992px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
 
         .stat-tile {
             background: white;
@@ -121,10 +137,25 @@ require_once '../includes/version.php';
             flex-shrink: 0;
         }
 
-        .stat-icon-wrap.blue   { background: #eff6ff; color: #2563eb; }
-        .stat-icon-wrap.red    { background: #fef2f2; color: var(--danger); }
-        .stat-icon-wrap.green  { background: #f0fdf4; color: var(--success); }
-        .stat-icon-wrap.amber  { background: #fffbeb; color: var(--warning); }
+        .stat-icon-wrap.blue {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .stat-icon-wrap.red {
+            background: #fef2f2;
+            color: var(--danger);
+        }
+
+        .stat-icon-wrap.green {
+            background: #f0fdf4;
+            color: var(--success);
+        }
+
+        .stat-icon-wrap.amber {
+            background: #fffbeb;
+            color: var(--warning);
+        }
 
         .stat-value {
             font-size: 1.75rem;
@@ -181,7 +212,11 @@ require_once '../includes/version.php';
             gap: 1rem;
         }
 
-        @media (max-width: 900px) { .workflows-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) {
+            .workflows-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
         .wf-card {
             background: white;
@@ -204,18 +239,34 @@ require_once '../includes/version.php';
             border-radius: 0 var(--radius) var(--radius) 0;
         }
 
-        .wf-card.in_progress::before  { background: var(--primary); }
-        .wf-card.completed::before    { background: var(--success); }
-        .wf-card.delayed::before      { background: var(--danger); }
-        .wf-card.cancelled::before    { background: var(--gray-300); }
+        .wf-card.in_progress::before {
+            background: var(--primary);
+        }
+
+        .wf-card.completed::before {
+            background: var(--success);
+        }
+
+        .wf-card.delayed::before {
+            background: var(--danger);
+        }
+
+        .wf-card.cancelled::before {
+            background: var(--gray-300);
+        }
 
         .wf-card:hover {
             box-shadow: var(--shadow-md);
             transform: translateY(-1px);
         }
 
-        .wf-card.completed { opacity: 0.85; }
-        .wf-card.cancelled { opacity: 0.65; }
+        .wf-card.completed {
+            opacity: 0.85;
+        }
+
+        .wf-card.cancelled {
+            opacity: 0.65;
+        }
 
         /* دکمه حذف روی کارت (گوشه بالا-چپ) */
         .wf-delete-btn {
@@ -237,8 +288,15 @@ require_once '../includes/version.php';
             transition: all 0.15s ease;
             z-index: 3;
         }
-        .wf-card:hover .wf-delete-btn { opacity: 1; }
-        .wf-delete-btn:hover { background: var(--danger); color: white; }
+
+        .wf-card:hover .wf-delete-btn {
+            opacity: 1;
+        }
+
+        .wf-delete-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
 
         .wf-header {
             display: flex;
@@ -246,7 +304,8 @@ require_once '../includes/version.php';
             justify-content: space-between;
             gap: 0.75rem;
             margin-bottom: 1rem;
-            padding-left: 2.2rem;   /* جا برای دکمه حذف */
+            padding-left: 2.2rem;
+            /* جا برای دکمه حذف */
         }
 
         .wf-title {
@@ -283,9 +342,17 @@ require_once '../includes/version.php';
             background: var(--primary);
         }
 
-        .progress-bar.bar-success { background: var(--success); }
-        .progress-bar.bar-warning { background: var(--warning); }
-        .progress-bar.bar-danger  { background: var(--danger); }
+        .progress-bar.bar-success {
+            background: var(--success);
+        }
+
+        .progress-bar.bar-warning {
+            background: var(--warning);
+        }
+
+        .progress-bar.bar-danger {
+            background: var(--danger);
+        }
 
         .progress-pct {
             position: absolute;
@@ -358,9 +425,23 @@ require_once '../includes/version.php';
             position: relative;
         }
 
-        .mini-dot.completed { background: var(--success); color: white; box-shadow: 0 0 0 1px var(--success); }
-        .mini-dot.active    { background: var(--primary); color: white; box-shadow: 0 0 0 1px var(--primary); }
-        .mini-dot.delayed   { background: var(--danger);  color: white; box-shadow: 0 0 0 1px var(--danger); }
+        .mini-dot.completed {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 0 0 1px var(--success);
+        }
+
+        .mini-dot.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .mini-dot.delayed {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 0 0 1px var(--danger);
+        }
 
         /* Delay alert strip */
         .delay-strip {
@@ -398,7 +479,11 @@ require_once '../includes/version.php';
             grid-column: 1 / -1;
         }
 
-        .state-box i { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+        .state-box i {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 0.75rem;
+        }
 
         /* ── Refresh FAB ── */
         .fab-refresh {
@@ -430,7 +515,11 @@ require_once '../includes/version.php';
             animation: spin 0.6s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         /* ── Dropdown Filters ── */
         .filter-dropdown-wrap {
@@ -483,12 +572,14 @@ require_once '../includes/version.php';
             background: white;
             border: 1px solid var(--gray-200);
             border-radius: 10px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
             z-index: 999;
             overflow: hidden;
         }
 
-        .filter-dropdown-menu.show { display: block; }
+        .filter-dropdown-menu.show {
+            display: block;
+        }
 
         .filter-dropdown-search {
             padding: 8px 10px;
@@ -521,7 +612,9 @@ require_once '../includes/version.php';
             transition: background 0.1s;
         }
 
-        .filter-dropdown-item:hover { background: var(--gray-50); }
+        .filter-dropdown-item:hover {
+            background: var(--gray-50);
+        }
 
         .filter-dropdown-item.selected {
             background: #eff6ff;
@@ -535,7 +628,9 @@ require_once '../includes/version.php';
             display: none;
         }
 
-        .filter-dropdown-item.selected .check-icon { display: inline; }
+        .filter-dropdown-item.selected .check-icon {
+            display: inline;
+        }
 
         .filter-dropdown-empty {
             padding: 16px;
@@ -556,7 +651,9 @@ require_once '../includes/version.php';
             color: var(--gray-900);
         }
 
-.modal-body { padding: 1.5rem; }
+        .modal-body {
+            padding: 1.5rem;
+        }
 
         /* ── مودال تأیید حذف: قفل عرض (ریشه‌ای) ── */
         #confirmDeleteModal .modal-dialog {
@@ -565,8 +662,14 @@ require_once '../includes/version.php';
             margin: 1.75rem auto !important;
             flex-shrink: 0;
         }
-        #confirmDeleteModal .modal-content { width: 100% !important; }
-        #confirmDeleteModal .modal-body p { word-break: normal; }
+
+        #confirmDeleteModal .modal-content {
+            width: 100% !important;
+        }
+
+        #confirmDeleteModal .modal-body p {
+            word-break: normal;
+        }
 
         /* وسط‌چین متن دکمه‌های مودال */
         #confirmDeleteModal .modal-body .btn {
@@ -593,10 +696,24 @@ require_once '../includes/version.php';
             transition: box-shadow 0.2s;
         }
 
-        .detail-step:hover { box-shadow: var(--shadow-sm); }
-        .detail-step.completed { border-right-color: var(--success); background: #f0fdf4; }
-        .detail-step.active    { border-right-color: var(--primary); background: #eff6ff; }
-        .detail-step.delayed   { border-right-color: var(--danger);  background: #fef2f2; }
+        .detail-step:hover {
+            box-shadow: var(--shadow-sm);
+        }
+
+        .detail-step.completed {
+            border-right-color: var(--success);
+            background: #f0fdf4;
+        }
+
+        .detail-step.active {
+            border-right-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .detail-step.delayed {
+            border-right-color: var(--danger);
+            background: #fef2f2;
+        }
 
         .detail-step-title {
             font-size: 0.9rem;
@@ -613,9 +730,15 @@ require_once '../includes/version.php';
             color: var(--gray-600);
         }
 
-        .meta-row .lbl { color: var(--gray-400); }
+        .meta-row .lbl {
+            color: var(--gray-400);
+        }
 
-        @media (max-width: 576px) { .meta-row { grid-template-columns: 1fr; } }
+        @media (max-width: 576px) {
+            .meta-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -695,7 +818,7 @@ require_once '../includes/version.php';
                 <div class="filter-dropdown-menu" id="routineDropdownMenu">
                     <div class="filter-dropdown-search">
                         <input type="text" placeholder="جستجوی روتین..." id="routineSearchInput"
-                               oninput="filterDropdownList('routine', this.value)">
+                            oninput="filterDropdownList('routine', this.value)">
                     </div>
                     <div class="filter-dropdown-list" id="routineDropdownList">
                         <div class="filter-dropdown-empty">در حال بارگذاری...</div>
@@ -713,7 +836,7 @@ require_once '../includes/version.php';
                 <div class="filter-dropdown-menu" id="sectionDropdownMenu">
                     <div class="filter-dropdown-search">
                         <input type="text" placeholder="جستجوی واحد..." id="sectionSearchInput"
-                               oninput="filterDropdownList('section', this.value)">
+                            oninput="filterDropdownList('section', this.value)">
                     </div>
                     <div class="filter-dropdown-list" id="sectionDropdownList">
                         <div class="filter-dropdown-empty">در حال بارگذاری...</div>
@@ -723,7 +846,7 @@ require_once '../includes/version.php';
 
             <!-- دکمه ریست فیلترها (فقط وقتی فیلتر فعال داریم) -->
             <button class="filter-pill" id="resetFiltersBtn" onclick="resetAllFilters()"
-                    style="display:none; background:#fef2f2; border-color:#fecaca; color:#b91c1c;">
+                style="display:none; background:#fef2f2; border-color:#fecaca; color:#b91c1c;">
                 <i class="bi bi-x-circle"></i>پاک کردن فیلترها
             </button>
         </div>
@@ -749,7 +872,7 @@ require_once '../includes/version.php';
             </div>
         </div>
     </div>
-<!-- Confirm Delete Modal -->
+    <!-- Confirm Delete Modal -->
     <div class="modal" id="confirmDeleteModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="width: 20% !important;">
@@ -773,13 +896,13 @@ require_once '../includes/version.php';
         </div>
     </div>
 
-<!-- Undo Toast (هماهنگ با استایل toast پروژه) -->
+    <!-- Undo Toast (هماهنگ با استایل toast پروژه) -->
     <div id="undoToast" class="toast-notification">
         <div class="toast-header">
             <i class="bi bi-trash" style="color:#744ca4;"></i>
             <span>حذف روتین</span>
             <button type="button" onclick="hideUndoToast()"
-                    style="margin-right:auto;background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1rem;line-height:1;">
+                style="margin-right:auto;background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1rem;line-height:1;">
                 <i class="bi bi-x-lg"></i>
             </button>
         </div>
@@ -787,7 +910,7 @@ require_once '../includes/version.php';
             <span id="undoToastBody">روتین حذف شد</span>
             <div style="margin-top:10px;">
                 <button type="button" id="undoToastBtn"
-                        style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:#744ca4;font-weight:600;font-size:12.5px;cursor:pointer;padding:0;">
+                    style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:#744ca4;font-weight:600;font-size:12.5px;cursor:pointer;padding:0;">
                     <i class="bi bi-arrow-counterclockwise"></i> بازگرداندن
                 </button>
             </div>
@@ -800,18 +923,20 @@ require_once '../includes/version.php';
 
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script>
-        let allWorkflows   = [];
-        let currentFilter  = 'all';     // فیلتر وضعیت
+        let allWorkflows = [];
+        let currentFilter = 'all'; // فیلتر وضعیت
         // نقش کاربر — فقط مدیریت/سرپرست دکمهٔ حذف ببینند
         let isManagerUser = false;
         try {
             const _u = JSON.parse(localStorage.getItem('user_info') || '{}');
             isManagerUser = (parseInt(_u.id) === 1) || ['management', 'supervisor'].includes(_u.role);
-        } catch (e) { isManagerUser = false; }
-        let currentRoutine = null;      // id روتین انتخاب‌شده
-        let currentSection = null;      // key واحد انتخاب‌شده
-        let allRoutines    = [];        // لیست روتین‌های تعریف‌شده
-        let allSections    = [];        // لیست واحدها
+        } catch (e) {
+            isManagerUser = false;
+        }
+        let currentRoutine = null; // id روتین انتخاب‌شده
+        let currentSection = null; // key واحد انتخاب‌شده
+        let allRoutines = []; // لیست روتین‌های تعریف‌شده
+        let allSections = []; // لیست واحدها
 
         /* ─── Data Loading ─── */
         async function loadAllData() {
@@ -831,20 +956,24 @@ require_once '../includes/version.php';
         function loadStats() {
             const list = allWorkflows || [];
             const count = s => list.filter(w => w.status === s).length;
-            document.getElementById('activeWorkflows').textContent    = toFa(count('in_progress'));
-            document.getElementById('delayedWorkflows').textContent   = toFa(count('delayed'));
+            document.getElementById('activeWorkflows').textContent = toFa(count('in_progress'));
+            document.getElementById('delayedWorkflows').textContent = toFa(count('delayed'));
             document.getElementById('completedWorkflows').textContent = toFa(count('completed'));
         }
 
         async function loadWorkflows() {
             try {
-                const res  = await fetch('../api/workflows/list.php', { headers: { 'Authorization': 'Bearer ' + authToken } });
+                const res = await fetch('../api/workflows/list.php', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
                 const data = await res.json();
                 if (data.success) {
                     allWorkflows = data.workflows || [];
                     loadStats();
                     updateAvgProgress();
-                    applyFilter();   // ← render با فیلتر فعلی، نه reset
+                    applyFilter(); // ← render با فیلتر فعلی، نه reset
                 } else {
                     showError(data.message);
                 }
@@ -855,7 +984,10 @@ require_once '../includes/version.php';
         }
 
         function updateAvgProgress() {
-            if (!allWorkflows.length) { document.getElementById('avgProgress').textContent = '۰٪'; return; }
+            if (!allWorkflows.length) {
+                document.getElementById('avgProgress').textContent = '۰٪';
+                return;
+            }
             const avg = Math.round(allWorkflows.reduce((s, w) => s + (parseInt(w.progress) || 0), 0) / allWorkflows.length);
             document.getElementById('avgProgress').textContent = toFa(avg) + '٪';
         }
@@ -893,7 +1025,7 @@ require_once '../includes/version.php';
         /* ─── Dropdown Filters ─── */
         function toggleDropdown(type) {
             const menu = document.getElementById(type + 'DropdownMenu');
-            const btn  = document.getElementById(type + 'DropdownBtn');
+            const btn = document.getElementById(type + 'DropdownBtn');
             const isOpen = menu.classList.contains('show');
 
             // بستن همه dropdown ها
@@ -946,7 +1078,7 @@ require_once '../includes/version.php';
         }
 
         function resetAllFilters() {
-            currentFilter  = 'all';
+            currentFilter = 'all';
             currentRoutine = null;
             currentSection = null;
 
@@ -971,9 +1103,9 @@ require_once '../includes/version.php';
 
         function filterDropdownList(type, query) {
             const listId = type + 'DropdownList';
-            const items  = document.querySelectorAll('#' + listId + ' .filter-dropdown-item');
-            const q      = query.trim().toLowerCase();
-            let visible  = 0;
+            const items = document.querySelectorAll('#' + listId + ' .filter-dropdown-item');
+            const q = query.trim().toLowerCase();
+            let visible = 0;
             items.forEach(item => {
                 const match = item.textContent.toLowerCase().includes(q);
                 item.style.display = match ? '' : 'none';
@@ -987,19 +1119,21 @@ require_once '../includes/version.php';
                 document.getElementById(listId).appendChild(empty);
             }
             empty.style.display = visible === 0 ? 'block' : 'none';
-            empty.textContent   = 'نتیجه‌ای یافت نشد';
+            empty.textContent = 'نتیجه‌ای یافت نشد';
         }
 
         /* ─── Load Routines & Sections for dropdowns ─── */
         async function loadRoutinesList() {
             try {
-                const res  = await fetch('../api/workflows/routines-list.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                const res = await fetch('../api/workflows/routines-list.php', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await res.json();
                 if (!data.success) return;
                 allRoutines = data.routines || [];
-                const list  = document.getElementById('routineDropdownList');
+                const list = document.getElementById('routineDropdownList');
                 if (!allRoutines.length) {
                     list.innerHTML = '<div class="filter-dropdown-empty">روتینی تعریف نشده</div>';
                     return;
@@ -1019,8 +1153,10 @@ require_once '../includes/version.php';
 
         async function loadSectionsList() {
             try {
-                const res  = await fetch('/api/organization/activity-sections.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                const res = await fetch('/api/organization/activity-sections.php', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await res.json();
                 if (!data.success) return;
@@ -1053,26 +1189,36 @@ require_once '../includes/version.php';
         function renderWorkflows(workflows) {
             const container = document.getElementById('workflowsList');
             if (!workflows?.length) {
-                container.innerHTML = `<div class="state-box"><i class="bi bi-inbox"></i><p>هیچ کاری یافت نشد</p></div>`;
+                // اگر اصلاً روتینی برای کاربر نیست → پیامِ اختصاصی؛ اگر فقط فیلتر خالی است → پیامِ فیلتر
+                const noneAtAll = !(allWorkflows && allWorkflows.length);
+                const msg = noneAtAll ?
+                    'هیچ کار روتینی مربوط به واحد یا شخص شما نیست' :
+                    'هیچ کاری با این فیلتر یافت نشد';
+                container.innerHTML = `<div class="state-box"><i class="bi bi-inbox"></i><p>${msg}</p></div>`;
                 return;
             }
             container.innerHTML = workflows.map(renderCard).join('');
         }
 
         function renderCard(wf) {
-            const progress  = parseInt(wf.progress) || 0;
-            const statusCls = { in_progress: 'in_progress', delayed: 'delayed', completed: 'completed', cancelled: 'cancelled' }[wf.status] || 'in_progress';
-            const barCls    = wf.status === 'delayed' ? 'bar-danger'
-                            : wf.status === 'completed' ? 'bar-success'
-                            : progress > 70 ? 'bar-success'
-                            : progress > 30 ? 'bar-warning' : '';
+            const progress = parseInt(wf.progress) || 0;
+            const statusCls = {
+                in_progress: 'in_progress',
+                delayed: 'delayed',
+                completed: 'completed',
+                cancelled: 'cancelled'
+            } [wf.status] || 'in_progress';
+            const barCls = wf.status === 'delayed' ? 'bar-danger' :
+                wf.status === 'completed' ? 'bar-success' :
+                progress > 70 ? 'bar-success' :
+                progress > 30 ? 'bar-warning' : '';
 
             const statusBadge = getStatusBadge(wf.status);
-            const modeBadge   = wf.execution_mode === 'parallel'
-                ? `<span class="badge bg-info">موازی</span>`
-                : `<span class="badge bg-secondary">آبشاری</span>`;
-            const bottleneck  = wf.status === 'delayed'
-                ? `<span class="bottleneck-badge"><i class="bi bi-exclamation-circle"></i>گلوگاه</span>` : '';
+            const modeBadge = wf.execution_mode === 'parallel' ?
+                `<span class="badge bg-info">موازی</span>` :
+                `<span class="badge bg-secondary">آبشاری</span>`;
+            const bottleneck = wf.status === 'delayed' ?
+                `<span class="bottleneck-badge"><i class="bi bi-exclamation-circle"></i>گلوگاه</span>` : '';
 
             const deleteBtn = isManagerUser ? `
                 <button class="wf-delete-btn" title="حذف روتین"
@@ -1111,17 +1257,17 @@ require_once '../includes/version.php';
         }
 
         function renderMiniTimeline(wf) {
-            const total   = parseInt(wf.total_stages)   || 1;
+            const total = parseInt(wf.total_stages) || 1;
             const current = parseInt(wf.current_stage) || 1;
-            const show    = Math.min(total, 6);
+            const show = Math.min(total, 6);
             let dots = '';
             for (let i = 1; i <= show; i++) {
-                const cls  = i < current ? 'completed'
-                           : i === current ? (wf.status === 'delayed' ? 'delayed' : 'active')
-                           : '';
-                const icon = i < current ? '<i class="bi bi-check"></i>'
-                           : i === current ? '<i class="bi bi-arrow-left"></i>'
-                           : (total > 6 && i === show ? '…' : toFa(i));
+                const cls = i < current ? 'completed' :
+                    i === current ? (wf.status === 'delayed' ? 'delayed' : 'active') :
+                    '';
+                const icon = i < current ? '<i class="bi bi-check"></i>' :
+                    i === current ? '<i class="bi bi-arrow-left"></i>' :
+                    (total > 6 && i === show ? '…' : toFa(i));
                 dots += `<div class="mini-step"><div class="mini-dot ${cls}">${icon}</div></div>`;
             }
             return `<div class="mini-timeline">${dots}</div>`;
@@ -1130,13 +1276,22 @@ require_once '../includes/version.php';
         /* ─── Detail Modal ─── */
         async function showDetails(id) {
             try {
-                const res  = await fetch(`../api/workflows/detail.php?id=${id}`, { headers: { 'Authorization': 'Bearer ' + authToken } });
+                const res = await fetch(`../api/workflows/detail.php?id=${id}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
                 const data = await res.json();
                 if (data.success) renderDetailModal(data.workflow, data.steps);
-            } catch (e) { console.error('showDetails:', e); }
+            } catch (e) {
+                console.error('showDetails:', e);
+            }
         }
         /* ─── حذف نرم با مودال تأیید + بازگردانی (Undo) ─── */
-        let pendingDelete = { id: null, title: '' };
+        let pendingDelete = {
+            id: null,
+            title: ''
+        };
         let confirmModalInstance = null;
 
         function getConfirmModal() {
@@ -1147,14 +1302,20 @@ require_once '../includes/version.php';
         }
 
         function deleteWorkflow(id, title, event) {
-            if (event) event.stopPropagation();   // جلوگیری از باز شدن مودال جزئیات
-            pendingDelete = { id, title };
+            if (event) event.stopPropagation(); // جلوگیری از باز شدن مودال جزئیات
+            pendingDelete = {
+                id,
+                title
+            };
             document.getElementById('confirmDeleteTitle').textContent = title;
             getConfirmModal().show();
         }
 
         async function performDelete() {
-            const { id, title } = pendingDelete;
+            const {
+                id,
+                title
+            } = pendingDelete;
             if (!id) return;
 
             // بستن مودال تأیید
@@ -1163,8 +1324,13 @@ require_once '../includes/version.php';
             try {
                 const res = await fetch('../api/workflows/delete.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ instance_id: id })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken
+                    },
+                    body: JSON.stringify({
+                        instance_id: id
+                    })
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -1180,7 +1346,7 @@ require_once '../includes/version.php';
             }
         }
 
-let undoToastTimer = null;
+        let undoToastTimer = null;
 
         function showUndoToast(id, title) {
             document.getElementById('undoToastBody').textContent = `روتین «${title}» حذف شد`;
@@ -1206,8 +1372,13 @@ let undoToastTimer = null;
             try {
                 const res = await fetch('../api/workflows/restore.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ instance_id: id })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken
+                    },
+                    body: JSON.stringify({
+                        instance_id: id
+                    })
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -1220,26 +1391,27 @@ let undoToastTimer = null;
                 alert('خطا در ارتباط با سرور');
             }
         }
+
         function renderDetailModal(wf, steps) {
             const modeLabel = wf.execution_mode === 'parallel' ? 'موازی' : 'آبشاری';
             document.getElementById('modalTitle').textContent = wf.title + ' — ' + modeLabel;
             const progress = parseInt(wf.progress) || 0;
-            const barCls   = wf.status === 'delayed' ? 'bar-danger' : wf.status === 'completed' ? 'bar-success' : '';
+            const barCls = wf.status === 'delayed' ? 'bar-danger' : wf.status === 'completed' ? 'bar-success' : '';
 
             let stepsHtml = '';
             steps.forEach((step, idx) => {
-                const cls = step.status === 'completed' ? 'completed'
-                          : step.status === 'active'    ? 'active'
-                          : step.status === 'delayed'   ? 'delayed' : '';
+                const cls = step.status === 'completed' ? 'completed' :
+                    step.status === 'active' ? 'active' :
+                    step.status === 'delayed' ? 'delayed' : '';
 
                 // گلوگاه فقط برای مرحلهٔ «فعالِ» از موعد گذشته — مرحلهٔ تکمیل‌شده گلوگاه نیست
-                const activeOverdue = (step.status === 'active') && (step.is_delayed == 1); 
+                const activeOverdue = (step.status === 'active') && (step.is_delayed == 1);
                 const completedLate = (step.status === 'completed') && (step.is_delayed == 1);
 
                 // وضعیت نمایشی: مرحلهٔ فعال ولی هنوز شروع‌نشده → «شروع‌نشده»
-                const stepBadge = (step.status === 'active' && step.task_status === 'not_started')
-                    ? '<span class="badge bg-secondary">شروع‌نشده</span>'
-                    : getStepStatusBadge(step.status);
+                const stepBadge = (step.status === 'active' && step.task_status === 'not_started') ?
+                    '<span class="badge bg-secondary">شروع‌نشده</span>' :
+                    getStepStatusBadge(step.status);
 
                 stepsHtml += `
                 <div class="detail-step ${cls}" style="cursor:pointer;" onclick="window.location.href='task-detail.php?id=${step.task_id}'">
@@ -1295,42 +1467,77 @@ let undoToastTimer = null;
         /* تبدیل اعداد لاتین به فارسی */
         function toFa(n) {
             if (n === null || n === undefined) return n;
-            return String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+            return String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
         }
         /* ─── Helpers ─── */
         function formatDate(d) {
             if (!d) return '—';
-            return new Date(d).toLocaleDateString('fa-IR', { year: 'numeric', month: 'short', day: 'numeric' });
+            return new Date(d).toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
         }
 
         function formatDateTime(d) {
             if (!d) return '—';
-            return new Date(d).toLocaleDateString('fa-IR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            return new Date(d).toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
         function formatDuration(mins) {
             if (!mins) return '';
-            const h = Math.floor(mins / 60), m = mins % 60;
-            if (h >= 24) { const d = Math.floor(h / 24), rh = h % 24; return `${toFa(d)} روز${rh ? ' ' + toFa(rh) + ' ساعت' : ''}`; }
-            if (h > 0)   return `${toFa(h)} ساعت${m ? ' ' + toFa(m) + ' دقیقه' : ''}`;
+            const h = Math.floor(mins / 60),
+                m = mins % 60;
+            if (h >= 24) {
+                const d = Math.floor(h / 24),
+                    rh = h % 24;
+                return `${toFa(d)} روز${rh ? ' ' + toFa(rh) + ' ساعت' : ''}`;
+            }
+            if (h > 0) return `${toFa(h)} ساعت${m ? ' ' + toFa(m) + ' دقیقه' : ''}`;
             return `${toFa(m)} دقیقه`;
         }
 
         function getStatusBadge(s) {
-            return { in_progress: '<span class="badge bg-primary">در حال اجرا</span>', delayed: '<span class="badge bg-danger">تأخیر دارد</span>', completed: '<span class="badge bg-success">تکمیل شده</span>', cancelled: '<span class="badge bg-secondary">لغو شده</span>' }[s] || `<span class="badge bg-secondary">${s}</span>`;
+            return {
+                in_progress: '<span class="badge bg-primary">در حال اجرا</span>',
+                delayed: '<span class="badge bg-danger">تأخیر دارد</span>',
+                completed: '<span class="badge bg-success">تکمیل شده</span>',
+                cancelled: '<span class="badge bg-secondary">لغو شده</span>'
+            } [s] || `<span class="badge bg-secondary">${s}</span>`;
         }
 
         function getStatusLabel(s) {
-            return { in_progress: 'در حال اجرا', delayed: 'دارای تأخیر', completed: 'تکمیل شده', cancelled: 'لغو شده' }[s] || s;
+            return {
+                in_progress: 'در حال اجرا',
+                delayed: 'دارای تأخیر',
+                completed: 'تکمیل شده',
+                cancelled: 'لغو شده'
+            } [s] || s;
         }
 
         function getStepStatusBadge(s) {
-            return { completed: '<span class="badge bg-success">تکمیل شده</span>', active: '<span class="badge bg-primary">در حال انجام</span>', delayed: '<span class="badge bg-danger">تأخیر</span>', pending: '<span class="badge bg-secondary">در انتظار</span>' }[s] || `<span class="badge bg-secondary">${s}</span>`;
+            return {
+                completed: '<span class="badge bg-success">تکمیل شده</span>',
+                active: '<span class="badge bg-primary">در حال انجام</span>',
+                delayed: '<span class="badge bg-danger">تأخیر</span>',
+                pending: '<span class="badge bg-secondary">در انتظار</span>'
+            } [s] || `<span class="badge bg-secondary">${s}</span>`;
         }
 
-        let sectionLabels = { management: 'مدیریت', supervisor: 'سرپرست' };
+        let sectionLabels = {
+            management: 'مدیریت',
+            supervisor: 'سرپرست'
+        };
 
-        function getSectionLabel(key) { return sectionLabels[key] || key || '—'; }
+        function getSectionLabel(key) {
+            return sectionLabels[key] || key || '—';
+        }
 
         async function loadSections() {
             // این تابع حالا از loadSectionsList فراخوانی می‌شود که هم label و هم dropdown را پر می‌کند
@@ -1338,7 +1545,10 @@ let undoToastTimer = null;
         }
 
         function updateLastUpdateTime() {
-            document.getElementById('lastUpdate').textContent = 'بروزرسانی: ' + new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('lastUpdate').textContent = 'بروزرسانی: ' + new Date().toLocaleTimeString('fa-IR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
         function showError(msg) {
@@ -1352,7 +1562,8 @@ let undoToastTimer = null;
             loadAllData();
         });
 
-        setInterval(loadAllData, 60000);   // هر ۶۰ ثانیه — فیلترها حفظ می‌شوند
+        setInterval(loadAllData, 60000); // هر ۶۰ ثانیه — فیلترها حفظ می‌شوند
     </script>
 </body>
+
 </html>
