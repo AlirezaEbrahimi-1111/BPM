@@ -1,2 +1,0 @@
-[26-May-2026 12:14:01 Asia/Tehran] Ticket list error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ts.slug' in 'SELECT'
-[26-May-2026 12:17:33 Asia/Tehran] Ticket list error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'tp.slug' in 'SELECT'
