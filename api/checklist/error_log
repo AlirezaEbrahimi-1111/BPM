@@ -1,0 +1,59 @@
+[22-Jun-2026 14:28:03 Asia/Tehran] ===========================================
+[22-Jun-2026 14:28:03 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 14:28:03 Asia/Tehran] To User: 29
+[22-Jun-2026 14:28:03 Asia/Tehran] Title: ارجاع آیتم چک‌لیست
+[22-Jun-2026 14:28:03 Asia/Tehran] Message: آیتم «5م واریز شود.» از کار «واریز حقوق علیرضا ابراهیمی» به شما ارجاع شد
+[22-Jun-2026 14:28:03 Asia/Tehran] Related Type: task
+[22-Jun-2026 14:28:03 Asia/Tehran] Related ID: 323
+[22-Jun-2026 14:28:03 Asia/Tehran] Task Info - Creator: 19, Assignee: 19
+[22-Jun-2026 14:28:03 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 14:28:03 Asia/Tehran] ===========================================
+[22-Jun-2026 14:28:03 Asia/Tehran] 📧 Notification created with ID: 633 - Sending SMS...
+[22-Jun-2026 14:28:03 Asia/Tehran] 📤 SMS async dispatched for notification #633
+[22-Jun-2026 14:28:04 Asia/Tehran] ⚠️ sms-worker: pattern=general bodyId=466121 notif=#633
+[22-Jun-2026 15:14:58 Asia/Tehran] ===========================================
+[22-Jun-2026 15:14:58 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 15:14:58 Asia/Tehran] To User: 19
+[22-Jun-2026 15:14:58 Asia/Tehran] Title: کار تکمیل شد: واریز حقوق علیرضا ابراهیمی
+[22-Jun-2026 15:14:58 Asia/Tehran] Message: کار «واریز حقوق علیرضا ابراهیمی» توسط سینا فروغی به پایان رسید.
+[22-Jun-2026 15:14:58 Asia/Tehran] Related Type: task
+[22-Jun-2026 15:14:58 Asia/Tehran] Related ID: 323
+[22-Jun-2026 15:14:58 Asia/Tehran] Task Info - Creator: 19, Assignee: 19
+[22-Jun-2026 15:14:58 Asia/Tehran] 🚫 BLOCKED: Self-notification!
+[22-Jun-2026 15:14:58 Asia/Tehran] ===========================================
+[23-Jun-2026 12:14:48 Asia/Tehran] ===========================================
+[23-Jun-2026 12:14:48 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[23-Jun-2026 12:14:48 Asia/Tehran] To User: 12
+[23-Jun-2026 12:14:48 Asia/Tehran] Title: ارجاع آیتم چک‌لیست
+[23-Jun-2026 12:14:48 Asia/Tehran] Message: آیتم «گرفتن جیمیل شرکت» از کار «برنامه ریزی خرید کالا از کشورهای همسایه» به شما ارجاع شد
+[23-Jun-2026 12:14:48 Asia/Tehran] Related Type: task
+[23-Jun-2026 12:14:48 Asia/Tehran] Related ID: 369
+[23-Jun-2026 12:14:48 Asia/Tehran] Task Info - Creator: 19, Assignee: 19
+[23-Jun-2026 12:14:48 Asia/Tehran] ✅ ALLOWED: Creating notification
+[23-Jun-2026 12:14:48 Asia/Tehran] ===========================================
+[23-Jun-2026 12:14:48 Asia/Tehran] 📧 Notification created with ID: 814 - Sending SMS...
+[23-Jun-2026 12:14:48 Asia/Tehran] 📤 SMS async dispatched for notification #814
+[23-Jun-2026 12:14:48 Asia/Tehran] ⚠️ sms-worker: pattern=general bodyId=466121 notif=#814
+[27-Jun-2026 05:55:21 Asia/Tehran] ===========================================
+[27-Jun-2026 05:55:21 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[27-Jun-2026 05:55:21 Asia/Tehran] To User: 19
+[27-Jun-2026 05:55:21 Asia/Tehran] Title: کار تکمیل شد: برنامه ریزی خرید کالا از کشورهای همسایه
+[27-Jun-2026 05:55:21 Asia/Tehran] Message: کار «برنامه ریزی خرید کالا از کشورهای همسایه» توسط حسن نظری به پایان رسید.
+[27-Jun-2026 05:55:21 Asia/Tehran] Related Type: task
+[27-Jun-2026 05:55:21 Asia/Tehran] Related ID: 369
+[27-Jun-2026 05:55:21 Asia/Tehran] Task Info - Creator: 19, Assignee: 19
+[27-Jun-2026 05:55:21 Asia/Tehran] 🚫 BLOCKED: Self-notification!
+[27-Jun-2026 05:55:21 Asia/Tehran] ===========================================
+[27-Jun-2026 10:16:32 Asia/Tehran] ===========================================
+[27-Jun-2026 10:16:32 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[27-Jun-2026 10:16:32 Asia/Tehran] To User: 18
+[27-Jun-2026 10:16:32 Asia/Tehran] Title: ارجاع آیتم چک‌لیست
+[27-Jun-2026 10:16:32 Asia/Tehran] Message: آیتم «شرکت های خصوصی باید لیستش از بانک گرفته شود.» از کار «فروش اقساطی بانک رفاه» به شما ارجاع شد
+[27-Jun-2026 10:16:32 Asia/Tehran] Related Type: task
+[27-Jun-2026 10:16:32 Asia/Tehran] Related ID: 384
+[27-Jun-2026 10:16:32 Asia/Tehran] Task Info - Creator: 19, Assignee: 19
+[27-Jun-2026 10:16:32 Asia/Tehran] ✅ ALLOWED: Creating notification
+[27-Jun-2026 10:16:32 Asia/Tehran] ===========================================
+[27-Jun-2026 10:16:32 Asia/Tehran] 📧 Notification created with ID: 881 - Sending SMS...
+[27-Jun-2026 10:16:32 Asia/Tehran] 📤 SMS async dispatched for notification #881
+[27-Jun-2026 10:16:32 Asia/Tehran] ⚠️ sms-worker: pattern=general bodyId=466121 notif=#881

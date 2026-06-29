@@ -1,0 +1,22 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # هدایتِ اجباری به HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# .htaccess
+RewriteEngine On
+
+# انتقال Authorization Header
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+# یا این روش:
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+RewriteEngine On
+
+# فقط اگر مسیر دقیقاً /pages باشه
+RewriteCond %{REQUEST_URI} ^/pages/?$ 
+RewriteRule ^.*$ /access-denied.php [R=302,L]
