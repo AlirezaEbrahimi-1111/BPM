@@ -1,0 +1,104 @@
+/* ===== users.css ===== */
+
+/* Layout */
+.users-page .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+/* Filters bar */
+.filters-bar {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: .75rem 1rem;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: .5rem;
+    margin-bottom: 1rem;
+}
+.filters-bar .form-control,
+.filters-bar .form-select {
+    max-width: 180px;
+}
+
+/* Table */
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .875rem;
+}
+.users-table thead th {
+    background: var(--bs-secondary-bg);
+    padding: .6rem .75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--bs-border-color);
+}
+.users-table tbody tr {
+    border-bottom: 1px solid var(--bs-border-color);
+    transition: background .15s;
+}
+.users-table tbody tr:hover {
+    background: var(--bs-tertiary-bg);
+}
+.users-table td {
+    padding: .55rem .75rem;
+    vertical-align: middle;
+}
+
+/* Unit badges */
+.unit-badge {
+    display: inline-block;
+    font-size: .7rem;
+    padding: .2em .5em;
+    border-radius: .3rem;
+    background: var(--bs-secondary-bg);
+    border: 1px solid var(--bs-border-color);
+    color: var(--bs-body-color);
+    margin: 1px;
+}
+.unit-badge.primary {
+    background: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+/* Status badge */
+.status-active   { color: #198754; font-weight: 600; }
+.status-inactive { color: #6c757d; }
+
+/* Action buttons */
+.action-btns {
+    display: flex;
+    gap: .3rem;
+    flex-wrap: nowrap;
+}
+.action-btns .btn {
+    padding: .2rem .45rem;
+    font-size: .75rem;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--bs-secondary-color);
+}
+
+/* Edit units modal — unit cards */
+.unit-card {
+    border: 1px solid var(--bs-border-color);
+    border-radius: .4rem;
+    padding: .6rem .75rem;
+    transition: border-color .15s, background .15s;
+}
+.unit-card.selected {
+    border-color: #0d6efd;
+    background: #f0f5ff;
+}

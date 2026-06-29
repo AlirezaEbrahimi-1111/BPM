@@ -1,0 +1,53 @@
+<?php
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: https://bpm.computeryekta.com');
+header('Access-Control-Allow-Methods: GET');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/TaskManager.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
+try {
+    $user_id = requireAuth();
+    
+    $database = new Database();
+    $db = $database->getConnection();
+    $taskManager = new TaskManager($db);
+    
+    // ✅ بررسی فیلتر
+    $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+    
+    if ($filter === 'previous_delegations') {
+        // نمایش ارجاعات سابق
+        $tasks = $taskManager->getPreviousDelegations($user_id);
+    } else {
+        // نمایش کارهای واگذار شده عادی (فقط کارهایی که خودش ایجاد کرده)
+        $tasks = $taskManager->getCreatedTasks($user_id);
+    }
+    
+    // اضافه کردن تعداد تکمیل‌ها + اعتبار بخشش معوقه به هر کار
+    foreach ($tasks as &$task) {
+        if (!isset($task['completed_count'])) {
+            $stmt = $db->prepare("SELECT COUNT(*) as count FROM task_history WHERE task_id = ? AND action = 'completed'");
+            $stmt->execute([$task['id']]);
+            $task['completed_count'] = $stmt->fetch()['count'];
+        }
+        // اگر کوئری مبدأ این فیلد را نداده، از جدول tasks بخوان
+        if (!array_key_exists('overdue_forgiven_credit', $task)) {
+            $f = $db->prepare("SELECT overdue_forgiven_credit FROM tasks WHERE id = ?");
+            $f->execute([$task['id']]);
+            $task['overdue_forgiven_credit'] = (int) $f->fetchColumn();
+        }
+    }
+    unset($task);
+    
+    echo json_encode(['success' => true, 'tasks' => $tasks], JSON_UNESCAPED_UNICODE);
+    
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'خطای داخلی سرور'], JSON_UNESCAPED_UNICODE);
+    error_log("Get delegated tasks error: " . $e->getMessage());
+}
+?>

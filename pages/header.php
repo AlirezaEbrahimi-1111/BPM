@@ -1,0 +1,1411 @@
+<?php
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
+?>
+<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+<link rel="stylesheet" href="<?= asset('/assets/css/custom.css') ?>">
+<link rel="stylesheet" href="<?= asset('/assets/css/responsive/dashboard-responsive.css') ?>">
+<!-- وزیرمتن - بهینه برای موبایل -->
+<link rel="stylesheet" href="<?= asset('/assets/fonts/Vazirmatn-font-face.css') ?>">
+
+<style>
+
+
+    /* یکدست‌سازی بج زنگ اعلان و مگافون اطلاعیه */
+.notification-badge,
+.announcement-badge {
+    position: absolute;
+    top: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: #ef4444 !important;   /* قرمز یکسان */
+    color: #fff !important;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    font-size: .68rem;
+    font-weight: 700;
+    line-height: 14px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.notification-badge.hidden,
+.announcement-badge.hidden { display: none !important; }
+</style>
+<!-- بستن فوری drawer قبل از render — جلوگیری از flash -->
+<script>document.addEventListener('DOMContentLoaded', function () { var d = document.getElementById('navbarNav'); if (d) { d.classList.remove('drawer-open'); } document.body.classList.remove('drawer-body-open'); var b = document.getElementById('mobileMenuBtn'); if (b) b.classList.remove('menu-btn-hidden'); var o = document.getElementById('drawerOverlay'); if (o) o.classList.remove('overlay-active'); });</script>
+<!-- هدر ثابت -->
+<nav class="navbar navbar-expand-lg navbar-light fixed-top">
+    <div class="container-fluid">
+        <!-- نام سایت در سمت راست -->
+        <a class="navbar-brand ms-auto" href="../../pages/dashboard.php">
+            <span id="userName" class="me-2"><?php echo isset($_SESSION['organization_name']) ? htmlspecialchars($_SESSION['organization_name']) : 'کاربر جاری'; ?></span>
+        </a>
+
+        <!-- دکمه همبرگر سفارشی موبایل -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="باز کردن منو">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <!-- منوی ناوبری موبایل -->
+        <div class="mobile-drawer" id="navbarNav">
+            <div class="drawer-header">
+                <span class="drawer-title">منو</span>
+                <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="بستن منو">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <ul class="navbar-nav" id="mainNav">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../pages/dashboard.php">
+                        <i class="bi bi-house-door me-2"></i>داشبورد
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../pages/create-task.php">
+                        <i class="bi bi-plus-circle me-2"></i>کار جدید
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../pages/tasks.php">
+                        <i class="bi bi-list-task me-2"></i>مدیریت کارها
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../pages/my-tasks.php">
+                        <i class="bi bi-person-check me-2"></i>کارهای من
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../pages/delegated-tasks.php">
+                        <i class="bi bi-person-check me-2"></i>کارهای واگذارشده
+                    </a>
+                </li>
+                <?php if ((int)($_SESSION['organization_id'] ?? 0) === 1): ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../attendance_system/pages/requests.php">
+                        <i class="bi bi-file-text me-2"></i>ورود و خروج
+                    </a>
+                </li>
+                <?php endif; ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../pages/announcements.php">
+                        <i class="bi bi-megaphone me-2"></i>اطلاعیه‌ها
+                    </a>
+                </li>
+                <li class="nav-item" style="display:none;">
+                    <a class="nav-link" href="../../pages/reports.php">
+                        <i class="bi bi-file-text me-2"></i>گزارشات
+                    </a>
+                </li>
+                <!-- منوی نظارت (فقط برای مدیران) -->
+                <li class="nav-item dropdown" id="navOverview" style="display: none;">
+                    <a class="nav-link dropdown-toggle" href="#" id="overviewDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-view-list me-2"></i>نظارت
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end admin-submenu" aria-labelledby="overviewDropdown">
+                        <li id="overviewTasksItem">
+                            <a class="dropdown-item" href="/pages/tasks-overview.php">
+                                <i class="bi bi-list-check ms-2"></i>نظارت بر کارها
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="/pages/workflow-monitor.php">
+                                <i class="bi-diagram-3 ms-2"></i>نظارت بر روتین‌های فعال
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <!-- منوی مدیریت با زیرمنو (فقط برای مدیران) -->
+                <li class="nav-item dropdown" id="fulladmintag" style="display: none;">
+                    <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-shield-lock me-2"></i>مدیریت
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end admin-submenu" aria-labelledby="adminDropdown">
+                        <!--<li>--> 
+                        <!--    <a class="dropdown-item" href="../../pages/sms-templates.php">-->
+                        <!--        <i class="bi bi-chat-square-text ms-2"></i>الگوهای پیامک-->
+                        <!--    </a>-->
+                        <!--</li>-->
+                        <!--<li>-->
+                        <!--    <a class="dropdown-item" href="../../pages/sms-logs.php">-->
+                        <!--        <i class="bi bi-graph-up ms-2"></i>گزارش پیامک‌ها-->
+                        <!--    </a>-->
+                        <!--</li>-->
+                        <!--<li>-->
+                        <!--    <hr class="dropdown-divider">-->
+                        <!--</li>-->
+                        <li>
+                            <a class="dropdown-item" href="../../pages/users.php">
+                                <i class="bi bi-people ms-2"></i>مدیریت کاربران
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="../../pages/workflow-templates.php">
+                                <i class="bi bi-diagram-3 ms-2"></i>مدیریت روتین‌ها
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="../../pages/activity_section_managment.php">
+                                <i class="bi bi-diagram-3 ms-2"></i>مدیریت واحدهای فعالیت
+                            </a>
+                        </li>
+                       <li>
+                            <a class="dropdown-item" href="../../pages/group-management.php">
+                                <i class="bi bi-diagram-3 ms-2"></i>مدیریت گروه‌ها
+                            </a>
+                        </li>
+                        <li id="holidaysMenuItem" style="display:none;">
+                            <a class="dropdown-item" href="../../pages/holidays.php">
+                                <i class="bi bi-calendar-x ms-2"></i>روزهای تعطیل
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="../../pages/attendance-devices.php">
+                                <i class="bi bi-shield-lock ms-2"></i>دستگاه‌های حضور و غیاب
+                            </a>
+                        </li>
+                        <li><a class="dropdown-item" href="../../attendance_system/pages/payroll-report.php"><i class="bi bi-cash-stack ms-2"></i>گزارش حقوق پرسنل</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="../../attendance_system/pages/settings.php">
+                                <i class="bi bi-gear-fill ms-2"></i>تنظیمات سیستم
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <!-- Overlay تاریک پشت منو -->
+        <div class="drawer-overlay" id="drawerOverlay"></div>
+
+<div class="navbar-divider"></div>
+
+<!-- حضور و غیاب - Minimal -->
+<div class="attendance-container" id="attendanceContainer">
+    <div class="attendance-loading">
+        <div class="spinner-border spinner-border-sm" role="status"></div>
+    </div>
+</div>
+
+
+        <!-- آیکون‌های تنظیمات و خروج -->
+        <div class="navbar-nav me-0" style="flex-direction: row;">
+            <div class="nav-item">
+                <a class="nav-link settings-btn" href="../../pages/tickets.php" title="تیکت‌ها">
+                   <i class="bi bi-headset" style="font-size:1.2rem;color:#744CA4;"></i>
+               </a>
+           </div>
+                   <div class="navbar-divider"></div>
+
+            <div class="nav-item">
+                <a class="nav-link settings-btn" href="../../pages/settings.php" title="تنظیمات">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#744CA4" stroke-width="1.6">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </a>
+            </div>
+            <div class="dropdown" style="position: relative;">
+                <!-- آیکون مگافون با بج -->
+                <a href="#" class="nav-link position-relative settings-btn" id="announcementDropdown"
+                    aria-expanded="false" style="display: inline-flex; align-items: center;">
+                    <i class="bi bi-megaphone announcement-bell"></i>
+                    <span class="announcement-badge hidden" id="announcementBadge">0</span>
+                </a>
+            </div>
+
+            <!-- Dropdown اطلاعیه‌ها — دقیقاً مثل notificationDropdownMenu -->
+            <div class="dropdown-menu notification-dropdown p-0" id="announcementDropdownMenu"
+                aria-labelledby="announcementDropdown" style="min-width: 360px;">
+                <div class="notification-header">
+                    <span>اطلاعیه‌های سازمانی</span>
+                    <button class="mark-all-btn" onclick="markAllAnnouncementsRead()" id="markAllAnnBtn">
+                        همه خوانده شد
+                    </button>
+                </div>
+                <!-- لیست اطلاعیه‌ها -->
+                <div class="notification-list-container" id="announcementList">
+                    <div class="notification-loading">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">در حال بارگذاری...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dropdown" style="position: relative;">
+                <a href="#" class="nav-link position-relative settings-btn" id="notificationDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false" style="display: inline-flex; align-items: center;">
+                    <i class="bi bi-bell notification-bell"></i>
+                    <span class="notification-badge hidden" id="notificationBadge">0</span>
+                </a>
+            </div>
+
+            <div class="dropdown-menu notification-dropdown p-0" id="notificationDropdownMenu"
+                aria-labelledby="notificationDropdown">
+                <div class="notification-header">
+                    <span>اعلان‌ها</span>
+                    <button class="mark-all-btn" onclick="markAllAsRead()" id="markAllBtn">
+                        همه خوانده شد
+                    </button>
+                </div>
+                <!-- لیست اعلان‌ها -->
+                <div class="notification-list-container" id="notificationList">
+                    <div class="notification-loading">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">در حال بارگذاری...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-item ">
+                <a class="nav-link settings-btn" href="#" onclick="logoutConfirm()" title="خروج">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+<script src="<?= asset('/assets/js/table-utils.js') ?>"></script>
+<script src="<?= asset('/assets/js/date-utils.js') ?>"></script>
+
+<script>
+    // ============================================
+    // متغیرهای سراسری
+    // ============================================
+    var authToken;
+    var unreadCount = 0;
+    var lastNotificationId = 0;
+    let annUnreadCount = 0;
+    let annCache = {};   // ذخیرهٔ کاملِ اطلاعیه‌ها برای نمایش در مودال
+
+    // ============================================
+    // تابع کمکی URL
+    // ============================================
+function getApiUrl(endpoint) {
+    endpoint = endpoint.replace(/^\/+/, '').replace(/^api\/+/, '');
+    return '/api/' + endpoint;
+}
+
+    // ============================================
+    // آیکون بر اساس نوع اعلان
+    // ============================================
+    function getNotificationIcon(type) {
+        const icons = {
+            info: 'info-circle',
+            success: 'check-circle',
+            warning: 'exclamation-triangle',
+            danger: 'x-circle'
+        };
+        return icons[type] || 'bell';
+    }
+
+    // ============================================
+    // بروزرسانی badge
+    // ============================================
+    function updateBadge(count) {
+        const badge = document.querySelector('.notification-badge');
+        if (!badge) return;
+
+        unreadCount = count;
+
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.classList.remove('hidden');
+
+            const bell = document.querySelector('.notification-bell');
+            if (bell) bell.classList.add('has-notification');
+        } else {
+            badge.classList.add('hidden');
+
+            const bell = document.querySelector('.notification-bell');
+            if (bell) bell.classList.remove('has-notification');
+        }
+    }
+
+    // ============================================
+    // بارگذاری اعلان‌ها
+    // ============================================
+    async function loadNotifications() {
+        const listContainer = document.getElementById('notificationList');
+
+        if (!authToken) {
+            console.warn('⚠️ authToken هنوز set نشده');
+            return;
+        }
+
+        if (listContainer) {
+            listContainer.innerHTML = '<div class="notification-loading"><div class="spinner-border" role="status"></div></div>';
+        }
+
+        try {
+            const apiUrl = '/api/notifications/list.php?unread_only=1&limit=50';
+
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + authToken,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const contentType = response.headers.get('content-type');
+
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('❌ HTML returned:', text.substring(0, 200));
+                throw new Error('پاسخ JSON نیست');
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'خطای سرور');
+            }
+
+            const data = await response.json();
+
+            if (data.success && listContainer) {
+                if (data.notifications && data.notifications.length > 0) {
+                    listContainer.innerHTML = '';
+                    data.notifications.forEach(notif => {
+                        const item = document.createElement('a');
+                        item.className = `notification-item ${notif.is_read ? '' : 'unread'}`;
+                        item.href = notif.link || '#';
+                        item.setAttribute('data-notif-id', notif.id);
+                        item.innerHTML = `
+                        <div class="d-flex align-items-start">
+                            <div class="notification-icon ${notif.type}">
+                                <i class="bi bi-${getNotificationIcon(notif.type)}"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">${notif.title}</div>
+                                <div class="notification-message">${notif.message}</div>
+                                <div class="notification-time">${new Date(notif.created_at).toLocaleDateString('fa-IR')}</div>
+                            </div>
+                        </div>
+                    `;
+                        item.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            if (notif.is_read === 0) markAsRead(notif.id);
+                            if (notif.link && notif.link !== '#') window.location.href = notif.link;
+                        });
+                        listContainer.appendChild(item);
+                    });
+                    lastNotificationId = Math.max(...data.notifications.map(n => parseInt(n.id)));
+                } else {
+                    listContainer.innerHTML = '<div class="notification-empty"><i class="bi bi-bell-slash"></i><div>هیچ اعلان جدیدی وجود ندارد</div></div>';
+                }
+                updateBadge(data.unread_count || 0);
+            }
+        } catch (error) {
+            console.error('❌ خطا در بارگذاری اعلان‌ها:', error);
+            if (listContainer) {
+                listContainer.innerHTML = '<div class="notification-empty"><i class="bi bi-wifi-off"></i><div>خطا: ' + error.message + '</div></div>';
+            }
+            updateBadge(0);
+        }
+    }
+    function updateAnnouncementBadge(count) {
+        const badge = document.getElementById('announcementBadge');
+        if (!badge) return;
+
+        annUnreadCount = count;
+
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.classList.remove('hidden');
+            const icon = document.querySelector('.announcement-bell');
+            if (icon) icon.classList.add('has-announcement');
+        } else {
+            badge.classList.add('hidden');
+            const icon = document.querySelector('.announcement-bell');
+            if (icon) icon.classList.remove('has-announcement');
+        }
+    }
+
+    // ─── بارگذاری اطلاعیه‌ها ───
+    async function loadAnnouncements() {
+        const listContainer = document.getElementById('announcementList');
+        if (!authToken || !listContainer) return;
+
+        listContainer.innerHTML = `
+        <div class="notification-loading">
+            <div class="spinner-border" role="status"></div>
+        </div>`;
+
+        try {
+            const response = await fetch('/api/announcements/list.php?limit=8&offset=0', {
+                headers: { 'Authorization': 'Bearer ' + authToken }
+            });
+
+            if (!response.ok) throw new Error('server error');
+            const data = await response.json();
+
+            if (data.success) {
+                renderAnnouncementList(data.announcements, data.unread_count);
+                updateAnnouncementBadge(data.unread_count || 0);
+            }
+        } catch (err) {
+            console.error('❌ خطا در بارگذاری اطلاعیه‌ها:', err);
+            listContainer.innerHTML = `
+            <div class="ann-empty">
+                <i class="bi bi-wifi-off"></i>
+                <p>خطا در بارگذاری</p>
+            </div>`;
+        }
+    }
+
+    // ─── رندر لیست ───
+    function renderAnnouncementList(announcements, unreadCount) {
+        const listContainer = document.getElementById('announcementList');
+        if (!listContainer) return;
+
+        if (!announcements || announcements.length === 0) {
+            listContainer.innerHTML = `
+            <div class="ann-empty">
+                <i class="bi bi-megaphone"></i>
+                <p>اطلاعیه‌ای وجود ندارد</p>
+            </div>`;
+            return;
+        }
+
+        const priorityIcons = {
+            urgent: '<i class="bi bi-exclamation-triangle-fill"></i>',
+            high: '<i class="bi bi-exclamation-circle-fill"></i>',
+            normal: '<i class="bi bi-megaphone-fill"></i>',
+            low: '<i class="bi bi-info-circle"></i>'
+        };
+
+        let html = '';
+        annCache = {};
+        announcements.forEach(ann => {
+            annCache[ann.id] = ann;
+            const isUnread = ann.is_read === false || ann.is_read === 0;
+            const priority = ann.priority || 'normal';
+            const icon = priorityIcons[priority] || priorityIcons.normal;
+            const timeText = getSmartAnnTime(ann.created_at);
+
+            // بج اولویت فوری/مهم روی عنوان
+            let priorityTag = '';
+            if (priority === 'urgent') priorityTag = '<span class="ann-urgent-tag">فوری</span>';
+            else if (priority === 'high') priorityTag = '<span class="ann-high-tag">مهم</span>';
+
+            html += `
+            <div class="announcement-item ${isUnread ? 'unread' : ''}" 
+                 data-ann-id="${ann.id}"
+                 onclick="handleAnnouncementClick(event, ${ann.id})">
+                <div class="ann-priority-icon ${priority}">${icon}</div>
+                <div class="ann-item-body">
+                    <div class="ann-item-title">
+                        ${priorityTag}
+                        ${escapeHtml(ann.title)}
+                    </div>
+                    <div class="ann-item-time">
+                        <i class="bi bi-clock" style="font-size:10px;"></i>
+                        ${timeText}
+                    </div>
+                </div>
+            </div>`;
+        });
+
+        // footer — لینک مشاهده همه (اگه صفحه جداگانه داری)
+        html += `
+        <div class="ann-dropdown-footer">
+            <a href="/pages/announcements.php">مشاهده همه اطلاعیه‌ها ←</a>
+        </div>`;
+
+        listContainer.innerHTML = html;
+    }
+
+ // ─── کلیک روی اطلاعیه ⟵ باز کردنِ مودالِ جزئیات ───
+    function handleAnnouncementClick(ev, annId) {
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+
+        // علامت خوانده‌شده
+        markAnnouncementRead(annId);
+
+        // بستن dropdown
+        const menu = document.getElementById('announcementDropdownMenu');
+        if (menu) menu.classList.remove('show');
+
+        // باز کردنِ مودالِ جزئیات
+        const ann = annCache[annId];
+        if (ann) openAnnouncementModal(ann);
+    }
+
+    // ─── مودالِ جزئیاتِ اطلاعیه ───
+    function openAnnouncementModal(ann) {
+        closeAnnouncementModal(); // اگر مودالِ قبلی باز بود
+
+        const priority = ann.priority || 'normal';
+        const prMap = {
+            urgent: { label: 'فوری', color: '#ef4444' },
+            high:   { label: 'مهم',  color: '#f59e0b' },
+            normal: { label: 'عادی', color: '#744CA4' },
+            low:    { label: 'اطلاع‌رسانی', color: '#64748b' }
+        };
+        const pr = prMap[priority] || prMap.normal;
+        const timeText = (typeof getSmartAnnTime === 'function') ? getSmartAnnTime(ann.created_at) : '';
+        const contentHtml = escapeHtml(ann.content || '').replace(/\n/g, '<br>');
+
+        const overlay = document.createElement('div');
+        overlay.id = 'annModalOverlay';
+        overlay.setAttribute('dir', 'rtl');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+        overlay.innerHTML =
+            '<div style="background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);font-family:inherit;">' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:16px 18px;border-bottom:1px solid #EEF2F7;">' +
+                    '<div style="font-weight:800;color:#1f2937;font-size:16px;">' + escapeHtml(ann.title || 'اطلاعیه') + '</div>' +
+                    '<button type="button" id="annModalClose" style="border:none;background:#F3F4F6;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;color:#6B7280;">&times;</button>' +
+                '</div>' +
+                '<div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid #F3F4F6;">' +
+                    '<span style="background:' + pr.color + ';color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;">' + pr.label + '</span>' +
+                    '<span style="color:#9CA3AF;font-size:12px;">' + timeText + '</span>' +
+                '</div>' +
+                '<div style="padding:16px 18px;overflow:auto;line-height:2;color:#374151;font-size:14px;">' + (contentHtml || '<span style="color:#9CA3AF;">متنی برای این اطلاعیه ثبت نشده است.</span>') + '</div>' +
+                '<div style="padding:12px 18px;border-top:1px solid #EEF2F7;text-align:center;">' +
+                    '<a href="/pages/announcements.php" style="color:#744CA4;font-weight:700;text-decoration:none;font-size:13px;">مشاهده همه اطلاعیه‌ها ←</a>' +
+                '</div>' +
+            '</div>';
+
+        document.body.appendChild(overlay);
+
+        document.getElementById('annModalClose').addEventListener('click', closeAnnouncementModal);
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) closeAnnouncementModal();
+        });
+        document.addEventListener('keydown', annModalEsc);
+    }
+
+    function annModalEsc(e) {
+        if (e.key === 'Escape') closeAnnouncementModal();
+    }
+
+    function closeAnnouncementModal() {
+        const o = document.getElementById('annModalOverlay');
+        if (o) o.remove();
+        document.removeEventListener('keydown', annModalEsc);
+    }
+
+    // ─── علامت خوانده شده (تک) ───
+    async function markAnnouncementRead(annId) {
+        // بروزرسانی فوری UI
+        const item = document.querySelector(`.announcement-item[data-ann-id="${annId}"]`);
+        if (item && item.classList.contains('unread')) {
+            item.classList.remove('unread');
+            const newCount = Math.max(0, annUnreadCount - 1);
+            updateAnnouncementBadge(newCount);
+        }
+
+        try {
+            await fetch('/api/announcements/update.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + authToken
+                },
+                body: JSON.stringify({ action: 'mark_read', id: annId })
+            });
+        } catch (err) {
+            console.error('❌ خطا در mark_read:', err);
+        }
+    }
+
+    // ─── علامت همه خوانده شده ───
+    async function markAllAnnouncementsRead() {
+        const btn = document.getElementById('markAllAnnBtn');
+        if (!btn || annUnreadCount === 0) return;
+
+        btn.disabled = true;
+        btn.textContent = '...';
+
+        try {
+            await fetch('/api/announcements/update.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + authToken
+                },
+                body: JSON.stringify({ action: 'mark_all_read' })
+            });
+
+            document.querySelectorAll('.announcement-item.unread')
+                .forEach(el => el.classList.remove('unread'));
+            updateAnnouncementBadge(0);
+
+            // بستن dropdown بعد از 500ms
+            setTimeout(() => {
+                const menu = document.getElementById('announcementDropdownMenu');
+                if (menu) menu.classList.remove('show');
+            }, 500);
+
+        } catch (err) {
+            console.error('❌ خطا:', err);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'همه خوانده شد';
+        }
+    }
+
+    // ─── راه‌اندازی dropdown ───
+    function setupAnnouncementDropdown() {
+        const toggle = document.getElementById('announcementDropdown');
+        const menu = document.getElementById('announcementDropdownMenu');
+        if (!toggle || !menu) return;
+
+        toggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isShown = menu.classList.contains('show');
+
+            // بستن dropdown اعلان اگه باز بود
+            const notifMenu = document.getElementById('notificationDropdownMenu');
+            if (notifMenu) notifMenu.classList.remove('show');
+
+            if (isShown) {
+                menu.classList.remove('show');
+            } else {
+                menu.classList.add('show');
+                loadAnnouncements(); // هر بار که باز میشه refresh کن
+            }
+        });
+
+        // بستن با کلیک خارج
+        document.addEventListener('click', function (e) {
+            if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.remove('show');
+            }
+        });
+    }
+
+    // ─── بررسی اطلاعیه‌های جدید (polling) ───
+    async function checkNewAnnouncements() {
+        if (!authToken) return;
+        try {
+            const response = await fetch('/api/announcements/list.php?limit=1&offset=0', {
+                headers: { 'Authorization': 'Bearer ' + authToken }
+            });
+            const data = await response.json();
+            if (data.success && data.unread_count !== annUnreadCount) {
+                updateAnnouncementBadge(data.unread_count || 0);
+            }
+        } catch (err) { /* silent */ }
+    }
+
+    // ─── توابع کمکی ───
+    function getSmartAnnTime(dateString) {
+        if (!dateString) return '';
+        const now = new Date();
+        const date = new Date(dateString);
+        const diffMin = Math.floor((now - date) / 60000);
+        const diffHour = Math.floor(diffMin / 60);
+        const diffDay = Math.floor(diffHour / 24);
+
+        if (diffMin < 1) return 'همین الان';
+        if (diffMin < 60) return diffMin + ' دقیقه پیش';
+        if (diffHour < 24) return diffHour + ' ساعت پیش';
+        if (diffDay === 1) return 'دیروز';
+        if (diffDay < 7) return diffDay + ' روز پیش';
+        return new Date(dateString).toLocaleDateString('fa-IR');
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    // ============================================
+    // علامت‌گذاری خوانده شده
+    // ============================================
+    async function markAsRead(notifId) {
+        try {
+            const response = await fetch('/api/notifications/mark-read.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + authToken
+                },
+                body: JSON.stringify({ id: notifId })
+            });
+            const data = await response.json();
+            if (data.success) {
+                unreadCount = Math.max(0, unreadCount - 1);
+                updateBadge(unreadCount);
+                const notifItem = document.querySelector(`[data-notif-id="${notifId}"]`);
+                if (notifItem) notifItem.classList.remove('unread');
+            }
+        } catch (error) {
+            console.error('❌ خطا در علامت‌گذاری:', error);
+        }
+    }
+
+    // ============================================
+    // علامت‌گذاری همه
+    // ============================================
+    async function markAllAsRead() {
+        const btn = document.getElementById('markAllBtn');
+        if (!btn || unreadCount === 0) return;
+
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'در حال پردازش...';
+
+        try {
+            const response = await fetch('/api/notifications/mark-all-read.php', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + authToken }
+            });
+            const data = await response.json();
+            if (data.success) {
+                unreadCount = 0;
+                updateBadge(0);
+                document.querySelectorAll('.notification-item.unread').forEach(item => item.classList.remove('unread'));
+                setTimeout(() => {
+                    const dropdownMenu = document.getElementById('notificationDropdownMenu');
+                    if (dropdownMenu) {
+                        dropdownMenu.classList.remove('show');
+                    }
+                }, 100);
+            }
+        } catch (error) {
+            console.error('❌ خطا:', error);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    }
+
+    // ============================================
+    // بررسی اعلان‌های جدید
+    // ============================================
+    async function checkNewNotifications() {
+        if (!authToken) return;
+        try {
+            const apiUrl = '/api/notifications/new.php' + '?since=' + lastNotificationId;
+            const response = await fetch(apiUrl, {
+                headers: { 'Authorization': 'Bearer ' + authToken }
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            if (data.success && data.new_count > 0) {
+                loadNotifications();
+                lastNotificationId = data.latest_id;
+            }
+        } catch (error) {
+            console.error('❌ خطا در بررسی اعلان‌های جدید:', error);
+        }
+    }
+// ============================================
+    // ✅ بارگذاری وضعیت حضور و غیاب - نسخه مینیمال
+    // ============================================
+    async function loadAttendanceStatus() {
+    const container = document.getElementById('attendanceContainer');
+
+    if (!authToken || !container) {
+        if (container) container.style.display = 'none';
+        return;
+    }
+
+    try {
+        const apiUrl = getApiUrl('attendance/today-status.php');
+
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + authToken,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            container.style.display = 'none';
+            return;
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'API Error');
+        }
+
+        const tooltipContent = buildTooltipContent(data);
+
+        container.innerHTML = '';
+        container.style.display = 'flex';
+
+        if (data.buttons && data.buttons.length > 0) {
+            data.buttons.forEach(btn => {
+                const button = document.createElement('button');
+                if (btn.type === 'check_in') {
+                    button.className = 'attendance-icon-btn btn-in';
+                    button.innerHTML = '<i class="bi bi-box-arrow-in-left"></i>';
+                    button.title = data.shift_count === 2 ? btn.label : 'ثبت ورود';
+                } else {
+                    button.className = 'attendance-icon-btn btn-out';
+                    button.innerHTML = '<i class="bi bi-box-arrow-right"></i>';
+                    button.title = data.shift_count === 2 ? btn.label : 'ثبت خروج';
+                }
+                button.onclick = () => registerAttendance(btn.type, btn.shift);
+                container.appendChild(button);
+            });
+        } else if (data.window_message) {
+            // بازه‌ی بینِ دو شیفت ⟵ پیامِ «الان زمانِ ثبت ورود نیست»
+            const waiting = document.createElement('span');
+            waiting.className = 'attendance-complete';
+            waiting.innerHTML = '<i class="bi bi-clock-history"></i>';
+            waiting.title = data.window_message;
+            container.appendChild(waiting);
+        } else {
+            const complete = document.createElement('span');
+            complete.className = 'attendance-complete';
+            complete.innerHTML = '<i class="bi bi-check-lg"></i>';
+            complete.title = 'حضور امروز تکمیل شد';
+            container.appendChild(complete);
+        }
+
+        if (tooltipContent) {
+            const infoBtn = document.createElement('button');
+            infoBtn.className = 'attendance-info-btn';
+            infoBtn.innerHTML = `
+                <i class="bi bi-info-circle"></i>
+                <div class="attendance-tooltip">${tooltipContent}</div>
+            `;
+            container.appendChild(infoBtn);
+        }
+
+    } catch (error) {
+        console.error('❌ Error loading attendance:', error);
+        if (container) container.style.display = 'none';
+    }
+}
+    // ============================================
+    // ✅ ساخت محتوای Tooltip
+    // ============================================
+    function buildTooltipContent(data) {
+        let lines = [];
+
+        // شیفت 1
+        if (data.shift1) {
+            if (data.shift1.check_in) {
+                lines.push(`ورود${data.shift_count === 2 ? ' ۱' : ''}: ${data.shift1.check_in}`);
+            }
+            if (data.shift1.check_out) {
+                lines.push(`خروج${data.shift_count === 2 ? ' ۱' : ''}: ${data.shift1.check_out}`);
+            }
+        }
+
+        // شیفت 2
+        if (data.shift_count === 2 && data.shift2) {
+            if (data.shift2.check_in) {
+                lines.push(`ورود ۲: ${data.shift2.check_in}`);
+            }
+            if (data.shift2.check_out) {
+                lines.push(`خروج ۲: ${data.shift2.check_out}`);
+            }
+        }
+
+        return lines.length > 0 ? lines.join('<br>') : null;
+    }
+    // ============================================
+    // تولید Fingerprint سبک دستگاه (بدون کتابخانه)
+    // ============================================
+    function getDeviceFingerprint() {
+        try {
+            // ✅ پایداری: اگر قبلاً ساخته و ذخیره شده، همان را برگردان
+            let stored = '';
+            try { stored = localStorage.getItem('yekta_device_fp') || ''; } catch (e) {}
+            if (stored && stored.length >= 16) return stored;
+
+            const parts = [
+                navigator.userAgent || '',
+                navigator.language || '',
+                (navigator.languages || []).join(','),
+                Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+                screen.width + 'x' + screen.height + 'x' + (screen.colorDepth || ''),
+                (navigator.hardwareConcurrency || '') + '',
+                (navigator.deviceMemory || '') + '',
+                (navigator.platform || '') + '',
+                getCanvasSignature()
+            ];
+            const raw = parts.join('|');
+            const fp = simpleHash(raw);
+            try { localStorage.setItem('yekta_device_fp', fp); } catch (e) {}
+            return fp;
+        } catch (e) {
+            return '';
+        }
+    }
+
+    // امضای کوچک canvas (تفاوت رندر بین دستگاه‌ها)
+    function getCanvasSignature() {
+        try {
+            const c = document.createElement('canvas');
+            c.width = 200; c.height = 40;
+            const ctx = c.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = "14px 'Arial'";
+            ctx.fillStyle = '#f60';
+            ctx.fillRect(0, 0, 100, 20);
+            ctx.fillStyle = '#069';
+            ctx.fillText('yekta-fp-۱۲۳', 2, 2);
+            ctx.fillStyle = 'rgba(102,0,153,0.7)';
+            ctx.fillText('yekta-fp-۱۲۳', 4, 6);
+            return c.toDataURL();
+        } catch (e) {
+            return 'no-canvas';
+        }
+    }
+
+    // هش ساده (FNV-1a 32بیت → رشتهٔ هگز ۱۶ کاراکتری)
+    function simpleHash(str) {
+        let h1 = 0x811c9dc5, h2 = 0x1000193;
+        for (let i = 0; i < str.length; i++) {
+            const ch = str.charCodeAt(i);
+            h1 ^= ch; h1 = Math.imul(h1, 0x01000193) >>> 0;
+            h2 = (Math.imul(h2 ^ ch, 0x85ebca6b)) >>> 0;
+        }
+        const hex = (n) => ('00000000' + (n >>> 0).toString(16)).slice(-8);
+        return hex(h1) + hex(h2); // ۱۶ کاراکتر
+    }
+ // ============================================
+    // ✅ ثبت حضور
+    // ============================================
+    async function registerAttendance(action, shift = 1) {
+        const container = document.getElementById('attendanceContainer');
+
+        if (container) {
+            container.innerHTML = '<div class="attendance-loading"><div class="spinner-border spinner-border-sm"></div></div>';
+        }
+
+        try {
+            const apiUrl = getApiUrl('attendance/register.php');
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + authToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: action,
+                    shift: shift,
+                    fingerprint: getDeviceFingerprint()
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                loadAttendanceStatus();
+
+                // Event
+                window.dispatchEvent(new CustomEvent('attendanceUpdated', {
+                    detail: { action, shift, timestamp: new Date().toISOString() }
+                }));
+
+                // Toast
+                const shiftText = shift === 2 ? ' شیفت ۲' : '';
+                const msg = action === 'check_in'
+                    ? `✅ ورود${shiftText} ثبت شد`
+                    : `✅ خروج${shiftText} ثبت شد`;
+                showToast(msg, 'success');
+
+            } else {
+                showToast(data.message || 'خطا در ثبت', 'error');
+                loadAttendanceStatus();
+            }
+        } catch (error) {
+            console.error('❌ Error:', error);
+            showToast('خطا در ارتباط با سرور', 'error');
+            loadAttendanceStatus();
+        }
+    }
+    // ============================================
+    // تابع Toast
+    // ============================================
+    function showToast(message, type = 'success') {
+        const existingToast = document.querySelector('.custom-toast');
+        if (existingToast) existingToast.remove();
+
+        const toast = document.createElement('div');
+        toast.className = `custom-toast toast-${type}`;
+        toast.innerHTML = `
+            <div class="toast-content">
+                <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'x-circle-fill'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 2500);
+    }
+
+    // ── بازنویسی سراسری alert → toast ──
+    window.alert = function (msg) {
+        const text = String(msg).replace(/^\s*[✅❌⚠️ℹ️]\s*/, '');
+        const type = /موفق|ثبت|ذخیره|انجام شد|تکمیل|اضافه شد|حذف شد|ویرایش شد/.test(text) ? 'success' : 'warning';
+        showToast(text, type);
+    };
+
+    // ── مودال تأیید (جایگزین confirm) ──
+    function uiConfirm(message, onYes, opts = {}) {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;';
+        overlay.innerHTML = `
+            <div style="background:#fff;border-radius:12px;padding:20px;width:90%;max-width:400px;box-shadow:0 10px 40px rgba(0,0,0,.2);direction:rtl;text-align:right;">
+                <p style="margin:0 0 16px;font-size:15px;line-height:1.8;">${message}</p>
+                <div style="display:flex;gap:8px;justify-content:flex-end;">
+                    <button id="uiConfirmNo" class="btn btn-secondary">${opts.noText || 'خیر'}</button>
+                    <button id="uiConfirmYes" class="btn ${opts.danger ? 'btn-danger' : 'btn-primary'}">${opts.yesText || 'بله'}</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        const close = () => overlay.remove();
+        overlay.querySelector('#uiConfirmNo').onclick = close;
+        overlay.onclick = (e) => { if (e.target === overlay) close(); };
+        overlay.querySelector('#uiConfirmYes').onclick = () => { close(); onYes && onYes(); };
+    }
+
+    // ── مودال ورودی (جایگزین prompt) ──
+    function uiPrompt(message, onSubmit, opts = {}) {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;';
+        overlay.innerHTML = `
+            <div style="background:#fff;border-radius:12px;padding:20px;width:90%;max-width:420px;box-shadow:0 10px 40px rgba(0,0,0,.2);direction:rtl;text-align:right;">
+                <p style="margin:0 0 12px;font-size:15px;line-height:1.8;">${message}</p>
+                <textarea id="uiPromptInput" rows="3" style="width:100%;border:1px solid #ddd;border-radius:8px;padding:10px;resize:vertical;font-family:inherit;" placeholder="${opts.placeholder || ''}">${opts.value || ''}</textarea>
+                <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
+                    <button id="uiPromptCancel" class="btn btn-secondary">انصراف</button>
+                    <button id="uiPromptOk" class="btn btn-primary">${opts.okText || 'تأیید'}</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        const close = () => overlay.remove();
+        const input = overlay.querySelector('#uiPromptInput');
+        input.focus();
+        overlay.querySelector('#uiPromptCancel').onclick = close;
+        overlay.onclick = (e) => { if (e.target === overlay) close(); };
+        overlay.querySelector('#uiPromptOk').onclick = () => {
+            const val = input.value.trim();
+            if (opts.required && !val) { showToast('لطفاً مقدار را وارد کنید', 'warning'); return; }
+            close();
+            onSubmit && onSubmit(val);
+        };
+    }
+
+    // ============================================
+    // 📱 Mobile Drawer Control - ULTIMATE FIX
+    (function () {
+        // اجرای مستقیم و بی‌درنگ
+        function forceCloseDrawer() {
+            var drawer = document.getElementById('navbarNav');
+            var overlay = document.getElementById('drawerOverlay');
+            var menuBtn = document.getElementById('mobileMenuBtn');
+
+            if (drawer) {
+                drawer.classList.remove('drawer-open');
+                // حذف استایل مستقیم اگر وجود داره
+                drawer.style.transform = '';
+                drawer.style.visibility = '';
+            }
+
+            if (overlay) {
+                overlay.classList.remove('overlay-active');
+            }
+
+            document.body.classList.remove('drawer-body-open');
+
+            if (menuBtn) {
+                menuBtn.classList.remove('menu-btn-hidden');
+            }
+
+            console.log('✅ Drawer forcefully closed');
+        }
+
+        // اجرا بلافاصله
+        forceCloseDrawer();
+
+        // اجرا بعد از DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', forceCloseDrawer);
+
+        // اجرا بعد از load کامل
+        window.addEventListener('load', forceCloseDrawer);
+
+        // اجرا با هر بار تغییر مسیر (برای SPA-like behavior)
+        window.addEventListener('popstate', forceCloseDrawer);
+
+        // اجرا با کلیک روی هر لینک
+        document.addEventListener('click', function (e) {
+            var link = e.target.closest('a');
+            if (link && link.getAttribute('href') &&
+                link.getAttribute('href') !== '#' &&
+                !link.getAttribute('href').startsWith('#')) {
+
+                // اگه در موبایل هستیم و drawer بازه
+                if (window.innerWidth < 992) {
+                    setTimeout(forceCloseDrawer, 10);
+                }
+            }
+        });
+
+        // راه‌اندازی event listeners برای باز و بسته کردن
+        function setupDrawer() {
+            var menuBtn = document.getElementById('mobileMenuBtn');
+            var drawer = document.getElementById('navbarNav');
+            var overlay = document.getElementById('drawerOverlay');
+            var closeBtn = document.getElementById('drawerCloseBtn');
+
+            if (!menuBtn || !drawer) return;
+
+            // باز کردن
+            menuBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                if (window.innerWidth >= 992) return;
+
+                drawer.classList.add('drawer-open');
+                if (overlay) overlay.classList.add('overlay-active');
+                document.body.classList.add('drawer-body-open');
+                menuBtn.classList.add('menu-btn-hidden');
+            });
+
+            // بستن با دکمه close
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    forceCloseDrawer();
+                });
+            }
+
+            // بستن با کلیک روی overlay
+            if (overlay) {
+                overlay.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    forceCloseDrawer();
+                });
+            }
+
+            // بستن با Escape
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    forceCloseDrawer();
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupDrawer);
+        } else {
+            setupDrawer();
+        }
+    })();
+
+    // ============================================
+    // تابع خروج
+    // ============================================
+    function logoutConfirm() {
+        uiConfirm('آیا مطمئن هستید که می‌خواهید از سیستم خارج شوید؟', function () {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_info');
+
+            const loginUrl = '../../index.php';
+            window.location.href = loginUrl;
+        }, { danger: true, yesText: 'بله، خروج', noText: 'انصراف' });
+    }
+
+    // ============================================
+    // نمایش/مخفی منوی مدیریت
+    // ============================================
+    function toggleManagerMenu() {
+        const userInfo = localStorage.getItem('user_info');
+        if (!userInfo) return;
+
+        const user = JSON.parse(userInfo);
+        const isManager = (user.role === 'management' || user.role === 'supervisor');
+        const isFullAdmin = (user.role === 'supervisor');
+        // روزهای تعطیل فقط برای مدیر کل سیستم (id=1)
+        const holidaysItem = document.getElementById('holidaysMenuItem');
+        if (holidaysItem) {
+            holidaysItem.style.display = (parseInt(user.id) === 1) ? 'block' : 'none';
+        }
+        const overviewMenu = document.getElementById('navOverview');
+        if (overviewMenu) {
+            overviewMenu.style.display = isManager ? 'block' : 'none';
+        }
+
+        const adminMenus = document.querySelectorAll('#fulladmintag');
+        adminMenus.forEach(menu => {
+            if (menu.id === 'fulladmintag' && menu.classList.contains('dropdown')) {
+                // نمایش منوی مدیریت
+                menu.style.display = isFullAdmin ? 'block' : 'none';
+            } else {
+                //نمایش ورود و خروج
+                menu.style.display = 'block';
+            }
+        });
+    }
+// نمایش «نظارت» برای واحدی که مرحلهٔ فعال دارد (فقط زیرمنوی روتین‌ها)
+    async function setupOverviewForUnit() {
+        const userInfo = localStorage.getItem('user_info');
+        if (!userInfo || !authToken) return;
+        const user = JSON.parse(userInfo);
+        const isManager = (parseInt(user.id) === 1) || ['management', 'supervisor'].includes(user.role);
+        if (isManager) return; // مدیران از قبل می‌بینند
+        try {
+            const res = await fetch('/api/workflows/list.php', { headers: { 'Authorization': 'Bearer ' + authToken } });
+            const data = await res.json();
+            if (data.success && Array.isArray(data.workflows) && data.workflows.length > 0) {
+                const overviewMenu = document.getElementById('navOverview');
+                if (overviewMenu) overviewMenu.style.display = 'block';
+                const tasksItem = document.getElementById('overviewTasksItem');
+                if (tasksItem) tasksItem.style.display = 'none'; // فقط «نظارت بر روتین‌های فعال»
+            }
+        } catch (e) { /* silent */ }
+    }
+    // ============================================
+    // بستن dropdown با کلیک خارج
+    // ============================================
+    function setupDropdownBehavior() {
+        const dropdownToggle = document.getElementById('notificationDropdown');
+        const dropdownMenu = document.getElementById('notificationDropdownMenu');
+
+        if (!dropdownToggle || !dropdownMenu) return;
+
+        dropdownToggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isShown = dropdownMenu.classList.contains('show');
+
+            if (isShown) {
+                dropdownMenu.classList.remove('show');
+            } else {
+                dropdownMenu.classList.add('show');
+                loadNotifications();
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.classList.remove('show');
+            }
+        });
+    }
+
+    // ============================================
+    // بارگذاری اولیه
+    // ============================================
+    (function () {
+        authToken = localStorage.getItem('auth_token');
+
+        console.log('🔧 Header loaded - authToken:', authToken ? 'SET ✅' : 'NOT SET ❌');
+
+        if (!authToken) {
+            const currentPath = window.location.pathname;
+            if (currentPath.includes('/pages/') && !currentPath.includes('index.php')) {
+                console.warn('⚠️ No token - redirecting');
+                window.location.href = '../index.php';
+                return;
+            }
+        }
+        // تابع جدید برای تنظیم dropdownهای ناوبری
+        // تابع جدید برای تنظیم dropdownهای ناوبری
+        function setupNavDropdowns() {
+            // صبر کن تا Bootstrap کامل لود شود، بعد dropdown ها را فعال کن
+            function activateDropdowns() {
+                if (typeof bootstrap === 'undefined' || !bootstrap.Dropdown) {
+                    // Bootstrap هنوز لود نشده، 200ms بعد دوباره تلاش کن
+                    setTimeout(activateDropdowns, 200);
+                    return;
+                }
+
+                // فعال‌سازی دستی همه dropdown های ناوبری
+                var dropdownToggles = document.querySelectorAll('#mainNav .dropdown-toggle');
+                dropdownToggles.forEach(function (toggle) {
+                    new bootstrap.Dropdown(toggle);
+                });
+
+                console.log('✅ Nav dropdowns activated');
+            }
+
+            activateDropdowns();
+        }
+        function highlightActiveMenu() {
+            var currentPath = window.location.pathname;
+
+            // همه لینک‌های منو
+            var navLinks = document.querySelectorAll('#mainNav .nav-link, #mainNav .dropdown-item');
+
+            navLinks.forEach(function (link) {
+                var href = link.getAttribute('href');
+                if (!href || href === '#') return;
+
+                // استخراج نام فایل از href
+                var linkFile = href.split('/').pop().split('?')[0];
+                var currentFile = currentPath.split('/').pop().split('?')[0];
+
+                if (linkFile && currentFile && linkFile === currentFile) {
+                    // اگر لینک مستقیم در nav است
+                    if (link.classList.contains('nav-link')) {
+                        link.classList.add('active-nav-item');
+                    }
+                    // اگر لینک داخل dropdown است
+                    if (link.classList.contains('dropdown-item')) {
+                        link.classList.add('active-nav-item');
+                        // خود dropdown toggle هم متمایز شود
+                        var parentDropdown = link.closest('.nav-item.dropdown');
+                        if (parentDropdown) {
+                            var toggle = parentDropdown.querySelector('.nav-link');
+                            if (toggle) toggle.classList.add('active-nav-item');
+                        }
+                    }
+                }
+            });
+        }
+        function initializeHeader() {
+            console.log('✅ Initializing header...');
+            setupAnnouncementDropdown();
+            if (authToken) { loadAnnouncements(); }
+            toggleManagerMenu();
+            setupOverviewForUnit();
+            setupDropdownBehavior();
+            setupNavDropdowns();
+            if (authToken) {
+                loadNotifications();
+                loadAttendanceStatus();
+
+                // بررسی هر 30 ثانیه
+                setInterval(checkNewNotifications, 30000);
+                setInterval(loadAttendanceStatus, 60000);
+            }
+            highlightActiveMenu();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeHeader);
+        } else {
+            initializeHeader();
+        }
+    })();
+</script>
+<!-- تعریف مسیر صحیح check-subscription -->
+<script>window.SUBSCRIPTION_CHECK_URL = '/api/organization/check-subscription.php';</script>
+<script src="<?= asset('/assets/js/subscription-toast.js') ?>"></script>
+<script>window.NAJVA={};var s=document.createElement("script");s.src="https://van.najva.com/static/js/main-script.js";s.defer=!0;s.id="najva-mini-script";s.setAttribute("data-najva-id","5dea1c13-3439-4848-8ba3-581729b1a361");document.head.appendChild(s);</script>

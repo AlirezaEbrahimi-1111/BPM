@@ -1,0 +1,46 @@
+[09-Apr-2026 13:54:33 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1045] Access denied for user 'computeryekta_adminyekta'@'localhost' (using password: YES)
+[09-Apr-2026 13:54:33 Asia/Tehran] Login API error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:17:06 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:17:06 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:17:13 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:17:13 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:17:21 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:17:21 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:17:33 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:17:33 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:18:15 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:18:15 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:18:32 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:18:32 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:18:41 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:18:41 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:19:05 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:19:05 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:11:23 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:11:23 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:11:23 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:11:23 Asia/Tehran] Profile error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:11:30 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:11:30 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:11:42 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:11:42 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:11:52 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:11:52 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:18 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:13:18 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:18 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:13:18 Asia/Tehran] Profile error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:27 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:13:27 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:30 Asia/Tehran] Login error: SQLSTATE[HY000]: General error: 2006 MySQL server has gone away
+[29-Jun-2026 10:13:30 Asia/Tehran] SQLSTATE[HY000]: General error: 2006 MySQL server has gone away
+[29-Jun-2026 10:13:43 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 10:13:43 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:52 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 10:13:52 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:57 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 10:13:57 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:14:01 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 10:14:01 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:14:12 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 10:14:12 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده

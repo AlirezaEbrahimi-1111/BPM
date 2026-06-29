@@ -1,0 +1,880 @@
+[11-Apr-2026 10:31:55 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:32:00 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:33:03 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:34:14 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:38:43 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:42:34 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:51:48 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:51:52 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:52:00 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:52:37 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:52:44 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:53:53 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:53:59 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:54:58 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:55:03 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:55:40 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:55:48 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:56:22 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[11-Apr-2026 10:56:48 Asia/Tehran] Monthly report error: SQLSTATE[HY000] [1045] Access denied for user 'adminyekta'@'localhost' (using password: YES)
+[29-Apr-2026 20:43:38 Asia/Tehran] Today status error: User not found
+[29-Apr-2026 21:14:40 Asia/Tehran] Today status error: User not found
+[29-Apr-2026 21:15:40 Asia/Tehran] Today status error: User not found
+[29-Apr-2026 21:16:40 Asia/Tehran] Today status error: User not found
+[29-Apr-2026 21:17:40 Asia/Tehran] Today status error: User not found
+[29-Apr-2026 21:18:40 Asia/Tehran] Today status error: User not found
+[02-May-2026 09:44:39 Asia/Tehran] Today status error: User not found
+[02-May-2026 09:45:39 Asia/Tehran] Today status error: User not found
+[02-May-2026 09:46:39 Asia/Tehran] Today status error: User not found
+[02-May-2026 09:47:39 Asia/Tehran] Today status error: User not found
+[02-May-2026 09:48:39 Asia/Tehran] Today status error: User not found
+[02-May-2026 09:49:21 Asia/Tehran] Today status error: User not found
+[14-Jun-2026 09:18:54 Asia/Tehran] ===========================================
+[14-Jun-2026 09:18:54 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[14-Jun-2026 09:18:54 Asia/Tehran] To User: 1
+[14-Jun-2026 09:18:54 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[14-Jun-2026 09:18:54 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط علیرضا ابراهیمی در انتظار تأیید است.
+[14-Jun-2026 09:18:54 Asia/Tehran] Related Type: attendance_device
+[14-Jun-2026 09:18:54 Asia/Tehran] Related ID: 0
+[14-Jun-2026 09:18:54 Asia/Tehran] ✅ ALLOWED: Creating notification
+[14-Jun-2026 09:18:54 Asia/Tehran] ===========================================
+[14-Jun-2026 09:18:54 Asia/Tehran] 📧 Notification created with ID: 298 - Sending SMS...
+[14-Jun-2026 09:18:54 Asia/Tehran] 📤 SMS async dispatched for notification #298
+[14-Jun-2026 09:18:54 Asia/Tehran] ===========================================
+[14-Jun-2026 09:18:54 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[14-Jun-2026 09:18:54 Asia/Tehran] To User: 19
+[14-Jun-2026 09:18:54 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[14-Jun-2026 09:18:54 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط علیرضا ابراهیمی در انتظار تأیید است.
+[14-Jun-2026 09:18:54 Asia/Tehran] Related Type: attendance_device
+[14-Jun-2026 09:18:54 Asia/Tehran] Related ID: 0
+[14-Jun-2026 09:18:54 Asia/Tehran] ✅ ALLOWED: Creating notification
+[14-Jun-2026 09:18:54 Asia/Tehran] ===========================================
+[14-Jun-2026 09:18:54 Asia/Tehran] 📧 Notification created with ID: 299 - Sending SMS...
+[14-Jun-2026 09:18:54 Asia/Tehran] 📤 SMS async dispatched for notification #299
+[14-Jun-2026 09:18:54 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#299
+[14-Jun-2026 09:18:54 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#298
+[14-Jun-2026 09:21:21 Asia/Tehran] ===========================================
+[14-Jun-2026 09:21:21 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[14-Jun-2026 09:21:21 Asia/Tehran] To User: 1
+[14-Jun-2026 09:21:21 Asia/Tehran] Title: دستگاه شما رد شد
+[14-Jun-2026 09:21:21 Asia/Tehran] Message: درخواست ثبت دستگاه 2.180.31.135 رد شد. با مدیریت تماس بگیرید.
+[14-Jun-2026 09:21:21 Asia/Tehran] Related Type: attendance_device
+[14-Jun-2026 09:21:21 Asia/Tehran] Related ID: 2
+[14-Jun-2026 09:21:21 Asia/Tehran] ✅ ALLOWED: Creating notification
+[14-Jun-2026 09:21:21 Asia/Tehran] ===========================================
+[14-Jun-2026 09:21:21 Asia/Tehran] 📧 Notification created with ID: 300 - Sending SMS...
+[14-Jun-2026 09:21:21 Asia/Tehran] 📤 SMS async dispatched for notification #300
+[14-Jun-2026 09:21:21 Asia/Tehran] ⚠️ sms-worker: pattern=device_rejected bodyId=474382 notif=#300
+[14-Jun-2026 09:21:45 Asia/Tehran] ===========================================
+[14-Jun-2026 09:21:45 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[14-Jun-2026 09:21:45 Asia/Tehran] To User: 1
+[14-Jun-2026 09:21:45 Asia/Tehran] Title: دستگاه شما تأیید شد
+[14-Jun-2026 09:21:45 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[14-Jun-2026 09:21:45 Asia/Tehran] Related Type: attendance_device
+[14-Jun-2026 09:21:45 Asia/Tehran] Related ID: 2
+[14-Jun-2026 09:21:45 Asia/Tehran] ✅ ALLOWED: Creating notification
+[14-Jun-2026 09:21:45 Asia/Tehran] ===========================================
+[14-Jun-2026 09:21:45 Asia/Tehran] 📧 Notification created with ID: 301 - Sending SMS...
+[14-Jun-2026 09:21:45 Asia/Tehran] 📤 SMS async dispatched for notification #301
+[14-Jun-2026 09:21:45 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#301
+[14-Jun-2026 09:50:44 Asia/Tehran] ===========================================
+[14-Jun-2026 09:50:44 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[14-Jun-2026 09:50:44 Asia/Tehran] To User: 1
+[14-Jun-2026 09:50:44 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[14-Jun-2026 09:50:44 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط علیرضا ابراهیمی در انتظار تأیید است.
+[14-Jun-2026 09:50:44 Asia/Tehran] Related Type: attendance_device
+[14-Jun-2026 09:50:44 Asia/Tehran] Related ID: 0
+[14-Jun-2026 09:50:44 Asia/Tehran] ✅ ALLOWED: Creating notification
+[14-Jun-2026 09:50:44 Asia/Tehran] ===========================================
+[14-Jun-2026 09:50:44 Asia/Tehran] 📧 Notification created with ID: 302 - Sending SMS...
+[14-Jun-2026 09:50:44 Asia/Tehran] 📤 SMS async dispatched for notification #302
+[14-Jun-2026 09:50:44 Asia/Tehran] ===========================================
+[14-Jun-2026 09:50:44 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[14-Jun-2026 09:50:44 Asia/Tehran] To User: 19
+[14-Jun-2026 09:50:44 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[14-Jun-2026 09:50:44 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط علیرضا ابراهیمی در انتظار تأیید است.
+[14-Jun-2026 09:50:44 Asia/Tehran] Related Type: attendance_device
+[14-Jun-2026 09:50:44 Asia/Tehran] Related ID: 0
+[14-Jun-2026 09:50:44 Asia/Tehran] ✅ ALLOWED: Creating notification
+[14-Jun-2026 09:50:44 Asia/Tehran] ===========================================
+[14-Jun-2026 09:50:44 Asia/Tehran] 📧 Notification created with ID: 303 - Sending SMS...
+[14-Jun-2026 09:50:44 Asia/Tehran] 📤 SMS async dispatched for notification #303
+[14-Jun-2026 09:50:44 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#302
+[14-Jun-2026 09:50:44 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#303
+[14-Jun-2026 09:50:56 Asia/Tehran] ===========================================
+[14-Jun-2026 09:50:56 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[14-Jun-2026 09:50:56 Asia/Tehran] To User: 1
+[14-Jun-2026 09:50:56 Asia/Tehran] Title: دستگاه شما رد شد
+[14-Jun-2026 09:50:56 Asia/Tehran] Message: درخواست ثبت دستگاه 2.180.31.135 رد شد. با مدیریت تماس بگیرید.
+[14-Jun-2026 09:50:56 Asia/Tehran] Related Type: attendance_device
+[14-Jun-2026 09:50:56 Asia/Tehran] Related ID: 3
+[14-Jun-2026 09:50:56 Asia/Tehran] ✅ ALLOWED: Creating notification
+[14-Jun-2026 09:50:56 Asia/Tehran] ===========================================
+[14-Jun-2026 09:50:56 Asia/Tehran] 📧 Notification created with ID: 304 - Sending SMS...
+[14-Jun-2026 09:50:56 Asia/Tehran] 📤 SMS async dispatched for notification #304
+[14-Jun-2026 09:50:56 Asia/Tehran] ⚠️ sms-worker: pattern=device_rejected bodyId=474382 notif=#304
+[14-Jun-2026 09:51:13 Asia/Tehran] ===========================================
+[14-Jun-2026 09:51:13 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[14-Jun-2026 09:51:13 Asia/Tehran] To User: 1
+[14-Jun-2026 09:51:13 Asia/Tehran] Title: دستگاه شما تأیید شد
+[14-Jun-2026 09:51:13 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[14-Jun-2026 09:51:13 Asia/Tehran] Related Type: attendance_device
+[14-Jun-2026 09:51:13 Asia/Tehran] Related ID: 3
+[14-Jun-2026 09:51:13 Asia/Tehran] ✅ ALLOWED: Creating notification
+[14-Jun-2026 09:51:13 Asia/Tehran] ===========================================
+[14-Jun-2026 09:51:13 Asia/Tehran] 📧 Notification created with ID: 305 - Sending SMS...
+[14-Jun-2026 09:51:13 Asia/Tehran] 📤 SMS async dispatched for notification #305
+[14-Jun-2026 09:51:13 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#305
+[22-Jun-2026 09:13:46 Asia/Tehran] ===========================================
+[22-Jun-2026 09:13:46 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:13:46 Asia/Tehran] To User: 1
+[22-Jun-2026 09:13:46 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 09:13:46 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط حسن نظری در انتظار تأیید است.
+[22-Jun-2026 09:13:46 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:13:46 Asia/Tehran] Related ID: 0
+[22-Jun-2026 09:13:46 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:13:46 Asia/Tehran] ===========================================
+[22-Jun-2026 09:13:46 Asia/Tehran] 📧 Notification created with ID: 536 - Sending SMS...
+[22-Jun-2026 09:13:46 Asia/Tehran] 📤 SMS async dispatched for notification #536
+[22-Jun-2026 09:13:46 Asia/Tehran] ===========================================
+[22-Jun-2026 09:13:46 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:13:46 Asia/Tehran] To User: 19
+[22-Jun-2026 09:13:46 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 09:13:46 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط حسن نظری در انتظار تأیید است.
+[22-Jun-2026 09:13:46 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:13:46 Asia/Tehran] Related ID: 0
+[22-Jun-2026 09:13:46 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:13:46 Asia/Tehran] ===========================================
+[22-Jun-2026 09:13:46 Asia/Tehran] 📧 Notification created with ID: 537 - Sending SMS...
+[22-Jun-2026 09:13:46 Asia/Tehran] 📤 SMS async dispatched for notification #537
+[22-Jun-2026 09:13:47 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#537
+[22-Jun-2026 09:13:47 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#536
+[22-Jun-2026 09:19:05 Asia/Tehran] ===========================================
+[22-Jun-2026 09:19:05 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:19:05 Asia/Tehran] To User: 12
+[22-Jun-2026 09:19:05 Asia/Tehran] Title: دستگاه شما تأیید شد
+[22-Jun-2026 09:19:05 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[22-Jun-2026 09:19:05 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:19:05 Asia/Tehran] Related ID: 4
+[22-Jun-2026 09:19:05 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:19:05 Asia/Tehran] ===========================================
+[22-Jun-2026 09:19:05 Asia/Tehran] 📧 Notification created with ID: 538 - Sending SMS...
+[22-Jun-2026 09:19:05 Asia/Tehran] 📤 SMS async dispatched for notification #538
+[22-Jun-2026 09:19:06 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#538
+[22-Jun-2026 09:25:03 Asia/Tehran] ===========================================
+[22-Jun-2026 09:25:03 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:25:03 Asia/Tehran] To User: 1
+[22-Jun-2026 09:25:03 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 09:25:03 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط سبحان محمدزاده در انتظار تأیید است.
+[22-Jun-2026 09:25:03 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:25:03 Asia/Tehran] Related ID: 0
+[22-Jun-2026 09:25:03 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:25:03 Asia/Tehran] ===========================================
+[22-Jun-2026 09:25:03 Asia/Tehran] 📧 Notification created with ID: 539 - Sending SMS...
+[22-Jun-2026 09:25:03 Asia/Tehran] 📤 SMS async dispatched for notification #539
+[22-Jun-2026 09:25:03 Asia/Tehran] ===========================================
+[22-Jun-2026 09:25:03 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:25:03 Asia/Tehran] To User: 19
+[22-Jun-2026 09:25:03 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 09:25:03 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط سبحان محمدزاده در انتظار تأیید است.
+[22-Jun-2026 09:25:03 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:25:03 Asia/Tehran] Related ID: 0
+[22-Jun-2026 09:25:03 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:25:03 Asia/Tehran] ===========================================
+[22-Jun-2026 09:25:03 Asia/Tehran] 📧 Notification created with ID: 540 - Sending SMS...
+[22-Jun-2026 09:25:03 Asia/Tehran] 📤 SMS async dispatched for notification #540
+[22-Jun-2026 09:25:04 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#539
+[22-Jun-2026 09:25:04 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#540
+[22-Jun-2026 09:28:25 Asia/Tehran] ===========================================
+[22-Jun-2026 09:28:25 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:28:25 Asia/Tehran] To User: 1
+[22-Jun-2026 09:28:25 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 09:28:25 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط رضا فضایلی در انتظار تأیید است.
+[22-Jun-2026 09:28:25 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:28:25 Asia/Tehran] Related ID: 0
+[22-Jun-2026 09:28:25 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:28:25 Asia/Tehran] ===========================================
+[22-Jun-2026 09:28:25 Asia/Tehran] 📧 Notification created with ID: 541 - Sending SMS...
+[22-Jun-2026 09:28:25 Asia/Tehran] 📤 SMS async dispatched for notification #541
+[22-Jun-2026 09:28:25 Asia/Tehran] ===========================================
+[22-Jun-2026 09:28:25 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:28:25 Asia/Tehran] To User: 19
+[22-Jun-2026 09:28:25 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 09:28:25 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط رضا فضایلی در انتظار تأیید است.
+[22-Jun-2026 09:28:25 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:28:25 Asia/Tehran] Related ID: 0
+[22-Jun-2026 09:28:25 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:28:25 Asia/Tehran] ===========================================
+[22-Jun-2026 09:28:25 Asia/Tehran] 📧 Notification created with ID: 542 - Sending SMS...
+[22-Jun-2026 09:28:25 Asia/Tehran] 📤 SMS async dispatched for notification #542
+[22-Jun-2026 09:28:26 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#541
+[22-Jun-2026 09:28:26 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#542
+[22-Jun-2026 09:36:31 Asia/Tehran] ===========================================
+[22-Jun-2026 09:36:31 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:36:31 Asia/Tehran] To User: 19
+[22-Jun-2026 09:36:31 Asia/Tehran] Title: دستگاه شما تأیید شد
+[22-Jun-2026 09:36:31 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[22-Jun-2026 09:36:31 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:36:31 Asia/Tehran] Related ID: 6
+[22-Jun-2026 09:36:31 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:36:31 Asia/Tehran] ===========================================
+[22-Jun-2026 09:36:31 Asia/Tehran] 📧 Notification created with ID: 543 - Sending SMS...
+[22-Jun-2026 09:36:31 Asia/Tehran] 📤 SMS async dispatched for notification #543
+[22-Jun-2026 09:36:31 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#543
+[22-Jun-2026 09:42:54 Asia/Tehran] ===========================================
+[22-Jun-2026 09:42:54 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:42:54 Asia/Tehran] To User: 25
+[22-Jun-2026 09:42:54 Asia/Tehran] Title: دستگاه شما تأیید شد
+[22-Jun-2026 09:42:54 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[22-Jun-2026 09:42:54 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:42:54 Asia/Tehran] Related ID: 5
+[22-Jun-2026 09:42:54 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:42:54 Asia/Tehran] ===========================================
+[22-Jun-2026 09:42:54 Asia/Tehran] 📧 Notification created with ID: 544 - Sending SMS...
+[22-Jun-2026 09:42:54 Asia/Tehran] 📤 SMS async dispatched for notification #544
+[22-Jun-2026 09:42:54 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#544
+[22-Jun-2026 09:45:00 Asia/Tehran] ===========================================
+[22-Jun-2026 09:45:00 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:45:00 Asia/Tehran] To User: 1
+[22-Jun-2026 09:45:00 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 09:45:00 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط سینا فروغی در انتظار تأیید است.
+[22-Jun-2026 09:45:00 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:45:00 Asia/Tehran] Related ID: 0
+[22-Jun-2026 09:45:00 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:45:00 Asia/Tehran] ===========================================
+[22-Jun-2026 09:45:00 Asia/Tehran] 📧 Notification created with ID: 545 - Sending SMS...
+[22-Jun-2026 09:45:00 Asia/Tehran] 📤 SMS async dispatched for notification #545
+[22-Jun-2026 09:45:00 Asia/Tehran] ===========================================
+[22-Jun-2026 09:45:00 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:45:00 Asia/Tehran] To User: 19
+[22-Jun-2026 09:45:00 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 09:45:00 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط سینا فروغی در انتظار تأیید است.
+[22-Jun-2026 09:45:00 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:45:00 Asia/Tehran] Related ID: 0
+[22-Jun-2026 09:45:00 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:45:00 Asia/Tehran] ===========================================
+[22-Jun-2026 09:45:00 Asia/Tehran] 📧 Notification created with ID: 546 - Sending SMS...
+[22-Jun-2026 09:45:00 Asia/Tehran] 📤 SMS async dispatched for notification #546
+[22-Jun-2026 09:45:01 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#545
+[22-Jun-2026 09:45:01 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#546
+[22-Jun-2026 09:46:03 Asia/Tehran] ===========================================
+[22-Jun-2026 09:46:03 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:46:03 Asia/Tehran] To User: 1
+[22-Jun-2026 09:46:03 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 09:46:03 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط محمدرضا فروغی در انتظار تأیید است.
+[22-Jun-2026 09:46:03 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:46:03 Asia/Tehran] Related ID: 0
+[22-Jun-2026 09:46:03 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:46:03 Asia/Tehran] ===========================================
+[22-Jun-2026 09:46:03 Asia/Tehran] 📧 Notification created with ID: 547 - Sending SMS...
+[22-Jun-2026 09:46:03 Asia/Tehran] 📤 SMS async dispatched for notification #547
+[22-Jun-2026 09:46:03 Asia/Tehran] ===========================================
+[22-Jun-2026 09:46:03 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:46:03 Asia/Tehran] To User: 19
+[22-Jun-2026 09:46:03 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 09:46:03 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط محمدرضا فروغی در انتظار تأیید است.
+[22-Jun-2026 09:46:03 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:46:03 Asia/Tehran] Related ID: 0
+[22-Jun-2026 09:46:03 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:46:03 Asia/Tehran] ===========================================
+[22-Jun-2026 09:46:03 Asia/Tehran] 📧 Notification created with ID: 548 - Sending SMS...
+[22-Jun-2026 09:46:03 Asia/Tehran] 📤 SMS async dispatched for notification #548
+[22-Jun-2026 09:46:03 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#547
+[22-Jun-2026 09:46:03 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#548
+[22-Jun-2026 09:53:18 Asia/Tehran] ===========================================
+[22-Jun-2026 09:53:18 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:53:18 Asia/Tehran] To User: 29
+[22-Jun-2026 09:53:18 Asia/Tehran] Title: دستگاه شما تأیید شد
+[22-Jun-2026 09:53:18 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[22-Jun-2026 09:53:18 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:53:18 Asia/Tehran] Related ID: 7
+[22-Jun-2026 09:53:18 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:53:18 Asia/Tehran] ===========================================
+[22-Jun-2026 09:53:18 Asia/Tehran] 📧 Notification created with ID: 549 - Sending SMS...
+[22-Jun-2026 09:53:18 Asia/Tehran] 📤 SMS async dispatched for notification #549
+[22-Jun-2026 09:53:18 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#549
+[22-Jun-2026 09:53:20 Asia/Tehran] ===========================================
+[22-Jun-2026 09:53:20 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 09:53:20 Asia/Tehran] To User: 17
+[22-Jun-2026 09:53:20 Asia/Tehran] Title: دستگاه شما تأیید شد
+[22-Jun-2026 09:53:20 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[22-Jun-2026 09:53:20 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 09:53:20 Asia/Tehran] Related ID: 8
+[22-Jun-2026 09:53:20 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 09:53:20 Asia/Tehran] ===========================================
+[22-Jun-2026 09:53:20 Asia/Tehran] 📧 Notification created with ID: 550 - Sending SMS...
+[22-Jun-2026 09:53:20 Asia/Tehran] 📤 SMS async dispatched for notification #550
+[22-Jun-2026 09:53:20 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#550
+[22-Jun-2026 10:11:44 Asia/Tehran] ===========================================
+[22-Jun-2026 10:11:44 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 10:11:44 Asia/Tehran] To User: 1
+[22-Jun-2026 10:11:44 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 10:11:44 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط علی صفری در انتظار تأیید است.
+[22-Jun-2026 10:11:44 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 10:11:44 Asia/Tehran] Related ID: 0
+[22-Jun-2026 10:11:44 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 10:11:44 Asia/Tehran] ===========================================
+[22-Jun-2026 10:11:44 Asia/Tehran] 📧 Notification created with ID: 564 - Sending SMS...
+[22-Jun-2026 10:11:44 Asia/Tehran] 📤 SMS async dispatched for notification #564
+[22-Jun-2026 10:11:44 Asia/Tehran] ===========================================
+[22-Jun-2026 10:11:44 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 10:11:44 Asia/Tehran] To User: 19
+[22-Jun-2026 10:11:44 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 10:11:44 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط علی صفری در انتظار تأیید است.
+[22-Jun-2026 10:11:44 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 10:11:44 Asia/Tehran] Related ID: 0
+[22-Jun-2026 10:11:44 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 10:11:44 Asia/Tehran] ===========================================
+[22-Jun-2026 10:11:44 Asia/Tehran] 📧 Notification created with ID: 565 - Sending SMS...
+[22-Jun-2026 10:11:44 Asia/Tehran] 📤 SMS async dispatched for notification #565
+[22-Jun-2026 10:11:45 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#564
+[22-Jun-2026 10:11:45 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#565
+[22-Jun-2026 10:12:58 Asia/Tehran] ===========================================
+[22-Jun-2026 10:12:58 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 10:12:58 Asia/Tehran] To User: 23
+[22-Jun-2026 10:12:58 Asia/Tehran] Title: دستگاه شما تأیید شد
+[22-Jun-2026 10:12:58 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[22-Jun-2026 10:12:58 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 10:12:58 Asia/Tehran] Related ID: 9
+[22-Jun-2026 10:12:58 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 10:12:58 Asia/Tehran] ===========================================
+[22-Jun-2026 10:12:58 Asia/Tehran] 📧 Notification created with ID: 566 - Sending SMS...
+[22-Jun-2026 10:12:58 Asia/Tehran] 📤 SMS async dispatched for notification #566
+[22-Jun-2026 10:12:59 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#566
+[22-Jun-2026 10:51:23 Asia/Tehran] ===========================================
+[22-Jun-2026 10:51:23 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 10:51:23 Asia/Tehran] To User: 1
+[22-Jun-2026 10:51:23 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 10:51:23 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط مهدی ذوالفقاری در انتظار تأیید است.
+[22-Jun-2026 10:51:23 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 10:51:23 Asia/Tehran] Related ID: 0
+[22-Jun-2026 10:51:23 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 10:51:23 Asia/Tehran] ===========================================
+[22-Jun-2026 10:51:23 Asia/Tehran] 📧 Notification created with ID: 578 - Sending SMS...
+[22-Jun-2026 10:51:23 Asia/Tehran] 📤 SMS async dispatched for notification #578
+[22-Jun-2026 10:51:23 Asia/Tehran] ===========================================
+[22-Jun-2026 10:51:23 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 10:51:23 Asia/Tehran] To User: 19
+[22-Jun-2026 10:51:23 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 10:51:23 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط مهدی ذوالفقاری در انتظار تأیید است.
+[22-Jun-2026 10:51:23 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 10:51:23 Asia/Tehran] Related ID: 0
+[22-Jun-2026 10:51:23 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 10:51:23 Asia/Tehran] ===========================================
+[22-Jun-2026 10:51:23 Asia/Tehran] 📧 Notification created with ID: 579 - Sending SMS...
+[22-Jun-2026 10:51:23 Asia/Tehran] 📤 SMS async dispatched for notification #579
+[22-Jun-2026 10:51:24 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#578
+[22-Jun-2026 10:51:24 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#579
+[22-Jun-2026 10:51:46 Asia/Tehran] ===========================================
+[22-Jun-2026 10:51:46 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 10:51:46 Asia/Tehran] To User: 21
+[22-Jun-2026 10:51:46 Asia/Tehran] Title: دستگاه شما تأیید شد
+[22-Jun-2026 10:51:46 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[22-Jun-2026 10:51:46 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 10:51:46 Asia/Tehran] Related ID: 10
+[22-Jun-2026 10:51:46 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 10:51:46 Asia/Tehran] ===========================================
+[22-Jun-2026 10:51:46 Asia/Tehran] 📧 Notification created with ID: 580 - Sending SMS...
+[22-Jun-2026 10:51:46 Asia/Tehran] 📤 SMS async dispatched for notification #580
+[22-Jun-2026 10:51:46 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#580
+[22-Jun-2026 13:48:19 Asia/Tehran] ===========================================
+[22-Jun-2026 13:48:19 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 13:48:19 Asia/Tehran] To User: 1
+[22-Jun-2026 13:48:19 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 13:48:19 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط علیرضا ابراهیمی در انتظار تأیید است.
+[22-Jun-2026 13:48:19 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 13:48:19 Asia/Tehran] Related ID: 0
+[22-Jun-2026 13:48:19 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 13:48:19 Asia/Tehran] ===========================================
+[22-Jun-2026 13:48:19 Asia/Tehran] 📧 Notification created with ID: 613 - Sending SMS...
+[22-Jun-2026 13:48:19 Asia/Tehran] 📤 SMS async dispatched for notification #613
+[22-Jun-2026 13:48:19 Asia/Tehran] ===========================================
+[22-Jun-2026 13:48:19 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 13:48:19 Asia/Tehran] To User: 19
+[22-Jun-2026 13:48:19 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 13:48:19 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط علیرضا ابراهیمی در انتظار تأیید است.
+[22-Jun-2026 13:48:19 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 13:48:19 Asia/Tehran] Related ID: 0
+[22-Jun-2026 13:48:19 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 13:48:19 Asia/Tehran] ===========================================
+[22-Jun-2026 13:48:19 Asia/Tehran] 📧 Notification created with ID: 614 - Sending SMS...
+[22-Jun-2026 13:48:19 Asia/Tehran] 📤 SMS async dispatched for notification #614
+[22-Jun-2026 13:48:19 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#614
+[22-Jun-2026 13:48:19 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#613
+[22-Jun-2026 13:50:51 Asia/Tehran] ===========================================
+[22-Jun-2026 13:50:51 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 13:50:51 Asia/Tehran] To User: 1
+[22-Jun-2026 13:50:51 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 13:50:51 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط رضا فضایلی در انتظار تأیید است.
+[22-Jun-2026 13:50:51 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 13:50:51 Asia/Tehran] Related ID: 0
+[22-Jun-2026 13:50:51 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 13:50:51 Asia/Tehran] ===========================================
+[22-Jun-2026 13:50:51 Asia/Tehran] 📧 Notification created with ID: 615 - Sending SMS...
+[22-Jun-2026 13:50:51 Asia/Tehran] 📤 SMS async dispatched for notification #615
+[22-Jun-2026 13:50:51 Asia/Tehran] ===========================================
+[22-Jun-2026 13:50:51 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 13:50:51 Asia/Tehran] To User: 19
+[22-Jun-2026 13:50:51 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 13:50:51 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط رضا فضایلی در انتظار تأیید است.
+[22-Jun-2026 13:50:51 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 13:50:51 Asia/Tehran] Related ID: 0
+[22-Jun-2026 13:50:51 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 13:50:51 Asia/Tehran] ===========================================
+[22-Jun-2026 13:50:51 Asia/Tehran] 📧 Notification created with ID: 616 - Sending SMS...
+[22-Jun-2026 13:50:51 Asia/Tehran] 📤 SMS async dispatched for notification #616
+[22-Jun-2026 13:50:51 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#616
+[22-Jun-2026 13:50:52 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#615
+[22-Jun-2026 13:52:41 Asia/Tehran] ===========================================
+[22-Jun-2026 13:52:41 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 13:52:41 Asia/Tehran] To User: 19
+[22-Jun-2026 13:52:41 Asia/Tehran] Title: دستگاه شما تأیید شد
+[22-Jun-2026 13:52:41 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[22-Jun-2026 13:52:41 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 13:52:41 Asia/Tehran] Related ID: 12
+[22-Jun-2026 13:52:41 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 13:52:41 Asia/Tehran] ===========================================
+[22-Jun-2026 13:52:41 Asia/Tehran] 📧 Notification created with ID: 617 - Sending SMS...
+[22-Jun-2026 13:52:41 Asia/Tehran] 📤 SMS async dispatched for notification #617
+[22-Jun-2026 13:52:41 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#617
+[22-Jun-2026 14:12:08 Asia/Tehran] ===========================================
+[22-Jun-2026 14:12:08 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 14:12:08 Asia/Tehran] To User: 1
+[22-Jun-2026 14:12:08 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 14:12:08 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط امیر اسماعیلی در انتظار تأیید است.
+[22-Jun-2026 14:12:08 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 14:12:08 Asia/Tehran] Related ID: 0
+[22-Jun-2026 14:12:08 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 14:12:08 Asia/Tehran] ===========================================
+[22-Jun-2026 14:12:08 Asia/Tehran] 📧 Notification created with ID: 623 - Sending SMS...
+[22-Jun-2026 14:12:08 Asia/Tehran] 📤 SMS async dispatched for notification #623
+[22-Jun-2026 14:12:08 Asia/Tehran] ===========================================
+[22-Jun-2026 14:12:08 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 14:12:08 Asia/Tehran] To User: 19
+[22-Jun-2026 14:12:08 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 14:12:08 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط امیر اسماعیلی در انتظار تأیید است.
+[22-Jun-2026 14:12:08 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 14:12:08 Asia/Tehran] Related ID: 0
+[22-Jun-2026 14:12:08 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 14:12:08 Asia/Tehran] ===========================================
+[22-Jun-2026 14:12:08 Asia/Tehran] 📧 Notification created with ID: 624 - Sending SMS...
+[22-Jun-2026 14:12:08 Asia/Tehran] 📤 SMS async dispatched for notification #624
+[22-Jun-2026 14:12:09 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#623
+[22-Jun-2026 14:12:09 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#624
+[22-Jun-2026 14:12:38 Asia/Tehran] ===========================================
+[22-Jun-2026 14:12:38 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 14:12:38 Asia/Tehran] To User: 49
+[22-Jun-2026 14:12:38 Asia/Tehran] Title: دستگاه شما تأیید شد
+[22-Jun-2026 14:12:38 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[22-Jun-2026 14:12:38 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 14:12:38 Asia/Tehran] Related ID: 13
+[22-Jun-2026 14:12:38 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 14:12:38 Asia/Tehran] ===========================================
+[22-Jun-2026 14:12:38 Asia/Tehran] 📧 Notification created with ID: 625 - Sending SMS...
+[22-Jun-2026 14:12:38 Asia/Tehran] 📤 SMS async dispatched for notification #625
+[22-Jun-2026 14:12:38 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#625
+[22-Jun-2026 15:58:31 Asia/Tehran] ===========================================
+[22-Jun-2026 15:58:31 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 15:58:31 Asia/Tehran] To User: 1
+[22-Jun-2026 15:58:31 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 15:58:31 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط آریو سلیمانی در انتظار تأیید است.
+[22-Jun-2026 15:58:31 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 15:58:31 Asia/Tehran] Related ID: 0
+[22-Jun-2026 15:58:31 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 15:58:31 Asia/Tehran] ===========================================
+[22-Jun-2026 15:58:31 Asia/Tehran] 📧 Notification created with ID: 654 - Sending SMS...
+[22-Jun-2026 15:58:31 Asia/Tehran] 📤 SMS async dispatched for notification #654
+[22-Jun-2026 15:58:31 Asia/Tehran] ===========================================
+[22-Jun-2026 15:58:31 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 15:58:31 Asia/Tehran] To User: 19
+[22-Jun-2026 15:58:31 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[22-Jun-2026 15:58:31 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط آریو سلیمانی در انتظار تأیید است.
+[22-Jun-2026 15:58:31 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 15:58:31 Asia/Tehran] Related ID: 0
+[22-Jun-2026 15:58:31 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 15:58:31 Asia/Tehran] ===========================================
+[22-Jun-2026 15:58:31 Asia/Tehran] 📧 Notification created with ID: 655 - Sending SMS...
+[22-Jun-2026 15:58:31 Asia/Tehran] 📤 SMS async dispatched for notification #655
+[22-Jun-2026 15:58:31 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#655
+[22-Jun-2026 15:58:31 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#654
+[22-Jun-2026 15:58:47 Asia/Tehran] ===========================================
+[22-Jun-2026 15:58:47 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[22-Jun-2026 15:58:47 Asia/Tehran] To User: 126
+[22-Jun-2026 15:58:47 Asia/Tehran] Title: دستگاه شما تأیید شد
+[22-Jun-2026 15:58:47 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[22-Jun-2026 15:58:47 Asia/Tehran] Related Type: attendance_device
+[22-Jun-2026 15:58:47 Asia/Tehran] Related ID: 14
+[22-Jun-2026 15:58:47 Asia/Tehran] ✅ ALLOWED: Creating notification
+[22-Jun-2026 15:58:47 Asia/Tehran] ===========================================
+[22-Jun-2026 15:58:47 Asia/Tehran] 📧 Notification created with ID: 656 - Sending SMS...
+[22-Jun-2026 15:58:47 Asia/Tehran] 📤 SMS async dispatched for notification #656
+[22-Jun-2026 15:58:47 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#656
+[23-Jun-2026 09:15:31 Asia/Tehran] ===========================================
+[23-Jun-2026 09:15:31 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[23-Jun-2026 09:15:31 Asia/Tehran] To User: 1
+[23-Jun-2026 09:15:31 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[23-Jun-2026 09:15:31 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط محمدرضا فروغی در انتظار تأیید است.
+[23-Jun-2026 09:15:31 Asia/Tehran] Related Type: attendance_device
+[23-Jun-2026 09:15:31 Asia/Tehran] Related ID: 0
+[23-Jun-2026 09:15:31 Asia/Tehran] ✅ ALLOWED: Creating notification
+[23-Jun-2026 09:15:31 Asia/Tehran] ===========================================
+[23-Jun-2026 09:15:31 Asia/Tehran] 📧 Notification created with ID: 758 - Sending SMS...
+[23-Jun-2026 09:15:31 Asia/Tehran] 📤 SMS async dispatched for notification #758
+[23-Jun-2026 09:15:31 Asia/Tehran] ===========================================
+[23-Jun-2026 09:15:31 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[23-Jun-2026 09:15:31 Asia/Tehran] To User: 19
+[23-Jun-2026 09:15:31 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[23-Jun-2026 09:15:31 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط محمدرضا فروغی در انتظار تأیید است.
+[23-Jun-2026 09:15:31 Asia/Tehran] Related Type: attendance_device
+[23-Jun-2026 09:15:31 Asia/Tehran] Related ID: 0
+[23-Jun-2026 09:15:31 Asia/Tehran] ✅ ALLOWED: Creating notification
+[23-Jun-2026 09:15:31 Asia/Tehran] ===========================================
+[23-Jun-2026 09:15:31 Asia/Tehran] 📧 Notification created with ID: 759 - Sending SMS...
+[23-Jun-2026 09:15:31 Asia/Tehran] 📤 SMS async dispatched for notification #759
+[23-Jun-2026 09:15:31 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#758
+[23-Jun-2026 09:15:31 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#759
+[23-Jun-2026 10:08:05 Asia/Tehran] ===========================================
+[23-Jun-2026 10:08:05 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[23-Jun-2026 10:08:05 Asia/Tehran] To User: 1
+[23-Jun-2026 10:08:05 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[23-Jun-2026 10:08:05 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط رضا فضایلی در انتظار تأیید است.
+[23-Jun-2026 10:08:05 Asia/Tehran] Related Type: attendance_device
+[23-Jun-2026 10:08:05 Asia/Tehran] Related ID: 0
+[23-Jun-2026 10:08:05 Asia/Tehran] ✅ ALLOWED: Creating notification
+[23-Jun-2026 10:08:05 Asia/Tehran] ===========================================
+[23-Jun-2026 10:08:05 Asia/Tehran] 📧 Notification created with ID: 766 - Sending SMS...
+[23-Jun-2026 10:08:05 Asia/Tehran] 📤 SMS async dispatched for notification #766
+[23-Jun-2026 10:08:05 Asia/Tehran] ===========================================
+[23-Jun-2026 10:08:05 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[23-Jun-2026 10:08:05 Asia/Tehran] To User: 19
+[23-Jun-2026 10:08:05 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[23-Jun-2026 10:08:05 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط رضا فضایلی در انتظار تأیید است.
+[23-Jun-2026 10:08:05 Asia/Tehran] Related Type: attendance_device
+[23-Jun-2026 10:08:05 Asia/Tehran] Related ID: 0
+[23-Jun-2026 10:08:05 Asia/Tehran] ✅ ALLOWED: Creating notification
+[23-Jun-2026 10:08:05 Asia/Tehran] ===========================================
+[23-Jun-2026 10:08:05 Asia/Tehran] 📧 Notification created with ID: 767 - Sending SMS...
+[23-Jun-2026 10:08:05 Asia/Tehran] 📤 SMS async dispatched for notification #767
+[23-Jun-2026 10:08:05 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#766
+[23-Jun-2026 10:08:05 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#767
+[23-Jun-2026 10:08:17 Asia/Tehran] ===========================================
+[23-Jun-2026 10:08:17 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[23-Jun-2026 10:08:17 Asia/Tehran] To User: 19
+[23-Jun-2026 10:08:17 Asia/Tehran] Title: دستگاه شما تأیید شد
+[23-Jun-2026 10:08:17 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[23-Jun-2026 10:08:17 Asia/Tehran] Related Type: attendance_device
+[23-Jun-2026 10:08:17 Asia/Tehran] Related ID: 16
+[23-Jun-2026 10:08:17 Asia/Tehran] ✅ ALLOWED: Creating notification
+[23-Jun-2026 10:08:17 Asia/Tehran] ===========================================
+[23-Jun-2026 10:08:17 Asia/Tehran] 📧 Notification created with ID: 768 - Sending SMS...
+[23-Jun-2026 10:08:17 Asia/Tehran] 📤 SMS async dispatched for notification #768
+[23-Jun-2026 10:08:17 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#768
+[23-Jun-2026 10:08:35 Asia/Tehran] ===========================================
+[23-Jun-2026 10:08:35 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[23-Jun-2026 10:08:35 Asia/Tehran] To User: 17
+[23-Jun-2026 10:08:35 Asia/Tehran] Title: دستگاه شما رد شد
+[23-Jun-2026 10:08:35 Asia/Tehran] Message: درخواست ثبت دستگاه 2.180.31.135 رد شد. با مدیریت تماس بگیرید.
+[23-Jun-2026 10:08:35 Asia/Tehran] Related Type: attendance_device
+[23-Jun-2026 10:08:35 Asia/Tehran] Related ID: 15
+[23-Jun-2026 10:08:35 Asia/Tehran] ✅ ALLOWED: Creating notification
+[23-Jun-2026 10:08:35 Asia/Tehran] ===========================================
+[23-Jun-2026 10:08:35 Asia/Tehran] 📧 Notification created with ID: 769 - Sending SMS...
+[23-Jun-2026 10:08:35 Asia/Tehran] 📤 SMS async dispatched for notification #769
+[23-Jun-2026 10:08:35 Asia/Tehran] ⚠️ sms-worker: pattern=device_rejected bodyId=474382 notif=#769
+[23-Jun-2026 14:21:15 Asia/Tehran] ===========================================
+[23-Jun-2026 14:21:15 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[23-Jun-2026 14:21:15 Asia/Tehran] To User: 1
+[23-Jun-2026 14:21:15 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[23-Jun-2026 14:21:15 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط آریو سلیمانی در انتظار تأیید است.
+[23-Jun-2026 14:21:15 Asia/Tehran] Related Type: attendance_device
+[23-Jun-2026 14:21:15 Asia/Tehran] Related ID: 0
+[23-Jun-2026 14:21:15 Asia/Tehran] ✅ ALLOWED: Creating notification
+[23-Jun-2026 14:21:15 Asia/Tehran] ===========================================
+[23-Jun-2026 14:21:15 Asia/Tehran] 📧 Notification created with ID: 839 - Sending SMS...
+[23-Jun-2026 14:21:15 Asia/Tehran] 📤 SMS async dispatched for notification #839
+[23-Jun-2026 14:21:15 Asia/Tehran] ===========================================
+[23-Jun-2026 14:21:15 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[23-Jun-2026 14:21:15 Asia/Tehran] To User: 19
+[23-Jun-2026 14:21:15 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[23-Jun-2026 14:21:15 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط آریو سلیمانی در انتظار تأیید است.
+[23-Jun-2026 14:21:15 Asia/Tehran] Related Type: attendance_device
+[23-Jun-2026 14:21:15 Asia/Tehran] Related ID: 0
+[23-Jun-2026 14:21:15 Asia/Tehran] ✅ ALLOWED: Creating notification
+[23-Jun-2026 14:21:15 Asia/Tehran] ===========================================
+[23-Jun-2026 14:21:15 Asia/Tehran] 📧 Notification created with ID: 840 - Sending SMS...
+[23-Jun-2026 14:21:15 Asia/Tehran] 📤 SMS async dispatched for notification #840
+[23-Jun-2026 14:21:15 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#840
+[23-Jun-2026 14:21:15 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#839
+[23-Jun-2026 14:21:44 Asia/Tehran] ===========================================
+[23-Jun-2026 14:21:44 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[23-Jun-2026 14:21:44 Asia/Tehran] To User: 126
+[23-Jun-2026 14:21:44 Asia/Tehran] Title: دستگاه شما تأیید شد
+[23-Jun-2026 14:21:44 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[23-Jun-2026 14:21:44 Asia/Tehran] Related Type: attendance_device
+[23-Jun-2026 14:21:44 Asia/Tehran] Related ID: 17
+[23-Jun-2026 14:21:44 Asia/Tehran] ✅ ALLOWED: Creating notification
+[23-Jun-2026 14:21:44 Asia/Tehran] ===========================================
+[23-Jun-2026 14:21:44 Asia/Tehran] 📧 Notification created with ID: 841 - Sending SMS...
+[23-Jun-2026 14:21:44 Asia/Tehran] 📤 SMS async dispatched for notification #841
+[23-Jun-2026 14:21:44 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#841
+[27-Jun-2026 15:14:59 Asia/Tehran] ===========================================
+[27-Jun-2026 15:14:59 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[27-Jun-2026 15:14:59 Asia/Tehran] To User: 1
+[27-Jun-2026 15:14:59 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[27-Jun-2026 15:14:59 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط آریو سلیمانی در انتظار تأیید است.
+[27-Jun-2026 15:14:59 Asia/Tehran] Related Type: attendance_device
+[27-Jun-2026 15:14:59 Asia/Tehran] Related ID: 0
+[27-Jun-2026 15:14:59 Asia/Tehran] ✅ ALLOWED: Creating notification
+[27-Jun-2026 15:14:59 Asia/Tehran] ===========================================
+[27-Jun-2026 15:14:59 Asia/Tehran] 📧 Notification created with ID: 921 - Sending SMS...
+[27-Jun-2026 15:14:59 Asia/Tehran] 📤 SMS async dispatched for notification #921
+[27-Jun-2026 15:14:59 Asia/Tehran] ===========================================
+[27-Jun-2026 15:14:59 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[27-Jun-2026 15:14:59 Asia/Tehran] To User: 19
+[27-Jun-2026 15:14:59 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[27-Jun-2026 15:14:59 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط آریو سلیمانی در انتظار تأیید است.
+[27-Jun-2026 15:14:59 Asia/Tehran] Related Type: attendance_device
+[27-Jun-2026 15:14:59 Asia/Tehran] Related ID: 0
+[27-Jun-2026 15:14:59 Asia/Tehran] ✅ ALLOWED: Creating notification
+[27-Jun-2026 15:14:59 Asia/Tehran] ===========================================
+[27-Jun-2026 15:14:59 Asia/Tehran] 📧 Notification created with ID: 922 - Sending SMS...
+[27-Jun-2026 15:14:59 Asia/Tehran] 📤 SMS async dispatched for notification #922
+[27-Jun-2026 15:14:59 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#922
+[27-Jun-2026 15:14:59 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#921
+[27-Jun-2026 15:23:27 Asia/Tehran] ===========================================
+[27-Jun-2026 15:23:27 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[27-Jun-2026 15:23:27 Asia/Tehran] To User: 126
+[27-Jun-2026 15:23:27 Asia/Tehran] Title: دستگاه شما تأیید شد
+[27-Jun-2026 15:23:27 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[27-Jun-2026 15:23:27 Asia/Tehran] Related Type: attendance_device
+[27-Jun-2026 15:23:27 Asia/Tehran] Related ID: 18
+[27-Jun-2026 15:23:27 Asia/Tehran] ✅ ALLOWED: Creating notification
+[27-Jun-2026 15:23:27 Asia/Tehran] ===========================================
+[27-Jun-2026 15:23:27 Asia/Tehran] 📧 Notification created with ID: 929 - Sending SMS...
+[27-Jun-2026 15:23:27 Asia/Tehran] 📤 SMS async dispatched for notification #929
+[27-Jun-2026 15:23:27 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#929
+[28-Jun-2026 09:17:15 Asia/Tehran] ===========================================
+[28-Jun-2026 09:17:15 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[28-Jun-2026 09:17:15 Asia/Tehran] To User: 1
+[28-Jun-2026 09:17:15 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[28-Jun-2026 09:17:15 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط سبحان محمدزاده در انتظار تأیید است.
+[28-Jun-2026 09:17:15 Asia/Tehran] Related Type: attendance_device
+[28-Jun-2026 09:17:15 Asia/Tehran] Related ID: 0
+[28-Jun-2026 09:17:15 Asia/Tehran] ✅ ALLOWED: Creating notification
+[28-Jun-2026 09:17:15 Asia/Tehran] ===========================================
+[28-Jun-2026 09:17:15 Asia/Tehran] 📧 Notification created with ID: 970 - Sending SMS...
+[28-Jun-2026 09:17:15 Asia/Tehran] 📤 SMS async dispatched for notification #970
+[28-Jun-2026 09:17:15 Asia/Tehran] ===========================================
+[28-Jun-2026 09:17:15 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[28-Jun-2026 09:17:15 Asia/Tehran] To User: 19
+[28-Jun-2026 09:17:15 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[28-Jun-2026 09:17:15 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط سبحان محمدزاده در انتظار تأیید است.
+[28-Jun-2026 09:17:15 Asia/Tehran] Related Type: attendance_device
+[28-Jun-2026 09:17:15 Asia/Tehran] Related ID: 0
+[28-Jun-2026 09:17:15 Asia/Tehran] ✅ ALLOWED: Creating notification
+[28-Jun-2026 09:17:15 Asia/Tehran] ===========================================
+[28-Jun-2026 09:17:15 Asia/Tehran] 📧 Notification created with ID: 971 - Sending SMS...
+[28-Jun-2026 09:17:15 Asia/Tehran] 📤 SMS async dispatched for notification #971
+[28-Jun-2026 09:17:15 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#971
+[28-Jun-2026 09:17:15 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#970
+[28-Jun-2026 09:17:53 Asia/Tehran] ===========================================
+[28-Jun-2026 09:17:53 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[28-Jun-2026 09:17:53 Asia/Tehran] To User: 25
+[28-Jun-2026 09:17:53 Asia/Tehran] Title: دستگاه شما تأیید شد
+[28-Jun-2026 09:17:53 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[28-Jun-2026 09:17:53 Asia/Tehran] Related Type: attendance_device
+[28-Jun-2026 09:17:53 Asia/Tehran] Related ID: 19
+[28-Jun-2026 09:17:53 Asia/Tehran] ✅ ALLOWED: Creating notification
+[28-Jun-2026 09:17:53 Asia/Tehran] ===========================================
+[28-Jun-2026 09:17:53 Asia/Tehran] 📧 Notification created with ID: 972 - Sending SMS...
+[28-Jun-2026 09:17:53 Asia/Tehran] 📤 SMS async dispatched for notification #972
+[28-Jun-2026 09:17:53 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#972
+[28-Jun-2026 12:23:47 Asia/Tehran] ===========================================
+[28-Jun-2026 12:23:47 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[28-Jun-2026 12:23:47 Asia/Tehran] To User: 1
+[28-Jun-2026 12:23:47 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[28-Jun-2026 12:23:47 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط علیرضا ابراهیمی در انتظار تأیید است.
+[28-Jun-2026 12:23:47 Asia/Tehran] Related Type: attendance_device
+[28-Jun-2026 12:23:47 Asia/Tehran] Related ID: 0
+[28-Jun-2026 12:23:47 Asia/Tehran] ✅ ALLOWED: Creating notification
+[28-Jun-2026 12:23:47 Asia/Tehran] ===========================================
+[28-Jun-2026 12:23:47 Asia/Tehran] 📧 Notification created with ID: 1006 - Sending SMS...
+[28-Jun-2026 12:23:47 Asia/Tehran] 📤 SMS async dispatched for notification #1006
+[28-Jun-2026 12:23:47 Asia/Tehran] ===========================================
+[28-Jun-2026 12:23:47 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[28-Jun-2026 12:23:47 Asia/Tehran] To User: 19
+[28-Jun-2026 12:23:47 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[28-Jun-2026 12:23:47 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط علیرضا ابراهیمی در انتظار تأیید است.
+[28-Jun-2026 12:23:47 Asia/Tehran] Related Type: attendance_device
+[28-Jun-2026 12:23:47 Asia/Tehran] Related ID: 0
+[28-Jun-2026 12:23:47 Asia/Tehran] ✅ ALLOWED: Creating notification
+[28-Jun-2026 12:23:47 Asia/Tehran] ===========================================
+[28-Jun-2026 12:23:47 Asia/Tehran] 📧 Notification created with ID: 1007 - Sending SMS...
+[28-Jun-2026 12:23:47 Asia/Tehran] 📤 SMS async dispatched for notification #1007
+[28-Jun-2026 12:23:47 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#1007
+[28-Jun-2026 12:23:47 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#1006
+[28-Jun-2026 12:24:00 Asia/Tehran] ===========================================
+[28-Jun-2026 12:24:00 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[28-Jun-2026 12:24:00 Asia/Tehran] To User: 1
+[28-Jun-2026 12:24:00 Asia/Tehran] Title: دستگاه شما تأیید شد
+[28-Jun-2026 12:24:00 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[28-Jun-2026 12:24:00 Asia/Tehran] Related Type: attendance_device
+[28-Jun-2026 12:24:00 Asia/Tehran] Related ID: 20
+[28-Jun-2026 12:24:00 Asia/Tehran] ✅ ALLOWED: Creating notification
+[28-Jun-2026 12:24:00 Asia/Tehran] ===========================================
+[28-Jun-2026 12:24:00 Asia/Tehran] 📧 Notification created with ID: 1008 - Sending SMS...
+[28-Jun-2026 12:24:00 Asia/Tehran] 📤 SMS async dispatched for notification #1008
+[28-Jun-2026 12:24:00 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#1008
+[28-Jun-2026 13:00:05 Asia/Tehran] ===========================================
+[28-Jun-2026 13:00:05 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[28-Jun-2026 13:00:05 Asia/Tehran] To User: 1
+[28-Jun-2026 13:00:05 Asia/Tehran] Title: دستگاه شما رد شد
+[28-Jun-2026 13:00:05 Asia/Tehran] Message: درخواست ثبت دستگاه 2.180.31.135 رد شد. با مدیریت تماس بگیرید.
+[28-Jun-2026 13:00:05 Asia/Tehran] Related Type: attendance_device
+[28-Jun-2026 13:00:05 Asia/Tehran] Related ID: 20
+[28-Jun-2026 13:00:05 Asia/Tehran] ✅ ALLOWED: Creating notification
+[28-Jun-2026 13:00:05 Asia/Tehran] ===========================================
+[28-Jun-2026 13:00:05 Asia/Tehran] 📧 Notification created with ID: 1018 - Sending SMS...
+[28-Jun-2026 13:00:05 Asia/Tehran] 📤 SMS async dispatched for notification #1018
+[28-Jun-2026 13:00:05 Asia/Tehran] ⚠️ sms-worker: pattern=device_rejected bodyId=474382 notif=#1018
+[28-Jun-2026 18:17:40 Asia/Tehran] Database connection error: SQLSTATE[08004] [1040] Too many connections
+[28-Jun-2026 18:17:40 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:17:40 Asia/Tehran] Database connection error: SQLSTATE[08004] [1040] Too many connections
+[28-Jun-2026 18:17:41 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:17:41 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:17:41 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:17:59 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:17:59 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:17:59 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:18:40 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:18:40 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:18:40 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:18:42 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:18:42 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:18:42 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:18:49 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:18:49 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:18:49 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[28-Jun-2026 18:19:40 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[28-Jun-2026 18:19:40 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:19:40 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[28-Jun-2026 18:19:42 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[28-Jun-2026 18:19:42 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:19:42 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[28-Jun-2026 18:19:58 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[28-Jun-2026 18:19:58 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:19:58 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[28-Jun-2026 18:20:40 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[28-Jun-2026 18:20:40 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:20:40 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[28-Jun-2026 18:20:42 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[28-Jun-2026 18:20:42 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[28-Jun-2026 18:20:42 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 09:16:42 Asia/Tehran] ===========================================
+[29-Jun-2026 09:16:42 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[29-Jun-2026 09:16:42 Asia/Tehran] To User: 1
+[29-Jun-2026 09:16:42 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[29-Jun-2026 09:16:42 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط زهرا بادپر در انتظار تأیید است.
+[29-Jun-2026 09:16:42 Asia/Tehran] Related Type: attendance_device
+[29-Jun-2026 09:16:42 Asia/Tehran] Related ID: 0
+[29-Jun-2026 09:16:42 Asia/Tehran] ✅ ALLOWED: Creating notification
+[29-Jun-2026 09:16:42 Asia/Tehran] ===========================================
+[29-Jun-2026 09:16:42 Asia/Tehran] 📧 Notification created with ID: 1125 - Sending SMS...
+[29-Jun-2026 09:16:42 Asia/Tehran] 📤 SMS async dispatched for notification #1125
+[29-Jun-2026 09:16:42 Asia/Tehran] ===========================================
+[29-Jun-2026 09:16:42 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[29-Jun-2026 09:16:42 Asia/Tehran] To User: 19
+[29-Jun-2026 09:16:42 Asia/Tehran] Title: دستگاه جدید در انتظار تأیید
+[29-Jun-2026 09:16:42 Asia/Tehran] Message: یک دستگاه جدید برای ثبت ورود/خروج از 2.180.31.135 توسط زهرا بادپر در انتظار تأیید است.
+[29-Jun-2026 09:16:42 Asia/Tehran] Related Type: attendance_device
+[29-Jun-2026 09:16:42 Asia/Tehran] Related ID: 0
+[29-Jun-2026 09:16:42 Asia/Tehran] ✅ ALLOWED: Creating notification
+[29-Jun-2026 09:16:42 Asia/Tehran] ===========================================
+[29-Jun-2026 09:16:42 Asia/Tehran] 📧 Notification created with ID: 1126 - Sending SMS...
+[29-Jun-2026 09:16:42 Asia/Tehran] 📤 SMS async dispatched for notification #1126
+[29-Jun-2026 09:16:42 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#1126
+[29-Jun-2026 09:16:42 Asia/Tehran] ⚠️ sms-worker: pattern=device_request bodyId=474376 notif=#1125
+[29-Jun-2026 09:57:57 Asia/Tehran] ===========================================
+[29-Jun-2026 09:57:57 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[29-Jun-2026 09:57:57 Asia/Tehran] To User: 129
+[29-Jun-2026 09:57:57 Asia/Tehran] Title: دستگاه شما تأیید شد
+[29-Jun-2026 09:57:57 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[29-Jun-2026 09:57:57 Asia/Tehran] Related Type: attendance_device
+[29-Jun-2026 09:57:57 Asia/Tehran] Related ID: 21
+[29-Jun-2026 09:57:57 Asia/Tehran] ✅ ALLOWED: Creating notification
+[29-Jun-2026 09:57:57 Asia/Tehran] ===========================================
+[29-Jun-2026 09:57:57 Asia/Tehran] 📧 Notification created with ID: 1133 - Sending SMS...
+[29-Jun-2026 09:57:57 Asia/Tehran] 📤 SMS async dispatched for notification #1133
+[29-Jun-2026 09:57:57 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#1133
+[29-Jun-2026 09:58:04 Asia/Tehran] ===========================================
+[29-Jun-2026 09:58:04 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[29-Jun-2026 09:58:04 Asia/Tehran] To User: 1
+[29-Jun-2026 09:58:04 Asia/Tehran] Title: دستگاه شما تأیید شد
+[29-Jun-2026 09:58:04 Asia/Tehran] Message: دستگاه 2.180.31.135 تأیید شد و اکنون می‌توانید ورود/خروج ثبت کنید.
+[29-Jun-2026 09:58:04 Asia/Tehran] Related Type: attendance_device
+[29-Jun-2026 09:58:04 Asia/Tehran] Related ID: 20
+[29-Jun-2026 09:58:04 Asia/Tehran] ✅ ALLOWED: Creating notification
+[29-Jun-2026 09:58:04 Asia/Tehran] ===========================================
+[29-Jun-2026 09:58:04 Asia/Tehran] 📧 Notification created with ID: 1134 - Sending SMS...
+[29-Jun-2026 09:58:04 Asia/Tehran] 📤 SMS async dispatched for notification #1134
+[29-Jun-2026 09:58:05 Asia/Tehran] ⚠️ sms-worker: pattern=device_approved bodyId=474379 notif=#1134
+[29-Jun-2026 09:58:06 Asia/Tehran] ===========================================
+[29-Jun-2026 09:58:06 Asia/Tehran] 📢 NOTIFICATION CREATE ATTEMPT
+[29-Jun-2026 09:58:06 Asia/Tehran] To User: 1
+[29-Jun-2026 09:58:06 Asia/Tehran] Title: دستگاه شما رد شد
+[29-Jun-2026 09:58:06 Asia/Tehran] Message: درخواست ثبت دستگاه 2.180.31.135 رد شد. با مدیریت تماس بگیرید.
+[29-Jun-2026 09:58:06 Asia/Tehran] Related Type: attendance_device
+[29-Jun-2026 09:58:06 Asia/Tehran] Related ID: 20
+[29-Jun-2026 09:58:06 Asia/Tehran] ✅ ALLOWED: Creating notification
+[29-Jun-2026 09:58:06 Asia/Tehran] ===========================================
+[29-Jun-2026 09:58:06 Asia/Tehran] 📧 Notification created with ID: 1135 - Sending SMS...
+[29-Jun-2026 09:58:06 Asia/Tehran] 📤 SMS async dispatched for notification #1135
+[29-Jun-2026 09:58:06 Asia/Tehran] ⚠️ sms-worker: pattern=device_rejected bodyId=474382 notif=#1135
+[29-Jun-2026 10:11:14 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:11:14 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:11:14 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:11:51 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:11:51 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:11:51 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:11:53 Asia/Tehran] Database connection error: SQLSTATE[08004] [1040] Too many connections
+[29-Jun-2026 10:11:53 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:11:53 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:11:54 Asia/Tehran] Database connection error: SQLSTATE[08004] [1040] Too many connections
+[29-Jun-2026 10:11:54 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:11:54 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:12:12 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:12:12 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:12:12 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:12:14 Asia/Tehran] Database connection error: SQLSTATE[08004] [1040] Too many connections
+[29-Jun-2026 10:12:14 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:12:14 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:12:51 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:12:51 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:12:51 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:12:53 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:12:53 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:12:53 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:12:54 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:12:54 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:12:54 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:13:14 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:13:14 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:14 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:13:17 Asia/Tehran] Database connection error: SQLSTATE[08004] [1040] Too many connections
+[29-Jun-2026 10:13:17 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:17 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:13:18 Asia/Tehran] Database connection error: SQLSTATE[HY000] [1040] Too many connections
+[29-Jun-2026 10:13:18 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:18 Asia/Tehran] Database connection error: SQLSTATE[08004] [1040] Too many connections
+[29-Jun-2026 10:13:36 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 10:13:36 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:36 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 10:13:51 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 10:13:51 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:51 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 10:13:54 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 10:13:54 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:54 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 10:13:59 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused
+[29-Jun-2026 10:13:59 Asia/Tehran] DB init error: خطا در اتصال به پایگاه داده
+[29-Jun-2026 10:13:59 Asia/Tehran] Database connection error: SQLSTATE[HY000] [2002] Connection refused

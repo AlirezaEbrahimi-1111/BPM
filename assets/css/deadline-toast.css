@@ -1,0 +1,142 @@
+/* ============================================================
+   فایل: assets/css/deadline-toast.css
+   هدف: استایل toast اعلان درخواست تمدید موعد
+   وابستگی: toastr.css (از قبل لود شده)
+   ============================================================ */
+
+/* ─── wrapper اصلی toast ─── */
+.deadline-toast-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    direction: rtl;
+    font-family: inherit;
+}
+
+/* ─── ردیف اطلاعات فرستنده ─── */
+.deadline-toast-from {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.92);
+    line-height: 1.5;
+}
+
+.deadline-toast-from strong {
+    color: #fff;
+    font-weight: 700;
+}
+
+/* ─── ردیف تاریخ درخواستی ─── */
+.deadline-toast-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12.5px;
+    color: #fff;
+    font-weight: 600;
+    margin-top: 2px;
+    width: fit-content;
+}
+
+/* ─── دکمه‌های عمل ─── */
+.deadline-toast-actions {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.deadline-toast-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: none;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1;
+}
+
+.deadline-toast-btn:active {
+    transform: scale(0.96);
+}
+
+/* دکمه تأیید */
+.deadline-toast-btn.btn-approve {
+    background: rgba(255, 255, 255, 0.95);
+    color: #1a6e30;
+}
+
+.deadline-toast-btn.btn-approve:hover {
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* دکمه رد */
+.deadline-toast-btn.btn-reject {
+    background: rgba(220, 53, 69, 0.85);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.deadline-toast-btn.btn-reject:hover {
+    background: rgba(220, 53, 69, 1);
+}
+
+/* دکمه بعداً یادآوری کن */
+.deadline-toast-btn.btn-later {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.deadline-toast-btn.btn-later:hover {
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+}
+
+/* ─── شخصی‌سازی container اصلی toastr ─── */
+#toast-container > .toast-deadline-alert {
+    /* رنگ سبز تیره (warning ولی با سبز) */
+    background: linear-gradient(135deg, #1a7a3c 0%, #25a150 100%) !important;
+    width: 360px !important;
+    border-radius: 10px !important;
+    padding: 14px 16px !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2) !important;
+    opacity: 1 !important;
+    border: none !important;
+}
+
+/* progress bar */
+#toast-container > .toast-deadline-alert .toast-progress {
+    background: rgba(255, 255, 255, 0.4) !important;
+    height: 3px !important;
+    border-radius: 0 0 10px 10px;
+}
+
+/* حذف استایل پیش‌فرض title و message چون ما HTML خودمون رو میدیم */
+#toast-container > .toast-deadline-alert .toast-title {
+    display: none !important;
+}
+
+#toast-container > .toast-deadline-alert .toast-message {
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #fff !important;
+}
+
+/* ─── موقعیت: پایین راست (برای RTL مناسب‌تره) ─── */
+#toast-container.toast-bottom-left {
+    left: auto !important;
+    right: 16px !important;
+    bottom: 16px !important;
+}

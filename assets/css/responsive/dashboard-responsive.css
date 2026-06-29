@@ -1,0 +1,576 @@
+/* ============================================
+   📱 dashboard-responsive.css  v3.0
+   سازگار با custom.css — بدون تضاد
+   شامل: لایوت داشبورد + هدر ریسپانسیو
+   ============================================ */
+
+/* ============================================
+   0. جلوگیری از زوم در iOS / Android
+   ============================================ */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* جلوگیری از زوم double-tap روی المان‌های تعاملی */
+button,
+a,
+input,
+select,
+textarea,
+.fab,
+.filter-btn,
+.nav-link,
+.task-item {
+  touch-action: manipulation;
+}
+
+/* ============================================
+   1. لایوت اصلی داشبورد
+   ============================================ */
+.main-content {
+  overflow-x: hidden;
+}
+
+/* ============================================
+   2. کارت‌های آماری گرادیانتی داشبورد
+   (scope با .row.mb-2 از .stat-card سفید جدا شده)
+   ============================================ */
+.row.mb-2 .stat-card {
+  border-radius: var(--radius-sm);
+  padding: 16px;
+
+  position: relative;
+  overflow: hidden;
+  min-height: 85px;
+  border: none;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 8px;
+  width: 100%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.row.mb-2 .stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.row.mb-2 .stat-card .stat-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: white;
+}
+
+.row.mb-2 .stat-card .stat-label {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.7rem !important;
+  /* کاهش سایز متن */
+  margin: 0 !important;
+  line-height: 0 !important;
+}
+
+.row.mb-2 .stat-card .bi {
+  color: rgba(255, 255, 255, 0.2) !important;
+  opacity: 1 !important;
+  font-size: 2.5rem !important;
+  /* کاهش سایز آیکون */
+  top: 5px !important;
+  left: 5px !important;
+}
+
+/* کارت خوش‌آمد (سفید) */
+.row.mb-2 .col-md-4:first-child .stat-card {
+  background: white !important;
+  border: 1px solid var(--gray-200) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.row.mb-2 .col-md-4:first-child .stat-card h2 {
+  color: var(--gray-800);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.row.mb-2 .col-md-4:first-child .stat-card p {
+  color: var(--gray-500);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+/* ============================================
+   3. کارت‌های سه‌ستونه پایین
+   ============================================ */
+.col-lg-4 .card-header {
+  background: var(--primary-gradient);
+  padding: 12px 16px;
+}
+
+.col-lg-4 .card-header h5 {
+  color: white;
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+.col-lg-4 .card-header .btn-light {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: background 0.2s;
+}
+
+.col-lg-4 .card-header .btn-light:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* ============================================
+   4. Task Item — اندازه فونت و text wrap
+   ============================================ */
+
+/* 🔤 کوچک‌تر کردن عنوان تسک */
+.task-title {
+  font-size: 0.82rem !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  line-height: 1.45 !important;
+  display: block !important;
+  font-weight: 500 !important;
+}
+
+.task-item {
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.task-title-section {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ============================================
+   5. دکمه یادآوری — لمسی
+   ============================================ */
+@media (hover: none) and (pointer: coarse) {
+  .btn-remind-overview {
+    opacity: 1 !important;
+    position: static !important;
+    left: auto !important;
+  }
+}
+
+/* ============================================
+   6. دکمه‌های فیلتر داشبورد
+   ============================================ */
+.filter-buttons {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.card-body .filter-btn {
+  min-height: 36px;
+  padding: 5px 14px;
+  font-size: 0.82rem;
+}
+
+/* ============================================
+   7. اسکرول موبایل
+   ============================================ */
+.recent-activities-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================
+/* ============================================
+   HEADER RESPONSIVE — نسخه قطعی و تمیز
+   اصول:
+   ① دسکتاپ (≥992px): همه چیز عادی، drawer پنهان
+   ② موبایل (<992px): همبرگر نمایش، attendance+icons پنهان
+   ③ Drawer: همیشه پنهان مگر با .drawer-open
+   ============================================ */
+
+/* ------------------------------------------
+   ① دکمه همبرگر — پیش‌فرض مخفی (دسکتاپ)
+   ------------------------------------------ */
+.mobile-menu-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.mobile-menu-btn:focus {
+  outline: none;
+}
+
+.hamburger-line {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+/* ------------------------------------------
+   ② Overlay
+   ------------------------------------------ */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 1040;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  /* پیش‌فرض: پنهان */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+
+.drawer-overlay.overlay-active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
+}
+
+/* ------------------------------------------
+   ③ Drawer — همیشه پنهان، فقط با drawer-open باز میشه
+   این قانون روی همه breakpoint‌ها اعمال میشه
+   مگر اینکه در ≥992px override بشه
+   ------------------------------------------ */
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(280px, 85vw);
+  z-index: 1050;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: -8px 0 32px rgba(15, 23, 42, 0.15);
+  transform: translateX(110%);
+  visibility: hidden;
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0s linear 0.32s;
+}
+
+.mobile-drawer.drawer-open {
+  transform: translateX(0);
+  visibility: visible;
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0s linear 0s;
+}
+
+/* ------------------------------------------
+   ④ دسکتاپ (≥992px): drawer = navbar عادی
+   ------------------------------------------ */
+@media (min-width: 992px) {
+
+  /* drawer به navbar flex عادی تبدیل میشه */
+  .mobile-drawer {
+    position: static;
+    transform: none;
+    visibility: visible;
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    justify-content: center;
+    overflow: visible;
+    width: auto;
+    background: transparent;
+    box-shadow: none;
+    transition: none;
+  }
+
+  /* در دسکتاپ drawer-open تاثیری نداره */
+  .mobile-drawer.drawer-open {
+    position: static;
+    transform: none;
+  }
+
+  /* drawer-header فقط موبایل */
+  .drawer-header {
+    display: none !important;
+  }
+
+  /* همبرگر پنهان */
+  .mobile-menu-btn {
+    display: none !important;
+  }
+}
+
+/* ------------------------------------------
+   ⑤ Drawer header (دکمه بستن + عنوان)
+   ------------------------------------------ */
+.drawer-header {
+  display: none;
+  /* پیش‌فرض مخفی — در موبایل نشون داده میشه */
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
+
+.drawer-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.drawer-close-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 1rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.drawer-close-btn:hover {
+  background: #e2e8f0;
+}
+
+body.drawer-body-open {
+  overflow: hidden;
+}
+
+/* ------------------------------------------
+   ⑥ موبایل (<992px)
+   ------------------------------------------ */
+@media (max-width: 991px) {
+
+  /* همبرگر: نمایش */
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  /* فقط divider مخفی میشه */
+  .navbar-divider {
+    display: none !important;
+  }
+
+  /* attendance و آیکون‌ها: همیشه نمایش در موبایل */
+  #attendanceContainer {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .navbar-nav.me-0 {
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    order: 4;
+  }
+
+  /* drawer-header نمایش */
+  .drawer-header {
+    display: flex;
+  }
+
+  /* منوی داخل drawer */
+  #mainNav {
+    flex-direction: column !important;
+    padding: 10px 10px 24px;
+    width: 100%;
+    gap: 2px;
+  }
+
+  #mainNav .nav-item {
+    width: 100%;
+  }
+
+  #mainNav .nav-link {
+    padding: 11px 14px !important;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #334155 !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    width: 100%;
+  }
+
+  #mainNav .nav-link i {
+    color: var(--primary);
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  #mainNav .nav-link:hover,
+  #mainNav .nav-link.active-nav-item {
+    background: rgba(99, 102, 241, 0.08);
+    color: var(--primary) !important;
+  }
+
+  /* زیرمنو inline */
+  #mainNav .dropdown-menu {
+    position: static !important;
+    float: none;
+    box-shadow: none !important;
+    border: none;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin: 4px 0 4px 14px;
+    padding: 4px;
+    animation: none !important;
+    transform: none !important;
+  }
+
+  #mainNav .dropdown-item {
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.86rem;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #475569;
+  }
+
+  #mainNav .dropdown-item:hover,
+  #mainNav .dropdown-item.active-nav-item {
+    background: rgba(99, 102, 241, 0.08);
+    color: var(--primary);
+  }
+
+  #mainNav .dropdown-item i {
+    color: var(--primary);
+    font-size: 0.95rem;
+    width: 18px;
+    text-align: center;
+  }
+}
+
+/* موبایل کوچک */
+@media (max-width: 575px) {
+  .mobile-drawer {
+    width: min(270px, 88vw);
+  }
+
+  .navbar-brand {
+    font-size: 0.88rem !important;
+  }
+
+  .dropdown-menu.notification-dropdown {
+    width: calc(100vw - 24px) !important;
+    right: 12px !important;
+    left: 12px !important;
+    top: 58px !important;
+  }
+}
+
+/* ============================================
+   📝 صفحه ایجاد کار (create-task) — ریسپانسیو
+   ============================================ */
+
+.create-task-container {
+  width: 100%;
+  max-width: 800px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.create-task-container h1 {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+@media (max-width: 767px) {
+  .create-task-container {
+    padding: 0 8px;
+  }
+
+  /* ردیف‌های دو ستونه → تک ستون */
+  .create-task-container .row>[class*="col-md-"] {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .create-task-container h1 {
+    font-size: 1rem;
+  }
+
+  /* دکمه ذخیره: تمام عرض */
+  .create-task-container .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .create-task-container .d-flex.justify-content-between>div:last-child {
+    width: 100%;
+  }
+
+  .create-task-container .d-flex.justify-content-between .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .create-task-container .form-section {
+    padding: 12px;
+  }
+
+  .create-task-container .form-section h4 {
+    font-size: 0.95rem;
+  }
+
+  .create-task-container .alert {
+    font-size: 0.82rem;
+    padding: 10px 12px;
+  }
+
+  .step-preview-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
