@@ -124,6 +124,7 @@ SELECT DISTINCT
     t.created_at,
     t.updated_at,
     dr.current_approver_id,
+    dr.created_at AS deadline_request_date,
     t.has_pending_deadline_request,
     ph.last_pending_date,
     creator.first_name as creator_first_name,
