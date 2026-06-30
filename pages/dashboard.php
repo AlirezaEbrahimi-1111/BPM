@@ -1867,6 +1867,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
                 // محاسبه تاخیر برای کارهای مقطعی (periodic)
                 let periodicDelayBadge = '';
                 if (task.task_type === 'periodic' &&
+                    task.is_workflow_task != 1 && // 🆕 روتین‌ها بج زمانِ مخصوص خودشان را دارند
                     task.working_days_delayed > 0 &&
                     task.status !== 'completed' &&
                     task.status !== 'approved') {
