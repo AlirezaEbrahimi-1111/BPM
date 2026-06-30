@@ -1455,11 +1455,14 @@ function normalizeDigits(str) {
                         if (task.status === 'completed' || task.status === 'approved') {
                             return false;
                         }
+                        // 🆕 منتظرِ تأییدِ انجام توسط کاربر — بدونِ توجه به موعد/تاریخِ pending
                         if (task.is_pending_approval == 1 &&
                             currentUser &&
-                            (currentUser.id == task.creator_id || currentUser.id == task.current_approver_id) &&
-                            task.last_pending_date &&
-                            task.last_pending_date.split(' ')[0] <= today) return true;
+                            (currentUser.id == task.creator_id || currentUser.id == task.current_approver_id)) return true;
+                        // 🆕 منتظرِ تأییدِ تمدیدِ موعد توسط کاربر — بدونِ توجه به موعد
+                        if (task.has_pending_deadline_request == 1 &&
+                            currentUser &&
+                            currentUser.id == task.current_approver_id) return true;
                         if (task.is_workflow_task == 1 &&
                             (task.status === 'in_progress' || task.status === 'not_started')) {
                             return true;
@@ -1492,12 +1495,19 @@ function normalizeDigits(str) {
                             return false;
                         }
 
-                        // ✅ اصلاح: pending approval فقط قبل از امروز
+                        // ✅ pending approval (تأییدِ انجام) فقط اگر قبل از امروز منتظر شده
                         const isPendingMyApproval = task.is_pending_approval == 1 &&
                             currentUser &&
                             (currentUser.id == task.creator_id || currentUser.id == task.current_approver_id) &&
                             task.last_pending_date &&
                             task.last_pending_date.split(' ')[0] < today;
+
+                        // 🆕 تمدیدِ موعد: اگر درخواست قبل از امروز ثبت شده و هنوز منتظرِ تأییدِ کاربر است
+                        const isPendingDeadlineOverdue = task.has_pending_deadline_request == 1 &&
+                            currentUser &&
+                            currentUser.id == task.current_approver_id &&
+                            task.deadline_request_date &&
+                            task.deadline_request_date.split(' ')[0] < today;
 
                         // ✅ اصلاح: workflow tasks — مقایسه رشته‌ای درست
                         if (task.is_workflow_task == 1) {
@@ -1519,7 +1529,7 @@ function normalizeDigits(str) {
                         const isContinuousOverdue = task.task_type === 'continuous' &&
                             task.overdue_periods > 1;
 
-                        return isRegularOverdue || isContinuousOverdue || isPendingMyApproval;
+                        return isRegularOverdue || isContinuousOverdue || isPendingMyApproval || isPendingDeadlineOverdue;
                     });
                     break;
 
