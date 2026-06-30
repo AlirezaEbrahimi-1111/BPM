@@ -33,14 +33,13 @@ class WorkflowManager
 
             $this->db->commit();
             return ['success' => true, 'template_id' => $template_id, 'message' => 'الگوی کار روتین با موفقیت ایجاد شد'];
-
         } catch (Exception $e) {
             $this->db->rollBack();
             error_log("CreateTemplate error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطا در ایجاد الگو'];
         }
     }
-private function updateStep($step_id, $step_data, $step_order)
+    private function updateStep($step_id, $step_data, $step_order)
     {
         $assignee_type = $step_data['assignee_type'] ?? 'section';
         $assignee_user_id = null;
@@ -134,16 +133,72 @@ private function updateStep($step_id, $step_data, $step_order)
             return [];
         }
     }
+    // دریافت همهٔ الگوها (فعال + غیرفعال) — مخصوص صفحهٔ مدیریت
+    public function getAllTemplates($organization_id)
+    {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT wt.*, 
+                       u.first_name as creator_first_name, 
+                       u.last_name as creator_last_name,
+                       (SELECT COUNT(*) FROM workflow_steps WHERE template_id = wt.id) as steps_count,
+                       (SELECT COUNT(*) FROM workflow_instances 
+                          WHERE template_id = wt.id 
+                            AND is_deleted = 0 
+                            AND status NOT IN ('completed','cancelled')) as active_instances
+                FROM workflow_templates wt
+                LEFT JOIN users u ON wt.created_by = u.id
+                WHERE wt.organization_id = ?
+                ORDER BY wt.is_active DESC, wt.created_at DESC
+            ");
+            $stmt->execute([$organization_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("GetAllTemplates error: " . $e->getMessage());
+            return [];
+        }
+    }
+    // فعال/غیرفعال کردن قالب (روتین‌های در حال اجرا دست‌نخورده می‌مانند)
+    public function setTemplateActive($template_id, $organization_id, $is_active)
+    {
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE workflow_templates
+                SET is_active = ?, updated_at = NOW()
+                WHERE id = ? AND organization_id = ?
+            ");
+            $stmt->execute([$is_active ? 1 : 0, $template_id, $organization_id]);
 
+            if ($stmt->rowCount() === 0) {
+                // یا قالب وجود ندارد، یا متعلق به سازمانِ دیگری است، یا مقدار تغییری نکرده
+                // برای اطمینان، وجودِ قالب را چک می‌کنیم
+                $chk = $this->db->prepare("SELECT COUNT(*) FROM workflow_templates WHERE id = ? AND organization_id = ?");
+                $chk->execute([$template_id, $organization_id]);
+                if ((int)$chk->fetchColumn() === 0) {
+                    return ['success' => false, 'message' => 'قالب یافت نشد یا دسترسی ندارید'];
+                }
+            }
+
+            return [
+                'success'   => true,
+                'is_active' => $is_active ? 1 : 0,
+                'message'   => $is_active ? 'قالب فعال شد' : 'قالب غیرفعال شد'
+            ];
+        } catch (Exception $e) {
+            error_log("SetTemplateActive error: " . $e->getMessage());
+            return ['success' => false, 'message' => 'خطا در تغییر وضعیت قالب'];
+        }
+    }
     // دریافت جزئیات الگو با مراحل آن
-    public function getTemplateDetails($template_id, $organization_id) {
+    public function getTemplateDetails($template_id, $organization_id)
+    {
         $stmt = $this->db->prepare("SELECT * FROM workflow_templates WHERE id = ? AND organization_id = ?");
         $stmt->execute([$template_id, $organization_id]);
         $template = $stmt->fetch(PDO::FETCH_ASSOC);
-        
+
         if ($template) {
             // دریافت مراحل الگو
-    $stmt = $this->db->prepare("
+            $stmt = $this->db->prepare("
         SELECT ws.id, ws.template_id, ws.step_order, ws.step_name, ws.step_description,
                ws.activity_section, ws.time_limit_hours, ws.assignee_type, ws.assignee_user_id,
                ws.execution_mode,
@@ -156,7 +211,7 @@ private function updateStep($step_id, $step_data, $step_order)
             $stmt->execute([$template_id]);
             $template['steps'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
-        
+
         return $template;
     }
 
@@ -165,21 +220,14 @@ private function updateStep($step_id, $step_data, $step_order)
     public function updateTemplate($template_id, $data)
     {
         try {
-                        // 🔒 اگر این قالب نمونهٔ در حال اجرا دارد، ویرایش/جابه‌جایی ممنوع است
-            $lockStmt = $this->db->prepare("
-                SELECT COUNT(*) FROM workflow_instances
-                WHERE template_id = ?
-                  AND is_deleted = 0
-                  AND status NOT IN ('completed', 'cancelled')
-            ");
-            $lockStmt->execute([$template_id]);
-            if ((int)$lockStmt->fetchColumn() > 0) {
-                return [
-                    'success' => false,
-                    'locked'  => true,
-                    'message' => 'این قالب یک یا چند کار روتینِ در حال اجرا دارد و تا تکمیل‌شدنِ همهٔ آن‌ها قابل ویرایش یا جابه‌جایی نیست.'
-                ];
-            }
+            // 🔒 قفلِ دائمی: ویرایش/جابه‌جاییِ قالب پس از ایجاد ممنوع است. برای تغییر، از «بازتعریف» استفاده کنید.
+            return [
+                'success' => false,
+                'locked'  => true,
+                'message' => 'ویرایش یا جابه‌جایی مراحلِ قالب امکان‌پذیر نیست. برای تغییر، از «بازتعریف» یک نسخهٔ جدید بسازید.'
+            ];
+
+            // ⬇️ کدِ قدیمی غیرفعال شد (هرگز اجرا نمی‌شود)
             $this->db->beginTransaction();
 
             // بروزرسانی template
@@ -218,7 +266,6 @@ private function updateStep($step_id, $step_data, $step_order)
 
             $this->db->commit();
             return ['success' => true, 'message' => 'الگو با موفقیت بروزرسانی شد'];
-
         } catch (Exception $e) {
             $this->db->rollBack();
             error_log("UpdateTemplate error: " . $e->getMessage());
@@ -227,31 +274,22 @@ private function updateStep($step_id, $step_data, $step_order)
     }
 
     // حذف الگو
-    public function deleteTemplate($template_id,$organization_id)
+    public function deleteTemplate($template_id, $organization_id)
     {
         try {
-            // 🔒 اگر این قالب نمونهٔ غیرنهایی دارد، حذف ممنوع است (هماهنگ با قفلِ ویرایش)
-            $stmt = $this->db->prepare("
-                SELECT COUNT(*) FROM workflow_instances
-                WHERE template_id = ?
-                  AND is_deleted = 0
-                  AND status NOT IN ('completed', 'cancelled')
-            ");
-            $stmt->execute([$template_id]);
-            if ((int)$stmt->fetchColumn() > 0) {
-                return [
-                    'success' => false,
-                    'locked'  => true,
-                    'message' => 'این قالب یک یا چند کار روتینِ در حال اجرا دارد و تا تکمیل‌شدنِ همهٔ آن‌ها قابل حذف نیست.'
-                ];
-            }
+            // 🔒 قفلِ دائمی: حذفِ قالب ممنوع است. به‌جای حذف، قالب را «غیرفعال» کنید.
+            return [
+                'success' => false,
+                'locked'  => true,
+                'message' => 'حذفِ قالب امکان‌پذیر نیست. برای کنار گذاشتنِ یک قالب، آن را «غیرفعال» کنید.'
+            ];
+            // ↓↓↓ کدِ قدیمی دیگر اجرا نمی‌شود ↓↓↓
 
             // حذف الگو (مراحل به صورت خودکار حذف می‌شوند به دلیل CASCADE)
             $stmt = $this->db->prepare("DELETE FROM workflow_templates WHERE id = ? AND organization_id = ?");
-$stmt->execute([$template_id, $organization_id]);
+            $stmt->execute([$template_id, $organization_id]);
 
             return ['success' => true, 'message' => 'الگو با موفقیت حذف شد'];
-
         } catch (Exception $e) {
             error_log("DeleteTemplate error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطا در حذف الگو'];
@@ -293,7 +331,7 @@ $stmt->execute([$template_id, $organization_id]);
 
             // ✅ ایجاد task و رکورد در workflow_instance_steps برای همه مراحل
             $first_task_id = null;
-            
+
             // 🆕 اولین مرحلهٔ آبشاری را پیدا کن (چون بر اساس step_order مرتب است، اولین موردِ cascade)
             $firstCascadeOrder = null;
             foreach ($steps as $s) {
@@ -310,7 +348,7 @@ $stmt->execute([$template_id, $organization_id]);
                 $is_active_now = ($step_mode === 'parallel') || ((int)$step['step_order'] === $firstCascadeOrder);
                 $step_status = $is_active_now ? 'active' : 'pending';
                 $task_status = 'not_started';
-                
+
                 // محاسبه deadline
                 $deadline = date('Y-m-d H:i:s', strtotime("+{$step['time_limit_hours']} hours"));
 
@@ -355,7 +393,7 @@ $stmt->execute([$template_id, $organization_id]);
                 ]);
 
                 $task_id = $this->db->lastInsertId();
-                
+
                 if ($is_first_step) {
                     $first_task_id = $task_id;
                 }
@@ -372,8 +410,8 @@ $stmt->execute([$template_id, $organization_id]);
                         started_at
                     ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 ");
-                
-                $started_at = $is_active_now ? date('Y-m-d H:i:s') : null;                
+
+                $started_at = $is_active_now ? date('Y-m-d H:i:s') : null;
                 $stmt->execute([
                     $instance_id,
                     $step['id'],
@@ -392,30 +430,30 @@ $stmt->execute([$template_id, $organization_id]);
                     ");
                     $stmt->execute([$task_id, $creator_id]);
                     // ✅ ارسال نوتیفیکیشن به اعضای واحد این مرحله
-                   // ✅ ارسال نوتیفیکیشن به مسئولِ مرحلهٔ اول (کاربرِ مشخص یا اعضای واحد)
-                   try {
-                       if ($resolved_assignee_id) {
-                           $this->createNotification(
-                               $resolved_assignee_id,
-                               'info',
-                               'کار روتین جدید',
-                               "کار روتین '{$title} - {$step['step_name']}' ایجاد شد و آماده انجام است",
-                               "../pages/task-detail.php?id={$task_id}",
-                               $instance_id
-                           );
-                       } else {
-                           $this->notifySectionMembers(
-                               $step['activity_section'],
-                               'info',
-                               'کار روتین جدید',
-                               "کار روتین '{$title} - {$step['step_name']}' ایجاد شد و آماده انجام است",
-                               "../pages/task-detail.php?id={$task_id}",
-                               $instance_id
-                           );
-                       }
-                   } catch (Exception $notif_error) {
-                       error_log("StartWorkflow notification error: " . $notif_error->getMessage());
-                   }
+                    // ✅ ارسال نوتیفیکیشن به مسئولِ مرحلهٔ اول (کاربرِ مشخص یا اعضای واحد)
+                    try {
+                        if ($resolved_assignee_id) {
+                            $this->createNotification(
+                                $resolved_assignee_id,
+                                'info',
+                                'کار روتین جدید',
+                                "کار روتین '{$title} - {$step['step_name']}' ایجاد شد و آماده انجام است",
+                                "../pages/task-detail.php?id={$task_id}",
+                                $instance_id
+                            );
+                        } else {
+                            $this->notifySectionMembers(
+                                $step['activity_section'],
+                                'info',
+                                'کار روتین جدید',
+                                "کار روتین '{$title} - {$step['step_name']}' ایجاد شد و آماده انجام است",
+                                "../pages/task-detail.php?id={$task_id}",
+                                $instance_id
+                            );
+                        }
+                    } catch (Exception $notif_error) {
+                        error_log("StartWorkflow notification error: " . $notif_error->getMessage());
+                    }
                 }
             }
 
@@ -427,7 +465,6 @@ $stmt->execute([$template_id, $organization_id]);
                 'task_id' => $first_task_id,
                 'message' => 'کار روتین با موفقیت ایجاد شد'
             ];
-
         } catch (Exception $e) {
             $this->db->rollBack();
             error_log("StartWorkflow error: " . $e->getMessage());
@@ -539,7 +576,7 @@ $stmt->execute([$template_id, $organization_id]);
                     SET current_step = ? 
                     WHERE id = ?
                 ");
-$stmt->execute([$next_step['step_order'], $instance_id]);
+                $stmt->execute([$next_step['step_order'], $instance_id]);
                 // دریافت اطلاعات مرحله بعدی
                 $stmt = $this->db->prepare("
                     SELECT ws.activity_section, ws.step_name, t.title, t.assignee_id
@@ -627,7 +664,6 @@ $stmt->execute([$next_step['step_order'], $instance_id]);
 
             $this->db->commit();
             return ['success' => true, 'message' => $message];
-
         } catch (Exception $e) {
             $this->db->rollBack();
             error_log("CompleteStep error: " . $e->getMessage());
@@ -776,7 +812,6 @@ $stmt->execute([$next_step['step_order'], $instance_id]);
 
             $this->db->commit();
             return ['success' => true, 'message' => 'کار روتین لغو شد'];
-
         } catch (Exception $e) {
             $this->db->rollBack();
             error_log("CancelWorkflow error: " . $e->getMessage());
@@ -987,11 +1022,9 @@ $stmt->execute([$next_step['step_order'], $instance_id]);
             }
 
             return ['success' => true, 'delayed_count' => count($delayed_workflows)];
-
         } catch (Exception $e) {
             error_log("CheckDelays error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطا در بررسی تأخیرها'];
         }
     }
 }
-?>

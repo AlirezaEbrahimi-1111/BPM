@@ -3,6 +3,7 @@ require_once '../includes/version.php';
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +13,7 @@ require_once '../includes/version.php';
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <link href="<?= asset('../assets/js/cdn/fonts/bootstrap-icons.woff2?30af91bf14e37666a085fb8a161ff36d') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
-    <script src="<?= asset('../../assets/js/sections-helper.js') ?>"></script> 
+    <script src="<?= asset('../../assets/js/sections-helper.js') ?>"></script>
     <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
     <style>
         :root {
@@ -32,14 +33,21 @@ require_once '../includes/version.php';
             --warning: #f59e0b;
             --radius: 12px;
             --radius-sm: 8px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-            --shadow: 0 4px 16px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.04);
-            --shadow-lg: 0 12px 40px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.06);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow: 0 4px 16px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.06);
         }
 
-        * { font-family: 'Vazirmatn', Tahoma, sans-serif !important; box-sizing: border-box; }
+        * {
+            font-family: 'Vazirmatn', Tahoma, sans-serif !important;
+            box-sizing: border-box;
+        }
 
-        body { background: var(--surface-2); color: var(--text-1); min-height: 100vh; }
+        body {
+            background: var(--surface-2);
+            color: var(--text-1);
+            min-height: 100vh;
+        }
 
         /* ─── Page Layout ─── */
         .page-wrapper {
@@ -68,7 +76,8 @@ require_once '../includes/version.php';
         }
 
         .page-header-left h1 i {
-            width: 38px; height: 38px;
+            width: 38px;
+            height: 38px;
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             border-radius: 10px;
             display: inline-flex;
@@ -98,11 +107,12 @@ require_once '../includes/version.php';
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
         }
+
         .btn-create:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(99,102,241,0.45);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.45);
         }
 
         /* ─── Template Grid ─── */
@@ -126,8 +136,10 @@ require_once '../includes/version.php';
         .template-card::before {
             content: '';
             position: absolute;
-            top: 0; right: 0;
-            width: 4px; height: 100%;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
             background: linear-gradient(180deg, var(--primary), var(--primary-light));
             opacity: 0;
             transition: opacity 0.2s;
@@ -139,7 +151,9 @@ require_once '../includes/version.php';
             transform: translateY(-2px);
         }
 
-        .template-card:hover::before { opacity: 1; }
+        .template-card:hover::before {
+            opacity: 1;
+        }
 
         .card-top {
             display: flex;
@@ -167,8 +181,16 @@ require_once '../includes/version.php';
             font-weight: 600;
             white-space: nowrap;
         }
-        .badge-active { background: #d1fae5; color: #065f46; }
-        .badge-inactive { background: #f1f5f9; color: var(--text-3); }
+
+        .badge-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-inactive {
+            background: #f1f5f9;
+            color: var(--text-3);
+        }
 
         .card-desc {
             font-size: 0.825rem;
@@ -194,7 +216,9 @@ require_once '../includes/version.php';
             color: var(--text-3);
         }
 
-        .card-meta i { font-size: 0.9rem; }
+        .card-meta i {
+            font-size: 0.9rem;
+        }
 
         .card-actions {
             display: flex;
@@ -202,7 +226,8 @@ require_once '../includes/version.php';
         }
 
         .btn-icon {
-            width: 32px; height: 32px;
+            width: 32px;
+            height: 32px;
             border-radius: var(--radius-sm);
             border: 1px solid var(--border);
             background: var(--surface);
@@ -215,9 +240,22 @@ require_once '../includes/version.php';
             color: var(--text-2);
         }
 
-        .btn-icon:hover { background: var(--surface-3); border-color: var(--border-hover); }
-        .btn-icon.edit:hover { color: var(--primary); border-color: var(--primary-light); background: #eef2ff; }
-        .btn-icon.del:hover { color: var(--danger); border-color: #fca5a5; background: #fef2f2; }
+        .btn-icon:hover {
+            background: var(--surface-3);
+            border-color: var(--border-hover);
+        }
+
+        .btn-icon.edit:hover {
+            color: var(--primary);
+            border-color: var(--primary-light);
+            background: #eef2ff;
+        }
+
+        .btn-icon.del:hover {
+            color: var(--danger);
+            border-color: #fca5a5;
+            background: #fef2f2;
+        }
 
         /* ─── Empty State ─── */
         .empty-state {
@@ -230,7 +268,8 @@ require_once '../includes/version.php';
         }
 
         .empty-state .empty-icon {
-            width: 72px; height: 72px;
+            width: 72px;
+            height: 72px;
             background: var(--surface-3);
             border-radius: 50%;
             display: flex;
@@ -241,8 +280,17 @@ require_once '../includes/version.php';
             color: var(--text-3);
         }
 
-        .empty-state h5 { font-size: 1.1rem; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
-        .empty-state p { font-size: 0.875rem; color: var(--text-3); }
+        .empty-state h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-2);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 0.875rem;
+            color: var(--text-3);
+        }
 
         /* ─── Modal ─── */
         .modal-content {
@@ -272,7 +320,10 @@ require_once '../includes/version.php';
             color: var(--primary);
         }
 
-        .modal-body { padding: 1.5rem; background: var(--surface); }
+        .modal-body {
+            padding: 1.5rem;
+            background: var(--surface);
+        }
 
         .modal-footer {
             padding: 1rem 1.5rem;
@@ -290,7 +341,8 @@ require_once '../includes/version.php';
             margin-bottom: 6px;
         }
 
-        .form-control, .form-select {
+        .form-control,
+        .form-select {
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             padding: 9px 12px;
@@ -300,13 +352,17 @@ require_once '../includes/version.php';
             transition: border-color 0.18s, box-shadow 0.18s;
         }
 
-        .form-control:focus, .form-select:focus {
+        .form-control:focus,
+        .form-select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
             outline: none;
         }
 
-        .form-switch .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
+        .form-switch .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
 
         /* ─── Section Divider ─── */
         .section-label {
@@ -362,7 +418,10 @@ require_once '../includes/version.php';
             cursor: pointer;
             transition: all 0.18s;
         }
-        .btn-add-step:hover { background: #e0e7ff; }
+
+        .btn-add-step:hover {
+            background: #e0e7ff;
+        }
 
         .step-item {
             background: var(--surface-2);
@@ -375,9 +434,19 @@ require_once '../includes/version.php';
             cursor: grab;
         }
 
-        .step-item:active { cursor: grabbing; }
-        .step-item.dragging { opacity: 0.45; border-style: dashed; }
-        .step-item:hover { border-color: var(--border-hover); box-shadow: var(--shadow-sm); }
+        .step-item:active {
+            cursor: grabbing;
+        }
+
+        .step-item.dragging {
+            opacity: 0.45;
+            border-style: dashed;
+        }
+
+        .step-item:hover {
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-sm);
+        }
 
         .step-item-header {
             display: flex;
@@ -387,7 +456,8 @@ require_once '../includes/version.php';
         }
 
         .step-num {
-            width: 24px; height: 24px;
+            width: 24px;
+            height: 24px;
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white;
             border-radius: 6px;
@@ -405,11 +475,26 @@ require_once '../includes/version.php';
             align-items: center;
             gap: 4px;
         }
-.template-card.locked { opacity: .9; cursor: not-allowed; }
-        .badge-status.badge-locked { background:#FEF3C7; color:#B54708; }
-        .btn-icon:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+
+        .template-card.locked {
+            opacity: .9;
+            cursor: not-allowed;
+        }
+
+        .badge-status.badge-locked {
+            background: #FEF3C7;
+            color: #B54708;
+        }
+
+        .btn-icon:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         .btn-remove-step {
-            width: 28px; height: 28px;
+            width: 28px;
+            height: 28px;
             border-radius: 6px;
             border: 1px solid #fca5a5;
             background: #fef2f2;
@@ -421,7 +506,10 @@ require_once '../includes/version.php';
             font-size: 0.8rem;
             transition: all 0.18s;
         }
-        .btn-remove-step:hover { background: #fee2e2; }
+
+        .btn-remove-step:hover {
+            background: #fee2e2;
+        }
 
         .steps-hint {
             font-size: 0.775rem;
@@ -449,9 +537,13 @@ require_once '../includes/version.php';
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
         }
-        .btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(99,102,241,0.4); }
+
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+        }
 
         .btn-cancel {
             display: inline-flex;
@@ -467,7 +559,10 @@ require_once '../includes/version.php';
             cursor: pointer;
             transition: all 0.18s;
         }
-        .btn-cancel:hover { background: var(--surface-3); }
+
+        .btn-cancel:hover {
+            background: var(--surface-3);
+        }
 
         /* ─── Skeleton loader ─── */
         .skeleton {
@@ -476,7 +571,32 @@ require_once '../includes/version.php';
             animation: shimmer 1.4s infinite;
             border-radius: 6px;
         }
-        @keyframes shimmer { to { background-position: -200% 0; } }
+
+        .template-card.inactive {
+            opacity: .65;
+        }
+
+        .btn-icon.view {
+            color: #475467;
+        }
+
+        .btn-icon.redefine {
+            color: #175CD3;
+        }
+
+        .btn-icon.toggle-active {
+            color: #B54708;
+        }
+
+        .btn-icon:hover {
+            background: #F2F4F7;
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position: -200% 0;
+            }
+        }
 
         .skel-card {
             background: var(--surface);
@@ -484,19 +604,84 @@ require_once '../includes/version.php';
             border-radius: var(--radius);
             padding: 1.25rem;
         }
-        .step-mode-toggle { display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; }
-.step-mode-toggle .sm-label { font-size:.8rem; color:var(--text-2); }
-.sm-btn { border:1px solid #d7dce3; background:#fff; color:#667085; border-radius:8px; padding:5px 12px; font-size:.8rem; cursor:pointer; font-family:inherit; transition:all .15s; }
-.sm-btn:hover { border-color:#744CA4; color:#744CA4; }
-.sm-btn.active.sm-parallel { background:#ECFDF3; border-color:#12B76A; color:#027A48; font-weight:700; }
-.sm-btn.active.sm-cascade  { background:#EFF8FF; border-color:#2E90FA; color:#175CD3; font-weight:700; }
-.exec-quick { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:6px 0 12px; }
-.exec-quick .eq-label { font-size:.82rem; color:var(--text-2); }
-.exec-preview { background:#F9FAFB; border:1px solid #EAECF0; border-radius:10px; padding:10px 14px; margin-top:10px; font-size:.83rem; color:#344054; }
-.exec-preview .ep-line { margin:2px 0; }
-.exec-preview b { color:#101828; }
+
+        .step-mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .step-mode-toggle .sm-label {
+            font-size: .8rem;
+            color: var(--text-2);
+        }
+
+        .sm-btn {
+            border: 1px solid #d7dce3;
+            background: #fff;
+            color: #667085;
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-size: .8rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .15s;
+        }
+
+        .sm-btn:hover {
+            border-color: #744CA4;
+            color: #744CA4;
+        }
+
+        .sm-btn.active.sm-parallel {
+            background: #ECFDF3;
+            border-color: #12B76A;
+            color: #027A48;
+            font-weight: 700;
+        }
+
+        .sm-btn.active.sm-cascade {
+            background: #EFF8FF;
+            border-color: #2E90FA;
+            color: #175CD3;
+            font-weight: 700;
+        }
+
+        .exec-quick {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 6px 0 12px;
+        }
+
+        .exec-quick .eq-label {
+            font-size: .82rem;
+            color: var(--text-2);
+        }
+
+        .exec-preview {
+            background: #F9FAFB;
+            border: 1px solid #EAECF0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-top: 10px;
+            font-size: .83rem;
+            color: #344054;
+        }
+
+        .exec-preview .ep-line {
+            margin: 2px 0;
+        }
+
+        .exec-preview b {
+            color: #101828;
+        }
     </style>
 </head>
+
 <body>
     <?php include 'header.php'; ?>
 
@@ -516,9 +701,21 @@ require_once '../includes/version.php';
         <!-- Grid -->
         <div class="templates-grid" id="templatesList">
             <!-- Skeletons while loading -->
-            <div class="skel-card"><div class="skeleton" style="height:20px;width:60%;margin-bottom:10px;"></div><div class="skeleton" style="height:14px;width:90%;margin-bottom:6px;"></div><div class="skeleton" style="height:14px;width:70%;"></div></div>
-            <div class="skel-card"><div class="skeleton" style="height:20px;width:50%;margin-bottom:10px;"></div><div class="skeleton" style="height:14px;width:85%;margin-bottom:6px;"></div><div class="skeleton" style="height:14px;width:60%;"></div></div>
-            <div class="skel-card"><div class="skeleton" style="height:20px;width:65%;margin-bottom:10px;"></div><div class="skeleton" style="height:14px;width:80%;margin-bottom:6px;"></div><div class="skeleton" style="height:14px;width:55%;"></div></div>
+            <div class="skel-card">
+                <div class="skeleton" style="height:20px;width:60%;margin-bottom:10px;"></div>
+                <div class="skeleton" style="height:14px;width:90%;margin-bottom:6px;"></div>
+                <div class="skeleton" style="height:14px;width:70%;"></div>
+            </div>
+            <div class="skel-card">
+                <div class="skeleton" style="height:20px;width:50%;margin-bottom:10px;"></div>
+                <div class="skeleton" style="height:14px;width:85%;margin-bottom:6px;"></div>
+                <div class="skeleton" style="height:14px;width:60%;"></div>
+            </div>
+            <div class="skel-card">
+                <div class="skeleton" style="height:20px;width:65%;margin-bottom:10px;"></div>
+                <div class="skeleton" style="height:14px;width:80%;margin-bottom:6px;"></div>
+                <div class="skeleton" style="height:14px;width:55%;"></div>
+            </div>
         </div>
     </div>
 
@@ -543,12 +740,12 @@ require_once '../includes/version.php';
                             <div class="col-md-5">
                                 <label class="form-label">نام کار روتین <span style="color:var(--danger)">*</span></label>
                                 <input type="text" class="form-control" id="templateName"
-                                       placeholder="مثال: فروش به مصرف‌کننده" required>
+                                    placeholder="مثال: فروش به مصرف‌کننده" required>
                             </div>
                             <div class="col-md-7">
                                 <label class="form-label">توضیحات</label>
                                 <textarea class="form-control" id="templateDescription" rows="2"
-                                          placeholder="توضیح مختصری درباره این فرآیند..."></textarea>
+                                    placeholder="توضیح مختصری درباره این فرآیند..."></textarea>
                             </div>
                         </div>
 
@@ -587,6 +784,13 @@ require_once '../includes/version.php';
                     </form>
                 </div>
 
+                <div id="deactivateOldWrap" style="display:none; padding:0 1rem 0.5rem;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer;">
+                        <input type="checkbox" id="deactivateOldChk">
+                        قالبِ قبلی غیرفعال شود (دیگر در ساخت کار جدید نمایش داده نشود)
+                    </label>
+                </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" data-bs-dismiss="modal">
                         <i class="bi bi-x"></i> انصراف
@@ -604,24 +808,55 @@ require_once '../includes/version.php';
         let currentTemplateId = null;
         let stepCounter = 0;
 
-        const UNITS = [
-            { value: 'sales',       label: 'فروش' },
-            { value: 'purchase',    label: 'خرید' },
-            { value: 'warehouse',   label: 'انبار' },
-            { value: 'technical',   label: 'فنی' },
-            { value: 'accounting',  label: 'حسابداری' },
-            { value: 'colleague',   label: 'همکار' },
-            { value: 'offices',     label: 'ادارات' },
-            { value: 'virtual',     label: 'فضای مجازی' },
-            { value: 'public',      label: 'عمومی' },
-            { value: 'management',  label: 'مدیریت' },
+        const UNITS = [{
+                value: 'sales',
+                label: 'فروش'
+            },
+            {
+                value: 'purchase',
+                label: 'خرید'
+            },
+            {
+                value: 'warehouse',
+                label: 'انبار'
+            },
+            {
+                value: 'technical',
+                label: 'فنی'
+            },
+            {
+                value: 'accounting',
+                label: 'حسابداری'
+            },
+            {
+                value: 'colleague',
+                label: 'همکار'
+            },
+            {
+                value: 'offices',
+                label: 'ادارات'
+            },
+            {
+                value: 'virtual',
+                label: 'فضای مجازی'
+            },
+            {
+                value: 'public',
+                label: 'عمومی'
+            },
+            {
+                value: 'management',
+                label: 'مدیریت'
+            },
         ];
 
         // ─── بارگذاری لیست ───────────────────────────────
         async function loadTemplates() {
             try {
-                const response = await fetch('../api/workflows/list-templates.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                const response = await fetch('../api/workflows/list-all-templates.php', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await response.json();
                 if (data.success) renderTemplates(data.templates);
@@ -647,17 +882,15 @@ require_once '../includes/version.php';
             }
 
             container.innerHTML = templates.map(t => {
-                const locked = (parseInt(t.active_instances) || 0) > 0;
+                const isActive = (t.is_active == 1);
                 return `
-                <div class="template-card ${locked ? 'locked' : ''}"
-                     onclick="${locked ? 'notifyLocked()' : `editTemplate(${t.id})`}">
+                <div class="template-card ${isActive ? '' : 'inactive'}"
+                     onclick="viewTemplate(${t.id})" style="cursor:pointer;">
                     <div class="card-top">
                         <h3 class="card-title">${escHtml(t.name)}</h3>
-                        ${locked
-                            ? '<span class="badge-status badge-locked"><i class="bi bi-lock-fill" style="font-size:9px;"></i> در حال اجرا</span>'
-                            : (t.is_active == 1
-                                ? '<span class="badge-status badge-active"><i class="bi bi-circle-fill" style="font-size:6px;"></i> فعال</span>'
-                                : '<span class="badge-status badge-inactive"><i class="bi bi-circle" style="font-size:6px;"></i> غیرفعال</span>')}
+                        ${isActive
+                            ? '<span class="badge-status badge-active"><i class="bi bi-circle-fill" style="font-size:6px;"></i> فعال</span>'
+                            : '<span class="badge-status badge-inactive"><i class="bi bi-circle" style="font-size:6px;"></i> غیرفعال</span>'}
                     </div>
                     <p class="card-desc">${escHtml(t.description || 'بدون توضیحات')}</p>
                     <div class="card-footer">
@@ -666,46 +899,147 @@ require_once '../includes/version.php';
                             <span>${t.steps_count || 0} مرحله</span>
                         </div>
                         <div class="card-actions">
-                            <button class="btn-icon edit" ${locked ? 'disabled' : ''}
-                                title="${locked ? 'قفل: کار روتینِ در حال اجرا دارد' : 'ویرایش'}"
-                                onclick="event.stopPropagation(); ${locked ? 'notifyLocked()' : `editTemplate(${t.id})`}">
-                                <i class="bi bi-${locked ? 'lock' : 'pencil'}"></i>
+                            <button class="btn-icon view" title="مشاهده"
+                                onclick="event.stopPropagation(); viewTemplate(${t.id})">
+                                <i class="bi bi-eye"></i>
                             </button>
-                            <button class="btn-icon del" ${locked ? 'disabled' : ''}
-                                title="${locked ? 'قفل: کار روتینِ در حال اجرا دارد' : 'حذف'}"
-                                onclick="event.stopPropagation(); ${locked ? 'notifyLocked()' : `deleteTemplate(${t.id})`}">
-                                <i class="bi bi-trash"></i>
+                            <button class="btn-icon redefine" title="بازتعریف (ساخت نسخهٔ جدید)"
+                                onclick="event.stopPropagation(); redefineTemplate(${t.id})">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </button>
+                            <button class="btn-icon toggle-active" title="${isActive ? 'غیرفعال‌کردن' : 'فعال‌کردن'}"
+                                onclick="event.stopPropagation(); toggleTemplateActive(${t.id}, ${isActive ? 0 : 1})">
+                                <i class="bi bi-${isActive ? 'pause-circle' : 'play-circle'}"></i>
                             </button>
                         </div>
                     </div>
                 </div>`;
             }).join('');
         }
-
+        // ─── فعال/غیرفعال‌کردن قالب ───────────────────────
+        function toggleTemplateActive(templateId, newActive) {
+            const makeActive = (newActive == 1);
+            const msg = makeActive ?
+                'این قالب دوباره فعال شود و در ساخت کار جدید نمایش داده شود؟' :
+                'این قالب غیرفعال شود؟ دیگر در ساخت کار جدید نمایش داده نمی‌شود (کارهای در حال اجرا ادامه می‌یابند).';
+            uiConfirm(msg, async function() {
+                try {
+                    const res = await fetch('../api/workflows/toggle-template-active.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            template_id: templateId,
+                            is_active: makeActive ? 1 : 0
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        loadTemplates();
+                    } else {
+                        showToast(data.message || 'تغییر وضعیت انجام نشد', 'danger');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    showToast('خطا در ارتباط با سرور', 'danger');
+                }
+            });
+        }
         // ─── مودال افزودن ────────────────────────────────
         function showAddTemplateModal() {
             currentTemplateId = null;
+            redefineSourceId = null;
+            setTemplateModalReadonly(false);
             document.getElementById('modalTitle').innerHTML = '<i class="bi bi-plus-circle"></i> افزودن کار روتین جدید';
             document.getElementById('templateForm').reset();
             document.getElementById('templateId').value = '';
             document.getElementById('templateActive').checked = true;
+            const wrap = document.getElementById('deactivateOldWrap');
+            if (wrap) wrap.style.display = 'none'; // تیک فقط در بازتعریف
             document.getElementById('stepsList').innerHTML = '';
             stepCounter = 0;
             addStep();
             new bootstrap.Modal(document.getElementById('templateModal')).show();
         }
-function notifyLocked() {
+
+        function notifyLocked() {
             showToast('این قالب یک کار روتینِ در حال اجرا دارد و تا تکمیل‌شدنِ آن قابل ویرایش یا حذف نیست.', 'warning');
+        }
+        // ─── مشاهدهٔ فقط‌خواندنی ──────────────────────────
+        async function viewTemplate(templateId) {
+            try {
+                const response = await fetch(`../api/workflows/get-template.php?id=${templateId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.message, 'danger');
+                    return;
+                }
+
+                const t = data.template;
+                currentTemplateId = null;
+                redefineSourceId = null;
+
+                document.getElementById('modalTitle').innerHTML = '<i class="bi bi-eye"></i> مشاهدهٔ کار روتین';
+                document.getElementById('templateId').value = '';
+                document.getElementById('templateName').value = t.name || '';
+                document.getElementById('templateDescription').value = t.description || '';
+                document.getElementById('templateActive').checked = t.is_active == 1;
+
+                const wrap = document.getElementById('deactivateOldWrap');
+                if (wrap) wrap.style.display = 'none';
+
+                document.getElementById('stepsList').innerHTML = '';
+                stepCounter = 0;
+                if (t.steps && t.steps.length > 0) {
+                    t.steps.forEach(step => addStep(step));
+                } else {
+                    addStep();
+                }
+
+                // فقط‌خواندنی کردن کلِ فرم + پنهان‌کردن دکمهٔ ذخیره
+                setTemplateModalReadonly(true);
+
+                new bootstrap.Modal(document.getElementById('templateModal')).show();
+            } catch (e) {
+                console.error(e);
+                showToast('خطا در بارگذاری اطلاعات', 'danger');
+            }
+        }
+
+        // فعال/غیرفعال‌کردنِ حالتِ فقط‌خواندنیِ مودال
+        function setTemplateModalReadonly(readonly) {
+            const modal = document.getElementById('templateModal');
+            // همهٔ ورودی‌ها/دکمه‌های داخلِ فرم
+            modal.querySelectorAll('input, select, textarea, button').forEach(el => {
+                // دکمهٔ بستن و انصراف نباید غیرفعال شوند
+                if (el.classList.contains('btn-close') || el.classList.contains('btn-cancel') || el.getAttribute('data-bs-dismiss') === 'modal') return;
+                el.disabled = readonly;
+            });
+            // دکمهٔ افزودن مرحله و حذف مرحله و کشیدن
+            const saveBtn = modal.querySelector('.btn-save');
+            if (saveBtn) saveBtn.style.display = readonly ? 'none' : '';
         }
         // ─── ویرایش الگو ─────────────────────────────────
         async function editTemplate(templateId) {
             try {
                 const response = await fetch(`../api/workflows/get-template.php?id=${templateId}`, {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await response.json();
 
-                if (!data.success) { showToast(data.message, 'danger'); return; }
+                if (!data.success) {
+                    showToast(data.message, 'danger');
+                    return;
+                }
 
                 const t = data.template;
                 currentTemplateId = templateId;
@@ -731,10 +1065,56 @@ function notifyLocked() {
                 showToast('خطا در بارگذاری اطلاعات', 'danger');
             }
         }
+        // ─── بازتعریف (ساخت نسخهٔ جدید از روی قالب) ──────────
+        let redefineSourceId = null; // آیدیِ قالبِ مبدأ برای غیرفعال‌سازی پس از ذخیره
 
+        async function redefineTemplate(templateId) {
+            try {
+                const response = await fetch(`../api/workflows/get-template.php?id=${templateId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    showToast(data.message, 'danger');
+                    return;
+                }
+
+                const t = data.template;
+                currentTemplateId = null;
+                redefineSourceId = templateId; // مبدأ را نگه می‌داریم
+                setTemplateModalReadonly(false);
+
+                document.getElementById('modalTitle').innerHTML = '<i class="bi bi-arrow-repeat"></i> بازتعریف کار روتین';
+                document.getElementById('templateId').value = ''; // خالی → ساختِ نسخهٔ جدید
+                document.getElementById('templateName').value = (t.name || '') + ' (نسخهٔ جدید)';
+                document.getElementById('templateDescription').value = t.description || '';
+                document.getElementById('templateActive').checked = true;
+
+                // تیکِ «قالب قبلی غیرفعال شود» را نمایش بده و پیش‌فرض خاموش
+                const wrap = document.getElementById('deactivateOldWrap');
+                if (wrap) wrap.style.display = 'block';
+                const chk = document.getElementById('deactivateOldChk');
+                if (chk) chk.checked = false;
+
+                document.getElementById('stepsList').innerHTML = '';
+                stepCounter = 0;
+                if (t.steps && t.steps.length > 0) {
+                    t.steps.forEach(step => addStep(step));
+                } else {
+                    addStep();
+                }
+
+                new bootstrap.Modal(document.getElementById('templateModal')).show();
+            } catch (e) {
+                console.error(e);
+                showToast('خطا در بارگذاری اطلاعات', 'danger');
+            }
+        }
         // ─── افزودن مرحله ────────────────────────────────
-        let stepPickers = {};       // stepId -> picker instance
-        let stepOriginalData = {};  // stepId -> { type, value } (برای حالت ویرایش‌نشده)
+        let stepPickers = {}; // stepId -> picker instance
+        let stepOriginalData = {}; // stepId -> { type, value } (برای حالت ویرایش‌نشده)
 
         function addStep(stepData = null) {
             stepCounter++;
@@ -742,9 +1122,8 @@ function notifyLocked() {
             const stepMode = (stepData && stepData.execution_mode === 'parallel') ? 'parallel' : 'cascade';
             stepOriginalData[stepId] = {
                 type: stepData ? (stepData.assignee_type || 'section') : 'section',
-                value: stepData
-                    ? (stepData.assignee_type === 'user' ? stepData.assignee_user_id : stepData.activity_section)
-                    : ''
+                value: stepData ?
+                    (stepData.assignee_type === 'user' ? stepData.assignee_user_id : stepData.activity_section) : ''
             };
 
             let assigneePlaceholder = 'جستجوی کاربر یا انتخاب واحد...';
@@ -845,21 +1224,30 @@ function notifyLocked() {
         function updateExecPreview() {
             const box = document.getElementById('execPreview');
             if (!box) return;
-            const faNum = s => String(s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+            const faNum = s => String(s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
             const items = [...document.querySelectorAll('.step-item')];
-            if (!items.length) { box.innerHTML = ''; return; }
+            if (!items.length) {
+                box.innerHTML = '';
+                return;
+            }
 
             const modes = items.map(it => it.querySelector('.step-mode-toggle')?.dataset.mode || 'cascade');
             const names = items.map((it, i) => (it.querySelector('.step-name')?.value.trim() || ('مرحله ' + faNum(i + 1))));
             const firstCascadeIdx = modes.findIndex(m => m === 'cascade');
 
-            const activeNow = [], waiting = [];
+            const activeNow = [],
+                waiting = [];
             items.forEach((it, i) => {
                 if (modes[i] === 'parallel' || i === firstCascadeIdx) {
                     activeNow.push(names[i]);
                 } else {
                     let p = -1;
-                    for (let k = i - 1; k >= 0; k--) { if (modes[k] === 'cascade') { p = k; break; } }
+                    for (let k = i - 1; k >= 0; k--) {
+                        if (modes[k] === 'cascade') {
+                            p = k;
+                            break;
+                        }
+                    }
                     waiting.push(names[i] + (p >= 0 ? ' (بعد از: ' + names[p] + ')' : ''));
                 }
             });
@@ -874,29 +1262,42 @@ function notifyLocked() {
 
         function initDragAndDrop() {
             document.querySelectorAll('.step-item').forEach(el => {
-                el.ondragstart = function () { draggedEl = this; this.classList.add('dragging'); };
-                el.ondragover  = e => e.preventDefault();
-                el.ondrop      = function (e) {
+                el.ondragstart = function() {
+                    draggedEl = this;
+                    this.classList.add('dragging');
+                };
+                el.ondragover = e => e.preventDefault();
+                el.ondrop = function(e) {
                     e.stopPropagation();
                     if (draggedEl && draggedEl !== this) {
                         const all = [...document.querySelectorAll('.step-item')];
-                        const di = all.indexOf(draggedEl), ti = all.indexOf(this);
+                        const di = all.indexOf(draggedEl),
+                            ti = all.indexOf(this);
                         if (di < ti) this.after(draggedEl);
                         else this.before(draggedEl);
                         updateStepNumbers();
                     }
                 };
-                el.ondragend = function () { this.classList.remove('dragging'); draggedEl = null; };
+                el.ondragend = function() {
+                    this.classList.remove('dragging');
+                    draggedEl = null;
+                };
             });
         }
 
         // ─── ذخیره الگو ──────────────────────────────────
         async function saveTemplate() {
             const name = document.getElementById('templateName').value.trim();
-            if (!name) { showToast('نام کار روتین الزامی است', 'warning'); return; }
+            if (!name) {
+                showToast('نام کار روتین الزامی است', 'warning');
+                return;
+            }
 
             const stepItems = document.querySelectorAll('.step-item');
-            if (stepItems.length === 0) { showToast('حداقل یک مرحله تعریف کنید', 'warning'); return; }
+            if (stepItems.length === 0) {
+                showToast('حداقل یک مرحله تعریف کنید', 'warning');
+                return;
+            }
 
             const steps = [];
             let valid = true;
@@ -907,11 +1308,19 @@ function notifyLocked() {
                 const sTime = item.querySelector('.step-time').value;
 
                 const picked = stepPickers[stepId] ? stepPickers[stepId].getValue() : null;
-                let assignee = (picked && picked.value !== '__all__' && picked.value !== '__all_users__')
-                    ? { type: picked.type, value: picked.value }
-                    : (stepOriginalData[stepId] || { type: 'section', value: '' });
+                let assignee = (picked && picked.value !== '__all__' && picked.value !== '__all_users__') ? {
+                        type: picked.type,
+                        value: picked.value
+                    } :
+                    (stepOriginalData[stepId] || {
+                        type: 'section',
+                        value: ''
+                    });
 
-                if (!sName || !assignee.value || !sTime) { valid = false; return; }
+                if (!sName || !assignee.value || !sTime) {
+                    valid = false;
+                    return;
+                }
                 const sMode = item.querySelector('.step-mode-toggle')?.dataset.mode === 'parallel' ? 'parallel' : 'cascade';
                 steps.push({
                     step_order: i + 1,
@@ -923,7 +1332,10 @@ function notifyLocked() {
                 });
             });
 
-            if (!valid) { showToast('تمام فیلدها از جمله مسئولِ هر مرحله را تکمیل کنید (نه «همه واحدها»)', 'warning'); return; }
+            if (!valid) {
+                showToast('تمام فیلدها از جمله مسئولِ هر مرحله را تکمیل کنید (نه «همه واحدها»)', 'warning');
+                return;
+            }
 
             const payload = {
                 name,
@@ -935,9 +1347,9 @@ function notifyLocked() {
             const templateId = document.getElementById('templateId').value;
             if (templateId) payload.template_id = templateId;
 
-            const url = templateId
-                ? '../api/workflows/update-template.php'
-                : '../api/workflows/create-template.php';
+            const url = templateId ?
+                '../api/workflows/update-template.php' :
+                '../api/workflows/create-template.php';
 
             const saveBtn = document.querySelector('.btn-save');
             saveBtn.disabled = true;
@@ -946,12 +1358,35 @@ function notifyLocked() {
             try {
                 const res = await fetch(url, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken
+                    },
                     body: JSON.stringify(payload)
                 });
                 const data = await res.json();
 
                 if (data.success) {
+                    // اگر بازتعریف بود و تیکِ غیرفعال‌سازیِ قالب قبلی زده شده بود
+                    const deact = document.getElementById('deactivateOldChk');
+                    if (redefineSourceId && deact && deact.checked) {
+                        try {
+                            await fetch('../api/workflows/toggle-template-active.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': 'Bearer ' + authToken
+                                },
+                                body: JSON.stringify({
+                                    template_id: redefineSourceId,
+                                    is_active: 0
+                                })
+                            });
+                        } catch (e) {
+                            console.error('deactivate old template:', e);
+                        }
+                    }
+                    redefineSourceId = null; // پاک‌سازی
                     showToast(data.message, 'success');
                     bootstrap.Modal.getInstance(document.getElementById('templateModal')).hide();
                     loadTemplates();
@@ -968,26 +1403,47 @@ function notifyLocked() {
 
         // ─── حذف الگو ────────────────────────────────────
         function deleteTemplate(templateId) {
-            uiConfirm('آیا از حذف این روتین اطمینان دارید؟', async function () {
+            uiConfirm('آیا از حذف این روتین اطمینان دارید؟', async function() {
                 try {
                     const res = await fetch('../api/workflows/delete-template.php', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                        body: JSON.stringify({ template_id: templateId })
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            template_id: templateId
+                        })
                     });
                     const data = await res.json();
-                    if (data.success) { showToast(data.message, 'success'); loadTemplates(); }
-                    else showToast(data.message, 'danger');
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        loadTemplates();
+                    } else showToast(data.message, 'danger');
                 } catch (e) {
                     showToast('خطا در حذف', 'danger');
                 }
-            }, { danger: true, yesText: 'بله، حذف', noText: 'انصراف' });
+            }, {
+                danger: true,
+                yesText: 'بله، حذف',
+                noText: 'انصراف'
+            });
         }
 
         // ─── Toast ────────────────────────────────────────
         function showToast(msg, type = 'info') {
-            const colors = { success: '#10b981', danger: '#ef4444', warning: '#f59e0b', info: '#6366f1' };
-            const icons  = { success: 'check-circle-fill', danger: 'x-circle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const colors = {
+                success: '#10b981',
+                danger: '#ef4444',
+                warning: '#f59e0b',
+                info: '#6366f1'
+            };
+            const icons = {
+                success: 'check-circle-fill',
+                danger: 'x-circle-fill',
+                warning: 'exclamation-triangle-fill',
+                info: 'info-circle-fill'
+            };
 
             const el = document.createElement('div');
             el.style.cssText = `
@@ -1011,12 +1467,13 @@ function notifyLocked() {
 
         // ─── Utils ────────────────────────────────────────
         function escHtml(str) {
-            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
+
         function escAttr(str) {
             return String(str || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
-        
+
         // ─── بارگذاریِ مستقلِ کاربران و واحدها برای Pickerِ مسئولِ هر مرحله ───
         let wfUsers = [];
         let wfSections = [];
@@ -1026,28 +1483,42 @@ function notifyLocked() {
         async function loadUsersAndSectionsForPicker() {
             try {
                 const [usersRes, sectionsRes] = await Promise.all([
-                    fetch('../api/users/list.php', { headers: { 'Authorization': 'Bearer ' + authToken } }),
-                    fetch('../api/organization/activity-sections.php', { headers: { 'Authorization': 'Bearer ' + authToken } })
+                    fetch('../api/users/list.php', {
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken
+                        }
+                    }),
+                    fetch('../api/organization/activity-sections.php', {
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken
+                        }
+                    })
                 ]);
                 const usersData = await usersRes.json();
                 const sectionsData = await sectionsRes.json();
                 if (usersData.success) wfUsers = usersData.users;
                 if (sectionsData.success) {
                     wfSections = sectionsData.sections;
-                    sectionsData.sections.forEach(s => { wfSectionMap[s.section_key] = s.section_label; });
+                    sectionsData.sections.forEach(s => {
+                        wfSectionMap[s.section_key] = s.section_label;
+                    });
                 }
             } catch (e) {
                 console.error('loadUsersAndSectionsForPicker error:', e);
             }
         }
-        
+
         // ─── Init ─────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', async function () {
-            if (!authToken) { window.location.href = '../index.php'; return; }
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (!authToken) {
+                window.location.href = '../index.php';
+                return;
+            }
             loadTemplates();
             await loadSectionMap(); // در init صفحه
             await loadUsersAndSectionsForPicker();
         });
     </script>
 </body>
+
 </html>
