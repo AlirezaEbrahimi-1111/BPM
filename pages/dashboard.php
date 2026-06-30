@@ -90,8 +90,8 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             --dm-line: #e9ebf2;
             --dm-brand: #6c4ac9;
             --dm-brand-2: #8a63e6;
-            --dm-shadow: 0 1px 2px rgba(24,28,46,.04), 0 8px 24px rgba(24,28,46,.06);
-            --dm-shadow-hover: 0 6px 16px rgba(24,28,46,.10), 0 16px 40px rgba(24,28,46,.10);
+            --dm-shadow: 0 1px 2px rgba(24, 28, 46, .04), 0 8px 24px rgba(24, 28, 46, .06);
+            --dm-shadow-hover: 0 6px 16px rgba(24, 28, 46, .10), 0 16px 40px rgba(24, 28, 46, .10);
             --dm-radius: 18px;
             font-family: 'Vazirmatn', 'IRANSans', 'Vazir', system-ui, -apple-system, sans-serif;
             color: var(--dm-ink);
@@ -106,6 +106,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             gap: 1rem;
             margin-bottom: 1.25rem;
         }
+
         #dashboardModern .dash-welcome {
             position: relative;
             overflow: hidden;
@@ -118,23 +119,36 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             flex-direction: column;
             justify-content: center;
         }
+
         #dashboardModern .dash-welcome__glow {
             position: absolute;
             inset: auto -40px -60px auto;
-            width: 220px; height: 220px;
-            background: radial-gradient(circle, rgba(255,255,255,.25), transparent 70%);
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(255, 255, 255, .25), transparent 70%);
             pointer-events: none;
         }
+
         #dashboardModern .dash-welcome__title {
-            font-size: 1.5rem; font-weight: 800; margin: 0 0 .35rem; line-height: 1.5; color:white;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0 0 .35rem;
+            line-height: 1.5;
+            color: white;
         }
-        #dashboardModern .dash-welcome__sub { margin: 0; opacity: .92; font-size: .95rem; }
+
+        #dashboardModern .dash-welcome__sub {
+            margin: 0;
+            opacity: .92;
+            font-size: .95rem;
+        }
 
         #dashboardModern .dash-stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 1rem;
         }
+
         #dashboardModern .stat-card {
             background: var(--dm-surface);
             border: 1px solid var(--dm-line);
@@ -148,24 +162,68 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             position: relative;
             overflow: hidden;
         }
+
         #dashboardModern .stat-card::before {
-            content: ""; position: absolute; inset-inline-start: 0; top: 0; bottom: 0;
-            width: 4px; background: var(--c, var(--dm-brand));
+            content: "";
+            position: absolute;
+            inset-inline-start: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--c, var(--dm-brand));
         }
-        #dashboardModern .stat-card:hover { transform: translateY(-3px); box-shadow: var(--dm-shadow-hover); }
+
+        #dashboardModern .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--dm-shadow-hover);
+        }
+
         #dashboardModern .stat-card__icon {
-            flex: 0 0 auto; width: 48px; height: 48px; border-radius: 14px;
-            display: grid; place-items: center; font-size: 1.4rem;
+            flex: 0 0 auto;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            font-size: 1.4rem;
             background: color-mix(in srgb, var(--c, var(--dm-brand)) 30%, #fff);
             color: var(--c, var(--dm-brand));
         }
-        #dashboardModern .stat-card__body { display: flex; flex-direction: column; line-height: 1.2; }
-        #dashboardModern .stat-number { font-size: 1.7rem; font-weight: 800; margin: 0; color: var(--dm-ink); }
-        #dashboardModern .stat-label { margin: .15rem 0 0; color: var(--dm-muted); font-size: .85rem; }
-        #dashboardModern .stat-card--total { --c: #6c4ac9; }
-        #dashboardModern .stat-card--done  { --c: #14a06b; }
-        #dashboardModern .stat-card--over  { --c: #e0683a; }
-        #dashboardModern .stat-card--soon  { --c: #2f7be0; }
+
+        #dashboardModern .stat-card__body {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        #dashboardModern .stat-number {
+            font-size: 1.7rem;
+            font-weight: 800;
+            margin: 0;
+            color: var(--dm-ink);
+        }
+
+        #dashboardModern .stat-label {
+            margin: .15rem 0 0;
+            color: var(--dm-muted);
+            font-size: .85rem;
+        }
+
+        #dashboardModern .stat-card--total {
+            --c: #6c4ac9;
+        }
+
+        #dashboardModern .stat-card--done {
+            --c: #14a06b;
+        }
+
+        #dashboardModern .stat-card--over {
+            --c: #e0683a;
+        }
+
+        #dashboardModern .stat-card--soon {
+            --c: #2f7be0;
+        }
 
         /* ---------- پنل‌ها ---------- */
         #dashboardModern .dash-card {
@@ -176,61 +234,147 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             overflow: hidden;
             height: 100%;
         }
+
         #dashboardModern .dash-card .card-header {
             background: transparent;
             border-bottom: 1px solid var(--dm-line);
             padding: 1rem 1.1rem;
-            display: flex; align-items: center; justify-content: space-between;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
+
         #dashboardModern .dash-card .card-header h5 {
-            margin: 0; font-size: 1rem; font-weight: 700; color: var(--dm-ink);
-            display: flex; align-items: center; gap: .5rem;
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dm-ink);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
         }
-        #dashboardModern .dash-card .card-header h5 i { color: var(--dm-brand); font-size: 1.15rem; }
+
+        #dashboardModern .dash-card .card-header h5 i {
+            color: var(--dm-brand);
+            font-size: 1.15rem;
+        }
+
         #dashboardModern .dash-link {
-            font-size: .82rem; font-weight: 600; text-decoration: none;
-            color: var(--dm-brand); background: color-mix(in srgb, var(--dm-brand) 10%, #fff);
-            padding: .35rem .7rem; border-radius: 999px; transition: background .15s ease;
+            font-size: .82rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--dm-brand);
+            background: color-mix(in srgb, var(--dm-brand) 10%, #fff);
+            padding: .35rem .7rem;
+            border-radius: 999px;
+            transition: background .15s ease;
         }
-        #dashboardModern .dash-link:hover { background: color-mix(in srgb, var(--dm-brand) 20%, #fff); }
-        #dashboardModern .dash-card .card-body { padding: 1rem 1.1rem; }
+
+        #dashboardModern .dash-link:hover {
+            background: color-mix(in srgb, var(--dm-brand) 20%, #fff);
+        }
+
+        #dashboardModern .dash-card .card-body {
+            padding: 1rem 1.1rem;
+        }
 
         /* ---------- دکمه‌های فیلتر ---------- */
-        #dashboardModern .filter-buttons { display: flex; gap: .4rem; margin-bottom: .9rem; flex-wrap: wrap; }
-        #dashboardModern .filter-btn {
-            border: 1px solid var(--dm-line); background: #fff; color: var(--dm-muted);
-            padding: .35rem .85rem; border-radius: 999px; font-size: .82rem; font-weight: 600;
-            cursor: pointer; transition: all .15s ease;
+        #dashboardModern .filter-buttons {
+            display: flex;
+            gap: .4rem;
+            margin-bottom: .9rem;
+            flex-wrap: wrap;
         }
-        #dashboardModern .filter-btn:hover { border-color: var(--dm-brand); color: var(--dm-brand); }
+
+        #dashboardModern .filter-btn {
+            border: 1px solid var(--dm-line);
+            background: #fff;
+            color: var(--dm-muted);
+            padding: .35rem .85rem;
+            border-radius: 999px;
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s ease;
+        }
+
+        #dashboardModern .filter-btn:hover {
+            border-color: var(--dm-brand);
+            color: var(--dm-brand);
+        }
+
         #dashboardModern .filter-btn.active {
-            background: var(--dm-brand); border-color: var(--dm-brand); color: #fff;
+            background: var(--dm-brand);
+            border-color: var(--dm-brand);
+            color: #fff;
             box-shadow: 0 4px 12px color-mix(in srgb, var(--dm-brand) 35%, transparent);
         }
 
         /* ---------- ناحیهٔ اسکرول ---------- */
         #dashboardModern .recent-activities-scroll {
-            max-height: 420px; overflow-y: auto; padding-inline-end: .25rem;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-inline-end: .25rem;
         }
-        #dashboardModern .recent-activities-scroll::-webkit-scrollbar { width: 7px; }
+
+        #dashboardModern .recent-activities-scroll::-webkit-scrollbar {
+            width: 7px;
+        }
+
         #dashboardModern .recent-activities-scroll::-webkit-scrollbar-thumb {
-            background: #d6dae6; border-radius: 999px;
+            background: #d6dae6;
+            border-radius: 999px;
         }
-        #dashboardModern .recent-activities-scroll::-webkit-scrollbar-thumb:hover { background: #bcc2d4; }
-        #dashboardModern .loading { display: grid; place-items: center; padding: 2.5rem 0; }
-        #dashboardModern .loading .spinner-border { color: var(--dm-brand); }
+
+        #dashboardModern .recent-activities-scroll::-webkit-scrollbar-thumb:hover {
+            background: #bcc2d4;
+        }
+
+        #dashboardModern .loading {
+            display: grid;
+            place-items: center;
+            padding: 2.5rem 0;
+        }
+
+        #dashboardModern .loading .spinner-border {
+            color: var(--dm-brand);
+        }
 
         /* ---------- ریسپانسیو ---------- */
         @media (max-width: 992px) {
-            #dashboardModern .dash-hero { grid-template-columns: 1fr; }
+            #dashboardModern .dash-hero {
+                grid-template-columns: 1fr;
+            }
         }
+
         @media (max-width: 576px) {
-            #dashboardModern .dash-stats { grid-template-columns: repeat(2, 1fr); gap: .7rem; }
-            #dashboardModern .stat-card { padding: .9rem .8rem; gap: .6rem; }
-            #dashboardModern .stat-card__icon { width: 42px; height: 42px; font-size: 1.2rem; }
-            #dashboardModern .stat-number { font-size: 1.4rem; }
-            #dashboardModern .dash-welcome { padding: 1.3rem 1.2rem; }
-            #dashboardModern .dash-welcome__title { font-size: 1.25rem; }
+            #dashboardModern .dash-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: .7rem;
+            }
+
+            #dashboardModern .stat-card {
+                padding: .9rem .8rem;
+                gap: .6rem;
+            }
+
+            #dashboardModern .stat-card__icon {
+                width: 42px;
+                height: 42px;
+                font-size: 1.2rem;
+            }
+
+            #dashboardModern .stat-number {
+                font-size: 1.4rem;
+            }
+
+            #dashboardModern .dash-welcome {
+                padding: 1.3rem 1.2rem;
+            }
+
+            #dashboardModern .dash-welcome__title {
+                font-size: 1.25rem;
+            }
         }
     </style>
     <!-- ناوبری بالا -->
@@ -513,14 +657,14 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
 }
 `;
         // بارگذاری اولیه
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             checkAuth();
             // authToken = localStorage.getItem('auth_token');
 
-        if (!authToken) {
-          window.location.href = '../index.php';
-          return;
-        }
+            if (!authToken) {
+                window.location.href = '../index.php';
+                return;
+            }
 
 
             initializePage();
@@ -531,12 +675,12 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
         function checkAuth() {
             // دریافت اطلاعات کاربر
             fetch('../api/auth/profile.php', {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + authToken,
-                    'Content-Type': 'application/json'
-                }
-            })
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    }
+                })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Unauthorized');
@@ -545,7 +689,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
                 })
                 .then(data => {
                     if (data.success) {
-                        sessionStorage.removeItem('auth_bounce');   // 🆕 این یک خط را اضافه کن
+                        sessionStorage.removeItem('auth_bounce'); // 🆕 این یک خط را اضافه کن
                         currentUser = data.user;
                         updateUserInfo();
                     } else {
@@ -561,7 +705,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
         }
         // ارسال یادآوری
         function sendReminder(taskId, title, assigneeName) {
-            uiPrompt(`ارسال یادآوری برای "${title}" به ${assigneeName}:`, async function (message) {
+            uiPrompt(`ارسال یادآوری برای "${title}" به ${assigneeName}:`, async function(message) {
                 if (!message) return;
 
                 try {
@@ -588,13 +732,17 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
                     console.error('Error sending reminder:', error);
                     showAlert('خطا در ارتباط با سرور', 'danger');
                 }
-            }, { placeholder: 'پیام یادآوری...', required: true, okText: 'ارسال' });
+            }, {
+                placeholder: 'پیام یادآوری...',
+                required: true,
+                okText: 'ارسال'
+            });
         }
         // بروزرسانی اطلاعات کاربر
         function updateUserInfo() {
-            const userName = currentUser.first_name && currentUser.last_name
-                ? `${currentUser.first_name} ${currentUser.last_name}`
-                : 'کاربر گرامی';
+            const userName = currentUser.first_name && currentUser.last_name ?
+                `${currentUser.first_name} ${currentUser.last_name}` :
+                'کاربر گرامی';
 
             document.getElementById('welcomeName').textContent = userName;
             // تاریخ امروز
@@ -616,6 +764,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
 
 
         }
+
         function enTofaNumber(numb) {
             const persianNumbers = "۰۱۲۳۴۵۶۷۸۹";
             const englishNumbers = "0123456789";
@@ -656,28 +805,29 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             // به‌روزرسانی Stats
             updateProgressStats();
         }
+
         function searchMyTasks(query) {
-    const searchTerm = normalizeDigits(query).toLowerCase().trim();
+            const searchTerm = normalizeDigits(query).toLowerCase().trim();
 
-    let filtered = myTasksData.filter(task =>
-        !['completed', 'approved'].includes(task.status)
-    );
+            let filtered = myTasksData.filter(task =>
+                !['completed', 'approved'].includes(task.status)
+            );
 
-    if (searchTerm) {
-        filtered = filtered.filter(task =>
-            matchesAllWords((task.title || '') + ' ' + (task.description || '') + ' ' + task.id, searchTerm)
-        );
-    }
+            if (searchTerm) {
+                filtered = filtered.filter(task =>
+                    matchesAllWords((task.title || '') + ' ' + (task.description || '') + ' ' + task.id, searchTerm)
+                );
+            }
 
-    renderMyTasks(filtered);
-}
+            renderMyTasks(filtered);
+        }
         // تابع addSearchBox فعلی را با این جایگزین کنید:
-function addSearchBox() {
-    const myTasksCard = document.querySelector('[id="myTasksList"]').closest('.card');
-    if (!myTasksCard) return;
+        function addSearchBox() {
+            const myTasksCard = document.querySelector('[id="myTasksList"]').closest('.card');
+            if (!myTasksCard) return;
 
-    if (!document.getElementById('myTaskSearchBox')) {
-        const searchHTML = `
+            if (!document.getElementById('myTaskSearchBox')) {
+                const searchHTML = `
             <div id="myTaskSearchBox" style="margin-bottom:1rem;">
                 <div class="dtask-search-row">
                     <i class="bi bi-search"></i>
@@ -686,15 +836,15 @@ function addSearchBox() {
                 </div>
             </div>
         `;
-        const cardBody = myTasksCard.querySelector('.card-body');
-        const filterButtons = cardBody.querySelector('.filter-buttons');
-        if (filterButtons) {
-            filterButtons.insertAdjacentHTML('afterend', searchHTML);
-        } else {
-            cardBody.insertAdjacentHTML('afterbegin', searchHTML);
+                const cardBody = myTasksCard.querySelector('.card-body');
+                const filterButtons = cardBody.querySelector('.filter-buttons');
+                if (filterButtons) {
+                    filterButtons.insertAdjacentHTML('afterend', searchHTML);
+                } else {
+                    cardBody.insertAdjacentHTML('afterbegin', searchHTML);
+                }
+            }
         }
-    }
-}
         // بارگذاری آمار
         async function loadStats() {
 
@@ -714,7 +864,7 @@ function addSearchBox() {
                     document.getElementById('totalTasks').textContent = String(enTofaNumber(data.stats.total)) || 0;
                     document.getElementById('completedTasks').textContent = String(enTofaNumber(data.stats.completed)) || 0;
                     document.getElementById('overdueTasks').textContent = String(enTofaNumber(data.stats.overdue)) || 0;
-                    document.getElementById('todayTasks').textContent = String(enTofaNumber(0));// data.stats.today || 0;
+                    document.getElementById('todayTasks').textContent = String(enTofaNumber(0)); // data.stats.today || 0;
                 }
             } catch (error) {
                 console.error('Error loading stats:', error);
@@ -815,7 +965,7 @@ function addSearchBox() {
                         !['completed', 'approved', 'termination_requested'].includes(task.status)
                     );
 
-                    renderDelegatedTasks(visibleTasks);   // ← visibleTasks نه delegatedTasksData
+                    renderDelegatedTasks(visibleTasks); // ← visibleTasks نه delegatedTasksData
 
                     // 🆕 اضافه کنید:
                     initializeDelegatedImprovements();
@@ -864,28 +1014,28 @@ function addSearchBox() {
                     statusBadge = getStatusBadge(task);
                 }
                 // نوع کار
-                const taskTypeIcon = task.task_type === 'continuous'
-                    ? '🔄'
-                    : task.task_type === 'periodic'
-                        ? '📅'
-                        : '⚙️';
+                const taskTypeIcon = task.task_type === 'continuous' ?
+                    '🔄' :
+                    task.task_type === 'periodic' ?
+                    '📅' :
+                    '⚙️';
 
                 // Countdown
                 const countdown = calculateDelegatedCountdown(task.original_deadline || task.due_date);
-                const countdownBadge = countdown
-                    ? `<span class="badge ${countdown.class}">${countdown.text}</span>`
-                    : '';
+                const countdownBadge = countdown ?
+                    `<span class="badge ${countdown.class}">${countdown.text}</span>` :
+                    '';
 
-                const continuousBadge = task.task_type === 'continuous' && task.overdue_periods > 0
-                    ? `<span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill me-1"> </i>${task.overdue_periods} دوره معوقه</span>`
-                    : '';
+                const continuousBadge = task.task_type === 'continuous' && task.overdue_periods > 0 ?
+                    `<span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill me-1"> </i>${task.overdue_periods} دوره معوقه</span>` :
+                    '';
 
                 // نام مسئول انجام
-                const assigneeName = task.assignee_name 
-                || task.department_name 
-                || task.assignee_department 
-                || task.section_name 
-                || (task.assignee_type === 'department' ? 'بخش نامشخص' : 'نامشخص');
+                const assigneeName = task.assignee_name ||
+                    task.department_name ||
+                    task.assignee_department ||
+                    task.section_name ||
+                    (task.assignee_type === 'department' ? 'بخش نامشخص' : 'نامشخص');
 
                 html += `
             <div class="task-item ${taskClass}" onclick="viewTask(${task.id})">
@@ -921,65 +1071,119 @@ function addSearchBox() {
             container.innerHTML = html;
         }
         // ============================================
-            // 🔍 جستجو در کارهای واگذار شده
-            // ============================================
-            function searchDelegatedTasks(query) {
-                const searchTerm = query.toLowerCase().trim();
+        // 🔍 جستجو در کارهای واگذار شده
+        // ============================================
+        function searchDelegatedTasks(query) {
+            const searchTerm = query.toLowerCase().trim();
 
-                let filtered = delegatedTasksData.filter(task =>
-                    !['completed', 'approved', 'termination_requested'].includes(task.status)
+            let filtered = delegatedTasksData.filter(task =>
+                !['completed', 'approved', 'termination_requested'].includes(task.status)
+            );
+
+            if (searchTerm) {
+                filtered = filtered.filter(task =>
+                    matchesAllWords((task.title || '') + ' ' + (task.description || '') + ' ' + (task.assignee_name || '') + ' ' + task.id, searchTerm)
                 );
-
-                if (searchTerm) {
-                    filtered = filtered.filter(task =>
-                        matchesAllWords((task.title || '') + ' ' + (task.description || '') + ' ' + (task.assignee_name || '') + ' ' + task.id, searchTerm)
-                    );
-                }
-
-                renderDelegatedTasks(filtered);
             }
 
-            // ============================================
-            // ⏱️ Countdown برای کارهای واگذار شده
-            // ============================================
-            function calculateDelegatedCountdown(dueDate) {
-                if (!dueDate) return null;
-             
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-             
-                const due = new Date(dueDate);
-                due.setHours(0, 0, 0, 0);
-             
-                const diffTime = due - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-             
-                if (diffDays === 0)                    return { text: 'امروز',               class: 'badge-info' };
-                if (diffDays === 1)                    return { text: '۱ روز مانده',          class: 'badge-warning' };
-                if (diffDays > 1 && diffDays <= 3)    return { text: `${diffDays} روز مانده`, class: 'badge-warning' };
-                if (diffDays > 3 && diffDays <= 7)    return { text: `${diffDays} روز مانده`, class: 'badge-success' };
-                if (diffDays < 0)                     return { text: `${Math.abs(diffDays)} روز تاخیر`, class: 'badge-danger' };
-                return { text: `${diffDays} روز مانده`, class: 'badge-secondary' };
+            renderDelegatedTasks(filtered);
+        }
+        // ⏳ بج زمان باقی‌مانده برای کارهای روتین (با دقت ساعت/دقیقه)
+        function workflowTimeBadge(task) {
+            // مبنا: موعدِ مرحلهٔ فعال (deadline با ساعت دقیق)
+            const raw = task.deadline || task.due_date || task.original_deadline;
+            if (!raw) return '';
+
+            // پشتیبانی از "YYYY-MM-DD HH:MM:SS" و "YYYY-MM-DD"
+            const due = new Date(raw.replace(' ', 'T'));
+            if (isNaN(due.getTime())) return '';
+
+            const diffMin = Math.round((due - new Date()) / 60000); // دقیقه (مثبت=مانده، منفی=گذشته)
+            const hourglass = '<i class="bi bi-hourglass-split me-1"></i>';
+
+            // مهلت گذشته
+            if (diffMin < 0) {
+                const m = Math.abs(diffMin);
+                const txt = m >= 1440 ? `${Math.floor(m / 1440)} روز تأخیر` :
+                    m >= 60 ? `${Math.floor(m / 60)} ساعت تأخیر` :
+                    `${m} دقیقه تأخیر`;
+                return `<span class="badge bg-danger">${hourglass}${enTofaNumber(txt)}</span>`;
             }
-function matchesAllWords(text, query) {
-    if (!query) return true;
-    const words = normalizeDigits(query).trim().toLowerCase().split(/\s+/);
-    const haystack = normalizeDigits(text).toLowerCase();
-    return words.every(w => haystack.includes(w));
-}
-            // ============================================
-            // 🎛️ اضافه کردن جستجو برای کارهای واگذار
-            // ============================================
-            function addSearchBoxForDelegated() {
-                const delegatedCard = document.querySelector('[id="delegatedTasksList"]').closest('.card');
 
-                if (!delegatedCard) {
-                    console.warn('Delegated card not found');
-                    return;
-                }
+            // بیشتر از ۲۴ ساعت → روز
+            if (diffMin >= 1440) {
+                const d = Math.floor(diffMin / 1440);
+                return `<span class="badge badge-secondary">${hourglass}${enTofaNumber(d + ' روز مانده')}</span>`;
+            }
+            // بین ۱ تا ۲۴ ساعت → ساعت (سبز/زرد)
+            if (diffMin >= 60) {
+                const h = Math.floor(diffMin / 60);
+                const cls = diffMin <= 180 ? 'badge-warning' : 'badge-success'; // ≤۳ساعت زرد
+                return `<span class="badge ${cls}">${hourglass}${enTofaNumber(h + ' ساعت مانده')}</span>`;
+            }
+            // کمتر از ۱ ساعت → دقیقه (قرمز، فوری)
+            return `<span class="badge bg-danger">${hourglass}${enTofaNumber(diffMin + ' دقیقه مانده')}</span>`;
+        }
+        // ============================================
+        // ⏱️ Countdown برای کارهای واگذار شده
+        // ============================================
+        function calculateDelegatedCountdown(dueDate) {
+            if (!dueDate) return null;
 
-                if (!document.getElementById('delegatedTaskSearchBox')) {
-const searchHTML = `
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const due = new Date(dueDate);
+            due.setHours(0, 0, 0, 0);
+
+            const diffTime = due - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return {
+                text: 'امروز',
+                class: 'badge-info'
+            };
+            if (diffDays === 1) return {
+                text: '۱ روز مانده',
+                class: 'badge-warning'
+            };
+            if (diffDays > 1 && diffDays <= 3) return {
+                text: `${diffDays} روز مانده`,
+                class: 'badge-warning'
+            };
+            if (diffDays > 3 && diffDays <= 7) return {
+                text: `${diffDays} روز مانده`,
+                class: 'badge-success'
+            };
+            if (diffDays < 0) return {
+                text: `${Math.abs(diffDays)} روز تاخیر`,
+                class: 'badge-danger'
+            };
+            return {
+                text: `${diffDays} روز مانده`,
+                class: 'badge-secondary'
+            };
+        }
+
+        function matchesAllWords(text, query) {
+            if (!query) return true;
+            const words = normalizeDigits(query).trim().toLowerCase().split(/\s+/);
+            const haystack = normalizeDigits(text).toLowerCase();
+            return words.every(w => haystack.includes(w));
+        }
+        // ============================================
+        // 🎛️ اضافه کردن جستجو برای کارهای واگذار
+        // ============================================
+        function addSearchBoxForDelegated() {
+            const delegatedCard = document.querySelector('[id="delegatedTasksList"]').closest('.card');
+
+            if (!delegatedCard) {
+                console.warn('Delegated card not found');
+                return;
+            }
+
+            if (!document.getElementById('delegatedTaskSearchBox')) {
+                const searchHTML = `
     <div id="delegatedTaskSearchBox" style="margin-bottom:1rem;">
         <div class="dtask-search-row">
             <i class="bi bi-search"></i>
@@ -989,16 +1193,16 @@ const searchHTML = `
     </div>
 `;
 
-                    const delegatedBody = delegatedCard.querySelector('.card-body');
-                    delegatedBody.insertAdjacentHTML('afterbegin', searchHTML);
-                }
+                const delegatedBody = delegatedCard.querySelector('.card-body');
+                delegatedBody.insertAdjacentHTML('afterbegin', searchHTML);
             }
+        }
 
-            // ============================================
-            // 🚀 راه‌اندازی بهبودهای کارهای واگذار
-            // ============================================
-            function initializeDelegatedImprovements() {
-                const delegatedStyles = `
+        // ============================================
+        // 🚀 راه‌اندازی بهبودهای کارهای واگذار
+        // ============================================
+        function initializeDelegatedImprovements() {
+            const delegatedStyles = `
     .dtask-search-row {
         display: flex;
         align-items: center;
@@ -1040,22 +1244,24 @@ const searchHTML = `
     .btn-remind-overview:hover { transform: scale(1.1); }
 `;
 
-                // اضافه کردن Styles (اگر قبلا اضافه نشده باشد)
-                if (!document.getElementById('delegatedStyles')) {
-                    const styleTag = document.createElement('style');
-                    styleTag.id = 'delegatedStyles';
-                    styleTag.innerHTML = delegatedStyles;
-                    document.head.appendChild(styleTag);
-                }
-
-                // اضافه کردن جستجو
-                addSearchBoxForDelegated();
+            // اضافه کردن Styles (اگر قبلا اضافه نشده باشد)
+            if (!document.getElementById('delegatedStyles')) {
+                const styleTag = document.createElement('style');
+                styleTag.id = 'delegatedStyles';
+                styleTag.innerHTML = delegatedStyles;
+                document.head.appendChild(styleTag);
             }
+
+            // اضافه کردن جستجو
+            addSearchBoxForDelegated();
+        }
         // بارگذاری فعالیت‌های اخیر
         async function loadRecentActivities() {
             try {
                 const response = await fetch('../api/tasks/recent-activities.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
 
                 const data = await response.json();
@@ -1080,7 +1286,7 @@ const searchHTML = `
         let allActivities = [];
         let activitiesDisplayed = 10;
         let currentActivityFilter = 'all';
-        window.addEventListener("pageshow", function (event) {
+        window.addEventListener("pageshow", function(event) {
             if (event.persisted) {
                 window.location.reload();
             }
@@ -1132,11 +1338,12 @@ const searchHTML = `
             container.innerHTML = html;
         }
 
-function normalizeDigits(str) {
-    return str
-        .replace(/[۰-۹]/g, d => d.charCodeAt(0) - 1776)
-        .replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632);
-}
+        function normalizeDigits(str) {
+            return str
+                .replace(/[۰-۹]/g, d => d.charCodeAt(0) - 1776)
+                .replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632);
+        }
+
         function buildActivityItems(activities, limit) {
             let html = '';
             const items = activities.slice(0, limit);
@@ -1151,9 +1358,9 @@ function normalizeDigits(str) {
                 const notes = activity.notes || '';
 
                 // ساخت لینک کار
-                const taskLink = taskId
-                    ? `<a class="task-link" href="task-detail.php?id=${taskId}" onclick="event.stopPropagation();">${taskTitle}</a>`
-                    : taskTitle;
+                const taskLink = taskId ?
+                    `<a class="task-link" href="task-detail.php?id=${taskId}" onclick="event.stopPropagation();">${taskTitle}</a>` :
+                    taskTitle;
 
                 // ساخت متن توضیحات
                 let notesHtml = '';
@@ -1196,9 +1403,9 @@ function normalizeDigits(str) {
             currentActivityFilter = action;
             activitiesDisplayed = 10;
 
-            const filtered = action === 'all'
-                ? allActivities
-                : allActivities.filter(a => a.action === action);
+            const filtered = action === 'all' ?
+                allActivities :
+                allActivities.filter(a => a.action === action);
 
             const listEl = document.getElementById('activitiesList');
             if (filtered.length === 0) {
@@ -1228,9 +1435,9 @@ function normalizeDigits(str) {
         function loadMoreActivities() {
             activitiesDisplayed += 10;
 
-            const filtered = currentActivityFilter === 'all'
-                ? allActivities
-                : allActivities.filter(a => a.action === currentActivityFilter);
+            const filtered = currentActivityFilter === 'all' ?
+                allActivities :
+                allActivities.filter(a => a.action === currentActivityFilter);
 
             document.getElementById('activitiesList').innerHTML =
                 buildGroupedActivities(filtered, activitiesDisplayed);
@@ -1249,41 +1456,111 @@ function normalizeDigits(str) {
         // اطلاعات هر نوع عملیات
         function getActivityInfo(action) {
             const info = {
-                'created': { icon: 'plus-circle-fill', text: 'کار جدید ایجاد شد' },
-                'assigned': { icon: 'arrow-right-circle-fill', text: 'کار واگذار شد' },
-                'completed': { icon: 'check-circle-fill', text: 'کار تکمیل شد' },
-                'approved': { icon: 'patch-check-fill', text: 'کار تأیید شد' },
-                'rejected': { icon: 'x-circle-fill', text: 'کار رد شد' },
-                'stopped': { icon: 'pause-circle-fill', text: 'کار متوقف شد' },
-                'delegated': { icon: 'share-fill', text: 'کار ارجاع داده شد' },
-                'commented': { icon: 'chat-dots-fill', text: 'نظر جدید ثبت شد' },
-                'reminder': { icon: 'bell-fill', text: 'یادآوری ارسال شد' },
-                'status_changed': { icon: 'arrow-repeat', text: 'وضعیت تغییر کرد' },
-                'deadline_extended': { icon: 'calendar-plus', text: 'مهلت تمدید شد' },
-                'pending_approval': { icon: 'hourglass-split', text: 'در انتظار تأیید' },
-                'termination_requested': { icon: 'exclamation-diamond-fill', text: 'درخواست اتمام' },
+                'created': {
+                    icon: 'plus-circle-fill',
+                    text: 'کار جدید ایجاد شد'
+                },
+                'assigned': {
+                    icon: 'arrow-right-circle-fill',
+                    text: 'کار واگذار شد'
+                },
+                'completed': {
+                    icon: 'check-circle-fill',
+                    text: 'کار تکمیل شد'
+                },
+                'approved': {
+                    icon: 'patch-check-fill',
+                    text: 'کار تأیید شد'
+                },
+                'rejected': {
+                    icon: 'x-circle-fill',
+                    text: 'کار رد شد'
+                },
+                'stopped': {
+                    icon: 'pause-circle-fill',
+                    text: 'کار متوقف شد'
+                },
+                'delegated': {
+                    icon: 'share-fill',
+                    text: 'کار ارجاع داده شد'
+                },
+                'commented': {
+                    icon: 'chat-dots-fill',
+                    text: 'نظر جدید ثبت شد'
+                },
+                'reminder': {
+                    icon: 'bell-fill',
+                    text: 'یادآوری ارسال شد'
+                },
+                'status_changed': {
+                    icon: 'arrow-repeat',
+                    text: 'وضعیت تغییر کرد'
+                },
+                'deadline_extended': {
+                    icon: 'calendar-plus',
+                    text: 'مهلت تمدید شد'
+                },
+                'pending_approval': {
+                    icon: 'hourglass-split',
+                    text: 'در انتظار تأیید'
+                },
+                'termination_requested': {
+                    icon: 'exclamation-diamond-fill',
+                    text: 'درخواست اتمام'
+                },
             };
 
-            return info[action] || { icon: 'circle-fill', text: action };
+            return info[action] || {
+                icon: 'circle-fill',
+                text: action
+            };
         }
         // اطلاعات هر نوع عملیات
         function getActInfo(action) {
             const map = {
-                'created': { template: 'کار {task} <v>ایجاد شد</v>' },
-                'assigned': { template: 'کار {task} به {user} <v>واگذار شد</v>' },
-                'completed': { template: 'کار {task} <v>تکمیل شد</v>' },
-                'approved': { template: 'کار {task} <v>تأیید شد</v>' },
-                'rejected': { template: 'کار {task} <v>رد شد</v>' },
-                'stopped': { template: 'کار {task} توسط {user} <v>متوقف شد</v>' },
-                'delegated': { template: 'کار {task} <v>ارجاع شد</v>' },
-                'commented': { template: 'روی {task} <v>نظر داد</v>' },
-                'reminder': { template: '<v>یادآوری</v> برای {task} به {user} ارسال شد' },
-                'status_changed': { template: 'وضعیت {task} توسط {user} <v>تغییر کرد</v>' },
-                'deadline_extended': { template: 'مهلت {task} توسط {user} <v>تمدید شد</v>' },
-                'pending_approval': { template: 'کار {task} <v>در انتظار تأیید</v> {user}' },
-                'termination_requested': { template: '<v>درخواست اتمام</v> {task} ثبت شد' },
+                'created': {
+                    template: 'کار {task} <v>ایجاد شد</v>'
+                },
+                'assigned': {
+                    template: 'کار {task} به {user} <v>واگذار شد</v>'
+                },
+                'completed': {
+                    template: 'کار {task} <v>تکمیل شد</v>'
+                },
+                'approved': {
+                    template: 'کار {task} <v>تأیید شد</v>'
+                },
+                'rejected': {
+                    template: 'کار {task} <v>رد شد</v>'
+                },
+                'stopped': {
+                    template: 'کار {task} توسط {user} <v>متوقف شد</v>'
+                },
+                'delegated': {
+                    template: 'کار {task} <v>ارجاع شد</v>'
+                },
+                'commented': {
+                    template: 'روی {task} <v>نظر داد</v>'
+                },
+                'reminder': {
+                    template: '<v>یادآوری</v> برای {task} به {user} ارسال شد'
+                },
+                'status_changed': {
+                    template: 'وضعیت {task} توسط {user} <v>تغییر کرد</v>'
+                },
+                'deadline_extended': {
+                    template: 'مهلت {task} توسط {user} <v>تمدید شد</v>'
+                },
+                'pending_approval': {
+                    template: 'کار {task} <v>در انتظار تأیید</v> {user}'
+                },
+                'termination_requested': {
+                    template: '<v>درخواست اتمام</v> {task} ثبت شد'
+                },
             };
-            return map[action] || { template: 'عملیاتی روی {task} انجام شد' };
+            return map[action] || {
+                template: 'عملیاتی روی {task} انجام شد'
+            };
         }
         // زمان هوشمند (دقیق‌تر)
         function getSmartTimeAgo(dateString) {
@@ -1424,12 +1701,14 @@ function normalizeDigits(str) {
                 }
             });
         }
+
         function getEffectiveDate(task) {
             const dates = [task.due_date, task.deadline, task.original_deadline]
                 .filter(d => d)
                 .map(d => d.split(' ')[0]);
             return dates.length > 0 ? dates.sort().pop() : null;
         }
+
         function filterMyTasks(filter, e) {
             // بروزرسانی دکمه‌های فیلتر
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
@@ -1473,7 +1752,7 @@ function normalizeDigits(str) {
                         if (task.task_type === 'periodic') {
                             const originalDate = task.original_deadline ? task.original_deadline.split(' ')[0] : '';
                             const dueDate = task.due_date || '';
-                            const deadlineDate = task.deadline ? task.deadline.split(' ')[0] : '';  // ← اضافه شد
+                            const deadlineDate = task.deadline ? task.deadline.split(' ')[0] : ''; // ← اضافه شد
 
                             // پیدا کردن بزرگترین تاریخ
                             const dates = [originalDate, dueDate, deadlineDate].filter(d => d);
@@ -1539,6 +1818,7 @@ function normalizeDigits(str) {
 
             renderMyTasks(filteredTasks);
         }
+
         function renderMyTasks(tasks) {
             const container = document.getElementById('myTasksList');
 
@@ -1573,47 +1853,53 @@ function normalizeDigits(str) {
                     statusBadge = getStatusBadge(task);
                 }
 
-                const taskTypeIcon = task.task_type === 'continuous'
-                    ? '🔄'
-                    : task.task_type === 'periodic'
-                        ? '📅'
-                        : '⚙️';
+                const taskTypeIcon = task.task_type === 'continuous' ?
+                    '🔄' :
+                    task.task_type === 'periodic' ?
+                    '📅' :
+                    '⚙️';
 
-                const continuousBadge = task.task_type === 'continuous' && task.overdue_periods > 0
-                    ? `<span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill me-1"> </i>${task.overdue_periods} دوره معوقه</span>`
-                    : '';
+                const continuousBadge = task.task_type === 'continuous' && task.overdue_periods > 0 ?
+                    `<span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill me-1"> </i>${task.overdue_periods} دوره معوقه</span>` :
+                    '';
 
                 // 🆕 محاسبه تاخیر برای کارهای مقطعی (periodic)
                 // محاسبه تاخیر برای کارهای مقطعی (periodic)
-let periodicDelayBadge = '';
-if (task.task_type === 'periodic' &&
-    task.working_days_delayed > 0 &&
-    task.status !== 'completed' &&
-    task.status !== 'approved') {
+                let periodicDelayBadge = '';
+                if (task.task_type === 'periodic' &&
+                    task.working_days_delayed > 0 &&
+                    task.status !== 'completed' &&
+                    task.status !== 'approved') {
 
-    periodicDelayBadge = enTofaNumber(
-        `<span class="badge bg-danger">
+                    periodicDelayBadge = enTofaNumber(
+                        `<span class="badge bg-danger">
             <i class="bi bi-clock-history me-2"> </i>
             ${task.working_days_delayed} روز کاری تاخیر
          </span>`
-    );
-}
+                    );
+                }
 
-// 🆕 محاسبه چند روز مانده (مثل کارهای واگذار شده)
-// محاسبه بزرگترین تاریخ از بین سه فیلد
-const allDates = [task.original_deadline, task.due_date, task.deadline]
-    .filter(d => d)
-    .map(d => d.split(' ')[0]);
-const effectiveDate = allDates.length > 0 ? allDates.sort().reverse()[0] : null;
+                // 🆕 محاسبه چند روز مانده (مثل کارهای واگذار شده)
+                // محاسبه بزرگترین تاریخ از بین سه فیلد
+                const allDates = [task.original_deadline, task.due_date, task.deadline]
+                    .filter(d => d)
+                    .map(d => d.split(' ')[0]);
+                const effectiveDate = allDates.length > 0 ? allDates.sort().reverse()[0] : null;
 
-// فقط اگر تاخیر نداره، badge مانده نشون بده
-const myCountdown = (periodicDelayBadge === '') 
-    ? calculateDelegatedCountdown(effectiveDate)
-    : null;
-const myCountdownBadge = myCountdown
-    ? `<span class="badge ${myCountdown.class}">${enTofaNumber(myCountdown.text)}</span>`
-    : '';
-html += `
+                // 🆕 کارهای روتین: بج زمان باقی‌مانده با دقت ساعت/دقیقه (نه فقط روز)
+                let myCountdownBadge = '';
+                if (task.is_workflow_task == 1) {
+                    myCountdownBadge = workflowTimeBadge(task);
+                } else {
+                    // فقط اگر تاخیر نداره، badge مانده نشون بده
+                    const myCountdown = (periodicDelayBadge === '') ?
+                        calculateDelegatedCountdown(effectiveDate) :
+                        null;
+                    myCountdownBadge = myCountdown ?
+                        `<span class="badge ${myCountdown.class}">${enTofaNumber(myCountdown.text)}</span>` :
+                        '';
+                }
+                html += `
     <div class="task-item ${taskClass}" onclick="viewTask(${task.id})">
         <div class="task-header">
             <div class="task-title-section">
@@ -1637,7 +1923,7 @@ html += `
 
             container.innerHTML = html;
         }
-       
+
         // ذخیره کار جدید
         async function saveTask() {
             const isWorkflow = document.getElementById('isWorkflowTask').checked;
@@ -1768,23 +2054,27 @@ html += `
         }
 
         function logout() {
-            uiConfirm('آیا مطمئن هستید که می‌خواهید خارج شوید؟', function () {
+            uiConfirm('آیا مطمئن هستید که می‌خواهید خارج شوید؟', function() {
                 fetch('../api/auth/logout.php', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + authToken
-                    }
-                })
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken
+                        }
+                    })
                     .finally(() => {
                         localStorage.removeItem('auth_token');
                         localStorage.removeItem('user_info');
                         window.location.href = '../index.php';
                     });
-            }, { danger: true, yesText: 'بله، خروج', noText: 'انصراف' });
+            }, {
+                danger: true,
+                yesText: 'بله، خروج',
+                noText: 'انصراف'
+            });
         }
 
         // بستن سایدبار موبایل با کلیک خارج از آن
-        document.addEventListener('click', function (event) {
+        document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');
             const toggleButton = document.querySelector('.navbar-toggler');
 
