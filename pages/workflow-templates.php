@@ -297,7 +297,7 @@ require_once '../includes/version.php';
             border: none;
             border-radius: 16px;
             box-shadow: var(--shadow-lg);
-            max-width: 850px !important;
+            max-width: 935px !important;
         }
 
         .modal-header {
@@ -538,6 +538,79 @@ require_once '../includes/version.php';
             align-items: center;
             gap: 8px;
             margin-top: 10px;
+        }
+
+        /* ─── چیدمانِ یک‌خطیِ هر مرحله ─── */
+        .step-item.step-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+        }
+
+        .step-row .step-num {
+            flex: 0 0 auto;
+        }
+
+        .step-row .drag-hint {
+            flex: 0 0 auto;
+            cursor: grab;
+            margin: 0;
+        }
+
+        .step-row .sr-name {
+            flex: 1 1 30%;
+            min-width: 0;
+        }
+
+        .step-row .sr-assignee {
+            flex: 1 1 35%;
+            min-width: 0;
+        }
+
+        .step-row .sr-time {
+            flex: 0 0 80px;
+            text-align: center;
+        }
+
+        .step-row .sr-mode {
+            flex: 0 0 auto;
+            margin: 0;
+            display: flex;
+            gap: 4px;
+        }
+
+        .step-row .sr-mode .sm-btn {
+            padding: 5px 9px;
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+
+        .step-row .sr-remove {
+            flex: 0 0 auto;
+        }
+
+        /* جمع‌وجور کردنِ پیکر مسئول در ردیف */
+        .step-row .sr-assignee .form-control,
+        .step-row .sr-assignee input {
+            font-size: 0.8rem;
+            padding: 7px 10px;
+        }
+
+        /* ── موبایل: برگشت به حالت عمودی ── */
+        @media (max-width: 768px) {
+            .step-item.step-row {
+                flex-wrap: wrap;
+            }
+
+            .step-row .sr-name,
+            .step-row .sr-assignee {
+                flex: 1 1 100%;
+            }
+
+            .step-row .sr-time {
+                flex: 0 0 80px;
+            }
         }
 
         /* ─── Btn Save / Cancel ─── */
@@ -1165,37 +1238,28 @@ require_once '../includes/version.php';
             }
 
             const html = `
-                <div class="step-item" data-step-id="${stepId}" draggable="true">
-                    <div class="step-item-header">
-                        <span class="step-num">${stepCounter}</span>
-                        <span class="drag-hint"><i class="bi bi-grip-horizontal"></i> بکشید</span>
-                        <button type="button" class="btn-remove-step" onclick="removeStep(this)" title="حذف مرحله">
-                            <i class="bi bi-x"></i>
-                        </button>
+                <div class="step-item step-row" data-step-id="${stepId}" draggable="true">
+                    <span class="step-num">${stepCounter}</span>
+                    <span class="drag-hint" title="بکشید"><i class="bi bi-grip-vertical"></i></span>
+
+                    <input type="text" class="form-control form-control-sm step-name sr-name"
+                           value="${escAttr(stepData ? stepData.step_name : '')}"
+                           placeholder="نام مرحله" oninput="updateExecPreview()" required>
+
+                    <div class="sr-assignee" id="step_assignee_${stepId}"></div>
+
+                    <input type="number" class="form-control form-control-sm step-time sr-time"
+                           value="${stepData ? stepData.time_limit_hours : 24}"
+                           min="1" placeholder="ساعت" title="مهلت (ساعت)" required>
+
+                    <div class="step-mode-toggle sr-mode" data-mode="${stepMode}">
+                        <button type="button" class="sm-btn sm-cascade ${stepMode==='cascade'?'active':''}" onclick="setStepMode(this,'cascade')" title="آبشاری">⛓</button>
+                        <button type="button" class="sm-btn sm-parallel ${stepMode==='parallel'?'active':''}" onclick="setStepMode(this,'parallel')" title="موازی">⚡</button>
                     </div>
-                    <div class="row g-2">
-                        <div class="col-md-5">
-                            <label class="form-label">نام مرحله <span style="color:var(--danger)">*</span></label>
-                                <input type="text" class="form-control form-control-sm step-name"
-                                   value="${escAttr(stepData ? stepData.step_name : '')}"
-                                   placeholder="مثال: بررسی موجودی" oninput="updateExecPreview()" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">مسئول <span style="color:var(--danger)">*</span></label>
-                            <div id="step_assignee_${stepId}"></div>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">مهلت (ساعت) <span style="color:var(--danger)">*</span></label>
-                            <input type="number" class="form-control form-control-sm step-time"
-                                   value="${stepData ? stepData.time_limit_hours : 24}"
-                                   min="1" required>
-                        </div>
-                    </div>
-                    <div class="step-mode-toggle" data-mode="${stepMode}">
-                        <span class="sm-label">نحوهٔ اجرا:</span>
-                        <button type="button" class="sm-btn sm-cascade ${stepMode==='cascade'?'active':''}" onclick="setStepMode(this,'cascade')">⛓ آبشاری</button>
-                        <button type="button" class="sm-btn sm-parallel ${stepMode==='parallel'?'active':''}" onclick="setStepMode(this,'parallel')">⚡ موازی</button>
-                    </div>
+
+                    <button type="button" class="btn-remove-step sr-remove" onclick="removeStep(this)" title="حذف مرحله">
+                        <i class="bi bi-x"></i>
+                    </button>
                 </div>`;
 
             document.getElementById('stepsList').insertAdjacentHTML('beforeend', html);
