@@ -333,6 +333,23 @@ require_once '../includes/version.php';
             gap: 8px;
         }
 
+        /* حالتِ مشاهده: عناصرِ ویرایش/جابه‌جایی پنهان شوند */
+        #templateModal.view-mode .btn-remove-step,
+        #templateModal.view-mode .drag-hint,
+        #templateModal.view-mode .btn-add-step,
+        #templateModal.view-mode .exec-quick {
+            display: none !important;
+        }
+
+        #templateModal.view-mode .step-item {
+            cursor: default;
+        }
+
+        #templateModal.view-mode .step-mode-toggle {
+            pointer-events: none;
+            opacity: .85;
+        }
+
         /* ─── Form Elements ─── */
         .form-label {
             font-size: 0.825rem;
@@ -1016,13 +1033,25 @@ require_once '../includes/version.php';
         // فعال/غیرفعال‌کردنِ حالتِ فقط‌خواندنیِ مودال
         function setTemplateModalReadonly(readonly) {
             const modal = document.getElementById('templateModal');
-            // همهٔ ورودی‌ها/دکمه‌های داخلِ فرم
+
+            // کلاسِ view-mode برای کنترلِ نمایش با CSS (حذف مرحله، جابه‌جایی، افزودن مرحله، ذخیره)
+            modal.classList.toggle('view-mode', !!readonly);
+
+            // ورودی‌ها و دکمه‌های داخلِ فرم را غیرفعال کن
             modal.querySelectorAll('input, select, textarea, button').forEach(el => {
-                // دکمهٔ بستن و انصراف نباید غیرفعال شوند
-                if (el.classList.contains('btn-close') || el.classList.contains('btn-cancel') || el.getAttribute('data-bs-dismiss') === 'modal') return;
+                if (el.classList.contains('btn-close') ||
+                    el.classList.contains('btn-cancel') ||
+                    el.getAttribute('data-bs-dismiss') === 'modal') return;
                 el.disabled = readonly;
             });
-            // دکمهٔ افزودن مرحله و حذف مرحله و کشیدن
+
+            // غیرفعال‌کردنِ کشیدن (drag) روی مراحل در حالت مشاهده
+            modal.querySelectorAll('.step-item').forEach(el => {
+                if (readonly) el.removeAttribute('draggable');
+                else el.setAttribute('draggable', 'true');
+            });
+
+            // دکمهٔ ذخیره
             const saveBtn = modal.querySelector('.btn-save');
             if (saveBtn) saveBtn.style.display = readonly ? 'none' : '';
         }
