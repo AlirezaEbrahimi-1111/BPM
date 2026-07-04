@@ -348,7 +348,7 @@ require_once '../includes/version.php';
             loadTasks();
             loadSections().then(() => loadUsers());
 
-            ['filterAssignee', 'filterStatus', 'filterPriority', 'filterType'].forEach(id => {
+            ['filterStatus', 'filterPriority', 'filterType'].forEach(id => {
                 document.getElementById(id).addEventListener('change', () => {
                     statFilter = '';
                     clearStatActive();
