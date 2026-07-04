@@ -1,14 +1,4 @@
 <?php
-/**
- * API: ارسال پاسخ به تیکت
- * POST /api/tickets/reply.php
- * 
- * از FormData ارسال شود (برای پشتیبانی فایل):
- *   ticket_id   - شناسه تیکت (الزامی)
- *   message     - متن پیام (الزامی)
- *   is_internal - یادداشت داخلی (0 یا 1، اختیاری)
- *   attachments[] - فایل‌ها (اختیاری)
- */
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: https://bpm.computeryekta.com');
@@ -19,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 // ✅ بعد
 try {
     $database = new Database();
