@@ -59,11 +59,15 @@ try {
     unset($it);
 
 // تعیین اینکه کاربر مجاز به تیک‌زدن هر آیتم هست یا نه (هماهنگ با toggle.php)
+    $__locked = isChecklistLocked($task);   // 🔒 کار به پایان رسیده؟
     foreach ($items as &$it) {
         $type  = $it['assignee_type']  ?? null;
         $value = $it['assignee_value'] ?? null;
 
-        if ($type === 'user') {
+        if ($__locked) {
+            // کار قفل است → هیچ‌کس نمی‌تواند تیک بزند
+            $it['can_toggle_this'] = false;
+        } elseif ($type === 'user') {
             $it['can_toggle_this'] = ((string)$value === (string)$user_id);
         } elseif ($type === 'section') {
             $it['can_toggle_this'] = ($value === $user_section);
@@ -76,14 +80,16 @@ try {
 
     $p = checklistProgress($db, $task_id);
 
+    $locked = isChecklistLocked($task);   // 🔒 آیا کار به پایان رسیده؟
     echo json_encode([
         'success' => true,
         'items'   => $items,
         'total'   => $p['total'],
         'done'    => $p['done'],
         'percent' => $p['percent'],
-        'can_edit' => $task['_is_creator'],   // فقط تعریف‌کننده آیتم اضافه/ویرایش/حذف می‌کند
-        'can_toggle' => true                  // creator یا assignee (هر دو مجاز)
+        'can_edit' => $task['_is_creator'] && !$locked,   // اگر قفل باشد، ویرایش هم ممنوع
+        'can_toggle' => !$locked,                         // اگر قفل باشد، تیک هم ممنوع
+        'is_locked' => $locked                            // 🆕 برای نمایش پیام در فرانت‌اند
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {

@@ -26,13 +26,42 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     <script src="<?= asset('../assets/js/task-groups.js') ?>"></script>
     <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/deadline-toast.css') ?>">
-<style>
-    .step-mode-badge { display:inline-flex; align-items:center; gap:3px; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; margin-right:6px; }
-.step-mode-badge.mode-parallel { background:#ECFDF3; color:#027A48; }
-.step-mode-badge.mode-cascade  { background:#EFF8FF; color:#175CD3; }
-.exec-summary { background:#F9FAFB; border:1px solid #EAECF0; border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:13px; color:#344054; }
-.exec-summary b { color:#101828; }
-</style>
+    <style>
+        .step-mode-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-right: 6px;
+        }
+
+        .step-mode-badge.mode-parallel {
+            background: #ECFDF3;
+            color: #027A48;
+        }
+
+        .step-mode-badge.mode-cascade {
+            background: #EFF8FF;
+            color: #175CD3;
+        }
+
+        .exec-summary {
+            background: #F9FAFB;
+            border: 1px solid #EAECF0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #344054;
+        }
+
+        .exec-summary b {
+            color: #101828;
+        }
+    </style>
 </head>
 
 <body>
@@ -276,74 +305,74 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         </div>
                     </div>
                     <!-- بخش فایل‌های پیوست -->
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <!-- اشتراک‌گذاری تاریخچه با ارجاع‌شوندگان -->
+                    <div class="form-check form-switch mt-4" id="shareHistorySection">
+                        <input class="form-check-input" type="checkbox" id="shareHistoryToggle" checked>
+                        <label class="form-check-label" for="shareHistoryToggle">
+                            تاریخچهٔ کار برای کاربران ارجاع‌شونده قابل نمایش باشد
+                        </label>
+                        <small class="form-text text-muted d-block">
+                            اگر غیرفعال شود، هر کاربری که کار به او ارجاع می‌شود فقط از زمان ورود خودش به بعد را می‌بیند.
+                        </small>
                     </div>
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                        <!-- اشتراک‌گذاری تاریخچه با ارجاع‌شوندگان -->
-                        <div class="form-check form-switch mt-4" id="shareHistorySection">
-                            <input class="form-check-input" type="checkbox" id="shareHistoryToggle" checked>
-                            <label class="form-check-label" for="shareHistoryToggle">
-                                تاریخچهٔ کار برای کاربران ارجاع‌شونده قابل نمایش باشد
-                            </label>
-                            <small class="form-text text-muted d-block">
-                                اگر غیرفعال شود، هر کاربری که کار به او ارجاع می‌شود فقط از زمان ورود خودش به بعد را می‌بیند.
-                            </small>
+
+                    <!-- 🆕 بخش چک‌لیست (فقط کار عادی) -->
+                    <div class=" mt-4" id="checklistSection">
+                        <div style="display:flex; align-items:center;">
+                            <h5 style="display:flex; align-items:center; gap:8px; margin:0;">
+                                <i class="bi bi-check2-square"></i> چک‌لیست
+                            </h5>
                         </div>
 
-                        <!-- 🆕 بخش چک‌لیست (فقط کار عادی) -->
-                        <div class=" mt-4" id="checklistSection">
-                            <div style="display:flex; align-items:center;">
-                                <h5 style="display:flex; align-items:center; gap:8px; margin:0;">
-                                    <i class="bi bi-check2-square"></i> چک‌لیست
-                                </h5>
-                            </div>
-    
-                            <div id="checklistItems" class="mt-2"></div>
-    
-                            <div style="display:flex; gap:8px; margin-top:8px;">
-                                <input type="text" id="newChecklistItem" class="form-control form-control-sm"
-                                       placeholder="افزودن آیتم جدید..."
-                                       onkeydown="if(event.key==='Enter'){event.preventDefault();addChecklistItemCreate();}">
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addChecklistItemCreate()">
-                                    <i class="bi bi-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                        </div>
-                        <div class="col-md-6">
-                        <!-- بخش فایل‌های پیوست -->
-                        <div class="attachments-section mt-4">
-                            <h5 style="display:flex; align-items:center; gap:8px;">
-                                <i class="bi bi-paperclip"></i>
-                                فایل‌های پیوست
-                                <span id="attachmentsCountBadge" class="badge bg-secondary" style="display:none;">0</span>
-                            </h5>
-    
-                            <div class="upload-area" id="uploadArea" style="border:2px dashed #ccc; border-radius:8px; padding:30px;
-    text-align:center; cursor:pointer; margin-top:10px;">
-                                <input type="file" id="fileInput" style="display:none;"
-                                    accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg" multiple>
-                                <i class="bi bi-cloud-upload fs-3"></i>
-                                &nbsp;<strong>فایل خود را اینجا رها کنید یا کلیک کنید</strong>
-                                <p><small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg (حداکثر 20MB)</small></p>
-                            </div>
-                            <div id="selectedFilesList" style="margin-top:1rem;"></div>
-    
-                        </div>
+                        <div id="checklistItems" class="mt-2"></div>
+
+                        <div style="display:flex; gap:8px; margin-top:8px;">
+                            <input type="text" id="newChecklistItem" class="form-control form-control-sm"
+                                placeholder="افزودن آیتم جدید..."
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();addChecklistItemCreate();}">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addChecklistItemCreate()">
+                                <i class="bi bi-plus"></i>
+                            </button>
                         </div>
                     </div>
-                </form>
-            </div>
-            <!-- دکمه‌های عمل -->
-            <div class="d-flex justify-content-between mt-4">
-                <div></div>
-                <div>
-                    <button type="button" class="btn btn-primary" onclick="saveTask()" id="saveBtn">
-                        <i class="bi bi-check-circle ms-2"></i>ذخیره کار
-                    </button>
+                </div>
+                <div class="col-md-6">
+                    <!-- بخش فایل‌های پیوست -->
+                    <div class="attachments-section mt-4">
+                        <h5 style="display:flex; align-items:center; gap:8px;">
+                            <i class="bi bi-paperclip"></i>
+                            فایل‌های پیوست
+                            <span id="attachmentsCountBadge" class="badge bg-secondary" style="display:none;">0</span>
+                        </h5>
+
+                        <div class="upload-area" id="uploadArea" style="border:2px dashed #ccc; border-radius:8px; padding:30px;
+    text-align:center; cursor:pointer; margin-top:10px;">
+                            <input type="file" id="fileInput" style="display:none;"
+                                accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg" multiple>
+                            <i class="bi bi-cloud-upload fs-3"></i>
+                            &nbsp;<strong>فایل خود را اینجا رها کنید یا کلیک کنید</strong>
+                            <p><small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg (حداکثر 20MB)</small></p>
+                        </div>
+                        <div id="selectedFilesList" style="margin-top:1rem;"></div>
+
+                    </div>
                 </div>
             </div>
+            </form>
         </div>
+        <!-- دکمه‌های عمل -->
+        <div class="d-flex justify-content-between mt-4">
+            <div></div>
+            <div>
+                <button type="button" class="btn btn-primary" onclick="saveTask()" id="saveBtn">
+                    <i class="bi bi-check-circle ms-2"></i>ذخیره کار
+                </button>
+            </div>
+        </div>
+    </div>
     </div>
 
 
@@ -365,7 +394,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     <script src="<?= asset('../assets/js/persian-datepicker.js') ?>"></script>
 
     <script>
-
         let currentTaskType = 'manual';
         let users = [];
         let sections = []; // لیست واحدها
@@ -383,14 +411,18 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             'management': 'مدیریت',
             'supervisor': 'سرپرست'
         };
-// 🆕 چک‌لیست در فرم ساخت کار
+        // 🆕 چک‌لیست در فرم ساخت کار
         let checklistItemsCreate = []; // {tempId, title}
 
         function addChecklistItemCreate() {
             const input = document.getElementById('newChecklistItem');
             const title = input.value.trim();
             if (!title) return;
-            checklistItemsCreate.push({ tempId: Date.now(), title });
+            checklistItemsCreate.push({
+                tempId: Date.now(),
+                title,
+                description: ''
+            });
             renderChecklistCreate();
             input.value = '';
             input.focus();
@@ -405,14 +437,20 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             const c = document.getElementById('checklistItems');
             if (!c) return;
             c.innerHTML = checklistItemsCreate.map((item, idx) => `
-                <div class="d-flex align-items-center gap-2 mb-1 p-1 border rounded">
-                    <span class="text-muted">${enTofaNumber(idx + 1)}.</span>
-                    <input type="text" class="form-control form-control-sm border-0" value="${item.title}"
-                        onchange="updateChecklistTitleCreate(${item.tempId}, this.value)">
-                    <button type="button" class="btn btn-link btn-sm text-danger p-0"
-                        onclick="removeChecklistItemCreate(${item.tempId})">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                <div class="mb-2 p-2 border rounded">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted">${enTofaNumber(idx + 1)}.</span>
+                        <input type="text" class="form-control form-control-sm border-0" value="${item.title}"
+                            placeholder="عنوان آیتم..."
+                            onchange="updateChecklistTitleCreate(${item.tempId}, this.value)">
+                        <button type="button" class="btn btn-link btn-sm text-danger p-0"
+                            onclick="removeChecklistItemCreate(${item.tempId})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    <textarea class="form-control form-control-sm mt-1" rows="2"
+                        placeholder="توضیحات (اختیاری)..."
+                        onchange="updateChecklistDescCreate(${item.tempId}, this.value)">${item.description || ''}</textarea>
                 </div>`).join('');
         }
 
@@ -420,19 +458,26 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             const it = checklistItemsCreate.find(i => i.tempId === tempId);
             if (it) it.title = val.trim();
         }
+
+        function updateChecklistDescCreate(tempId, val) {
+            const it = checklistItemsCreate.find(i => i.tempId === tempId);
+            if (it) it.description = val.trim();
+        }
         async function loadSections() {
             try {
                 const res = await fetch('../api/organization/activity-sections.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await res.json();
                 if (data.success) {
-                    sections = data.sections;   // ← آرایه sections را پر کن
+                    sections = data.sections; // ← آرایه sections را پر کن
                     data.sections.forEach(s => {
                         acticity_section[s.section_key] = s.section_label;
                     });
                 }
-            } catch { }
+            } catch {}
         }
 
 
@@ -440,7 +485,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         async function loadWorkflowTemplates() {
             try {
                 const response = await fetch('../api/workflows/list-templates.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
 
                 const data = await response.json();
@@ -472,7 +519,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         }
 
         // تغییر نوع کار (عادی یا روتین)
-        document.getElementById('isWorkflowTask').addEventListener('change', function () {
+        document.getElementById('isWorkflowTask').addEventListener('change', function() {
             const isWorkflow = this.checked;
             document.getElementById('workflowSection').style.display = isWorkflow ? 'block' : 'none';
             document.getElementById('manualTaskForm').style.display = isWorkflow ? 'none' : 'block';
@@ -485,7 +532,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         });
 
         // انتخاب الگوی workflow
-        document.getElementById('workflowTemplate').addEventListener('change', async function () {
+        document.getElementById('workflowTemplate').addEventListener('change', async function() {
             const templateId = this.value;
 
             if (!templateId) {
@@ -495,7 +542,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
             try {
                 const response = await fetch(`../api/workflows/get-template.php?id=${templateId}`, {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
 
                 const data = await response.json();
@@ -509,6 +558,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 console.error('Error loading template details:', error);
             }
         });
+
         function enTofaNumber(numb) {
             const persianNumbers = "۰۱۲۳۴۵۶۷۸۹";
             const englishNumbers = "0123456789";
@@ -518,7 +568,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         // نمایش پیش‌نمایش مراحل
         function showWorkflowPreview(template) {
             const previewContainer = document.getElementById('stepsPreview');
-            console.log('steps:', JSON.stringify(template.steps.map(s => ({ id: s.id, name: s.step_name }))));
+            console.log('steps:', JSON.stringify(template.steps.map(s => ({
+                id: s.id,
+                name: s.step_name
+            }))));
 
             let html = '';
             template.steps.forEach((step, index) => {
@@ -550,15 +603,22 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             });
 
             // خلاصهٔ ترتیب اجرا
-            const fa = s => String(s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+            const fa = s => String(s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
             const modes = template.steps.map(s => (s.execution_mode === 'parallel') ? 'parallel' : 'cascade');
             const firstCascade = modes.indexOf('cascade');
-            const activeNow = [], waiting = [];
+            const activeNow = [],
+                waiting = [];
             template.steps.forEach((s, i) => {
                 const nm = s.step_name || ('مرحله ' + fa(i + 1));
                 if (modes[i] === 'parallel' || i === firstCascade) activeNow.push(nm);
                 else {
-                    let p = -1; for (let k = i - 1; k >= 0; k--) { if (modes[k] === 'cascade') { p = k; break; } }
+                    let p = -1;
+                    for (let k = i - 1; k >= 0; k--) {
+                        if (modes[k] === 'cascade') {
+                            p = k;
+                            break;
+                        }
+                    }
                     waiting.push(nm + (p >= 0 ? ' (بعد از: ' + template.steps[p].step_name + ')' : ''));
                 }
             });
@@ -575,7 +635,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
 
         // بارگذاری اولیه
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             authToken = localStorage.getItem('auth_token');
             if (!authToken) {
                 window.location.href = '../index.php';
@@ -585,11 +645,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         });
 
         async function initializePage() {
-            await loadSections();           // ← await — باید قبل از loadUsers تمام شود
+            await loadSections(); // ← await — باید قبل از loadUsers تمام شود
             await checkUserPermissions();
             setupTaskTypeSelection();
             setupFormHandlers();
-            await loadUsers();              // ← sections و acticity_section آماده‌اند
+            await loadUsers(); // ← sections و acticity_section آماده‌اند
             setupCreateTaskUpload();
         }
 
@@ -597,7 +657,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         async function checkUserPermissions() {
             try {
                 const response = await fetch('../api/auth/profile.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
 
                 const data = await response.json();
@@ -606,8 +668,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                     myRole = data.user.role || '';
 
                     // 🆕 راه‌اندازی گروه‌ها (گروه سازمانی فقط برای management+supervisor)
-                    const isOrgAdmin = (data.user.activity_section === 'management'
-                        && data.user.role === 'supervisor');
+                    const isOrgAdmin = (data.user.activity_section === 'management' &&
+                        data.user.role === 'supervisor');
                     await TaskGroups.init({
                         isOrgAdmin,
                         onChange: () => TaskGroups.fill(document.getElementById('taskGroupSelect'))
@@ -642,15 +704,20 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         // راه‌اندازی رویدادهای فرم
         function setupFormHandlers() {
             // تغییر نوع کار دستی
-            document.getElementById('manualTaskType').addEventListener('change', function () {
+            document.getElementById('manualTaskType').addEventListener('change', function() {
                 const isPeriodicTask = this.value === 'periodic';
                 document.getElementById('manualPeriodicOptions').style.display = isPeriodicTask ? 'block' : 'none';
                 document.getElementById('manualContinuousOptions').style.display = isPeriodicTask ? 'none' : 'block';
+
                 function updateEndDateHint() {
                     const period = document.getElementById('manualPeriodicOptions').value;
                     const startDate = document.getElementById('manualStartDate').getAttribute('data-date');
                     const hint = document.getElementById('endDateHint');
-                    const labels = { daily: 'روز', weekly: 'هفته', monthly: 'ماه' };
+                    const labels = {
+                        daily: 'روز',
+                        weekly: 'هفته',
+                        monthly: 'ماه'
+                    };
                     if (startDate) {
                         hint.textContent = `حداقل یک ${labels[period] || 'دوره'} بعد از تاریخ شروع`;
                     }
@@ -663,7 +730,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             });
 
             // تغییر روتین انتخابی
-            document.getElementById('isWorkflowTask').addEventListener('change', async function () {
+            document.getElementById('isWorkflowTask').addEventListener('change', async function() {
                 const routineId = this.value;
 
                 if (!routineId) {
@@ -676,29 +743,32 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         async function loadUsers() {
             try {
                 const response = await fetch('../api/users/list.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await response.json();
                 if (data.success) {
                     users = data.users;
                     AssigneePicker.init({
-                        container:    '#assigneePicker',
+                        container: '#assigneePicker',
                         users,
-                        sections,                      // آرایه [{ section_key, section_label }]
-                        sectionMap:   acticity_section, // object { key: label } — ترجمه نام واحد
+                        sections, // آرایه [{ section_key, section_label }]
+                        sectionMap: acticity_section, // object { key: label } — ترجمه نام واحد
                         showSections: true,
-                        allowAll:     (myRole === 'supervisor'), // 🆕 «همه کاربران/همه واحدها» فقط برای سرپرست
-                        onSelect: (type, value, label) => { /* getValue() کافی است */ }
+                        allowAll: (myRole === 'supervisor'), // 🆕 «همه کاربران/همه واحدها» فقط برای سرپرست
+                        onSelect: (type, value, label) => {
+                            /* getValue() کافی است */ }
                     });
                 }
             } catch (error) {
                 console.error('Error loading users:', error);
             }
         }
-        
+
         // ذخیره کار
         async function saveTask() {
-            
+
             // دکمه ذخیره را پیدا کن
             const saveBtn = document.getElementById('saveBtn');
             if (!saveBtn) {
@@ -726,7 +796,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
                 if (taskId) {
                     // تسک با موفقیت ساخته شده، صفحه را رفرش کن
-                    setTimeout(function () {
+                    setTimeout(function() {
                         window.location.reload();
                     }, 800);
                 } else {
@@ -797,7 +867,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                     await saveStepDescriptions(data.instance_id);
 
                     if (workflowPendingFiles.length > 0 && data.instance_id) {
-                        await uploadWorkflowFiles(data.instance_id);   // 🆕 instance_id
+                        await uploadWorkflowFiles(data.instance_id); // 🆕 instance_id
                     }
                     return data.task_id || data.instance_id;
 
@@ -867,9 +937,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         }
 
         function goBack() {
-            uiConfirm('آیا مطمئن هستید که می‌خواهید بدون ذخیره خارج شوید؟', function () {
+            uiConfirm('آیا مطمئن هستید که می‌خواهید بدون ذخیره خارج شوید؟', function() {
                 window.location.href = 'dashboard.php';
-            }, { danger: true, yesText: 'بله، خروج', noText: 'بمان در صفحه' });
+            }, {
+                danger: true,
+                yesText: 'بله، خروج',
+                noText: 'بمان در صفحه'
+            });
         }
 
         // ذخیره کار عادی (کد قبلی)
@@ -902,24 +976,24 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                     assigneeId = sel.value;
                 }
             }
-            
+
             const taskData = {
                 title: document.getElementById('manualTitle').value.trim(),
                 description: document.getElementById('manualDescription').value.trim(),
                 task_type: taskType,
                 priority: document.getElementById('manualPriority').value,
                 assignee_id: assigneeId,
-                group_id: document.getElementById('taskGroupSelect')?.value || null,  // ✅ اضافه شد
+                group_id: document.getElementById('taskGroupSelect')?.value || null, // ✅ اضافه شد
                 share_history: document.getElementById('shareHistoryToggle')?.checked ? 1 : 0
             };
             console.log('111');
             // شرطی کردن فیلدهای تاریخ و دوره بر اساس نوع تسک
             if (taskType === 'periodic') {
-                taskData.due_date = dueDateInput.getAttribute('data-date') || null;  // فرمت میلادی از data-date
+                taskData.due_date = dueDateInput.getAttribute('data-date') || null; // فرمت میلادی از data-date
                 taskData.start_date = null;
                 taskData.period_type = null;
             } else if (taskType === 'continuous') {
-                taskData.start_date = startDateInput.getAttribute('data-date') || null;  // فرمت میلادی
+                taskData.start_date = startDateInput.getAttribute('data-date') || null; // فرمت میلادی
                 taskData.period_type = document.getElementById('manualPeriod').value || null;
                 taskData.due_date = null;
                 taskData.end_date = document.getElementById('manualEndDate').getAttribute('data-date') || null;
@@ -942,7 +1016,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             }
             // چک تاریخ پایان
             if (taskData.task_type === 'continuous' && taskData.end_date && taskData.start_date) {
-                const periodDays = { daily: 1, weekly: 7, monthly: 30 };
+                const periodDays = {
+                    daily: 1,
+                    weekly: 7,
+                    monthly: 30
+                };
                 const minDays = periodDays[taskData.period_type] || 1;
                 const startMs = new Date(taskData.start_date).getTime();
                 const endMs = new Date(taskData.end_date).getTime();
@@ -1003,13 +1081,22 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             try {
                 await fetch('../api/checklist/save.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken
+                    },
                     body: JSON.stringify({
                         task_id: taskId,
-                        items: checklistItemsCreate.map((it, i) => ({ title: it.title, sort_order: i }))
+                        items: checklistItemsCreate.map((it, i) => ({
+                            title: it.title,
+                            description: it.description || '',
+                            sort_order: i
+                        }))
                     })
                 });
-            } catch (e) { console.error('saveChecklistItems error:', e); }
+            } catch (e) {
+                console.error('saveChecklistItems error:', e);
+            }
         }
         // ذخیره تسک برای یک واحد یا همه واحدها
         async function saveTaskForSection(sectionKey) {
@@ -1088,9 +1175,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 }
 
                 if (data.success) {
-                    const label = sectionKey === '__all__'
-                        ? 'همه واحدها'
-                        : (sections.find(s => s.section_key === sectionKey)?.section_label || sectionKey);
+                    const label = sectionKey === '__all__' ?
+                        'همه واحدها' :
+                        (sections.find(s => s.section_key === sectionKey)?.section_label || sectionKey);
                     showToast(`${data.created_count} تسک برای ${label} با موفقیت ایجاد شد`, 'success');
                     return data.first_task_id || 1; // مقدار truthy برای saveTask
                 } else {
@@ -1123,11 +1210,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
 
         // نمایش مراحل روتین هنگام انتخاب
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const isWorkflowTask = document.getElementById('isWorkflowTask');
             loadWorkflowTemplates();
 
-            isWorkflowTask.addEventListener('change', async function () {
+            isWorkflowTask.addEventListener('change', async function() {
                 const routineId = this.value;
                 const previewDiv = document.getElementById('routineStepsPreview');
                 const stepsList = document.getElementById('stepsList');
@@ -1369,18 +1456,36 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
             uploadArea.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', () => {
-                if (fileInput.files.length > 0) { addWorkflowFiles(fileInput.files); fileInput.value = ''; }
+                if (fileInput.files.length > 0) {
+                    addWorkflowFiles(fileInput.files);
+                    fileInput.value = '';
+                }
             });
-            uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = '#0d6efd'; });
-            uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = '#ccc'; });
-            uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.style.borderColor = '#ccc'; addWorkflowFiles(e.dataTransfer.files); });
+            uploadArea.addEventListener('dragover', e => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#0d6efd';
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = '#ccc';
+            });
+            uploadArea.addEventListener('drop', e => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#ccc';
+                addWorkflowFiles(e.dataTransfer.files);
+            });
         }
 
         function addWorkflowFiles(files) {
             const maxSize = 20 * 1024 * 1024;
             for (let file of files) {
-                if (file.size > maxSize) { alert(`فایل "${file.name}" بیش از 20MB است.`); continue; }
-                workflowPendingFiles.push({ file, visible_to_steps: [] });
+                if (file.size > maxSize) {
+                    alert(`فایل "${file.name}" بیش از 20MB است.`);
+                    continue;
+                }
+                workflowPendingFiles.push({
+                    file,
+                    visible_to_steps: []
+                });
             }
             renderWorkflowFiles();
         }
@@ -1388,7 +1493,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         function renderWorkflowFiles() {
             const list = document.getElementById('workflowFilesList');
             if (!list) return;
-            if (workflowPendingFiles.length === 0) { list.innerHTML = ''; return; }
+            if (workflowPendingFiles.length === 0) {
+                list.innerHTML = '';
+                return;
+            }
 
             const sections = Object.entries(acticity_section);
             let html = '';
@@ -1467,8 +1575,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             if (stepDescs.length > 0) {
                 await fetch('../api/workflows/save-step-descriptions.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ instance_id: instanceId, steps: stepDescs })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken
+                    },
+                    body: JSON.stringify({
+                        instance_id: instanceId,
+                        steps: stepDescs
+                    })
                 });
             }
         }
@@ -1483,15 +1597,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
                 await fetch('../api/tasks/upload-attachment.php', {
                     method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + authToken },
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    },
                     body: formData
                 });
             }
             workflowPendingFiles = [];
         }
-
-
-        </script>
+    </script>
     <script src="<?= asset('../assets/js/deadline-toast.js') ?>"></script>
     <script src="<?= asset('../assets/js/alert.js') ?>"></script>
 

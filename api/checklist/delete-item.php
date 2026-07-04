@@ -44,7 +44,12 @@ try {
         echo json_encode(['success' => false, 'message' => 'فقط تعریف‌کننده کار می‌تواند آیتم را حذف کند']);
         exit;
     }
-
+// 🔒 اگر کار تکمیل/تأیید/متوقف/لغو شده، چک‌لیست قفل است
+    if (isChecklistLocked($task)) {
+        http_response_code(409);
+        echo json_encode(['success' => false, 'message' => 'این کار به پایان رسیده و چک‌لیست آن قفل شده است']);
+        exit;
+    }
     $db->prepare("DELETE FROM task_checklist_items WHERE id = ?")->execute([$item_id]);
 
     // بعد از حذف، شاید بقیه آیتم‌ها همه تیک‌خورده باشند → auto-complete

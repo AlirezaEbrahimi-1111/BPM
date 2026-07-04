@@ -42,16 +42,53 @@ require_once '../includes/version.php';
         #taskInfo .border-end {
             border-color: #e9ecef !important;
         }
+
         .checklist-detail-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 8px 4px; border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 4px;
+            border-bottom: 1px solid #f0f0f0;
         }
-        .checklist-detail-item:hover { background: #f8f9fa; border-radius: 6px; }
+
+        .checklist-detail-item:hover {
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
         .checklist-detail-item.done .chk-title {
-            text-decoration: line-through; color: #9ca3af;
+            text-decoration: line-through;
+            color: #9ca3af;
         }
-        .chk-title { flex: 1; font-size: 0.88rem; }
-        .chk-meta { font-size: 0.72rem; color: #9ca3af; }
+
+        .chk-title {
+            flex: 1;
+            font-size: 0.88rem;
+        }
+
+        .chk-meta {
+            font-size: 0.72rem;
+            color: #9ca3af;
+        }
+
+        .chk-desc-text {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 2px;
+            padding-right: 26px;
+            line-height: 1.5;
+        }
+
+        .checklist-detail-item-wrap {
+            border-bottom: 1px solid #f0f0f0;
+            padding: 4px 0;
+        }
+
+        .checklist-detail-item-wrap:hover {
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
         @media (max-width: 576px) {
             #taskInfo .col-6 {
                 flex: 0 0 100%;
@@ -152,15 +189,21 @@ require_once '../includes/version.php';
                 <div id="checklistDetailItems"></div>
 
                 <!-- افزودن آیتم - فقط تعریف‌کننده -->
+                <div id="checklistLockNote" style="display:none; margin-top:8px; padding:8px 12px; background:#fef3c7; border:1px solid #fcd34d; border-radius:8px; font-size:0.8rem; color:#92400e;">
+                    <i class="bi bi-lock-fill me-1"></i>
+                    این کار به پایان رسیده و چک‌لیست آن قفل شده است. امکان افزودن، ویرایش، حذف یا تغییر آیتم‌ها وجود ندارد.
+                </div>
                 <div id="addChecklistItemRow" style="display:none; margin-top:8px;">
                     <div style="display:flex; gap:8px;">
                         <input type="text" id="newDetailChecklistItem" class="form-control form-control-sm"
-                               placeholder="افزودن آیتم..."
-                               onkeydown="if(event.key==='Enter'){event.preventDefault();addDetailChecklistItem();}">
+                            placeholder="افزودن آیتم..."
+                            onkeydown="if(event.key==='Enter'){event.preventDefault();addDetailChecklistItem();}">
                         <button class="btn btn-outline-primary btn-sm" onclick="addDetailChecklistItem()">
                             <i class="bi bi-plus"></i>
                         </button>
                     </div>
+                    <textarea id="newDetailChecklistDesc" class="form-control form-control-sm mt-1" rows="2"
+                        placeholder="توضیحات (اختیاری)..."></textarea>
                 </div>
             </div>
             <!-- تاریخچه -->
@@ -210,7 +253,7 @@ require_once '../includes/version.php';
                 </button>
                 <button type="button" class="btn btn-primary" id="clearOverdueBtn" onclick="showClearOverdueModal()"
                     style="display: none;">
-                    <i class="bi bi-eraser ms-2"></i>رفع دوره‌های معوقه 
+                    <i class="bi bi-eraser ms-2"></i>رفع دوره‌های معوقه
                 </button>
                 <button type="button" class="btn btn-primary" id="editBtn" onclick="editTask()" style="display: none;">
                     <i class="bi bi-pencil ms-2"></i>ویرایش
@@ -243,7 +286,7 @@ require_once '../includes/version.php';
             <button class="fab" onclick="showNewTaskModal()" title="کار جدید">
                 <i class="bi bi-plus"></i>
             </button>
-            
+
         </div>
         <!-- Modal ارجاع کار -->
         <div class="modal fade" id="delegateModal" tabindex="-1">
@@ -456,22 +499,22 @@ require_once '../includes/version.php';
                                 </div>
                             </div>
                         </div>
-                       <div class="mb-3">
-                        <label class="form-label">واگذار به کاربر *</label>
-                        <div id="redefinePicker"></div>
-                    </div>
-            
-                    <div class="mb-3" id="redefineAttachmentsOption" style="display:none;">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="redefineIncludeAttachments" checked>
-                            <label class="form-check-label" for="redefineIncludeAttachments">
-                                فایل‌های پیوست را به کار جدید منتقل کن
-                            </label>
+                        <div class="mb-3">
+                            <label class="form-label">واگذار به کاربر *</label>
+                            <div id="redefinePicker"></div>
                         </div>
-                        <small class="text-muted d-block mt-1" id="redefineAttachmentsCount"></small>
+
+                        <div class="mb-3" id="redefineAttachmentsOption" style="display:none;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="redefineIncludeAttachments" checked>
+                                <label class="form-check-label" for="redefineIncludeAttachments">
+                                    فایل‌های پیوست را به کار جدید منتقل کن
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mt-1" id="redefineAttachmentsCount"></small>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
+                    <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
                         <button type="button" class="btn btn-primary" onclick="submitRedefine()">
                             <i class="bi bi-check-circle me-2"></i>ایجاد کار جدید
@@ -544,7 +587,7 @@ require_once '../includes/version.php';
             </div>
         </div>
 
-<!-- Modal تمدید ساعتی کار روتین -->
+        <!-- Modal تمدید ساعتی کار روتین -->
         <div id="workflowDeadlineModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -635,7 +678,7 @@ require_once '../includes/version.php';
                 </button>
             </div>
         </div>
-<!-- Modal درخواست/اعمال تمدید دوره -->
+        <!-- Modal درخواست/اعمال تمدید دوره -->
         <div id="renewalModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -894,8 +937,8 @@ require_once '../includes/version.php';
             let isAssignee;
             let isCreator;
             let justSubmittedRequest = false; // ✅ اضافه کنید
-            let taskHistory = [];   // ← اضافه کن
-            let currentTerminationRequestId = null;  // ← اضافه کن
+            let taskHistory = []; // ← اضافه کن
+            let currentTerminationRequestId = null; // ← اضافه کن
             function toggleAttachments() {
                 const body = document.getElementById('attachmentsBody');
                 const chevron = document.getElementById('attachmentsChevron');
@@ -904,6 +947,7 @@ require_once '../includes/version.php';
                 body.style.display = isOpen ? 'none' : 'block';
                 chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
             }
+
             function initPersianDatepickerForModal(inputId, defaultDateString) {
                 const input = document.getElementById(inputId);
                 if (!input) {
@@ -925,8 +969,8 @@ require_once '../includes/version.php';
 
                 let currentJalaliYear = 0;
                 let currentJalaliMonth = 0;
-                let holidays = [];        // تاریخ‌های تعطیل (فرمت: 'YYYY-MM-DD')
-                let holidayTitles = {};   // نگاشت تاریخ → عنوان تعطیل
+                let holidays = []; // تاریخ‌های تعطیل (فرمت: 'YYYY-MM-DD')
+                let holidayTitles = {}; // نگاشت تاریخ → عنوان تعطیل
                 const jalaliMonths = [
                     'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
                     'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
@@ -937,7 +981,9 @@ require_once '../includes/version.php';
                     try {
                         const token = window.authToken || localStorage.getItem('auth_token') || '';
                         const res = await fetch('/api/holidays/list.php', {
-                            headers: { 'Authorization': 'Bearer ' + token }
+                            headers: {
+                                'Authorization': 'Bearer ' + token
+                            }
                         });
                         if (!res.ok) return;
                         const data = await res.json();
@@ -951,6 +997,7 @@ require_once '../includes/version.php';
                         // بدون تعطیلات ادامه می‌دیم
                     }
                 }
+
                 function toPersian(num) {
                     const persianNumbers = '۰۱۲۳۴۵۶۷۸۹';
                     return String(num).replace(/\d/g, d => persianNumbers[d]);
@@ -1025,7 +1072,7 @@ require_once '../includes/version.php';
                     let gm2 = 0;
                     for (gm2 = 0; gm2 < 12 && g_day_no >= g_days_in_month[gm2]; gm2++)
                         g_day_no -= g_days_in_month[gm2];
-                
+
                     // ✅ مشکل timezone — به جای new Date(y,m,d) از noon استفاده می‌کنیم
                     // تا getDay() در همه timezone‌ها درست باشه
                     return new Date(gy2, gm2, g_day_no + 1, 12, 0, 0);
@@ -1074,13 +1121,13 @@ require_once '../includes/version.php';
                             const dayEl = document.createElement('div');
                             dayEl.className = 'datepicker-day';
                             dayEl.textContent = toPersian(day);
-                        
+
                             // ── تشخیص تعطیل بودن روز ──
                             const gregDate = jalaliToGregorian(year, month, day);
                             const gregStr = gregDate.toISOString().split('T')[0];
                             const isFriday = gregDate.getDay() === 5;
                             const isHoliday = holidays.includes(gregStr);
-                        
+
                             if (isFriday) dayEl.classList.add('datepicker-friday');
                             if (isHoliday) {
                                 dayEl.classList.add('datepicker-holiday');
@@ -1090,11 +1137,11 @@ require_once '../includes/version.php';
 
                             const currentDayNum = year * 10000 + month * 100 + day;
                             const todayNum = todayJalali.year * 10000 + todayJalali.month * 100 + todayJalali.day;
-                        
+
                             if (year === todayJalali.year && month === todayJalali.month && day === todayJalali.day) {
                                 dayEl.classList.add('today');
                             }
-                        
+
                             if (currentDayNum < todayNum) {
                                 dayEl.classList.add('disabled');
                                 dayEl.title = 'انتخاب روز گذشته مجاز نیست';
@@ -1105,9 +1152,20 @@ require_once '../includes/version.php';
                                         const label = isHoliday ? (holidayTitles[gregStr] || 'تعطیل رسمی') : 'جمعه';
                                         showToast(`روز انتخابی «${label}» است. آیا مطمئن هستید؟`, 'warning', {
                                             duration: 1500000,
-                                            buttons: [
-                                                { label: 'بله، انتخاب کن', style: 'primary', onClick: function () { selectDate(year, month, day); } },
-                                                { label: 'خیر', style: 'ghost', onClick: function () { return; } }
+                                            buttons: [{
+                                                    label: 'بله، انتخاب کن',
+                                                    style: 'primary',
+                                                    onClick: function() {
+                                                        selectDate(year, month, day);
+                                                    }
+                                                },
+                                                {
+                                                    label: 'خیر',
+                                                    style: 'ghost',
+                                                    onClick: function() {
+                                                        return;
+                                                    }
+                                                }
                                             ]
                                         });
                                     } else {
@@ -1116,7 +1174,7 @@ require_once '../includes/version.php';
                                 });
                                 dayEl.style.cursor = 'pointer';
                             }
-                        
+
                             daysContainer.appendChild(dayEl);
                         }
                     } catch (e) {
@@ -1220,7 +1278,7 @@ require_once '../includes/version.php';
                     const defaultJalali = gregorianToJalali(defaultDate);
                     currentJalaliYear = defaultJalali.year;
                     currentJalaliMonth = defaultJalali.month;
-                    
+
                     loadHolidays().then(() => {
                         updateCalendar();
                         selectDate(defaultJalali.year, defaultJalali.month, defaultJalali.day);
@@ -1229,18 +1287,20 @@ require_once '../includes/version.php';
                     console.error('❌ Error initializing datepicker:', e);
                 }
             }
-            document.addEventListener('DOMContentLoaded', function (event) {
+            document.addEventListener('DOMContentLoaded', function(event) {
                 authToken = localStorage.getItem('auth_token');
 
                 if (taskId) {
                     loadPendingDeadlineRequests();
                 }
-                
+
                 try {
                     const su = JSON.parse(localStorage.getItem('user_info'));
                     myUserId = su ? parseInt(su.id) : null;
-                } catch { myUserId = null; }
-        
+                } catch {
+                    myUserId = null;
+                }
+
                 const reviewModal = document.getElementById('reviewDeadlineModal');
                 const rejectModal = document.getElementById('rejectReasonModal');
                 const requestModal = document.getElementById('requestDeadlineModal');
@@ -1265,23 +1325,23 @@ require_once '../includes/version.php';
 
                 if (!taskId) {
                     const t = showToast('هیچ کاری با این شماره پیدا نشد', 'info');
-                    
-                        window.location.href = document.referrer; // بارگذاری مجدد کامل صفحه قبلی
+
+                    window.location.href = document.referrer; // بارگذاری مجدد کامل صفحه قبلی
                     return;
                 }
 
                 loadSections().then(() => {
-                    loadTaskDetails();   // 🆕 بعد از آماده‌شدن برچسب‌های فارسی
+                    loadTaskDetails(); // 🆕 بعد از آماده‌شدن برچسب‌های فارسی
                 });
                 loadUsers();
 
                 // ✅ نوتیفیکیشن‌های این تسک را خوانده‌شده کن
                 markTaskNotificationsRead(taskId);
-                
+
                 // ✅ Event Listener برای دکمه درخواست مهلت
                 const requestBtn = document.getElementById('requestDeadlineBtn');
                 if (requestBtn) {
-                    requestBtn.addEventListener('click', function (e) {
+                    requestBtn.addEventListener('click', function(e) {
                         // چک کردن disabled بودن (هم کلاس هم attribute)
                         if (this.classList.contains('disabled') || this.getAttribute('data-disabled') === 'true') {
                             e.preventDefault();
@@ -1297,7 +1357,7 @@ require_once '../includes/version.php';
 
                 const modals = document.querySelectorAll('.modal');
                 modals.forEach(modal => {
-                    modal.addEventListener('show.bs.modal', function () {
+                    modal.addEventListener('show.bs.modal', function() {
                         // حذف backdrop های قبلی
                         document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
                             if (backdrop.style.display === 'none') {
@@ -1307,134 +1367,157 @@ require_once '../includes/version.php';
                     });
                 });
             });
+
             function checkDeadlineRequests(taskId) {
                 loadPendingDeadlineRequests();
             }
             // ── واحدهای فعالیت از API ──────────────────────────────────
             let orgSections = [];
-// ============== چک‌لیست ==============
-        let checklistCanEdit = false;
-        let checklistUsers = []; // لیست کاربران برای منوی ارجاع چک‌لیست
-        let currentChecklistItems = []; // آخرین آیتم‌های لودشده (برای مودال ویرایش)
-        let myUserId = null;
-        let delegateTargetId = '';
-        async function loadChecklist() {
-            // فقط برای کار عادی (نه workflow)
-            if (!taskData || taskData.is_workflow_task == 1) {
-                document.getElementById('checklistDetailSection').style.display = 'none';
-                return;
-            }
-            try {
-                const res = await fetch(`../api/checklist/get.php?task_id=${taskId}`, {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
-                });
-                const data = await res.json();
-                if (!data.success) return;
-
-                checklistCanEdit = data.can_edit;
-                const section = document.getElementById('checklistDetailSection');
-
-                // اگر آیتمی نیست و کاربر تعریف‌کننده هم نیست، بخش را نشان نده
-                if (data.total === 0 && !checklistCanEdit) {
-                    section.style.display = 'none';
+            // ============== چک‌لیست ==============
+            let checklistCanEdit = false;
+            let checklistUsers = []; // لیست کاربران برای منوی ارجاع چک‌لیست
+            let currentChecklistItems = []; // آخرین آیتم‌های لودشده (برای مودال ویرایش)
+            let myUserId = null;
+            let delegateTargetId = '';
+            async function loadChecklist() {
+                // فقط برای کار عادی (نه workflow)
+                if (!taskData || taskData.is_workflow_task == 1) {
+                    document.getElementById('checklistDetailSection').style.display = 'none';
                     return;
                 }
-                section.style.display = 'block';
+                try {
+                    const res = await fetch(`../api/checklist/get.php?task_id=${taskId}`, {
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken
+                        }
+                    });
+                    const data = await res.json();
+                    if (!data.success) return;
 
-                renderDetailChecklist(data.items, data.percent, data.done, data.total);
+                    checklistCanEdit = data.can_edit;
+                    const section = document.getElementById('checklistDetailSection');
 
-                // ردیف افزودن فقط برای تعریف‌کننده
-                document.getElementById('addChecklistItemRow').style.display =
-                    checklistCanEdit ? 'block' : 'none';
+                    // اگر آیتمی نیست و کاربر تعریف‌کننده هم نیست، بخش را نشان نده
+                    if (data.total === 0 && !checklistCanEdit) {
+                        section.style.display = 'none';
+                        return;
+                    }
+                    section.style.display = 'block';
 
-            } catch (e) { console.error('loadChecklist error:', e); }
-        }
-        // تازه‌سازی فقط بخش تاریخچه (بدون رفرش کل صفحه)
-        async function refreshHistory() {
-            try {
-                const response = await fetch(`../api/tasks/detail.php?id=${taskId}`, {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    taskHistory = data.history || [];
-                    displayHistory(taskHistory);   // همان تابع نمایش تاریخچه
+                    renderDetailChecklist(data.items, data.percent, data.done, data.total);
+
+                    // ردیف افزودن فقط برای تعریف‌کننده (و وقتی کار قفل نیست)
+                    document.getElementById('addChecklistItemRow').style.display =
+                        checklistCanEdit ? 'block' : 'none';
+
+                    // 🔒 اگر کار به پایان رسیده، پیام قفل نمایش بده
+                    const lockNote = document.getElementById('checklistLockNote');
+                    if (data.is_locked) {
+                        if (lockNote) lockNote.style.display = 'block';
+                    } else {
+                        if (lockNote) lockNote.style.display = 'none';
+                    }
+
+                } catch (e) {
+                    console.error('loadChecklist error:', e);
                 }
-            } catch (e) {
-                console.error('refreshHistory error:', e);
             }
-        }
-        // تولید برچسب ارجاعِ یک آیتم چک‌لیست برای نمایش (برای همه کاربران)
-        function renderChecklistAssigneeBadge(item) {
-            if (!item.assignee_type) return '';   // بدون ارجاع → چیزی نشان نده
-        
-            let label = '', icon = '';
-        
-            if (item.assignee_type === 'user') {
-                icon = 'bi-person';
-                label = (item.assignee_user_name && item.assignee_user_name.trim())
-                    ? item.assignee_user_name.trim()
-                    : 'کاربر حذف‌شده';
-            } else if (item.assignee_type === 'section') {
-                icon = 'bi-people-fill';
-                label = item.assignee_section_name
-                    || item.assignee_value
-                    || 'واحد حذف‌شده';
-            } else {
-                return '';
+            // تازه‌سازی فقط بخش تاریخچه (بدون رفرش کل صفحه)
+            async function refreshHistory() {
+                try {
+                    const response = await fetch(`../api/tasks/detail.php?id=${taskId}`, {
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        taskHistory = data.history || [];
+                        displayHistory(taskHistory); // همان تابع نمایش تاریخچه
+                    }
+                } catch (e) {
+                    console.error('refreshHistory error:', e);
+                }
             }
-        
-            return `<span class="badge bg-light text-dark border ms-1" style="font-weight:normal;">
+            // تولید برچسب ارجاعِ یک آیتم چک‌لیست برای نمایش (برای همه کاربران)
+            function renderChecklistAssigneeBadge(item) {
+                if (!item.assignee_type) return ''; // بدون ارجاع → چیزی نشان نده
+
+                let label = '',
+                    icon = '';
+
+                if (item.assignee_type === 'user') {
+                    icon = 'bi-person';
+                    label = (item.assignee_user_name && item.assignee_user_name.trim()) ?
+                        item.assignee_user_name.trim() :
+                        'کاربر حذف‌شده';
+                } else if (item.assignee_type === 'section') {
+                    icon = 'bi-people-fill';
+                    label = item.assignee_section_name ||
+                        item.assignee_value ||
+                        'واحد حذف‌شده';
+                } else {
+                    return '';
+                }
+
+                return `<span class="badge bg-light text-dark border ms-1" style="font-weight:normal;">
                         <i class="bi ${icon} me-1"></i>${label}
                     </span>`;
-        }
-        // ساخت گزینه‌های منوی ارجاع (کاربران + واحدها)
-        // selectedRaw مثل "user:۱۲۳" یا "section:management" یا "" است
-        function buildChecklistAssigneeOptions(selectedRaw) {
-            let html = `<option value="">بدون ارجاع</option>`;
+            }
+            // ساخت گزینه‌های منوی ارجاع (کاربران + واحدها)
+            // selectedRaw مثل "user:۱۲۳" یا "section:management" یا "" است
+            function buildChecklistAssigneeOptions(selectedRaw) {
+                let html = `<option value="">بدون ارجاع</option>`;
 
-            if (checklistUsers.length) {
-                html += `<optgroup label="کاربران">`;
-                checklistUsers.forEach(u => {
-                    const name = u.full_name
-                        || `${u.first_name || ''} ${u.last_name || ''}`.trim()
-                        || u.phone;
-                    const val = `user:${u.id}`;
-                    html += `<option value="${val}" ${selectedRaw === val ? 'selected' : ''}>${name}</option>`;
-                });
-                html += `</optgroup>`;
+                if (checklistUsers.length) {
+                    html += `<optgroup label="کاربران">`;
+                    checklistUsers.forEach(u => {
+                        const name = u.full_name ||
+                            `${u.first_name || ''} ${u.last_name || ''}`.trim() ||
+                            u.phone;
+                        const val = `user:${u.id}`;
+                        html += `<option value="${val}" ${selectedRaw === val ? 'selected' : ''}>${name}</option>`;
+                    });
+                    html += `</optgroup>`;
+                }
+
+                if (orgSections.length) {
+                    html += `<optgroup label="واحدها">`;
+                    orgSections.forEach(s => {
+                        const val = `section:${s.section_key}`;
+                        html += `<option value="${val}" ${selectedRaw === val ? 'selected' : ''}>${s.section_label}</option>`;
+                    });
+                    html += `</optgroup>`;
+                }
+
+                return html;
             }
 
-            if (orgSections.length) {
-                html += `<optgroup label="واحدها">`;
-                orgSections.forEach(s => {
-                    const val = `section:${s.section_key}`;
-                    html += `<option value="${val}" ${selectedRaw === val ? 'selected' : ''}>${s.section_label}</option>`;
-                });
-                html += `</optgroup>`;
-            }
+            function renderDetailChecklist(items, percent, done, total) {
+                currentChecklistItems = items || []; // 🆕 نگه‌داری برای مودال
 
-            return html;
-        } 
-        function renderDetailChecklist(items, percent, done, total) {
-            currentChecklistItems = items || []; // 🆕 نگه‌داری برای مودال
+                document.getElementById('checklistProgress').style.width = percent + '%';
+                document.getElementById('checklistProgressText').textContent =
+                    `${enTofaNumber(done)} از ${enTofaNumber(total)}`;
 
-            document.getElementById('checklistProgress').style.width = percent + '%';
-            document.getElementById('checklistProgressText').textContent =
-                `${enTofaNumber(done)} از ${enTofaNumber(total)}`;
+                const c = document.getElementById('checklistDetailItems');
+                if (!items || items.length === 0) {
+                    c.innerHTML = '<p class="text-muted" style="font-size:.85rem;">هنوز آیتمی اضافه نشده.</p>';
+                    return;
+                }
+                c.innerHTML = items.map(item => {
+                    // آیا این آیتم به کاربر فعلی ارجاع شده؟
+                    const mine = item.assignee_type === 'user' &&
+                        myUserId != null &&
+                        parseInt(item.assignee_value) === myUserId;
 
-            const c = document.getElementById('checklistDetailItems');
-            if (!items || items.length === 0) {
-                c.innerHTML = '<p class="text-muted" style="font-size:.85rem;">هنوز آیتمی اضافه نشده.</p>';
-                return;
-            }
-            c.innerHTML = items.map(item => {
-                // آیا این آیتم به کاربر فعلی ارجاع شده؟
-                const mine = item.assignee_type === 'user'
-                    && myUserId != null
-                    && parseInt(item.assignee_value) === myUserId;
+                    // توضیحات آیتم (اگر داشته باشد) — امن‌سازی برای HTML
+                    const descHtml = item.description ?
+                        `<div class="chk-desc-text">${String(item.description).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` :
+                        '';
 
-                return `
+                    return `
+                  <div class="checklist-detail-item-wrap">
                     <div class="checklist-detail-item ${item.is_done == 1 ? 'done' : ''}"
                      id="chk-${item.id}"
                      style="${mine ? 'background:#fff8e1; border-right:3px solid #ffc107; padding-right:6px; border-radius:6px;' : ''}${item.can_toggle_this === false ? 'opacity:0.65;' : ''}">
@@ -1459,176 +1542,231 @@ require_once '../includes/version.php';
                             <i class="bi bi-trash"></i>
                         </button>
                     `) : ''}
-                </div>`;
-            }).join('');
-        }
-        // برچسب ارجاع — برای همه‌ی کاربران نمایش داده می‌شود
-        function renderAssigneeBadge(item) {
-            if (!item.assignee_type) return '';
-            let label = '', icon = '';
-            if (item.assignee_type === 'user') {
-                icon = 'bi-person';
-                label = (item.assignee_user_name && item.assignee_user_name.trim())
-                    ? item.assignee_user_name.trim()
-                    : 'کاربر حذف‌شده';
-            } else if (item.assignee_type === 'section') {
-                icon = 'bi-people-fill';
-                label = item.assignee_section_name
-                    || getSectionLabel(item.assignee_value)
-                    || 'واحد حذف‌شده';
-            } else {
-                return '';
+                    </div>
+                    ${descHtml}
+                  </div>`;
+                }).join('');
             }
-            return `<span class="badge bg-light text-dark border ms-1" style="font-weight:normal;">
+            // برچسب ارجاع — برای همه‌ی کاربران نمایش داده می‌شود
+            function renderAssigneeBadge(item) {
+                if (!item.assignee_type) return '';
+                let label = '',
+                    icon = '';
+                if (item.assignee_type === 'user') {
+                    icon = 'bi-person';
+                    label = (item.assignee_user_name && item.assignee_user_name.trim()) ?
+                        item.assignee_user_name.trim() :
+                        'کاربر حذف‌شده';
+                } else if (item.assignee_type === 'section') {
+                    icon = 'bi-people-fill';
+                    label = item.assignee_section_name ||
+                        getSectionLabel(item.assignee_value) ||
+                        'واحد حذف‌شده';
+                } else {
+                    return '';
+                }
+                return `<span class="badge bg-light text-dark border ms-1" style="font-weight:normal;">
                         <i class="bi ${icon} me-1"></i>${label}
                     </span>`;
-        }
+            }
 
-        async function toggleChecklistItem(itemId, isDone) {
-            try {
-                const res = await fetch('../api/checklist/toggle.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ item_id: itemId, is_done: isDone ? 1 : 0 })
+            async function toggleChecklistItem(itemId, isDone) {
+                try {
+                    const res = await fetch('../api/checklist/toggle.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            item_id: itemId,
+                            is_done: isDone ? 1 : 0
+                        })
+                    });
+                    const data = await res.json();
+                    if (!data.success) {
+                        showToast(data.message || 'خطا در ثبت', 'warning');
+                        loadChecklist();
+                        return;
+                    }
+                    if (data.auto_completed) {
+                        showToast('همه آیتم‌ها تکمیل شدند. کار طبق روال ادامه یافت.', 'success');
+                        setTimeout(() => location.reload(), 1200);
+                    } else {
+                        loadChecklist(); // تازه‌سازی درصد و آیتم‌ها
+                        refreshHistory(); // 🆕 تازه‌سازی تاریخچه تا تغییر وضعیت دیده شود
+                    }
+                } catch (e) {
+                    showToast('خطا در ارتباط با سرور', 'warning');
+                }
+            }
+
+            async function addDetailChecklistItem() {
+                const input = document.getElementById('newDetailChecklistItem');
+                const descInput = document.getElementById('newDetailChecklistDesc');
+                const title = input.value.trim();
+                const description = descInput ? descInput.value.trim() : '';
+                if (!title) return;
+                try {
+                    const res = await fetch('../api/checklist/add-item.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            task_id: taskId,
+                            title,
+                            description
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        input.value = '';
+                        if (descInput) descInput.value = '';
+                        loadChecklist();
+                        refreshHistory();
+                    } else showToast(data.message || 'خطا در افزودن', 'warning');
+                } catch (e) {
+                    showToast('خطا در ارتباط با سرور', 'warning');
+                }
+            }
+
+            function showLockReason() {
+                showToast(
+                    'آیتم‌های انجام‌شده قفل هستند. اگر می‌خواهید این آیتم را ویرایش یا حذف کنید، ابتدا تیک آن را بردارید تا قفل باز شود.',
+                    'info'
+                );
+            }
+            // باز کردن مودال ویرایش (به‌جای prompt قدیمی)
+            let clTarget = null,
+                clTouched = false; // انتخابِ پیکرِ ارجاع چک‌لیست
+            function editChecklistItem(itemId, currentTitle) {
+                // پیدا کردن آیتم برای دانستن ارجاع فعلی‌اش
+                const item = currentChecklistItems.find(i => i.id == itemId);
+                const currentRaw = (item && item.assignee_type && item.assignee_value) ?
+                    `${item.assignee_type}:${item.assignee_value}` :
+                    '';
+
+                document.getElementById('editChecklistItemId').value = itemId;
+                document.getElementById('editChecklistTitle').value = currentTitle;
+                document.getElementById('editChecklistDesc').value = (item && item.description) ? item.description : '';
+                // پیکر سرچ‌دار (کاربر + واحد) با نام واحد فارسی
+                clTarget = null;
+                clTouched = false;
+                const _secMap = {};
+                (orgSections || []).forEach(s => {
+                    _secMap[s.section_key] = s.section_label;
                 });
-                const data = await res.json();
-                if (!data.success) {
-                    showToast(data.message || 'خطا در ثبت', 'warning');
-                    loadChecklist();
+
+                // برچسب ارجاع فعلی برای نمایش در placeholder
+                let _curLabel = 'بدون ارجاع';
+                if (item && item.assignee_type === 'user') {
+                    const _u = (checklistUsers || []).find(x => String(x.id) === String(item.assignee_value));
+                    _curLabel = _u ? (_u.full_name || `${_u.first_name || ''} ${_u.last_name || ''}`.trim() || _u.phone) : 'کاربر';
+                } else if (item && item.assignee_type === 'section') {
+                    _curLabel = _secMap[item.assignee_value] || item.assignee_value;
+                }
+
+                document.getElementById('editChecklistAssigneePicker').innerHTML = '';
+                AssigneePicker.create({
+                    container: '#editChecklistAssigneePicker',
+                    users: checklistUsers || [],
+                    sections: orgSections || [],
+                    sectionMap: _secMap,
+                    showSections: true,
+                    placeholder: 'ارجاع فعلی: ' + _curLabel + ' — برای تغییر جستجو کنید...',
+                    onSelect: (type, value) => {
+                        clTouched = true;
+                        // گزینه‌های گروهیِ «همه...» برای آیتم چک‌لیست نامعتبرند
+                        if (!type || value === '__all__' || value === '__all_users__') {
+                            clTarget = null;
+                            return;
+                        }
+                        clTarget = {
+                            type: type,
+                            value: value
+                        };
+                    }
+                });
+
+                const modal = new bootstrap.Modal(document.getElementById('editChecklistModal'));
+                modal.show();
+            }
+
+            // ذخیره تغییرات مودال
+            async function submitEditChecklist() {
+                const itemId = document.getElementById('editChecklistItemId').value;
+                const title = document.getElementById('editChecklistTitle').value.trim();
+                const description = document.getElementById('editChecklistDesc').value.trim();
+                if (!title) {
+                    showToast('عنوان نمی‌تواند خالی باشد', 'warning');
                     return;
                 }
-                if (data.auto_completed) {
-                    showToast('همه آیتم‌ها تکمیل شدند. کار طبق روال ادامه یافت.', 'success');
-                    setTimeout(() => location.reload(), 1200);
+
+                let assignee_type = null,
+                    assignee_value = null;
+                if (clTouched) {
+                    // کاربر انتخاب را تغییر داده یا پاک کرده
+                    if (clTarget) {
+                        assignee_type = clTarget.type;
+                        assignee_value = String(clTarget.value);
+                    }
                 } else {
-                    loadChecklist();   // تازه‌سازی درصد و آیتم‌ها
-                    refreshHistory();  // 🆕 تازه‌سازی تاریخچه تا تغییر وضعیت دیده شود
+                    // بدون تغییر → حفظ ارجاع فعلی آیتم
+                    const _it = currentChecklistItems.find(i => i.id == itemId);
+                    if (_it && _it.assignee_type && _it.assignee_value) {
+                        assignee_type = _it.assignee_type;
+                        assignee_value = String(_it.assignee_value);
+                    }
                 }
-            } catch (e) { showToast('خطا در ارتباط با سرور', 'warning'); }
-        }
 
-        async function addDetailChecklistItem() {
-            const input = document.getElementById('newDetailChecklistItem');
-            const title = input.value.trim();
-            if (!title) return;
-            try {
-                const res = await fetch('../api/checklist/add-item.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ task_id: taskId, title })
-                });
-                const data = await res.json();
-                if (data.success) { input.value = ''; loadChecklist(); refreshHistory(); }
-                else showToast(data.message || 'خطا در افزودن', 'warning');
-            } catch (e) { showToast('خطا در ارتباط با سرور', 'warning'); }
-        }
-        function showLockReason() {
-            showToast(
-                'آیتم‌های انجام‌شده قفل هستند. اگر می‌خواهید این آیتم را ویرایش یا حذف کنید، ابتدا تیک آن را بردارید تا قفل باز شود.',
-                'info'
-            );
-        }
-// باز کردن مودال ویرایش (به‌جای prompt قدیمی)
-        let clTarget = null, clTouched = false;   // انتخابِ پیکرِ ارجاع چک‌لیست
-        function editChecklistItem(itemId, currentTitle) {
-            // پیدا کردن آیتم برای دانستن ارجاع فعلی‌اش
-            const item = currentChecklistItems.find(i => i.id == itemId);
-            const currentRaw = (item && item.assignee_type && item.assignee_value)
-                ? `${item.assignee_type}:${item.assignee_value}`
-                : '';
+                try {
+                    const res = await fetch('../api/checklist/update-item.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            item_id: parseInt(itemId),
+                            title: title,
+                            description: description,
+                            assignee_type: assignee_type,
+                            assignee_value: assignee_value
+                        })
 
-            document.getElementById('editChecklistItemId').value = itemId;
-            document.getElementById('editChecklistTitle').value = currentTitle;
-            // پیکر سرچ‌دار (کاربر + واحد) با نام واحد فارسی
-            clTarget = null; clTouched = false;
-            const _secMap = {};
-            (orgSections || []).forEach(s => { _secMap[s.section_key] = s.section_label; });
-
-            // برچسب ارجاع فعلی برای نمایش در placeholder
-            let _curLabel = 'بدون ارجاع';
-            if (item && item.assignee_type === 'user') {
-                const _u = (checklistUsers || []).find(x => String(x.id) === String(item.assignee_value));
-                _curLabel = _u ? (_u.full_name || `${_u.first_name || ''} ${_u.last_name || ''}`.trim() || _u.phone) : 'کاربر';
-            } else if (item && item.assignee_type === 'section') {
-                _curLabel = _secMap[item.assignee_value] || item.assignee_value;
-            }
-
-            document.getElementById('editChecklistAssigneePicker').innerHTML = '';
-            AssigneePicker.create({
-                container: '#editChecklistAssigneePicker',
-                users: checklistUsers || [],
-                sections: orgSections || [],
-                sectionMap: _secMap,
-                showSections: true,
-                placeholder: 'ارجاع فعلی: ' + _curLabel + ' — برای تغییر جستجو کنید...',
-                onSelect: (type, value) => {
-                    clTouched = true;
-                    // گزینه‌های گروهیِ «همه...» برای آیتم چک‌لیست نامعتبرند
-                    if (!type || value === '__all__' || value === '__all_users__') { clTarget = null; return; }
-                    clTarget = { type: type, value: value };
-                }
-            });
-
-            const modal = new bootstrap.Modal(document.getElementById('editChecklistModal'));
-            modal.show();
-        }
-
-        // ذخیره تغییرات مودال
-        async function submitEditChecklist() {
-            const itemId = document.getElementById('editChecklistItemId').value;
-            const title  = document.getElementById('editChecklistTitle').value.trim();
-            if (!title) { showToast('عنوان نمی‌تواند خالی باشد', 'warning'); return; }
-
-            let assignee_type = null, assignee_value = null;
-            if (clTouched) {
-                // کاربر انتخاب را تغییر داده یا پاک کرده
-                if (clTarget) { assignee_type = clTarget.type; assignee_value = String(clTarget.value); }
-            } else {
-                // بدون تغییر → حفظ ارجاع فعلی آیتم
-                const _it = currentChecklistItems.find(i => i.id == itemId);
-                if (_it && _it.assignee_type && _it.assignee_value) {
-                    assignee_type  = _it.assignee_type;
-                    assignee_value = String(_it.assignee_value);
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('editChecklistModal')).hide();
+                        showToast('آیتم به‌روزرسانی شد', 'success');
+                        loadChecklist();
+                    } else {
+                        showToast(data.message || 'خطا در ویرایش', 'warning');
+                    }
+                } catch (e) {
+                    showToast('خطا در ارتباط با سرور', 'warning');
                 }
             }
 
-            try {
-                const res = await fetch('../api/checklist/update-item.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({
-                        item_id: parseInt(itemId),
-                        title: title,
-                        assignee_type: assignee_type,
-                        assignee_value: assignee_value
-                    })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('editChecklistModal')).hide();
-                    showToast('آیتم به‌روزرسانی شد', 'success');
-                    loadChecklist();
-                } else {
-                    showToast(data.message || 'خطا در ویرایش', 'warning');
-                }
-            } catch (e) {
-                showToast('خطا در ارتباط با سرور', 'warning');
-            }
-        }
-
-        async function deleteChecklistItem(itemId) {
-            showToast('آیا مطمئن هستید که می‌خواهید این آیتم را حذف کنید؟', 'warning', {
+            async function deleteChecklistItem(itemId) {
+                showToast('آیا مطمئن هستید که می‌خواهید این آیتم را حذف کنید؟', 'warning', {
                     duration: 1500000,
-                    buttons: [
-                        {
+                    buttons: [{
                             label: 'بله، حذف شود',
                             style: 'primary',
-                            onClick: async function () {
+                            onClick: async function() {
                                 try {
                                     const res = await fetch('../api/checklist/delete-item.php', {
                                         method: 'POST',
-                                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                                        body: JSON.stringify({ item_id: itemId })
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': 'Bearer ' + authToken
+                                        },
+                                        body: JSON.stringify({
+                                            item_id: itemId
+                                        })
                                     });
                                     const data = await res.json();
                                     if (data.success) {
@@ -1640,26 +1778,32 @@ require_once '../includes/version.php';
                                             refreshHistory();
                                         }
                                     } else showToast(data.message || 'خطا در حذف', 'warning');
-                                } catch (e) { showToast('خطا در ارتباط با سرور', 'warning'); }
+                                } catch (e) {
+                                    showToast('خطا در ارتباط با سرور', 'warning');
+                                }
                             }
                         },
                         {
                             label: 'خیر، منصرف شدم',
                             style: 'ghost',
-                            onClick: function () { return; }
+                            onClick: function() {
+                                return;
+                            }
                         }
                     ]
                 });
-        }
-        
-        
-        
-        
-        
+            }
+
+
+
+
+
             async function loadSections() {
                 try {
                     const res = await fetch('/api/organization/activity-sections.php', {
-                        headers: { 'Authorization': 'Bearer ' + authToken }
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken
+                        }
                     });
                     const data = await res.json();
                     if (data.success) orgSections = data.sections;
@@ -1668,8 +1812,8 @@ require_once '../includes/version.php';
 
             function getSectionLabel(value) {
                 if (!value) return 'نامشخص';
-                const found = orgSections.find(s => s.section_key === value);   // 🆕
-                return found ? found.section_label : value;                      // 🆕
+                const found = orgSections.find(s => s.section_key === value); // 🆕
+                return found ? found.section_label : value; // 🆕
             }
 
             // برای سازگاری با کدهای قدیمی که sectionToFarsi صدا می‌زنند
@@ -1684,7 +1828,9 @@ require_once '../includes/version.php';
                             'Content-Type': 'application/json',
                             'Authorization': 'Bearer ' + authToken
                         },
-                        body: JSON.stringify({ task_id: parseInt(taskId) })
+                        body: JSON.stringify({
+                            task_id: parseInt(taskId)
+                        })
                     });
                 } catch (e) {
                     // خطا مهم نیست، فقط لاگ کن
@@ -1711,8 +1857,8 @@ require_once '../includes/version.php';
                         window.userId = currentUser.id;
 
                         displayTaskDetails(taskData, data.history);
-                        renderTaskGroup(taskData);   // 🆕
-                        setupActionButtons(taskData);        // ← isAssignee اینجا مقدار می‌گیرد
+                        renderTaskGroup(taskData); // 🆕
+                        setupActionButtons(taskData); // ← isAssignee اینجا مقدار می‌گیرد
                         updateDeadlineDisplay(taskData);
                         checkDeadlineRequests(taskId);
                         loadTerminationRequest();
@@ -1728,34 +1874,34 @@ require_once '../includes/version.php';
                     }
                 } catch (error) {
                     const t = showToast('خطا در ارتباط با سرور', 'warning');
-                    
+
                 }
             }
-// 🆕 نمایش گروه کار + امکان تغییر برای تعریف‌کننده
-        async function renderTaskGroup(task) {
-            const cell = document.getElementById('taskGroupCell');
-            if (!cell) return;
+            // 🆕 نمایش گروه کار + امکان تغییر برای تعریف‌کننده
+            async function renderTaskGroup(task) {
+                const cell = document.getElementById('taskGroupCell');
+                if (!cell) return;
 
-            const isOwner = (currentUser && currentUser.id == task.creator_id);
+                const isOwner = (currentUser && currentUser.id == task.creator_id);
 
-            // نمایش badge فعلی (یا «بدون گروه»)
-            function badgeHtml() {
-                if (task.group_id && task.group_name) {
-                    const color = task.group_color || '#6366f1';
-                    return `<span class="badge" style="background:${color}20;color:${color};border:1px solid ${color}40;">
+                // نمایش badge فعلی (یا «بدون گروه»)
+                function badgeHtml() {
+                    if (task.group_id && task.group_name) {
+                        const color = task.group_color || '#6366f1';
+                        return `<span class="badge" style="background:${color}20;color:${color};border:1px solid ${color}40;">
                                 <i class="${task.group_icon || 'bi-tag'} me-1"></i>${task.group_name}</span>`;
+                    }
+                    return '<span class="text-muted">بدون گروه</span>';
                 }
-                return '<span class="text-muted">بدون گروه</span>';
-            }
 
-            // اگر تعریف‌کننده نیست، فقط نمایش
-            if (!isOwner) {
-                cell.innerHTML = badgeHtml();
-                return;
-            }
+                // اگر تعریف‌کننده نیست، فقط نمایش
+                if (!isOwner) {
+                    cell.innerHTML = badgeHtml();
+                    return;
+                }
 
-            // تعریف‌کننده: badge + دکمه تغییر
-            cell.innerHTML = `${badgeHtml()}
+                // تعریف‌کننده: badge + دکمه تغییر
+                cell.innerHTML = `${badgeHtml()}
                 <button class="btn btn-link btn-sm p-0 ms-2" id="changeGroupBtn" title="تغییر گروه">
                     <i class="bi bi-pencil"></i>
                 </button>
@@ -1763,42 +1909,53 @@ require_once '../includes/version.php';
                     <select id="taskGroupSelect" class="form-select form-select-sm d-inline-block" style="width:auto;"></select>
                 </span>`;
 
-            // راه‌اندازی گروه‌ها
-            const isOrgAdmin = (currentUser.activity_section === 'management' && currentUser.role === 'supervisor');
-            await TaskGroups.init({ isOrgAdmin });
-
-            document.getElementById('changeGroupBtn').addEventListener('click', () => {
-                const wrap = document.getElementById('groupSelectWrap');
-                const sel = document.getElementById('taskGroupSelect');
-                TaskGroups.fill(sel, task.group_id || '');
-                wrap.style.display = 'inline-block';
-                document.getElementById('changeGroupBtn').style.display = 'none';
-
-                sel.addEventListener('change', async () => {
-                    await saveTaskGroup(task.id, sel.value);
-                }, { once: true });
-            });
-        }
-
-        // 🆕 ذخیره تغییر گروه
-        async function saveTaskGroup(taskId, groupId) {
-            try {
-                const res = await fetch('../api/tasks/update-group.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ task_id: taskId, group_id: groupId || null })
+                // راه‌اندازی گروه‌ها
+                const isOrgAdmin = (currentUser.activity_section === 'management' && currentUser.role === 'supervisor');
+                await TaskGroups.init({
+                    isOrgAdmin
                 });
-                const data = await res.json();
-                if (data.success) {
-                    showToast('گروه کار به‌روزرسانی شد', 'success');
-                    setTimeout(() => location.reload(), 800);
-                } else {
-                    showToast(data.message || 'خطا در تغییر گروه', 'warning');
-                }
-            } catch (e) {
-                showToast('خطا در ارتباط با سرور', 'warning');
+
+                document.getElementById('changeGroupBtn').addEventListener('click', () => {
+                    const wrap = document.getElementById('groupSelectWrap');
+                    const sel = document.getElementById('taskGroupSelect');
+                    TaskGroups.fill(sel, task.group_id || '');
+                    wrap.style.display = 'inline-block';
+                    document.getElementById('changeGroupBtn').style.display = 'none';
+
+                    sel.addEventListener('change', async () => {
+                        await saveTaskGroup(task.id, sel.value);
+                    }, {
+                        once: true
+                    });
+                });
             }
-        }
+
+            // 🆕 ذخیره تغییر گروه
+            async function saveTaskGroup(taskId, groupId) {
+                try {
+                    const res = await fetch('../api/tasks/update-group.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            task_id: taskId,
+                            group_id: groupId || null
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast('گروه کار به‌روزرسانی شد', 'success');
+                        setTimeout(() => location.reload(), 800);
+                    } else {
+                        showToast(data.message || 'خطا در تغییر گروه', 'warning');
+                    }
+                } catch (e) {
+                    showToast('خطا در ارتباط با سرور', 'warning');
+                }
+            }
+
             function displayTaskDetails(task, history) {
 
                 document.getElementById('taskTitle').textContent = task.title;
@@ -1894,7 +2051,7 @@ require_once '../includes/version.php';
                 }
 
                 if (task.task_type === 'continuous') {
-    col2HTML += `
+                    col2HTML += `
 <div class="info-item">
     <div class="info-label">تاریخ شروع:</div>
     <div class="info-value">${formatPersianDate(task.start_date)}</div>
@@ -1988,7 +2145,7 @@ require_once '../includes/version.php';
                     stepDescEl.style.display = '';
                 } else {
                     stepDescEl.innerHTML = '';
-                    stepDescEl.style.display = 'none';   // کارهای عادی: زیر عنوان خالی و پنهان
+                    stepDescEl.style.display = 'none'; // کارهای عادی: زیر عنوان خالی و پنهان
                 }
 
                 // if (task.delegation_notes) {
@@ -2007,12 +2164,15 @@ require_once '../includes/version.php';
 
                 displayHistory(history);
             }
+
             function showNewTaskModal() {
                 window.location.href = 'create-task.php';
             }
+
             function showDailyReportModal() {
                 window.location.href = 'daily-report.php';
             }
+
             function updateDeadlineDisplay(task) {
                 // تعیین نقش کاربر
                 isCreator = (task.creator_id === userId);
@@ -2020,16 +2180,16 @@ require_once '../includes/version.php';
 
                 const deadlineElement = document.getElementById('deadlineValue');
                 if (task.deadline) {
-                    deadlineElement.textContent = (task.is_workflow_task == 1)
-                        ? formatDateTime(task.deadline)
-                        : formatDateTime(task.deadline).split(' - ')[0];
+                    deadlineElement.textContent = (task.is_workflow_task == 1) ?
+                        formatDateTime(task.deadline) :
+                        formatDateTime(task.deadline).split(' - ')[0];
                 }
 
                 // ✅ کار روتین: آیکن تمدید ساعتی برای مسئولِ مرحله (کاربرِ مشخص یا اعضای واحد)
                 if (task.is_workflow_task == 1) {
-                    const inSection = currentUser && (task.assignee_id
-                        ? currentUser.id == task.assignee_id
-                        : currentUser.activity_section === task.current_step_section);
+                    const inSection = currentUser && (task.assignee_id ?
+                        currentUser.id == task.assignee_id :
+                        currentUser.activity_section === task.current_step_section);
                     const isFinished = ['completed', 'approved', 'rejected'].includes(task.status);
                     const wfBtn = document.getElementById('requestDeadlineBtn');
                     if (wfBtn) {
@@ -2038,7 +2198,10 @@ require_once '../includes/version.php';
                             wfBtn.removeAttribute('data-disabled');
                             wfBtn.style.display = 'inline-block';
                             wfBtn.setAttribute('title', 'تمدید موعد (ساعتی)');
-                            wfBtn.onclick = function (e) { e.preventDefault(); showWorkflowDeadlineModal(); };
+                            wfBtn.onclick = function(e) {
+                                e.preventDefault();
+                                showWorkflowDeadlineModal();
+                            };
                         } else {
                             wfBtn.style.setProperty('display', 'none', 'important');
                         }
@@ -2074,10 +2237,10 @@ require_once '../includes/version.php';
             function loadPendingDeadlineRequests() {
 
                 fetch(`../api/tasks/get-deadline-requests.php?task_id=${taskId}`, {
-                    headers: {
-                        'Authorization': 'Bearer ' + authToken
-                    }
-                })
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken
+                        }
+                    })
                     .then(response => response.json())
                     .then(data => {
 
@@ -2104,17 +2267,16 @@ require_once '../includes/version.php';
 
                                 badge.textContent = `درخواست: ${displayDate}`;
                                 badge.style.display = 'inline-block';
-                                badge.onclick = function () {
+                                badge.onclick = function() {
                                     showDeadlineReviewModal(request);
                                 };
                                 // ✅ نمایش toast با دکمه مشاهده
                                 showToast('یک درخواست تمدید موعد در انتظار بررسی شماست', 'info', {
                                     duration: 150000,
-                                    buttons: [
-                                        {
+                                    buttons: [{
                                             label: 'مشاهده درخواست',
                                             style: 'primary',
-                                            onClick: function () {
+                                            onClick: function() {
                                                 showDeadlineReviewModal(request);
                                             }
                                         },
@@ -2265,7 +2427,7 @@ require_once '../includes/version.php';
 
                 // اضافه کردن event listener جدید
                 const freshBtn = document.getElementById('requestDeadlineBtn');
-                freshBtn.addEventListener('click', function (e) {
+                freshBtn.addEventListener('click', function(e) {
                     if (this.classList.contains('disabled') || this.getAttribute('data-disabled') === 'true') {
                         e.preventDefault();
                         e.stopPropagation();
@@ -2277,7 +2439,7 @@ require_once '../includes/version.php';
                 });
 
             }
-  // ===== تمدید ساعتی کار روتین =====
+            // ===== تمدید ساعتی کار روتین =====
             function showWorkflowDeadlineModal() {
                 document.getElementById('wfCurrentDeadline').textContent =
                     (taskData && taskData.deadline) ? formatDeadlineDisplay(taskData.deadline) : 'نامشخص';
@@ -2295,7 +2457,10 @@ require_once '../includes/version.php';
             function updateWfDeadlinePreview() {
                 const hours = parseInt(document.getElementById('wfExtendHours').value, 10);
                 const preview = document.getElementById('wfNewDeadlinePreview');
-                if (!hours || hours < 1 || !taskData || !taskData.deadline) { preview.textContent = '-'; return; }
+                if (!hours || hours < 1 || !taskData || !taskData.deadline) {
+                    preview.textContent = '-';
+                    return;
+                }
                 const nd = new Date(new Date(taskData.deadline).getTime() + hours * 3600 * 1000);
                 preview.textContent = formatDeadlineDisplay(wfToMysqlDatetime(nd));
             }
@@ -2303,9 +2468,18 @@ require_once '../includes/version.php';
             async function submitWorkflowDeadlineRequest() {
                 const hours = parseInt(document.getElementById('wfExtendHours').value, 10);
                 const reason = document.getElementById('wfExtensionReason').value.trim();
-                if (!hours || hours < 1) { showToast('تعداد ساعت معتبر وارد کنید', 'info'); return; }
-                if (!reason) { showToast('لطفاً دلیل را وارد کنید', 'info'); return; }
-                if (!taskData || !taskData.deadline) { showToast('موعد فعلی نامشخص است', 'warning'); return; }
+                if (!hours || hours < 1) {
+                    showToast('تعداد ساعت معتبر وارد کنید', 'info');
+                    return;
+                }
+                if (!reason) {
+                    showToast('لطفاً دلیل را وارد کنید', 'info');
+                    return;
+                }
+                if (!taskData || !taskData.deadline) {
+                    showToast('موعد فعلی نامشخص است', 'warning');
+                    return;
+                }
 
                 const nd = new Date(new Date(taskData.deadline).getTime() + hours * 3600 * 1000);
                 const newDeadline = wfToMysqlDatetime(nd);
@@ -2313,18 +2487,32 @@ require_once '../includes/version.php';
                 try {
                     const response = await fetch('../api/tasks/request-deadline.php', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                        body: JSON.stringify({ task_id: taskId, new_deadline: newDeadline, reason: reason, extend_hours: hours })
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            task_id: taskId,
+                            new_deadline: newDeadline,
+                            reason: reason,
+                            extend_hours: hours
+                        })
                     });
                     const data = await response.json();
                     if (data.success) {
                         closeModal('workflowDeadlineModal');
-                        if (data.auto_approved) { showToast('موعد کار روتین تمدید شد', 'success'); location.reload(); }
-                        else { showToast('درخواست تمدید ارسال شد', 'success'); }
+                        if (data.auto_approved) {
+                            showToast('موعد کار روتین تمدید شد', 'success');
+                            location.reload();
+                        } else {
+                            showToast('درخواست تمدید ارسال شد', 'success');
+                        }
                     } else {
                         showToast(data.message || 'خطا در ارسال درخواست', 'warning');
                     }
-                } catch (e) { showToast('خطا در ارتباط با سرور', 'warning'); }
+                } catch (e) {
+                    showToast('خطا در ارتباط با سرور', 'warning');
+                }
             }
             async function submitDeadlineRequest() {
                 const newDeadlineInput = document.getElementById('newDeadline');
@@ -2339,7 +2527,7 @@ require_once '../includes/version.php';
                 if (!reason) {
                     showToast('لطفاً دلیل درخواست را وارد کنید', 'info');
                     // await doHeavyWork();
-                    
+
                     return;
                 }
 
@@ -2377,7 +2565,7 @@ require_once '../includes/version.php';
                     }
                 } catch (error) {
                     const t = showToast('خطا در ارتباط با سرور', 'warning');
-                    
+
                 }
             }
 
@@ -2388,35 +2576,43 @@ require_once '../includes/version.php';
 
                 document.getElementById('requesterName').textContent = request.first_name + " " + request.last_name || 'نامشخص';
 
-// موعد فعلی (برای کار روتین با ساعت)
+                // موعد فعلی (برای کار روتین با ساعت)
                 const currentDeadlineElement = document.getElementById('currentDeadlineDisplay');
                 if (taskData && taskData.deadline) {
                     const isWfCur = taskData.is_workflow_task == 1;
-                    const formatted = isWfCur
-                        ? formatDeadlineDisplay(taskData.deadline)
-                        : formatDeadlineDisplay(taskData.deadline).split(' - ')[0];
+                    const formatted = isWfCur ?
+                        formatDeadlineDisplay(taskData.deadline) :
+                        formatDeadlineDisplay(taskData.deadline).split(' - ')[0];
                     currentDeadlineElement.textContent = 'موعد فعلی: ' + formatted;
                 }
 
-// موعد درخواستی (برای کار روتین با ساعت)
+                // موعد درخواستی (برای کار روتین با ساعت)
                 const requestedDeadlineElement = document.getElementById('requestedDeadlineDisplay');
                 const isWf = taskData && taskData.is_workflow_task == 1;
-                const requestedFormatted = isWf
-                    ? formatDeadlineDisplay(request.requested_new_deadline)
-                    : formatDeadlineDisplay(request.requested_new_deadline).split(' - ')[0];
+                const requestedFormatted = isWf ?
+                    formatDeadlineDisplay(request.requested_new_deadline) :
+                    formatDeadlineDisplay(request.requested_new_deadline).split(' - ')[0];
                 requestedDeadlineElement.textContent = 'موعد درخواستی: ' + requestedFormatted;
 
                 document.getElementById('extensionReasonDisplay').textContent = request.reason || 'دلیلی ذکر نشده';
 
                 modal.style.display = 'block';
             }
+
             function formatDeadlineDisplay(dateString) {
                 if (!dateString) return 'نامشخص';
                 try {
                     const date = new Date(dateString);
-                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                    const options = {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    };
                     const persianDate = date.toLocaleDateString('fa-IR', options);
-                    const timeOptions = { hour: '2-digit', minute: '2-digit' };
+                    const timeOptions = {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    };
                     const persianTime = date.toLocaleTimeString('fa-IR', timeOptions);
                     return `${persianDate} - ${persianTime}`;
                 } catch (e) {
@@ -2433,49 +2629,60 @@ require_once '../includes/version.php';
 
                 showToast('آیا می‌خواهید تأیید کنید؟', 'warning', {
                     duration: 1500000,
-                    buttons: [
-                        { label: 'بله، تأیید', style: 'primary', onClick: function () {
-                            fetch('../api/tasks/approve-deadline.php', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': 'Bearer ' + authToken
-                                },
-                                body: JSON.stringify({ request_id: requestId })
-                            })
-                                .then(response => {
-                                    return response.text().then(text => {
-                                        try {
-                                            return JSON.parse(text);
-                                        } catch (e) {
-                                            console.error('❌ JSON parse error:', e);
-                                            console.error('❌ Response was:', text);
-                                            throw new Error('خطای سرور: ' + text.substring(0, 200));
-                                        }
-                                    });
-                                })
-                                .then(data => {
-                                    if (data.success) {
-                                        showToast('تأیید شد', 'success');
-                                        const badge = document.getElementById('pendingRequestBadge');
-                                        if (badge) badge.style.display = 'none';
-                                        closeModal('reviewDeadlineModal');
-                                        if (data.new_deadline) {
-                                            const deadlineElement = document.getElementById('deadlineValue');
-                                            if (deadlineElement) {
-                                                deadlineElement.textContent = formatDateTime(data.new_deadline).split(' - ')[0];
+                    buttons: [{
+                            label: 'بله، تأیید',
+                            style: 'primary',
+                            onClick: function() {
+                                fetch('../api/tasks/approve-deadline.php', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': 'Bearer ' + authToken
+                                        },
+                                        body: JSON.stringify({
+                                            request_id: requestId
+                                        })
+                                    })
+                                    .then(response => {
+                                        return response.text().then(text => {
+                                            try {
+                                                return JSON.parse(text);
+                                            } catch (e) {
+                                                console.error('❌ JSON parse error:', e);
+                                                console.error('❌ Response was:', text);
+                                                throw new Error('خطای سرور: ' + text.substring(0, 200));
                                             }
+                                        });
+                                    })
+                                    .then(data => {
+                                        if (data.success) {
+                                            showToast('تأیید شد', 'success');
+                                            const badge = document.getElementById('pendingRequestBadge');
+                                            if (badge) badge.style.display = 'none';
+                                            closeModal('reviewDeadlineModal');
+                                            if (data.new_deadline) {
+                                                const deadlineElement = document.getElementById('deadlineValue');
+                                                if (deadlineElement) {
+                                                    deadlineElement.textContent = formatDateTime(data.new_deadline).split(' - ')[0];
+                                                }
+                                            }
+                                            setTimeout(() => location.reload(), 1000);
+                                        } else {
+                                            showToast('خطا در ارتباط با سرور', 'warning');
                                         }
-                                        setTimeout(() => location.reload(), 1000);
-                                    } else {
+                                    })
+                                    .catch(error => {
                                         showToast('خطا در ارتباط با سرور', 'warning');
-                                    }
-                                })
-                                .catch(error => {
-                                    showToast('خطا در ارتباط با سرور', 'warning');
-                                });
-                        } },
-                        { label: 'خیر', style: 'ghost', onClick: function () { return; } }
+                                    });
+                            }
+                        },
+                        {
+                            label: 'خیر',
+                            style: 'ghost',
+                            onClick: function() {
+                                return;
+                            }
+                        }
                     ]
                 });
             }
@@ -2508,7 +2715,7 @@ require_once '../includes/version.php';
                 const requestId = window.currentDeadlineRequestId;
                 if (!requestId) {
                     const t = showToast('درخواست یافت نشد', 'warning');
-                    
+
 
                     return;
                 }
@@ -2517,26 +2724,26 @@ require_once '../includes/version.php';
                 modal.style.display = 'block';
 
                 const confirmBtn = document.getElementById('confirmRejectBtn');
-                confirmBtn.onclick = function () {
+                confirmBtn.onclick = function() {
                     const reason = document.getElementById('rejectionReasonInput').value.trim();
 
                     if (!reason) {
                         const t = showToast('لطفا دلیل را وارد کنید', 'warning');
-                        
+
                         return;
                     }
 
                     fetch('../api/tasks/reject-deadline.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + authToken  // ✅ اضافه کردن
-                        },
-                        body: JSON.stringify({
-                            request_id: requestId,
-                            rejection_reason: reason
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + authToken // ✅ اضافه کردن
+                            },
+                            body: JSON.stringify({
+                                request_id: requestId,
+                                rejection_reason: reason
+                            })
                         })
-                    })
                         .then(response => {
                             // ✅ اضافه کردن: نمایش response قبل از parse
                             return response.text().then(text => {
@@ -2552,7 +2759,7 @@ require_once '../includes/version.php';
                         .then(data => {
                             if (data.success) {
                                 const t = showToast('رد درخواست با موفقیت انجام شد', 'info');
-                                
+
 
                                 const badge = document.getElementById('pendingRequestBadge');
                                 if (badge) badge.style.display = 'none';
@@ -2563,13 +2770,13 @@ require_once '../includes/version.php';
                                 setTimeout(() => location.reload(), 1000);
                             } else {
                                 const t = showToast('خطا در ارتباط با سرور', 'warning');
-                                
+
 
                             }
                         })
                         .catch(error => {
                             const t = showToast('خطا در ارتباط با سرور', 'warning');
-                            
+
                         });
                 };
             }
@@ -2577,20 +2784,20 @@ require_once '../includes/version.php';
             // تابع کمکی برای ارسال رد
             function performReject(requestId, reason) {
                 fetch('../api/tasks/reject-deadline.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        request_id: requestId,
-                        rejection_reason: reason
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            request_id: requestId,
+                            rejection_reason: reason
+                        })
                     })
-                })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
                             const t = showToast('رد درخواست با موفقیت انجام شد', 'info');
-                            
+
                             // ✅ اصلاح: مخفی کردن badge درخواست منتظر
                             const badge = document.getElementById('pendingRequestBadge');
                             if (badge) {
@@ -2609,12 +2816,12 @@ require_once '../includes/version.php';
                             }, 1000);
                         } else {
                             const t = showToast('خطا در ارتباط با سرور', 'warning');
-                            
+
                         }
                     })
                     .catch(error => {
                         const t = showToast('خطا در ارتباط با سرور', 'warning');
-                        
+
                     });
             }
             async function submitRejectDeadline() {
@@ -2622,13 +2829,13 @@ require_once '../includes/version.php';
 
                 if (!reason) {
                     const t = showToast('لطفا دلیل را وارد کنید', 'warning');
-                    
+
                     return;
                 }
 
                 if (!currentDeadlineRequestId) {
                     const t = showToast('درخواستی یافت نشد', 'warning');
-                    
+
                     return;
                 }
 
@@ -2711,7 +2918,7 @@ require_once '../includes/version.php';
                 const lastApprovedDateToday = isLastApprovedDateToday(task);
 
                 let currentDeadlineRequestId = null; // شناسه درخواست منتظر
-                let currentDeadlineTaskId = null;    // شناسه کار
+                let currentDeadlineTaskId = null; // شناسه کار
 
                 [startBtn, completeBtn, addDiscBtn, delegateBtn, editBtn, deleteBtn].forEach(btn => btn.style.display = 'none');
                 approveBtn.style.display = 'none';
@@ -2749,9 +2956,9 @@ require_once '../includes/version.php';
 
                     // ✅ چک 1: مسئولِ این مرحله (کاربرِ مشخص یا عضوِ واحد) باشد و مرحله «فعال» باشد
                     const stepActive = (task.current_step_status === 'active');
-                    const inSection = stepActive && currentUser && (task.assignee_id
-                        ? isAssignee
-                        : currentUser.activity_section === task.current_step_section);
+                    const inSection = stepActive && currentUser && (task.assignee_id ?
+                        isAssignee :
+                        currentUser.activity_section === task.current_step_section);
 
                     // ✅ چک 2: آیا این task در مرحله فعلی workflow است؟
                     // const isCurrentStage = task.current_stage_id === task.current_workflow_step;
@@ -2772,8 +2979,7 @@ require_once '../includes/version.php';
                         if (task.status === 'not_started' || task.status === 'delegated' || task.status === 'rejected') {
                             // کار شروع نشده، می‌توان شروع کرد
                             startBtn.style.display = 'inline-block';
-                        }
-                        else if (task.status === 'in_progress') {
+                        } else if (task.status === 'in_progress') {
                             if (!isAssignee) {
                                 // کار در حال انجام اما کاربر assignee نیست
                                 startBtn.style.display = 'inline-block';
@@ -2868,9 +3074,8 @@ require_once '../includes/version.php';
                 // ── دکمه اتمام دوره: فقط creator، فقط کارهای دوره‌ای، فقط وقتی تکمیل/تأیید نشده
                 const terminatePeriodBtn = document.getElementById('terminatePeriodBtn');
                 if (terminatePeriodBtn) {
-                    const canTerminate = isCreator
-                        && ['continuous'].includes(task.task_type)
-                        && !['completed', 'approved', 'rejected'].includes(task.status);
+                    const canTerminate = isCreator && ['continuous'].includes(task.task_type) &&
+                        !['completed', 'approved', 'rejected'].includes(task.status);
                     terminatePeriodBtn.style.display = canTerminate ? 'inline-block' : 'none';
                 }
 
@@ -2881,10 +3086,10 @@ require_once '../includes/version.php';
                     const _forgiven = task.overdue_forgiven_credit || 0;
                     const _overdue = calculateOverduePeriods(task);
                     const _remaining = Math.max(0, _overdue - _completed - _forgiven);
-                    const canRequest = (task.task_type === 'continuous')
-                        && _remaining > 0
-                        && (isAssignee || isCreator)
-                        && !['completed', 'approved', 'rejected'].includes(task.status);
+                    const canRequest = (task.task_type === 'continuous') &&
+                        _remaining > 0 &&
+                        (isAssignee || isCreator) &&
+                        !['completed', 'approved', 'rejected'].includes(task.status);
                     if (canRequest && task.has_pending_overdue_request == 1) {
                         clearOverdueBtn.style.display = 'inline-block';
                         clearOverdueBtn.disabled = true;
@@ -2897,7 +3102,7 @@ require_once '../includes/version.php';
                         clearOverdueBtn.style.display = 'none';
                     }
                 }
-editBtn.style.display = 'none';
+                editBtn.style.display = 'none';
                 setupRenewalButton(task);
             }
 
@@ -2916,9 +3121,9 @@ editBtn.style.display = 'none';
                 if (task.task_type !== 'continuous') return;
 
                 const today = new Date().toISOString().split('T')[0];
-                const isReady = task.end_date
-                    && task.end_date <= today
-                    && task.is_pending_approval != 1;
+                const isReady = task.end_date &&
+                    task.end_date <= today &&
+                    task.is_pending_approval != 1;
 
                 // درخواستی در جریان است؟
                 if (task.has_pending_renewal_request == 1) {
@@ -3032,28 +3237,43 @@ editBtn.style.display = 'none';
                 history.forEach(item => {
                     const actionLabel = getActionLabel(item.action);
                     const badgeClass = actionBadgeClass[item.action] || 'ab-updated';
-                    const userName = item.from_user_first_name || item.from_user_last_name
-                        ? `${item.from_user_first_name || ''} ${item.from_user_last_name || ''}`.trim()
-                        : 'نامشخص';
+                    const userName = item.from_user_first_name || item.from_user_last_name ?
+                        `${item.from_user_first_name || ''} ${item.from_user_last_name || ''}`.trim() :
+                        'نامشخص';
 
-                    const dateOnly = item.created_at
-                        ? new Date(item.created_at).toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' })
-                        : '';
-                    const timeOnly = item.created_at
-                        ? new Date(item.created_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
-                        : '';
+                    const dateOnly = item.created_at ?
+                        new Date(item.created_at).toLocaleDateString('fa-IR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }) :
+                        '';
+                    const timeOnly = item.created_at ?
+                        new Date(item.created_at).toLocaleTimeString('fa-IR', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) :
+                        '';
 
                     // build notes section
                     let notesHTML = '';
                     if (item.action === 'deadline_extended' && item.notes) {
                         try {
                             const n = JSON.parse(item.notes);
-                            const oldD = n.old_deadline
-                                ? new Date(n.old_deadline).toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' })
-                                : 'نامشخص';
-                            const newD = n.new_deadline
-                                ? new Date(n.new_deadline).toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' })
-                                : 'نامشخص';
+                            const oldD = n.old_deadline ?
+                                new Date(n.old_deadline).toLocaleDateString('fa-IR', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                }) :
+                                'نامشخص';
+                            const newD = n.new_deadline ?
+                                new Date(n.new_deadline).toLocaleDateString('fa-IR', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                }) :
+                                'نامشخص';
                             notesHTML = `
                             <div class="ml-deadline-inline">
                                 <span class="ml-cross">${oldD}</span>
@@ -3099,7 +3319,7 @@ editBtn.style.display = 'none';
                             customNotesHTML = (notesHTML || '') + `<div class="ml-notes">در انتظار تأیید: ${toName}</div>`;
                         }
                     }
-                    
+
                     html += `
         <div class="ml-item">
             <div class="ml-left">
@@ -3120,7 +3340,9 @@ editBtn.style.display = 'none';
 
             async function loadUsers() {
                 try {
-                    if (!orgSections || !orgSections.length) { await loadSections(); }
+                    if (!orgSections || !orgSections.length) {
+                        await loadSections();
+                    }
                     const response = await fetch('../api/users/list.php', {
                         headers: {
                             'Authorization': 'Bearer ' + authToken
@@ -3132,13 +3354,17 @@ editBtn.style.display = 'none';
                     if (data.success) {
                         checklistUsers = data.users;
                         const secMap = {};
-                        (orgSections || []).forEach(s => { secMap[s.section_key] = s.section_label; });
+                        (orgSections || []).forEach(s => {
+                            secMap[s.section_key] = s.section_label;
+                        });
                         AssigneePicker.create({
                             container: '#delegatePicker',
                             users: data.users,
                             sectionMap: secMap,
                             showSections: false,
-                            onSelect: (_, v) => { delegateTargetId = v || ''; }
+                            onSelect: (_, v) => {
+                                delegateTargetId = v || '';
+                            }
                         });
                     }
                 } catch (error) {
@@ -3175,7 +3401,7 @@ editBtn.style.display = 'none';
                     });
                     const data = await response.json();
                     const t = showToast(data.message, 'info');
-                    
+
 
 
                     if (data.success) {
@@ -3184,7 +3410,7 @@ editBtn.style.display = 'none';
                     }
                 } catch (error) {
                     const t = showToast('خطا در درج توضیح', 'warning');
-                    
+
                 }
             }
 
@@ -3224,14 +3450,14 @@ editBtn.style.display = 'none';
                     });
                     const data = await response.json();
                     const t = showToast(data.message, 'info');
-                    
+
 
                     bootstrap.Modal.getInstance(document.getElementById('completeDiscModal')).hide();
                     location.reload();
 
                 } catch (error) {
                     const t = showToast('خطا در تکمیل کار', 'info');
-                    
+
 
                 }
             }
@@ -3256,7 +3482,7 @@ editBtn.style.display = 'none';
                     if (data.success) {
                         showToast(data.message, 'success');
                         bootstrap.Modal.getInstance(document.getElementById('delegateModal')).hide();
-                            window.location.href = document.referrer; // بارگذاری مجدد کامل صفحه قبلی
+                        window.location.href = document.referrer; // بارگذاری مجدد کامل صفحه قبلی
                     } else {
                         showToast(data.message || 'خطا در تأیید و ارجاع', 'warning');
                     }
@@ -3264,11 +3490,12 @@ editBtn.style.display = 'none';
                     showToast('خطا در ارتباط با سرور', 'warning');
                 }
             }
+
             function showDelegateModal() {
                 // منبع امن: از window._currentTask استفاده کن (در loadTaskDetails ست می‌شود)
                 const t = window._currentTask || null;
                 const wrap = document.getElementById('delegateShareHistoryWrap');
-                const chk  = document.getElementById('delegateShareHistory');
+                const chk = document.getElementById('delegateShareHistory');
                 const isCreator = (currentUser && t && currentUser.id == t.creator_id);
                 if (wrap) wrap.style.display = isCreator ? 'block' : 'none';
                 if (chk && t) chk.checked = (parseInt(t.share_history) !== 0);
@@ -3282,7 +3509,7 @@ editBtn.style.display = 'none';
 
                 if (!toUserId) {
                     const t = showToast('لطفا کاربر مقصد را انتخاب کنید', 'info');
-                    
+
                     return;
                 }
 
@@ -3309,27 +3536,31 @@ editBtn.style.display = 'none';
 
                     const data = await response.json();
                     const t = showToast(data.message, 'info');
-                    
+
 
                     if (data.success) {
                         bootstrap.Modal.getInstance(document.getElementById('delegateModal')).hide();
-                            window.location.href = document.referrer; // بارگذاری مجدد کامل صفحه قبلی
+                        window.location.href = document.referrer; // بارگذاری مجدد کامل صفحه قبلی
                     }
                 } catch (error) {
                     const t = showToast('خطا در ارجاع کار', 'info');
-                    
+
                 }
             }
 
-            function editTask() {
-            }
+            function editTask() {}
 
             async function restoreTask(id) {
                 try {
                     const res = await fetch('../api/tasks/restore.php', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                        body: JSON.stringify({ task_id: id })
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            task_id: id
+                        })
                     });
                     const d = await res.json();
                     if (d.success) location.reload();
@@ -3342,11 +3573,10 @@ editBtn.style.display = 'none';
             async function deleteTask() {
                 showToast('آیا مطمئن هستید که می‌خواهید این کار را حذف کنید؟', 'warning', {
                     duration: 1500000,
-                    buttons: [
-                        {
+                    buttons: [{
                             label: 'بله، حذف شود',
                             style: 'primary',
-                            onClick: async function () {
+                            onClick: async function() {
                                 try {
                                     const response = await fetch('../api/tasks/delete.php', {
                                         method: 'POST',
@@ -3368,17 +3598,22 @@ editBtn.style.display = 'none';
                                             title: 'حذف کار',
                                             message: 'کار حذف شد',
                                             duration: 3000,
-                                            onUndo: async () => { undone = true; await restoreTask(taskId); }
+                                            onUndo: async () => {
+                                                undone = true;
+                                                await restoreTask(taskId);
+                                            }
                                         });
                                         // اگر تا پایان مهلت، بازگردانی نشد → برگشت به صفحه قبل
-                                        setTimeout(() => { if (!undone) window.location.href = back; }, 3200);
+                                        setTimeout(() => {
+                                            if (!undone) window.location.href = back;
+                                        }, 3200);
                                     } else {
                                         const t = showToast('خطا در حذف کار', 'warning');
-                                        
+
                                     }
                                 } catch (error) {
                                     const t = showToast('خطا در ارتباط با سرور', 'warning');
-                                    
+
 
                                 }
                             }
@@ -3386,7 +3621,9 @@ editBtn.style.display = 'none';
                         {
                             label: 'خیر، منصرف شدم',
                             style: 'ghost',
-                            onClick: function () { return; }
+                            onClick: function() {
+                                return;
+                            }
                         }
                     ]
                 });
@@ -3395,11 +3632,15 @@ editBtn.style.display = 'none';
             }
 
             function goBack() {
-                    window.location.href = document.referrer;
+                window.location.href = document.referrer;
             }
 
             function getPriorityLabel(priority) {
-                const labels = { 'high': 'بالا', 'medium': 'متوسط', 'low': 'پایین' };
+                const labels = {
+                    'high': 'بالا',
+                    'medium': 'متوسط',
+                    'low': 'پایین'
+                };
                 return labels[priority] || priority;
             }
 
@@ -3412,21 +3653,27 @@ editBtn.style.display = 'none';
                     'delegated': 'ارجاع شد',
                     'not_started': 'شروع نشده',
                     'termination_requested': 'درخواست اتمام',
-                    'rejected':'متوقف شده'
+                    'rejected': 'متوقف شده'
                 };
                 return labels[status] || status;
             }
 
             function getPeriodLabel(period) {
-                const labels = { 'daily': 'روزانه', 'weekly': 'هفتگی', 'monthly': 'ماهانه' };
+                const labels = {
+                    'daily': 'روزانه',
+                    'weekly': 'هفتگی',
+                    'monthly': 'ماهانه'
+                };
                 return labels[period] || period;
             }
+
             function toLocalYMD(d) {
                 const y = d.getFullYear();
                 const m = String(d.getMonth() + 1).padStart(2, '0');
                 const day = String(d.getDate()).padStart(2, '0');
                 return `${y}-${m}-${day}`;
             }
+
             function getNextDueDate(startDate, periodType, lastCompletedDate) {
                 if (!startDate || !periodType) return null;
                 const today = new Date();
@@ -3443,10 +3690,17 @@ editBtn.style.display = 'none';
                 const base = new Date(lastCompletedDate);
                 const next = new Date(base);
                 switch (periodType) {
-                    case 'daily': next.setDate(base.getDate() + 1); break;
-                    case 'weekly': next.setDate(base.getDate() + 7); break;
-                    case 'monthly': next.setMonth(base.getMonth() + 1); break;
-                    default: return null;
+                    case 'daily':
+                        next.setDate(base.getDate() + 1);
+                        break;
+                    case 'weekly':
+                        next.setDate(base.getDate() + 7);
+                        break;
+                    case 'monthly':
+                        next.setMonth(base.getMonth() + 1);
+                        break;
+                    default:
+                        return null;
                 }
                 if (next < today) return today.toISOString().split('T')[0];
                 return next.toISOString().split('T')[0];
@@ -3475,7 +3729,11 @@ editBtn.style.display = 'none';
                 try {
                     const date = new Date(dateString);
 
-                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                    const options = {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    };
                     return date.toLocaleDateString('fa-IR', options);
                 } catch (e) {
                     return dateString;
@@ -3487,8 +3745,15 @@ editBtn.style.display = 'none';
                 try {
                     const date = new Date(dateString);
                     date.setDate(date.getDate());
-                    const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-                    const timeOptions = { hour: '2-digit', minute: '2-digit' };
+                    const dateOptions = {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    };
+                    const timeOptions = {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    };
                     const persianDate = date.toLocaleDateString('fa-IR', dateOptions);
                     const persianTime = date.toLocaleTimeString('fa-IR', timeOptions);
                     return `${persianDate} - ${persianTime}`;
@@ -3520,11 +3785,11 @@ editBtn.style.display = 'none';
                 const data = await response.json();
                 if (data.success) {
                     const t = showToast('کار شروع شد', 'warning');
-                    
+
                     location.reload();
                 } else {
                     const t = showToast('خطا در شروع کار: ' + (data.message || 'نامشخص'), 'warning');
-                    
+
                 }
             }
 
@@ -3535,7 +3800,10 @@ editBtn.style.display = 'none';
             }
 
             function showAlert(message, type = 'info') {
-                const map = { danger: 'warning', error: 'warning' };
+                const map = {
+                    danger: 'warning',
+                    error: 'warning'
+                };
                 showToast(message, map[type] || type);
             }
 
@@ -3566,14 +3834,14 @@ editBtn.style.display = 'none';
 
                     const data = await response.json();
                     const t = showToast(data.message, 'info');
-                    
+
                     if (data.success) {
                         bootstrap.Modal.getInstance(document.getElementById('approveModal')).hide();
                         location.reload();
                     }
                 } catch (error) {
                     const t = showToast('خطا در تأیید کار', 'warning');
-                    
+
                 }
             }
 
@@ -3657,7 +3925,7 @@ editBtn.style.display = 'none';
 
                 if (!notes) {
                     const t = showToast('لطفا دلیل کار را وارد کنید', 'info');
-                    
+
                     return;
                 }
 
@@ -3677,7 +3945,7 @@ editBtn.style.display = 'none';
 
                     const data = await response.json();
                     const t = showToast(data.message, 'info');
-                    
+
 
                     if (data.success) {
                         bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
@@ -3685,11 +3953,12 @@ editBtn.style.display = 'none';
                     }
                 } catch (error) {
                     const t = showToast('خطا در رد کار', 'warning');
-                    
+
                 }
             }
             // نمایش modal بازتعریف
             let redefineTargetId = '';
+
             function showRedefineModal() {
                 // پر کردن فیلدها با اطلاعات فعلی
                 document.getElementById('redefineTitle').value = taskData.title;
@@ -3744,7 +4013,7 @@ editBtn.style.display = 'none';
                 loadUsersForRedefine();
 
                 // نمایش modal
-// نمایش checkbox فایل‌ها اگر پیوست دارد
+                // نمایش checkbox فایل‌ها اگر پیوست دارد
                 const attachmentsOption = document.getElementById('redefineAttachmentsOption');
                 const attachmentsCount = document.getElementById('redefineAttachmentsCount');
                 const attachmentItems = document.querySelectorAll('#attachmentsList [data-attachment-id]');
@@ -3757,7 +4026,7 @@ editBtn.style.display = 'none';
 
                 // نمایش modal
                 new bootstrap.Modal(document.getElementById('redefineModal')).show();
-                }
+            }
             // راه‌اندازی datepicker برای modal بازتعریف
             function initPersianDatepickerForRedefine(inputId, defaultDateString) {
                 const input = document.getElementById(inputId);
@@ -3775,7 +4044,9 @@ editBtn.style.display = 'none';
             // بارگذاری لیست کاربران
             async function loadUsersForRedefine() {
                 try {
-                    if (!orgSections || !orgSections.length) { await loadSections(); }
+                    if (!orgSections || !orgSections.length) {
+                        await loadSections();
+                    }
                     const response = await fetch('../api/users/list.php', {
                         headers: {
                             'Authorization': 'Bearer ' + authToken
@@ -3787,12 +4058,14 @@ editBtn.style.display = 'none';
 
                         // نگاشت کلید واحد → نام فارسی (طبق استاندارد بقیهٔ بخش‌ها)
                         const secMap = {};
-                        (orgSections || []).forEach(s => { secMap[s.section_key] = s.section_label; });
+                        (orgSections || []).forEach(s => {
+                            secMap[s.section_key] = s.section_label;
+                        });
 
                         // پیش‌فرض: خودم (id کاربر جاری)
                         const me = JSON.parse(localStorage.getItem('user_info'));
                         redefineTargetId = me ? String(me.id) : '';
-                        
+
                         AssigneePicker.create({
                             container: '#redefinePicker',
                             users: usersForPicker,
@@ -3832,7 +4105,7 @@ editBtn.style.display = 'none';
                 }
 
                 try {
-// جمع‌آوری آیدی فایل‌های پیوست در صورت انتخاب کاربر
+                    // جمع‌آوری آیدی فایل‌های پیوست در صورت انتخاب کاربر
                     // جمع‌آوری آیدی فایل‌ها در صورت انتخاب کاربر
                     let copyAttachmentIds = [];
                     const includeAttachments = document.getElementById('redefineIncludeAttachments');
@@ -4016,17 +4289,17 @@ editBtn.style.display = 'none';
                 let html = '';
                 attachments.forEach(attachment => {
                     const icon = getFileIcon(attachment.file_type);
-                    const preview = attachment.is_image
-                        ? `<img src="${attachment.file_path}" alt="${attachment.file_original_name}">`
-                        : `<i class="bi ${icon}"></i>`;
+                    const preview = attachment.is_image ?
+                        `<img src="${attachment.file_path}" alt="${attachment.file_original_name}">` :
+                        `<i class="bi ${icon}"></i>`;
 
                     const canDelete = attachment.can_delete === true;
 
-                    const deleteBtn = canDelete
-                        ? `<button class="btn-icon btn-delete" onclick="deleteAttachment(${attachment.id})" title="حذف">
+                    const deleteBtn = canDelete ?
+                        `<button class="btn-icon btn-delete" onclick="deleteAttachment(${attachment.id})" title="حذف">
            <i class="bi bi-trash" style="line-height: 0"></i>
-       </button>`
-                        : '';
+       </button>` :
+                        '';
 
                     html += `
             <div class="attachment-item" data-id="${attachment.id}" data-attachment-id="${attachment.id}">
@@ -4133,7 +4406,8 @@ editBtn.style.display = 'none';
                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                     'application/vnd.ms-excel',
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/x-m4a'];
+                    'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/x-m4a'
+                ];
 
                 for (let file of files) {
                     // چک حجم
@@ -4233,39 +4507,53 @@ editBtn.style.display = 'none';
             function deleteAttachment(attachmentId) {
                 showToast('آیا مطمئن هستید که می‌خواهید این فایل را حذف کنید؟', 'warning', {
                     duration: 1500000,
-                    buttons: [
-                        { label: 'بله، حذف', style: 'primary', onClick: async function () {
-                            try {
-                                const response = await fetch('../api/tasks/delete-attachment.php', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': 'Bearer ' + authToken
-                                    },
-                                    body: JSON.stringify({ attachment_id: attachmentId })
-                                });
+                    buttons: [{
+                            label: 'بله، حذف',
+                            style: 'primary',
+                            onClick: async function() {
+                                try {
+                                    const response = await fetch('../api/tasks/delete-attachment.php', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': 'Bearer ' + authToken
+                                        },
+                                        body: JSON.stringify({
+                                            attachment_id: attachmentId
+                                        })
+                                    });
 
-                                const data = await response.json();
+                                    const data = await response.json();
 
-                                if (data.success) {
-                                    showAlert('فایل با موفقیت حذف شد', 'success');
-                                    loadAttachments();
-                                } else {
-                                    showAlert(data.message || 'خطا در حذف فایل', 'danger');
+                                    if (data.success) {
+                                        showAlert('فایل با موفقیت حذف شد', 'success');
+                                        loadAttachments();
+                                    } else {
+                                        showAlert(data.message || 'خطا در حذف فایل', 'danger');
+                                    }
+                                } catch (error) {
+                                    console.error('Delete error:', error);
+                                    showAlert('خطا در حذف فایل', 'danger');
                                 }
-                            } catch (error) {
-                                console.error('Delete error:', error);
-                                showAlert('خطا در حذف فایل', 'danger');
                             }
-                        } },
-                        { label: 'خیر', style: 'ghost', onClick: function () { return; } }
+                        },
+                        {
+                            label: 'خیر',
+                            style: 'ghost',
+                            onClick: function() {
+                                return;
+                            }
+                        }
                     ]
                 });
             }
 
             // تابع showAlert (اگر قبلاً وجود نداره)
             function showAlert(message, type = 'info') {
-                const map = { danger: 'warning', error: 'warning' };
+                const map = {
+                    danger: 'warning',
+                    error: 'warning'
+                };
                 showToast(message, map[type] || type);
             }
 
@@ -4317,7 +4605,8 @@ editBtn.style.display = 'none';
                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                     'application/vnd.ms-excel',
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/x-m4a'];
+                    'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/x-m4a'
+                ];
 
                 for (let file of files) {
                     // چک حجم
@@ -4454,6 +4743,7 @@ editBtn.style.display = 'none';
                     showAlert('خطا در درج توضیح', 'danger');
                 }
             }
+
             function canRequestTermination(task) {
                 if (task.task_type !== 'continuous') return false;
                 if (!isAssignee) return false;
@@ -4472,7 +4762,9 @@ editBtn.style.display = 'none';
                 if (!taskId) return;
                 try {
                     const response = await fetch(`../api/tasks/get-termination-request.php?task_id=${taskId}`, {
-                        headers: { 'Authorization': 'Bearer ' + authToken }
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken
+                        }
                     });
                     const data = await response.json();
 
@@ -4492,16 +4784,17 @@ editBtn.style.display = 'none';
 
                         showToast(
                             `درخواست اتمام کار از ${request.requester_name} دریافت شد`,
-                            'info',
-                            {
+                            'info', {
                                 duration: 150000,
-                                buttons: [
-                                    {
+                                buttons: [{
                                         label: 'مشاهده درخواست',
                                         style: 'primary',
                                         onClick: () => showTerminationReviewModal(request)
                                     },
-                                    { label: 'بعداً', style: 'ghost' }
+                                    {
+                                        label: 'بعداً',
+                                        style: 'ghost'
+                                    }
                                 ]
                             }
                         );
@@ -4532,7 +4825,10 @@ editBtn.style.display = 'none';
                             'Content-Type': 'application/json',
                             'Authorization': 'Bearer ' + authToken
                         },
-                        body: JSON.stringify({ task_id: taskId, reason })
+                        body: JSON.stringify({
+                            task_id: taskId,
+                            reason
+                        })
                     });
                     const data = await response.json();
 
@@ -4606,7 +4902,7 @@ editBtn.style.display = 'none';
                     showToast('خطا در ارتباط با سرور', 'warning');
                 }
             }
-// ============ رفع دوره‌های معوقه (Overdue Clear) ============
+            // ============ رفع دوره‌های معوقه (Overdue Clear) ============
             function showClearOverdueModal() {
                 const old = document.getElementById('clearOverdueModalWrap');
                 if (old) old.remove();
@@ -4628,16 +4924,26 @@ editBtn.style.display = 'none';
 
             function submitClearOverdue() {
                 const btn = document.getElementById('clearOverdueConfirmBtn');
-                if (btn) { btn.disabled = true; btn.textContent = 'در حال ارسال...'; }
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = 'در حال ارسال...';
+                }
                 const reason = (document.getElementById('clearOverdueReason') || {}).value || '';
                 fetch('../api/tasks/request-overdue-clear.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ task_id: taskId, reason: reason })
-                })
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            task_id: taskId,
+                            reason: reason
+                        })
+                    })
                     .then(r => r.json())
                     .then(data => {
-                        const w = document.getElementById('clearOverdueModalWrap'); if (w) w.remove();
+                        const w = document.getElementById('clearOverdueModalWrap');
+                        if (w) w.remove();
                         showToast(data.message || (data.success ? 'انجام شد' : 'خطا'), data.success ? 'success' : 'error');
                         if (data.success) setTimeout(() => location.reload(), 1200);
                     })
@@ -4646,8 +4952,10 @@ editBtn.style.display = 'none';
 
             function loadPendingOverdueClearRequests() {
                 fetch(`../api/tasks/get-overdue-clear-requests.php?task_id=${taskId}`, {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
-                })
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken
+                        }
+                    })
                     .then(r => r.json())
                     .then(data => {
                         if (!(data.success && data.requests && data.requests.length > 0)) return;
@@ -4657,9 +4965,17 @@ editBtn.style.display = 'none';
                         if (request.current_approver_id != uid) return; // فقط تأییدکننده
                         showToast('یک درخواست رفع دوره‌های معوقه در انتظار بررسی شماست', 'info', {
                             duration: 150000,
-                            buttons: [
-                                { label: 'مشاهده درخواست', style: 'primary', onClick: function () { showOverdueClearReviewModal(request); } },
-                                { label: 'بعداً', style: 'ghost' }
+                            buttons: [{
+                                    label: 'مشاهده درخواست',
+                                    style: 'primary',
+                                    onClick: function() {
+                                        showOverdueClearReviewModal(request);
+                                    }
+                                },
+                                {
+                                    label: 'بعداً',
+                                    style: 'ghost'
+                                }
                             ]
                         });
                     })
@@ -4690,13 +5006,19 @@ editBtn.style.display = 'none';
 
             function approveOverdueClear(requestId) {
                 fetch('../api/tasks/approve-overdue-clear.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ request_id: requestId })
-                })
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            request_id: requestId
+                        })
+                    })
                     .then(r => r.json())
                     .then(data => {
-                        const w = document.getElementById('ocReviewWrap'); if (w) w.remove();
+                        const w = document.getElementById('ocReviewWrap');
+                        if (w) w.remove();
                         showToast(data.message, data.success ? 'success' : 'error');
                         if (data.success) setTimeout(() => location.reload(), 1200);
                     })
@@ -4706,13 +5028,20 @@ editBtn.style.display = 'none';
             function rejectOverdueClear(requestId) {
                 const reason = (document.getElementById('ocRejectReason') || {}).value || '';
                 fetch('../api/tasks/reject-overdue-clear.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ request_id: requestId, rejection_reason: reason })
-                })
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            request_id: requestId,
+                            rejection_reason: reason
+                        })
+                    })
                     .then(r => r.json())
                     .then(data => {
-                        const w = document.getElementById('ocReviewWrap'); if (w) w.remove();
+                        const w = document.getElementById('ocReviewWrap');
+                        if (w) w.remove();
                         showToast(data.message, data.success ? 'success' : 'error');
                         if (data.success) setTimeout(() => location.reload(), 1200);
                     })
@@ -4755,255 +5084,287 @@ editBtn.style.display = 'none';
                 }
             }
             async function showTerminatePeriodConfirm() {
-    showToast('آیا مطمئن هستید که می‌خواهید این کار را اتمام دهید؟', 'warning', {
-        duration: 1500000,
-        buttons: [
-            {
-                label: 'بله، اتمام داده شود',
-                style: 'primary',
-                onClick: async function () {
-                    try {
-                        const response = await fetch('../api/tasks/terminate-period.php', {
+                showToast('آیا مطمئن هستید که می‌خواهید این کار را اتمام دهید؟', 'warning', {
+                    duration: 1500000,
+                    buttons: [{
+                            label: 'بله، اتمام داده شود',
+                            style: 'primary',
+                            onClick: async function() {
+                                try {
+                                    const response = await fetch('../api/tasks/terminate-period.php', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': 'Bearer ' + authToken
+                                        },
+                                        body: JSON.stringify({
+                                            task_id: taskId
+                                        })
+                                    });
+                                    const data = await response.json();
+                                    if (data.success) {
+                                        showToast(data.message, 'success');
+                                        setTimeout(() => location.reload(), 1200);
+                                    } else {
+                                        showToast(data.message || 'خطا در اتمام کار', 'warning');
+                                    }
+                                } catch (error) {
+                                    showToast('خطا در ارتباط با سرور', 'warning');
+                                }
+                            }
+                        },
+                        {
+                            label: 'خیر، منصرف شدم',
+                            style: 'ghost',
+                            onClick: function() {
+                                return;
+                            }
+                        }
+                    ]
+                });
+            }
+
+            let renewalMode = 'request'; // یا 'apply'
+            let currentRenewalRequest = null;
+
+            function openRenewalModal(mode) {
+                renewalMode = mode;
+                document.getElementById('renewalModalTitle').textContent =
+                    mode === 'apply' ? 'تمدید دوره' : 'درخواست تمدید دوره';
+                document.getElementById('renewalSubmitBtn').textContent =
+                    mode === 'apply' ? 'اعمال تمدید' : 'ارسالِ درخواست';
+                document.getElementById('renewalReasonRequiredHint').textContent =
+                    mode === 'apply' ? 'اختیاری' : 'اجباری';
+                document.getElementById('renewalPeriodLabel').textContent = getPeriodLabel(taskData.period_type);
+                document.getElementById('renewalNewStartDate').value = '';
+                document.getElementById('renewalNewStartDate').removeAttribute('data-date');
+                document.getElementById('renewalNewEndDate').value = '';
+                document.getElementById('renewalNewEndDate').removeAttribute('data-date');
+                document.getElementById('renewalReason').value = '';
+                document.getElementById('renewalNextPeriodPreview').textContent = '-';
+
+                document.getElementById('renewalModal').style.display = 'block';
+
+                setTimeout(() => {
+                    initPersianDatepickerForModal('renewalNewStartDate', null);
+                    initPersianDatepickerForModal('renewalNewEndDate', null);
+
+                    const startInput = document.getElementById('renewalNewStartDate');
+                    const obs = new MutationObserver(() => updateRenewalPreview());
+                    obs.observe(startInput, {
+                        attributes: true,
+                        attributeFilter: ['data-date']
+                    });
+                }, 150);
+            }
+
+            function updateRenewalPreview() {
+                const startVal = document.getElementById('renewalNewStartDate').getAttribute('data-date');
+                if (!startVal) {
+                    document.getElementById('renewalNextPeriodPreview').textContent = '-';
+                    return;
+                }
+                document.getElementById('renewalNextPeriodPreview').textContent = formatPersianDate(startVal);
+            }
+            next ? formatPersianDate(next) : '-';
+
+            function submitRenewal() {
+                const startVal = document.getElementById('renewalNewStartDate').getAttribute('data-date');
+                const endVal = document.getElementById('renewalNewEndDate').getAttribute('data-date');
+                const reason = document.getElementById('renewalReason').value.trim();
+
+                if (!startVal) {
+                    const t = showToast('تاریخ شروع مجدد الزامی است', 'warning');
+                    return;
+                }
+                if (renewalMode === 'request' && !reason) {
+                    const t = showToast('دلیل درخواست الزامی است', 'warning');
+                    return;
+                }
+
+                const url = renewalMode === 'apply' ?
+                    '../api/tasks/apply-renewal.php' :
+                    '../api/tasks/request-renewal.php';
+
+                fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            task_id: taskData.id,
+                            new_start_date: startVal,
+                            new_end_date: endVal || null,
+                            reason: reason
+                        })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            const t = showToast(data.message || 'انجام شد', 'success');
+                            closeModal('renewalModal');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            const t = showToast(data.message || 'خطا', 'warning');
+                        }
+                    })
+                    .catch(() => {
+                        const t = showToast('خطا در ارتباط با سرور', 'warning');
+                    });
+            }
+
+            // بررسی اینکه آیا درخواستِ تمدیدِ دورهٔ در‌جریان مربوط به کاربر جاری است
+            function fetchPendingRenewalRequest(taskId) {
+                fetch('../api/tasks/get-pending-renewal.php?task_id=' + taskId, {
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken
+                        }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.success || !data.request) return;
+                        currentRenewalRequest = data.request;
+
+                        const pendingBadge = document.getElementById('renewalPendingBadge');
+                        const reviewBtn = document.getElementById('reviewRenewalBtn');
+
+                        if (currentUser && currentUser.id == data.request.current_approver_id) {
+                            reviewBtn.style.display = 'inline-block';
+                            reviewBtn.onclick = () => openReviewRenewalModal(data.request);
+                        } else {
+                            pendingBadge.style.display = 'inline-block';
+                        }
+                    })
+                    .catch(() => {});
+            }
+
+            function openReviewRenewalModal(req) {
+                document.getElementById('renewalRequesterName').textContent = req.requester_name || '-';
+                document.getElementById('renewalReqStartDisplay').textContent = formatPersianDate(req.new_start_date);
+                document.getElementById('renewalReqEndDisplay').textContent = req.new_end_date ? formatPersianDate(req.new_end_date) : 'نامحدود';
+                document.getElementById('renewalReasonDisplay').textContent = req.reason || '-';
+                document.getElementById('reviewRenewalModal').style.display = 'block';
+            }
+
+            function approveRenewalRequest() {
+                if (!currentRenewalRequest) return;
+
+                showToast('آیا می‌خواهید تأیید کنید؟', 'warning', {
+                    duration: 1500000,
+                    buttons: [{
+                            label: 'بله، تأیید',
+                            style: 'primary',
+                            onClick: function() {
+                                fetch('../api/tasks/approve-renewal.php', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': 'Bearer ' + authToken
+                                        },
+                                        body: JSON.stringify({
+                                            request_id: currentRenewalRequest.id
+                                        })
+                                    })
+                                    .then(r => r.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            showToast(data.message || 'تأیید شد', 'success');
+                                            closeModal('reviewRenewalModal');
+                                            setTimeout(() => location.reload(), 1000);
+                                        } else {
+                                            showToast(data.message || 'خطا', 'warning');
+                                        }
+                                    })
+                                    .catch(() => {
+                                        showToast('خطا در ارتباط با سرور', 'warning');
+                                    });
+                            }
+                        },
+                        {
+                            label: 'خیر',
+                            style: 'ghost',
+                            onClick: function() {
+                                return;
+                            }
+                        }
+                    ]
+                });
+            }
+
+            function showRejectRenewalReason() {
+                closeModal('reviewRenewalModal');
+                document.getElementById('rejectionReasonInput').value = '';
+                const rejectModal = document.getElementById('rejectReasonModal');
+                rejectModal.style.display = 'block';
+
+                const confirmBtn = document.getElementById('confirmRejectBtn');
+                confirmBtn.onclick = function() {
+                    const reason = document.getElementById('rejectionReasonInput').value.trim();
+                    if (!reason) {
+                        const t = showToast('لطفاً دلیل را وارد کنید', 'warning');
+                        return;
+                    }
+                    fetch('../api/tasks/reject-renewal.php', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': 'Bearer ' + authToken
                             },
-                            body: JSON.stringify({ task_id: taskId })
-                        });
-                        const data = await response.json();
-                        if (data.success) {
-                            showToast(data.message, 'success');
-                            setTimeout(() => location.reload(), 1200);
-                        } else {
-                            showToast(data.message || 'خطا در اتمام کار', 'warning');
-                        }
-                    } catch (error) {
-                        showToast('خطا در ارتباط با سرور', 'warning');
-                    }
-                }
-            },
-            {
-                label: 'خیر، منصرف شدم',
-                style: 'ghost',
-                onClick: function () { return; }
-            }
-        ]
-    });
-}
-
-let renewalMode = 'request'; // یا 'apply'
-        let currentRenewalRequest = null;
-
-        function openRenewalModal(mode) {
-            renewalMode = mode;
-            document.getElementById('renewalModalTitle').textContent =
-                mode === 'apply' ? 'تمدید دوره' : 'درخواست تمدید دوره';
-            document.getElementById('renewalSubmitBtn').textContent =
-                mode === 'apply' ? 'اعمال تمدید' : 'ارسالِ درخواست';
-            document.getElementById('renewalReasonRequiredHint').textContent =
-                mode === 'apply' ? 'اختیاری' : 'اجباری';
-            document.getElementById('renewalPeriodLabel').textContent = getPeriodLabel(taskData.period_type);
-            document.getElementById('renewalNewStartDate').value = '';
-            document.getElementById('renewalNewStartDate').removeAttribute('data-date');
-            document.getElementById('renewalNewEndDate').value = '';
-            document.getElementById('renewalNewEndDate').removeAttribute('data-date');
-            document.getElementById('renewalReason').value = '';
-            document.getElementById('renewalNextPeriodPreview').textContent = '-';
-
-            document.getElementById('renewalModal').style.display = 'block';
-
-            setTimeout(() => {
-                initPersianDatepickerForModal('renewalNewStartDate', null);
-                initPersianDatepickerForModal('renewalNewEndDate', null);
-                
-                const startInput = document.getElementById('renewalNewStartDate');
-                const obs = new MutationObserver(() => updateRenewalPreview());
-                obs.observe(startInput, { attributes: true, attributeFilter: ['data-date'] });
-            }, 150);
-        }
-
-        function updateRenewalPreview() {
-            const startVal = document.getElementById('renewalNewStartDate').getAttribute('data-date');
-            if (!startVal) {
-                document.getElementById('renewalNextPeriodPreview').textContent = '-';
-                return;
-            }
-            document.getElementById('renewalNextPeriodPreview').textContent = formatPersianDate(startVal);
-        }   next ? formatPersianDate(next) : '-';
-
-        function submitRenewal() {
-            const startVal = document.getElementById('renewalNewStartDate').getAttribute('data-date');
-            const endVal = document.getElementById('renewalNewEndDate').getAttribute('data-date');
-            const reason = document.getElementById('renewalReason').value.trim();
-
-            if (!startVal) {
-                const t = showToast('تاریخ شروع مجدد الزامی است', 'warning'); 
-                return;
-            }
-            if (renewalMode === 'request' && !reason) {
-                const t = showToast('دلیل درخواست الزامی است', 'warning'); 
-                return;
-            }
-
-            const url = renewalMode === 'apply'
-                ? '../api/tasks/apply-renewal.php'
-                : '../api/tasks/request-renewal.php';
-
-            fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                body: JSON.stringify({
-                    task_id: taskData.id,
-                    new_start_date: startVal,
-                    new_end_date: endVal || null,
-                    reason: reason
-                })
-            })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        const t = showToast(data.message || 'انجام شد', 'success'); 
-                        closeModal('renewalModal');
-                        setTimeout(() => location.reload(), 1000);
-                    } else {
-                        const t = showToast(data.message || 'خطا', 'warning');
-                    }
-                })
-                .catch(() => {
-                    const t = showToast('خطا در ارتباط با سرور', 'warning');
-                });
-        }
-
-        // بررسی اینکه آیا درخواستِ تمدیدِ دورهٔ در‌جریان مربوط به کاربر جاری است
-        function fetchPendingRenewalRequest(taskId) {
-            fetch('../api/tasks/get-pending-renewal.php?task_id=' + taskId, {
-                headers: { 'Authorization': 'Bearer ' + authToken }
-            })
-                .then(r => r.json())
-                .then(data => {
-                    if (!data.success || !data.request) return;
-                    currentRenewalRequest = data.request;
-
-                    const pendingBadge = document.getElementById('renewalPendingBadge');
-                    const reviewBtn = document.getElementById('reviewRenewalBtn');
-
-                    if (currentUser && currentUser.id == data.request.current_approver_id) {
-                        reviewBtn.style.display = 'inline-block';
-                        reviewBtn.onclick = () => openReviewRenewalModal(data.request);
-                    } else {
-                        pendingBadge.style.display = 'inline-block';
-                    }
-                })
-                .catch(() => {});
-        }
-
-        function openReviewRenewalModal(req) {
-            document.getElementById('renewalRequesterName').textContent = req.requester_name || '-';
-            document.getElementById('renewalReqStartDisplay').textContent = formatPersianDate(req.new_start_date);
-            document.getElementById('renewalReqEndDisplay').textContent = req.new_end_date ? formatPersianDate(req.new_end_date) : 'نامحدود';
-            document.getElementById('renewalReasonDisplay').textContent = req.reason || '-';
-            document.getElementById('reviewRenewalModal').style.display = 'block';
-        }
-
-        function approveRenewalRequest() {
-            if (!currentRenewalRequest) return;
-
-            showToast('آیا می‌خواهید تأیید کنید؟', 'warning', {
-                duration: 1500000,
-                buttons: [
-                    { label: 'بله، تأیید', style: 'primary', onClick: function () {
-                        fetch('../api/tasks/approve-renewal.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                            body: JSON.stringify({ request_id: currentRenewalRequest.id })
-                        })
-                            .then(r => r.json())
-                            .then(data => {
-                                if (data.success) {
-                                    showToast(data.message || 'تأیید شد', 'success');
-                                    closeModal('reviewRenewalModal');
-                                    setTimeout(() => location.reload(), 1000);
-                                } else {
-                                    showToast(data.message || 'خطا', 'warning');
-                                }
+                            body: JSON.stringify({
+                                request_id: currentRenewalRequest.id,
+                                rejection_reason: reason
                             })
-                            .catch(() => {
-                                showToast('خطا در ارتباط با سرور', 'warning');
-                            });
-                    } },
-                    { label: 'خیر', style: 'ghost', onClick: function () { return; } }
-                ]
-            });
-        }
-
-        function showRejectRenewalReason() {
-            closeModal('reviewRenewalModal');
-            document.getElementById('rejectionReasonInput').value = '';
-            const rejectModal = document.getElementById('rejectReasonModal');
-            rejectModal.style.display = 'block';
-
-            const confirmBtn = document.getElementById('confirmRejectBtn');
-            confirmBtn.onclick = function () {
-                const reason = document.getElementById('rejectionReasonInput').value.trim();
-                if (!reason) {
-                    const t = showToast('لطفاً دلیل را وارد کنید', 'warning'); 
-                    return;
-                }
-                fetch('../api/tasks/reject-renewal.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ request_id: currentRenewalRequest.id, rejection_reason: reason })
-                })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            const t = showToast('رد درخواست با موفقیت انجام شد', 'info'); 
-                            closeModal('rejectReasonModal');
-                            setTimeout(() => location.reload(), 1000);
-                        } else {
-                            const t = showToast(data.message || 'خطا', 'warning'); 
-                        }
-                    })
-                    .catch(() => {
-                        const t = showToast('خطا در ارتباط با سرور', 'warning'); 
-                    });
-            };
-        }
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                const t = showToast('رد درخواست با موفقیت انجام شد', 'info');
+                                closeModal('rejectReasonModal');
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                const t = showToast(data.message || 'خطا', 'warning');
+                            }
+                        })
+                        .catch(() => {
+                            const t = showToast('خطا در ارتباط با سرور', 'warning');
+                        });
+                };
+            }
         </script>
         <script src="<?= asset('../assets/js/task-groups.js') ?>"></script>
         <script src="<?= asset('../assets/js/cdn/intro.min.js') ?>"></script>
         <!--<script src="<?= asset('../assets/js/deadline-toast.js') ?>"></script>-->
         <script src="<?= asset('../assets/js/alert.js') ?>"></script>
         <!-- مودال ویرایش آیتم چک‌لیست -->
-<div class="modal fade" id="editChecklistModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-pencil-square ms-2"></i>ویرایش آیتم</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="editChecklistItemId">
-                <div class="mb-3">
-                    <label class="form-label">عنوان آیتم</label>
-                    <input type="text" class="form-control" id="editChecklistTitle" placeholder="عنوان آیتم...">
+        <div class="modal fade" id="editChecklistModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-pencil-square ms-2"></i>ویرایش آیتم</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editChecklistItemId">
+                        <div class="mb-3">
+                            <label class="form-label">توضیحات (اختیاری)</label>
+                            <textarea class="form-control" id="editChecklistDesc" rows="3" placeholder="توضیحات آیتم..."></textarea>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">ارجاع به</label>
+                            <div id="editChecklistAssigneePicker"></div>
+                            <small class="text-muted">می‌توانید این آیتم را به یک کاربر یا واحد ارجاع دهید (اختیاری).</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                        <button type="button" class="btn btn-primary" onclick="submitEditChecklist()">
+                            <i class="bi bi-check-circle ms-2"></i>ذخیره
+                        </button>
+                    </div>
                 </div>
-                <div class="mb-2">
-                    <label class="form-label">ارجاع به</label>
-                    <div id="editChecklistAssigneePicker"></div>
-                    <small class="text-muted">می‌توانید این آیتم را به یک کاربر یا واحد ارجاع دهید (اختیاری).</small> 
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                <button type="button" class="btn btn-primary" onclick="submitEditChecklist()">
-                    <i class="bi bi-check-circle ms-2"></i>ذخیره
-                </button>
             </div>
         </div>
-    </div>
-</div>
 </body>
 
 </html>
