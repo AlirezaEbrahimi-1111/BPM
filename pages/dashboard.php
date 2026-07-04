@@ -814,9 +814,15 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             );
 
             if (searchTerm) {
-                filtered = filtered.filter(task =>
-                    matchesAllWords((task.title || '') + ' ' + (task.description || '') + ' ' + task.id, searchTerm)
-                );
+                filtered = filtered.filter(task => {
+                    const otherText = (task.title || '') + ' ' + (task.description || '') + ' ' + task.id;
+                    task._checklistOnlyMatch = isChecklistOnlyMatch(otherText, task.checklist_titles || '', searchTerm);
+                    return matchesAllWords(otherText + ' ' + (task.checklist_titles || ''), searchTerm);
+                });
+            } else {
+                filtered.forEach(task => {
+                    task._checklistOnlyMatch = false;
+                });
             }
 
             renderMyTasks(filtered);
@@ -1043,7 +1049,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
                     <div class="task-title-section">
                         <div class="task-title">
                             <span class="task-type-icon" title="${task.task_type}">${taskTypeIcon}</span>
-                            ${task.title}
+                                ${task.title}${checklistMatchBadge(task)}
                         </div>
                         <div class="task-assignee">
                             <i class="bi bi-person-circle me-1"></i>
@@ -1081,9 +1087,15 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             );
 
             if (searchTerm) {
-                filtered = filtered.filter(task =>
-                    matchesAllWords((task.title || '') + ' ' + (task.description || '') + ' ' + (task.assignee_name || '') + ' ' + task.id, searchTerm)
-                );
+                filtered = filtered.filter(task => {
+                    const otherText = (task.title || '') + ' ' + (task.description || '') + ' ' + (task.assignee_name || '') + ' ' + task.id;
+                    task._checklistOnlyMatch = isChecklistOnlyMatch(otherText, task.checklist_titles || '', searchTerm);
+                    return matchesAllWords(otherText + ' ' + (task.checklist_titles || ''), searchTerm);
+                });
+            } else {
+                filtered.forEach(task => {
+                    task._checklistOnlyMatch = false;
+                });
             }
 
             renderDelegatedTasks(filtered);
@@ -1170,6 +1182,17 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             const words = normalizeDigits(query).trim().toLowerCase().split(/\s+/);
             const haystack = normalizeDigits(text).toLowerCase();
             return words.every(w => haystack.includes(w));
+        }
+
+        function isChecklistOnlyMatch(otherText, checklistText, searchTerm) {
+            if (!searchTerm) return false;
+            if (matchesAllWords(otherText, searchTerm)) return false; // خودش مچ شده، نیازی به چک‌لیست نبوده
+            return matchesAllWords(checklistText, searchTerm);
+        }
+
+        function checklistMatchBadge(task) {
+            if (!task._checklistOnlyMatch) return '';
+            return '<span style="display:inline-flex;align-items:center;gap:3px;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;border-radius:8px;padding:1px 6px;font-size:0.65rem;margin-inline-start:6px;vertical-align:middle;" title="این کار به‌خاطر چک‌لیستش پیدا شد"><i class="bi bi-check2-square"></i> چک‌لیست</span>';
         }
         // ============================================
         // 🎛️ اضافه کردن جستجو برای کارهای واگذار

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * API: my-tasks.php
  * نسخه اصلاح شده — محاسبه دوره معوقه بدون جمعه و تعطیلات رسمی
@@ -11,7 +12,7 @@ try {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php'; // ← اضافه شد
-
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php';
     $user_id = requireAuth();
     $user = getUserInfo($user_id);
 
@@ -82,7 +83,7 @@ try {
             $activity_section    // NOT EXISTS: واحد
         ]);
         $archived = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+        attachChecklistTitles($db, $archived);
         echo json_encode([
             'success' => true,
             'data' => [
@@ -303,7 +304,6 @@ ORDER BY
                 }
 
                 $task['days_remaining'] = (int) $current_date->diff($next_due)->format('%r%a');
-
             } catch (Exception $e) {
                 $task['overdue_periods'] = 0;
                 error_log("overdue calc error task#{$task['id']}: " . $e->getMessage());
@@ -349,7 +349,7 @@ ORDER BY
 
         $processed_tasks[] = $task;
     }
-
+    attachChecklistTitles($db, $processed_tasks);
     echo json_encode([
         'success' => true,
         'data' => [
@@ -361,7 +361,6 @@ ORDER BY
         ],
         'message' => 'کارها با موفقیت بارگذاری شدند'
     ]);
-
 } catch (Exception $e) {
     error_log("API Error in my-tasks.php: " . $e->getMessage());
     http_response_code(500);

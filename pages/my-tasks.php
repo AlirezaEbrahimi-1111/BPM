@@ -147,9 +147,14 @@ require_once '../includes/version.php';
     <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script>
-        let currentPage = 1, totalPages = 1, allTasks = [], filteredTasks = [], searchTimeout;
+        let currentPage = 1,
+            totalPages = 1,
+            allTasks = [],
+            filteredTasks = [],
+            searchTimeout;
         let viewingArchive = false; // آیا الان بایگانی نمایش داده می‌شود؟
-        let sortColumn = 'created_at', sortDirection = 'desc';
+        let sortColumn = 'created_at',
+            sortDirection = 'desc';
         let perPage = 10;
         let statFilter = 'today';
         let currentUser = null;
@@ -157,21 +162,59 @@ require_once '../includes/version.php';
         let filterAssigneeId = '';
 
 
-        const columnDefs = [
-            { field: 'id', headerName: 'شناسه', width: 75, sortable: true, resizable: true, cellRenderer: p => p.value ? String(p.value).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]) : '-' },
+        const columnDefs = [{
+                field: 'id',
+                headerName: 'شناسه',
+                width: 75,
+                sortable: true,
+                resizable: true,
+                cellRenderer: p => p.value ? String(p.value).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]) : '-'
+            },
             {
-                field: 'title', headerName: 'عنوان', flex: 2, sortable: true, resizable: true,
+                field: 'title',
+                headerName: 'عنوان',
+                flex: 2,
+                sortable: true,
+                resizable: true,
                 cellRenderer: p => {
                     const desc = p.data.description ? `<div style="font-size:0.7rem;color:#94a3b8;line-height:1.4;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${p.data.description}</div>` : '';
-                    return `<div>${p.value || '-'}${desc}</div>`;
+                    return `<div>${p.value || '-'}${checklistMatchBadge(p.data)}${desc}</div>`;
                 }
             },
-            { field: 'creator_name', headerName: 'تعریف‌کننده', flex: 1, sortable: true, resizable: true },
-            { field: 'assignee_name', headerName: 'مسئول انجام', flex: 1, sortable: true, resizable: true },
-            { field: 'status', headerName: 'وضعیت', width: 130, resizable: true, cellRenderer: p => statusBadge(p.value) },
-            { field: 'task_type', headerName: 'نوع', width: 95, resizable: true, cellRenderer: p => typeBadge(p.value) },
             {
-                field: 'deadline', colId: 'col_moed', headerName: 'موعد', width: 105, resizable: true,
+                field: 'creator_name',
+                headerName: 'تعریف‌کننده',
+                flex: 1,
+                sortable: true,
+                resizable: true
+            },
+            {
+                field: 'assignee_name',
+                headerName: 'مسئول انجام',
+                flex: 1,
+                sortable: true,
+                resizable: true
+            },
+            {
+                field: 'status',
+                headerName: 'وضعیت',
+                width: 130,
+                resizable: true,
+                cellRenderer: p => statusBadge(p.value)
+            },
+            {
+                field: 'task_type',
+                headerName: 'نوع',
+                width: 95,
+                resizable: true,
+                cellRenderer: p => typeBadge(p.value)
+            },
+            {
+                field: 'deadline',
+                colId: 'col_moed',
+                headerName: 'موعد',
+                width: 105,
+                resizable: true,
                 comparator: (a, b, nodeA, nodeB) => {
                     const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d => d).sort().pop() || '9999';
                     const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d => d).sort().pop() || '9999';
@@ -183,7 +226,10 @@ require_once '../includes/version.php';
                 }
             },
             {
-                headerName: 'مهلت', colId: 'col_mohlat', width: 120, resizable: true,
+                headerName: 'مهلت',
+                colId: 'col_mohlat',
+                width: 120,
+                resizable: true,
                 field: 'deadline',
                 sortable: false,
                 comparator: (a, b, nodeA, nodeB) => {
@@ -230,8 +276,11 @@ require_once '../includes/version.php';
             // ✅ حفظ state بعد از برگشت به صفحه
             onGridReady: params => {
                 const saved = localStorage.getItem('allTasksGridState');
-                if (saved) params.api.applyColumnState({ state: JSON.parse(saved), applyOrder: true });
-                applyResponsiveColumns();   // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
+                if (saved) params.api.applyColumnState({
+                    state: JSON.parse(saved),
+                    applyOrder: true
+                });
+                applyResponsiveColumns(); // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
             },
             onSortChanged: params => localStorage.setItem('myTasksGridState', JSON.stringify(params.api.getColumnState())),
             onColumnResized: params => localStorage.setItem('myTasksGridState', JSON.stringify(params.api.getColumnState())),
@@ -247,7 +296,7 @@ require_once '../includes/version.php';
                                 .replace(/Page/g, 'صفحه')
                                 .replace(/\bof\b/g, 'از')
                                 .replace(/\bto\b/g, 'تا')
-                                .replace(/\d+/g, n => n.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]));
+                                .replace(/\d+/g, n => n.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]));
                         }
                     });
 
@@ -277,15 +326,20 @@ require_once '../includes/version.php';
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(applyResponsiveColumns, 200);
         });
+
         function showNewTaskModal() {
             window.location.href = 'create-task.php';
         }
+
         function showDailyReportModal() {
             window.location.href = 'daily-report.php';
         }
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             authToken = localStorage.getItem('auth_token');
-            if (!authToken) { window.location.href = '../index.php'; return; }
+            if (!authToken) {
+                window.location.href = '../index.php';
+                return;
+            }
 
             currentUser = JSON.parse(localStorage.getItem('user_info') || '{}');
 
@@ -314,7 +368,7 @@ require_once '../includes/version.php';
             });
 
             document.querySelectorAll('.per-page-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
+                btn.addEventListener('click', function() {
                     document.querySelectorAll('.per-page-btn').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     perPage = parseInt(this.dataset.value);
@@ -323,26 +377,46 @@ require_once '../includes/version.php';
                 });
             });
 
-            document.getElementById('searchInput').addEventListener('input', function () {
+            document.getElementById('searchInput').addEventListener('input', function() {
                 clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => { currentPage = 1; onFilterChange(); }, 300);
+                searchTimeout = setTimeout(() => {
+                    currentPage = 1;
+                    onFilterChange();
+                }, 300);
             });
 
         });
-function matchesAllWords(text, query) {
-    if (!query) return true;
-    const words = normalizeDigits(query).trim().toLowerCase().split(/\s+/);
-    const haystack = normalizeDigits(text).toLowerCase();
-    return words.every(w => haystack.includes(w));
-}
-function normalizeDigits(str) {
-    return str
-        .replace(/[۰-۹]/g, d => d.charCodeAt(0) - 1776)
-        .replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632);
-}
+
+        function matchesAllWords(text, query) {
+            if (!query) return true;
+            const words = normalizeDigits(query).trim().toLowerCase().split(/\s+/);
+            const haystack = normalizeDigits(text).toLowerCase();
+            return words.every(w => haystack.includes(w));
+        }
+
+        function isChecklistOnlyMatch(otherText, checklistText, searchTerm) {
+            if (!searchTerm) return false;
+            if (matchesAllWords(otherText, searchTerm)) return false; // خودش مچ شده، نیازی به چک‌لیست نبوده
+            return matchesAllWords(checklistText, searchTerm);
+        }
+
+        function checklistMatchBadge(task) {
+            if (!task._checklistOnlyMatch) return '';
+            return '<span style="display:inline-flex;align-items:center;gap:3px;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;border-radius:8px;padding:1px 6px;font-size:0.65rem;margin-inline-start:6px;vertical-align:middle;" title="این کار به‌خاطر چک‌لیستش پیدا شد"><i class="bi bi-check2-square"></i> چک‌لیست</span>';
+        }
+
+        function normalizeDigits(str) {
+            return str
+                .replace(/[۰-۹]/g, d => d.charCodeAt(0) - 1776)
+                .replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632);
+        }
         async function loadTasks() {
             try {
-                const res = await fetch('../api/tasks/my-tasks.php', { headers: { 'Authorization': 'Bearer ' + authToken } });
+                const res = await fetch('../api/tasks/my-tasks.php', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
                 const data = await res.json();
                 if (data.success) {
                     viewingArchive = false;
@@ -351,27 +425,35 @@ function normalizeDigits(str) {
                     document.getElementById('filterStatus').value = 'open';
                     updateStats();
                     applyFilters(); // این خودش renderTable رو صدا می‌زنه که gridApi رو آپدیت می‌کنه
-                }
-                else showError(data.message || 'خطا');
-            } catch (e) { console.error(e); showError('خطا در ارتباط'); }
+                } else showError(data.message || 'خطا');
+            } catch (e) {
+                console.error(e);
+                showError('خطا در ارتباط');
+            }
         }
 
         async function loadSections() {
             try {
                 const res = await fetch('../api/organization/activity-sections.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await res.json();
                 if (data.success) {
-                    data.sections.forEach(s => { acticity_section[s.section_key] = s.section_label; });
+                    data.sections.forEach(s => {
+                        acticity_section[s.section_key] = s.section_label;
+                    });
                 }
             } catch {}
         }
- 
+
         async function loadUsers() {
             try {
                 const response = await fetch('../api/users/list.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -382,7 +464,10 @@ function normalizeDigits(str) {
                         sectionMap: acticity_section,
                         showSections: false,
                         placeholder: 'همه پرسنل',
-                        onSelect: (_, v) => { filterAssigneeId = v || ''; applyFilters(); }
+                        onSelect: (_, v) => {
+                            filterAssigneeId = v || '';
+                            applyFilters();
+                        }
                     });
                 }
             } catch (error) {
@@ -393,7 +478,9 @@ function normalizeDigits(str) {
         async function loadChecklistArchive() {
             try {
                 const res = await fetch('../api/tasks/my-tasks.php?filter=checklist_archive', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -410,10 +497,19 @@ function normalizeDigits(str) {
                 showError('خطا در ارتباط');
             }
         }
+
         function updateStats() {
             const today = todayLocal();
-            const todayCount = allTasks.filter(t => { if (t.task_type === 'periodic') return t.due_date === today && t.status !== 'completed' && t.status !== 'approved'; if (t.task_type === 'continuous') return (t.overdue_periods || 0) > 0 && (!t.end_date || t.end_date >= today); return false; }).length;
-            const overdueCount = allTasks.filter(t => { if (t.task_type === 'periodic') return t.due_date && t.due_date < today && (t.status === 'not_started' || t.status === 'in_progress'); if (t.task_type === 'continuous') return (t.overdue_periods || 0) > 0 && (!t.end_date || t.end_date >= today); return false; }).length;
+            const todayCount = allTasks.filter(t => {
+                if (t.task_type === 'periodic') return t.due_date === today && t.status !== 'completed' && t.status !== 'approved';
+                if (t.task_type === 'continuous') return (t.overdue_periods || 0) > 0 && (!t.end_date || t.end_date >= today);
+                return false;
+            }).length;
+            const overdueCount = allTasks.filter(t => {
+                if (t.task_type === 'periodic') return t.due_date && t.due_date < today && (t.status === 'not_started' || t.status === 'in_progress');
+                if (t.task_type === 'continuous') return (t.overdue_periods || 0) > 0 && (!t.end_date || t.end_date >= today);
+                return false;
+            }).length;
             const progressCount = allTasks.filter(t => t.status === 'in_progress').length;
             const completedCount = allTasks.filter(t => t.status === 'completed' || t.status === 'approved').length;
             const notStartedCount = allTasks.filter(t => t.status === 'not_started').length;
@@ -440,8 +536,13 @@ function normalizeDigits(str) {
             onFilterChange();
         }
 
-        function clearStatActive() { document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active')); }
-        function onFilterChange() { applyFilters(); }
+        function clearStatActive() {
+            document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+        }
+
+        function onFilterChange() {
+            applyFilters();
+        }
         // 🆕 نمایش ستون‌های کمتر در موبایل
         function applyResponsiveColumns() {
             if (!gridApi) return;
@@ -458,6 +559,7 @@ function normalizeDigits(str) {
                 gridApi.setColumnsVisible([col], !isMobile);
             });
         }
+
         function applyFilters() {
             const s = normalizeDigits(document.getElementById('searchInput').value).trim().toLowerCase();
             const as = filterAssigneeId;
@@ -467,14 +569,31 @@ function normalizeDigits(str) {
             const today = todayLocal();
 
             filteredTasks = allTasks.filter(t => {
-                if (s && !matchesAllWords((t.title || '') + ' ' + (t.description || '') + ' ' + t.id, s)) return false;
+                const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + t.id;
+                t._checklistOnlyMatch = isChecklistOnlyMatch(otherText, t.checklist_titles || '', s);
+                if (s && !matchesAllWords(otherText + ' ' + (t.checklist_titles || ''), s)) return false;
                 if (as && t.assignee_id != as) return false;
                 if (pr && t.priority !== pr) return false;
                 if (ty && t.task_type !== ty) return false;
-                if (st) { if (st === 'open' && (t.status === 'completed' || t.status === 'approved')) return false; else if (st !== 'open' && t.status !== st) return false; }
+                if (st) {
+                    if (st === 'open' && (t.status === 'completed' || t.status === 'approved')) return false;
+                    else if (st !== 'open' && t.status !== st) return false;
+                }
 
-                if (statFilter === 'today') { if (t.task_type === 'periodic') { if (!(t.due_date === today && t.status !== 'completed' && t.status !== 'approved')) return false; } else if (t.task_type === 'continuous') { if (!((t.overdue_periods || 0) > 0 && (!t.end_date || t.end_date >= today))) return false; } else return false; }
-                if (statFilter === 'overdue') { if (t.task_type === 'periodic') { if (!(t.due_date && t.due_date < today && (t.status === 'not_started' || t.status === 'in_progress'))) return false; } else if (t.task_type === 'continuous') { if (!((t.overdue_periods || 0) > 0 && (!t.end_date || t.end_date >= today))) return false; } else return false; }
+                if (statFilter === 'today') {
+                    if (t.task_type === 'periodic') {
+                        if (!(t.due_date === today && t.status !== 'completed' && t.status !== 'approved')) return false;
+                    } else if (t.task_type === 'continuous') {
+                        if (!((t.overdue_periods || 0) > 0 && (!t.end_date || t.end_date >= today))) return false;
+                    } else return false;
+                }
+                if (statFilter === 'overdue') {
+                    if (t.task_type === 'periodic') {
+                        if (!(t.due_date && t.due_date < today && (t.status === 'not_started' || t.status === 'in_progress'))) return false;
+                    } else if (t.task_type === 'continuous') {
+                        if (!((t.overdue_periods || 0) > 0 && (!t.end_date || t.end_date >= today))) return false;
+                    } else return false;
+                }
                 if (statFilter === 'in_progress' && t.status !== 'in_progress') return false;
                 if (statFilter === 'completed' && t.status !== 'completed' && t.status !== 'approved') return false;
                 if (statFilter === 'not_started' && t.status !== 'not_started') return false;
@@ -511,7 +630,8 @@ function normalizeDigits(str) {
             });
             // ✅ سورت اصلاح شده
             filteredTasks.sort((a, b) => {
-                let va = a[sortColumn] ?? '', vb = b[sortColumn] ?? '';
+                let va = a[sortColumn] ?? '',
+                    vb = b[sortColumn] ?? '';
 
                 if (sortColumn === 'id' || sortColumn === 'days_remaining') {
                     va = (va === '' || va === null) ? 99999 : +va;
@@ -541,12 +661,30 @@ function normalizeDigits(str) {
             rejected: ['متوقف', 'pause-circle'],
             termination_requested: ['در انتظار اتمام', 'hourglass-split']
         };
-        const priorityCfg = { high: ['بالا', 'arrow-up'], medium: ['متوسط', 'dash'], low: ['پایین', 'arrow-down'] };
-        const typeCfg = { periodic: ['مقطعی', 'calendar-event'], continuous: ['دوره‌ای', 'arrow-repeat'] };
+        const priorityCfg = {
+            high: ['بالا', 'arrow-up'],
+            medium: ['متوسط', 'dash'],
+            low: ['پایین', 'arrow-down']
+        };
+        const typeCfg = {
+            periodic: ['مقطعی', 'calendar-event'],
+            continuous: ['دوره‌ای', 'arrow-repeat']
+        };
 
-        function statusBadge(s) { const [l, i] = statusCfg[s] || [s, 'circle']; return `<span class="badge status-${s}"><i class="bi bi-${i}"></i>${l}</span>`; }
-        function priorityBadge(p) { const [l, i] = priorityCfg[p] || [p, 'dash']; return `<span class="badge priority-${p}"><i class="bi bi-${i}"></i>${l}</span>`; }
-        function typeBadge(t) { const [l, i] = typeCfg[t] || [t, 'tag']; return `<span class="badge type-${t}"><i class="bi bi-${i}"></i>${l}</span>`; }
+        function statusBadge(s) {
+            const [l, i] = statusCfg[s] || [s, 'circle'];
+            return `<span class="badge status-${s}"><i class="bi bi-${i}"></i>${l}</span>`;
+        }
+
+        function priorityBadge(p) {
+            const [l, i] = priorityCfg[p] || [p, 'dash'];
+            return `<span class="badge priority-${p}"><i class="bi bi-${i}"></i>${l}</span>`;
+        }
+
+        function typeBadge(t) {
+            const [l, i] = typeCfg[t] || [t, 'tag'];
+            return `<span class="badge type-${t}"><i class="bi bi-${i}"></i>${l}</span>`;
+        }
 
         function daysLeft(d, status) {
             if (!d) return '<span class="days-badge">-</span>';
@@ -558,11 +696,30 @@ function normalizeDigits(str) {
             return `<span class="days-badge days-normal">${toPersian(diff)} روز</span>`;
         }
 
-        function fmtDate(d) { return d ? new Date(d).toLocaleDateString('fa-IR') : '-'; }
-        function relTime(d) { if (!d) return ''; const ms = Date.now() - new Date(d), m = Math.floor(ms / 6e4), h = Math.floor(ms / 36e5), dy = Math.floor(ms / 864e5); if (m < 60) return `${toPersian(m)} دقیقه پیش`; if (h < 24) return `${toPersian(h)} ساعت پیش`; if (dy < 7) return `${toPersian(dy)} روز پیش`; if (dy < 30) return `${toPersian(Math.floor(dy / 7))} هفته پیش`; return `${toPersian(Math.floor(dy / 30))} ماه پیش`; }
-        function toPersian(n) { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
+        function fmtDate(d) {
+            return d ? new Date(d).toLocaleDateString('fa-IR') : '-';
+        }
 
-        function viewTask(id) { window.location.href = `task-detail.php?id=${id}`; }
+        function relTime(d) {
+            if (!d) return '';
+            const ms = Date.now() - new Date(d),
+                m = Math.floor(ms / 6e4),
+                h = Math.floor(ms / 36e5),
+                dy = Math.floor(ms / 864e5);
+            if (m < 60) return `${toPersian(m)} دقیقه پیش`;
+            if (h < 24) return `${toPersian(h)} ساعت پیش`;
+            if (dy < 7) return `${toPersian(dy)} روز پیش`;
+            if (dy < 30) return `${toPersian(Math.floor(dy / 7))} هفته پیش`;
+            return `${toPersian(Math.floor(dy / 30))} ماه پیش`;
+        }
+
+        function toPersian(n) {
+            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
+        }
+
+        function viewTask(id) {
+            window.location.href = `task-detail.php?id=${id}`;
+        }
 
         // ========================================
         // Column Resize

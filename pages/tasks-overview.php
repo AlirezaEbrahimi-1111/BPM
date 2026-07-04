@@ -45,7 +45,7 @@ require_once '../includes/version.php';
 
                 <div class="filters-row">
                     <div class="filter-item">
-                         <div id="filterCreatorPicker"></div>
+                        <div id="filterCreatorPicker"></div>
                     </div>
                     <div class="filter-item">
                         <div id="filterAssigneePicker"></div>
@@ -97,26 +97,45 @@ require_once '../includes/version.php';
     <script src="<?= asset('../../assets/js/table-utils.js') ?>"></script>
     <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
     <script>
-
-        let currentPage = 1, totalPages = 1, allTasks = [], filteredTasks = [], searchTimeout;
-        let sortColumn = 'created_at', sortDirection = 'desc';
+        let currentPage = 1,
+            totalPages = 1,
+            allTasks = [],
+            filteredTasks = [],
+            searchTimeout;
+        let sortColumn = 'created_at',
+            sortDirection = 'desc';
         let perPage = 15;
         let gridApi = null; // ← اضافه می‌شود
         let userRole = null;
         let currentUserId = null;
         let acticity_section = {};
-        let filterCreatorId  = '';
+        let filterCreatorId = '';
         let filterAssigneeId = '';
-        const columnDefs = [
-            { field: 'id', headerName: 'شناسه', width: 75, cellRenderer: p => p.value ? String(p.value).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]) : '-' },
-            { field: 'title', headerName: 'عنوان', width: 90, flex: 2,
+        const columnDefs = [{
+                field: 'id',
+                headerName: 'شناسه',
+                width: 75,
+                cellRenderer: p => p.value ? String(p.value).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]) : '-'
+            },
+            {
+                field: 'title',
+                headerName: 'عنوان',
+                width: 90,
+                flex: 2,
                 cellRenderer: p => {
                     const desc = p.data.description ? `<div style="font-size:0.7rem;color:#94a3b8;line-height:1.4;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${p.data.description}</div>` : '';
-                    return `<div>${p.value || '-'}${desc}</div>`;
+                    return `<div>${p.value || '-'}${checklistMatchBadge(p.data)}${desc}</div>`;
                 }
             },
-            { field: 'creator_name', headerName: 'تعریف‌کننده', flex: 1 },
-            { field: 'assignee_name', headerName: 'مسئول انجام', flex: 1,
+            {
+                field: 'creator_name',
+                headerName: 'تعریف‌کننده',
+                flex: 1
+            },
+            {
+                field: 'assignee_name',
+                headerName: 'مسئول انجام',
+                flex: 1,
                 cellRenderer: p => {
                     const t = p.data;
                     const personName = (p.value && p.value.trim()) ? p.value.trim() : '';
@@ -151,36 +170,65 @@ require_once '../includes/version.php';
                     return html;
                 }
             },
-            { field: 'status', headerName: 'وضعیت', width: 130, cellRenderer: p => statusBadge(p.value) },
-            { field: 'task_type', headerName: 'نوع', width: 95, cellRenderer: p => typeBadge(p.value) },
-                        { field: 'deadline', colId: 'col_moed', headerName: 'موعد', width: 105, resizable: true,
+            {
+                field: 'status',
+                headerName: 'وضعیت',
+                width: 130,
+                cellRenderer: p => statusBadge(p.value)
+            },
+            {
+                field: 'task_type',
+                headerName: 'نوع',
+                width: 95,
+                cellRenderer: p => typeBadge(p.value)
+            },
+            {
+                field: 'deadline',
+                colId: 'col_moed',
+                headerName: 'موعد',
+                width: 105,
+                resizable: true,
                 comparator: (a, b, nodeA, nodeB) => {
-                    const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d=>d).sort().pop() || '9999';
-                    const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d=>d).sort().pop() || '9999';
+                    const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d => d).sort().pop() || '9999';
+                    const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d => d).sort().pop() || '9999';
                     return da < db ? -1 : da > db ? 1 : 0;
                 },
                 cellRenderer: p => {
-                    const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d=>d).sort().pop();
+                    const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d => d).sort().pop();
                     return `<span class="date-display">${fmtDate(d)}</span>`;
                 }
             },
-{ headerName: 'مهلت', colId: 'col_mohlat', width: 120, resizable: true,
+            {
+                headerName: 'مهلت',
+                colId: 'col_mohlat',
+                width: 120,
+                resizable: true,
                 field: 'deadline',
                 sortable: false,
                 comparator: (a, b, nodeA, nodeB) => {
-                    const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d=>d).sort().pop() || '9999';
-                    const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d=>d).sort().pop() || '9999';
+                    const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d => d).sort().pop() || '9999';
+                    const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d => d).sort().pop() || '9999';
                     return da < db ? -1 : da > db ? 1 : 0;
                 },
                 cellRenderer: p => {
-                    const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d=>d).sort().pop();
+                    const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d => d).sort().pop();
                     return daysLeft(d, p.data.status);
                 }
             },
-            { field: 'created_at', headerName: 'ایجاد', width: 120, cellRenderer: p => `<span class="date-display">${fmtDate(p.value)}</span><br><span class="date-relative">${relTime(p.value)}</span>` },
-            { headerName: 'عملیات', width: 110, sortable: false, cellRenderer: p => buildActionButtons(p.data) },
+            {
+                field: 'created_at',
+                headerName: 'ایجاد',
+                width: 120,
+                cellRenderer: p => `<span class="date-display">${fmtDate(p.value)}</span><br><span class="date-relative">${relTime(p.value)}</span>`
+            },
+            {
+                headerName: 'عملیات',
+                width: 110,
+                sortable: false,
+                cellRenderer: p => buildActionButtons(p.data)
+            },
         ];
-        
+
         const gridOptions = {
             theme: agGrid.themeQuartz.withParams({
                 fontFamily: 'Tahoma, Vazirmatn, sans-serif',
@@ -195,52 +243,61 @@ require_once '../includes/version.php';
             pagination: true,
             paginationPageSize: 15,
             paginationPageSizeSelector: [15, 30, 50, 100],
-            defaultColDef: { sortable: true, resizable: true },
+            defaultColDef: {
+                sortable: true,
+                resizable: true
+            },
             onRowClicked: params => viewTask(params.data.id),
             onGridReady: params => {
                 const saved = localStorage.getItem('allTasksGridState');
-                if (saved) params.api.applyColumnState({ state: JSON.parse(saved), applyOrder: true });
-                applyResponsiveColumns();   // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
+                if (saved) params.api.applyColumnState({
+                    state: JSON.parse(saved),
+                    applyOrder: true
+                });
+                applyResponsiveColumns(); // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
             },
             onPaginationChanged: () => {
-                    setTimeout(() => {
-                        // فارسی کردن اعداد و متن‌ها
-                        document.querySelectorAll('.ag-paging-panel span, .ag-paging-panel button').forEach(el => {
-                            if (el.childElementCount === 0 && !el.classList.contains('injected-az')) {
-                                el.textContent = el.textContent
-                                    .replace(/Page/g, 'صفحه')
-                                    .replace(/\bof\b/g, 'از')
-                                    .replace(/\bto\b/g, 'تا')
-                                    .replace(/\d+/g, n => n.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]));
-                            }
-                        });
-
-                        // حذف span های تنها «از» که بیرون از summary پنل هستند
-                        document.querySelectorAll('.ag-paging-panel > span, .ag-paging-panel > div:not(.ag-paging-row-summary-panel):not(.ag-paging-page-size):not(.ag-paging-button-wrapper):not(.ag-paging-page-summary-panel)').forEach(el => {
-                            if (el.textContent.trim() === 'از') el.remove();
-                        });
-
-                        // اضافه کردن «از» به ابتدای summary
-                        const summary = document.querySelector('.ag-paging-row-summary-panel');
-                        if (summary) {
-                            summary.querySelectorAll('.injected-az').forEach(el => el.remove());
-                            const azSpan = document.createElement('span');
-                            azSpan.textContent = 'از ';
-                            azSpan.className = 'injected-az';
-                            summary.insertBefore(azSpan, summary.firstChild);
+                setTimeout(() => {
+                    // فارسی کردن اعداد و متن‌ها
+                    document.querySelectorAll('.ag-paging-panel span, .ag-paging-panel button').forEach(el => {
+                        if (el.childElementCount === 0 && !el.classList.contains('injected-az')) {
+                            el.textContent = el.textContent
+                                .replace(/Page/g, 'صفحه')
+                                .replace(/\bof\b/g, 'از')
+                                .replace(/\bto\b/g, 'تا')
+                                .replace(/\d+/g, n => n.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]));
                         }
-                    }, 100); // ← از 0 به 100 تغییر کرد تا AG Grid اول رندر کنه
-                },
+                    });
+
+                    // حذف span های تنها «از» که بیرون از summary پنل هستند
+                    document.querySelectorAll('.ag-paging-panel > span, .ag-paging-panel > div:not(.ag-paging-row-summary-panel):not(.ag-paging-page-size):not(.ag-paging-button-wrapper):not(.ag-paging-page-summary-panel)').forEach(el => {
+                        if (el.textContent.trim() === 'از') el.remove();
+                    });
+
+                    // اضافه کردن «از» به ابتدای summary
+                    const summary = document.querySelector('.ag-paging-row-summary-panel');
+                    if (summary) {
+                        summary.querySelectorAll('.injected-az').forEach(el => el.remove());
+                        const azSpan = document.createElement('span');
+                        azSpan.textContent = 'از ';
+                        azSpan.className = 'injected-az';
+                        summary.insertBefore(azSpan, summary.firstChild);
+                    }
+                }, 100); // ← از 0 به 100 تغییر کرد تا AG Grid اول رندر کنه
+            },
         };
         gridApi = agGrid.createGrid(document.getElementById('myGrid'), gridOptions);
         // 🆕 با تغییر اندازه پنجره، ستون‌ها دوباره تنظیم شوند
-let resizeTimer;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(applyResponsiveColumns, 200);
-});
-        document.addEventListener('DOMContentLoaded', function () {
-            if (!authToken) { window.location.href = '../index.php'; return; }
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(applyResponsiveColumns, 200);
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!authToken) {
+                window.location.href = '../index.php';
+                return;
+            }
             loadFiltersFromURL();
             checkManagerRole();
             document.getElementById('filterStatus').value = 'open';
@@ -254,7 +311,7 @@ window.addEventListener('resize', () => {
 
             // دکمه‌های تعداد نمایش
             document.querySelectorAll('.per-page-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
+                btn.addEventListener('click', function() {
                     document.querySelectorAll('.per-page-btn').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     perPage = parseInt(this.dataset.value);
@@ -264,9 +321,12 @@ window.addEventListener('resize', () => {
             });
 
             document.getElementById('includeMyTasks').addEventListener('change', loadTasks);
-            document.getElementById('searchInput').addEventListener('input', function () {
+            document.getElementById('searchInput').addEventListener('input', function() {
                 clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => { currentPage = 1; onFilterChange(); }, 300);
+                searchTimeout = setTimeout(() => {
+                    currentPage = 1;
+                    onFilterChange();
+                }, 300);
             });
             document.querySelectorAll('th[data-sort]').forEach(th => {
                 th.addEventListener('click', () => handleSort(th.dataset.sort));
@@ -304,14 +364,19 @@ window.addEventListener('resize', () => {
                 type: document.getElementById('filterType').value,
                 perPage: perPage
             };
-            Object.entries(vals).forEach(([k, v]) => { if (v && v !== 15) p.set(k, v); });
+            Object.entries(vals).forEach(([k, v]) => {
+                if (v && v !== 15) p.set(k, v);
+            });
             if (currentPage > 1) p.set('page', currentPage);
             if (sortColumn !== 'created_at') p.set('sort', sortColumn);
             if (sortDirection !== 'desc') p.set('dir', sortDirection);
             window.history.replaceState({}, '', p.toString() ? `?${p.toString()}` : window.location.pathname);
         }
 
-        function onFilterChange() { applyFilters(); saveFiltersToURL(); }
+        function onFilterChange() {
+            applyFilters();
+            saveFiltersToURL();
+        }
 
         function handleSort(col) {
             if (isCurrentlyResizing()) return;
@@ -329,70 +394,95 @@ window.addEventListener('resize', () => {
 
         async function checkManagerRole() {
             try {
-                const res = await fetch('../api/auth/profile.php', { headers: { 'Authorization': 'Bearer ' + authToken } });
+                const res = await fetch('../api/auth/profile.php', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
                 const data = await res.json();
                 if (!data.success || !['manager', 'supervisor'].includes(data.user.role)) {
                     alert('⛔ دسترسی ندارید');
-                    setTimeout(() => { window.location.href = 'dashboard.php'; }, 1200);
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.php';
+                    }, 1200);
                     return;
                 }
                 userRole = data.user.role;
                 currentUserId = data.user.id;
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
         // 🆕 نمایش ستون‌های کمتر در موبایل
         function applyResponsiveColumns() {
-    if (!gridApi) return;
-    const isMobile = window.innerWidth <= 576;
+            if (!gridApi) return;
+            const isMobile = window.innerWidth <= 576;
 
-    // در موبایل پنهان شوند (فقط عنوان، وضعیت، موعد بماند)
-    // 🆕 ستون «مهلت» با colId یکتا، تا با «موعد» قاطی نشود
-    const hideOnMobile = [
-        'id', 'creator_name', 'assignee_name',
-        'task_type', 'created_at', 'col_mohlat'
-    ];
+            // در موبایل پنهان شوند (فقط عنوان، وضعیت، موعد بماند)
+            // 🆕 ستون «مهلت» با colId یکتا، تا با «موعد» قاطی نشود
+            const hideOnMobile = [
+                'id', 'creator_name', 'assignee_name',
+                'task_type', 'created_at', 'col_mohlat'
+            ];
 
-    hideOnMobile.forEach(col => {
-        gridApi.setColumnsVisible([col], !isMobile);
-    });
-}
-function normalizeDigits(str) {
-    return str
-        .replace(/[۰-۹]/g, d => d.charCodeAt(0) - 1776)
-        .replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632);
-}
-async function loadSections() {
+            hideOnMobile.forEach(col => {
+                gridApi.setColumnsVisible([col], !isMobile);
+            });
+        }
+
+        function normalizeDigits(str) {
+            return str
+                .replace(/[۰-۹]/g, d => d.charCodeAt(0) - 1776)
+                .replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632);
+        }
+        async function loadSections() {
             try {
                 const res = await fetch('../api/organization/activity-sections.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await res.json();
                 if (data.success) {
-                    data.sections.forEach(s => { acticity_section[s.section_key] = s.section_label; });
+                    data.sections.forEach(s => {
+                        acticity_section[s.section_key] = s.section_label;
+                    });
                 }
             } catch {}
         }
- 
+
         async function loadUsers() {
             try {
                 const response = await fetch('../api/users/list.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await response.json();
                 if (data.success) {
                     users = data.users;
-                    const pickerCfg = { users, sectionMap: acticity_section, showSections: false };
+                    const pickerCfg = {
+                        users,
+                        sectionMap: acticity_section,
+                        showSections: false
+                    };
                     AssigneePicker.create({
                         ...pickerCfg,
                         container: '#filterCreatorPicker',
                         placeholder: 'همه تعریف‌کنندگان',
-                        onSelect: (_, v) => { filterCreatorId = v || ''; applyFilters(); }
+                        onSelect: (_, v) => {
+                            filterCreatorId = v || '';
+                            applyFilters();
+                        }
                     });
                     AssigneePicker.create({
                         ...pickerCfg,
                         container: '#filterAssigneePicker',
                         placeholder: 'همه مسئولان',
-                        onSelect: (_, v) => { filterAssigneeId = v || ''; applyFilters(); }
+                        onSelect: (_, v) => {
+                            filterAssigneeId = v || '';
+                            applyFilters();
+                        }
                     });
                 }
             } catch (error) {
@@ -403,21 +493,41 @@ async function loadSections() {
         async function loadTasks() {
             try {
                 const inc = document.getElementById('includeMyTasks').checked ? '1' : '0';
-                const res = await fetch(`../api/tasks/overview.php?include_my_tasks=${inc}`, { headers: { 'Authorization': 'Bearer ' + authToken } });
+                const res = await fetch(`../api/tasks/overview.php?include_my_tasks=${inc}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
                 const data = await res.json();
                 if (data.success) {
-                    allTasks = data.tasks || []; applyFilters();
+                    allTasks = data.tasks || [];
+                    applyFilters();
                     console.log('📋 اولین رکورد:', data.tasks[0]);
-                }
-                else showError(data.message || 'خطا');
-            } catch (e) { console.error(e); showError('خطا در ارتباط'); }
+                } else showError(data.message || 'خطا');
+            } catch (e) {
+                console.error(e);
+                showError('خطا در ارتباط');
+            }
         }
-function matchesAllWords(text, query) {
-    if (!query) return true;
-    const words = normalizeDigits(query).trim().toLowerCase().split(/\s+/);
-    const haystack = normalizeDigits(text).toLowerCase();
-    return words.every(w => haystack.includes(w));
-}
+
+        function matchesAllWords(text, query) {
+            if (!query) return true;
+            const words = normalizeDigits(query).trim().toLowerCase().split(/\s+/);
+            const haystack = normalizeDigits(text).toLowerCase();
+            return words.every(w => haystack.includes(w));
+        }
+
+        function isChecklistOnlyMatch(otherText, checklistText, searchTerm) {
+            if (!searchTerm) return false;
+            if (matchesAllWords(otherText, searchTerm)) return false; // خودش مچ شده، نیازی به چک‌لیست نبوده
+            return matchesAllWords(checklistText, searchTerm);
+        }
+
+        function checklistMatchBadge(task) {
+            if (!task._checklistOnlyMatch) return '';
+            return '<span style="display:inline-flex;align-items:center;gap:3px;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;border-radius:8px;padding:1px 6px;font-size:0.65rem;margin-inline-start:6px;vertical-align:middle;" title="این کار به‌خاطر چک‌لیستش پیدا شد"><i class="bi bi-check2-square"></i> چک‌لیست</span>';
+        }
+
         function applyFilters() {
             const s = normalizeDigits(document.getElementById('searchInput').value).trim().toLowerCase();
             const cr = filterCreatorId;
@@ -427,7 +537,9 @@ function matchesAllWords(text, query) {
             const ty = document.getElementById('filterType').value;
 
             filteredTasks = allTasks.filter(t => {
-                if (s && !matchesAllWords((t.title || '') + ' ' + (t.description || '') + ' ' + t.id, s)) return false;
+                const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + t.id;
+                t._checklistOnlyMatch = isChecklistOnlyMatch(otherText, t.checklist_titles || '', s);
+                if (s && !matchesAllWords(otherText + ' ' + (t.checklist_titles || ''), s)) return false;
                 if (cr && t.creator_id != cr) return false;
                 if (as && t.assignee_id != as) return false;
                 if (pr && t.priority !== pr) return false;
@@ -440,8 +552,12 @@ function matchesAllWords(text, query) {
             });
 
             filteredTasks.sort((a, b) => {
-                let va = a[sortColumn] || '', vb = b[sortColumn] || '';
-                if (sortColumn === 'id') { va = +va; vb = +vb; }
+                let va = a[sortColumn] || '',
+                    vb = b[sortColumn] || '';
+                if (sortColumn === 'id') {
+                    va = +va;
+                    vb = +vb;
+                }
                 if (va < vb) return sortDirection === 'asc' ? -1 : 1;
                 if (va > vb) return sortDirection === 'asc' ? 1 : -1;
                 return 0;
@@ -455,16 +571,39 @@ function matchesAllWords(text, query) {
         }
 
         const statusCfg = {
-            not_started: ['شروع نشده', 'circle'], in_progress: ['در حال انجام', 'play-circle'],
-            completed: ['تکمیل شده', 'check-circle'], pending_approval: ['منتظر تأیید', 'hourglass-split'], rejected: ['متوقف شده', 'pause-circle'],
-            approved: ['تأیید شده', 'check-circle-fill'], delegated: ['ارجاع شده', 'arrow-left-right'], termination_requested: ['در انتظار اتمام', 'hourglass-split']
+            not_started: ['شروع نشده', 'circle'],
+            in_progress: ['در حال انجام', 'play-circle'],
+            completed: ['تکمیل شده', 'check-circle'],
+            pending_approval: ['منتظر تأیید', 'hourglass-split'],
+            rejected: ['متوقف شده', 'pause-circle'],
+            approved: ['تأیید شده', 'check-circle-fill'],
+            delegated: ['ارجاع شده', 'arrow-left-right'],
+            termination_requested: ['در انتظار اتمام', 'hourglass-split']
         };
-        const priorityCfg = { high: ['بالا', 'arrow-up'], medium: ['متوسط', 'dash'], low: ['پایین', 'arrow-down'] };
-        const typeCfg = { periodic: ['مقطعی', 'calendar-event'], continuous: ['دوره‌ای', 'arrow-repeat'] };
+        const priorityCfg = {
+            high: ['بالا', 'arrow-up'],
+            medium: ['متوسط', 'dash'],
+            low: ['پایین', 'arrow-down']
+        };
+        const typeCfg = {
+            periodic: ['مقطعی', 'calendar-event'],
+            continuous: ['دوره‌ای', 'arrow-repeat']
+        };
 
-        function statusBadge(s) { const [l, i] = statusCfg[s] || [s, 'circle']; return `<span class="badge status-${s}"><i class="bi bi-${i}"></i>${l}</span>`; }
-        function priorityBadge(p) { const [l, i] = priorityCfg[p] || [p, 'dash']; return `<span class="badge priority-${p}"><i class="bi bi-${i}"></i>${l}</span>`; }
-        function typeBadge(t) { const [l, i] = typeCfg[t] || [t, 'tag']; return `<span class="badge type-${t}"><i class="bi bi-${i}"></i>${l}</span>`; }
+        function statusBadge(s) {
+            const [l, i] = statusCfg[s] || [s, 'circle'];
+            return `<span class="badge status-${s}"><i class="bi bi-${i}"></i>${l}</span>`;
+        }
+
+        function priorityBadge(p) {
+            const [l, i] = priorityCfg[p] || [p, 'dash'];
+            return `<span class="badge priority-${p}"><i class="bi bi-${i}"></i>${l}</span>`;
+        }
+
+        function typeBadge(t) {
+            const [l, i] = typeCfg[t] || [t, 'tag'];
+            return `<span class="badge type-${t}"><i class="bi bi-${i}"></i>${l}</span>`;
+        }
 
         function daysLeft(d, status) {
             if (status === 'completed' || status === 'approved')
@@ -477,11 +616,16 @@ function matchesAllWords(text, query) {
             return `<span class="days-badge days-normal">${toPersian(diff)} روز</span>`;
         }
 
-        function fmtDate(d) { return d ? new Date(d).toLocaleDateString('fa-IR') : '-'; }
+        function fmtDate(d) {
+            return d ? new Date(d).toLocaleDateString('fa-IR') : '-';
+        }
 
         function relTime(d) {
             if (!d) return '';
-            const ms = Date.now() - new Date(d), m = Math.floor(ms / 6e4), h = Math.floor(ms / 36e5), dy = Math.floor(ms / 864e5);
+            const ms = Date.now() - new Date(d),
+                m = Math.floor(ms / 6e4),
+                h = Math.floor(ms / 36e5),
+                dy = Math.floor(ms / 864e5);
             if (m < 60) return `${toPersian(m)} دقیقه پیش`;
             if (h < 24) return `${toPersian(h)} ساعت پیش`;
             if (dy < 7) return `${toPersian(dy)} روز پیش`;
@@ -489,7 +633,9 @@ function matchesAllWords(text, query) {
             return `${toPersian(Math.floor(dy / 30))} ماه پیش`;
         }
 
-        function toPersian(n) { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
+        function toPersian(n) {
+            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
+        }
 
         function updatePaginationInfo(f, t, total) {
             document.getElementById('showingFrom').textContent = toPersian(f);
@@ -499,7 +645,10 @@ function matchesAllWords(text, query) {
 
         function renderPagination(pages) {
             const nav = document.getElementById('paginationNav');
-            if (pages <= 1) { nav.innerHTML = ''; return; }
+            if (pages <= 1) {
+                nav.innerHTML = '';
+                return;
+            }
             let h = `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="goPage(${currentPage - 1});return false">قبلی</a></li>`;
             for (let i = 1; i <= pages; i++) {
                 if (i === 1 || i === pages || (i >= currentPage - 2 && i <= currentPage + 2))
@@ -511,18 +660,31 @@ function matchesAllWords(text, query) {
             nav.innerHTML = h;
         }
 
-        function goPage(p) { if (p >= 1 && p <= totalPages) { currentPage = p; onFilterChange(); document.querySelector('.table-scroll').scrollTop = 0; } }
-        function viewTask(id) { window.location.href = `task-detail.php?id=${id}`; }
+        function goPage(p) {
+            if (p >= 1 && p <= totalPages) {
+                currentPage = p;
+                onFilterChange();
+                document.querySelector('.table-scroll').scrollTop = 0;
+            }
+        }
+
+        function viewTask(id) {
+            window.location.href = `task-detail.php?id=${id}`;
+        }
+
         function showError(msg) {
             document.getElementById('tasksTableBody').innerHTML = `<tr><td colspan="11"><div class="empty-state"><i class="bi bi-exclamation-triangle text-danger"></i><p>${msg}</p></div></td></tr>`;
         }
-        function exportToExcel() { alert('این قابلیت به زودی اضافه می‌شود'); }
+
+        function exportToExcel() {
+            alert('این قابلیت به زودی اضافه می‌شود');
+        }
 
         // ========================================
         // ارسال یادآوری (نوتیفیکیشن و SMS)
         // ========================================
         function sendReminder(taskId, title, assigneeName) {
-            uiPrompt(`ارسال یادآوری برای "${title}" به ${assigneeName}:`, async function (message) {
+            uiPrompt(`ارسال یادآوری برای "${title}" به ${assigneeName}:`, async function(message) {
                 if (!message) return;
 
                 try {
@@ -549,7 +711,11 @@ function matchesAllWords(text, query) {
                     console.error('Error sending reminder:', error);
                     showAlert('خطا در ارتباط با سرور', 'danger');
                 }
-            }, { placeholder: 'پیام یادآوری...', required: true, okText: 'ارسال' });
+            }, {
+                placeholder: 'پیام یادآوری...',
+                required: true,
+                okText: 'ارسال'
+            });
         }
 
         // نمایش پیام (alert)
@@ -568,35 +734,36 @@ function matchesAllWords(text, query) {
                 }
             }, 5000);
         }
-function buildActionButtons(t) {
-    if (!t) return '';
-    const title = (t.title || '').replace(/'/g, "\\'");
-    const name = (t.assignee_name || 'نامشخص').replace(/'/g, "\\'");
-    let html = '';
 
-    // دکمه یادآوری — فقط اگر مسئول دارد و تکمیل نشده
-    if (t.assignee_id && t.status !== 'completed' && t.status !== 'approved') {
-        html += `<button class="btn-remind-overview" 
+        function buildActionButtons(t) {
+            if (!t) return '';
+            const title = (t.title || '').replace(/'/g, "\\'");
+            const name = (t.assignee_name || 'نامشخص').replace(/'/g, "\\'");
+            let html = '';
+
+            // دکمه یادآوری — فقط اگر مسئول دارد و تکمیل نشده
+            if (t.assignee_id && t.status !== 'completed' && t.status !== 'approved') {
+                html += `<button class="btn-remind-overview" 
             onclick="event.stopPropagation();sendReminder(${t.id},'${title}','${name}')" 
             title="یادآوری">
             <i class="bi bi-bell"></i>
         </button>`;
-    }
+            }
 
-// دکمه حذف — فقط برای کارهای غیرروتین و تکمیل/تأییدنشده
-if (t.is_workflow_task != 1 && t.status !== 'completed' && t.status !== 'approved') {
-    html += `<button class="btn-remind-overview" style="color:#dc3545;"
+            // دکمه حذف — فقط برای کارهای غیرروتین و تکمیل/تأییدنشده
+            if (t.is_workflow_task != 1 && t.status !== 'completed' && t.status !== 'approved') {
+                html += `<button class="btn-remind-overview" style="color:#dc3545;"
         onclick="event.stopPropagation();deleteTask(${t.id})" 
         title="حذف">
         <i class="bi bi-trash"></i>
     </button>`;
-}
+            }
 
-    return html;
-}
+            return html;
+        }
 
         function deleteTask(taskId) {
-            uiConfirm('آیا از حذف این کار اطمینان دارید؟', async function () {
+            uiConfirm('آیا از حذف این کار اطمینان دارید؟', async function() {
                 try {
                     const res = await fetch(`../api/tasks/delete.php`, {
                         method: 'POST',
@@ -604,7 +771,9 @@ if (t.is_workflow_task != 1 && t.status !== 'completed' && t.status !== 'approve
                             'Content-Type': 'application/json',
                             'Authorization': 'Bearer ' + authToken
                         },
-                        body: JSON.stringify({ task_id: taskId })
+                        body: JSON.stringify({
+                            task_id: taskId
+                        })
                     });
 
                     const data = await res.json();
@@ -618,9 +787,12 @@ if (t.is_workflow_task != 1 && t.status !== 'completed' && t.status !== 'approve
                     console.error(e);
                     alert('❌ خطا در ارتباط با سرور');
                 }
-            }, { danger: true, yesText: 'بله، حذف', noText: 'انصراف' });
+            }, {
+                danger: true,
+                yesText: 'بله، حذف',
+                noText: 'انصراف'
+            });
         }
-
     </script>
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
 </body>

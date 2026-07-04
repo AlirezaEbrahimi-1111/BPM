@@ -9,7 +9,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/TaskManager.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php'; // ← اضافه شد
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php';
 try {
     $user_id = requireAuth();
 
@@ -101,7 +101,7 @@ try {
         }
     }
     unset($task); // رفع reference leak
-
+attachChecklistTitles($db, $tasks);
     echo json_encode(['success' => true, 'tasks' => $tasks], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
