@@ -172,7 +172,19 @@ AND t.status != 'rejected'
     OR (
       dr.current_approver_id IS NULL 
       AND (
-        t.assignee_id = ? 
+        (
+          t.assignee_id = ?
+          AND (
+            -- اگر تسک روتین است، فقط وقتی نشان بده که مرحله‌اش فعال شده باشد
+            t.is_workflow_task = 0
+            OR t.is_workflow_task IS NULL
+            OR EXISTS (
+                SELECT 1 FROM workflow_instance_steps wis_a
+                WHERE wis_a.task_id = t.id
+                  AND wis_a.status = 'active'
+            )
+          )
+        )
         OR (
   t.is_workflow_task = 1 
   AND t.activity_section = ?
