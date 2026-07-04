@@ -58,13 +58,13 @@ function countWorkingDays($from_date, $to_date, $db)
     $stmt = $db->prepare("SELECT holiday_date FROM holidays WHERE holiday_date >= ? AND holiday_date <= ?");
     $stmt->execute([$start->format('Y-m-d'), $end->format('Y-m-d')]);
     $holidays = [];
-    
+
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $h) {
         $holidays[$h['holiday_date']] = true;
     }
 
     $current = clone $start;
-    
+
     while ($current < $end) {
         $d = $current->format('Y-m-d');
         $is_friday = ($current->format('l') === 'Friday');
@@ -490,7 +490,7 @@ if ($user_id) {
         (int) $user_id === 1 ||
         ($me_row['activity_section'] === 'management' && in_array($me_row['role'], ['supervisor', 'admin'], true))
     ));
-    
+
     // 2. مأموریت‌های منتظر تأیید مسئول (من مسئول هستم)
     if ($is_supervisor) {
         $stmt = $db->prepare("
@@ -819,7 +819,7 @@ if ($user_id) {
         ");
         $stmt->execute($org_user_ids);
         $forget_requests = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-} catch (Exception $e) {
+    } catch (Exception $e) {
         echo "<!-- REQ_QUERY_ERROR: " . htmlspecialchars($e->getMessage()) . " -->";
     }
 
@@ -854,7 +854,9 @@ $all_requests = array_merge($mission_requests, $leave_requests, $pass_requests, 
 // ===== لایهٔ دادهٔ گرید درخواست‌ها (فاز ج‑۱) =====
 // واحدِ کاربرانِ درخواست‌ها
 $__sections_map = [];
-$__uids = array_values(array_unique(array_filter(array_map(function ($r) { return $r['user_id'] ?? null; }, $all_requests))));
+$__uids = array_values(array_unique(array_filter(array_map(function ($r) {
+    return $r['user_id'] ?? null;
+}, $all_requests))));
 if (!empty($__uids)) {
     $__in = implode(',', array_fill(0, count($__uids), '?'));
     try {
@@ -863,7 +865,8 @@ if (!empty($__uids)) {
         foreach ($__st->fetchAll(PDO::FETCH_ASSOC) as $__r) {
             $__sections_map[$__r['id']] = $__r['activity_section'];
         }
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+    }
 }
 
 $requests_for_grid = [];
@@ -873,11 +876,13 @@ foreach ($all_requests as $req) {
     $status = $req['status'] ?? 'pending';
 
     // can_edit / can_delete (همان منطق جدول فعلی)
-    $can_edit = false; $can_delete = false;
+    $can_edit = false;
+    $can_delete = false;
     $is_own = (($req['user_id'] ?? null) == $user_id);
     if (!($is_admin_role ?? false) || $is_own) {
         if ($type === 'pass') {
-            $ca = new DateTime($req['created_at']); $nw = new DateTime();
+            $ca = new DateTime($req['created_at']);
+            $nw = new DateTime();
             $hp = ($nw->getTimestamp() - $ca->getTimestamp()) / 3600;
             $can_edit = $can_delete = ($hp <= ($app_settings['pass_edit_hours'] ?? 24));
         } else {
@@ -896,7 +901,8 @@ foreach ($all_requests as $req) {
     }
 
     // برچسب وضعیت + دلیل رد
-    $status_label = 'در انتظار تأیید'; $reject_reason = '';
+    $status_label = 'در انتظار تأیید';
+    $reject_reason = '';
     if ($status === 'pending') {
         if ($type === 'leave') {
             if (($req['substitute_approval'] ?? 'pending') === 'pending') $status_label = 'در انتظار تأیید جانشین';
@@ -1040,9 +1046,9 @@ function formatDateJalali($gregorianDate)
     <link rel="stylesheet" href="../../assets/css/persian-datepicker.css">
     <link rel="stylesheet" href="../../assets/css/deadline-toast.css">
     <link rel="stylesheet" href="../../assets/css/custom.css">
-    
+
     <script src="../../assets/js/ag-grid-community.min.js"></script>
-        <script src="../../assets/js/undo-toast.js"></script>
+    <script src="../../assets/js/undo-toast.js"></script>
 
     <style>
         /* ======================================== 
@@ -1077,7 +1083,7 @@ function formatDateJalali($gregorianDate)
             gap: 12px;
             width: 100%;
         }
-        
+
         .page-header .stat-card {
             flex: 1;
             min-width: 0;
@@ -1106,11 +1112,11 @@ function formatDateJalali($gregorianDate)
             letter-spacing: 0.5px;
             margin-bottom: 6px;
         }
-        
+
         .stat-label .bi-info-circle {
             color: #9CA3AF !important;
         }
-        
+
         .stat-label .bi-info-circle:hover {
             color: #744CA4 !important;
         }
@@ -1119,9 +1125,9 @@ function formatDateJalali($gregorianDate)
             font-size: 15px !important;
             font-weight: 700;
             color: #2D3748;
-            padding-top:.5rem;
+            padding-top: .5rem;
         }
-        
+
         /* ======================================== 
            📋 بخش درخواست‌ها
         ======================================== */
@@ -1253,20 +1259,25 @@ function formatDateJalali($gregorianDate)
             white-space: nowrap;
         }
 
-        .desc-cell{
+        .desc-cell {
             display: inline-block;
-            max-width: 200px;          /* عرض دلخواه ستون؛ کم/زیاد کن */
+            max-width: 200px;
+            /* عرض دلخواه ستون؛ کم/زیاد کن */
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;   /* همان «…» */
+            text-overflow: ellipsis;
+            /* همان «…» */
             vertical-align: middle;
             cursor: pointer;
         }
-        .desc-cell.expanded{           /* بعد از کلیک: نمایش کامل */
+
+        .desc-cell.expanded {
+            /* بعد از کلیک: نمایش کامل */
             max-width: none;
             white-space: normal;
             word-break: break-word;
         }
+
         .new-request-btn {
             padding: 10px 20px;
             background: linear-gradient(135deg, #744CA4 0%, #657AE7 100%);
@@ -1479,7 +1490,7 @@ function formatDateJalali($gregorianDate)
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(116, 76, 164, 0.1);
             overflow: hidden;
-            height:700px;
+            height: 700px;
         }
 
         .attendance-table-header {
@@ -1586,7 +1597,7 @@ function formatDateJalali($gregorianDate)
             font-weight: 500;
             font-size: 13px !important;
             line-height: 2;
-            margin-top:5px;
+            margin-top: 5px;
         }
 
         .shift-time.shift-2 {
@@ -2533,22 +2544,48 @@ function formatDateJalali($gregorianDate)
             letter-spacing: 0;
             font-size: 13px;
         }
+
         #requestsGrid .req-actions-cell {
             display: flex !important;
             align-items: center;
             gap: 6px;
             white-space: nowrap;
         }
+
         #requestsGrid .req-actions-cell .action-icon-btn {
             flex: 0 0 auto;
         }
-        #attendanceGrid { font-family: inherit; }
-        #attendanceGrid .att-clickable { cursor: pointer; }
-        #attendanceGrid .att-clickable:hover { background: #f5f4fb !important; }
-        #attendanceGrid .att-holiday { background: #f3f4f6 !important; color: #9ca3af !important; }
-        #attendanceGrid .att-holiday .att-off { color: #9ca3af; font-weight: 700; }
-        #attendanceGrid .att-disabled { opacity: .55; cursor: default; }
-        #attendanceGrid .att-date-num { font-weight: 600; }
+
+        #attendanceGrid {
+            font-family: inherit;
+        }
+
+        #attendanceGrid .att-clickable {
+            cursor: pointer;
+        }
+
+        #attendanceGrid .att-clickable:hover {
+            background: #f5f4fb !important;
+        }
+
+        #attendanceGrid .att-holiday {
+            background: #f3f4f6 !important;
+            color: #9ca3af !important;
+        }
+
+        #attendanceGrid .att-holiday .att-off {
+            color: #9ca3af;
+            font-weight: 700;
+        }
+
+        #attendanceGrid .att-disabled {
+            opacity: .55;
+            cursor: default;
+        }
+
+        #attendanceGrid .att-date-num {
+            font-weight: 600;
+        }
     </style>
 </head>
 
@@ -2558,7 +2595,7 @@ function formatDateJalali($gregorianDate)
     <!-- تنظیمات سیستم برای JavaScript -->
     <script>
         // ── مبدل سراسری: همهٔ alertها به toast تبدیل می‌شوند ──
-        window.alert = function (msg) {
+        window.alert = function(msg) {
             const text = String(msg).replace(/^\s*[✅❌⚠️ℹ️]\s*/, '');
             const type = /موفق|ثبت شد|ذخیره شد|انجام شد|تکمیل/.test(text) ? 'success' : 'warning';
             showToast(text, type);
@@ -2622,98 +2659,98 @@ function formatDateJalali($gregorianDate)
                 <div id="my-requests-section" style="display: none;">
                     <!-- Header: عنوان + 4 کارت آماری (5×20%) -->
                     <?php if (!($is_admin_role ?? false)): ?>
-                    <div class="page-header">
-                        <div class="stat-card">
-                            <div class="stat-label">ساعت کار تا دیروز</div>
-                            <div class="stat-value" style="color: #3B82F6;">
-                                <?php echo $stats['work_hours']; ?>
+                        <div class="page-header">
+                            <div class="stat-card">
+                                <div class="stat-label">ساعت کار تا دیروز</div>
+                                <div class="stat-value" style="color: #3B82F6;">
+                                    <?php echo $stats['work_hours']; ?>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="stat-card">
-                            <div class="stat-label">درخواست‌ تأیید شده</div>
-                            <div class="stat-value" style="color: #10B981;">
-                                <?php echo englishToFarsiNumber($stats['approved_requests']); ?>
+                            <div class="stat-card">
+                                <div class="stat-label">درخواست‌ تأیید شده</div>
+                                <div class="stat-value" style="color: #10B981;">
+                                    <?php echo englishToFarsiNumber($stats['approved_requests']); ?>
+                                </div>
                             </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">در انتظار تأیید</div>
-                            <div class="stat-value" style="color: #F59E0B;">
-                                <?php echo englishToFarsiNumber($stats['pending_count']); ?>
+                            <div class="stat-card">
+                                <div class="stat-label">در انتظار تأیید</div>
+                                <div class="stat-value" style="color: #F59E0B;">
+                                    <?php echo englishToFarsiNumber($stats['pending_count']); ?>
+                                </div>
                             </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">رد شده ماه جاری</div>
-                            <div class="stat-value" style="color: #EF4444;">
-                                <?php echo englishToFarsiNumber($stats['rejected_count']); ?>
+                            <div class="stat-card">
+                                <div class="stat-label">رد شده ماه جاری</div>
+                                <div class="stat-value" style="color: #EF4444;">
+                                    <?php echo englishToFarsiNumber($stats['rejected_count']); ?>
+                                </div>
                             </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">
-                                کسری تا دیروز
-                                <i class="bi bi-info-circle" id="shortageInfoIcon" style="font-size:12px;color:#9CA3AF;cursor:help;margin-right:4px;" title=""></i>
+                            <div class="stat-card">
+                                <div class="stat-label">
+                                    کسری تا دیروز
+                                    <i class="bi bi-info-circle" id="shortageInfoIcon" style="font-size:12px;color:#9CA3AF;cursor:help;margin-right:4px;" title=""></i>
+                                </div>
+                                <div class="stat-value" style="color: #EF4444;" id="cardShortageHM">—</div>
                             </div>
-                            <div class="stat-value" style="color: #EF4444;" id="cardShortageHM">—</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">جریمهٔ کسری تا دیروز</div>
-                            <div class="stat-value" style="color: #EF4444; font-size: 15px;" id="cardPenaltyToman">—</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">حقوق تا دیروز</div>
-                            <div class="stat-value" style="color: #8B5CF6; font-size: 15px;" id="cardSalaryToman">—</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px;">
-                                <span class="stat-label" style="margin-bottom:0;">درخواست‌های این ماه</span>
-                                <i class="bi bi-info-circle" id="monthCountInfoIcon" style="font-size:11px;cursor:help;color:#6B7280 !important;"></i>
+                            <div class="stat-card">
+                                <div class="stat-label">جریمهٔ کسری تا دیروز</div>
+                                <div class="stat-value" style="color: #EF4444; font-size: 15px;" id="cardPenaltyToman">—</div>
                             </div>
-                            <div class="stat-value" id="cardCounts" style="color:#744CA4;">—</div>
+                            <div class="stat-card">
+                                <div class="stat-label">حقوق تا دیروز</div>
+                                <div class="stat-value" style="color: #8B5CF6; font-size: 15px;" id="cardSalaryToman">—</div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px;">
+                                    <span class="stat-label" style="margin-bottom:0;">درخواست‌های این ماه</span>
+                                    <i class="bi bi-info-circle" id="monthCountInfoIcon" style="font-size:11px;cursor:help;color:#6B7280 !important;"></i>
+                                </div>
+                                <div class="stat-value" id="cardCounts" style="color:#744CA4;">—</div>
+                            </div>
+                            <script>
+                                const MY_USER_ID = <?php echo (int) $user_id; ?>;
+                                const MY_MONTHLY_SALARY = <?php echo (float) ($user['monthly_salary'] ?? 0); ?>;
+                            </script>
+
+                        </div>
+                    <?php else: ?>
+                        <!-- نمایش عنوان برای مدیران -->
+                        <div style="margin-bottom: 20px; padding: 14px 20px; background: linear-gradient(135deg, rgba(116,76,164,0.08) 0%, rgba(101,122,231,0.08) 100%); border-radius: 12px; border-right: 4px solid #744CA4;">
+                            <h5 style="margin: 0; color: #744CA4; font-weight: 700;">
+                                <i class="bi bi-people-fill me-2"></i>
+                                درخواست‌های همه کارمندان سازمان
+                            </h5>
+                        </div>
+                        <!-- کارت‌های آماریِ شخصیِ مدیر -->
+                        <div class="page-header">
+                            <div class="stat-card">
+                                <div class="stat-label">
+                                    کسری تا دیروز
+                                    <i class="bi bi-info-circle" id="shortageInfoIcon" style="font-size:12px;color:#6B7280;cursor:help;margin-right:4px;opacity:0.7;" title=""></i>
+                                </div>
+                                <div class="stat-value" style="color: #EF4444;" id="cardShortageHM">—</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">جریمهٔ کسری تا دیروز</div>
+                                <div class="stat-value" style="color: #EF4444; font-size: 15px;" id="cardPenaltyToman">—</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">حقوق تا دیروز</div>
+                                <div class="stat-value" style="color: #8B5CF6; font-size: 15px;" id="cardSalaryToman">—</div>
+                            </div>
+                            <div class="stat-card">
+                                <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px;">
+                                    <span class="stat-label" style="margin-bottom:0;">درخواست‌های این ماه</span>
+                                    <i class="bi bi-info-circle" id="monthCountInfoIcon" style="font-size:11px;cursor:help;color:#6B7280 !important;"></i>
+                                </div>
+                                <div class="stat-value" id="cardCounts" style="color:#744CA4;">—</div>
+                            </div>
                         </div>
                         <script>
                             const MY_USER_ID = <?php echo (int) $user_id; ?>;
                             const MY_MONTHLY_SALARY = <?php echo (float) ($user['monthly_salary'] ?? 0); ?>;
                         </script>
-
-                    </div>
-                    <?php else: ?>
-                    <!-- نمایش عنوان برای مدیران -->
-                    <div style="margin-bottom: 20px; padding: 14px 20px; background: linear-gradient(135deg, rgba(116,76,164,0.08) 0%, rgba(101,122,231,0.08) 100%); border-radius: 12px; border-right: 4px solid #744CA4;">
-                        <h5 style="margin: 0; color: #744CA4; font-weight: 700;">
-                            <i class="bi bi-people-fill me-2"></i>
-                            درخواست‌های همه کارمندان سازمان
-                        </h5>
-                    </div>
-                    <!-- کارت‌های آماریِ شخصیِ مدیر -->
-                    <div class="page-header">
-                        <div class="stat-card">
-                            <div class="stat-label">
-                                کسری تا دیروز
-                                <i class="bi bi-info-circle" id="shortageInfoIcon" style="font-size:12px;color:#6B7280;cursor:help;margin-right:4px;opacity:0.7;" title=""></i>
-                            </div>
-                            <div class="stat-value" style="color: #EF4444;" id="cardShortageHM">—</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">جریمهٔ کسری تا دیروز</div>
-                            <div class="stat-value" style="color: #EF4444; font-size: 15px;" id="cardPenaltyToman">—</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">حقوق تا دیروز</div>
-                            <div class="stat-value" style="color: #8B5CF6; font-size: 15px;" id="cardSalaryToman">—</div>
-                        </div>
-                        <div class="stat-card">
-                            <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px;">
-                                <span class="stat-label" style="margin-bottom:0;">درخواست‌های این ماه</span>
-                                <i class="bi bi-info-circle" id="monthCountInfoIcon" style="font-size:11px;cursor:help;color:#6B7280 !important;"></i>
-                            </div>
-                            <div class="stat-value" id="cardCounts" style="color:#744CA4;">—</div>
-                        </div>
-                    </div>
-                    <script>
-                        const MY_USER_ID = <?php echo (int) $user_id; ?>;
-                        const MY_MONTHLY_SALARY = <?php echo (float) ($user['monthly_salary'] ?? 0); ?>;
-                    </script>
                     <?php endif; ?>
 
                     <!-- Controls -->
@@ -2741,51 +2778,53 @@ function formatDateJalali($gregorianDate)
                         </label>
 
                         <?php if ($is_admin_role ?? false): ?>
-                        <!-- فیلتر کارمند/واحد برای مدیران -->
-                        <?php
-                        // برچسب فارسیِ واحدها (همهٔ واحدهای سازمان)
-                        $__sec_labels = [];
-                        if (!empty($org_id)) {
-                            try {
-                                $__sl = $db->prepare("SELECT section_key, section_label FROM organization_activity_sections WHERE organization_id = ?");
-                                $__sl->execute([$org_id]);
-                                foreach ($__sl->fetchAll(PDO::FETCH_ASSOC) as $__row) {
-                                    $__sec_labels[$__row['section_key']] = $__row['section_label'];
+                            <!-- فیلتر کارمند/واحد برای مدیران -->
+                            <?php
+                            // برچسب فارسیِ واحدها (همهٔ واحدهای سازمان)
+                            $__sec_labels = [];
+                            if (!empty($org_id)) {
+                                try {
+                                    $__sl = $db->prepare("SELECT section_key, section_label FROM organization_activity_sections WHERE organization_id = ?");
+                                    $__sl->execute([$org_id]);
+                                    foreach ($__sl->fetchAll(PDO::FETCH_ASSOC) as $__row) {
+                                        $__sec_labels[$__row['section_key']] = $__row['section_label'];
+                                    }
+                                } catch (Exception $e) {
                                 }
-                            } catch (Exception $e) {}
-                        }
+                            }
 
-                        // همهٔ کاربران فعالِ سازمان (مثل create-task)
-                        $filter_users_list = [];
-                        if (!empty($org_id)) {
-                            try {
-                                $__uq = $db->prepare("SELECT id, first_name, last_name, activity_section FROM users WHERE organization_id = ? AND is_deleted = 0 AND is_active = 1 ORDER BY first_name, last_name");
-                                $__uq->execute([$org_id]);
-                                foreach ($__uq->fetchAll(PDO::FETCH_ASSOC) as $__u) {
-                                    $__name = trim(($__u['first_name'] ?? '') . ' ' . ($__u['last_name'] ?? ''));
-                                    if ($__name === '') $__name = 'کاربر ' . $__u['id'];
-                                    $filter_users_list[] = [
-                                        'id' => (int) $__u['id'],
-                                        'full_name' => $__name,
-                                        'first_name' => $__name,
-                                        'last_name' => '',
-                                        'activity_section' => $__u['activity_section'] ?? '',
-                                    ];
+                            // همهٔ کاربران فعالِ سازمان (مثل create-task)
+                            $filter_users_list = [];
+                            if (!empty($org_id)) {
+                                try {
+                                    $__uq = $db->prepare("SELECT id, first_name, last_name, activity_section FROM users WHERE organization_id = ? AND is_deleted = 0 AND is_active = 1 ORDER BY first_name, last_name");
+                                    $__uq->execute([$org_id]);
+                                    foreach ($__uq->fetchAll(PDO::FETCH_ASSOC) as $__u) {
+                                        $__name = trim(($__u['first_name'] ?? '') . ' ' . ($__u['last_name'] ?? ''));
+                                        if ($__name === '') $__name = 'کاربر ' . $__u['id'];
+                                        $filter_users_list[] = [
+                                            'id' => (int) $__u['id'],
+                                            'full_name' => $__name,
+                                            'first_name' => $__name,
+                                            'last_name' => '',
+                                            'activity_section' => $__u['activity_section'] ?? '',
+                                        ];
+                                    }
+                                } catch (Exception $e) {
                                 }
-                            } catch (Exception $e) {}
-                        }
+                            }
 
-                        // همهٔ واحدهای سازمان
-                        $filter_sections_list = [];
-                        foreach ($__sec_labels as $__k => $__l) {
-                            $filter_sections_list[] = ['section_key' => $__k, 'section_label' => $__l];
-                        }
-                        ?>
-                        <div id="employeeFilterPicker" style="min-width: 240px;"></div>
-                        <script>
-                            const FILTER_USERS = <?php echo json_encode($filter_users_list, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
-                            const FILTER_SECTIONS = <?php echo json_encode($filter_sections_list, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
-                        </script>
+                            // همهٔ واحدهای سازمان
+                            $filter_sections_list = [];
+                            foreach ($__sec_labels as $__k => $__l) {
+                                $filter_sections_list[] = ['section_key' => $__k, 'section_label' => $__l];
+                            }
+                            ?>
+                            <div id="employeeFilterPicker" style="min-width: 240px;"></div>
+                            <script>
+                                const FILTER_USERS = <?php echo json_encode($filter_users_list, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+                                const FILTER_SECTIONS = <?php echo json_encode($filter_sections_list, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+                            </script>
                         <?php endif; ?>
 
                         <button class="new-request-btn" onclick="openNewRequestModal()">
@@ -3189,126 +3228,179 @@ function formatDateJalali($gregorianDate)
     </div>
 
     <script src="../../assets/js/cdn/bootstrap.bundle.min.js"></script>
-        <script src="../../assets/js/assignee-picker.js"></script>
+    <script src="../../assets/js/assignee-picker.js"></script>
 
     <script>
-(function () {
-    const farsi = s => convertToFarsiNumber(String(s ?? ''));
-    const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        (function() {
+            const farsi = s => convertToFarsiNumber(String(s ?? ''));
+            const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-    function statusBadge(d) {
-        const tl = `onclick="showTimeline(${d.id}, '${d.type}', event)"`;
-        if (d.status === 'pending')
-            return `<span class="status-badge status-with-timeline" style="color:#F59E0B;" ${tl}>${esc(d.status_label)}<i class="bi bi-clock-history timeline-icon"></i></span>`;
-        if (d.status === 'rejected') {
-            const rr = d.reject_reason ? `<i class="bi bi-chat-dots reject-reason-icon" data-tooltip="${esc(d.reject_reason)}"></i>` : '';
-            return `<span class="status-badge status-with-timeline" style="color:#EF4444;" ${tl}>رد شده ${rr}</span>`;
-        }
-        if (d.status === 'approved')
-            return `<span class="status-badge status-with-timeline" style="color:#10B981;" ${tl}>تأیید شده</span>`;
-        return `<span class="status-badge" style="color:#6b8dcf;">تأیید خودکار</span>`;
-    }
-
-function actionsCell(d) {
-        let h = '';
-        if (d.can_edit) h += `<button class="action-icon-btn edit-btn" onclick="editRequest(${d.id}, '${d.type}')" title="ویرایش"><i class="bi bi-pencil"></i></button>`;
-        if (d.can_delete) h += `<button class="action-icon-btn delete-btn" onclick="deleteRequest(${d.id}, '${d.type}')" title="حذف"><i class="bi bi-trash"></i></button>`;
-        if (!d.can_edit && !d.can_delete) return '<span class="no-action">—</span>';
-        return `<div style="display:flex;gap:6px;justify-content:center;align-items:center;height:100%;">${h}</div>`;
-    }
-
-    function reqFilterPass(d) {
-        const activeBtn = document.querySelector('.filter-btn.active');
-        const statusFilter = activeBtn ? (activeBtn.textContent.includes('همه') ? 'all' : activeBtn.textContent.includes('انتظار') ? 'pending' : activeBtn.textContent.includes('تایید') ? 'approved' : 'rejected') : 'all';
-        if (statusFilter !== 'all' && d.status !== statusFilter) return false;
-
-        const ef = window.__empFilter;
-        if (ef && ef.value) {
-            if (ef.type === 'section') { if ((d.user_section || '') !== ef.value) return false; }
-            else if (String(d.user_id) !== String(ef.value)) return false;
-        }
-
-        if (document.getElementById('currentMonthFilter') && document.getElementById('currentMonthFilter').checked && d.date_greg) {
-            const t = new Date();
-            const j = gregorianToJalaliJS(t.getFullYear(), t.getMonth() + 1, t.getDate());
-            const g = jalaliToGregorianJS(j[0], j[1], 1);
-            if (new Date(d.date_greg) < new Date(g[0], g[1] - 1, g[2])) return false;
-        }
-
-        const si = document.getElementById('searchInput');
-        const term = (si ? si.value : '').trim().toLowerCase();
-        if (term) {
-            const hay = (d.request_code + ' ' + d.type_label + ' ' + (d.user_full_name || '') + ' ' + (d.description || '')).toLowerCase();
-            if (!hay.includes(term)) return false;
-        }
-        return true;
-    }
-
-    function buildRequestsGrid() {
-        const el = document.getElementById('requestsGrid');
-        if (!el || typeof agGrid === 'undefined') return;
-
-        const cols = [
-            { headerName: 'کد', field: 'request_code', width: 120, cellRenderer: p => farsi(p.value || '—') },
-            { headerName: 'نوع', field: 'type_label', width: 100 }
-        ];
-        if (IS_ADMIN_ROLE) cols.push({ headerName: 'کارمند', field: 'user_full_name', flex: 1, minWidth: 120 });
-        cols.push(
-            { headerName: 'تاریخ', field: 'date_jalali', width: 120, cellRenderer: p => farsi(p.value || '—') },
-            { headerName: 'شروع', field: 'start_time', width: 80, cellRenderer: p => p.value ? farsi(p.value) : '—' },
-            { headerName: 'پایان', field: 'end_time', width: 80, cellRenderer: p => p.value ? farsi(p.value) : '—' },
-            { headerName: 'توضیحات', field: 'description', flex: 1, minWidth: 140, tooltipField: 'description', cellRenderer: p => p.value ? esc(p.value) : '—' },
-            { headerName: 'وضعیت', width: 175, sortable: false, cellRenderer: p => statusBadge(p.data) },
-            { headerName: 'تاریخ ایجاد', field: 'created_jalali', width: 150, cellRenderer: p => farsi(p.value || '—') },
-            { headerName: 'عملیات', width: 120, sortable: false, cellClass: 'req-actions-cell', cellRenderer: p => actionsCell(p.data) }
-        );
-
-        window.__reqGridApi = agGrid.createGrid(el, {
-            enableRtl: true,
-            rowHeight: 46,
-            headerHeight: 44,
-            pagination: true,
-            paginationPageSize: 10,
-            enableBrowserTooltips: true,
-            onPaginationChanged: () => persianizePaging(),
-            columnDefs: cols,
-            rowData: (typeof REQUESTS_DATA !== 'undefined' ? REQUESTS_DATA : []),
-            isExternalFilterPresent: () => true,
-            doesExternalFilterPass: node => reqFilterPass(node.data),
-            overlayNoRowsTemplate: '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;color:#A0AEC0;"><div style="font-size:48px;margin-bottom:12px;">📭</div><div style="font-size:16px;font-weight:600;color:#718096;">هیچ درخواستی موجود نیست</div></div>'
-        });
-        window.__reqGridApi.onFilterChanged();
-    }
-
-    // وصل‌کردن فیلترهای فعلی به گرید (بازنویسی توابع قدیمی)
-    applyAllFilters = function () { if (window.__reqGridApi) window.__reqGridApi.onFilterChanged(); };
-    initPagination = function () { /* صفحه‌بندی داخلیِ گرید */ };
-
-    document.addEventListener('DOMContentLoaded', function () {
-        buildRequestsGrid();
-        // پیکر سرچ‌دار کاربر/واحد
-        const pc = document.getElementById('employeeFilterPicker');
-        if (pc && typeof AssigneePicker !== 'undefined' && typeof FILTER_USERS !== 'undefined') {
-            const secMap = {};
-            (typeof FILTER_SECTIONS !== 'undefined' ? FILTER_SECTIONS : []).forEach(s => secMap[s.section_key] = s.section_label);
-            AssigneePicker.create({
-                container: '#employeeFilterPicker',
-                users: FILTER_USERS,
-                sections: (typeof FILTER_SECTIONS !== 'undefined' ? FILTER_SECTIONS : []),
-                sectionMap: secMap,
-                showSections: true,
-                placeholder: 'فیلتر بر اساس کاربر یا واحد...',
-                onSelect: (type, value) => {
-                    window.__empFilter = (value && value !== '__all__' && value !== '__all_users__') ? { type: type, value: value } : null;
-                    if (window.__reqGridApi) window.__reqGridApi.onFilterChanged();
+            function statusBadge(d) {
+                const tl = `onclick="showTimeline(${d.id}, '${d.type}', event)"`;
+                if (d.status === 'pending')
+                    return `<span class="status-badge status-with-timeline" style="color:#F59E0B;" ${tl}>${esc(d.status_label)}<i class="bi bi-clock-history timeline-icon"></i></span>`;
+                if (d.status === 'rejected') {
+                    const rr = d.reject_reason ? `<i class="bi bi-chat-dots reject-reason-icon" data-tooltip="${esc(d.reject_reason)}"></i>` : '';
+                    return `<span class="status-badge status-with-timeline" style="color:#EF4444;" ${tl}>رد شده ${rr}</span>`;
                 }
+                if (d.status === 'approved')
+                    return `<span class="status-badge status-with-timeline" style="color:#10B981;" ${tl}>تأیید شده</span>`;
+                return `<span class="status-badge" style="color:#6b8dcf;">تأیید خودکار</span>`;
+            }
+
+            function actionsCell(d) {
+                let h = '';
+                if (d.can_edit) h += `<button class="action-icon-btn edit-btn" onclick="editRequest(${d.id}, '${d.type}')" title="ویرایش"><i class="bi bi-pencil"></i></button>`;
+                if (d.can_delete) h += `<button class="action-icon-btn delete-btn" onclick="deleteRequest(${d.id}, '${d.type}')" title="حذف"><i class="bi bi-trash"></i></button>`;
+                if (!d.can_edit && !d.can_delete) return '<span class="no-action">—</span>';
+                return `<div style="display:flex;gap:6px;justify-content:center;align-items:center;height:100%;">${h}</div>`;
+            }
+
+            function reqFilterPass(d) {
+                const activeBtn = document.querySelector('.filter-btn.active');
+                const statusFilter = activeBtn ? (activeBtn.textContent.includes('همه') ? 'all' : activeBtn.textContent.includes('انتظار') ? 'pending' : activeBtn.textContent.includes('تایید') ? 'approved' : 'rejected') : 'all';
+                if (statusFilter !== 'all' && d.status !== statusFilter) return false;
+
+                const ef = window.__empFilter;
+                if (ef && ef.value) {
+                    if (ef.type === 'section') {
+                        if ((d.user_section || '') !== ef.value) return false;
+                    } else if (String(d.user_id) !== String(ef.value)) return false;
+                }
+
+                if (document.getElementById('currentMonthFilter') && document.getElementById('currentMonthFilter').checked && d.date_greg) {
+                    const t = new Date();
+                    const j = gregorianToJalaliJS(t.getFullYear(), t.getMonth() + 1, t.getDate());
+                    const g = jalaliToGregorianJS(j[0], j[1], 1);
+                    if (new Date(d.date_greg) < new Date(g[0], g[1] - 1, g[2])) return false;
+                }
+
+                const si = document.getElementById('searchInput');
+                const term = (si ? si.value : '').trim().toLowerCase();
+                if (term) {
+                    const hay = (d.request_code + ' ' + d.type_label + ' ' + (d.user_full_name || '') + ' ' + (d.description || '')).toLowerCase();
+                    if (!hay.includes(term)) return false;
+                }
+                return true;
+            }
+
+            function buildRequestsGrid() {
+                const el = document.getElementById('requestsGrid');
+                if (!el || typeof agGrid === 'undefined') return;
+
+                const cols = [{
+                        headerName: 'کد',
+                        field: 'request_code',
+                        width: 120,
+                        cellRenderer: p => farsi(p.value || '—')
+                    },
+                    {
+                        headerName: 'نوع',
+                        field: 'type_label',
+                        width: 100
+                    }
+                ];
+                if (IS_ADMIN_ROLE) cols.push({
+                    headerName: 'کارمند',
+                    field: 'user_full_name',
+                    flex: 1,
+                    minWidth: 120
+                });
+                cols.push({
+                    headerName: 'تاریخ',
+                    field: 'date_jalali',
+                    width: 120,
+                    cellRenderer: p => farsi(p.value || '—')
+                }, {
+                    headerName: 'شروع',
+                    field: 'start_time',
+                    width: 80,
+                    cellRenderer: p => p.value ? farsi(p.value) : '—'
+                }, {
+                    headerName: 'پایان',
+                    field: 'end_time',
+                    width: 80,
+                    cellRenderer: p => p.value ? farsi(p.value) : '—'
+                }, {
+                    headerName: 'توضیحات',
+                    field: 'description',
+                    flex: 1,
+                    minWidth: 140,
+                    tooltipField: 'description',
+                    cellRenderer: p => p.value ? esc(p.value) : '—'
+                }, {
+                    headerName: 'وضعیت',
+                    width: 175,
+                    sortable: false,
+                    cellRenderer: p => statusBadge(p.data)
+                }, {
+                    headerName: 'تاریخ ایجاد',
+                    field: 'created_jalali',
+                    width: 150,
+                    cellRenderer: p => farsi(p.value || '—')
+                }, {
+                    headerName: 'عملیات',
+                    width: 120,
+                    sortable: false,
+                    cellClass: 'req-actions-cell',
+                    cellRenderer: p => actionsCell(p.data)
+                });
+
+                window.__reqGridApi = agGrid.createGrid(el, {
+                    enableRtl: true,
+                    rowHeight: 46,
+                    headerHeight: 44,
+                    pagination: true,
+                    paginationPageSize: 10,
+                    enableBrowserTooltips: true,
+                    onPaginationChanged: () => persianizePaging(),
+                    columnDefs: cols,
+                    rowData: (typeof REQUESTS_DATA !== 'undefined' ? REQUESTS_DATA : []),
+                    isExternalFilterPresent: () => true,
+                    doesExternalFilterPass: node => reqFilterPass(node.data),
+                    overlayNoRowsTemplate: '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;color:#A0AEC0;"><div style="font-size:48px;margin-bottom:12px;">📭</div><div style="font-size:16px;font-weight:600;color:#718096;">هیچ درخواستی موجود نیست</div></div>'
+                });
+                window.__reqGridApi.onFilterChanged();
+            }
+
+            // وصل‌کردن فیلترهای فعلی به گرید (بازنویسی توابع قدیمی)
+            applyAllFilters = function() {
+                if (window.__reqGridApi) window.__reqGridApi.onFilterChanged();
+            };
+            initPagination = function() {
+                /* صفحه‌بندی داخلیِ گرید */ };
+
+            document.addEventListener('DOMContentLoaded', function() {
+                buildRequestsGrid();
+                // پیکر سرچ‌دار کاربر/واحد
+                const pc = document.getElementById('employeeFilterPicker');
+                if (pc && typeof AssigneePicker !== 'undefined' && typeof FILTER_USERS !== 'undefined') {
+                    const secMap = {};
+                    (typeof FILTER_SECTIONS !== 'undefined' ? FILTER_SECTIONS : []).forEach(s => secMap[s.section_key] = s.section_label);
+                    AssigneePicker.create({
+                        container: '#employeeFilterPicker',
+                        users: FILTER_USERS,
+                        sections: (typeof FILTER_SECTIONS !== 'undefined' ? FILTER_SECTIONS : []),
+                        sectionMap: secMap,
+                        showSections: true,
+                        placeholder: 'فیلتر بر اساس کاربر یا واحد...',
+                        onSelect: (type, value) => {
+                            window.__empFilter = (value && value !== '__all__' && value !== '__all_users__') ? {
+                                type: type,
+                                value: value
+                            } : null;
+                            if (window.__reqGridApi) window.__reqGridApi.onFilterChanged();
+                        }
+                    });
+                }
+                const s = document.getElementById('searchInput');
+                if (s) s.addEventListener('input', () => {
+                    if (window.__reqGridApi) window.__reqGridApi.onFilterChanged();
+                });
             });
-        }
-        const s = document.getElementById('searchInput');
-        if (s) s.addEventListener('input', () => { if (window.__reqGridApi) window.__reqGridApi.onFilterChanged(); });
-    });
-})();
-</script>
+        })();
+    </script>
+    <script src="<?= asset('../assets/js/alert.js') ?>"></script>
     <script>
         (async function checkAuth() {
             const authToken = localStorage.getItem('auth_token');
@@ -3348,10 +3440,10 @@ function actionsCell(d) {
         // ============================================
         // ماسک ساعت ۲۴ ساعته (HH:MM)
         // ============================================
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.time-input-custom').forEach(input => {
 
-                input.addEventListener('input', function (e) {
+                input.addEventListener('input', function(e) {
                     let value = this.value;
 
                     // تبدیل اعداد فارسی به انگلیسی
@@ -3384,7 +3476,7 @@ function actionsCell(d) {
                 });
 
                 // اعتبارسنجی هنگام خروج از فیلد
-                input.addEventListener('blur', function () {
+                input.addEventListener('blur', function() {
                     let value = this.value.trim();
                     if (!value) return;
 
@@ -3639,7 +3731,7 @@ function actionsCell(d) {
             // اما برای سادگی فرض می‌کنیم یک بازه کلی داریم
             shortageSlots.push({
                 start: '08:00', // زمان شروع شیفت فرضی
-                end: '17:00',   // زمان پایان شیفت فرضی
+                end: '17:00', // زمان پایان شیفت فرضی
                 minutes: day.shortage_minutes
             });
 
@@ -3718,16 +3810,40 @@ function actionsCell(d) {
             }
 
             const typeInfo = {
-                'pass': { icon: 'bi-person-walking', label: 'پاس', color: 'pass' },
-                'mission': { icon: 'bi-briefcase', label: 'مأموریت', color: 'mission' },
-                'leave': { icon: 'bi-house', label: 'مرخصی', color: 'leave' },
-                'forget': { icon: 'bi-clock-history', label: 'فراموشی', color: 'forget' },
-                'technical': { icon: 'bi-wrench', label: 'فنی', color: 'technical' }
+                'pass': {
+                    icon: 'bi-person-walking',
+                    label: 'پاس',
+                    color: 'pass'
+                },
+                'mission': {
+                    icon: 'bi-briefcase',
+                    label: 'مأموریت',
+                    color: 'mission'
+                },
+                'leave': {
+                    icon: 'bi-house',
+                    label: 'مرخصی',
+                    color: 'leave'
+                },
+                'forget': {
+                    icon: 'bi-clock-history',
+                    label: 'فراموشی',
+                    color: 'forget'
+                },
+                'technical': {
+                    icon: 'bi-wrench',
+                    label: 'فنی',
+                    color: 'technical'
+                }
             };
 
             let badges = '';
             validRequests.forEach(req => {
-                const info = typeInfo[req.type] || { icon: 'bi-question', label: '?', color: '' };
+                const info = typeInfo[req.type] || {
+                    icon: 'bi-question',
+                    label: '?',
+                    color: ''
+                };
                 const startTime = req.start_time ? req.start_time.substring(0, 5) : '';
                 const endTime = req.end_time ? req.end_time.substring(0, 5) : '';
 
@@ -3841,20 +3957,53 @@ function actionsCell(d) {
                         // اگر شیفت/ورودِ دوم وجود دارد یا کاربر دوشیفته است → هر دو زیرِ هم
                         if (shiftCount >= 2 || b) {
                             return '<span class="shift-time">' + (a ? convertToFarsiNumber(a) : '') + '</span>' +
-                                   '<span class="shift-time shift-2">' + (b ? convertToFarsiNumber(b) : '') + '</span>';
+                                '<span class="shift-time shift-2">' + (b ? convertToFarsiNumber(b) : '') + '</span>';
                         }
                         return a ? '<span class="shift-time">' + convertToFarsiNumber(a) + '</span>' : '<span class="time-empty"></span>';
                     };
 
-                    const columnDefs = [
-                        { headerName: 'روز', field: 'day_name', width: 90, cellRenderer: p => '<span class="day-name">' + (p.value || '') + '</span>' },
-                        { headerName: 'تاریخ', width: 120, cellRenderer: dateRenderer },
-                        { headerName: 'ورود', width: 110, cellRenderer: p => inOutRenderer(p, 'in') },
-                        { headerName: 'خروج', width: 110, cellRenderer: p => inOutRenderer(p, 'out') },
-                        { headerName: 'کسری اولیه', width: 110, cellRenderer: p => p.data.is_holiday ? '—' : convertToFarsiNumber(p.data.shortage_hms || '۰:۰۰') },
-                        { headerName: 'درخواست‌ها', flex: 1, minWidth: 140, cellRenderer: p => p.data.is_holiday ? '—' : getRequestBadges(p.data.valid_requests) },
-                        { headerName: 'کسری نهایی', width: 110, cellRenderer: p => p.data.is_holiday ? '—' : convertToFarsiNumber(p.data.final_shortage_hms || '۰:۰۰') },
-                        { headerName: 'ریالی', width: 130, cellRenderer: p => p.data.is_holiday ? '—' : (formatNumber(p.data.shortage_money) + ' ریال') }
+                    const columnDefs = [{
+                            headerName: 'روز',
+                            field: 'day_name',
+                            width: 90,
+                            cellRenderer: p => '<span class="day-name">' + (p.value || '') + '</span>'
+                        },
+                        {
+                            headerName: 'تاریخ',
+                            width: 120,
+                            cellRenderer: dateRenderer
+                        },
+                        {
+                            headerName: 'ورود',
+                            width: 110,
+                            cellRenderer: p => inOutRenderer(p, 'in')
+                        },
+                        {
+                            headerName: 'خروج',
+                            width: 110,
+                            cellRenderer: p => inOutRenderer(p, 'out')
+                        },
+                        {
+                            headerName: 'کسری اولیه',
+                            width: 110,
+                            cellRenderer: p => p.data.is_holiday ? '—' : convertToFarsiNumber(p.data.shortage_hms || '۰:۰۰')
+                        },
+                        {
+                            headerName: 'درخواست‌ها',
+                            flex: 1,
+                            minWidth: 140,
+                            cellRenderer: p => p.data.is_holiday ? '—' : getRequestBadges(p.data.valid_requests)
+                        },
+                        {
+                            headerName: 'کسری نهایی',
+                            width: 110,
+                            cellRenderer: p => p.data.is_holiday ? '—' : convertToFarsiNumber(p.data.final_shortage_hms || '۰:۰۰')
+                        },
+                        {
+                            headerName: 'ریالی',
+                            width: 130,
+                            cellRenderer: p => p.data.is_holiday ? '—' : (formatNumber(p.data.shortage_money) + ' ریال')
+                        }
                     ];
 
                     const gridOptions = {
@@ -3874,13 +4023,21 @@ function actionsCell(d) {
                     };
 
                     container.innerHTML = '<div id="attendanceGrid" class="ag-theme-alpine" style="width:100%;height:700px;"></div>';
-                    if (window.attendanceGridApi) { try { window.attendanceGridApi.destroy(); } catch (e) {} }
+                    if (window.attendanceGridApi) {
+                        try {
+                            window.attendanceGridApi.destroy();
+                        } catch (e) {}
+                    }
                     window.attendanceGridApi = agGrid.createGrid(document.getElementById('attendanceGrid'), gridOptions);
 
                     // اسکرول خودکار به امروز
                     const todayIdx = data.days.findIndex(d => d.date === todayStr2);
                     if (todayIdx >= 0) {
-                        setTimeout(() => { try { window.attendanceGridApi.ensureIndexVisible(todayIdx, 'middle'); } catch (e) {} }, 60);
+                        setTimeout(() => {
+                            try {
+                                window.attendanceGridApi.ensureIndexVisible(todayIdx, 'middle');
+                            } catch (e) {}
+                        }, 60);
                     }
 
                 } else {
@@ -3971,7 +4128,7 @@ function actionsCell(d) {
             // اما برای سادگی فرض می‌کنیم یک بازه کلی داریم
             shortageSlots.push({
                 start: '08:00', // زمان شروع شیفت فرضی
-                end: '17:00',   // زمان پایان شیفت فرضی
+                end: '17:00', // زمان پایان شیفت فرضی
                 minutes: day.shortage_minutes
             });
 
@@ -4149,15 +4306,15 @@ function actionsCell(d) {
         // ============================================
         // Listener برای آپدیت خودکار تاریخ پایان
         // ============================================
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             // تاریخ شروع مأموریت
             const missionStartInput = document.getElementById('missionStartDate');
             const missionEndInput = document.getElementById('missionEndDate');
 
             if (missionStartInput) {
                 // Observer برای تغییرات
-                const observer = new MutationObserver(function (mutations) {
-                    mutations.forEach(function (mutation) {
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
                         if (mutation.attributeName === 'data-date') {
                             const startDate = missionStartInput.getAttribute('data-date');
                             const startValue = missionStartInput.value;
@@ -4180,8 +4337,8 @@ function actionsCell(d) {
             const leaveEndInput = document.getElementById('leaveEndDate');
 
             if (leaveStartInput) {
-                const observer = new MutationObserver(function (mutations) {
-                    mutations.forEach(function (mutation) {
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
                         if (mutation.attributeName === 'data-date') {
                             const startDate = leaveStartInput.getAttribute('data-date');
                             const startValue = leaveStartInput.value;
@@ -4212,7 +4369,9 @@ function actionsCell(d) {
             }
 
             const type = ['mission', 'leave', 'pass', 'forget', 'technical'][currentTab];
-            let data = { type };
+            let data = {
+                type
+            };
 
 
 
@@ -4228,7 +4387,12 @@ function actionsCell(d) {
                     endDate = startDate;
                 }
 
-                console.log('📌 Debug mission:', { startDate, endDate, startTime, endTime }); // برای دیباگ                if (!startDate || !startTime || !endTime || !desc) {
+                console.log('📌 Debug mission:', {
+                    startDate,
+                    endDate,
+                    startTime,
+                    endTime
+                }); // برای دیباگ                if (!startDate || !startTime || !endTime || !desc) {
 
                 if (!startDate || !startTime || !endTime || !desc) {
                     alert('❌ لطفاً تمام فیلدها را پر کنید');
@@ -4243,14 +4407,18 @@ function actionsCell(d) {
                 if (APP_SETTINGS.mission_max_hours_monthly > 0) {
                     try {
                         const checkRes = await fetch(`/attendance_system/api/requests/check-limits.php?type=mission&date=${data.start_datetime.split(' ')[0]}`, {
-                            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('auth_token') }
+                            headers: {
+                                'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
+                            }
                         });
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
                             alert('❌ ' + checkData.message);
                             return;
                         }
-                    } catch (e) { console.error('خطا در بررسی سقف:', e); }
+                    } catch (e) {
+                        console.error('خطا در بررسی سقف:', e);
+                    }
                 }
                 data = {
                     ...data,
@@ -4258,8 +4426,7 @@ function actionsCell(d) {
                     end_datetime: `${endDate} ${endTime}`,
                     description: desc
                 };
-            }
-            else if (type === 'leave') {
+            } else if (type === 'leave') {
                 const startDate = document.getElementById('leaveStartDate').getAttribute('data-date');
                 let endDate = document.getElementById('leaveEndDate').getAttribute('data-date');
                 const startTime = document.getElementById('leaveStartTime').value;
@@ -4275,7 +4442,12 @@ function actionsCell(d) {
                     endDate = startDate;
                 }
 
-                console.log('📌 Debug mission:', { startDate, endDate, startTime, endTime }); // برای دیباگ
+                console.log('📌 Debug mission:', {
+                    startDate,
+                    endDate,
+                    startTime,
+                    endTime
+                }); // برای دیباگ
 
                 if (!startDate || !startTime || !endTime || !reason) {
                     alert('❌ لطفاً تمام فیلدها را پر کنید');
@@ -4308,8 +4480,7 @@ function actionsCell(d) {
                     reason: reason,
                     substitute_id: substituteId
                 };
-            }
-            else if (type === 'pass') {
+            } else if (type === 'pass') {
                 const passDate = document.getElementById('passDate').getAttribute('data-date');
                 const startTime = document.getElementById('passStartTime').value;
                 const endTime = document.getElementById('passEndTime').value;
@@ -4329,7 +4500,9 @@ function actionsCell(d) {
                     try {
                         console.log('aaaaa:   ' + APP_SETTINGS.pass_max_count_monthly);
                         const checkRes = await fetch(`/attendance_system/api/requests/check-limits.php?type=pass&date=${passDate}`, {
-                            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('auth_token') }
+                            headers: {
+                                'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
+                            }
                         });
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
@@ -4358,8 +4531,7 @@ function actionsCell(d) {
                     end_time: endTime,
                     reason: reason
                 };
-            }
-            else if (type === 'forget') {
+            } else if (type === 'forget') {
                 const date = document.getElementById('forgetPasswordDate').getAttribute('data-date');
                 const startTime = document.getElementById('forgetStartTime').value;
                 const endTime = document.getElementById('forgetEndTime').value;
@@ -4377,14 +4549,18 @@ function actionsCell(d) {
                 if (APP_SETTINGS.forget_max_monthly > 0) {
                     try {
                         const checkRes = await fetch(`/attendance_system/api/requests/check-limits.php?type=forget&date=${date}`, {
-                            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('auth_token') }
+                            headers: {
+                                'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
+                            }
                         });
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
                             alert('❌ ' + checkData.message);
                             return;
                         }
-                    } catch (e) { console.error('خطا در بررسی سقف:', e); }
+                    } catch (e) {
+                        console.error('خطا در بررسی سقف:', e);
+                    }
                 }
                 data = {
                     ...data,
@@ -4392,8 +4568,7 @@ function actionsCell(d) {
                     end_time: `${date} ${endTime}`,
                     description: desc
                 };
-            }
-            else if (type === 'technical') {
+            } else if (type === 'technical') {
                 const date = document.getElementById('technicalIssueDate').getAttribute('data-date');
                 const startTime = document.getElementById('technicalStartTime').value;
                 const endTime = document.getElementById('technicalEndTime').value;
@@ -4411,14 +4586,18 @@ function actionsCell(d) {
                 if (APP_SETTINGS.technical_max_monthly > 0) {
                     try {
                         const checkRes = await fetch(`/attendance_system/api/requests/check-limits.php?type=technical&date=${date}`, {
-                            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('auth_token') }
+                            headers: {
+                                'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
+                            }
                         });
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
                             alert('❌ ' + checkData.message);
                             return;
                         }
-                    } catch (e) { console.error('خطا در بررسی سقف:', e); }
+                    } catch (e) {
+                        console.error('خطا در بررسی سقف:', e);
+                    }
                 }
                 data = {
                     ...data,
@@ -4446,7 +4625,9 @@ function actionsCell(d) {
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(data)
                 });
 
@@ -4492,18 +4673,22 @@ function actionsCell(d) {
         function applyAllFilters() {
             // 1. وضعیت فعال
             const activeFilterBtn = document.querySelector('.filter-btn.active');
-            const statusFilter = activeFilterBtn
-                ? (activeFilterBtn.textContent.includes('همه') ? 'all'
-                    : activeFilterBtn.textContent.includes('انتظار') ? 'pending'
-                    : activeFilterBtn.textContent.includes('تایید') ? 'approved' : 'rejected')
-                : 'all';
+            const statusFilter = activeFilterBtn ?
+                (activeFilterBtn.textContent.includes('همه') ? 'all' :
+                    activeFilterBtn.textContent.includes('انتظار') ? 'pending' :
+                    activeFilterBtn.textContent.includes('تایید') ? 'approved' : 'rejected') :
+                'all';
 
             // 2. فیلتر کارمند یا واحد
             const employeeSelect = document.getElementById('employeeFilter');
             const empVal = employeeSelect ? employeeSelect.value : '';
-            let selectedUserId = '', selectedSection = '';
-            if (empVal.indexOf('section:') === 0) { selectedSection = empVal.slice(8); }
-            else { selectedUserId = empVal; }
+            let selectedUserId = '',
+                selectedSection = '';
+            if (empVal.indexOf('section:') === 0) {
+                selectedSection = empVal.slice(8);
+            } else {
+                selectedUserId = empVal;
+            }
             const secMap = window.USER_SECTION_MAP || {};
 
             // 3. فیلتر ماه جاری
@@ -4553,6 +4738,7 @@ function actionsCell(d) {
         }
         // پیش‌فرض هنگام لود: فقط ماه جاری
         document.addEventListener('DOMContentLoaded', applyAllFilters);
+
         function filterByStatus(status) {
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
@@ -4621,7 +4807,7 @@ function actionsCell(d) {
         }
 
         // جستجو
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('searchInput').addEventListener('input', (e) => {
                 const query = e.target.value.toLowerCase();
                 document.querySelectorAll('.request-row').forEach(row => {
@@ -4631,7 +4817,7 @@ function actionsCell(d) {
 
                 initPagination();
             });
-            setTimeout(function () {
+            setTimeout(function() {
 
                 loadMonthlyAttendance();
                 loadSubstituteUsers();
@@ -4683,7 +4869,9 @@ function actionsCell(d) {
             try {
                 const authToken = localStorage.getItem('auth_token');
                 const response = await fetch('/api/users/list.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
 
                 const data = await response.json();
@@ -4691,7 +4879,7 @@ function actionsCell(d) {
                     const currentUserInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
                     users = data.users;
 
-                    unitsToFilter = ['all','RS', 'ATM', 'AC'];
+                    unitsToFilter = ['all', 'RS', 'ATM', 'AC'];
                     const filteredUsers = users.filter(user => {
                         return unitsToFilter.includes(user.activity_unit);
                     });
@@ -4737,21 +4925,71 @@ function actionsCell(d) {
             const el = document.getElementById('pendingApprovalsGrid');
             if (!el || typeof agGrid === 'undefined') return;
 
-            const typeLabels = { mission: 'مأموریت', leave: 'مرخصی', pass: 'پاس', forget: 'فراموشی', technical: 'مشکل فنی' };
-            const roleLabels = { substitute: 'جانشین', manager: 'مدیر', supervisor: 'مسئول', admin: 'ادمین' };
+            const typeLabels = {
+                mission: 'مأموریت',
+                leave: 'مرخصی',
+                pass: 'پاس',
+                forget: 'فراموشی',
+                technical: 'مشکل فنی'
+            };
+            const roleLabels = {
+                substitute: 'جانشین',
+                manager: 'مدیر',
+                supervisor: 'مسئول',
+                admin: 'ادمین'
+            };
             const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-            const cols = [
-                { headerName: 'کد', field: 'request_code', width: 120, cellRenderer: p => convertToFarsiNumber(p.value || '—') },
-                { headerName: 'نوع', width: 90, valueGetter: p => typeLabels[p.data.type] || p.data.type },
-                { headerName: 'درخواست‌دهنده', width: 150, valueGetter: p => ((p.data.first_name || '') + ' ' + (p.data.last_name || '')).trim() || '—' },
-                { headerName: 'جانشین', field: 'substitute_name', width: 120, cellRenderer: p => p.value ? esc(p.value) : '—' },
-                { headerName: 'شروع', width: 145, valueGetter: p => formatDateTimeJalali(p.data.start_datetime) },
-                { headerName: 'پایان', width: 145, valueGetter: p => formatDateTimeJalali(p.data.end_datetime) },
-                { headerName: 'توضیحات', field: 'description', flex: 1, minWidth: 140, tooltipField: 'description', cellRenderer: p => p.value ? esc(p.value) : '—' },
-                { headerName: 'نقش', width: 90, cellRenderer: p => `<span class="role-badge ${p.data.pending_role}">${roleLabels[p.data.pending_role] || p.data.pending_role}</span>` },
+            const cols = [{
+                    headerName: 'کد',
+                    field: 'request_code',
+                    width: 120,
+                    cellRenderer: p => convertToFarsiNumber(p.value || '—')
+                },
                 {
-                    headerName: 'عملیات', width: 120, sortable: false, cellRenderer: p => {
+                    headerName: 'نوع',
+                    width: 90,
+                    valueGetter: p => typeLabels[p.data.type] || p.data.type
+                },
+                {
+                    headerName: 'درخواست‌دهنده',
+                    width: 150,
+                    valueGetter: p => ((p.data.first_name || '') + ' ' + (p.data.last_name || '')).trim() || '—'
+                },
+                {
+                    headerName: 'جانشین',
+                    field: 'substitute_name',
+                    width: 120,
+                    cellRenderer: p => p.value ? esc(p.value) : '—'
+                },
+                {
+                    headerName: 'شروع',
+                    width: 145,
+                    valueGetter: p => formatDateTimeJalali(p.data.start_datetime)
+                },
+                {
+                    headerName: 'پایان',
+                    width: 145,
+                    valueGetter: p => formatDateTimeJalali(p.data.end_datetime)
+                },
+                {
+                    headerName: 'توضیحات',
+                    field: 'description',
+                    flex: 1,
+                    minWidth: 140,
+                    tooltipField: 'description',
+                    cellRenderer: p => p.value ? esc(p.value) : '—'
+                },
+                {
+                    headerName: 'نقش',
+                    width: 90,
+                    cellRenderer: p => `<span class="role-badge ${p.data.pending_role}">${roleLabels[p.data.pending_role] || p.data.pending_role}</span>`
+                },
+                {
+                    headerName: 'عملیات',
+                    width: 120,
+                    sortable: false,
+                    cellRenderer: p => {
                         if (p.data.is_expired) return '<span style="background:#FEF3C7;color:#D97706;font-size:10px;padding:4px 8px;border-radius:6px;white-space:nowrap;"><i class="bi bi-clock"></i> منقضی شده</span>';
                         return `<div style="display:flex;gap:6px;justify-content:center;align-items:center;height:100%;">
                             <button class="action-icon-btn approve-btn" onclick="approveRequest(${p.data.id}, '${p.data.type}')" title="تأیید"><i class="bi bi-check-lg"></i></button>
@@ -4763,9 +5001,17 @@ function actionsCell(d) {
 
             if (!pendingGridApi) {
                 pendingGridApi = agGrid.createGrid(el, {
-                    enableRtl: true, rowHeight: 46, headerHeight: 44, pagination: true, paginationPageSize: 10,
-                    enableBrowserTooltips: true, columnDefs: cols, rowData: rows,
-                    getRowStyle: p => p.data.is_expired ? { opacity: '0.6' } : null,
+                    enableRtl: true,
+                    rowHeight: 46,
+                    headerHeight: 44,
+                    pagination: true,
+                    paginationPageSize: 10,
+                    enableBrowserTooltips: true,
+                    columnDefs: cols,
+                    rowData: rows,
+                    getRowStyle: p => p.data.is_expired ? {
+                        opacity: '0.6'
+                    } : null,
                     onPaginationChanged: () => persianizePaging(),
                     overlayNoRowsTemplate: '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;"><div style="font-size:48px;margin-bottom:12px;">✅</div><div style="font-size:16px;font-weight:600;color:#10B981;">هیچ درخواستی منتظر تأیید شما نیست</div></div>'
                 });
@@ -4843,12 +5089,18 @@ function actionsCell(d) {
 
         // تأیید درخواست
         async function approveRequest(id, type) {
-            uiConfirm('آیا از تأیید این درخواست مطمئن هستید؟', async function () {
+            uiConfirm('آیا از تأیید این درخواست مطمئن هستید؟', async function() {
                 try {
                     const response = await fetch('/attendance_system/api/requests/approve.php', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id, type, action: 'approve' })
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            id,
+                            type,
+                            action: 'approve'
+                        })
                     });
                     const result = await response.json();
                     if (result.success) {
@@ -4863,7 +5115,10 @@ function actionsCell(d) {
                     console.error('خطا:', error);
                     showToast('خطا در ارتباط با سرور', 'warning');
                 }
-            }, { yesText: 'بله، تأیید شود', noText: 'خیر، منصرف شدم' });
+            }, {
+                yesText: 'بله، تأیید شود',
+                noText: 'خیر، منصرف شدم'
+            });
         }
 
         // رد درخواست
@@ -4886,19 +5141,31 @@ function actionsCell(d) {
 
             const close = () => overlay.remove();
             overlay.querySelector('#rejectCancelBtn').onclick = close;
-            overlay.onclick = (e) => { if (e.target === overlay) close(); };
+            overlay.onclick = (e) => {
+                if (e.target === overlay) close();
+            };
             overlay.querySelector('#rejectReasonInput').focus();
 
-            overlay.querySelector('#rejectConfirmBtn').onclick = async function () {
+            overlay.querySelector('#rejectConfirmBtn').onclick = async function() {
                 const notes = overlay.querySelector('#rejectReasonInput').value.trim();
-                if (!notes) { showToast('لطفاً دلیل رد را وارد کنید', 'warning'); return; }
+                if (!notes) {
+                    showToast('لطفاً دلیل رد را وارد کنید', 'warning');
+                    return;
+                }
                 close();
 
                 try {
                     const response = await fetch('/attendance_system/api/requests/approve.php', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id, type, action: 'reject', notes })
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            id,
+                            type,
+                            action: 'reject',
+                            notes
+                        })
                     });
 
                     const result = await response.json();
@@ -4920,43 +5187,47 @@ function actionsCell(d) {
         }
 
         // لود تعداد منتظر تأیید هنگام بارگذاری صفحه
-async function loadPendingCount() {
-    try {
-        const response = await fetch('/attendance_system/api/requests/pending-approvals.php');
-        const text = await response.text();
-        console.log('Status:', response.status);
-        console.log('Response:', text);
-        
-        if (!text.trim()) {
-            console.error('پاسخ خالیه');
-            return;
+        async function loadPendingCount() {
+            try {
+                const response = await fetch('/attendance_system/api/requests/pending-approvals.php');
+                const text = await response.text();
+                console.log('Status:', response.status);
+                console.log('Response:', text);
+
+                if (!text.trim()) {
+                    console.error('پاسخ خالیه');
+                    return;
+                }
+
+                const result = JSON.parse(text);
+                if (result.success && result.count > 0) {
+                    const badge = document.getElementById('pendingCount');
+                    badge.textContent = convertToFarsiNumber(result.count);
+                    badge.style.display = 'inline-block';
+                }
+            } catch (error) {
+                console.error('خطا در لود تعداد:', error);
+            }
         }
-        
-        const result = JSON.parse(text);
-        if (result.success && result.count > 0) {
-            const badge = document.getElementById('pendingCount');
-            badge.textContent = convertToFarsiNumber(result.count);
-            badge.style.display = 'inline-block';
-        }
-    } catch (error) {
-        console.error('خطا در لود تعداد:', error);
-    }
-}
 
         // حذف درخواست
         async function deleteRequest(id, type) {
             showToast('آیا از حذف این درخواست مطمئن هستید؟', 'warning', {
                 duration: 1500000,
-                buttons: [
-                    {
+                buttons: [{
                         label: 'بله، حذف شود',
                         style: 'primary',
-                        onClick: async function () {
+                        onClick: async function() {
                             try {
                                 const response = await fetch('/attendance_system/api/requests/delete.php', {
                                     method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ id, type })
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        id,
+                                        type
+                                    })
                                 });
 
                                 const result = await response.json();
@@ -4976,7 +5247,9 @@ async function loadPendingCount() {
                     {
                         label: 'خیر، منصرف شدم',
                         style: 'ghost',
-                        onClick: function () { return; }
+                        onClick: function() {
+                            return;
+                        }
                     }
                 ]
             });
@@ -4996,7 +5269,13 @@ async function loadPendingCount() {
                 const data = result.data;
 
                 // تعیین tab بر اساس نوع
-                const tabIndex = { 'mission': 0, 'leave': 1, 'pass': 2, 'forget': 3, 'technical': 4 }[type];
+                const tabIndex = {
+                    'mission': 0,
+                    'leave': 1,
+                    'pass': 2,
+                    'forget': 3,
+                    'technical': 4
+                } [type];
                 switchTab(tabIndex);
 
                 // باز کردن مودال
@@ -5022,8 +5301,7 @@ async function loadPendingCount() {
                         document.getElementById('missionStartTime').value = data.start_time || '';
                         document.getElementById('missionEndTime').value = data.end_time || '';
                         document.getElementById('missionDesc').value = data.description || '';
-                    }
-                    else if (type === 'leave') {
+                    } else if (type === 'leave') {
                         const startInput = document.getElementById('leaveStartDate');
                         const endInput = document.getElementById('leaveEndDate');
                         if (startInput) {
@@ -5041,8 +5319,7 @@ async function loadPendingCount() {
                         if (data.substitute_id) {
                             document.getElementById('leaveSubstitute').value = data.substitute_id;
                         }
-                    }
-                    else if (type === 'pass') {
+                    } else if (type === 'pass') {
                         const dateInput = document.getElementById('passDate');
                         if (dateInput) {
                             dateInput.setAttribute('data-date', data.pass_date);
@@ -5051,8 +5328,7 @@ async function loadPendingCount() {
                         document.getElementById('passStartTime').value = data.start_time || '';
                         document.getElementById('passEndTime').value = data.end_time || '';
                         document.getElementById('passReason').value = data.reason || '';
-                    }
-                    else if (type === 'forget') {
+                    } else if (type === 'forget') {
                         const dateInput = document.getElementById('forgetPasswordDate');
                         if (dateInput) {
                             dateInput.setAttribute('data-date', data.date);
@@ -5061,8 +5337,7 @@ async function loadPendingCount() {
                         document.getElementById('forgetStartTime').value = data.start_time || '';
                         document.getElementById('forgetEndTime').value = data.end_time || '';
                         document.getElementById('forgetPasswordDesc').value = data.description || '';
-                    }
-                    else if (type === 'technical') {
+                    } else if (type === 'technical') {
                         const dateInput = document.getElementById('technicalIssueDate');
                         if (dateInput) {
                             dateInput.setAttribute('data-date', data.date);
@@ -5210,7 +5485,7 @@ async function loadPendingCount() {
         // Tooltip برای دلیل رد
         const tooltip = document.getElementById('rejectTooltip');
 
-        document.addEventListener('mouseover', function (e) {
+        document.addEventListener('mouseover', function(e) {
             if (e.target.classList.contains('reject-reason-icon')) {
                 const text = e.target.getAttribute('data-tooltip');
                 if (text) {
@@ -5224,7 +5499,7 @@ async function loadPendingCount() {
             }
         });
 
-        document.addEventListener('mouseout', function (e) {
+        document.addEventListener('mouseout', function(e) {
             if (e.target.classList.contains('reject-reason-icon')) {
                 tooltip.classList.remove('visible');
             }
@@ -5236,7 +5511,7 @@ async function loadPendingCount() {
 
             if (!startInput || !endInput) return true;
 
-            endInput.addEventListener('change', function () {
+            endInput.addEventListener('change', function() {
                 const start = startInput.value.trim();
                 const end = endInput.value.trim();
 
@@ -5255,7 +5530,7 @@ async function loadPendingCount() {
                 }
             });
         }
- 
+
         // برای مأموریت
         validateTimeOrder('missionStartTime', 'missionEndTime', 'ساعت پایان مأموریت نمی‌تواند قبل از ساعت شروع باشد.');
 
@@ -5270,113 +5545,121 @@ async function loadPendingCount() {
 
         // برای فراموشی
         validateTimeOrder('forgetStartTime', 'forgetEndTime', 'ساعت پایان فراموشی نمی‌تواند قبل از ساعت شروع باشد.');
-
     </script>
     <script>
-(function () {
-    function fmtHM(min) {
-        min = Math.max(0, Math.round(min));
-        const h = Math.floor(min / 60), m = min % 60;
-        return convertToFarsiNumber(h + ':' + String(m).padStart(2, '0'));
-    }
-    const tomanFromRial = rial => Math.round((rial || 0) / 10);
-
-    function computeMonthCounts() {
-        const counts = { leave: 0, mission: 0, pass: 0, technical: 0, forget: 0 };
-        if (typeof REQUESTS_DATA === 'undefined' || typeof MY_USER_ID === 'undefined') return counts;
-        const t = new Date();
-        const jNow = gregorianToJalaliJS(t.getFullYear(), t.getMonth() + 1, t.getDate());
-        REQUESTS_DATA.forEach(d => {
-            if (String(d.user_id) !== String(MY_USER_ID)) return;
-            const ds = (d.date_greg || '').split(' ')[0].split('-');
-            if (ds.length < 3) return;
-            const dj = gregorianToJalaliJS(+ds[0], +ds[1], +ds[2]);
-            if (dj[0] !== jNow[0] || dj[1] !== jNow[1]) return; // فقط ماه جاری
-            const valid = (d.type === 'pass') ? (d.status !== 'cancelled') : (d.status === 'approved');
-            if (!valid) return;
-            if (counts[d.type] !== undefined) counts[d.type]++;
-        });
-        return counts;
-    }
-
-    async function loadStatCards() {
-        const elHM = document.getElementById('cardShortageHM');
-        if (!elHM) return; // فقط در نمای کارمند وجود دارد
-        try {
-            const res = await fetch('/api/attendance/monthly-report.php?t=' + Date.now());
-            const data = await res.json();
-            if (!data || !data.days) return;
-
-            const t = new Date();
-            const pad = n => String(n).padStart(2, '0');
-            const todayStr = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
-
-            let sumBefore = 0, sumFinal = 0, sumMoney = 0;
-            data.days.forEach(day => {
-                if (day.is_holiday) return;
-                if (day.date < todayStr) {           // فقط تا دیروز
-                    sumBefore += (day.shortage_minutes || 0);        // قبل از ×۲
-                    sumFinal  += (day.final_shortage_minutes || 0);  // بعد از ×۲
-                    sumMoney  += (day.shortage_money || 0);          // ریال
-                }
-            });
-
-            elHM.textContent = fmtHM(sumFinal);
-            const icon = document.getElementById('shortageInfoIcon');
-            if (icon) icon.title = 'کسری واقعی (قبل از ضرب): ' + fmtHM(sumBefore) + ' — پس از ضرب در ۲: ' + fmtHM(sumFinal);
-
-            const penaltyToman = tomanFromRial(sumMoney);
-            const salaryToman = Math.max(0, tomanFromRial(MY_MONTHLY_SALARY - sumMoney));
-            document.getElementById('cardPenaltyToman').textContent = convertToFarsiNumber(formatNumber(penaltyToman)) + ' تومان';
-            document.getElementById('cardSalaryToman').textContent  = convertToFarsiNumber(formatNumber(salaryToman)) + ' تومان';
-
-            const c = computeMonthCounts();
-            const total = c.leave + c.mission + c.pass + c.technical + c.forget;
-            const tooltipText = [
-                c.mission  ? `مأموریت (${convertToFarsiNumber(c.mission)})`   : '',
-                c.leave    ? `مرخصی (${convertToFarsiNumber(c.leave)})`       : '',
-                c.pass     ? `پاس (${convertToFarsiNumber(c.pass)})`           : '',
-                c.forget   ? `فراموشی (${convertToFarsiNumber(c.forget)})`    : '',
-                c.technical? `مشکل فنی (${convertToFarsiNumber(c.technical)})`: '',
-            ].filter(Boolean).join(' , ') || 'درخواستی ثبت نشده';
-            document.getElementById('cardCounts').innerHTML =
-                convertToFarsiNumber(total) + ' درخواست';
-            const countIcon = document.getElementById('monthCountInfoIcon');
-            if (countIcon) countIcon.title = tooltipText;
-        } catch (e) {
-            console.error('خطا در کارت‌های آماری:', e);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', loadStatCards);
-})();
-</script>
-<script>
-window.persianizePaging = function () {
-    setTimeout(() => {
-        document.querySelectorAll('.ag-paging-panel span, .ag-paging-panel button').forEach(el => {
-            if (el.childElementCount === 0 && !el.classList.contains('injected-az')) {
-                el.textContent = el.textContent
-                    .replace(/Page/g, 'صفحه')
-                    .replace(/\bof\b/g, 'از')
-                    .replace(/\bto\b/g, 'تا')
-                    .replace(/\d+/g, n => n.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]));
+        (function() {
+            function fmtHM(min) {
+                min = Math.max(0, Math.round(min));
+                const h = Math.floor(min / 60),
+                    m = min % 60;
+                return convertToFarsiNumber(h + ':' + String(m).padStart(2, '0'));
             }
-        });
-        document.querySelectorAll('.ag-paging-panel > span, .ag-paging-panel > div:not(.ag-paging-row-summary-panel):not(.ag-paging-page-size):not(.ag-paging-button-wrapper):not(.ag-paging-page-summary-panel)').forEach(el => {
-            if (el.textContent.trim() === 'از') el.remove();
-        });
-        const summary = document.querySelector('.ag-paging-row-summary-panel');
-        if (summary) {
-            summary.querySelectorAll('.injected-az').forEach(el => el.remove());
-            const azSpan = document.createElement('span');
-            azSpan.textContent = 'از ';
-            azSpan.className = 'injected-az';
-            summary.insertBefore(azSpan, summary.firstChild);
-        }
-    }, 100);
-};
-</script>
+            const tomanFromRial = rial => Math.round((rial || 0) / 10);
+
+            function computeMonthCounts() {
+                const counts = {
+                    leave: 0,
+                    mission: 0,
+                    pass: 0,
+                    technical: 0,
+                    forget: 0
+                };
+                if (typeof REQUESTS_DATA === 'undefined' || typeof MY_USER_ID === 'undefined') return counts;
+                const t = new Date();
+                const jNow = gregorianToJalaliJS(t.getFullYear(), t.getMonth() + 1, t.getDate());
+                REQUESTS_DATA.forEach(d => {
+                    if (String(d.user_id) !== String(MY_USER_ID)) return;
+                    const ds = (d.date_greg || '').split(' ')[0].split('-');
+                    if (ds.length < 3) return;
+                    const dj = gregorianToJalaliJS(+ds[0], +ds[1], +ds[2]);
+                    if (dj[0] !== jNow[0] || dj[1] !== jNow[1]) return; // فقط ماه جاری
+                    const valid = (d.type === 'pass') ? (d.status !== 'cancelled') : (d.status === 'approved');
+                    if (!valid) return;
+                    if (counts[d.type] !== undefined) counts[d.type]++;
+                });
+                return counts;
+            }
+
+            async function loadStatCards() {
+                const elHM = document.getElementById('cardShortageHM');
+                if (!elHM) return; // فقط در نمای کارمند وجود دارد
+                try {
+                    const res = await fetch('/api/attendance/monthly-report.php?t=' + Date.now());
+                    const data = await res.json();
+                    if (!data || !data.days) return;
+
+                    const t = new Date();
+                    const pad = n => String(n).padStart(2, '0');
+                    const todayStr = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
+
+                    let sumBefore = 0,
+                        sumFinal = 0,
+                        sumMoney = 0;
+                    data.days.forEach(day => {
+                        if (day.is_holiday) return;
+                        if (day.date < todayStr) { // فقط تا دیروز
+                            sumBefore += (day.shortage_minutes || 0); // قبل از ×۲
+                            sumFinal += (day.final_shortage_minutes || 0); // بعد از ×۲
+                            sumMoney += (day.shortage_money || 0); // ریال
+                        }
+                    });
+
+                    elHM.textContent = fmtHM(sumFinal);
+                    const icon = document.getElementById('shortageInfoIcon');
+                    if (icon) icon.title = 'کسری واقعی (قبل از ضرب): ' + fmtHM(sumBefore) + ' — پس از ضرب در ۲: ' + fmtHM(sumFinal);
+
+                    const penaltyToman = tomanFromRial(sumMoney);
+                    const salaryToman = Math.max(0, tomanFromRial(MY_MONTHLY_SALARY - sumMoney));
+                    document.getElementById('cardPenaltyToman').textContent = convertToFarsiNumber(formatNumber(penaltyToman)) + ' تومان';
+                    document.getElementById('cardSalaryToman').textContent = convertToFarsiNumber(formatNumber(salaryToman)) + ' تومان';
+
+                    const c = computeMonthCounts();
+                    const total = c.leave + c.mission + c.pass + c.technical + c.forget;
+                    const tooltipText = [
+                        c.mission ? `مأموریت (${convertToFarsiNumber(c.mission)})` : '',
+                        c.leave ? `مرخصی (${convertToFarsiNumber(c.leave)})` : '',
+                        c.pass ? `پاس (${convertToFarsiNumber(c.pass)})` : '',
+                        c.forget ? `فراموشی (${convertToFarsiNumber(c.forget)})` : '',
+                        c.technical ? `مشکل فنی (${convertToFarsiNumber(c.technical)})` : '',
+                    ].filter(Boolean).join(' , ') || 'درخواستی ثبت نشده';
+                    document.getElementById('cardCounts').innerHTML =
+                        convertToFarsiNumber(total) + ' درخواست';
+                    const countIcon = document.getElementById('monthCountInfoIcon');
+                    if (countIcon) countIcon.title = tooltipText;
+                } catch (e) {
+                    console.error('خطا در کارت‌های آماری:', e);
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', loadStatCards);
+        })();
+    </script>
+    <script>
+        window.persianizePaging = function() {
+            setTimeout(() => {
+                document.querySelectorAll('.ag-paging-panel span, .ag-paging-panel button').forEach(el => {
+                    if (el.childElementCount === 0 && !el.classList.contains('injected-az')) {
+                        el.textContent = el.textContent
+                            .replace(/Page/g, 'صفحه')
+                            .replace(/\bof\b/g, 'از')
+                            .replace(/\bto\b/g, 'تا')
+                            .replace(/\d+/g, n => n.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]));
+                    }
+                });
+                document.querySelectorAll('.ag-paging-panel > span, .ag-paging-panel > div:not(.ag-paging-row-summary-panel):not(.ag-paging-page-size):not(.ag-paging-button-wrapper):not(.ag-paging-page-summary-panel)').forEach(el => {
+                    if (el.textContent.trim() === 'از') el.remove();
+                });
+                const summary = document.querySelector('.ag-paging-row-summary-panel');
+                if (summary) {
+                    summary.querySelectorAll('.injected-az').forEach(el => el.remove());
+                    const azSpan = document.createElement('span');
+                    azSpan.textContent = 'از ';
+                    azSpan.className = 'injected-az';
+                    summary.insertBefore(azSpan, summary.firstChild);
+                }
+            }, 100);
+        };
+    </script>
 </body>
 
 </html>

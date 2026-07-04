@@ -29,32 +29,32 @@ function showToast(message, type = 'success', options = {}) {
     // ─── تنظیمات هر نوع ───────────────────────────────────────
     const config = {
         success: {
-            icon:        'check-circle-fill',
-            color:       '#10b981',
-            bgColor:     '#f0fdf4',
+            icon: 'check-circle-fill',
+            color: '#10b981',
+            bgColor: '#f0fdf4',
             borderColor: '#10b981',
-            label:       'موفق',
+            label: 'موفق',
         },
         error: {
-            icon:        'x-circle-fill',
-            color:       '#ef4444',
-            bgColor:     '#fef2f2',
+            icon: 'x-circle-fill',
+            color: '#ef4444',
+            bgColor: '#fef2f2',
             borderColor: '#ef4444',
-            label:       'خطا',
+            label: 'خطا',
         },
         warning: {
-            icon:        'exclamation-triangle-fill',
-            color:       '#f59e0b',
-            bgColor:     '#fffbeb',
+            icon: 'exclamation-triangle-fill',
+            color: '#f59e0b',
+            bgColor: '#fffbeb',
             borderColor: '#f59e0b',
-            label:       'اخطار',
+            label: 'اخطار',
         },
         info: {
-            icon:        'info-circle-fill',
-            color:       '#3b82f6',
-            bgColor:     '#fff5f5ff',
+            icon: 'info-circle-fill',
+            color: '#3b82f6',
+            bgColor: '#fff5f5ff',
             borderColor: '#3b82f6',
-            label:       'اطلاعات',
+            label: 'اطلاعات',
         },
     };
 
@@ -90,9 +90,9 @@ function showToast(message, type = 'success', options = {}) {
     // ─── ساخت محتوا ───────────────────────────────────────────
     const header = document.createElement('div');
     Object.assign(header.style, {
-        display:    'flex',
+        display: 'flex',
         alignItems: 'center',
-        gap:        '10px',
+        gap: '10px',
     });
 
     header.innerHTML = `
@@ -111,9 +111,9 @@ function showToast(message, type = 'success', options = {}) {
     if (buttons.length > 0) {
         const btnRow = document.createElement('div');
         Object.assign(btnRow.style, {
-            display:    'flex',
-            gap:        '8px',
-            marginTop:  '12px',
+            display: 'flex',
+            gap: '8px',
+            marginTop: '12px',
             justifyContent: 'flex-end',
         });
 
@@ -123,16 +123,16 @@ function showToast(message, type = 'success', options = {}) {
 
             const isPrimary = (btn.style ?? 'ghost') === 'primary';
             Object.assign(el.style, {
-                padding:      '6px 16px',
+                padding: '6px 16px',
                 borderRadius: '8px',
-                border:       isPrimary ? 'none' : `1.5px solid ${color}`,
-                background:   isPrimary ? color : 'transparent',
-                color:        isPrimary ? 'white' : color,
-                cursor:       'pointer',
-                fontSize:     '0.85rem',
-                fontWeight:   '600',
-                fontFamily:   'Vazir, sans-serif',
-                transition:   'opacity 0.2s',
+                border: isPrimary ? 'none' : `1.5px solid ${color}`,
+                background: isPrimary ? color : 'transparent',
+                color: isPrimary ? 'white' : color,
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+                fontFamily: 'Vazir, sans-serif',
+                transition: 'opacity 0.2s',
             });
             el.onmouseenter = () => el.style.opacity = '0.8';
             el.onmouseleave = () => el.style.opacity = '1';
@@ -151,15 +151,15 @@ function showToast(message, type = 'success', options = {}) {
     // ─── نوار پیشرفت ──────────────────────────────────────────
     const progressBar = document.createElement('div');
     Object.assign(progressBar.style, {
-        position:        'absolute',
-        bottom:          '0',
-        right:           '0',         // ◄ RTL
-        height:          '3px',
-        width:           '100%',
-        background:      color,
-        borderRadius:    '0 0 14px 14px',
+        position: 'absolute',
+        bottom: '0',
+        right: '0',         // ◄ RTL
+        height: '3px',
+        width: '100%',
+        background: color,
+        borderRadius: '0 0 14px 14px',
         transformOrigin: 'right',     // ◄ RTL: از راست کم می‌شه
-        transition:      `transform ${duration}ms linear`,
+        transition: `transform ${duration}ms linear`,
     });
     toast.style.position = 'fixed';   // برای position نوار
     toast.style.overflow = 'hidden';
@@ -171,7 +171,7 @@ function showToast(message, type = 'success', options = {}) {
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             toast.style.transform = 'translateX(0)';
-            toast.style.opacity   = '1';
+            toast.style.opacity = '1';
             // شروع نوار
             progressBar.style.transform = 'scaleX(0)';
         });
@@ -183,7 +183,7 @@ function showToast(message, type = 'success', options = {}) {
     function closeToast() {
         clearTimeout(timer);
         toast.style.transform = 'translateX(-420px)';
-        toast.style.opacity   = '0';
+        toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 400);
     }
 
@@ -200,7 +200,7 @@ function showToast(message, type = 'success', options = {}) {
     };
     toast.onmouseleave = () => {
         progressBar.style.transition = `transform ${duration * 0.3}ms linear`;
-        progressBar.style.transform  = 'scaleX(0)';
+        progressBar.style.transform = 'scaleX(0)';
         timer = setTimeout(closeToast, duration * 0.3);
     };
 

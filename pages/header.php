@@ -291,6 +291,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 </nav>
 <script src="<?= asset('/assets/js/table-utils.js') ?>"></script>
 <script src="<?= asset('/assets/js/date-utils.js') ?>"></script>
+    <script src="<?= asset('../assets/js/alert.js') ?>"></script>
 
 <script>
     // ============================================
@@ -739,7 +740,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 updateAnnouncementBadge(data.unread_count || 0);
             }
         } catch (err) {
-            /* silent */ }
+            /* silent */
+        }
     }
 
     // ─── توابع کمکی ───
@@ -1090,26 +1092,26 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     // ============================================
     // تابع Toast
     // ============================================
-    function showToast(message, type = 'success') {
-        const existingToast = document.querySelector('.custom-toast');
-        if (existingToast) existingToast.remove();
+    // function showToast(message, type = 'success', options = {}) {
+    //     const existingToast = document.querySelector('.custom-toast');
+    //     if (existingToast) existingToast.remove();
 
-        const toast = document.createElement('div');
-        toast.className = `custom-toast toast-${type}`;
-        toast.innerHTML = `
-            <div class="toast-content">
-                <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'x-circle-fill'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        document.body.appendChild(toast);
+    //     const toast = document.createElement('div');
+    //     toast.className = `custom-toast toast-${type}`;
+    //     toast.innerHTML = `
+    //         <div class="toast-content">
+    //             <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'x-circle-fill'}"></i>
+    //             <span>${message}</span>
+    //         </div>
+    //     `;
+    //     document.body.appendChild(toast);
 
-        setTimeout(() => toast.classList.add('show'), 100);
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 2500);
-    }
+    //     setTimeout(() => toast.classList.add('show'), 100);
+    //     setTimeout(() => {
+    //         toast.classList.remove('show');
+    //         setTimeout(() => toast.remove(), 300);
+    //     }, 2500);
+    // }
 
     // ── بازنویسی سراسری alert → toast ──
     window.alert = function(msg) {
