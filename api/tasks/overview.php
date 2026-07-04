@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 try {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php';
     // ========================================
     // تابع کمکی: آیا کاربر اجازه ارسال یادآوری دارد؟
     // شرط 1: کاربر creator تسک باشد
@@ -187,6 +187,7 @@ try {
         }
         unset($task);
         attachChecklistAssignees($db, $tasks);
+        attachChecklistTitles($db, $tasks);
         echo json_encode([
             'success' => true,
             'tasks' => $tasks,
@@ -289,6 +290,7 @@ try {
     }
     unset($task);
     attachChecklistAssignees($db, $tasks);
+    attachChecklistTitles($db, $tasks);
     echo json_encode([
         'success' => true,
         'tasks' => $tasks,

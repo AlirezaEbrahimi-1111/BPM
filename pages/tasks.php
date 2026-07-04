@@ -137,66 +137,129 @@ require_once '../includes/version.php';
         <button class="fab" onclick="showNewTaskModal()" title="کار جدید">
             <i class="bi bi-plus"></i>
         </button>
-        
+
     </div>
     <?php include 'footer.php'; ?>
 
 
-   <script src="<?= asset('../../assets/js/table-utils.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/table-utils.js') ?>"></script>
     <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script>
-        let allTasks = [], filteredTasks = [], searchTimeout;
-        let sortColumn = 'created_at', sortDirection = 'desc';
+        let allTasks = [],
+            filteredTasks = [],
+            searchTimeout;
+        let sortColumn = 'created_at',
+            sortDirection = 'desc';
         let perPage = 15;
         let gridApi = null;
         let acticity_section = {};
         let filterAssigneeId = '';
 
-        const columnDefs = [
-            { field: 'id', headerName: 'شناسه', width: 75, sortable: true, resizable: true, cellRenderer: p => p.value ? String(p.value).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]) : '-' },
-            { field: 'title', headerName: 'عنوان', flex: 2, sortable: true, resizable: true,
+        const columnDefs = [{
+                field: 'id',
+                headerName: 'شناسه',
+                width: 75,
+                sortable: true,
+                resizable: true,
+                cellRenderer: p => p.value ? String(p.value).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]) : '-'
+            },
+            {
+                field: 'title',
+                headerName: 'عنوان',
+                flex: 2,
+                sortable: true,
+                resizable: true,
                 cellRenderer: p => {
                     const desc = p.data.description ? `<div style="font-size:0.7rem;color:#94a3b8;line-height:1.4;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${p.data.description}</div>` : '';
-                    return `<div>${p.value || '-'}${desc}</div>`;
+                    return `<div>${p.value || '-'}${checklistMatchBadge(p.data)}${desc}</div>`;
                 }
             },
-            { field: 'group_name', colId: 'col_group', headerName: 'گروه', width: 120, resizable: true,
-                cellRenderer: p => p.value
-                    ? `<span class="badge" style="background:${p.data.group_color || '#6366f1'}20;color:${p.data.group_color || '#6366f1'};border:1px solid ${p.data.group_color || '#6366f1'}40;"><i class="${p.data.group_icon || 'bi-tag'} me-1"></i>${p.value}</span>`
-                    : '<span class="text-muted">—</span>'
+            {
+                field: 'group_name',
+                colId: 'col_group',
+                headerName: 'گروه',
+                width: 120,
+                resizable: true,
+                cellRenderer: p => p.value ?
+                    `<span class="badge" style="background:${p.data.group_color || '#6366f1'}20;color:${p.data.group_color || '#6366f1'};border:1px solid ${p.data.group_color || '#6366f1'}40;"><i class="${p.data.group_icon || 'bi-tag'} me-1"></i>${p.value}</span>` : '<span class="text-muted">—</span>'
             },
-            { field: 'creator_name', headerName: 'تعریف‌کننده', flex: 1, sortable: true, resizable: true },
-            { field: 'assignee_name', headerName: 'مسئول انجام', flex: 1, sortable: true, resizable: true },
-            { field: 'status', headerName: 'وضعیت', width: 130, resizable: true, cellRenderer: p => statusBadge(p.value) },
-            { field: 'task_type', headerName: 'نوع', width: 95, resizable: true, cellRenderer: p => typeBadge(p.value) },
-            { field: 'deadline', colId: 'col_moed', headerName: 'موعد', width: 105, resizable: true,
+            {
+                field: 'creator_name',
+                headerName: 'تعریف‌کننده',
+                flex: 1,
+                sortable: true,
+                resizable: true
+            },
+            {
+                field: 'assignee_name',
+                headerName: 'مسئول انجام',
+                flex: 1,
+                sortable: true,
+                resizable: true
+            },
+            {
+                field: 'status',
+                headerName: 'وضعیت',
+                width: 130,
+                resizable: true,
+                cellRenderer: p => statusBadge(p.value)
+            },
+            {
+                field: 'task_type',
+                headerName: 'نوع',
+                width: 95,
+                resizable: true,
+                cellRenderer: p => typeBadge(p.value)
+            },
+            {
+                field: 'deadline',
+                colId: 'col_moed',
+                headerName: 'موعد',
+                width: 105,
+                resizable: true,
                 comparator: (a, b, nodeA, nodeB) => {
-                    const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d=>d).sort().pop() || '9999';
-                    const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d=>d).sort().pop() || '9999';
+                    const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d => d).sort().pop() || '9999';
+                    const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d => d).sort().pop() || '9999';
                     return da < db ? -1 : da > db ? 1 : 0;
                 },
                 cellRenderer: p => {
-                    const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d=>d).sort().pop();
+                    const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d => d).sort().pop();
                     return `<span class="date-display">${fmtDate(d)}</span>`;
                 }
             },
-            { field: 'created_at', headerName: 'ایجاد', width: 120, resizable: true, cellRenderer: p => `<span class="date-display">${fmtDate(p.value)}</span><br><span class="date-relative">${relTime(p.value)}</span>` },
-            { headerName: 'مهلت', colId: 'col_mohlat', width: 120, resizable: true,
+            {
+                field: 'created_at',
+                headerName: 'ایجاد',
+                width: 120,
+                resizable: true,
+                cellRenderer: p => `<span class="date-display">${fmtDate(p.value)}</span><br><span class="date-relative">${relTime(p.value)}</span>`
+            },
+            {
+                headerName: 'مهلت',
+                colId: 'col_mohlat',
+                width: 120,
+                resizable: true,
                 field: 'deadline',
                 sortable: false,
                 comparator: (a, b, nodeA, nodeB) => {
-                    const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d=>d).sort().pop() || '9999';
-                    const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d=>d).sort().pop() || '9999';
+                    const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d => d).sort().pop() || '9999';
+                    const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d => d).sort().pop() || '9999';
                     return da < db ? -1 : da > db ? 1 : 0;
                 },
                 cellRenderer: p => {
-                    const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d=>d).sort().pop();
+                    const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d => d).sort().pop();
                     return daysLeft(d, p.data.status);
                 }
             },
-            { headerName: 'عملیات', colId: 'col_actions', width: 90, sortable: false, resizable: false,
-                cellRenderer: p => buildActionButtons(p.data) },
+            {
+                headerName: 'عملیات',
+                colId: 'col_actions',
+                width: 90,
+                sortable: false,
+                resizable: false,
+                cellRenderer: p => buildActionButtons(p.data)
+            },
         ];
 
         const gridOptions = {
@@ -213,44 +276,50 @@ require_once '../includes/version.php';
             pagination: true,
             paginationPageSize: 15,
             paginationPageSizeSelector: [15, 30, 50, 100],
-            defaultColDef: { sortable: true, resizable: true },
+            defaultColDef: {
+                sortable: true,
+                resizable: true
+            },
             onGridReady: params => {
                 const saved = localStorage.getItem('allTasksGridState');
-                if (saved) params.api.applyColumnState({ state: JSON.parse(saved), applyOrder: true });
-                applyResponsiveColumns();   // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
+                if (saved) params.api.applyColumnState({
+                    state: JSON.parse(saved),
+                    applyOrder: true
+                });
+                applyResponsiveColumns(); // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
             },
             onSortChanged: params => localStorage.setItem('allTasksGridState', JSON.stringify(params.api.getColumnState())),
             onColumnResized: params => localStorage.setItem('allTasksGridState', JSON.stringify(params.api.getColumnState())),
             onRowClicked: params => viewTask(params.data.id),
             onPaginationChanged: () => {
-                    setTimeout(() => {
-                        // فارسی کردن اعداد و متن‌ها
-                        document.querySelectorAll('.ag-paging-panel span, .ag-paging-panel button').forEach(el => {
-                            if (el.childElementCount === 0 && !el.classList.contains('injected-az')) {
-                                el.textContent = el.textContent
-                                    .replace(/Page/g, 'صفحه')
-                                    .replace(/\bof\b/g, 'از')
-                                    .replace(/\bto\b/g, 'تا')
-                                    .replace(/\d+/g, n => n.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]));
-                            }
-                        });
-
-                        // حذف span های تنها «از» که بیرون از summary پنل هستند
-                        document.querySelectorAll('.ag-paging-panel > span, .ag-paging-panel > div:not(.ag-paging-row-summary-panel):not(.ag-paging-page-size):not(.ag-paging-button-wrapper):not(.ag-paging-page-summary-panel)').forEach(el => {
-                            if (el.textContent.trim() === 'از') el.remove();
-                        });
-
-                        // اضافه کردن «از» به ابتدای summary
-                        const summary = document.querySelector('.ag-paging-row-summary-panel');
-                        if (summary) {
-                            summary.querySelectorAll('.injected-az').forEach(el => el.remove());
-                            const azSpan = document.createElement('span');
-                            azSpan.textContent = 'از ';
-                            azSpan.className = 'injected-az';
-                            summary.insertBefore(azSpan, summary.firstChild);
+                setTimeout(() => {
+                    // فارسی کردن اعداد و متن‌ها
+                    document.querySelectorAll('.ag-paging-panel span, .ag-paging-panel button').forEach(el => {
+                        if (el.childElementCount === 0 && !el.classList.contains('injected-az')) {
+                            el.textContent = el.textContent
+                                .replace(/Page/g, 'صفحه')
+                                .replace(/\bof\b/g, 'از')
+                                .replace(/\bto\b/g, 'تا')
+                                .replace(/\d+/g, n => n.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]));
                         }
-                    }, 100); // ← از 0 به 100 تغییر کرد تا AG Grid اول رندر کنه
-                },
+                    });
+
+                    // حذف span های تنها «از» که بیرون از summary پنل هستند
+                    document.querySelectorAll('.ag-paging-panel > span, .ag-paging-panel > div:not(.ag-paging-row-summary-panel):not(.ag-paging-page-size):not(.ag-paging-button-wrapper):not(.ag-paging-page-summary-panel)').forEach(el => {
+                        if (el.textContent.trim() === 'از') el.remove();
+                    });
+
+                    // اضافه کردن «از» به ابتدای summary
+                    const summary = document.querySelector('.ag-paging-row-summary-panel');
+                    if (summary) {
+                        summary.querySelectorAll('.injected-az').forEach(el => el.remove());
+                        const azSpan = document.createElement('span');
+                        azSpan.textContent = 'از ';
+                        azSpan.className = 'injected-az';
+                        summary.insertBefore(azSpan, summary.firstChild);
+                    }
+                }, 100); // ← از 0 به 100 تغییر کرد تا AG Grid اول رندر کنه
+            },
         };
         gridApi = agGrid.createGrid(document.getElementById('myGrid'), gridOptions);
         // 🆕 با تغییر اندازه پنجره، ستون‌ها دوباره تنظیم شوند
@@ -261,41 +330,64 @@ require_once '../includes/version.php';
         });
         let statFilter = '';
         let currentUser = null;
+
         function showNewTaskModal() {
             window.location.href = 'create-task.php';
         }
+
         function showDailyReportModal() {
             window.location.href = 'daily-report.php';
         }
+
         function matchesAllWords(text, query) {
             if (!query) return true;
             const words = normalizeDigits(query).trim().toLowerCase().split(/\s+/);
             const haystack = normalizeDigits(text).toLowerCase();
             return words.every(w => haystack.includes(w));
         }
+
+        function isChecklistOnlyMatch(otherText, checklistText, searchTerm) {
+            if (!searchTerm) return false;
+            if (matchesAllWords(otherText, searchTerm)) return false; // خودش مچ شده، نیازی به چک‌لیست نبوده
+            return matchesAllWords(checklistText, searchTerm);
+        }
+
+        function checklistMatchBadge(task) {
+            if (!task._checklistOnlyMatch) return '';
+            return '<span style="display:inline-flex;align-items:center;gap:3px;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;border-radius:8px;padding:1px 6px;font-size:0.65rem;margin-inline-start:6px;vertical-align:middle;" title="این کار به‌خاطر چک‌لیستش پیدا شد"><i class="bi bi-check2-square"></i> چک‌لیست</span>';
+        }
+
         function normalizeDigits(str) {
             return str
                 .replace(/[۰-۹]/g, d => d.charCodeAt(0) - 1776)
                 .replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632);
         }
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             authToken = localStorage.getItem('auth_token');
-            if (!authToken) { window.location.href = '../index.php'; return; }
+            if (!authToken) {
+                window.location.href = '../index.php';
+                return;
+            }
 
             currentUser = JSON.parse(localStorage.getItem('user_info') || '{}');
 
             document.getElementById('filterStatus').value = 'open';
 
             loadTasks();
-                        loadGroupOptions();
+            loadGroupOptions();
             loadSections().then(() => loadUsers());
 
-            [ 'filterStatus', 'filterPriority', 'filterType', 'filterGroup'].forEach(id => {
-                document.getElementById(id).addEventListener('change', () => { statFilter = ''; clearStatActive(); currentPage = 1; onFilterChange(); });
+            ['filterStatus', 'filterPriority', 'filterType', 'filterGroup'].forEach(id => {
+                document.getElementById(id).addEventListener('change', () => {
+                    statFilter = '';
+                    clearStatActive();
+                    currentPage = 1;
+                    onFilterChange();
+                });
             });
 
             document.querySelectorAll('.per-page-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
+                btn.addEventListener('click', function() {
                     document.querySelectorAll('.per-page-btn').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     perPage = parseInt(this.dataset.value);
@@ -304,31 +396,49 @@ require_once '../includes/version.php';
                 });
             });
 
-            document.getElementById('searchInput').addEventListener('input', function () {
+            document.getElementById('searchInput').addEventListener('input', function() {
                 clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => { currentPage = 1; onFilterChange(); }, 300);
+                searchTimeout = setTimeout(() => {
+                    currentPage = 1;
+                    onFilterChange();
+                }, 300);
             });
 
         });
 
         async function loadTasks() {
             try {
-                const res = await fetch('../api/tasks/all-tasks.php', { headers: { 'Authorization': 'Bearer ' + authToken } });
+                const res = await fetch('../api/tasks/all-tasks.php', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
                 const data = await res.json();
-                if (data.success) { allTasks = data.tasks || []; populateGroupFilter(); updateStats(); applyFilters(); }
-                else showError(data.message || 'خطا');
-            } catch (e) { console.error(e); showError('خطا در ارتباط'); }
+                if (data.success) {
+                    allTasks = data.tasks || [];
+                    populateGroupFilter();
+                    updateStats();
+                    applyFilters();
+                } else showError(data.message || 'خطا');
+            } catch (e) {
+                console.error(e);
+                showError('خطا در ارتباط');
+            }
         }
-// گروه‌های کاربر (حتی بدون تسک) از API
+        // گروه‌های کاربر (حتی بدون تسک) از API
         let allGroups = [];
         async function loadGroupOptions() {
             try {
                 const res = await fetch('../api/task-groups/list.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await res.json();
                 if (data.success) allGroups = data.groups || [];
-            } catch (e) { console.error('loadGroupOptions:', e); }
+            } catch (e) {
+                console.error('loadGroupOptions:', e);
+            }
             populateGroupFilter();
         }
 
@@ -359,19 +469,25 @@ require_once '../includes/version.php';
         async function loadSections() {
             try {
                 const res = await fetch('../api/organization/activity-sections.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await res.json();
                 if (data.success) {
-                    data.sections.forEach(s => { acticity_section[s.section_key] = s.section_label; });
+                    data.sections.forEach(s => {
+                        acticity_section[s.section_key] = s.section_label;
+                    });
                 }
             } catch {}
         }
- 
+
         async function loadUsers() {
             try {
                 const response = await fetch('../api/users/list.php', {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -382,7 +498,10 @@ require_once '../includes/version.php';
                         sectionMap: acticity_section,
                         showSections: false,
                         placeholder: 'همه پرسنل',
-                        onSelect: (_, v) => { filterAssigneeId = v || ''; applyFilters(); }
+                        onSelect: (_, v) => {
+                            filterAssigneeId = v || '';
+                            applyFilters();
+                        }
                     });
                 }
             } catch (error) {
@@ -392,8 +511,16 @@ require_once '../includes/version.php';
 
         function updateStats() {
             const today = todayLocal();
-            const todayCount = allTasks.filter(t => { if (t.task_type === 'periodic') return t.due_date === today && t.status !== 'completed' && t.status !== 'approved'; if (t.task_type === 'continuous') return (t.overdue_periods || 0) > 0; return false; }).length;
-            const overdueCount = allTasks.filter(t => { if (t.task_type === 'periodic') return t.due_date && t.due_date < today && (t.status === 'not_started' || t.status === 'in_progress'); if (t.task_type === 'continuous') return (t.overdue_periods || 0) > 0; return false; }).length;
+            const todayCount = allTasks.filter(t => {
+                if (t.task_type === 'periodic') return t.due_date === today && t.status !== 'completed' && t.status !== 'approved';
+                if (t.task_type === 'continuous') return (t.overdue_periods || 0) > 0;
+                return false;
+            }).length;
+            const overdueCount = allTasks.filter(t => {
+                if (t.task_type === 'periodic') return t.due_date && t.due_date < today && (t.status === 'not_started' || t.status === 'in_progress');
+                if (t.task_type === 'continuous') return (t.overdue_periods || 0) > 0;
+                return false;
+            }).length;
             const progressCount = allTasks.filter(t => t.status === 'in_progress').length;
             const completedCount = allTasks.filter(t => t.status === 'completed' || t.status === 'approved').length;
             const notStartedCount = allTasks.filter(t => t.status === 'not_started').length;
@@ -420,20 +547,25 @@ require_once '../includes/version.php';
             onFilterChange();
         }
 
-        function clearStatActive() { document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active')); }
-        function onFilterChange() { applyFilters(); }
+        function clearStatActive() {
+            document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+        }
+
+        function onFilterChange() {
+            applyFilters();
+        }
 
         function applyResponsiveColumns() {
             if (!gridApi) return;
             const isMobile = window.innerWidth <= 576;
-        
+
             // در موبایل پنهان شوند (فقط عنوان، وضعیت، موعد بماند)
             // 🆕 ستون «مهلت» با colId یکتا، تا با «موعد» قاطی نشود
             const hideOnMobile = [
                 'id', 'creator_name', 'assignee_name',
                 'task_type', 'created_at', 'col_mohlat'
             ];
-        
+
             hideOnMobile.forEach(col => {
                 gridApi.setColumnsVisible([col], !isMobile);
             });
@@ -445,21 +577,38 @@ require_once '../includes/version.php';
             const st = document.getElementById('filterStatus').value;
             const pr = document.getElementById('filterPriority').value;
             const ty = document.getElementById('filterType').value;
-            const gr = document.getElementById('filterGroup')?.value || '';   // 🆕
+            const gr = document.getElementById('filterGroup')?.value || ''; // 🆕
             const today = new Date().toISOString().split('T')[0];
 
             filteredTasks = allTasks.filter(t => {
-                if (s && !matchesAllWords((t.title || '') + ' ' + (t.description || '') + ' ' + t.id, s)) return false;
+                const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + t.id;
+                t._checklistOnlyMatch = isChecklistOnlyMatch(otherText, t.checklist_titles || '', s);
+                if (s && !matchesAllWords(otherText + ' ' + (t.checklist_titles || ''), s)) return false;
                 if (as && t.assignee_id != as) return false;
                 if (pr && t.priority !== pr) return false;
                 if (ty && t.task_type !== ty) return false;
                 // 🆕 فیلتر گروه
                 if (gr === '__none__' && t.group_id) return false;
                 else if (gr && gr !== '__none__' && t.group_id != gr) return false;
-                if (st) { if (st === 'open' && (t.status === 'completed' || t.status === 'approved')) return false; else if (st !== 'open' && t.status !== st) return false; }
+                if (st) {
+                    if (st === 'open' && (t.status === 'completed' || t.status === 'approved')) return false;
+                    else if (st !== 'open' && t.status !== st) return false;
+                }
 
-                if (statFilter === 'today') { if (t.task_type === 'periodic') { if (!(t.due_date === today && t.status !== 'completed' && t.status !== 'approved')) return false; } else if (t.task_type === 'continuous') { if (!((t.overdue_periods || 0) > 0)) return false; } else return false; }
-                if (statFilter === 'overdue') { if (t.task_type === 'periodic') { if (!(t.due_date && t.due_date < today && (t.status === 'not_started' || t.status === 'in_progress'))) return false; } else if (t.task_type === 'continuous') { if (!((t.overdue_periods || 0) > 0)) return false; } else return false; }
+                if (statFilter === 'today') {
+                    if (t.task_type === 'periodic') {
+                        if (!(t.due_date === today && t.status !== 'completed' && t.status !== 'approved')) return false;
+                    } else if (t.task_type === 'continuous') {
+                        if (!((t.overdue_periods || 0) > 0)) return false;
+                    } else return false;
+                }
+                if (statFilter === 'overdue') {
+                    if (t.task_type === 'periodic') {
+                        if (!(t.due_date && t.due_date < today && (t.status === 'not_started' || t.status === 'in_progress'))) return false;
+                    } else if (t.task_type === 'continuous') {
+                        if (!((t.overdue_periods || 0) > 0)) return false;
+                    } else return false;
+                }
                 if (statFilter === 'in_progress' && t.status !== 'in_progress') return false;
                 if (statFilter === 'completed' && t.status !== 'completed' && t.status !== 'approved') return false;
                 if (statFilter === 'not_started' && t.status !== 'not_started') return false;
@@ -467,7 +616,17 @@ require_once '../includes/version.php';
                 return true;
             });
 
-            filteredTasks.sort((a, b) => { let va = a[sortColumn] || '', vb = b[sortColumn] || ''; if (sortColumn === 'id') { va = +va; vb = +vb; } if (va < vb) return sortDirection === 'asc' ? -1 : 1; if (va > vb) return sortDirection === 'asc' ? 1 : -1; return 0; });
+            filteredTasks.sort((a, b) => {
+                let va = a[sortColumn] || '',
+                    vb = b[sortColumn] || '';
+                if (sortColumn === 'id') {
+                    va = +va;
+                    vb = +vb;
+                }
+                if (va < vb) return sortDirection === 'asc' ? -1 : 1;
+                if (va > vb) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
             renderTable();
         }
 
@@ -476,13 +635,40 @@ require_once '../includes/version.php';
         }
 
         // Helpers
-        const statusCfg = { not_started: ['شروع نشده', 'circle'], in_progress: ['در حال انجام', 'play-circle'], completed: ['تکمیل شده', 'check-circle'], pending_approval: ['منتظر تأیید', 'hourglass-split'], approved: ['تأیید شده', 'check-circle-fill'], delegated: ['ارجاع شده', 'arrow-left-right'], rejected: ['متوقف شده', 'pause-circle'], termination_requested: ['در انتظار اتمام', 'hourglass-split'] };
-        const priorityCfg = { high: ['بالا', 'arrow-up'], medium: ['متوسط', 'dash'], low: ['پایین', 'arrow-down'] };
-        const typeCfg = { periodic: ['مقطعی', 'calendar-event'], continuous: ['دوره‌ای', 'arrow-repeat'] };
+        const statusCfg = {
+            not_started: ['شروع نشده', 'circle'],
+            in_progress: ['در حال انجام', 'play-circle'],
+            completed: ['تکمیل شده', 'check-circle'],
+            pending_approval: ['منتظر تأیید', 'hourglass-split'],
+            approved: ['تأیید شده', 'check-circle-fill'],
+            delegated: ['ارجاع شده', 'arrow-left-right'],
+            rejected: ['متوقف شده', 'pause-circle'],
+            termination_requested: ['در انتظار اتمام', 'hourglass-split']
+        };
+        const priorityCfg = {
+            high: ['بالا', 'arrow-up'],
+            medium: ['متوسط', 'dash'],
+            low: ['پایین', 'arrow-down']
+        };
+        const typeCfg = {
+            periodic: ['مقطعی', 'calendar-event'],
+            continuous: ['دوره‌ای', 'arrow-repeat']
+        };
 
-        function statusBadge(s) { const [l, i] = statusCfg[s] || [s, 'circle']; return `<span class="badge status-${s}"><i class="bi bi-${i}"></i>${l}</span>`; }
-        function priorityBadge(p) { const [l, i] = priorityCfg[p] || [p, 'dash']; return `<span class="badge priority-${p}"><i class="bi bi-${i}"></i>${l}</span>`; }
-        function typeBadge(t) { const [l, i] = typeCfg[t] || [t, 'tag']; return `<span class="badge type-${t}"><i class="bi bi-${i}"></i>${l}</span>`; }
+        function statusBadge(s) {
+            const [l, i] = statusCfg[s] || [s, 'circle'];
+            return `<span class="badge status-${s}"><i class="bi bi-${i}"></i>${l}</span>`;
+        }
+
+        function priorityBadge(p) {
+            const [l, i] = priorityCfg[p] || [p, 'dash'];
+            return `<span class="badge priority-${p}"><i class="bi bi-${i}"></i>${l}</span>`;
+        }
+
+        function typeBadge(t) {
+            const [l, i] = typeCfg[t] || [t, 'tag'];
+            return `<span class="badge type-${t}"><i class="bi bi-${i}"></i>${l}</span>`;
+        }
 
         function daysLeft(d, status) {
             if (!d) return '<span class="days-badge">-</span>';
@@ -494,13 +680,30 @@ require_once '../includes/version.php';
             return `<span class="days-badge days-normal">${toPersian(diff)} روز</span>`;
         }
 
-        function fmtDate(d) { return d ? new Date(d).toLocaleDateString('fa-IR') : '-'; }
-        function relTime(d) { if (!d) return ''; const ms = Date.now() - new Date(d), m = Math.floor(ms / 6e4), h = Math.floor(ms / 36e5), dy = Math.floor(ms / 864e5); if (m < 60) return `${toPersian(m)} دقیقه پیش`; if (h < 24) return `${toPersian(h)} ساعت پیش`; if (dy < 7) return `${toPersian(dy)} روز پیش`; if (dy < 30) return `${toPersian(Math.floor(dy / 7))} هفته پیش`; return `${toPersian(Math.floor(dy / 30))} ماه پیش`; }
-        function toPersian(n) { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
-       // ستون عملیات — حذف فقط برای کارهای غیرروتین و تکمیل/تأییدنشده
+        function fmtDate(d) {
+            return d ? new Date(d).toLocaleDateString('fa-IR') : '-';
+        }
+
+        function relTime(d) {
+            if (!d) return '';
+            const ms = Date.now() - new Date(d),
+                m = Math.floor(ms / 6e4),
+                h = Math.floor(ms / 36e5),
+                dy = Math.floor(ms / 864e5);
+            if (m < 60) return `${toPersian(m)} دقیقه پیش`;
+            if (h < 24) return `${toPersian(h)} ساعت پیش`;
+            if (dy < 7) return `${toPersian(dy)} روز پیش`;
+            if (dy < 30) return `${toPersian(Math.floor(dy / 7))} هفته پیش`;
+            return `${toPersian(Math.floor(dy / 30))} ماه پیش`;
+        }
+
+        function toPersian(n) {
+            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
+        }
+        // ستون عملیات — حذف فقط برای کارهای غیرروتین و تکمیل/تأییدنشده
         function buildActionButtons(t) {
             if (!t) return '';
-            if (t.is_workflow_task == 1) return '';                 // کارهای روتین دکمهٔ حذف ندارند
+            if (t.is_workflow_task == 1) return ''; // کارهای روتین دکمهٔ حذف ندارند
             if (t.status === 'completed' || t.status === 'approved') return '';
             return `<button class="btn btn-sm btn-outline-danger" style="padding:.15rem .4rem;"
                 onclick="event.stopPropagation();deleteTask(${t.id})" title="حذف کار">
@@ -509,12 +712,17 @@ require_once '../includes/version.php';
         }
 
         function deleteTask(taskId) {
-            uiConfirm('آیا از حذف این کار اطمینان دارید؟', async function () {
+            uiConfirm('آیا از حذف این کار اطمینان دارید؟', async function() {
                 try {
                     const res = await fetch('../api/tasks/delete.php', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                        body: JSON.stringify({ task_id: taskId })
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            task_id: taskId
+                        })
                     });
                     const data = await res.json();
                     if (data.success) {
@@ -526,10 +734,21 @@ require_once '../includes/version.php';
                     console.error(e);
                     alert('❌ خطا در ارتباط با سرور');
                 }
-            }, { danger: true, yesText: 'بله، حذف', noText: 'انصراف' });
+            }, {
+                danger: true,
+                yesText: 'بله، حذف',
+                noText: 'انصراف'
+            });
         }
-        function viewTask(id) { window.location.href = `task-detail.php?id=${id}`; }
-        function showError(msg) { console.error(msg); if (gridApi) gridApi.setGridOption('rowData', []); }
+
+        function viewTask(id) {
+            window.location.href = `task-detail.php?id=${id}`;
+        }
+
+        function showError(msg) {
+            console.error(msg);
+            if (gridApi) gridApi.setGridOption('rowData', []);
+        }
     </script>
 </body>
 
