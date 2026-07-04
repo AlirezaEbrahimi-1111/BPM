@@ -6,7 +6,8 @@
  * گرفتن کار + بررسی دسترسی پایه (کاربر باید creator یا assignee باشد)
  * خروجی: آرایه task یا null
  */
-function getTaskForChecklist($db, $task_id, $user_id) {
+function getTaskForChecklist($db, $task_id, $user_id)
+{
     $stmt = $db->prepare("SELECT id, title, creator_id, assignee_id, status, checklist_auto_complete, activity_section, organization_id
                           FROM tasks WHERE id = ?");
     $stmt->execute([$task_id]);
@@ -45,6 +46,18 @@ function getTaskForChecklist($db, $task_id, $user_id) {
     return $task;
 }
 /**
+ * آیا چک‌لیستِ این کار قفل است؟
+ * کار در وضعیت‌های نهایی (تکمیل/تأیید/متوقف/لغو) قفل می‌شود:
+ * دیگر نمی‌توان آیتم اضافه/ویرایش/حذف کرد یا تیک زد.
+ * خروجی: true اگر قفل باشد.
+ */
+function isChecklistLocked($task)
+{
+    $lockedStatuses = ['completed', 'approved', 'stopped', 'cancelled'];
+    $status = $task['status'] ?? '';
+    return in_array($status, $lockedStatuses, true);
+}
+/**
  * ارسال اعلان به فرد/واحدی که آیتم چک‌لیست به او ارجاع شده.
  * $assignee_type: 'user' یا 'section'
  * $assignee_value: شناسه کاربر یا کلید واحد
@@ -52,7 +65,8 @@ function getTaskForChecklist($db, $task_id, $user_id) {
  * $actor_id: کسی که ارجاع را انجام داده (به او اعلان نرود)
  * $itemTitle: عنوان آیتم (برای متن اعلان)
  */
-function notifyChecklistAssignee($db, $assignee_type, $assignee_value, $task, $actor_id, $itemTitle = '') {
+function notifyChecklistAssignee($db, $assignee_type, $assignee_value, $task, $actor_id, $itemTitle = '')
+{
     if (!$assignee_type || !$assignee_value) return;
 
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
@@ -97,10 +111,52 @@ function notifyChecklistAssignee($db, $assignee_type, $assignee_value, $task, $a
     }
 }
 /**
+ * اطلاع به ارجاع‌دهنده (سازنده‌ی آیتم) وقتی آیتمش تیک خورد.
+ * $item: آرایه‌ی آیتم چک‌لیست (باید شامل created_by و title باشد)
+ * $task: آرایه‌ی کار (برای عنوان)
+ * $doer_id: کسی که تیک زده (به او اعلان نرود)
+ */
+function notifyChecklistItemDone($db, $item, $task, $doer_id)
+{
+    $creator_id = (int)($item['created_by'] ?? 0);
+    if (!$creator_id) return;
+
+    // اگر خودِ سازنده تیک زده، نیازی به اعلان نیست
+    if ($creator_id === (int)$doer_id) return;
+
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
+    $notif = new Notification($db);
+
+    // نام کسی که تیک زده
+    $stmt = $db->prepare("SELECT CONCAT(COALESCE(first_name,''),' ',COALESCE(last_name,'')) FROM users WHERE id = ?");
+    $stmt->execute([$doer_id]);
+    $doerName = trim($stmt->fetchColumn() ?: '') ?: 'کاربر';
+
+    $taskTitle = $task['title'] ?? 'کار';
+    $itemTitle = $item['title'] ?? 'آیتم';
+    $taskId    = $task['id'];
+
+    $title   = 'آیتم چک‌لیست انجام شد';
+    $message = "آیتم «{$itemTitle}» از کار «{$taskTitle}» توسط {$doerName} انجام شد";
+
+    $notif->create([
+        'to_user_id'   => $creator_id,
+        'title'        => $title,
+        'message'      => $message,
+        'type'         => 'info',
+        'link'         => "pages/task-detail.php?id={$taskId}",
+        'related_type' => 'task',
+        'related_id'   => $taskId,
+        'sms_pattern'  => 'general',
+        'sms_args'     => [$title, $message]
+    ]);
+}
+/**
  * محاسبه پیشرفت چک‌لیست یک کار
  * خروجی: ['total'=>N, 'done'=>N, 'percent'=>N]
  */
-function checklistProgress($db, $task_id) {
+function checklistProgress($db, $task_id)
+{
     $stmt = $db->prepare("SELECT COUNT(*) total, SUM(is_done) done
                           FROM task_checklist_items WHERE task_id = ?");
     $stmt->execute([$task_id]);
@@ -118,7 +174,8 @@ function checklistProgress($db, $task_id) {
  * (که خودش تصمیم می‌گیرد pending_approval شود یا completed).
  * خروجی: true اگر تکمیل خودکار اجرا شد.
  */
-function maybeAutoComplete($db, $task, $user_id) {
+function maybeAutoComplete($db, $task, $user_id)
+{
     if (empty($task['checklist_auto_complete'])) return false;
 
     $p = checklistProgress($db, $task['id']);
@@ -146,7 +203,8 @@ function maybeAutoComplete($db, $task, $user_id) {
  * توجه: این تابع فقط کارهای «دارای چک‌لیست با auto_complete روشن» را مدیریت می‌کند
  * و کارهای approved/stopped/rejected را دست نمی‌زند.
  */
-function syncTaskStatusWithChecklist($db, $task, $user_id) {
+function syncTaskStatusWithChecklist($db, $task, $user_id)
+{
     // فقط وقتی auto_complete روشن است معنا دارد
     if (empty($task['checklist_auto_complete'])) return;
 
@@ -168,8 +226,13 @@ function syncTaskStatusWithChecklist($db, $task, $user_id) {
                           SET status = 'not_started', is_pending_approval = FALSE,
                               pending_approval_count = 0, updated_at = NOW()
                           WHERE id = ?")->execute([$task['id']]);
-            addChecklistStatusHistory($db, $task['id'], $user_id, 'not_started',
-                'بازگشت به «شروع نشده» چون همه تیک‌ها برداشته شد');
+            addChecklistStatusHistory(
+                $db,
+                $task['id'],
+                $user_id,
+                'not_started',
+                'بازگشت به «شروع نشده» چون همه تیک‌ها برداشته شد'
+            );
         }
         return;
     }
@@ -195,8 +258,9 @@ function syncTaskStatusWithChecklist($db, $task, $user_id) {
  * action را 'updated' می‌گذاریم تا با اکشن‌های اصلی قاطی نشود،
  * و توضیح را در notes می‌نویسیم.
  */
-function addChecklistStatusHistory($db, $task_id, $user_id, $newStatus, $note) {
+function addChecklistStatusHistory($db, $task_id, $user_id, $newStatus, $note)
+{
     $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
                   VALUES (?, ?, NULL, 'checklist_sync', ?)")
-       ->execute([$task_id, $user_id, $note]);
+        ->execute([$task_id, $user_id, $note]);
 }

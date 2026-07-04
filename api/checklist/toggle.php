@@ -50,7 +50,12 @@ try {
         echo json_encode(['success' => false, 'message' => 'اجازه تغییر این آیتم را ندارید']);
         exit;
     }
-
+// 🔒 اگر کار تکمیل/تأیید/متوقف/لغو شده، چک‌لیست قفل است
+    if (isChecklistLocked($task)) {
+        http_response_code(409);
+        echo json_encode(['success' => false, 'message' => 'این کار به پایان رسیده و چک‌لیست آن قفل شده است']);
+        exit;
+    }
     // ── تعیین مسئولِ این آیتم و کنترل دسترسی تیک‌زدن ──────────────────
     // قانون:
     //   • آیتمِ دارای ارجاع → فقط مسئولش (کاربر یا اعضای واحد) می‌تواند تیک بزند
@@ -97,8 +102,21 @@ try {
                               SET is_done = 0, done_at = NULL, done_by = NULL WHERE id = ?");
         $stmt->execute([$item_id]);
     }
-
-// همگام‌سازی وضعیت کار با چک‌لیست (هر دو جهت)
+    // 🆕 اگر آیتم تیک خورد، به ارجاع‌دهنده (سازنده‌ی آیتم) اطلاع بده
+    if ($is_done) {
+        try {
+            // اطلاعات کامل آیتم را برای اعلان بخوان
+            $itemFull = $db->prepare("SELECT title, created_by FROM task_checklist_items WHERE id = ?");
+            $itemFull->execute([$item_id]);
+            $itemRow = $itemFull->fetch(PDO::FETCH_ASSOC);
+            if ($itemRow) {
+                notifyChecklistItemDone($db, $itemRow, $task, $user_id);
+            }
+        } catch (Exception $notifyErr) {
+            error_log("checklist toggle notify failed: " . $notifyErr->getMessage());
+        }
+    }
+    // همگام‌سازی وضعیت کار با چک‌لیست (هر دو جهت)
     $auto = false;
     if ($is_done) {
         // اگر با این تیک همه کامل شدند → تکمیل خودکار، وگرنه همگام‌سازی
@@ -119,7 +137,6 @@ try {
         'done' => $p['done'],
         'total' => $p['total']
     ], JSON_UNESCAPED_UNICODE);
-
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور']);

@@ -58,7 +58,12 @@ try {
         echo json_encode(['success' => false, 'message' => 'فقط تعریف‌کننده کار می‌تواند آیتم را ویرایش کند']);
         exit;
     }
-
+// 🔒 اگر کار تکمیل/تأیید/متوقف/لغو شده، چک‌لیست قفل است
+    if (isChecklistLocked($task)) {
+        http_response_code(409);
+        echo json_encode(['success' => false, 'message' => 'این کار به پایان رسیده و چک‌لیست آن قفل شده است']);
+        exit;
+    }
     if ($has_assignee) {
         // هم عنوان، هم ارجاع آپدیت می‌شود
         $stmt = $db->prepare("UPDATE task_checklist_items

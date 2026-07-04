@@ -29,7 +29,12 @@ try {
         echo json_encode(['success' => false, 'message' => 'فقط تعریف‌کننده کار می‌تواند آیتم اضافه کند']);
         exit;
     }
-
+// 🔒 اگر کار تکمیل/تأیید/متوقف/لغو شده، چک‌لیست قفل است
+    if (isChecklistLocked($task)) {
+        http_response_code(409);
+        echo json_encode(['success' => false, 'message' => 'این کار به پایان رسیده و چک‌لیست آن قفل شده است']);
+        exit;
+    }
     // sort_order = آخرین + 1
     $stmt = $db->prepare("SELECT COALESCE(MAX(sort_order), -1) + 1 FROM task_checklist_items WHERE task_id = ?");
     $stmt->execute([$task_id]);
