@@ -35,7 +35,7 @@ try {
     $user_section = $secStmt->fetchColumn() ?: '';
     // آیتم‌ها + نام تیک‌زننده
     $stmt = $db->prepare("
-        SELECT ci.id, ci.title, ci.is_done, ci.sort_order, ci.done_at,
+        SELECT ci.id, ci.title, ci.description, ci.is_done, ci.sort_order, ci.done_at,
                ci.assignee_type, ci.assignee_value,
                CONCAT(COALESCE(u.first_name,''),' ',COALESCE(u.last_name,'')) AS done_by_name,
                CONCAT(COALESCE(au.first_name,''),' ',COALESCE(au.last_name,'')) AS assignee_user_name,

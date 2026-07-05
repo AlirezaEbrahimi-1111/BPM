@@ -61,6 +61,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         .exec-summary b {
             color: #101828;
         }
+        .cl-desc-zone { display: inline-flex; align-items: center; }
+        .cl-desc-inline { font-size: 0.78rem; color: #9ca3af; font-weight: normal; }
+        .cl-desc-icon { font-size: 0.85rem; color: #6366f1; margin-inline-start: 4px; }
+        .cl-desc-icon:hover { color: #4338ca; }
     </style>
 </head>
 
@@ -436,22 +440,39 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         function renderChecklistCreate() {
             const c = document.getElementById('checklistItems');
             if (!c) return;
-            c.innerHTML = checklistItemsCreate.map((item, idx) => `
+            c.innerHTML = checklistItemsCreate.map((item, idx) => {
+                const desc = item.description || '';
+                const MAX_DESC_LEN = 50;
+
+                // نسخه‌های امن برای نمایش
+                const safeDesc = desc ?
+                    String(desc).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') :
+                    '';
+                const titleDesc = desc ?
+                    String(desc).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') :
+                    '';
+                const shortDesc = safeDesc.length > MAX_DESC_LEN ? safeDesc.slice(0, MAX_DESC_LEN) + '…' : safeDesc;
+
+                // ناحیه‌ی توضیحات (نمایش متن یا آیکون افزودن)
+                const descZone = safeDesc ?
+                    `<span class="cl-desc-inline" title="${titleDesc}" onclick="startEditDescCreate(${item.tempId})" style="cursor:pointer;"> — ${shortDesc}</span>` :
+                    `<i class="bi bi-chat-left-text cl-desc-icon" title="افزودن توضیحات" onclick="startEditDescCreate(${item.tempId})" style="cursor:pointer;"></i>`;
+
+                return `
                 <div class="mb-2 p-2 border rounded">
                     <div class="d-flex align-items-center gap-2">
                         <span class="text-muted">${enTofaNumber(idx + 1)}.</span>
                         <input type="text" class="form-control form-control-sm border-0" value="${item.title}"
-                            placeholder="عنوان آیتم..."
+                            placeholder="عنوان آیتم..." style="flex:0 0 auto; width:auto; max-width:220px;"
                             onchange="updateChecklistTitleCreate(${item.tempId}, this.value)">
+                        <span class="cl-desc-zone" id="cl-desc-zone-${item.tempId}" style="flex:1;">${descZone}</span>
                         <button type="button" class="btn btn-link btn-sm text-danger p-0"
                             onclick="removeChecklistItemCreate(${item.tempId})">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
-                    <textarea class="form-control form-control-sm mt-1" rows="2"
-                        placeholder="توضیحات (اختیاری)..."
-                        onchange="updateChecklistDescCreate(${item.tempId}, this.value)">${item.description || ''}</textarea>
-                </div>`).join('');
+                </div>`;
+            }).join('');
         }
 
         function updateChecklistTitleCreate(tempId, val) {
@@ -459,9 +480,77 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             if (it) it.title = val.trim();
         }
 
-        function updateChecklistDescCreate(tempId, val) {
+        // ═══════════════════════════════════════════════
+        //  ویرایش درجای توضیحات آیتم (نسخه‌ی create-task، فقط حافظه)
+        // ═══════════════════════════════════════════════
+
+        // ۱) شروع ویرایش: ناحیه‌ی توضیحات → textarea + دکمه‌ها
+        function startEditDescCreate(tempId) {
+            const zone = document.getElementById('cl-desc-zone-' + tempId);
+            if (!zone) return;
+
             const it = checklistItemsCreate.find(i => i.tempId === tempId);
-            if (it) it.description = val.trim();
+            const currentDesc = (it && it.description) ? it.description : '';
+
+            zone.innerHTML = `
+                <span style="display:inline-flex; align-items:center; gap:4px; width:100%;">
+                    <textarea id="cl-desc-input-${tempId}" class="form-control form-control-sm"
+                        rows="1" style="font-size:0.8rem; flex:1;"
+                        placeholder="توضیحات...">${currentDesc.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                    <button type="button" class="btn btn-link btn-sm text-success p-0" title="ثبت توضیحات"
+                        onclick="saveEditDescCreate(${tempId})">
+                        <i class="bi bi-check-lg"></i>
+                    </button>
+                    <button type="button" class="btn btn-link btn-sm text-secondary p-0" title="انصراف"
+                        onclick="cancelEditDescCreate(${tempId})">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </span>
+            `;
+
+            const ta = document.getElementById('cl-desc-input-' + tempId);
+            if (ta) {
+                ta.focus();
+                ta.setSelectionRange(ta.value.length, ta.value.length);
+            }
+        }
+
+        // ۲) ذخیره‌ی توضیحات (فقط در حافظه، بدون سرور)
+        function saveEditDescCreate(tempId) {
+            const ta = document.getElementById('cl-desc-input-' + tempId);
+            if (!ta) return;
+            const it = checklistItemsCreate.find(i => i.tempId === tempId);
+            if (it) {
+                it.description = ta.value.trim(); // ذخیره در حافظه
+            }
+            refreshDescZoneCreate(tempId);
+        }
+
+        // ۳) انصراف از ویرایش (بدون ذخیره)
+        function cancelEditDescCreate(tempId) {
+            refreshDescZoneCreate(tempId);
+        }
+
+        // ۴) بازسازی ناحیه‌ی توضیحاتِ یک آیتم (بدون رندر کل لیست)
+        function refreshDescZoneCreate(tempId) {
+            const zone = document.getElementById('cl-desc-zone-' + tempId);
+            if (!zone) return;
+
+            const it = checklistItemsCreate.find(i => i.tempId === tempId);
+            const desc = (it && it.description) ? it.description : '';
+
+            const MAX_DESC_LEN = 50;
+            const safeDesc = desc ?
+                String(desc).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') :
+                '';
+            const titleDesc = desc ?
+                String(desc).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') :
+                '';
+            const shortDesc = safeDesc.length > MAX_DESC_LEN ? safeDesc.slice(0, MAX_DESC_LEN) + '…' : safeDesc;
+
+            zone.innerHTML = safeDesc ?
+                `<span class="cl-desc-inline" title="${titleDesc}" onclick="startEditDescCreate(${tempId})" style="cursor:pointer;"> — ${shortDesc}</span>` :
+                `<i class="bi bi-chat-left-text cl-desc-icon" title="افزودن توضیحات" onclick="startEditDescCreate(${tempId})" style="cursor:pointer;"></i>`;
         }
         async function loadSections() {
             try {
@@ -758,7 +847,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         showSections: true,
                         allowAll: (myRole === 'supervisor'), // 🆕 «همه کاربران/همه واحدها» فقط برای سرپرست
                         onSelect: (type, value, label) => {
-                            /* getValue() کافی است */ }
+                            /* getValue() کافی است */
+                        }
                     });
                 }
             } catch (error) {
