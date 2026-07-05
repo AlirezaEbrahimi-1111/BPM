@@ -739,6 +739,28 @@ require_once '../includes/version.php';
                 grid-template-columns: 1fr;
             }
         }
+
+        .role-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-inline-start: 4px;
+            cursor: help;
+        }
+
+        .role-creator {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .role-step {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
     </style>
 </head>
 
@@ -843,7 +865,10 @@ require_once '../includes/version.php';
                     </div>
                 </div>
             </div>
-
+            <!-- فیلتر: فقط روتین‌های ساخته‌ی من -->
+            <button class="filter-pill" id="myRoutinesBtn" onclick="toggleMyRoutines(this)">
+                <i class="bi bi-person-check"></i>روتین‌های من
+            </button>
             <!-- دکمه ریست فیلترها (فقط وقتی فیلتر فعال داریم) -->
             <button class="filter-pill" id="resetFiltersBtn" onclick="resetAllFilters()"
                 style="display:none; background:#fef2f2; border-color:#fecaca; color:#b91c1c;">
@@ -935,6 +960,18 @@ require_once '../includes/version.php';
         }
         let currentRoutine = null; // id روتین انتخاب‌شده
         let currentSection = null; // key واحد انتخاب‌شده
+        let onlyMyRoutines = false; // فیلتر: فقط روتین‌های ساخته‌ی من
+        // شناسه و واحدِ کاربر جاری (برای تشخیص نقش‌ها)
+        let currentUserId = null;
+        let currentUserSection = null;
+        try {
+            const _uu = JSON.parse(localStorage.getItem('user_info') || '{}');
+            currentUserId = parseInt(_uu.id) || null;
+            currentUserSection = _uu.activity_section || null;
+        } catch (e) {
+            currentUserId = null;
+            currentUserSection = null;
+        }
         let allRoutines = []; // لیست روتین‌های تعریف‌شده
         let allSections = []; // لیست واحدها
 
@@ -1000,6 +1037,13 @@ require_once '../includes/version.php';
             updateResetBtn();
             applyFilter();
         }
+        // فعال/غیرفعال کردن فیلتر «روتین‌های من»
+        function toggleMyRoutines(btn) {
+            onlyMyRoutines = !onlyMyRoutines; // برعکس کردن وضعیت
+            if (btn) btn.classList.toggle('active', onlyMyRoutines);
+            updateResetBtn();
+            applyFilter();
+        }
 
         function applyFilter() {
             let list = allWorkflows;
@@ -1017,6 +1061,11 @@ require_once '../includes/version.php';
             // فیلتر واحد — فقط روتین‌هایی که مرحله فعلی‌شان از این بخش است
             if (currentSection !== null) {
                 list = list.filter(w => w.current_section === currentSection);
+            }
+
+            // فیلتر «روتین‌های من» — فقط روتین‌هایی که خودم ساخته‌ام
+            if (onlyMyRoutines && currentUserId !== null) {
+                list = list.filter(w => parseInt(w.created_by) === currentUserId);
             }
 
             renderWorkflows(list);
@@ -1081,6 +1130,7 @@ require_once '../includes/version.php';
             currentFilter = 'all';
             currentRoutine = null;
             currentSection = null;
+            onlyMyRoutines = false; // 🆕 پاک‌کردن فیلتر «روتین‌های من»
 
             document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
             document.querySelector('.filter-pill[data-filter="all"]').classList.add('active');
@@ -1097,7 +1147,7 @@ require_once '../includes/version.php';
         }
 
         function updateResetBtn() {
-            const hasExtra = currentRoutine !== null || currentSection !== null || currentFilter !== 'all';
+            const hasExtra = currentRoutine !== null || currentSection !== null || currentFilter !== 'all' || onlyMyRoutines;
             document.getElementById('resetFiltersBtn').style.display = hasExtra ? 'inline-flex' : 'none';
         }
 
@@ -1198,6 +1248,30 @@ require_once '../includes/version.php';
                 return;
             }
             container.innerHTML = workflows.map(renderCard).join('');
+        }
+        // ساخت آیکون‌های نقش کاربر برای هر روتین (سازنده / مسئول مرحله)
+        function renderRoleIcons(wf) {
+            let icons = '';
+
+            // نقش ۱: سازنده‌ی روتین
+            const isCreator = currentUserId !== null && parseInt(wf.created_by) === currentUserId;
+            if (isCreator) {
+                icons += `<span class="role-icon role-creator" title="شما سازندهٔ این روتین هستید">
+                            <i class="bi bi-person-badge"></i>
+                          </span>`;
+            }
+
+            // نقش ۲: مسئول مرحله (مرحله‌ی فعال مالِ واحد کاربر است)
+            const isStepOwner = currentUserSection !== null &&
+                wf.current_section &&
+                wf.current_section === currentUserSection;
+            if (isStepOwner) {
+                icons += `<span class="role-icon role-step" title="مرحلهٔ فعال این روتین به واحد شما مربوط است">
+                            <i class="bi bi-pin-angle-fill"></i>
+                          </span>`;
+            }
+
+            return icons;
         }
 
         function renderCard(wf) {
