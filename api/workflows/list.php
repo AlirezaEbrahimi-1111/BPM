@@ -8,14 +8,14 @@ ini_set('display_errors', 0);
 
 try {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
-    
+
     $database = new Database();
     $db = $database->getConnection();
-    
+
     // ✅ باید بشه — فقط workflows سازمان کاربر جاری
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
-    
+
     $user_id = requireAuth();
     $user = getUserInfo($user_id);
     $org_id = $user['organization_id'];
@@ -28,18 +28,23 @@ try {
     $visibilityCond = '';
     $execParams = ['org_id' => $org_id];
     if (!$isManager) {
-        $visibilityCond = " AND EXISTS (
-            SELECT 1 FROM workflow_instance_steps wisV
-            JOIN workflow_steps wsV ON wisV.step_id = wsV.id
-            WHERE wisV.instance_id = wi.id
-              AND wisV.status = 'active'
-              AND wsV.activity_section = :usec
+        $visibilityCond = " AND (
+            EXISTS (
+                SELECT 1 FROM workflow_instance_steps wisV
+                JOIN workflow_steps wsV ON wisV.step_id = wsV.id
+                WHERE wisV.instance_id = wi.id
+                  AND wisV.status = 'active'
+                  AND wsV.activity_section = :usec
+            )
+            OR wi.created_by = :ucreator
         )";
         $execParams['usec'] = $u_section;
+        $execParams['ucreator'] = $user_id;
     }
 
     $sql = "SELECT
                 wi.id,
+                wi.created_by,
                 wi.title,
                 wt.description,
                 wi.status,
@@ -128,11 +133,11 @@ try {
                     ELSE 4 
                 END,
                 wi.started_at DESC";
-    
+
     $stmt = $db->prepare($sql);
     $stmt->execute($execParams);
     $workflows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     foreach ($workflows as &$workflow) {
         if ($workflow['is_delayed'] == 1 && $workflow['status'] == 'in_progress') {
             $workflow['status'] = 'delayed';
@@ -141,7 +146,7 @@ try {
             $workflow['status'] = 'in_progress';
         }
         $workflow['priority'] = 'medium';
-    
+
         // ✅ این دو خط را اضافه کن:
         $workflow['workflow_id'] = (int)$workflow['workflow_id'];
         $workflow['sections'] = !empty($workflow['sections_csv'])
@@ -149,12 +154,11 @@ try {
             : [];
         unset($workflow['sections_csv']);
     }
-    
+
     echo json_encode([
         'success' => true,
         'workflows' => $workflows
     ], JSON_UNESCAPED_UNICODE);
-    
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([
