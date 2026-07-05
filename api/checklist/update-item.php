@@ -13,6 +13,7 @@ try {
     $input = json_decode(file_get_contents('php://input'), true);
     $item_id = intval($input['item_id'] ?? 0);
     $title   = trim($input['title'] ?? '');
+    $description = trim($input['description'] ?? '');
 
     // آیا ارجاع هم در این درخواست آمده؟ (اگر نیامد، ارجاع را دست نمی‌زنیم)
     $has_assignee = array_key_exists('assignee_type', $input);
@@ -65,15 +66,15 @@ try {
         exit;
     }
     if ($has_assignee) {
-        // هم عنوان، هم ارجاع آپدیت می‌شود
+        // عنوان، توضیحات و ارجاع آپدیت می‌شود
         $stmt = $db->prepare("UPDATE task_checklist_items
-                              SET title = ?, assignee_type = ?, assignee_value = ?
+                              SET title = ?, description = ?, assignee_type = ?, assignee_value = ?
                               WHERE id = ?");
-        $stmt->execute([$title, $assignee_type, $assignee_value, $item_id]);
+        $stmt->execute([$title, $description, $assignee_type, $assignee_value, $item_id]);
     } else {
-        // فقط عنوان (رفتار قبلی، بدون دست‌زدن به ارجاع)
-        $stmt = $db->prepare("UPDATE task_checklist_items SET title = ? WHERE id = ?");
-        $stmt->execute([$title, $item_id]);
+        // عنوان و توضیحات (بدون دست‌زدن به ارجاع)
+        $stmt = $db->prepare("UPDATE task_checklist_items SET title = ?, description = ? WHERE id = ?");
+        $stmt->execute([$title, $description, $item_id]);
     }
     // 🆕 اگر ارجاع تغییر کرده و مقصدِ جدید معتبر است → اعلان بفرست
     if ($has_assignee) {
