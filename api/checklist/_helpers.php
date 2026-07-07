@@ -96,8 +96,10 @@ function notifyChecklistAssignee($db, $assignee_type, $assignee_value, $task, $a
             'message'      => $message,
             'type'         => 'info',
             'link'         => "pages/task-detail.php?id={$taskId}",
-            'related_type' => 'task',
-            'related_id'   => $taskId
+            'related_type' => 'checklist',
+            'related_id'   => $taskId,
+            'sms_pattern'  => 'checklist_assigned',
+            'sms_args'     => [$taskTitle]
         ]);
     }
 }
@@ -130,16 +132,16 @@ function notifyChecklistItemDone($db, $item, $task, $doer_id)
     $title   = 'آیتم چک‌لیست انجام شد';
     $message = "آیتم «{$itemTitle}» از کار «{$taskTitle}» توسط {$doerName} انجام شد";
 
-    $notif->create([
+    $createResult = $notif->create([
         'to_user_id'   => $creator_id,
         'title'        => $title,
         'message'      => $message,
         'type'         => 'info',
         'link'         => "pages/task-detail.php?id={$taskId}",
-        'related_type' => 'task',
+        'related_type' => 'checklist',
         'related_id'   => $taskId,
-        'sms_pattern'  => 'general',
-        'sms_args'     => [$title, $message]
+        'sms_pattern'  => 'checklist_done',
+        'sms_args'     => [$itemTitle, $doerName]
     ]);
 }
 /**

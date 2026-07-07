@@ -52,12 +52,13 @@ try {
     }
 
     $stmt = $db->prepare("INSERT INTO task_checklist_items
-                            (task_id, title, assignee_type, assignee_value, sort_order, created_by)
-                          VALUES (?, ?, ?, ?, ?, ?)");
+                            (task_id, title, description, assignee_type, assignee_value, sort_order, created_by)
+                          VALUES (?, ?, ?, ?, ?, ?, ?)");
     $count = 0;
     foreach ($items as $i => $it) {
         $title = trim($it['title'] ?? '');
         if ($title === '') continue;
+        $description = trim($it['description'] ?? '');
         $order = isset($it['sort_order']) ? intval($it['sort_order']) : $i;
 
         // خواندن ارجاع
@@ -84,7 +85,7 @@ try {
             $assignee_value = null;
         }
 
-        $stmt->execute([$task_id, $title, $assignee_type, $assignee_value, $order, $user_id]);
+        $stmt->execute([$task_id, $title, $description, $assignee_type, $assignee_value, $order, $user_id]);
         $count++;
     }
     try{
