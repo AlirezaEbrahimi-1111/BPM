@@ -9,7 +9,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/TaskManager.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
 try {
     $user_id = requireAuth();
 
@@ -241,13 +241,17 @@ try {
         }
     }
 
-    // ✅ اطمینان از وجود is_deleted
+// ✅ اطمینان از وجود is_deleted
     if (!isset($task['is_deleted'])) {
         $stmt = $db->prepare("SELECT is_deleted FROM tasks WHERE id = ?");
         $stmt->execute([$_GET['id']]);
         $delResult = $stmt->fetch(PDO::FETCH_ASSOC);
         $task['is_deleted'] = $delResult ? intval($delResult['is_deleted']) : 0;
     }
+
+    // 🔄 بررسی برگشت از period_done به حالت فعال (اگر دوره‌ی بعدی رسیده باشد)
+    maybeStartNextPeriod($db, $task, $user_id);
+
     echo json_encode([
         'success' => true,
         'task' => $task,

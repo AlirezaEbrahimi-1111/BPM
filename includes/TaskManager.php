@@ -296,7 +296,7 @@ class TaskManager
             $today = date('Y-m-d');
             $sql = "UPDATE tasks SET 
                         last_approved_date = ?,
-                        status = 'in_progress',
+                        status = 'period_done',
                         is_pending_approval = FALSE,
                         pending_approval_count = 0,
                         updated_at = NOW()
@@ -305,7 +305,7 @@ class TaskManager
             $stmt->execute([$today, $task_id]);
 
             $this->addTaskHistory($task_id, $user_id, null, 'completed', $notes ?: 'کار تکمیل شد');
-            return ['success' => true, 'message' => 'دوره تکمیل شد و دوره بعدی فعال شد'];
+            return ['success' => true, 'message' => 'دوره تکمیل شد'];
         }
 
         // کار عادی/مقطعی — رفتار قبلی دست‌نخورده

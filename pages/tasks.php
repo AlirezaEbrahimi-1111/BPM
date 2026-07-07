@@ -642,8 +642,9 @@ require_once '../includes/version.php';
             pending_approval: ['منتظر تأیید', 'hourglass-split'],
             approved: ['تأیید شده', 'check-circle-fill'],
             delegated: ['ارجاع شده', 'arrow-left-right'],
-            rejected: ['متوقف شده', 'pause-circle'],
-            termination_requested: ['در انتظار اتمام', 'hourglass-split']
+            rejected: ['متوقف', 'pause-circle'],
+            termination_requested: ['در انتظار اتمام', 'hourglass-split'],
+            period_done: ['دوره انجام شد', 'calendar-check']
         };
         const priorityCfg = {
             high: ['بالا', 'arrow-up'],

@@ -401,7 +401,10 @@ h6 {
     background: #d4edda;
     color: #155724;
 }
-
+.status-period_done {
+    background: #cffafe;
+    color: #0e7490;
+}
 .status-delegated {
     background: #e0e7ff;
     color: #4338ca;
@@ -6314,7 +6317,6 @@ body.login-page::after {
     display: none;
 }
 
-// قبل:
 #delegatedTaskSearchBox {
     border-radius: 8px;
     overflow: hidden;

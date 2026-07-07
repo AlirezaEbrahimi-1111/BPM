@@ -2010,7 +2010,9 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
                 'approved': 'تأیید شده',
                 'pending_approval': 'در انتظار تأیید',
                 'termination_requested': 'در انتظار اتمام',
+                'period_done': 'دوره انجام شد',
             };
+         
             return `<span class="badge status-${task.status}">${labels[task.status] || task.status}</span>`;
         }
 

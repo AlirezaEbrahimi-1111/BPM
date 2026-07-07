@@ -8,7 +8,8 @@
  */
 function getTaskForChecklist($db, $task_id, $user_id)
 {
-    $stmt = $db->prepare("SELECT id, title, creator_id, assignee_id, status, checklist_auto_complete, activity_section, organization_id
+    $stmt = $db->prepare("SELECT id, title, creator_id, assignee_id, status, checklist_auto_complete, activity_section, organization_id,
+                                 task_type, period_type, start_date, end_date
                           FROM tasks WHERE id = ?");
     $stmt->execute([$task_id]);
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -45,26 +46,16 @@ function getTaskForChecklist($db, $task_id, $user_id)
     $task['_is_checklist_assignee'] = $isChecklistAssignee;  // 🆕 فلگ جدید
     return $task;
 }
-/**
- * آیا چک‌لیستِ این کار قفل است؟
- * کار در وضعیت‌های نهایی (تکمیل/تأیید/متوقف/لغو) قفل می‌شود:
- * دیگر نمی‌توان آیتم اضافه/ویرایش/حذف کرد یا تیک زد.
- * خروجی: true اگر قفل باشد.
- */
+
 function isChecklistLocked($task)
 {
-    $lockedStatuses = ['completed', 'approved', 'stopped', 'cancelled'];
+    $lockedStatuses = ['completed', 'approved', 'stopped', 'cancelled', 'period_done'];
     $status = $task['status'] ?? '';
-    return in_array($status, $lockedStatuses, true);
+    $result = in_array($status, $lockedStatuses, true);
+    // خط تست موقت — نشان می‌دهد این نسخه‌ی فایل واقعاً اجرا می‌شود
+    return $result;
 }
-/**
- * ارسال اعلان به فرد/واحدی که آیتم چک‌لیست به او ارجاع شده.
- * $assignee_type: 'user' یا 'section'
- * $assignee_value: شناسه کاربر یا کلید واحد
- * $task: آرایه‌ی کار (برای عنوان و organization و جلوگیری از اعلان به خود ارجاع‌دهنده)
- * $actor_id: کسی که ارجاع را انجام داده (به او اعلان نرود)
- * $itemTitle: عنوان آیتم (برای متن اعلان)
- */
+
 function notifyChecklistAssignee($db, $assignee_type, $assignee_value, $task, $actor_id, $itemTitle = '')
 {
     if (!$assignee_type || !$assignee_value) return;
@@ -184,7 +175,14 @@ function maybeAutoComplete($db, $task, $user_id)
     // کار قبلاً تکمیل/تأیید شده؟ کاری نکن
     if (in_array($task['status'], ['completed', 'approved', 'pending_approval'])) return false;
 
-    // از مسیر استاندارد پروژه عبور کن (منطق تأیید چندمرحله‌ای حفظ می‌شود)
+    // ══════════════════════════════════════════════════════════════
+    //  تسک دوره‌ای (continuous): به‌جای «تکمیل»، «ثبت دوره» می‌کنیم
+    // ══════════════════════════════════════════════════════════════
+    if (($task['task_type'] ?? '') === 'continuous') {
+        return registerRecurringPeriod($db, $task, $user_id);
+    }
+
+    // ── تسک عادی (رفتار قبلی، بدون تغییر) ──
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/TaskManager.php';
     $tm = new TaskManager($db);
     $tm->updateTaskStatus($task['id'], 'completed', $user_id, 'تکمیل خودکار با اتمام چک‌لیست');
@@ -192,17 +190,46 @@ function maybeAutoComplete($db, $task, $user_id)
 }
 
 /**
- * همگام‌سازی وضعیت کار با وضعیت چک‌لیست.
- * بعد از هر تغییر چک‌لیست (تیک، برداشتن تیک، افزودن، حذف) صدا زده می‌شود.
- *
- * قانون:
- *   • هیچ آیتمی تیک نخورده  → اگر کار in_progress است، به not_started برگردد
- *   • بعضی تیک خورده (نه همه) → اگر کار not_started/completed/pending_approval است، به in_progress برگردد
- *   • همه تیک خورده          → maybeAutoComplete (جداگانه فراخوانی می‌شود)
- *
- * توجه: این تابع فقط کارهای «دارای چک‌لیست با auto_complete روشن» را مدیریت می‌کند
- * و کارهای approved/stopped/rejected را دست نمی‌زند.
+ * ثبت یک دوره‌ی انجام‌شده برای تسک دوره‌ای.
  */
+function registerRecurringPeriod($db, $task, $user_id)
+{
+    error_log("registerRecurringPeriod CALLED for task " . $task['id']);  // خط تست موقت
+
+    $task_id = $task['id'];
+
+    try {
+        $db->beginTransaction();
+
+        // ۱) ثبت دوره در تاریخچه
+        $hist = $db->prepare("INSERT INTO task_history (task_id, from_user_id, action, notes)
+                              VALUES (?, ?, 'completed', ?)");
+        $hist->execute([$task_id, $user_id, 'دوره‌ی جاری با اتمام چک‌لیست ثبت شد']);
+
+        // ۲) ریست چک‌لیست: پاک‌کردن همه‌ی تیک‌ها
+        $reset = $db->prepare("UPDATE task_checklist_items
+                               SET is_done = 0, done_at = NULL, done_by = NULL
+                               WHERE task_id = ?");
+        $reset->execute([$task_id]);
+
+        // ۳) تغییر وضعیت کار به period_done + ثبت تاریخ آخرین انجام
+        $upd = $db->prepare("UPDATE tasks
+                             SET status = 'period_done', is_pending_approval = FALSE,
+                                 pending_approval_count = 0,
+                                 last_approved_date = CURDATE(),
+                                 updated_at = NOW()
+                             WHERE id = ?");
+        $upd->execute([$task_id]);
+
+        $db->commit();
+        return true;
+    } catch (Exception $e) {
+        $db->rollBack();
+        error_log("registerRecurringPeriod error task#{$task_id}: " . $e->getMessage());
+        return false;
+    }
+}
+
 function syncTaskStatusWithChecklist($db, $task, $user_id)
 {
     // فقط وقتی auto_complete روشن است معنا دارد
@@ -214,7 +241,8 @@ function syncTaskStatusWithChecklist($db, $task, $user_id)
     $status = $task['status'];
 
     // وضعیت‌هایی که نباید به‌خاطر چک‌لیست تغییر کنند
-    if (in_array($status, ['approved', 'stopped', 'rejected'])) return;
+    // period_done: تسک دوره‌ای که دوره‌اش ثبت شده و منتظر دوره‌ی بعدی است
+    if (in_array($status, ['approved', 'stopped', 'rejected', 'period_done'])) return;
 
     // ── حالت ۱: همه تیک خورده → اینجا کاری نکن (maybeAutoComplete مسئول است)
     if ($p['done'] >= $p['total']) return;
