@@ -13,17 +13,15 @@ try {
     $database = new Database();
     $db = $database->getConnection();
     
-    $checkAdmin = $db->prepare("SELECT activity_section, organization_id FROM users WHERE id = ? and is_deleted=0");
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+
+    $checkAdmin = $db->prepare("SELECT id, role, activity_section, organization_id FROM users WHERE id = ? and is_deleted=0");
     $checkAdmin->execute([$user_id]);
     $currentUser = $checkAdmin->fetch();
     $org_id = $currentUser['organization_id'];
 
-    
-    if (!$currentUser || $currentUser['activity_section'] !== 'management') {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
-        exit;
-    }
+    // 🔐 کنترل دسترسی متمرکز: فقط کسانی که اجازه‌ی مدیریت کاربرها را دارند
+    requirePermission($currentUser, 'manage_users');
     
     // دریافت لیست کاربران با واحدهایشان
     $sql = "SELECT u.id, u.phone, u.username, u.first_name, u.last_name, u.email,

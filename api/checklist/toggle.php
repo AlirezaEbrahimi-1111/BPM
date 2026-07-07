@@ -103,7 +103,7 @@ try {
         $stmt->execute([$item_id]);
     }
     // 🆕 اگر آیتم تیک خورد، به ارجاع‌دهنده (سازنده‌ی آیتم) اطلاع بده
-    if ($is_done) {
+   if ($is_done) {
         try {
             // اطلاعات کامل آیتم را برای اعلان بخوان
             $itemFull = $db->prepare("SELECT title, created_by FROM task_checklist_items WHERE id = ?");
@@ -129,7 +129,7 @@ try {
         syncTaskStatusWithChecklist($db, $task, $user_id);
     }
 
-    $p = checklistProgress($db, $row['task_id']);
+$p = checklistProgress($db, $row['task_id']);
     echo json_encode([
         'success' => true,
         'auto_completed' => $auto,

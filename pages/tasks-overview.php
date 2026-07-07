@@ -575,10 +575,11 @@ require_once '../includes/version.php';
             in_progress: ['در حال انجام', 'play-circle'],
             completed: ['تکمیل شده', 'check-circle'],
             pending_approval: ['منتظر تأیید', 'hourglass-split'],
-            rejected: ['متوقف شده', 'pause-circle'],
             approved: ['تأیید شده', 'check-circle-fill'],
             delegated: ['ارجاع شده', 'arrow-left-right'],
-            termination_requested: ['در انتظار اتمام', 'hourglass-split']
+            rejected: ['متوقف', 'pause-circle'],
+            termination_requested: ['در انتظار اتمام', 'hourglass-split'],
+            period_done: ['دوره انجام شد', 'calendar-check']
         };
         const priorityCfg = {
             high: ['بالا', 'arrow-up'],

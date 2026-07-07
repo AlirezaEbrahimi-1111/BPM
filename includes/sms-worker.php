@@ -27,7 +27,7 @@ try {
         $payload['message'] ?? ''
     ];
 
-    $bodyId = resolveBodyId($pattern_key);
+   $bodyId = resolveBodyId($pattern_key);
 
     $result = $sms->sendPattern(
         $payload['to_user_id'],
