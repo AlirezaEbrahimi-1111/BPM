@@ -3859,7 +3859,8 @@ require_once '../includes/version.php';
                 'delegated': 'ارجاع شد',
                 'not_started': 'شروع نشده',
                 'termination_requested': 'درخواست اتمام',
-                'rejected': 'متوقف شده'
+                'rejected': 'متوقف شده',
+                'period_done': 'دوره انجام شد'
             };
             return labels[status] || status;
         }
@@ -3926,6 +3927,7 @@ require_once '../includes/version.php';
                 'deadline_extended': 'تمدید موعد',
                 'termination_requested': 'درخواست اتمام',
                 'checklist_sync': 'به‌روزرسانی چک‌لیست',
+                'period_done': 'دوره انجام شد',
             };
             return labels[action] || action;
         }

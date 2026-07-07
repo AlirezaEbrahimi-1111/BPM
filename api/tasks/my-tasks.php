@@ -13,6 +13,7 @@ try {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php'; // ← اضافه شد
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
     $user_id = requireAuth();
     $user = getUserInfo($user_id);
 
@@ -175,7 +176,7 @@ AND t.status != 'rejected'
         (
           t.assignee_id = ?
           AND (
-            -- اگر تسک روتین است، فقط وقتی نشان بده که مرحله‌اش فعال شده باشد
+            -- اگرب تسک روتین است، فقط وقتی نشان بده که مرحله‌اش فعال شده باشد
             t.is_workflow_task = 0
             OR t.is_workflow_task IS NULL
             OR EXISTS (
@@ -255,7 +256,8 @@ ORDER BY
                 $start_date = new DateTime($task['start_date']);
                 $current_date = new DateTime($today);
                 $current_date->setTime(0, 0, 0);
-
+                // 🔄 بررسی برگشت از period_done به حالت فعال (تابع مشترک)
+                maybeStartNextPeriod($db, $task, $user_id, $holidays);
                 // هنوز شروع نشده
                 if ($current_date < $start_date) {
                     $task['overdue_periods'] = 0;

@@ -536,7 +536,7 @@ require_once '../includes/version.php';
             if (gridApi) gridApi.setGridOption('rowData', filteredTasks);
         }
 
-        const statusCfg = {
+       const statusCfg = {
             not_started: ['شروع نشده', 'circle'],
             in_progress: ['در حال انجام', 'play-circle'],
             completed: ['تکمیل شده', 'check-circle'],
@@ -544,7 +544,8 @@ require_once '../includes/version.php';
             approved: ['تأیید شده', 'check-circle-fill'],
             delegated: ['ارجاع شده', 'arrow-left-right'],
             rejected: ['متوقف', 'pause-circle'],
-            termination_requested: ['در انتظار اتمام', 'hourglass-split']
+            termination_requested: ['در انتظار اتمام', 'hourglass-split'],
+            period_done: ['دوره انجام شد', 'calendar-check']
         };
         const priorityCfg = {
             high: ['بالا', 'arrow-up'],

@@ -80,16 +80,16 @@ try {
 
     $p = checklistProgress($db, $task_id);
 
-    $locked = isChecklistLocked($task);   // 🔒 آیا کار به پایان رسیده؟
+$locked = isChecklistLocked($task);   // 🔒 آیا کار به پایان رسیده؟
     echo json_encode([
         'success' => true,
         'items'   => $items,
         'total'   => $p['total'],
         'done'    => $p['done'],
         'percent' => $p['percent'],
-        'can_edit' => $task['_is_creator'] && !$locked,   // اگر قفل باشد، ویرایش هم ممنوع
-        'can_toggle' => !$locked,                         // اگر قفل باشد، تیک هم ممنوع
-        'is_locked' => $locked                            // 🆕 برای نمایش پیام در فرانت‌اند
+        'can_edit' => $task['_is_creator'] && !$locked,
+        'can_toggle' => !$locked,
+        'is_locked' => $locked,
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
