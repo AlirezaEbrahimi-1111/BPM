@@ -35,14 +35,12 @@ try {
     // دریافت داده‌ها
     $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
     if (strpos($contentType, 'multipart/form-data') !== false) {
-        $ticketId    = (int)($_POST['ticket_id'] ?? 0);
-        $message     = trim($_POST['message'] ?? '');
-        $is_internal = (int)($_POST['is_internal'] ?? 0);
+        $ticketId = (int)($_POST['ticket_id'] ?? 0);
+        $message  = trim($_POST['message'] ?? '');
     } else {
-        $input       = json_decode(file_get_contents('php://input'), true);
-        $ticketId    = (int)($input['ticket_id'] ?? 0);
-        $message     = trim($input['message'] ?? '');
-        $is_internal = (int)($input['is_internal'] ?? 0);
+        $input    = json_decode(file_get_contents('php://input'), true);
+        $ticketId = (int)($input['ticket_id'] ?? 0);
+        $message  = trim($input['message'] ?? '');
     }
 
     if (!$ticketId) {
@@ -55,9 +53,12 @@ try {
     }
 
     // بررسی وجود تیکت
-    $stmt = $db->prepare("SELECT id, created_by, assigned_to, ticket_number, subject FROM tickets
-WHERE id = ? AND deleted_at IS NULL
-        AND (organization_id = ? OR ? = 1)");
+    $stmt = $db->prepare("SELECT t.id, t.created_by, t.assigned_to, t.ticket_number, t.subject,
+               t.status_id, ts.name AS old_status_name, ts.label AS old_status_label
+        FROM tickets t
+        JOIN ticket_statuses ts ON t.status_id = ts.id
+        WHERE t.id = ? AND t.deleted_at IS NULL
+        AND (t.organization_id = ? OR ? = 1)");
     $stmt->execute([$ticketId, $orgId, $user_id]);
     $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -69,7 +70,7 @@ WHERE id = ? AND deleted_at IS NULL
 
     // بررسی دسترسی
     $isCreator  = ((int)$ticket['created_by'] === $user_id);
-$isSuperAdmin = ($user_id === 1);
+    $isSuperAdmin = ($user_id === 1);
 
     if (!$isCreator && !$isSuperAdmin) {
         http_response_code(403);
@@ -77,20 +78,37 @@ $isSuperAdmin = ($user_id === 1);
         exit;
     }
 
-    // یادداشت داخلی فقط برای مدیران
-    if ($is_internal && !$isSuperAdmin) {
-        $is_internal = 0;
-    }
-
     $db->beginTransaction();
 
     // ─── ثبت پیام ───
     $stmt = $db->prepare("
         INSERT INTO ticket_messages (ticket_id, user_id, message, is_internal)
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, 0)
     ");
-    $stmt->execute([$ticketId, $user_id, $message, $is_internal]);
+    $stmt->execute([$ticketId, $user_id, $message]);
     $messageId = (int)$db->lastInsertId();
+
+    // ─── تغییر خودکار وضعیت بر اساس فرستنده‌ی پیام ───
+    // پاسخ سوپرادمین → منتظر پاسخ (کاربر)؛ پاسخ کاربر → باز (منتظر بررسی سوپرادمین)
+    // تیکتِ لغوشده خودکار دوباره باز نمی‌شود؛ باید دستی تغییر وضعیت داده شود.
+    if ($ticket['old_status_name'] !== 'cancelled') {
+        $newStatusName = $isSuperAdmin ? 'waiting_reply' : 'open';
+        $stmt = $db->prepare("SELECT id, label FROM ticket_statuses WHERE name = ?");
+        $stmt->execute([$newStatusName]);
+        $newStatus = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($newStatus && (int)$newStatus['id'] !== (int)$ticket['status_id']) {
+            $db->prepare("UPDATE tickets SET status_id = ? WHERE id = ?")
+                ->execute([$newStatus['id'], $ticketId]);
+
+            // action جدا از 'status_changed' (تغییر دستی در change-status.php) تا در
+            // تاریخچه مشخص باشد این تغییر خودکار و بر اثر پاسخ بوده، نه اقدام مستقیم مدیر.
+            $db->prepare("
+                INSERT INTO ticket_history (ticket_id, user_id, action, old_value, new_value)
+                VALUES (?, ?, 'status_auto_changed', ?, ?)
+            ")->execute([$ticketId, $user_id, $ticket['old_status_label'], $newStatus['label']]);
+        }
+    }
 
     // ─── آپلود فایل‌ها ───
     $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/uploads/tickets/';
@@ -132,42 +150,39 @@ $isSuperAdmin = ($user_id === 1);
     }
 
     // ─── ثبت تاریخچه ───
-    $actionLabel = $is_internal ? 'internal_note' : 'replied';
     $stmt = $db->prepare("
         INSERT INTO ticket_history (ticket_id, user_id, action)
-        VALUES (?, ?, ?)
+        VALUES (?, ?, 'replied')
     ");
-    $stmt->execute([$ticketId, $user_id, $actionLabel]);
+    $stmt->execute([$ticketId, $user_id]);
 
     // ─── نوتیفیکیشن ───
-    if (!$is_internal) {
-        // اگر پاسخ‌دهنده = assigned → نوتیف به creator
-        // اگر پاسخ‌دهنده = creator → نوتیف به assigned
-        $notifyUserId = ($user_id === (int)$ticket['assigned_to'])
-            ? (int)$ticket['created_by']
-            : (int)$ticket['assigned_to'];
+    // اگر پاسخ‌دهنده = assigned → نوتیف به creator
+    // اگر پاسخ‌دهنده = creator → نوتیف به assigned
+    $notifyUserId = ($user_id === (int)$ticket['assigned_to'])
+        ? (int)$ticket['created_by']
+        : (int)$ticket['assigned_to'];
 
-        if ($notifyUserId && $notifyUserId !== $user_id) {
-            $notif = new Notification($db);
-            $notif->create([
-                'to_user_id'   => $notifyUserId,
-                'title'        => 'پاسخ جدید: ' . $ticket['ticket_number'],
-                'message'      => $userName . ' به تیکت «' . $ticket['subject'] . '» پاسخ داد',
-                'type'         => 'info',
-                'link'         => 'ticket-detail.php?id=' . $ticketId,
-                'related_type' => 'ticket',
-                'related_id'   => $ticketId,
-                'sms_pattern'  => 'ticket_replied',
-                'sms_args'     => [$userName, $ticket['subject']],
-            ]);
-        }
+    if ($notifyUserId && $notifyUserId !== $user_id) {
+        $notif = new Notification($db);
+        $notif->create([
+            'to_user_id'   => $notifyUserId,
+            'title'        => 'پاسخ جدید: ' . $ticket['ticket_number'],
+            'message'      => $userName . ' به تیکت «' . $ticket['subject'] . '» پاسخ داد',
+            'type'         => 'info',
+            'link'         => 'ticket-detail.php?id=' . $ticketId,
+            'related_type' => 'ticket',
+            'related_id'   => $ticketId,
+            'sms_pattern'  => 'ticket_replied',
+            'sms_args'     => [$userName, $ticket['subject']],
+        ]);
     }
 
     $db->commit();
 
     echo json_encode([
         'success'    => true,
-        'message'    => $is_internal ? 'یادداشت داخلی ثبت شد' : 'پاسخ ارسال شد',
+        'message'    => 'پاسخ ارسال شد',
         'message_id' => $messageId
     ]);
 

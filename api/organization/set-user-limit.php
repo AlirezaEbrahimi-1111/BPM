@@ -1,13 +1,14 @@
 <?php
 
-require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 header('Content-Type: application/json; charset=utf-8');
 
-// 🔒 فقط مدیر کل (شناسهٔ ۱)
-if ((int)($_SESSION['user_id'] ?? 0) !== 1) {
+// 🔒 فقط مدیر کل (superadmin)
+if (!in_array((int)($_SESSION['user_id'] ?? 0), getSuperAdminIds(), true)) {
     echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز'], JSON_UNESCAPED_UNICODE);
     exit;
 }

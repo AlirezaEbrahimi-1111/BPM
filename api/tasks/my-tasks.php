@@ -174,17 +174,10 @@ AND t.status != 'rejected'
       dr.current_approver_id IS NULL 
       AND (
         (
+          -- ✅ اگر تسک صراحتاً به این کاربر تخصیص یافته (تعریف/ارجاع/claim)، همین کافی است؛
+          -- به status جدولِ workflow_instance_steps گره نمی‌زنیم چون ممکن است از حالتِ
+          -- تسکِ خودش عقب بماند (مثلاً بعد از ارجاع) و تسک را از لیست کاربر پنهان کند
           t.assignee_id = ?
-          AND (
-            -- اگرب تسک روتین است، فقط وقتی نشان بده که مرحله‌اش فعال شده باشد
-            t.is_workflow_task = 0
-            OR t.is_workflow_task IS NULL
-            OR EXISTS (
-                SELECT 1 FROM workflow_instance_steps wis_a
-                WHERE wis_a.task_id = t.id
-                  AND wis_a.status = 'active'
-            )
-          )
         )
         OR (
   t.is_workflow_task = 1 

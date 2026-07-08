@@ -1192,7 +1192,11 @@ $sql = "SELECT t.*,
                     $stmt = $this->db->prepare($sql);
                     $stmt->execute([$today, $performerId, $task_id]);
 
-                    $this->addTaskHistory($task_id, $user_id, $performerId, 'approved', 'آخرین دوره تأیید شد: ' . $notes);
+                    // ✅ action باید 'completed' باشد نه 'approved' — همه‌ی محاسبات دوره‌های
+                    // معوقه/موعد بعدی (calcOverduePeriods، next_due_date، maybeStartNextPeriod)
+                    // فقط رکوردهای action='completed' را می‌شمارند؛ وگرنه completed_count برای
+                    // همیشه ۰ می‌ماند و کار همیشه معوقه نشان داده می‌شود.
+                    $this->addTaskHistory($task_id, $user_id, $performerId, 'completed', 'آخرین دوره تأیید شد: ' . $notes);
                     $this->notifyCompletion($task, $performerId, 'completion_approved', $user_id);  // 🆕
                     return [
                         'success' => true,

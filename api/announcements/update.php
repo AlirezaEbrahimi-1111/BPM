@@ -13,6 +13,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 
 function ann_out($arr, $code = 200) {
@@ -36,7 +37,7 @@ try {
     $role      = $u['role'] ?? 'employee';
     $org       = $u['organization_id'] ?? null;
     $section   = $u['activity_section'] ?? null;
-    $isSuper   = ((int)$user_id === 1);
+    $isSuper   = in_array((int)$user_id, getSuperAdminIds(), true);
     $canManage = $isSuper || in_array($role, ['management', 'supervisor']);
 
     $input  = json_decode(file_get_contents('php://input'), true) ?: [];

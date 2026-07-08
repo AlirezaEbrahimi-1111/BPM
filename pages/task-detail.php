@@ -3160,11 +3160,15 @@ require_once '../includes/version.php';
             // ✅ منطق جدید workflow tasks
             if (isWorkflow) {
 
-                // ✅ چک 1: مسئولِ این مرحله (کاربرِ مشخص یا عضوِ واحد) باشد و مرحله «فعال» باشد
+                // ✅ چک 1: مسئولِ این مرحله (کاربرِ مشخص یا عضوِ واحد) باشد
+                // اگر تسک صراحتاً assignee دارد (تعریف/ارجاع/claim شده)، همان کافی است —
+                // به current_step_status گره نمی‌زنیم چون ممکن است از وضعیتِ واقعیِ تسک
+                // عقب بماند (مثلاً بعد از ارجاع) و دکمه‌های عملیات را برای مسئولِ واقعی مخفی کند.
+                // فقط برای تسکِ هنوز تخصیص‌نیافته (سراسرِ واحد) به «فعال بودنِ مرحله» نیاز داریم.
                 const stepActive = (task.current_step_status === 'active');
-                const inSection = stepActive && currentUser && (task.assignee_id ?
+                const inSection = currentUser && (task.assignee_id ?
                     isAssignee :
-                    currentUser.activity_section === task.current_step_section);
+                    (stepActive && currentUser.activity_section === task.current_step_section));
 
                 // ✅ چک 2: آیا این task در مرحله فعلی workflow است؟
                 // const isCurrentStage = task.current_stage_id === task.current_workflow_step;
@@ -3886,31 +3890,36 @@ require_once '../includes/version.php';
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
+            // نکته: تاریخ‌ها را دستی (سال/ماه/روز) پارس می‌کنیم و با toLocalYMD برمی‌گردانیم —
+            // new Date("YYYY-MM-DD") به‌عنوان UTC نیمه‌شب پارس می‌شود، ولی getDate/setDate و
+            // toISOString با ساعتِ محلی/UTC کار می‌کنند؛ ترکیب این دو روی مرورگرهایی با تایم‌زون
+            // غیر از تهران می‌تواند نتیجه را یک روز جابه‌جا کند.
             // هنوز هیچ دوره‌ای تأیید نشده → سررسید دورهٔ اول همان تاریخ شروع است
             if (!lastCompletedDate) {
-                const start = new Date(startDate);
+                const [sy, sm, sd] = startDate.split('-').map(Number);
+                const start = new Date(sy, sm - 1, sd);
                 start.setHours(0, 0, 0, 0);
-                if (start < today) return today.toISOString().split('T')[0];
+                if (start < today) return toLocalYMD(today);
                 return startDate;
             }
 
-            const base = new Date(lastCompletedDate);
-            const next = new Date(base);
+            const [ly, lm, ld] = lastCompletedDate.split('-').map(Number);
+            const next = new Date(ly, lm - 1, ld);
             switch (periodType) {
                 case 'daily':
-                    next.setDate(base.getDate() + 1);
+                    next.setDate(next.getDate() + 1);
                     break;
                 case 'weekly':
-                    next.setDate(base.getDate() + 7);
+                    next.setDate(next.getDate() + 7);
                     break;
                 case 'monthly':
-                    next.setMonth(base.getMonth() + 1);
+                    next.setMonth(next.getMonth() + 1);
                     break;
                 default:
                     return null;
             }
-            if (next < today) return today.toISOString().split('T')[0];
-            return next.toISOString().split('T')[0];
+            if (next < today) return toLocalYMD(today);
+            return toLocalYMD(next);
         }
 
         function getActionLabel(action) {

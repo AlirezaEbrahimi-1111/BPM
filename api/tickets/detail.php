@@ -79,10 +79,9 @@ try {
 
     // ─── پیام‌ها ───
     $msgSql = "
-        SELECT 
+        SELECT
             tm.id,
             tm.message,
-            tm.is_internal,
             tm.created_at,
             tm.user_id,
             CONCAT(u.first_name, ' ', u.last_name) AS user_name,
@@ -95,13 +94,6 @@ try {
     $stmt = $db->prepare($msgSql);
     $stmt->execute([$ticketId]);
     $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // فیلتر یادداشت‌های داخلی: فقط manager/supervisor ببینن
-    if (!in_array($role, ['manager', 'supervisor']) && $user_id !== 1) {
-        $messages = array_values(array_filter($messages, function($m) {
-            return (int)$m['is_internal'] === 0;
-        }));
-    }
 
     // ─── پیوست‌ها ───
     $attSql = "

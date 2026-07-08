@@ -159,19 +159,6 @@ require_once '../includes/version.php';
     border: 1px solid #c8e6c9;
     border-right: 4px solid #2e7d32;
 }
-        .msg-internal { background: #fff3cd; border: 1px solid #ffeeba; }
-        .msg-internal::before {
-            content: '\1F512 یادداشت داخلی';
-            font-size: .7rem;
-            font-weight: 700;
-            color: #856404;
-            position: absolute;
-            top: -9px;
-            right: 14px;
-            background: #fff3cd;
-            padding: 0 6px;
-            border-radius: 4px;
-        }
         .msg-head {
             display: flex;
             justify-content: space-between;
@@ -251,21 +238,6 @@ require_once '../includes/version.php';
             gap: 5px;
         }
         .btn-reply:disabled { opacity: .45; }
-        .btn-internal {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: .82rem;
-            font-family: inherit;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .btn-internal:hover { background: #ffe69c; }
 
         .reply-file-label {
             cursor: pointer;
@@ -375,11 +347,8 @@ require_once '../includes/version.php';
                     <h6><i class="bi bi-reply ms-2"></i>ارسال پاسخ</h6>
                     <textarea class="reply-textarea" id="replyMsg" placeholder="پاسخ خود را بنویسید..."></textarea>
                     <div class="reply-actions">
-                        <button class="btn-reply" id="btnReply" onclick="sendReply(false)">
+                        <button class="btn-reply" id="btnReply" onclick="sendReply()">
                             <i class="bi bi-send"></i>ارسال
-                        </button>
-                        <button class="btn-internal" id="btnInternal" onclick="sendReply(true)" style="display:none;">
-                            <i class="bi bi-lock"></i>یادداشت داخلی
                         </button>
                         <label class="reply-file-label">
                             <input type="file" id="replyFileInput" multiple hidden
@@ -512,24 +481,12 @@ require_once '../includes/version.php';
                 var m = messages[i];
             // ✅ بعد
                 var isAdminUser = (m.user_role === 'supervisor' || m.user_role === 'manager' || m.user_id == 1);
-                var cls;
-                if (m.is_internal == 1) {
-                    cls = 'msg-internal';
-                } else if (isAdminUser) {
-                    cls = 'msg-admin';
-                } else {
-                    cls = 'msg-user';
-                }
-                
+                var cls = isAdminUser ? 'msg-admin' : 'msg-user';
+
                 // نشان‌دهنده فرستنده
-                var senderBadge = '';
-                if (m.is_internal == 1) {
-                    senderBadge = '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:#856404;color:#fff;margin-right:6px;">یادداشت داخلی</span>';
-                } else if (isAdminUser) {
-                    senderBadge = '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:#2e7d32;color:#fff;margin-right:6px;">پشتیبانی</span>';
-                } else {
-                    senderBadge = '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:#744ca4;color:#fff;margin-right:6px;">کاربر</span>';
-                }
+                var senderBadge = isAdminUser
+                    ? '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:#2e7d32;color:#fff;margin-right:6px;">پشتیبانی</span>'
+                    : '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:#744ca4;color:#fff;margin-right:6px;">کاربر</span>';
                 var time = new Date(m.created_at).toLocaleString('fa-IR');
 
                 html += '<div class="msg-bubble ' + cls + '">';
@@ -588,7 +545,6 @@ require_once '../includes/version.php';
         // ─── مجوزها ───
         function setupPermissions(ticket) {
             if (currentUserId == 1) {
-                document.getElementById('btnInternal').style.display = 'inline-flex';
                 document.getElementById('deleteCard').style.display = '';
             }
         }
@@ -618,7 +574,7 @@ require_once '../includes/version.php';
         }
 
         // ─── ارسال پاسخ ───
-        async function sendReply(isInternal) {
+        async function sendReply() {
             var message = document.getElementById('replyMsg').value.trim();
             if (!message) {
                 showToast('متن پیام الزامی است', 'warning');
@@ -626,14 +582,13 @@ require_once '../includes/version.php';
                 return;
             }
 
-            var btn = isInternal ? document.getElementById('btnInternal') : document.getElementById('btnReply');
+            var btn = document.getElementById('btnReply');
             btn.disabled = true;
 
             try {
                 var fd = new FormData();
                 fd.append('ticket_id', ticketId);
                 fd.append('message', message);
-                fd.append('is_internal', isInternal ? '1' : '0');
 
                 var fileInput = document.getElementById('replyFileInput');
                 if (fileInput.files.length > 0) {

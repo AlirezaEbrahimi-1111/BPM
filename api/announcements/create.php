@@ -4,6 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 $user_id = requireAuth();
 $user = getUserInfo($user_id); // اکنون شامل role و organization_id و activity_section
@@ -61,7 +62,7 @@ if ($scope === 'user') {
 
 } elseif ($scope === 'all_orgs') {
     // فقط مدیر کل سیستم
-    if ((int)$user_id !== 1) {
+    if (!in_array((int)$user_id, getSuperAdminIds(), true)) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'فقط مدیر کل سیستم می‌تواند به همهٔ سازمان‌ها اطلاعیه بدهد'], JSON_UNESCAPED_UNICODE);
         exit;

@@ -1,12 +1,12 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 header('Content-Type: application/json; charset=utf-8');
 
-$allowed_admins  = [1];
 $current_user_id = (int)($_SESSION['user_id'] ?? 0);
 
-if (!in_array($current_user_id, $allowed_admins, true)) {
+if (!in_array($current_user_id, getSuperAdminIds(), true)) {
     http_response_code(403);
     echo json_encode(
         ['success' => false, 'message' => 'دسترسی غیرمجاز'],

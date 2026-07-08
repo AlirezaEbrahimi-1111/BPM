@@ -15,6 +15,7 @@ try {
     // ✅ باید بشه — فقط workflows سازمان کاربر جاری
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
     $user_id = requireAuth();
     $user = getUserInfo($user_id);
@@ -23,7 +24,7 @@ try {
     // دسترسی: مدیریت/سرپرست همه را می‌بینند؛ بقیه فقط روتین‌هایی که مرحلهٔ فعالشان مالِ واحد اوست
     $role      = $user['role'] ?? 'employee';
     $u_section = $user['activity_section'] ?? null;
-    $isManager = ((int)$user_id === 1) || in_array($role, ['management', 'supervisor']);
+    $isManager = in_array((int)$user_id, getSuperAdminIds(), true) || in_array($role, ['management', 'supervisor']);
 
     $visibilityCond = '';
     $execParams = ['org_id' => $org_id];

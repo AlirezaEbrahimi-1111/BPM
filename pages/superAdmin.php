@@ -8,6 +8,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/JalaliHelper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 if (!isset($db)) {
     $database = new Database();
@@ -25,8 +26,8 @@ if (!$user_id) {
     exit;
 }
 
-// 🔒 فقط مدیر کل (شناسهٔ ۱)
-if ((int)$user_id !== 1) {
+// 🔒 فقط مدیر کل (superadmin)
+if (!in_array((int)$user_id, getSuperAdminIds(), true)) {
     header('Location: dashboard.php');
     exit;
 }
