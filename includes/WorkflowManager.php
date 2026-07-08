@@ -363,21 +363,24 @@ class WorkflowManager
                 }
 
                 // ✅ ایجاد task برای این مرحله
+                // نکته: موعد با دقتِ ساعت/دقیقه باید در ستونِ `deadline` (DATETIME) ذخیره شود، نه `due_date`
+                // (`due_date` از نوع DATE است و بخشِ ساعت را بی‌صدا حذف می‌کند — دقیقاً همان ستونی که
+                // approve-deadline.php / request-deadline.php هم برای موعدِ کارهای روتین به‌کار می‌برند)
                 $stmt = $this->db->prepare("
                     INSERT INTO tasks (
-                        workflow_instance_id, 
-                        is_workflow_task, 
-                        title, 
-                        description, 
-                        creator_id, 
-                        activity_section, 
+                        workflow_instance_id,
+                        is_workflow_task,
+                        title,
+                        description,
+                        creator_id,
+                        activity_section,
                         assignee_id,
-                        task_type, 
-                        priority, 
-                        due_date, 
+                        task_type,
+                        priority,
+                        deadline,
                         status,
                         current_stage_id
-                    ) 
+                    )
                     VALUES (?, 1, ?, '', ?, ?, ?, 'periodic', 'high', ?, ?, ?)
                 ");
 
@@ -554,21 +557,28 @@ class WorkflowManager
             }
 
             if ($next_step) {
+                // ✅ موعدِ مرحلهٔ بعدی باید نسبتِ به لحظهٔ فعال‌شدنش حساب شود، نه لحظهٔ شروعِ کل روتین
+                // (deadline قبلی در startWorkflow() برای همهٔ مراحل از یک "الان" مشترک محاسبه شده بود)
+                $stmt = $this->db->prepare("SELECT time_limit_hours FROM workflow_steps WHERE id = ?");
+                $stmt->execute([$next_step['step_id']]);
+                $nextTimeLimitHours = $stmt->fetchColumn() ?: 24;
+                $nextDeadline = date('Y-m-d H:i:s', strtotime("+{$nextTimeLimitHours} hours"));
+
                 // فعال کردن مرحله بعدی
                 $stmt = $this->db->prepare("
-                    UPDATE workflow_instance_steps 
-                    SET status = 'active', started_at = NOW()
+                    UPDATE workflow_instance_steps
+                    SET status = 'active', started_at = NOW(), deadline = ?
                     WHERE id = ?
                 ");
-                $stmt->execute([$next_step['id']]);
+                $stmt->execute([$nextDeadline, $next_step['id']]);
 
                 // فعال کردن کار مرحله بعدی
                 $stmt = $this->db->prepare("
-                    UPDATE tasks 
-                    SET status = 'in_progress' 
+                    UPDATE tasks
+                    SET status = 'in_progress', deadline = ?
                     WHERE id = ?
                 ");
-                $stmt->execute([$next_step['task_id']]);
+                $stmt->execute([$nextDeadline, $next_step['task_id']]);
 
                 // بروزرسانی مرحله فعلی در workflow_instances
                 $stmt = $this->db->prepare("

@@ -1100,14 +1100,25 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
 
             renderDelegatedTasks(filtered);
         }
+        // تبدیل رشته‌ی "YYYY-MM-DD HH:MM:SS" (زمان تهران، بدون آفست) به Date واقعی،
+        // مستقل از تایم‌زون مرورگر
+        function parseTehranDateTime(str) {
+            const m = String(str).match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
+            if (!m) return new Date(str.replace(' ', 'T'));
+            const [, y, mo, d, h, mi, s] = m.map(Number);
+            return new Date(Date.UTC(y, mo - 1, d, h, mi, s) - 3.5 * 3600 * 1000);
+        }
+
         // ⏳ بج زمان باقی‌مانده برای کارهای روتین (با دقت ساعت/دقیقه)
         function workflowTimeBadge(task) {
             // مبنا: موعدِ مرحلهٔ فعال (deadline با ساعت دقیق)
             const raw = task.deadline || task.due_date || task.original_deadline;
             if (!raw) return '';
 
-            // پشتیبانی از "YYYY-MM-DD HH:MM:SS" و "YYYY-MM-DD"
-            const due = new Date(raw.replace(' ', 'T'));
+            // سرور تاریخ‌ها را به وقت تهران (بدون آفست) می‌فرستد؛ new Date() رشته‌ی بدون آفست را
+            // به‌عنوان زمان محلیِ مرورگر می‌خواند، نه تهران — روی مرورگرهایی با تایم‌زون غیر از
+            // تهران باعث اختلاف چند ساعتی در محاسبه‌ی تاخیر می‌شود. پس صریحاً UTC+03:30 می‌خوانیم.
+            const due = parseTehranDateTime(raw);
             if (isNaN(due.getTime())) return '';
 
             const diffMin = Math.round((due - new Date()) / 60000); // دقیقه (مثبت=مانده، منفی=گذشته)

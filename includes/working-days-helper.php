@@ -143,6 +143,12 @@ function calcOverduePeriods(
             $expected = 0;
     }
 
+    // از لحظه‌ای که موعد (start_date) فرا رسیده، حداقل یک دوره سررسیده محسوب می‌شود
+    // (هم‌راستا با next_due_date که همان start_date است تا قبل از اولین انجام)
+    if (in_array($period_type, ['daily', 'weekly', 'monthly'], true)) {
+        $expected = max($expected, 1);
+    }
+
     return max(0, $expected - $completed);
 }
 
