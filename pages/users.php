@@ -424,9 +424,17 @@ require_once '../includes/version.php';
     <div class="pt-3">
         <!-- بخش مدیر مستقیم -->
         <div class="row g-3 mb-4">
-            <div class="col-md-8">
+            <div class="col-md-6">
                 <label class="form-label">مدیر مستقیم</label>
                 <select class="form-select" id="e_manager_id"></select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">نقش</label>
+                <select class="form-select" id="e_role">
+                    <option value="employee">کارمند</option>
+                    <option value="manager">مدیر</option>
+                    <option value="supervisor">سوپروایزر</option>
+                </select>
             </div>
         </div>
         <div id="hierarchyTree" class="mb-4"></div>
@@ -908,6 +916,9 @@ async function openEditModal(userId) {
     document.getElementById('e_can_create_routine').checked  = u.can_create_routine  == 1;
     document.getElementById('e_can_create_workflow').checked = u.can_create_workflow == 1;
 
+    // نقش
+    document.getElementById('e_role').value = u.role || 'employee';
+
     // تب ۵
     buildManagerDropdown(userId, u.manager_id);
     buildHierarchyTree(u);
@@ -930,6 +941,7 @@ async function openEditModal(userId) {
         can_create_workflow: u.can_create_workflow == 1,
         manager_id:          String(u.manager_id || ''),
         activity_section: u.activity_section || '',
+        role:                u.role || 'employee',
         password:            '',
     };
     editModalInst.show();
@@ -969,6 +981,7 @@ if (pw && pw.length<4) { showModalAlert('رمز حداقل ۴ کاراکتر'); 
         can_create_workflow: document.getElementById('e_can_create_workflow').checked,
         manager_id:          String(document.getElementById('e_manager_id').value || ''),
         activity_section: document.getElementById('e_activity_section').value,
+        role:                document.getElementById('e_role').value,
         password:            pw,
     };
     
@@ -1001,6 +1014,7 @@ if (pw && pw.length<4) { showModalAlert('رمز حداقل ۴ کاراکتر'); 
         activity_section: document.getElementById('e_activity_section').value || null,
         can_create_routine:  document.getElementById('e_can_create_routine').checked  ? 1 : 0,
         can_create_workflow: document.getElementById('e_can_create_workflow').checked ? 1 : 0,
+        role: document.getElementById('e_role').value,
         manager_id: mgr ? parseInt(mgr.id) : null,
         manager_name:     mgr?.first_name || null,
         manager_lastname: mgr?.last_name  || null,
