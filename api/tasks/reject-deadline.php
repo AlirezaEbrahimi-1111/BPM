@@ -85,7 +85,7 @@ try {
             'title' => 'درخواست تمدید رد شد: ' . $request['title'],
             'message' => $message,
             'type' => 'warning',
-            'link' => 'task-detail.php?id=' . $task_id,
+            'link' => '/pages/task-detail.php?id=' . $task_id,
             'related_type' => 'task',
             'related_id' => $task_id,
                 'sms_pattern' => 'deadline_rejected',

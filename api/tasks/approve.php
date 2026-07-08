@@ -97,7 +97,7 @@ try {
                                 'title' => 'کار جدید برای تأیید: ' . ($task['title'] ?? 'نامشخص'),
                                 'message' => $message,
                                 'type' => 'info',
-                                'link' => 'task-detail.php?id=' . $input['task_id'],
+                                'link' => '/pages/task-detail.php?id=' . $input['task_id'],
                                 'related_type' => 'task',
                                 'related_id' => $input['task_id'],
                                 'is_read' => 0,
@@ -167,7 +167,7 @@ try {
                                 'title' => 'کار رد شد: ' . ($task['title'] ?? 'نامشخص'),
                                 'message' => $message,
                                 'type' => 'warning',
-                                'link' => 'task-detail.php?id=' . $input['task_id'],
+                                'link' => '/pages/task-detail.php?id=' . $input['task_id'],
                                 'related_type' => 'task',
                                 'related_id' => $input['task_id'],
                                 'is_read' => 0

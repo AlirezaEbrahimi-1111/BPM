@@ -441,7 +441,7 @@ class WorkflowManager
                                 'info',
                                 'کار روتین جدید',
                                 "کار روتین '{$title} - {$step['step_name']}' ایجاد شد و آماده انجام است",
-                                "../pages/task-detail.php?id={$task_id}",
+                                "/pages/task-detail.php?id={$task_id}",
                                 $instance_id
                             );
                         } else {
@@ -450,7 +450,7 @@ class WorkflowManager
                                 'info',
                                 'کار روتین جدید',
                                 "کار روتین '{$title} - {$step['step_name']}' ایجاد شد و آماده انجام است",
-                                "../pages/task-detail.php?id={$task_id}",
+                                "/pages/task-detail.php?id={$task_id}",
                                 $instance_id
                             );
                         }
@@ -605,7 +605,7 @@ class WorkflowManager
                             'workflow_ready',
                             'نوبت شما رسید',
                             "کار روتین '{$next_info['title']}' - {$next_info['step_name']} آماده انجام است",
-                            "../pages/task-detail.php?id={$next_step['task_id']}",
+                            "/pages/task-detail.php?id={$next_step['task_id']}",
                             $instance_id
                         );
                     } else {
@@ -614,7 +614,7 @@ class WorkflowManager
                             'workflow_ready',
                             'نوبت شما رسید',
                             "کار روتین '{$next_info['title']}' - {$next_info['step_name']} آماده انجام است",
-                            "../pages/task-detail.php?id={$next_step['task_id']}",
+                            "/pages/task-detail.php?id={$next_step['task_id']}",
                             $instance_id
                         );
                     }

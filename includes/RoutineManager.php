@@ -318,7 +318,7 @@ class RoutineManager {
                         'title'        => 'مرحله جدید کار روتین',
                         'message'      => 'کار روتین «' . $task['title'] . '» مرحله ' . $step_order . ' آماده انجام است.',
                         'type'         => 'info',
-                        'link'         => 'task-detail.php?id=' . $task['task_id'],
+                        'link'         => '/pages/task-detail.php?id=' . $task['task_id'],
                         'related_type' => 'routine',
                         'related_id'   => $instance_id,
                         'sms_pattern'  => 'routine_new_stage',

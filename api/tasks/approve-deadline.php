@@ -116,7 +116,7 @@ try {
                 'type'         => 'success',
                 'related_type' => 'task',
                 'related_id'   => $task_id,
-                'link'         => 'http://bpm.computeryekta.com/pages/task-detail.php?id=' . $task_id,
+                'link'         => '/pages/task-detail.php?id=' . $task_id,
             ]);
         } catch (Exception $e) {
             error_log("notif error: " . $e->getMessage());
@@ -206,7 +206,7 @@ try {
             'type' => 'warning',
             'related_type' => 'task',
             'related_id' => $task_id,
-            'link' => 'http://bpm.computeryekta.com/pages/task-detail.php?id=' . $task_id,
+            'link' => '/pages/task-detail.php?id=' . $task_id,
             'sms_pattern' => 'deadline_mid_approved',
             'sms_args'    => [$current_approver['full_name'], $request['title'], $jalali_date],
         ]);
@@ -295,7 +295,7 @@ try {
             'type' => 'success',
             'related_type' => 'task',
             'related_id' => $task_id,
-            'link' => 'http://bpm.computeryekta.com/pages/task-detail.php?id=' . $task_id,
+            'link' => '/pages/task-detail.php?id=' . $task_id,
             'sms_pattern' => 'deadline_approved',
             'sms_args'    => [$request['title'], $approverName, $jalali_date],
         ]);

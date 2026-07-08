@@ -190,7 +190,7 @@ try {
             'type'         => 'warning',
             'related_type' => 'task',
             'related_id'   => $task_id,
-            'link'         => 'http://bpm.computeryekta.com/pages/task-detail.php?id=' . $task_id,
+            'link'         => '/pages/task-detail.php?id=' . $task_id,
             'sms_pattern'  => 'overdue_clear_request',
             'sms_args'     => [$rname, $task['title'], (string)$remaining],
         ]);

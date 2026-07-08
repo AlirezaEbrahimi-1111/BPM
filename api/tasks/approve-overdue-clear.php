@@ -103,7 +103,7 @@ try {
             'type'         => 'success',
             'related_type' => 'task',
             'related_id'   => $task_id,
-            'link'         => 'http://bpm.computeryekta.com/pages/task-detail.php?id=' . $task_id,
+            'link'         => '/pages/task-detail.php?id=' . $task_id,
             'sms_pattern'  => 'overdue_clear_approved',
             'sms_args'     => [$req['title'], (string)$remaining],
         ]);
