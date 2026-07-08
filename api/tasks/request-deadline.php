@@ -284,7 +284,7 @@ try {
             'type' => 'warning',
             'related_type' => 'task',
             'related_id' => $task_id,
-            'link' => 'http://bpm.computeryekta.com/pages/task-detail.php?id=' . $task_id,
+            'link' => '/pages/task-detail.php?id=' . $task_id,
             'sms_pattern' => 'deadline_request',
             'sms_args'    => [$requester['full_name'], $task_info['title'], $jalali_date],
         ]);

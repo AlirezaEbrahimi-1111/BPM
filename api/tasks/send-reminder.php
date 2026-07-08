@@ -63,7 +63,7 @@ $notification_message = 'یادآوری برای کار: ' . $task['title'];
         'type' => 'warning',
         'related_type' => 'task',
         'related_id' => $input['task_id'],
-        'link' => '../pages/task-detail.php?id=' . $input['task_id'],
+        'link' => '/pages/task-detail.php?id=' . $input['task_id'],
         'sms_pattern' => 'task_reminder','sms_args' => [$task['title'],
         $input['message']]
     ];

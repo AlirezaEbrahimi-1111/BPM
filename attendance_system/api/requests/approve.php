@@ -154,7 +154,7 @@ try {
         $stmt->execute([$request['user_id'], $user_id]);
         $is_substitute = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($is_substitute && $request['substitute_approval'] === 'pending') {
+        if ($is_substitute && ($request['substitute_approval'] ?? 'pending') === 'pending') {
             $can_approve = true;
             $approver_role = 'substitute';
             $approval_field = 'substitute_approval';
@@ -164,7 +164,7 @@ try {
         } else {
             $is_manager = ((int) $request_owner['manager_code'] == $user_id) || ($request_owner['manager_id'] == $user_id);
 
-            if ($is_manager && $request['substitute_approval'] === 'approved' && $request['manager_approval'] === 'pending') {
+            if ($is_manager && $request['substitute_approval'] === 'approved' && ($request['manager_approval'] ?? 'pending') === 'pending') {
                 $can_approve = true;
                 $approver_role = 'manager';
                 $approval_field = 'manager_approval';
@@ -178,7 +178,7 @@ try {
                 $current_user['role'] === 'manager'
                 && ($current_user['manager_code'] == $current_user['id'] || $current_user['manager_id'] == $current_user['id'])
                 && $request['manager_approval'] === 'approved'
-                && $request['supervisor_approval'] === 'pending'
+                && ($request['supervisor_approval'] ?? 'pending') === 'pending'
             ) {
                 $can_approve = true;
                 $approver_role = 'supervisor';
@@ -194,7 +194,7 @@ try {
     elseif ($request_type === 'mission') {
         $is_manager = ((int) $request_owner['manager_code'] == $user_id) || ($request_owner['manager_id'] == $user_id);
 
-        if ($is_manager && $request['manager_approval'] === 'pending') {
+        if ($is_manager && ($request['manager_approval'] ?? 'pending') === 'pending') {
             $can_approve = true;
             $approver_role = 'manager';
             $approval_field = 'manager_approval';
@@ -208,7 +208,7 @@ try {
             $current_user['role'] === 'manager'
             && ($current_user['manager_code'] == $current_user['id'] || $current_user['manager_id'] == $current_user['id'])
             && $request['manager_approval'] === 'approved'
-            && $request['supervisor_approval'] === 'pending'
+            && ($request['supervisor_approval'] ?? 'pending') === 'pending'
         ) {
             $can_approve = true;
             $approver_role = 'supervisor';
@@ -223,7 +223,7 @@ try {
     elseif ($request_type === 'forget') {
         $is_manager = ((int) $request_owner['manager_code'] == $user_id) || ($request_owner['manager_id'] == $user_id);
 
-        if ($is_manager && $request['manager_approval'] === 'pending') {
+        if ($is_manager && ($request['manager_approval'] ?? 'pending') === 'pending') {
             $can_approve = true;
             $approver_role = 'manager';
             $approval_field = 'manager_approval';
@@ -237,7 +237,7 @@ try {
             ($current_user['role'] === 'manager' || $current_user['role'] === 'supervisor')
             && ($current_user['manager_code'] == $current_user['id'] || $current_user['manager_id'] == $current_user['id'])
             && $request['manager_approval'] === 'approved'
-            && $request['supervisor_approval'] === 'pending'
+            && ($request['supervisor_approval'] ?? 'pending') === 'pending'
         ) {
             $can_approve = true;
             $approver_role = 'supervisor';

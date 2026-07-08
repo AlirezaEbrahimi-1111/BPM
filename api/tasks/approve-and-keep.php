@@ -118,7 +118,7 @@ try {
                 'title'        => 'کار شما تأیید شد: ' . ($task['title'] ?? 'نامشخص'),
                 'message'      => 'کار «' . ($task['title'] ?? 'نامشخص') . '» توسط ' . $currentUserName . ' تأیید و ادامه آن در دست ایشان است.',
                 'type'         => 'info',
-                'link'         => 'task-detail.php?id=' . $input['task_id'],
+                'link'         => '/pages/task-detail.php?id=' . $input['task_id'],
                 'related_type' => 'task',
                 'related_id'   => $input['task_id'],
                 'is_read'      => 0,

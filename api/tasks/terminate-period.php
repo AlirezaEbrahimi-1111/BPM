@@ -108,7 +108,7 @@ try {
                 'title'      => 'کار «' . $task['title'] . '» اتمام یافت',
                 'message'    => 'کار «' . $task['title'] . '» توسط ' . $creatorName . ' به پایان رسید.',
                 'type'       => 'warning',
-                'link'       => 'task-detail.php?id=' . $task_id,
+                'link'       => '/pages/task-detail.php?id=' . $task_id,
                 'related_type' => 'task',
                 'related_id' => $task_id,
                 'is_read'    => 0

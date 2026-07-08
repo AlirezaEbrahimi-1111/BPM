@@ -148,7 +148,7 @@ try {
             'title' => 'کار جدید ارجاع شده: ' . ($task['title'] ?? 'نامشخص'),
             'message' => 'کار «' . ($task['title'] ?? 'نامشخص') . '» توسط ' . $currentUserName . ' تأیید و به شما ارجاع داده شد.',
             'type' => 'info',
-            'link' => 'task-detail.php?id=' . $input['task_id'],
+            'link' => '/pages/task-detail.php?id=' . $input['task_id'],
             'related_type' => 'task',
             'related_id' => $input['task_id'],
             'is_read' => 0,

@@ -208,7 +208,7 @@ function sendRenewalNotification(PDO $db, array $task, string $newEndDate): void
             'title'        => 'تمدید خودکار کار',
             'message'      => "کار «{$task['title']}» به مدت {$task['renew_duration']} {$unit} تمدید شد (تا تاریخ {$newEndDate})",
             'type'         => 'info',
-            'link'         => "task-detail.php?id={$task['id']}",
+            'link'         => "/pages/task-detail.php?id={$task['id']}",
             'related_type' => 'task',
             'related_id'   => $task['id'],
         ]);

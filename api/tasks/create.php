@@ -192,7 +192,7 @@ try {
                     'title'        => 'کار جدید برای شما',
                     'message'      => "یک کار جدید با عنوان «{$title}» توسط {$creator_name} برای شما ایجاد شد",
                     'type'         => 'info',
-                    'link'         => "task-detail.php?id={$result['task_id']}",
+                    'link'         => "/pages/task-detail.php?id={$result['task_id']}",
                     'related_type' => 'task',
                     'related_id'   => $result['task_id'],
                     'sms_pattern' => 'task_created',
