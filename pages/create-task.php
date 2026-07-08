@@ -61,10 +61,43 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         .exec-summary b {
             color: #101828;
         }
-        .cl-desc-zone { display: inline-flex; align-items: center; }
-        .cl-desc-inline { font-size: 0.78rem; color: #9ca3af; font-weight: normal; }
-        .cl-desc-icon { font-size: 0.85rem; color: #6366f1; margin-inline-start: 4px; }
-        .cl-desc-icon:hover { color: #4338ca; }
+        /* چک‌لیست: هر آیتم = ردیف (شماره، عنوان، آیکون‌های توضیحات/حذف در انتها) +
+           یک ناحیه‌ی اختیاریِ تمام‌عرض زیرش برای ویرایش توضیحات */
+        .cl-item-wrap { margin-bottom: 8px; }
+        .cl-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+            transition: border-color .15s, background .15s;
+        }
+        .cl-item:hover { border-color: #c7d2fe; background: #fafaff; }
+        .cl-index { color: #9ca3af; font-size: 0.85rem; flex: 0 0 auto; }
+        .cl-title-input { flex: 1 1 auto; min-width: 0; border: none; background: transparent; box-shadow: none !important; }
+        .cl-title-input:focus { background: #f3f4f6; border-radius: 4px; }
+        /* آیکون‌های توضیحات و حذف، گروه‌شده در انتهای هر آیتم (سمت چپ در RTL) */
+        .cl-actions { display: flex; align-items: center; gap: 2px; flex: 0 0 auto; margin-inline-start: auto; }
+        .cl-icon-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; border: none; background: transparent;
+            border-radius: 6px; color: #9ca3af; cursor: pointer; transition: background .15s, color .15s;
+            padding: 0; font-size: 0.9rem;
+        }
+        .cl-icon-btn:hover { background: #f3f4f6; }
+        .cl-desc-btn:hover { color: #6366f1; }
+        .cl-desc-btn.has-desc { color: #6366f1; }
+        .cl-delete-btn:hover { color: #dc2626; background: #fee2e2; }
+        .cl-desc-zone:empty { display: none; }
+        .cl-desc-zone.open { margin-top: 6px; }
+        .cl-desc-edit {
+            display: flex; flex-direction: column; gap: 6px;
+            padding: 8px 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
+        }
+        .cl-desc-edit textarea { font-size: 0.82rem; resize: vertical; }
+        .cl-desc-edit-actions { display: flex; gap: 6px; justify-content: flex-end; }
     </style>
 </head>
 
@@ -437,42 +470,52 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             renderChecklistCreate();
         }
 
+        function escapeHtml(str) {
+            return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function escapeAttr(str) {
+            return escapeHtml(str).replace(/"/g, '&quot;');
+        }
+
+        // تولتیپ‌های بوت‌استرپ برای دکمه‌های توضیحات را (دوباره) مقداردهی می‌کند
+        function initChecklistTooltips() {
+            document.querySelectorAll('#checklistItems [data-bs-toggle="tooltip"]').forEach(el => {
+                bootstrap.Tooltip.getInstance(el)?.dispose();
+                new bootstrap.Tooltip(el);
+            });
+        }
+
         function renderChecklistCreate() {
             const c = document.getElementById('checklistItems');
             if (!c) return;
             c.innerHTML = checklistItemsCreate.map((item, idx) => {
-                const desc = item.description || '';
-                const MAX_DESC_LEN = 50;
-
-                // نسخه‌های امن برای نمایش
-                const safeDesc = desc ?
-                    String(desc).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') :
-                    '';
-                const titleDesc = desc ?
-                    String(desc).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') :
-                    '';
-                const shortDesc = safeDesc.length > MAX_DESC_LEN ? safeDesc.slice(0, MAX_DESC_LEN) + '…' : safeDesc;
-
-                // ناحیه‌ی توضیحات (نمایش متن یا آیکون افزودن)
-                const descZone = safeDesc ?
-                    `<span class="cl-desc-inline" title="${titleDesc}" onclick="startEditDescCreate(${item.tempId})" style="cursor:pointer;"> — ${shortDesc}</span>` :
-                    `<i class="bi bi-chat-left-text cl-desc-icon" title="افزودن توضیحات" onclick="startEditDescCreate(${item.tempId})" style="cursor:pointer;"></i>`;
+                const hasDesc = !!(item.description && item.description.trim());
+                const descTooltip = hasDesc ? escapeAttr(item.description) : 'افزودن توضیحات';
 
                 return `
-                <div class="mb-2 p-2 border rounded">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="text-muted">${enTofaNumber(idx + 1)}.</span>
-                        <input type="text" class="form-control form-control-sm border-0" value="${item.title}"
-                            placeholder="عنوان آیتم..." style="flex:0 0 auto; width:auto; max-width:220px;"
+                <div class="cl-item-wrap">
+                    <div class="cl-item">
+                        <span class="cl-index">${enTofaNumber(idx + 1)}.</span>
+                        <input type="text" class="form-control form-control-sm cl-title-input" value="${escapeAttr(item.title)}"
+                            placeholder="عنوان آیتم..."
                             onchange="updateChecklistTitleCreate(${item.tempId}, this.value)">
-                        <span class="cl-desc-zone" id="cl-desc-zone-${item.tempId}" style="flex:1;">${descZone}</span>
-                        <button type="button" class="btn btn-link btn-sm text-danger p-0"
-                            onclick="removeChecklistItemCreate(${item.tempId})">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        <div class="cl-actions">
+                            <button type="button" class="cl-icon-btn cl-desc-btn ${hasDesc ? 'has-desc' : ''}"
+                                data-bs-toggle="tooltip" data-bs-placement="top" title="${descTooltip}"
+                                onclick="startEditDescCreate(${item.tempId})">
+                                <i class="bi ${hasDesc ? 'bi-chat-left-text-fill' : 'bi-chat-left-text'}"></i>
+                            </button>
+                            <button type="button" class="cl-icon-btn cl-delete-btn" title="حذف آیتم"
+                                onclick="removeChecklistItemCreate(${item.tempId})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
+                    <div class="cl-desc-zone" id="cl-desc-zone-${item.tempId}"></div>
                 </div>`;
             }).join('');
+            initChecklistTooltips();
         }
 
         function updateChecklistTitleCreate(tempId, val) {
@@ -482,9 +525,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
         // ═══════════════════════════════════════════════
         //  ویرایش درجای توضیحات آیتم (نسخه‌ی create-task، فقط حافظه)
+        //  ناحیه‌ی ویرایش، تمام‌عرض و زیرِ ردیف آیتم باز می‌شود
         // ═══════════════════════════════════════════════
 
-        // ۱) شروع ویرایش: ناحیه‌ی توضیحات → textarea + دکمه‌ها
         function startEditDescCreate(tempId) {
             const zone = document.getElementById('cl-desc-zone-' + tempId);
             if (!zone) return;
@@ -492,20 +535,22 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             const it = checklistItemsCreate.find(i => i.tempId === tempId);
             const currentDesc = (it && it.description) ? it.description : '';
 
+            zone.classList.add('open');
             zone.innerHTML = `
-                <span style="display:inline-flex; align-items:center; gap:4px; width:100%;">
-                    <textarea id="cl-desc-input-${tempId}" class="form-control form-control-sm"
-                        rows="1" style="font-size:0.8rem; flex:1;"
-                        placeholder="توضیحات...">${currentDesc.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
-                    <button type="button" class="btn btn-link btn-sm text-success p-0" title="ثبت توضیحات"
-                        onclick="saveEditDescCreate(${tempId})">
-                        <i class="bi bi-check-lg"></i>
-                    </button>
-                    <button type="button" class="btn btn-link btn-sm text-secondary p-0" title="انصراف"
-                        onclick="cancelEditDescCreate(${tempId})">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </span>
+                <div class="cl-desc-edit">
+                    <textarea id="cl-desc-input-${tempId}" class="form-control form-control-sm" rows="2"
+                        placeholder="توضیحات..."
+                        onkeydown="if(event.key==='Escape'){cancelEditDescCreate(${tempId});} else if(event.ctrlKey && event.key==='Enter'){saveEditDescCreate(${tempId});}"
+                    >${escapeHtml(currentDesc)}</textarea>
+                    <div class="cl-desc-edit-actions">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cancelEditDescCreate(${tempId})">
+                            <i class="bi bi-x-lg"></i> انصراف
+                        </button>
+                        <button type="button" class="btn btn-sm btn-success" onclick="saveEditDescCreate(${tempId})">
+                            <i class="bi bi-check-lg"></i> ثبت توضیحات
+                        </button>
+                    </div>
+                </div>
             `;
 
             const ta = document.getElementById('cl-desc-input-' + tempId);
@@ -515,42 +560,23 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             }
         }
 
-        // ۲) ذخیره‌ی توضیحات (فقط در حافظه، بدون سرور)
+        // ذخیره‌ی توضیحات (فقط در حافظه، بدون سرور) و بازرسم کل چک‌لیست
+        // (برای به‌روزرسانیِ آیکون و تولتیپ همان آیتم)
         function saveEditDescCreate(tempId) {
             const ta = document.getElementById('cl-desc-input-' + tempId);
             if (!ta) return;
             const it = checklistItemsCreate.find(i => i.tempId === tempId);
-            if (it) {
-                it.description = ta.value.trim(); // ذخیره در حافظه
-            }
-            refreshDescZoneCreate(tempId);
+            if (it) it.description = ta.value.trim();
+            renderChecklistCreate();
         }
 
-        // ۳) انصراف از ویرایش (بدون ذخیره)
+        // انصراف از ویرایش (بدون ذخیره)
         function cancelEditDescCreate(tempId) {
-            refreshDescZoneCreate(tempId);
-        }
-
-        // ۴) بازسازی ناحیه‌ی توضیحاتِ یک آیتم (بدون رندر کل لیست)
-        function refreshDescZoneCreate(tempId) {
             const zone = document.getElementById('cl-desc-zone-' + tempId);
-            if (!zone) return;
-
-            const it = checklistItemsCreate.find(i => i.tempId === tempId);
-            const desc = (it && it.description) ? it.description : '';
-
-            const MAX_DESC_LEN = 50;
-            const safeDesc = desc ?
-                String(desc).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') :
-                '';
-            const titleDesc = desc ?
-                String(desc).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') :
-                '';
-            const shortDesc = safeDesc.length > MAX_DESC_LEN ? safeDesc.slice(0, MAX_DESC_LEN) + '…' : safeDesc;
-
-            zone.innerHTML = safeDesc ?
-                `<span class="cl-desc-inline" title="${titleDesc}" onclick="startEditDescCreate(${tempId})" style="cursor:pointer;"> — ${shortDesc}</span>` :
-                `<i class="bi bi-chat-left-text cl-desc-icon" title="افزودن توضیحات" onclick="startEditDescCreate(${tempId})" style="cursor:pointer;"></i>`;
+            if (zone) {
+                zone.innerHTML = '';
+                zone.classList.remove('open');
+            }
         }
         async function loadSections() {
             try {

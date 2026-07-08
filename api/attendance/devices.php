@@ -8,6 +8,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/AttendanceNotify.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 function dev_out($a, $c = 200) { http_response_code($c); echo json_encode($a, JSON_UNESCAPED_UNICODE); exit; }
 
@@ -16,7 +17,7 @@ try {
     $u = getUserInfo($user_id);
     $org  = $u['organization_id'];
     $role = $u['role'] ?? 'employee';
-    $canManage = ((int)$user_id === 1) || in_array($role, ['supervisor', 'management']);
+    $canManage = in_array((int)$user_id, getSuperAdminIds(), true) || in_array($role, ['supervisor', 'management']);
     if (!$canManage) dev_out(['success' => false, 'message' => 'دسترسی غیرمجاز'], 403);
 
     $db = (new Database())->getConnection();
