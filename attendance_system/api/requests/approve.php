@@ -128,14 +128,16 @@ try {
     $request_owner = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // بررسی آیا مدیر کاربر همان مسئول است
-    $owner_manager_code = $request_owner['manager_code'] ?? null;
+    // نکته: manager_code یک کدِ نمایشیِ بی‌ربط به id است (نه شناسه‌ی مدیر)؛
+    // رابطه‌ی سلسله‌مراتبیِ معتبر فقط manager_id (FK واقعی) است.
+    $owner_manager_id = $request_owner['manager_id'] ?? null;
     $manager_is_supervisor = false;
 
-    if ($owner_manager_code) {
-        $stmt = $db->prepare("SELECT is_supervisor, manager_code FROM users WHERE id = ?");
-        $stmt->execute([$owner_manager_code]);
+    if ($owner_manager_id) {
+        $stmt = $db->prepare("SELECT is_supervisor FROM users WHERE id = ?");
+        $stmt->execute([$owner_manager_id]);
         $manager_info = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($manager_info && ($manager_info['is_supervisor'] == 1 || empty($manager_info['manager_code']))) {
+        if ($manager_info && $manager_info['is_supervisor'] == 1) {
             $manager_is_supervisor = true;
         }
     }
@@ -162,7 +164,7 @@ try {
             $approver_date_field = 'substitute_date';
             $approver_notes_field = 'substitute_notes';
         } else {
-            $is_manager = ((int) $request_owner['manager_code'] == $user_id) || ($request_owner['manager_id'] == $user_id);
+            $is_manager = ((int) $request_owner['manager_id'] === (int) $user_id);
 
             if ($is_manager && $request['substitute_approval'] === 'approved' && ($request['manager_approval'] ?? 'pending') === 'pending') {
                 $can_approve = true;
@@ -176,7 +178,8 @@ try {
                 }
             } elseif (
                 $current_user['role'] === 'manager'
-                && ($current_user['manager_code'] == $current_user['id'] || $current_user['manager_id'] == $current_user['id'])
+                && $current_user['is_supervisor'] == 1
+                && (int) $current_user['organization_id'] === (int) $request_owner['organization_id']
                 && $request['manager_approval'] === 'approved'
                 && ($request['supervisor_approval'] ?? 'pending') === 'pending'
             ) {
@@ -192,7 +195,7 @@ try {
     }
     // ===== مأموریت =====
     elseif ($request_type === 'mission') {
-        $is_manager = ((int) $request_owner['manager_code'] == $user_id) || ($request_owner['manager_id'] == $user_id);
+        $is_manager = ((int) $request_owner['manager_id'] === (int) $user_id);
 
         if ($is_manager && ($request['manager_approval'] ?? 'pending') === 'pending') {
             $can_approve = true;
@@ -206,7 +209,8 @@ try {
             }
         } elseif (
             $current_user['role'] === 'manager'
-            && ($current_user['manager_code'] == $current_user['id'] || $current_user['manager_id'] == $current_user['id'])
+            && $current_user['is_supervisor'] == 1
+            && (int) $current_user['organization_id'] === (int) $request_owner['organization_id']
             && $request['manager_approval'] === 'approved'
             && ($request['supervisor_approval'] ?? 'pending') === 'pending'
         ) {
@@ -221,7 +225,7 @@ try {
     }
     // ===== فراموشی =====
     elseif ($request_type === 'forget') {
-        $is_manager = ((int) $request_owner['manager_code'] == $user_id) || ($request_owner['manager_id'] == $user_id);
+        $is_manager = ((int) $request_owner['manager_id'] === (int) $user_id);
 
         if ($is_manager && ($request['manager_approval'] ?? 'pending') === 'pending') {
             $can_approve = true;
@@ -235,7 +239,8 @@ try {
             }
         } elseif (
             ($current_user['role'] === 'manager' || $current_user['role'] === 'supervisor')
-            && ($current_user['manager_code'] == $current_user['id'] || $current_user['manager_id'] == $current_user['id'])
+            && $current_user['is_supervisor'] == 1
+            && (int) $current_user['organization_id'] === (int) $request_owner['organization_id']
             && $request['manager_approval'] === 'approved'
             && ($request['supervisor_approval'] ?? 'pending') === 'pending'
         ) {
@@ -250,7 +255,11 @@ try {
     }
     // ===== مشکل فنی =====
     elseif ($request_type === 'technical') {
-        if (($current_user['role'] === 'admin' || $current_user['is_supervisor'] == 1) && $request['status'] === 'pending') {
+        if (
+            ($current_user['role'] === 'admin' || $current_user['is_supervisor'] == 1)
+            && (int) $current_user['organization_id'] === (int) $request_owner['organization_id']
+            && $request['status'] === 'pending'
+        ) {
             $can_approve = true;
             $approver_role = 'admin';
             $is_final_approval = true;
@@ -344,18 +353,18 @@ try {
         if ($request_type === 'leave') {
             if ($approver_role === 'substitute') {
                 // بعدی: مدیر
-                $next_approver_id = $request_owner['manager_code'] ?: $request_owner['manager_id'];
+                $next_approver_id = $request_owner['manager_id'];
                 $next_role_label = 'مدیر';
             } elseif ($approver_role === 'manager') {
-                // بعدی: مسئول = کسی که role=manager و manager_code=id خودش
+                // بعدی: مسئول = supervisorِ همان سازمان
                 $stmt = $db->prepare("
-                    SELECT id FROM users 
-                    WHERE role = 'manager' 
-                      AND (manager_code = id OR manager_id = id)
-                      AND is_active = 1 
+                    SELECT id FROM users
+                    WHERE is_supervisor = 1
+                      AND is_active = 1
+                      AND organization_id = ?
                     LIMIT 1
                 ");
-                $stmt->execute();
+                $stmt->execute([$request_owner['organization_id']]);
                 $mosavol = $stmt->fetch(PDO::FETCH_ASSOC);
                 if ($mosavol) {
                     $next_approver_id = $mosavol['id'];
@@ -364,15 +373,15 @@ try {
             }
         } elseif (in_array($request_type, ['mission', 'forget'])) {
             if ($approver_role === 'manager') {
-                // بعدی: مسئول
+                // بعدی: مسئول (در همان سازمان)
                 $stmt = $db->prepare("
-                    SELECT id FROM users 
-                    WHERE role = 'manager' 
-                      AND (manager_code = id OR manager_id = id)
-                      AND is_active = 1 
+                    SELECT id FROM users
+                    WHERE is_supervisor = 1
+                      AND is_active = 1
+                      AND organization_id = ?
                     LIMIT 1
                 ");
-                $stmt->execute();
+                $stmt->execute([$request_owner['organization_id']]);
                 $mosavol = $stmt->fetch(PDO::FETCH_ASSOC);
                 if ($mosavol) {
                     $next_approver_id = $mosavol['id'];

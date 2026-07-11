@@ -24,6 +24,7 @@ try {
     }
 
     $activity_section = $user['activity_section'] ?? null;
+    $org_id = $user['organization_id'] ?? null;
     $today = date('Y-m-d');
 
     $database = new Database();
@@ -51,6 +52,7 @@ try {
             LEFT JOIN users creator  ON t.creator_id  = creator.id
             LEFT JOIN users assignee ON t.assignee_id = assignee.id
             WHERE t.is_deleted = 0
+              AND t.organization_id = ?
               -- کاربر نباید از راه دیگری (assignee) به تسک وصل باشد
               AND t.assignee_id <> ?
               -- حداقل یک آیتم به کاربر/واحدش ارجاع شده باشد
@@ -77,6 +79,7 @@ try {
 
         $stmt = $db->prepare($archiveSql);
         $stmt->execute([
+            $org_id,              // t.organization_id = ? (فقط سازمان خودش)
             $user_id,            // t.assignee_id <> ?  (نباید assignee باشد)
             (string) $user_id,    // EXISTS: ارجاع به کاربر
             $activity_section,   // EXISTS: ارجاع به واحد
@@ -180,8 +183,9 @@ AND t.status != 'rejected'
           t.assignee_id = ?
         )
         OR (
-  t.is_workflow_task = 1 
+  t.is_workflow_task = 1
   AND t.activity_section = ?
+  AND t.organization_id = ?
   AND t.status NOT IN ('completed', 'cancelled')
   AND (t.assignee_id IS NULL OR t.assignee_id = 0)
   AND EXISTS (
@@ -198,7 +202,7 @@ AND t.status != 'rejected'
         AND ci.is_done = 0
           AND (
               (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
-              OR (ci.assignee_type = 'section' AND ci.assignee_value = ?)
+              OR (ci.assignee_type = 'section' AND ci.assignee_value = ? AND t.organization_id = ?)
           )
     )
   )
@@ -223,9 +227,11 @@ ORDER BY
         $user_id,            // dr.current_approver_id
         $user_id,            // t.assignee_id
         $activity_section,   // واحدِ کار روتین
+        $org_id,             // 🆕 t.organization_id = ? (فقط سازمان خودش)
         $user_id,            // assignee در حالت pending
         (string) $user_id,    // 🆕 ارجاع چک‌لیست به این کاربر
         $activity_section,   // 🆕 ارجاع چک‌لیست به واحدِ این کاربر
+        $org_id,             // 🆕 t.organization_id = ? (فقط سازمان خودش)
         $user_id             // ORDER BY: creator_id
     ]);
 
@@ -282,8 +288,10 @@ ORDER BY
                 $task['overdue_periods'] = max(0, $task['overdue_periods'] - $forgiven_credit);
 
                 // محاسبه اولین موعد انجام نشده
+                // ✅ دوره‌های بخشیده‌شده هم مثل انجام‌شده جلو می‌روند
                 $next_due = clone $start_date;
-                for ($i = 0; $i < $completed_count; $i++) {
+                $advance  = $completed_count + $forgiven_credit;
+                for ($i = 0; $i < $advance; $i++) {
                     switch ($task['period_type']) {
                         case 'daily':
                             // برای daily، موعد بعدی اولین روز کاری بعد از آخرین انجام

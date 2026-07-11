@@ -98,13 +98,14 @@ try {
 
                 if ($currentStep && $currentStep['activity_section']) {
                     $stmt = $db->prepare("
-                        SELECT COUNT(*) as count 
-                        FROM users 
-                        WHERE id = ? 
-                        AND activity_section = ? 
+                        SELECT COUNT(*) as count
+                        FROM users
+                        WHERE id = ?
+                        AND activity_section = ?
+                        AND organization_id = ?
                         AND is_active = 1
                     ");
-                    $stmt->execute([$user_id, $currentStep['activity_section']]);
+                    $stmt->execute([$user_id, $currentStep['activity_section'], $task['organization_id'] ?? 0]);
                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                     if ($result['count'] > 0) {
@@ -122,13 +123,14 @@ try {
     // 5. برای کارهای روتین (periodic/continuous)، همه اعضای بخش مربوطه
     if (!$hasAccess && in_array($task['task_type'], ['periodic', 'continuous']) && $task['activity_section']) {
         $stmt = $db->prepare("
-            SELECT COUNT(*) as count 
-            FROM users 
-            WHERE id = ? 
-            AND activity_section = ? 
+            SELECT COUNT(*) as count
+            FROM users
+            WHERE id = ?
+            AND activity_section = ?
+            AND organization_id = ?
             AND is_active = 1
         ");
-        $stmt->execute([$user_id, $task['activity_section']]);
+        $stmt->execute([$user_id, $task['activity_section'], $task['organization_id'] ?? 0]);
         $result = $stmt->fetch();
 
         if ($result['count'] > 0) {
@@ -137,10 +139,12 @@ try {
     }
     // 6. کاربرانی که آیتم چک‌لیست به آن‌ها (یا واحدشان) ارجاع شده
     if (!$hasAccess) {
-        // واحدِ کاربر را بخوان (برای ارجاع‌های نوع section)
-        $secStmt = $db->prepare("SELECT activity_section FROM users WHERE id = ?");
+        // واحد و سازمانِ کاربر را بخوان (برای ارجاع‌های نوع section)
+        $secStmt = $db->prepare("SELECT activity_section, organization_id FROM users WHERE id = ?");
         $secStmt->execute([$user_id]);
-        $user_section = $secStmt->fetchColumn() ?: '';
+        $user_row = $secStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        $user_section = $user_row['activity_section'] ?? '';
+        $sameOrg = isset($user_row['organization_id']) && (int)$user_row['organization_id'] === (int)($task['organization_id'] ?? -1);
 
         $stmt = $db->prepare("
             SELECT COUNT(*) as count
@@ -148,10 +152,10 @@ try {
             WHERE ci.task_id = ?
               AND (
                   (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
-                  OR (ci.assignee_type = 'section' AND ci.assignee_value = ?)
+                  OR (ci.assignee_type = 'section' AND ci.assignee_value = ? AND ? = 1)
               )
         ");
-        $stmt->execute([$_GET['id'], (string)$user_id, $user_section]);
+        $stmt->execute([$_GET['id'], (string)$user_id, $user_section, $sameOrg ? 1 : 0]);
         $checklistCount = $stmt->fetch()['count'];
 
         if ($checklistCount > 0) {

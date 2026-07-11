@@ -268,12 +268,18 @@ require_once '../includes/version.php';
                 resizable: true
             },
             onGridReady: params => {
-                const saved = localStorage.getItem('allTasksGridState');
-                if (saved) params.api.applyColumnState({
-                    state: JSON.parse(saved),
-                    applyOrder: true
-                });
-                applyResponsiveColumns(); // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
+                const saved = localStorage.getItem('delegatedTasksGridState');
+                if (saved) params.api.applyColumnState({ state: JSON.parse(saved), applyOrder: true });
+                applyResponsiveColumns();   // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
+
+                // 🆕 اگر با ?sort=overdue آمده‌ایم → سورت بر اساس موعد (معوقه‌ها اول)
+                const usp = new URLSearchParams(location.search);
+                if (usp.get('sort') === 'overdue') {
+                    params.api.applyColumnState({
+                        state: [{ colId: 'col_moed', sort: 'asc' }],
+                        defaultState: { sort: null }
+                    });
+                }
             },
             onSortChanged: params => localStorage.setItem('delegatedTasksGridState', JSON.stringify(params.api.getColumnState())),
             onColumnResized: params => localStorage.setItem('delegatedTasksGridState', JSON.stringify(params.api.getColumnState())),

@@ -290,7 +290,7 @@ class RoutineManager {
         if (!$this->notif) return;
         try {
             // کارهای فعالِ این مرحله (روتین‌ها به‌جای فرد، به «واحد فعالیت» تعلق دارند)
-            $sql = "SELECT t.id AS task_id, t.title, t.activity_section
+            $sql = "SELECT t.id AS task_id, t.title, t.activity_section, t.organization_id
                     FROM routine_tasks rt
                     JOIN tasks t ON rt.task_id = t.id
                     WHERE rt.instance_id = ?
@@ -303,12 +303,17 @@ class RoutineManager {
             foreach ($tasks as $task) {
                 if (empty($task['activity_section'])) continue;
 
-                // اعضای واحد فعالیتِ این کار (از جدول اصلی + fallback روی users)
-                $uSql = "SELECT user_id FROM user_activity_units WHERE activity_unit = ?
+                // اعضای واحد فعالیتِ این کار (از جدول اصلی + fallback روی users) — فقط همان سازمان
+                $uSql = "SELECT user_id FROM user_activity_units uau
+                         JOIN users u ON u.id = uau.user_id
+                         WHERE uau.activity_unit = ? AND u.organization_id = ?
                          UNION
-                         SELECT id AS user_id FROM users WHERE activity_unit = ?";
+                         SELECT id AS user_id FROM users WHERE activity_unit = ? AND organization_id = ?";
                 $uStmt = $this->db->prepare($uSql);
-                $uStmt->execute([$task['activity_section'], $task['activity_section']]);
+                $uStmt->execute([
+                    $task['activity_section'], $task['organization_id'],
+                    $task['activity_section'], $task['organization_id'],
+                ]);
                 $userIds = $uStmt->fetchAll(PDO::FETCH_COLUMN);
 
                 foreach (array_unique($userIds) as $uid) {

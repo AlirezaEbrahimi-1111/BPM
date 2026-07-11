@@ -594,8 +594,12 @@ class LeaveManager
                 return ['id' => $user['manager_id'], 'role' => 'manager'];
             }
         } elseif ($next_role == 'supervisor') {
-            $stmt = $this->db->prepare("SELECT id FROM users WHERE is_supervisor = 1 LIMIT 1");
-            $stmt->execute();
+            $stmt = $this->db->prepare("SELECT organization_id FROM users WHERE id = ?");
+            $stmt->execute([$request['user_id']]);
+            $requester_org_id = $stmt->fetchColumn();
+
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE is_supervisor = 1 AND organization_id = ? LIMIT 1");
+            $stmt->execute([$requester_org_id]);
             $supervisor = $stmt->fetch();
             if ($supervisor) {
                 return ['id' => $supervisor['id'], 'role' => 'supervisor'];

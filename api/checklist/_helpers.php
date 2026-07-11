@@ -21,20 +21,25 @@ function getTaskForChecklist($db, $task_id, $user_id)
     // آیا کاربر مسئولِ حداقل یک آیتم چک‌لیست است؟ (مستقیم یا از طریق واحدش)
     $isChecklistAssignee = false;
     if (!$isCreator && !$isAssignee) {
-        // واحدِ کاربر را بخوان
-        $secStmt = $db->prepare("SELECT activity_section FROM users WHERE id = ?");
+        // واحد و سازمانِ کاربر را بخوان
+        $secStmt = $db->prepare("SELECT activity_section, organization_id FROM users WHERE id = ?");
         $secStmt->execute([$user_id]);
-        $user_section = $secStmt->fetchColumn() ?: '';
+        $user_row = $secStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        $user_section = $user_row['activity_section'] ?? '';
+
+        // ارجاعِ «واحد» فقط وقتی معتبر است که کاربر در همان سازمانِ کار باشد
+        // (چون رشته‌ی activity_section می‌تواند بین سازمان‌های مختلف یکسان باشد)
+        $sameOrg = isset($user_row['organization_id']) && (int)$user_row['organization_id'] === (int)$task['organization_id'];
 
         $chkStmt = $db->prepare("
             SELECT COUNT(*) FROM task_checklist_items ci
             WHERE ci.task_id = ?
               AND (
                   (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
-                  OR (ci.assignee_type = 'section' AND ci.assignee_value = ?)
+                  OR (ci.assignee_type = 'section' AND ci.assignee_value = ? AND ? = 1)
               )
         ");
-        $chkStmt->execute([$task_id, (string)$user_id, $user_section]);
+        $chkStmt->execute([$task_id, (string)$user_id, $user_section, $sameOrg ? 1 : 0]);
         $isChecklistAssignee = ((int)$chkStmt->fetchColumn() > 0);
     }
 

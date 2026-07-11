@@ -201,15 +201,15 @@ try {
         $team_members = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     } else {
-        $stmt = $db->prepare("SELECT id FROM users WHERE manager_code = ? AND is_active = 1 AND organization_id = ? AND is_deleted = 0");
-        $stmt->execute([(string)$user_id, $user['organization_id']]);
+        $stmt = $db->prepare("SELECT id FROM users WHERE manager_id = ? AND is_active = 1 AND organization_id = ? AND is_deleted = 0");
+        $stmt->execute([$user_id, $user['organization_id']]);
         $direct_subordinates = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        
+
         $indirect_subordinates = [];
         if (!empty($direct_subordinates)) {
             $string_ids = array_map('strval', $direct_subordinates);
             $placeholders = str_repeat('?,', count($string_ids) - 1) . '?';
-            $stmt = $db->prepare("SELECT id FROM users WHERE manager_code IN ($placeholders) AND is_active = 1 AND organization_id = ? AND is_deleted = 0");
+            $stmt = $db->prepare("SELECT id FROM users WHERE manager_id IN ($placeholders) AND is_active = 1 AND organization_id = ? AND is_deleted = 0");
             $stmt->execute(array_merge($string_ids, [$user['organization_id']]));
             $indirect_subordinates = $stmt->fetchAll(PDO::FETCH_COLUMN);
         }

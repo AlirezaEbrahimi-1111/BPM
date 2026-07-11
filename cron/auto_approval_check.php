@@ -269,8 +269,13 @@ class AutoApprovalChecker {
         try {
             $this->db->beginTransaction();
             
-            // دریافت مسئول
-            $stmt = $this->db->query("SELECT id FROM users WHERE is_supervisor = 1 LIMIT 1");
+            // دریافت مسئول (فقط در سازمانِ خودِ درخواست‌دهنده)
+            $stmt = $this->db->prepare("SELECT organization_id FROM users WHERE id = ?");
+            $stmt->execute([$request['user_id']]);
+            $requester_org_id = $stmt->fetchColumn();
+
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE is_supervisor = 1 AND organization_id = ? LIMIT 1");
+            $stmt->execute([$requester_org_id]);
             $supervisor = $stmt->fetch();
             
             if (!$supervisor) {

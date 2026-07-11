@@ -203,7 +203,7 @@ else {
     $stmt = $db->prepare("
 SELECT id
 FROM users
-WHERE manager_code = ?
+WHERE manager_id = ?
   AND is_active = 1
   AND organization_id = ?
   AND is_deleted = 0
@@ -223,7 +223,7 @@ $stmt->execute([$user['id'], $user['organization_id']]);
         $stmt = $db->prepare("
 SELECT id
 FROM users
-WHERE manager_code IN ($placeholders)
+WHERE manager_id IN ($placeholders)
   AND is_active = 1
   AND organization_id = ?
   AND is_deleted = 0
