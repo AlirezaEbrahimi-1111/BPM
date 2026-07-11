@@ -833,15 +833,19 @@ class WorkflowManager
     // سیستم نوتیفیکیشن
     // ====================================
 
-    // ارسال نوتیفیکیشن به اعضای یک واحد
+    // ارسال نوتیفیکیشن به اعضای یک واحد (فقط اعضای همان سازمانِ workflow instance)
     private function notifySectionMembers($section, $type, $title, $message, $link, $related_id)
     {
         try {
             require_once __DIR__ . '/Notification.php';
             $notification = new Notification($this->db);
 
-            $stmt = $this->db->prepare("SELECT id FROM users WHERE activity_section = ? AND is_active = 1");
-            $stmt->execute([$section]);
+            $stmt = $this->db->prepare("SELECT organization_id FROM workflow_instances WHERE id = ?");
+            $stmt->execute([$related_id]);
+            $organization_id = $stmt->fetchColumn();
+
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE activity_section = ? AND is_active = 1 AND organization_id = ?");
+            $stmt->execute([$section, $organization_id]);
             $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($users as $user) {
@@ -861,12 +865,16 @@ class WorkflowManager
         }
     }
 
-    // ارسال نوتیفیکیشن به مدیران
+    // ارسال نوتیفیکیشن به مدیران (فقط مدیرانِ همان سازمانِ workflow instance)
     private function notifyManagers($type, $title, $message, $link, $related_id)
     {
         try {
-            $stmt = $this->db->prepare("SELECT id FROM users WHERE is_manager = 1 AND is_active = 1");
-            $stmt->execute();
+            $stmt = $this->db->prepare("SELECT organization_id FROM workflow_instances WHERE id = ?");
+            $stmt->execute([$related_id]);
+            $organization_id = $stmt->fetchColumn();
+
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE is_manager = 1 AND is_active = 1 AND organization_id = ?");
+            $stmt->execute([$organization_id]);
             $managers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($managers as $manager) {

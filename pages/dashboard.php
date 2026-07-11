@@ -1796,7 +1796,18 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
                         }
 
                         // کارهای دوره‌ای امروز
-                        if (task.task_type === 'continuous' && task.overdue_periods > 0 && (task.last_approved_date === null || task.last_approved_date !== today)) return true;
+                        if (task.task_type === 'continuous') {
+                            // اگر کار پایان یافته، نمایش نده
+                            if (task.end_date && task.end_date < today) return false;
+
+                            // ۱) دوره‌ی معوقه دارد
+                            if ((task.overdue_periods || 0) > 0) return true;
+
+                            // ۲) 🆕 دوره‌ی بعدی دقیقاً امروز سررسید شده
+                            if (task.next_due_date === today) return true;
+
+                            return false;
+                        }
 
                         return false;
                     });

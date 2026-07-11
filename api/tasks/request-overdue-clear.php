@@ -14,7 +14,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 /**
  * محاسبهٔ تعداد دوره‌های معوقه و باقی‌مانده (هم‌خوان با complete-recurring.php)
  * باقی‌مانده = معوقه − تکمیل‌شده − اعتبار بخشش
@@ -27,19 +27,16 @@ function oc_calc_remaining(PDO $db, array $task): array {
     $today = new DateTime();                     $today->setTime(0, 0, 0);
     if ($today < $start) return ['overdue' => 0, 'remaining' => 0];
 
-    $map = ['daily' => 'P1D', 'weekly' => 'P7D', 'monthly' => 'P1M'];
-    $interval = new DateInterval($map[$task['period_type']] ?? 'P1D');
-
-    $overdue = 0; $cur = clone $start;
-    while ($cur < $today) { $overdue++; $cur->add($interval); }
+    // ✅ همان فرمول my-tasks: فقط روزهای کاری (بدون جمعه و تعطیلات)
+    $holidays = getHolidaySet($db);
+    $overdue  = calcOverduePeriods($task['period_type'], $start, $today, 0, $holidays);
 
     $stmt = $db->prepare("SELECT COUNT(*) FROM task_history WHERE task_id = ? AND action = 'completed'");
     $stmt->execute([$task['id']]);
     $completed = (int) $stmt->fetchColumn();
 
     $forgiven  = (int) ($task['overdue_forgiven_credit'] ?? 0);
-    $remaining = $overdue - $completed - $forgiven;
-    return ['overdue' => $overdue, 'remaining' => max(0, $remaining)];
+    return ['overdue' => $overdue, 'remaining' => max(0, $overdue - $completed - $forgiven)];
 }
 
 /** پیدا کردن تأییدکننده: تعریف‌کننده اگر فعال باشد، وگرنه مدیر بخش، وگرنه خودِ تعریف‌کننده */
@@ -141,7 +138,9 @@ try {
     if ($isCreator) {
         $db->prepare("UPDATE tasks
                       SET overdue_forgiven_credit = overdue_forgiven_credit + ?,
-                          has_pending_overdue_request = 0, updated_at = NOW()
+                          has_pending_overdue_request = 0,
+                          last_approved_date = CURDATE(),
+                          updated_at = NOW()
                       WHERE id = ?")
            ->execute([$remaining, $task_id]);
 

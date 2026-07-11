@@ -474,7 +474,7 @@ if ($user_id) {
             'manager' as my_role
         FROM mission_requests m
         JOIN users u ON m.user_id = u.id
-        WHERE u.manager_code = ? 
+        WHERE u.manager_id = ?
         AND m.manager_approval = 'pending'
         AND m.status = 'pending'
     ");
@@ -564,7 +564,7 @@ if ($user_id) {
             'manager' as my_role
         FROM leave_requests l
         JOIN users u ON l.user_id = u.id
-        WHERE u.manager_code = ?
+        WHERE u.manager_id = ?
         AND l.substitute_approval = 'approved'
         AND l.manager_approval = 'pending'
         AND l.status = 'pending'
@@ -619,7 +619,7 @@ if ($user_id) {
             'manager' as my_role
         FROM forget_requests f
         JOIN users u ON f.user_id = u.id
-        WHERE u.manager_code = ?
+        WHERE u.manager_id = ?
         AND f.manager_approval = 'pending'
         AND f.status = 'pending'
     ");
@@ -672,8 +672,9 @@ if ($user_id) {
             FROM technical_issues t
             JOIN users u ON t.user_id = u.id
             WHERE t.status = 'pending'
+            AND u.organization_id = ?
         ");
-        $stmt->execute();
+        $stmt->execute([$my_org_id]);
         $pending_approvals = array_merge($pending_approvals, $stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 

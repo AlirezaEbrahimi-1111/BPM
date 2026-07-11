@@ -17,16 +17,16 @@ try {
     $db = $database->getConnection();
     
     // بررسی نقش
-    $stmt = $db->prepare("SELECT role, is_supervisor FROM users WHERE id = ?");
+    $stmt = $db->prepare("SELECT role, is_supervisor, organization_id FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $current_user = $stmt->fetch();
-    
+
     $team_members = [];
-    
+
     if ($current_user['is_supervisor']) {
-        // مسئول می‌تواند همه را ببیند
-        $stmt = $db->prepare("SELECT id, first_name, last_name, phone, role FROM users WHERE is_active = 1");
-        $stmt->execute();
+        // مسئول می‌تواند همه‌ی سازمان خودش را ببیند
+        $stmt = $db->prepare("SELECT id, first_name, last_name, phone, role FROM users WHERE is_active = 1 AND organization_id = ?");
+        $stmt->execute([$current_user['organization_id']]);
         $team_members = $stmt->fetchAll();
     } elseif ($current_user['role'] == 'manager') {
         // مدیر فقط تیم خود را می‌بیند

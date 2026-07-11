@@ -351,29 +351,34 @@ class RequestManager {
             }
             
             $conditions = [];
-            
+            $params = [];
+
             // اگر جانشین است
             $conditions[] = "(r.substitute_id = ? AND r.status = 'waiting_substitute')";
-            
+            $params[] = $user_id;
+
             // اگر مدیر است
             if ($user['role'] == 'manager') {
                 $conditions[] = "(r.manager_id = ? AND r.status = 'waiting_manager')";
+                $params[] = $user_id;
             }
-            
-            // اگر مسئول است
+
+            // اگر مسئول است (فقط درخواست‌های سازمانِ خودش)
             if ($user['role'] == 'supervisor') {
-                $conditions[] = "(r.status = 'waiting_supervisor')";
+                $conditions[] = "(r.status = 'waiting_supervisor' AND requester.organization_id = ?)";
+                $params[] = $user['organization_id'];
             }
-            
-            // اگر مسئول IT است
+
+            // اگر مسئول IT است (فقط درخواست‌های سازمانِ خودش)
             if ($user['role'] == 'it_manager') {
-                $conditions[] = "(r.status = 'waiting_it')";
+                $conditions[] = "(r.status = 'waiting_it' AND requester.organization_id = ?)";
+                $params[] = $user['organization_id'];
             }
-            
+
             if (empty($conditions)) {
                 return [];
             }
-            
+
             $sql = "SELECT r.*,
                            requester.first_name as requester_first_name,
                            requester.last_name as requester_last_name,
@@ -383,10 +388,8 @@ class RequestManager {
                     JOIN users requester ON r.user_id = requester.id
                     WHERE (" . implode(' OR ', $conditions) . ")
                     ORDER BY r.approval_deadline ASC, r.created_at ASC";
-            
+
             $stmt = $this->db->prepare($sql);
-            // تکرار user_id به تعداد شرایط
-            $params = array_fill(0, count($conditions), $user_id);
             $stmt->execute($params);
             return $stmt->fetchAll();
             
@@ -590,7 +593,7 @@ class RequestManager {
     }
     
     private function getUserRole($user_id) {
-        $stmt = $this->db->prepare("SELECT id, role FROM users WHERE id = ?");
+        $stmt = $this->db->prepare("SELECT id, role, organization_id FROM users WHERE id = ?");
         $stmt->execute([$user_id]);
         return $stmt->fetch();
     }

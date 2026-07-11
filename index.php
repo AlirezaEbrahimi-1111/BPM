@@ -112,6 +112,16 @@
             filter: drop-shadow(0 20px 40px rgba(108, 63, 244, 0.15));
         }
 
+        /* عنوانِ نام شرکت — فقط در چیدمانِ موبایل نمایش داده می‌شود */
+        .brand-company-name {
+            display: none;
+            font-size: 20px;
+            font-weight: 800;
+            color: #1a1a2e;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
         /* ===== RIGHT SIDE — فرم لاگین ===== */
         .login-side {
             flex: 1;
@@ -309,6 +319,9 @@
         .register-link::before { right: 0; }
         .register-link::after { left: 0; }
 
+        /* جداکنندهٔ «یا» — فقط در چیدمانِ موبایل نمایش داده می‌شود */
+        .or-divider { display: none; }
+
         /* نوار امنیتی */
         .security-bar {
             display: flex;
@@ -363,16 +376,49 @@
 
         /* ریسپانسیو */
         @media (max-width: 768px) {
-            .page-wrapper { flex-direction: column;     border-right: none;}
-            .brand-side { padding: 40px 24px 32px; border-bottom: 1px solid #f0f0f0; }
-            .login-side { padding: 32px 24px 48px; border-right: none; }
-            .brand-illustration { width: 180px; }
-            .brand-headline { font-size: 22px; }
+            .top-logo { display: none; }
+
+            .page-wrapper { flex-direction: column; border-right: none; width: 100%; }
+
+            .brand-side { padding: 48px 24px 16px; border-bottom: none; }
+            .brand-company-name { display: block; }
+            .brand-sub { display: none; }
+            .feature-icons { display: none; margin-bottom: 0; }
+            .brand-illustration { width: 240px; margin-top: 8px; }
+            .brand-headline { font-size: 18px; margin-bottom: 0; }
+
+            .login-side { padding: 8px 24px 40px; border-right: none; }
+
+            .or-divider {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-top: 22px;
+                color: #9ca3af;
+                font-size: 13px;
+            }
+            .or-divider::before,
+            .or-divider::after {
+                content: '';
+                flex: 1;
+                height: 1px;
+                background: #e5e7eb;
+            }
+            .register-link {
+                margin-top: 14px;
+                padding: 14px;
+                border: 1.5px solid #6c3ff4;
+                border-radius: 14px;
+                font-weight: 700;
+                font-size: 14px;
+            }
+            .register-link::before,
+            .register-link::after { display: none; }
         }
     </style>
 </head>
 <body>
-<div style="position:fixed; top:0; left:0; padding:16px 20px; z-index:100;">
+<div class="top-logo" style="position:fixed; top:0; left:0; padding:16px 20px; z-index:100;">
     <img src="https://computeryekta.com/wp-content/uploads/2026/06/modified_logo.png" alt="لوگو" style="height:40px;">
 </div>
 <div class="page-wrapper">
@@ -380,6 +426,7 @@
     <!-- ===== چپ: برند و تصویر ===== -->
     <div class="brand-side">
     <canvas id="networkCanvas"></canvas>
+    <h2 class="brand-company-name">یکتا همراهان ملک</h2>
     <h1 class="brand-headline">
             مدیریت <span>یکپارچه فرایندها</span> در یک نگاه
         </h1>
@@ -444,11 +491,11 @@
             <form id="loginForm" novalidate>
 
                 <div class="field-group">
-                    <label class="field-label" for="username">نام کاربری</label>
+                    <label class="field-label" for="username">شماره موبایل</label>
                     <div class="input-wrap">
-                        <input type="text" class="field-input" id="username"
-                               placeholder="نام کاربری خود را وارد کنید"
-                               required autocomplete="username">
+                        <input type="tel" class="field-input" id="username"
+                               placeholder="شماره موبایل خود را وارد کنید"
+                               required autocomplete="tel" inputmode="numeric">
                         <svg class="input-icon-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                             <circle cx="12" cy="7" r="4"/>
@@ -491,6 +538,7 @@
                     </svg>
                 </button>
 
+                <div class="or-divider"><span>یا</span></div>
                 <a href="/pages/registerCo.php" class="register-link">ثبت نام سازمان جدید</a>
 
                 <div class="security-bar">

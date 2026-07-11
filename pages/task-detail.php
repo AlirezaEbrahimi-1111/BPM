@@ -225,7 +225,7 @@ require_once '../includes/version.php';
 
         <!-- دکمه‌های عمل -->
         <div class="TDaction-buttons">
-            <button type="button" class="btn btn-outline-secondary" onclick="goBack()">
+            <button type="button" class="btn btn-outline-secondary" onclick="goBackSmart();">
                 <i class="bi bi-arrow-right ms-2"></i>بازگشت
             </button>
             <button type="button" class="btn btn-primary" id="startBtn" onclick="startThisTask()"
@@ -957,7 +957,20 @@ require_once '../includes/version.php';
             body.style.display = isOpen ? 'none' : 'block';
             chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
         }
-
+        /* ─── حفظ آدرس صفحه‌ی مبدأ (مقاوم در برابر رفرش) ─── */
+        (function rememberBackUrl() {
+            const ref = document.referrer;
+            // فقط اگر مبدأ خودِ task-detail نیست، ذخیره کن
+            if (ref && !ref.includes('task-detail.php')) {
+                sessionStorage.setItem('taskDetailBackUrl', ref);
+            }
+        })();
+        
+        function goBackSmart() {
+            const back = sessionStorage.getItem('taskDetailBackUrl') || 'tasks.php';
+            sessionStorage.removeItem('taskDetailBackUrl');
+            window.location.href = back;
+        }
         function initPersianDatepickerForModal(inputId, defaultDateString) {
             const input = document.getElementById(inputId);
             if (!input) {
@@ -1336,7 +1349,7 @@ require_once '../includes/version.php';
             if (!taskId) {
                 const t = showToast('هیچ کاری با این شماره پیدا نشد', 'info');
 
-                window.location.href = document.referrer; // بارگذاری مجدد کامل صفحه قبلی
+                goBackSmart();
                 return;
             }
 
@@ -3692,7 +3705,7 @@ require_once '../includes/version.php';
                 if (data.success) {
                     showToast(data.message, 'success');
                     bootstrap.Modal.getInstance(document.getElementById('delegateModal')).hide();
-                    window.location.href = document.referrer; // بارگذاری مجدد کامل صفحه قبلی
+                    goBackSmart();
                 } else {
                     showToast(data.message || 'خطا در تأیید و ارجاع', 'warning');
                 }
@@ -3750,7 +3763,7 @@ require_once '../includes/version.php';
 
                 if (data.success) {
                     bootstrap.Modal.getInstance(document.getElementById('delegateModal')).hide();
-                    window.location.href = document.referrer; // بارگذاری مجدد کامل صفحه قبلی
+                    goBackSmart();
                 }
             } catch (error) {
                 const t = showToast('خطا در ارجاع کار', 'info');
@@ -3839,10 +3852,6 @@ require_once '../includes/version.php';
             });
 
 
-        }
-
-        function goBack() {
-            window.location.href = document.referrer;
         }
 
         function getPriorityLabel(priority) {

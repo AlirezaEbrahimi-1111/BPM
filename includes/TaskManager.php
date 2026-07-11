@@ -862,22 +862,26 @@ class TaskManager
     public function getAllTasks($user_id, $filters = [])
     {
         try {
-            // واحدِ کاربر را برای شرط چک‌لیست بخوان
-            $secStmt = $this->db->prepare("SELECT activity_section FROM users WHERE id = ?");
+            // واحد و سازمانِ کاربر را برای شرط چک‌لیست بخوان
+            $secStmt = $this->db->prepare("SELECT activity_section, organization_id FROM users WHERE id = ?");
             $secStmt->execute([$user_id]);
-            $user_section = $secStmt->fetchColumn() ?: '';
+            $user_row = $secStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+            $user_section = $user_row['activity_section'] ?? '';
+            $user_org_id = $user_row['organization_id'] ?? 0;
 
             // ✅ نمایش: سازنده، یا مسئول، یا ارجاع چک‌لیست (به کاربر یا واحدش)
+            // نکته: چون activity_section بین سازمان‌های مختلف می‌تواند مقدار یکسان داشته باشد،
+            // شرط چک‌لیستِ واحد باید حتماً به t.organization_id هم محدود شود.
             $checklist_exists = "EXISTS (
                 SELECT 1 FROM task_checklist_items ci
                 WHERE ci.task_id = t.id
                   AND (
                       (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
-                      OR (ci.assignee_type = 'section' AND ci.assignee_value = ?)
+                      OR (ci.assignee_type = 'section' AND ci.assignee_value = ? AND t.organization_id = ?)
                   )
             )";
             $where_conditions = ["(t.creator_id = ? OR t.assignee_id = ? OR $checklist_exists)"];
-            $params = [$user_id, $user_id, (string)$user_id, $user_section];
+            $params = [$user_id, $user_id, (string)$user_id, $user_section, $user_org_id];
 
             if (!empty($filters['status'])) {
                 $where_conditions[] = "t.status = ?";

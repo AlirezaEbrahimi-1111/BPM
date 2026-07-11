@@ -126,17 +126,17 @@ try {
         WHERE lr.substitute_approval = 'approved'
         AND lr.manager_approval = 'pending'
         AND lr.status = 'pending'
-        AND (u.manager_code = ? OR u.manager_id = ?)
+        AND u.manager_id = ?
     ");
-    $stmt->execute([$user_id, $user_id]);
+    $stmt->execute([$user_id]);
     $pending_requests = array_merge($pending_requests, $stmt->fetchAll(PDO::FETCH_ASSOC));
 
     // ============================================
     // 3. درخواست‌های مرخصی منتظر تأیید مسئول
     // ============================================
-    if ($current_user['id'] == 19) {
+    if ($current_user['id'] == 19 || $current_user['is_supervisor'] == 1) {
         $stmt = $db->prepare("
-            SELECT 
+            SELECT
                 lr.id,
                 'leave' as type,
                 lr.request_code,
@@ -160,8 +160,9 @@ try {
             WHERE lr.manager_approval = 'approved'
             AND lr.supervisor_approval = 'pending'
             AND lr.status = 'pending'
+            AND u.organization_id = ?
         ");
-        $stmt->execute();
+        $stmt->execute([$current_user['organization_id']]);
         $pending_requests = array_merge($pending_requests, $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
@@ -188,17 +189,17 @@ try {
         JOIN users u ON mr.user_id = u.id
         WHERE mr.manager_approval = 'pending'
         AND mr.status = 'pending'
-        AND (u.manager_code = ? OR u.manager_id = ?)
+        AND u.manager_id = ?
     ");
-    $stmt->execute([$user_id, $user_id]);
+    $stmt->execute([$user_id]);
     $pending_requests = array_merge($pending_requests, $stmt->fetchAll(PDO::FETCH_ASSOC));
 
     // ============================================
     // 5. درخواست‌های مأموریت منتظر تأیید مسئول
     // ============================================
-    if ($current_user['id'] == 19) {
+    if ($current_user['id'] == 19 || $current_user['is_supervisor'] == 1) {
         $stmt = $db->prepare("
-            SELECT 
+            SELECT
                 mr.id,
                 'mission' as type,
                 mr.request_code,
@@ -218,8 +219,9 @@ try {
             WHERE mr.manager_approval = 'approved'
             AND mr.supervisor_approval = 'pending'
             AND mr.status = 'pending'
+            AND u.organization_id = ?
         ");
-        $stmt->execute();
+        $stmt->execute([$current_user['organization_id']]);
         $pending_requests = array_merge($pending_requests, $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
@@ -246,17 +248,17 @@ try {
         JOIN users u ON fr.user_id = u.id
         WHERE fr.manager_approval = 'pending'
         AND fr.status = 'pending'
-        AND (u.manager_code = ? OR u.manager_id = ?)
+        AND u.manager_id = ?
     ");
-    $stmt->execute([$user_id, $user_id]);
+    $stmt->execute([$user_id]);
     $pending_requests = array_merge($pending_requests, $stmt->fetchAll(PDO::FETCH_ASSOC));
 
     // ============================================
     // 7. درخواست‌های فراموشی منتظر تأیید مسئول
     // ============================================
-    if ($current_user['id'] == 19) {
+    if ($current_user['id'] == 19 || $current_user['is_supervisor'] == 1) {
         $stmt = $db->prepare("
-            SELECT 
+            SELECT
                 fr.id,
                 'forget' as type,
                 fr.request_code,
@@ -276,17 +278,18 @@ try {
             WHERE fr.manager_approval = 'approved'
             AND fr.supervisor_approval = 'pending'
             AND fr.status = 'pending'
+            AND u.organization_id = ?
         ");
-        $stmt->execute();
+        $stmt->execute([$current_user['organization_id']]);
         $pending_requests = array_merge($pending_requests, $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     // ============================================
-    // 8. درخواست‌های مشکل فنی (برای admin/supervisor)
+    // 8. درخواست‌های مشکل فنی (برای admin/supervisور همان سازمان)
     // ============================================
     if ($current_user['is_supervisor'] == 1 || $current_user['role'] === 'admin') {
         $stmt = $db->prepare("
-            SELECT 
+            SELECT
                 ti.id,
                 'technical' as type,
                 ti.request_code,
@@ -302,8 +305,9 @@ try {
             FROM technical_issues ti
             JOIN users u ON ti.user_id = u.id
             WHERE ti.status = 'pending'
+            AND u.organization_id = ?
         ");
-        $stmt->execute();
+        $stmt->execute([$current_user['organization_id']]);
         $pending_requests = array_merge($pending_requests, $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 

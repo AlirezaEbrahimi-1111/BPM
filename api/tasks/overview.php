@@ -5,6 +5,55 @@ try {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
+
+// overdue_periods + next_due_date برای کارهای دوره‌ای (هم‌راستا با my-tasks.php/delegated-tasks.php)
+function attachContinuousFields($db, &$tasks, $user_id)
+{
+    $holidays = getHolidaySet($db);
+    $today = date('Y-m-d');
+    foreach ($tasks as &$task) {
+        $task['overdue_periods'] = 0;
+        $task['next_due_date'] = null;
+        if ($task['task_type'] === 'continuous' && !empty($task['start_date'])) {
+            try {
+                $start_date = new DateTime($task['start_date']);
+                $current_date = new DateTime($today);
+                $current_date->setTime(0, 0, 0);
+                maybeStartNextPeriod($db, $task, $user_id, $holidays);
+                if ($current_date < $start_date) {
+                    $task['next_due_date'] = $task['start_date'];
+                } else {
+                    $completed_count = (int) ($task['completed_count'] ?? 0);
+                    if (!isset($task['completed_count'])) {
+                        $cstmt = $db->prepare("SELECT COUNT(*) FROM task_history WHERE task_id = ? AND action = 'completed'");
+                        $cstmt->execute([$task['id']]);
+                        $completed_count = (int) $cstmt->fetchColumn();
+                    }
+                    $task['overdue_periods'] = calcOverduePeriods($task['period_type'], $start_date, $current_date, $completed_count, $holidays);
+                    $forgiven = (int) ($task['overdue_forgiven_credit'] ?? 0);
+                    $task['overdue_periods'] = max(0, $task['overdue_periods'] - $forgiven);
+
+                    $next_due = clone $start_date;
+                    for ($i = 0; $i < $completed_count; $i++) {
+                        switch ($task['period_type']) {
+                            case 'daily':
+                                do { $next_due->modify('+1 day'); } while (!isWorkingDay($next_due, $holidays));
+                                break;
+                            case 'weekly': $next_due->modify('+1 week'); break;
+                            case 'monthly': $next_due->modify('+1 month'); break;
+                        }
+                    }
+                    $task['next_due_date'] = $next_due->format('Y-m-d');
+                }
+            } catch (Exception $e) {
+                error_log("overview.php continuous calc error task#{$task['id']}: " . $e->getMessage());
+            }
+        }
+    }
+    unset($task);
+}
     // ========================================
     // تابع کمکی: آیا کاربر اجازه ارسال یادآوری دارد؟
     // شرط 1: کاربر creator تسک باشد
@@ -137,11 +186,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php'
     }
 
     // دریافت اطلاعات کاربر
-    $stmt = $db->prepare("SELECT id, role, organization_id FROM users WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, role, organization_id, is_manager FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$user || !in_array($user['role'], ['manager', 'supervisor'])) {
+    if (!$user || (!in_array($user['role'], ['manager', 'supervisor']) && (int)($user['is_manager'] ?? 0) !== 1)) {
         echo json_encode([
             'success' => false,
             'message' => 'دسترسی غیرمجاز - نقش شما: ' . ($user['role'] ?? 'نامشخص')
@@ -157,19 +206,22 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php'
     // ========================================
     // 🔵 SUPERVISOR: همه تسک‌ها
     // ========================================
-    if ($user['role'] === 'supervisor') {
+    if ($user['role'] === 'supervisor' || (int)($user['is_manager'] ?? 0) === 1) {
         $sql = "
-            SELECT 
+            SELECT
                 t.id, t.title, t.description, t.task_type, t.priority, t.status,
                 t.due_date, t.created_at, t.creator_id, t.assignee_id, t.deadline,
                 t.is_workflow_task, t.activity_section,
+                t.group_id, t.period_type, t.start_date, t.end_date, t.overdue_forgiven_credit,
+                tg.name as group_name, tg.color as group_color,
                 CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
                 CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name
             FROM tasks t
             LEFT JOIN users creator ON t.creator_id = creator.id
             LEFT JOIN users assignee ON t.assignee_id = assignee.id
+            LEFT JOIN task_groups tg ON t.group_id = tg.id
             WHERE t.is_deleted = 0 AND t.organization_id = ?
-            ORDER BY 
+            ORDER BY
                 CASE WHEN t.due_date < CURDATE() THEN 1 ELSE 2 END,
                 t.priority = 'high' DESC,
                 t.created_at DESC
@@ -186,6 +238,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php'
             $task['can_remind'] = canUserRemind($db, $user_id, $task);
         }
         unset($task);
+        attachContinuousFields($db, $tasks, $user_id);
         attachChecklistAssignees($db, $tasks);
         attachChecklistTitles($db, $tasks);
         echo json_encode([
@@ -203,14 +256,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php'
     // ========================================
 
     // مرحله 1: پیدا کردن زیردستان مستقیم
-    // کاربرانی که manager_code آنها برابر با id کاربر جاری است
+    // کاربرانی که manager_id آنها برابر با id کاربر جاری است
     $stmt = $db->prepare("
-        SELECT id 
-        FROM users 
-        WHERE manager_code = ? 
+        SELECT id
+        FROM users
+        WHERE manager_id = ?
         AND is_active = 1
     ");
-    $stmt->execute([(string) $user_id]); // تبدیل به string برای مقایسه صحیح
+    $stmt->execute([$user_id]);
     $direct_subordinates = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
     error_log("👥 User $user_id - Direct subordinates: " . implode(',', $direct_subordinates));
@@ -218,17 +271,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php'
     // مرحله 2: پیدا کردن زیردستان غیرمستقیم (سطح دوم)
     $indirect_subordinates = [];
     if (!empty($direct_subordinates)) {
-        // تبدیل id ها به string برای مقایسه با manager_code
-        $string_ids = array_map('strval', $direct_subordinates);
-        $placeholders = str_repeat('?,', count($string_ids) - 1) . '?';
+        $placeholders = str_repeat('?,', count($direct_subordinates) - 1) . '?';
 
         $stmt = $db->prepare("
-            SELECT id 
-            FROM users 
-            WHERE manager_code IN ($placeholders) 
+            SELECT id
+            FROM users
+            WHERE manager_id IN ($placeholders)
             AND is_active = 1
         ");
-        $stmt->execute($string_ids);
+        $stmt->execute($direct_subordinates);
         $indirect_subordinates = $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 
@@ -260,18 +311,21 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php'
     $placeholders = str_repeat('?,', count($all_subordinates) - 1) . '?';
 
     $sql = "
-        SELECT 
+        SELECT
             t.id, t.title, t.description, t.task_type, t.priority, t.status,
             t.due_date, t.created_at, t.creator_id, t.assignee_id, t.deadline,
             t.is_workflow_task, t.activity_section,
+            t.group_id, t.period_type, t.start_date, t.end_date, t.overdue_forgiven_credit,
+            tg.name as group_name, tg.color as group_color,
             CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
             CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name
         FROM tasks t
         LEFT JOIN users creator ON t.creator_id = creator.id
         LEFT JOIN users assignee ON t.assignee_id = assignee.id
+        LEFT JOIN task_groups tg ON t.group_id = tg.id
         WHERE t.is_deleted = 0
         AND (t.creator_id IN ($placeholders) OR t.assignee_id IN ($placeholders))
-        ORDER BY 
+        ORDER BY
             CASE WHEN t.due_date < CURDATE() THEN 1 ELSE 2 END,
             t.priority = 'high' DESC,
             t.created_at DESC
@@ -289,6 +343,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php'
         $task['can_remind'] = canUserRemind($db, $user_id, $task);
     }
     unset($task);
+    attachContinuousFields($db, $tasks, $user_id);
     attachChecklistAssignees($db, $tasks);
     attachChecklistTitles($db, $tasks);
     echo json_encode([

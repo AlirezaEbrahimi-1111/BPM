@@ -502,7 +502,10 @@ require_once '../includes/version.php';
             const today = todayLocal();
             const todayCount = allTasks.filter(t => {
                 if (t.task_type === 'periodic') return t.due_date === today && t.status !== 'completed' && t.status !== 'approved';
-                if (t.task_type === 'continuous') return (t.overdue_periods || 0) > 0 && (!t.end_date || t.end_date >= today);
+                if (t.task_type === 'continuous') {
+                    if (t.end_date && t.end_date < today) return false;
+                    return (t.overdue_periods || 0) > 0 || t.next_due_date === today;
+                }
                 return false;
             }).length;
             const overdueCount = allTasks.filter(t => {

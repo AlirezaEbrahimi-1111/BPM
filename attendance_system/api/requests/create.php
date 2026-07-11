@@ -76,11 +76,13 @@ function generateRequestCode($prefix, $user_id)
 }
 
 // ✅ تابع چک کردن آیا مدیر کاربر همان مسئول کل است یا نه
+// نکته: manager_code یک کدِ نمایشیِ بی‌ربط به id است (نه شناسه‌ی مدیر)؛
+// معیارِ معتبرِ «مسئول کل بودن» ستونِ is_supervisor است.
 function isManagerSupervisor($db, $user_id)
 {
     try {
         // دریافت manager_id کاربر
-        $stmt = $db->prepare("SELECT manager_id, manager_code FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT manager_id FROM users WHERE id = ?");
         $stmt->execute([$user_id]);
         $user_info = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -89,12 +91,11 @@ function isManagerSupervisor($db, $user_id)
         }
 
         // دریافت اطلاعات مدیر
-        $stmt = $db->prepare("SELECT manager_code FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT is_supervisor FROM users WHERE id = ?");
         $stmt->execute([$user_info['manager_id']]);
         $manager_info = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // اگر manager_code مدیر خالی باشد = مسئول کل است
-        return $manager_info && empty($manager_info['manager_code']);
+        return $manager_info && $manager_info['is_supervisor'] == 1;
 
     } catch (Exception $e) {
         error_log("Error in isManagerSupervisor: " . $e->getMessage());
@@ -133,14 +134,14 @@ if ($start_time && $end_time) {
 /**
  * ارسال نوتیفیکیشن و پیامک به نفر بعدی در زنجیره تأیید
  * 
- * مسئول = کسی که role=manager و manager_code=id خودش
+ * مسئول = کسی که role=manager و manager_id=id خودش
  * مشکل فنی = فقط supervisor تأیید می‌کند (نه مسئول)
  */
 function notifyNextApprover($db, $user_id, $request_type, $request_id, $request_code)
 {
     try {
         // دریافت اطلاعات درخواست‌دهنده
-        $stmt = $db->prepare("SELECT first_name, last_name, manager_code, manager_id FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT first_name, last_name, manager_id, organization_id FROM users WHERE id = ?");
         $stmt->execute([$user_id]);
         $requester = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -172,8 +173,8 @@ function notifyNextApprover($db, $user_id, $request_type, $request_id, $request_
             }
 
         } elseif (in_array($request_type, ['mission', 'forget'])) {
-            // مأموریت و فراموشی: به مدیر
-            $manager_id = $requester['manager_code'] ?: $requester['manager_id'];
+            // مأموریت و فراموشی: به مدیر (manager_id تنها فیلد معتبر سلسله‌مراتب است)
+            $manager_id = $requester['manager_id'];
             if ($manager_id) {
                 $notify_user_id = $manager_id;
                 $role_label = 'مدیر';
@@ -181,15 +182,16 @@ function notifyNextApprover($db, $user_id, $request_type, $request_id, $request_
 
         } elseif ($request_type === 'technical') {
             // مشکل فنی: فقط به supervisor ها (نه مسئول)
-            // مسئول = کسی که role=manager و manager_code=id خودش
+            // مسئول = کسی که role=manager و manager_id=id خودش (self-reference)
             $stmt = $db->prepare("
-                SELECT id FROM users 
-                WHERE is_supervisor = 1 
-                  AND is_active = 1 
+                SELECT id FROM users
+                WHERE is_supervisor = 1
+                  AND is_active = 1
                   AND id != ?
-                  AND NOT (role = 'manager' AND (manager_code = id OR manager_id = id))
+                  AND organization_id = ?
+                  AND NOT (role = 'manager' AND manager_id = id)
             ");
-            $stmt->execute([$user_id]);
+            $stmt->execute([$user_id, $requester['organization_id']]);
             $supervisors = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             $notif = new Notification($db);
