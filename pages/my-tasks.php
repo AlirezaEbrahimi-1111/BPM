@@ -1,6 +1,7 @@
-<?php require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
-require_once '../config/config.php';
-require_once '../includes/version.php';
+<?php
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
+require_once  $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -142,10 +143,10 @@ require_once '../includes/version.php';
     <?php include 'footer.php'; ?>
 
 
-
-    <script src="<?= asset('../../assets/js/table-utils.js') ?>"></script>
-    <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
-    <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
+    <script src="<?= asset('/assets/js/task-filters.js') ?>"></script>
+    <script src="<?= asset('/assets/js/table-utils.js') ?>"></script>
+    <script src="<?= asset('/assets/js/assignee-picker.js') ?>"></script>
+    <script src="<?= asset('/assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script>
         let currentPage = 1,
             totalPages = 1,
@@ -216,12 +217,12 @@ require_once '../includes/version.php';
                 width: 105,
                 resizable: true,
                 comparator: (a, b, nodeA, nodeB) => {
-                    const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d => d).sort().pop() || '9999';
-                    const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d => d).sort().pop() || '9999';
+                    const da = TF.effectiveDue(nodeA.data) || '9999';
+                    const db = TF.effectiveDue(nodeB.data) || '9999';
                     return da < db ? -1 : da > db ? 1 : 0;
                 },
                 cellRenderer: p => {
-                    const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d => d).sort().pop();
+                    const d = TF.effectiveDue(p.data);
                     return `<span class="date-display">${fmtDate(d)}</span>`;
                 }
             },
@@ -233,12 +234,12 @@ require_once '../includes/version.php';
                 field: 'deadline',
                 sortable: false,
                 comparator: (a, b, nodeA, nodeB) => {
-                    const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d => d).sort().pop() || '9999';
-                    const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d => d).sort().pop() || '9999';
+                    const da = TF.effectiveDue(nodeA.data) || '9999';
+                    const db = TF.effectiveDue(nodeB.data) || '9999';
                     return da < db ? -1 : da > db ? 1 : 0;
                 },
                 cellRenderer: p => {
-                    const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d => d).sort().pop();
+                    const d = TF.effectiveDue(p.data);
                     return daysLeft(d, p.data.status);
                 }
             },
@@ -500,19 +501,8 @@ require_once '../includes/version.php';
 
         function updateStats() {
             const today = todayLocal();
-            const todayCount = allTasks.filter(t => {
-                if (t.task_type === 'periodic') return t.due_date === today && t.status !== 'completed' && t.status !== 'approved';
-                if (t.task_type === 'continuous') {
-                    if (t.end_date && t.end_date < today) return false;
-                    return (t.overdue_periods || 0) > 0 || t.next_due_date === today;
-                }
-                return false;
-            }).length;
-            const overdueCount = allTasks.filter(t => {
-                if (t.task_type === 'periodic') return t.due_date && t.due_date < today && (t.status === 'not_started' || t.status === 'in_progress');
-                if (t.task_type === 'continuous') return (t.overdue_periods || 0) > 0 && (!t.end_date || t.end_date >= today);
-                return false;
-            }).length;
+            const todayCount = allTasks.filter(t => TF.isDueToday(t, currentUser, today)).length;
+            const overdueCount = allTasks.filter(t => TF.isOverdue(t, currentUser, today)).length;
             const progressCount = allTasks.filter(t => t.status === 'in_progress').length;
             const completedCount = allTasks.filter(t => t.status === 'completed' || t.status === 'approved').length;
             const notStartedCount = allTasks.filter(t => t.status === 'not_started').length;
@@ -583,20 +573,8 @@ require_once '../includes/version.php';
                     else if (st !== 'open' && t.status !== st) return false;
                 }
 
-                if (statFilter === 'today') {
-                    if (t.task_type === 'periodic') {
-                        if (!(t.due_date === today && t.status !== 'completed' && t.status !== 'approved')) return false;
-                    } else if (t.task_type === 'continuous') {
-                        if (!((t.overdue_periods || 0) > 0 && (!t.end_date || t.end_date >= today))) return false;
-                    } else return false;
-                }
-                if (statFilter === 'overdue') {
-                    if (t.task_type === 'periodic') {
-                        if (!(t.due_date && t.due_date < today && (t.status === 'not_started' || t.status === 'in_progress'))) return false;
-                    } else if (t.task_type === 'continuous') {
-                        if (!((t.overdue_periods || 0) > 0 && (!t.end_date || t.end_date >= today))) return false;
-                    } else return false;
-                }
+                if (statFilter === 'today' && !TF.isDueToday(t, currentUser, today)) return false;
+                if (statFilter === 'overdue' && !TF.isOverdue(t, currentUser, today)) return false;
                 if (statFilter === 'in_progress' && t.status !== 'in_progress') return false;
                 if (statFilter === 'completed' && t.status !== 'completed' && t.status !== 'approved') return false;
                 if (statFilter === 'not_started' && t.status !== 'not_started') return false;
@@ -610,14 +588,7 @@ require_once '../includes/version.php';
             filteredTasks.forEach(t => {
                 let effectiveDate = null;
 
-                if (t.task_type === 'continuous') {
-                    // دوره‌ای: اگر API مقدار next_due_date برگردانده استفاده کن، وگرنه start_date
-                    effectiveDate = t.next_due_date || t.start_date || null;
-                } else {
-                    // مقطعی: بیشترین تاریخ
-                    const dates = [t.due_date, t.deadline, t.original_deadline].filter(d => d);
-                    effectiveDate = dates.length > 0 ? dates.sort().pop() : null;
-                }
+                effectiveDate = TF.effectiveDue(t) || null;
 
                 t.effective_due_date = effectiveDate;
 

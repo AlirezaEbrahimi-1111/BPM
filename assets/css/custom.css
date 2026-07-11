@@ -401,10 +401,17 @@ h6 {
     background: #d4edda;
     color: #155724;
 }
+
 .status-period_done {
     background: #cffafe;
     color: #0e7490;
 }
+
+.status-overdue {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
 .status-delegated {
     background: #e0e7ff;
     color: #4338ca;
@@ -4392,13 +4399,16 @@ body.drawer-body-open {
 /* --- بدنه صفحه ورود --- */
 body.login-page {
     background: var(--gray-50);
-    height: 100vh;           /* به جای min-height */
+    height: 100vh;
+    /* به جای min-height */
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;              /* حذف padding اضافی */
+    padding: 0;
+    /* حذف padding اضافی */
     position: relative;
-    overflow: hidden;         /* جلوگیری از اسکرول */
+    overflow: hidden;
+    /* جلوگیری از اسکرول */
     margin-top: 0;
 }
 
@@ -4428,15 +4438,19 @@ body.login-page::after {
 .login-wrapper {
     position: relative;
     z-index: 1;
-    width: 25%; /* دسکتاپ: 25% */
-    margin: 0 auto; /* وسط‌چین */
+    width: 25%;
+    /* دسکتاپ: 25% */
+    margin: 0 auto;
+    /* وسط‌چین */
 }
 
 .register-wrapper {
     position: relative;
     z-index: 1;
-    width: 35%; /* دسکتاپ: 35% */
-    margin: 0 auto; /* وسط‌چین */
+    width: 35%;
+    /* دسکتاپ: 35% */
+    margin: 0 auto;
+    /* وسط‌چین */
 }
 
 /* --- کارت ورود --- */
@@ -4446,7 +4460,8 @@ body.login-page::after {
     border-radius: var(--radius-lg);
     padding: 48px 40px;
     box-shadow: var(--shadow-xl);
-    width: 70%; /* اضافه کنید */
+    width: 70%;
+    /* اضافه کنید */
 }
 
 
@@ -4873,15 +4888,17 @@ body.login-page::after {
 
 /* --- ریسپانسیو ورود --- */
 @media (max-width: 480px) {
+
     .login-wrapper,
     .register-wrapper {
-        width: 100% !important; /* موبایل: 80% */
+        width: 100% !important;
+        /* موبایل: 80% */
     }
-    
+
     .login-card,
     .register-card {
         padding: 36px 24px;
-        max-width:80% !important;
+        max-width: 80% !important;
     }
 
     .login-logo-frame {
@@ -6230,17 +6247,18 @@ body.login-page::after {
         width: 100px;
         height: 100px;
     }
-    
+
     .plan-price {
         font-size: 1.5rem;
     }
-    
+
     .stat-icon {
         width: 40px;
         height: 40px;
         font-size: 1.25rem;
     }
 }
+
 .register-link-underline {
     display: block;
     width: 100%;
@@ -6254,6 +6272,7 @@ body.login-page::after {
     position: relative;
     transition: color 0.3s ease;
 }
+
 .register-link-underline::after {
     content: '';
     position: absolute;
@@ -6264,11 +6283,13 @@ body.login-page::after {
     height: 2px;
     background: #764ba2;
     transition: width 0.3s ease;
-    
+
 }
+
 .register-link-underline:hover {
     color: #764ba2;
 }
+
 .register-link-underline:hover::after {
     width: 60%;
 }
@@ -6320,13 +6341,15 @@ body.login-page::after {
 #delegatedTaskSearchBox {
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
 #delegatedTaskSearchBox .form-control {
     border: 1px solid #e8eaed;
     padding: 10px 14px;
     font-size: 14px;
 }
+
 #delegatedTaskSearchBox .form-control:focus {
     border-color: #f5576c;
     box-shadow: none;
@@ -6340,18 +6363,22 @@ body.login-page::after {
     border-bottom: 1px solid #ddd;
     transition: border-color .15s;
 }
+
 .dtask-search-row:focus-within {
     border-bottom-color: #555;
 }
+
 .dtask-search-row i {
     font-size: 15px;
     color: #aaa;
     flex-shrink: 0;
     transition: color .15s;
 }
+
 .dtask-search-row:focus-within i {
     color: #666;
 }
+
 .dtask-search-row input {
     border: none;
     outline: none;
@@ -6368,9 +6395,11 @@ body.login-page::after {
 
 /* لپ‌تاپ‌های معمولی و مانیتور متوسط: 1201px تا 1600px */
 @media (min-width: 1201px) and (max-width: 1600px) {
+
     .overview-container,
     .task-detail-container {
-        max-width: 900px;      /* جلوگیری از کش‌آمدن یا پهن‌شدن بیش از حد */
+        max-width: 900px;
+        /* جلوگیری از کش‌آمدن یا پهن‌شدن بیش از حد */
         margin-left: auto;
         margin-right: auto;
     }
@@ -6378,12 +6407,14 @@ body.login-page::after {
 
 /* مانیتورهای بزرگ: 1601px تا 1920px (Full HD) */
 @media (min-width: 1601px) and (max-width: 1920px) {
+
     .overview-container,
     .task-detail-container {
         max-width: 1000px;
         margin-left: auto;
         margin-right: auto;
     }
+
     /* فونت کمی بزرگ‌تر برای خوانایی روی صفحه بزرگ */
     body {
         font-size: 15px;
@@ -6392,31 +6423,66 @@ body.login-page::after {
 
 /* مانیتورهای خیلی بزرگ: بالای 1920px (2K / 4K) */
 @media (min-width: 1921px) {
+
     .overview-container,
     .task-detail-container {
         max-width: 1600px;
         margin-left: auto;
         margin-right: auto;
     }
+
     body {
         font-size: 16px;
     }
 }
 
-.custom-toast{
-    position: fixed; top: 80px; left: 24px; z-index: 99999;
-    min-width: 280px; max-width: 400px;
-    background: #1e2233; color: #fff;
-    border-radius: 12px; padding: .8rem 1rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,.22);
-    font-family: Vazirmatn, sans-serif; font-size: .9rem;
-    opacity: 0; transform: translateY(16px);
+.custom-toast {
+    position: fixed;
+    top: 80px;
+    left: 24px;
+    z-index: 99999;
+    min-width: 280px;
+    max-width: 400px;
+    background: #1e2233;
+    color: #fff;
+    border-radius: 12px;
+    padding: .8rem 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .22);
+    font-family: Vazirmatn, sans-serif;
+    font-size: .9rem;
+    opacity: 0;
+    transform: translateY(16px);
     transition: opacity .25s ease, transform .25s ease;
 }
-.custom-toast.show{ opacity: 1; transform: translateY(0); }
-.custom-toast .toast-content{ display: flex; align-items: center; gap: .55rem; }
-.custom-toast .toast-content i{ font-size: 1.15rem; flex-shrink: 0; }
-.custom-toast.toast-success{ background: #16a34a; }
-.custom-toast.toast-error{ background: #dc2626; }
-.custom-toast.toast-warning{ background: #d97706; }
-.custom-toast.toast-info{ background: #4f46e5; }
+
+.custom-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.custom-toast .toast-content {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+}
+
+.custom-toast .toast-content i {
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.custom-toast.toast-success {
+    background: #16a34a;
+}
+
+.custom-toast.toast-error {
+    background: #dc2626;
+}
+
+.custom-toast.toast-warning {
+    background: #d97706;
+}
+
+.custom-toast.toast-info {
+    background: #4f46e5;
+}

@@ -500,8 +500,9 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             <i class="bi bi-plus"></i>
         </button>
     </div>
-    <script src="../../assets/js/table-utils.js"></script>
+    <script src="/assets/js/table-utils.js"></script>
     <script src="<?= asset('/assets/js/undo-toast.js') ?>"></script>
+    <script src="<?= asset('/assets/js/task-filters.js') ?>"></script>
     <script>
         let currentUser = null;
         // let authToken = null;
@@ -1763,98 +1764,11 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
                     break;
 
                 case 'today':
-                    filteredTasks = myTasksData.filter(task => {
-
-                        if (task.status === 'completed' || task.status === 'approved') {
-                            return false;
-                        }
-                        // 🆕 منتظرِ تأییدِ انجام توسط کاربر — بدونِ توجه به موعد/تاریخِ pending
-                        if (task.is_pending_approval == 1 &&
-                            currentUser &&
-                            (currentUser.id == task.creator_id || currentUser.id == task.current_approver_id)) return true;
-                        // 🆕 منتظرِ تأییدِ تمدیدِ موعد توسط کاربر — بدونِ توجه به موعد
-                        if (task.has_pending_deadline_request == 1 &&
-                            currentUser &&
-                            currentUser.id == task.current_approver_id) return true;
-                        if (task.is_workflow_task == 1 &&
-                            (task.status === 'in_progress' || task.status === 'not_started')) {
-                            return true;
-                        }
-
-
-
-                        if (task.task_type === 'periodic') {
-                            const originalDate = task.original_deadline ? task.original_deadline.split(' ')[0] : '';
-                            const dueDate = task.due_date || '';
-                            const deadlineDate = task.deadline ? task.deadline.split(' ')[0] : ''; // ← اضافه شد
-
-                            // پیدا کردن بزرگترین تاریخ
-                            const dates = [originalDate, dueDate, deadlineDate].filter(d => d);
-                            const maxDate = dates.length > 0 ? dates.sort().reverse()[0] : '';
-
-                            return maxDate && maxDate <= today;
-                        }
-
-                        // کارهای دوره‌ای امروز
-                        if (task.task_type === 'continuous') {
-                            // اگر کار پایان یافته، نمایش نده
-                            if (task.end_date && task.end_date < today) return false;
-
-                            // ۱) دوره‌ی معوقه دارد
-                            if ((task.overdue_periods || 0) > 0) return true;
-
-                            // ۲) 🆕 دوره‌ی بعدی دقیقاً امروز سررسید شده
-                            if (task.next_due_date === today) return true;
-
-                            return false;
-                        }
-
-                        return false;
-                    });
+                    filteredTasks = myTasksData.filter(t => TF.isDueToday(t, currentUser, today));
                     break;
 
                 case 'overdue':
-                    filteredTasks = myTasksData.filter(task => {
-                        if (task.status === 'completed' || task.status === 'approved') {
-                            return false;
-                        }
-
-                        // ✅ pending approval (تأییدِ انجام) فقط اگر قبل از امروز منتظر شده
-                        const isPendingMyApproval = task.is_pending_approval == 1 &&
-                            currentUser &&
-                            (currentUser.id == task.creator_id || currentUser.id == task.current_approver_id) &&
-                            task.last_pending_date &&
-                            task.last_pending_date.split(' ')[0] < today;
-
-                        // 🆕 تمدیدِ موعد: اگر درخواست قبل از امروز ثبت شده و هنوز منتظرِ تأییدِ کاربر است
-                        const isPendingDeadlineOverdue = task.has_pending_deadline_request == 1 &&
-                            currentUser &&
-                            currentUser.id == task.current_approver_id &&
-                            task.deadline_request_date &&
-                            task.deadline_request_date.split(' ')[0] < today;
-
-                        // ✅ اصلاح: workflow tasks — مقایسه رشته‌ای درست
-                        if (task.is_workflow_task == 1) {
-                            const d1 = task.original_deadline ? task.original_deadline.split(' ')[0] : '';
-                            const d2 = task.due_date || '';
-                            const maxDate = [d1, d2].filter(d => d).sort().reverse()[0] || '';
-                            if (maxDate && maxDate < today) return true;
-                        }
-
-                        // ✅ اصلاح: periodic tasks — مقایسه رشته‌ای تمیزتر
-                        const isRegularOverdue = task.task_type === 'periodic' && (() => {
-                            const d1 = task.deadline ? task.deadline.split(' ')[0] : '';
-                            const d2 = task.due_date || '';
-                            const maxDate = [d1, d2].filter(d => d).sort().reverse()[0] || '';
-                            return maxDate && maxDate < today;
-                        })();
-
-                        // ✅ اصلاح: continuous — فقط اگه بیشتر از ۱ دوره عقب باشه
-                        const isContinuousOverdue = task.task_type === 'continuous' &&
-                            task.overdue_periods > 1;
-
-                        return isRegularOverdue || isContinuousOverdue || isPendingMyApproval || isPendingDeadlineOverdue;
-                    });
+                    filteredTasks = myTasksData.filter(t => TF.isOverdue(t, currentUser, today));
                     break;
 
                 default:
@@ -2034,7 +1948,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
                 'termination_requested': 'در انتظار اتمام',
                 'period_done': 'دوره انجام شد',
             };
-         
+
             return `<span class="badge status-${task.status}">${labels[task.status] || task.status}</span>`;
         }
 
