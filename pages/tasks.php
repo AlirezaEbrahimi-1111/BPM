@@ -141,10 +141,10 @@ require_once '../includes/version.php';
     </div>
     <?php include 'footer.php'; ?>
 
-
-    <script src="<?= asset('../../assets/js/table-utils.js') ?>"></script>
-    <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
-    <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
+    <script src="<?= asset('/assets/js/task-filters.js') ?>"></script>
+    <script src="<?= asset('/assets/js/table-utils.js') ?>"></script>
+    <script src="<?= asset('/assets/js/assignee-picker.js') ?>"></script>
+    <script src="<?= asset('/assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script>
         let allTasks = [],
             filteredTasks = [],
@@ -219,21 +219,14 @@ require_once '../includes/version.php';
                 width: 105,
                 resizable: true,
                 comparator: (a, b, nodeA, nodeB) => {
-                    const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d => d).sort().pop() || '9999';
-                    const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d => d).sort().pop() || '9999';
+                    const da = TF.effectiveDue(nodeA.data) || '9999';
+                    const db = TF.effectiveDue(nodeB.data) || '9999';
                     return da < db ? -1 : da > db ? 1 : 0;
                 },
                 cellRenderer: p => {
-                    const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d => d).sort().pop();
+                    const d = TF.effectiveDue(p.data);
                     return `<span class="date-display">${fmtDate(d)}</span>`;
                 }
-            },
-            {
-                field: 'created_at',
-                headerName: 'ایجاد',
-                width: 120,
-                resizable: true,
-                cellRenderer: p => `<span class="date-display">${fmtDate(p.value)}</span><br><span class="date-relative">${relTime(p.value)}</span>`
             },
             {
                 headerName: 'مهلت',
@@ -243,14 +236,21 @@ require_once '../includes/version.php';
                 field: 'deadline',
                 sortable: false,
                 comparator: (a, b, nodeA, nodeB) => {
-                    const da = [nodeA.data.due_date, nodeA.data.deadline, nodeA.data.original_deadline].filter(d => d).sort().pop() || '9999';
-                    const db = [nodeB.data.due_date, nodeB.data.deadline, nodeB.data.original_deadline].filter(d => d).sort().pop() || '9999';
+                    const da = TF.effectiveDue(nodeA.data) || '9999';
+                    const db = TF.effectiveDue(nodeB.data) || '9999';
                     return da < db ? -1 : da > db ? 1 : 0;
                 },
                 cellRenderer: p => {
-                    const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d => d).sort().pop();
+                    const d = TF.effectiveDue(p.data);
                     return daysLeft(d, p.data.status);
                 }
+            },
+            {
+                field: 'created_at',
+                headerName: 'ایجاد',
+                width: 120,
+                resizable: true,
+                cellRenderer: p => `<span class="date-display">${fmtDate(p.value)}</span><br><span class="date-relative">${relTime(p.value)}</span>`
             },
             {
                 headerName: 'عملیات',

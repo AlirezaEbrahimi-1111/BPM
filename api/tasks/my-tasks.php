@@ -11,7 +11,8 @@ try {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php'; // ← اضافه شد
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-dates-helper.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
     $user_id = requireAuth();
@@ -241,127 +242,12 @@ ORDER BY
     $processed_tasks = [];
 
     foreach ($all_tasks as $task) {
-        $task['overdue_periods'] = 0;
-        $task['next_due_date'] = null;
-        $task['days_remaining'] = null;
-        // ← فیلد جدید: تاخیر به روز کاری (برای نمایش در badge)
-        $task['working_days_delayed'] = 0;
-
-        // ══════════════════════════════════════════════════════
-        //  کار دوره‌ای (continuous)
-        // ══════════════════════════════════════════════════════
-        if ($task['task_type'] === 'continuous' && !empty($task['start_date'])) {
-            try {
-                $start_date = new DateTime($task['start_date']);
-                $current_date = new DateTime($today);
-                $current_date->setTime(0, 0, 0);
-                // 🔄 بررسی برگشت از period_done به حالت فعال (تابع مشترک)
-                maybeStartNextPeriod($db, $task, $user_id, $holidays);
-                // هنوز شروع نشده
-                if ($current_date < $start_date) {
-                    $task['overdue_periods'] = 0;
-                    $task['next_due_date'] = $task['start_date'];
-                    // days_remaining را بر اساس روز تقویمی نگه می‌داریم (منفی نیست)
-                    $task['days_remaining'] = (int) $current_date->diff($start_date)->format('%r%a');
-                    $processed_tasks[] = $task;
-                    continue;
-                }
-
-                // تعداد دوره‌های انجام شده
-                $count_sql = "SELECT COUNT(*) as count FROM task_history WHERE task_id = ? AND action = 'completed'";
-                $count_stmt = $db->prepare($count_sql);
-                $count_stmt->execute([$task['id']]);
-                $count_result = $count_stmt->fetch(PDO::FETCH_ASSOC);
-                $completed_count = (int) ($count_result['count'] ?? 0);
-
-                // ✅ محاسبه با روزهای کاری (بدون جمعه و تعطیلات)
-                $task['overdue_periods'] = calcOverduePeriods(
-                    $task['period_type'],
-                    $start_date,
-                    $current_date,
-                    $completed_count,
-                    $holidays
-                );
-
-                // ✅ کسر دوره‌های بخشیده‌شده (رفع معوقه)
-                $forgiven_credit = (int) ($task['overdue_forgiven_credit'] ?? 0);
-                $task['overdue_periods'] = max(0, $task['overdue_periods'] - $forgiven_credit);
-
-                // محاسبه اولین موعد انجام نشده
-                // ✅ دوره‌های بخشیده‌شده هم مثل انجام‌شده جلو می‌روند
-                $next_due = clone $start_date;
-                $advance  = $completed_count + $forgiven_credit;
-                for ($i = 0; $i < $advance; $i++) {
-                    switch ($task['period_type']) {
-                        case 'daily':
-                            // برای daily، موعد بعدی اولین روز کاری بعد از آخرین انجام
-                            do {
-                                $next_due->modify('+1 day');
-                            } while (!isWorkingDay($next_due, $holidays));
-                            break;
-                        case 'weekly':
-                            $next_due->modify('+1 week');
-                            break;
-                        case 'monthly':
-                            $next_due->modify('+1 month');
-                            break;
-                    }
-                }
-
-                $task['next_due_date'] = $next_due->format('Y-m-d');
-
-                // بررسی تاریخ پایان
-                if (!empty($task['end_date'])) {
-                    $end_date = new DateTime($task['end_date']);
-                    if ($next_due > $end_date) {
-                        continue; // کار پایان یافته، نمایش نده
-                    }
-                }
-
-                $task['days_remaining'] = (int) $current_date->diff($next_due)->format('%r%a');
-            } catch (Exception $e) {
-                $task['overdue_periods'] = 0;
-                error_log("overdue calc error task#{$task['id']}: " . $e->getMessage());
-            }
+        $task = enrichTaskDates($task, $db, $holidays, $today);
+        // کار دوره‌ای که بازه‌اش تمام شده → نمایش نده
+        if ($task['task_type'] === 'continuous' && !empty($task['end_date'])
+            && $task['next_due_date'] > $task['end_date']) {
+            continue;
         }
-
-        // ══════════════════════════════════════════════════════
-        //  کار مقطعی (periodic)
-        // ══════════════════════════════════════════════════════
-        elseif ($task['task_type'] === 'periodic') {
-            $dates = [];
-
-            if (!empty($task['due_date']))
-                $dates[] = new DateTime($task['due_date']);
-            if (!empty($task['deadline']))
-                $dates[] = new DateTime($task['deadline']);
-            if (!empty($task['original_deadline']))
-                $dates[] = new DateTime($task['original_deadline']);
-
-            if (!empty($dates)) {
-                $max_date = max($dates);
-                $task['next_due_date'] = $max_date->format('Y-m-d');
-
-                $current_date = new DateTime($today);
-
-                // days_remaining: تقویمی (مثبت=مانده، منفی=گذشته)
-                $task['days_remaining'] = (int) $current_date->diff($max_date)->format('%r%a');
-
-                // ✅ تاخیر به روز کاری (بدون جمعه و تعطیلات)
-                if (
-                    $current_date > $max_date &&
-                    $task['status'] !== 'completed' &&
-                    $task['status'] !== 'approved'
-                ) {
-                    $task['working_days_delayed'] = calcPeriodicDelayWorkingDays(
-                        $max_date->format('Y-m-d'),
-                        $today,
-                        $holidays
-                    );
-                }
-            }
-        }
-
         $processed_tasks[] = $task;
     }
     attachChecklistTitles($db, $processed_tasks);
