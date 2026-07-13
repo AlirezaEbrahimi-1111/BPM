@@ -6,6 +6,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $user_id = requireAuth();
@@ -52,10 +53,8 @@ try {
     error_log("task-groups/create error: " . $e->getMessage());
 }
 
-// بررسی دسترسی ساخت گروه سازمانی: management + supervisor
+// بررسی دسترسی ساخت گروه سازمانی
 function canManageOrgGroup($db, $user_id) {
-    $stmt = $db->prepare("SELECT activity_section, role FROM users WHERE id = ?");
-    $stmt->execute([$user_id]);
-    $u = $stmt->fetch(PDO::FETCH_ASSOC);
-    return $u && $u['activity_section'] === 'management' && $u['role'] === 'supervisor';
+    $me = loadUserForPermissions($db, $user_id);
+    return hasPermission($me, 'manage_task_groups');
 }

@@ -35,11 +35,9 @@ try {
         throw new Exception("User not found");
     }
 
-    if ($currentUser['role'] !== 'supervisor') {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
-        exit;
-    }
+    $currentUser = loadUserForPermissions($db, $user_id);
+    requirePermission($currentUser, 'view_org_settings');
+    $orgId = $currentUser['organization_id'];
 
     $orgId = $currentUser['organization_id'];
 

@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 try {
     $user_id = requireAuth();
     
@@ -18,15 +18,8 @@ try {
     $db = $database->getConnection();
     
     // بررسی دسترسی ادمین
-    $checkAdmin = $db->prepare("SELECT activity_section FROM users WHERE id = ?");
-    $checkAdmin->execute([$user_id]);
-    $currentUser = $checkAdmin->fetch();
-    
-    if (!$currentUser || $currentUser['activity_section'] !== 'management') {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
-        exit;
-    }
+    $currentUser = loadUserForPermissions($db, $user_id);
+    requirePermission($currentUser, 'manage_users');
     
     $target_user_id = $_GET['user_id'];
     

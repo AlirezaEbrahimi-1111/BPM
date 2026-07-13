@@ -30,12 +30,9 @@ if ($method === 'GET') {
     exit;
 }
 
-// فقط supervisor یا management می‌تونه ویرایش کنه
-if (!in_array($user['activity_section'], ['management', 'supervisor'])) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'دسترسی ندارید']);
-    exit;
-}
+// فقط کسی که اجازهٔ مدیریت واحدها را دارد
+$currentUser = loadUserForPermissions($db, $user_id);
+requirePermission($currentUser, 'manage_activity_sections');
 
 $input = json_decode(file_get_contents('php://input'), true);
 

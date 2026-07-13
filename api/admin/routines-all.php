@@ -12,15 +12,8 @@ try {
     $db = $database->getConnection();
     
     // بررسی دسترسی ادمین
-    $checkAdmin = $db->prepare("SELECT activity_section FROM users WHERE id = ?");
-    $checkAdmin->execute([$user_id]);
-    $user = $checkAdmin->fetch();
-    
-    if (!$user || $user['activity_section'] !== 'management') {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
-        exit;
-    }
+    $currentUser = loadUserForPermissions($db, $user_id);
+    requirePermission($currentUser, 'monitor_all_workflows');
     
     $sql = "SELECT rw.*, 
                    (SELECT COUNT(*) FROM routine_steps WHERE routine_id = rw.id) as steps_count,

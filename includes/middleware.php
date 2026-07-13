@@ -64,27 +64,18 @@ function getUserInfo($user_id) {
 /**
  * بررسی دسترسی به نقش خاص
  */
+/**
+ * ⚠️ منسوخ (Deprecated) — از requirePermission در permissions.php استفاده کنید.
+ *
+ * این تابع قبلاً activity_section (واحد) را با نقش‌ها مقایسه می‌کرد،
+ * که از پایه اشتباه بود. حالا فقط role را چک می‌کند.
+ */
 function requireRole($user_id, $required_roles = []) {
     $user = getUserInfo($user_id);
-    
-    if (!$user) {
-        return false;
-    }
-    
-    // اگر هیچ نقش مشخص نشده، فقط active بودن الزامی است
-    if (empty($required_roles)) {
-        return true;
-    }
-    
-    // بررسی activity_section
-    $allowed_sections = [
-        'admin' => 'management',
-        'manager' => ['sales', 'purchase', 'warehouse', 'technical', 'accounting'],
-        'supervisor' => ['sales', 'purchase', 'warehouse', 'technical', 'accounting'],
-        'employee' => ['sales', 'purchase', 'warehouse', 'technical', 'accounting', 'public']
-    ];
-    
-    return in_array($user['activity_section'], $required_roles);
+    if (!$user) return false;
+    if (empty($required_roles)) return true;
+
+    return in_array($user['role'] ?? '', $required_roles, true);
 }
 
 /**
@@ -104,8 +95,8 @@ function requireSpecificRole($user_id, $required_role) {
     }
     
     // For simplicity, we'll check activity_section
-    $admin_sections = ['management', 'admin'];
-    if ($required_role === 'admin' && !in_array($user['activity_section'], $admin_sections)) {
+    // ⚠️ منسوخ — از requirePermission استفاده کنید
+    if ($required_role === 'admin' && ($user['role'] ?? '') !== 'supervisor') {
         http_response_code(403);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([

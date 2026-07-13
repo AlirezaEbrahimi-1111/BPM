@@ -37,14 +37,8 @@ try {
     if (!$me)
         throw new Exception('کاربر یافت نشد');
 
-    $is_superadmin = ((int) $me['id'] === 1);
-    $is_manager = ($me['activity_section'] === 'management' && in_array($me['role'], ['supervisor', 'admin'], true));
-
-    if (!$is_superadmin && !$is_manager) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز'], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
+    $me = loadUserForPermissions($db, $user_id);
+    requirePermission($me, 'view_payroll');
 
     $organization_id = (int) $me['organization_id'];
     if ($organization_id <= 0)
