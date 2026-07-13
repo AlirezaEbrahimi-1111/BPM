@@ -3,3 +3,4 @@ error_log
 debug.txt
 config/config.php
 includes/sms.php
+tests/config.php
