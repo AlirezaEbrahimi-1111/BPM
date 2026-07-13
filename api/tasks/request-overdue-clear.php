@@ -15,16 +15,21 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+
 /**
  * محاسبهٔ تعداد دوره‌های معوقه و باقی‌مانده (هم‌خوان با complete-recurring.php)
  * باقی‌مانده = معوقه − تکمیل‌شده − اعتبار بخشش
  */
-function oc_calc_remaining(PDO $db, array $task): array {
+function oc_calc_remaining(PDO $db, array $task): array
+{
     if (($task['task_type'] ?? '') !== 'continuous' || empty($task['start_date'])) {
         return ['overdue' => 0, 'remaining' => 0];
     }
-    $start = new DateTime($task['start_date']); $start->setTime(0, 0, 0);
-    $today = new DateTime();                     $today->setTime(0, 0, 0);
+    $start = new DateTime($task['start_date']);
+    $start->setTime(0, 0, 0);
+    $today = new DateTime();
+    $today->setTime(0, 0, 0);
     if ($today < $start) return ['overdue' => 0, 'remaining' => 0];
 
     // ✅ همان فرمول my-tasks: فقط روزهای کاری (بدون جمعه و تعطیلات)
@@ -39,21 +44,37 @@ function oc_calc_remaining(PDO $db, array $task): array {
     return ['overdue' => $overdue, 'remaining' => max(0, $overdue - $completed - $forgiven)];
 }
 
-/** پیدا کردن تأییدکننده: تعریف‌کننده اگر فعال باشد، وگرنه مدیر بخش، وگرنه خودِ تعریف‌کننده */
-function oc_resolve_approver(PDO $db, array $task): int {
+/**
+ * پیدا کردن تأییدکننده:
+ *   ۱) تعریف‌کنندهٔ کار (اگر فعال باشد)
+ *   ۲) وگرنه یک سرپرست در همان واحد
+ *   ۳) وگرنه یک سرپرست در سازمان (هر واحدی)
+ *   ۴) وگرنه خودِ تعریف‌کننده
+ *
+ * ⚠️ نقش‌های معتبر: supervisor و manager
+ *    (پیش از این «admin» و «management» هم چک می‌شدند که هیچ‌کدام
+ *     نقش معتبر نیستند — «management» یک واحد است، نه نقش)
+ */
+function oc_resolve_approver(PDO $db, array $task): int
+{
     $creator_id = (int) $task['creator_id'];
+
+    // ۱) تعریف‌کننده
     $c = $db->prepare("SELECT is_active, is_deleted FROM users WHERE id = ?");
     $c->execute([$creator_id]);
     $cu = $c->fetch(PDO::FETCH_ASSOC);
     $creatorOk = $cu && (int)$cu['is_active'] === 1 && (int)($cu['is_deleted'] ?? 0) === 0;
     if ($creatorOk) return $creator_id;
 
-    // مدیر همان بخش
+    // نقش‌هایی که اجازهٔ تأیید رفع معوقه دارند
+    $approverRoles = "'supervisor','manager'";
+
+    // ۲) سرپرست همان واحد
     if (!empty($task['activity_section'])) {
         $m = $db->prepare("
             SELECT id FROM users
             WHERE organization_id = ? AND activity_section = ?
-              AND role IN ('supervisor','admin','management')
+              AND role IN ($approverRoles)
               AND is_active = 1 AND (is_deleted = 0 OR is_deleted IS NULL)
             ORDER BY id LIMIT 1
         ");
@@ -61,16 +82,18 @@ function oc_resolve_approver(PDO $db, array $task): int {
         $mid = $m->fetchColumn();
         if ($mid) return (int) $mid;
     }
-    // مدیر سازمان (fallback)
+
+    // ۳) هر سرپرستی در سازمان (بدون قید واحد)
     $o = $db->prepare("
         SELECT id FROM users
-        WHERE organization_id = ? AND activity_section = 'management'
-          AND role IN ('supervisor','admin','management')
+        WHERE organization_id = ?
+          AND role IN ($approverRoles)
           AND is_active = 1 AND (is_deleted = 0 OR is_deleted IS NULL)
         ORDER BY id LIMIT 1
     ");
     $o->execute([$task['organization_id']]);
     $oid = $o->fetchColumn();
+
     return $oid ? (int) $oid : $creator_id;
 }
 
@@ -112,6 +135,16 @@ try {
         $s->execute([$user_id]);
         $isSection = ($s->fetchColumn() === $task['activity_section']);
     }
+    // سوپرادمین و سرپرست سازمان هم مجازند
+    if (!$isAssignee && !$isCreator && !$isSection) {
+        $me = loadUserForPermissions($db, $user_id);
+        if (
+            hasPermission($me, 'view_all_org_tasks')
+            && isSameOrganization($me, $task['organization_id'])
+        ) {
+            $isSection = true;   // اجازه بده عبور کند
+        }
+    }
     if (!$isAssignee && !$isCreator && !$isSection) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'شما مجاز به این عملیات نیستید'], JSON_UNESCAPED_UNICODE);
@@ -142,17 +175,21 @@ try {
                           last_approved_date = CURDATE(),
                           updated_at = NOW()
                       WHERE id = ?")
-           ->execute([$remaining, $task_id]);
+            ->execute([$remaining, $task_id]);
 
         $db->prepare("INSERT INTO overdue_clear_requests
             (organization_id, task_id, requested_by, periods_count, reason, status, current_approver_id, forgiven_count)
             VALUES (?, ?, ?, ?, ?, 'approved', ?, ?)")
-           ->execute([$task['organization_id'], $task_id, $user_id, $remaining, $reason, $user_id, $remaining]);
+            ->execute([$task['organization_id'], $task_id, $user_id, $remaining, $reason, $user_id, $remaining]);
 
         $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
                       VALUES (?, ?, ?, 'updated', ?)")
-           ->execute([$task_id, $user_id, $user_id,
-               'رفع دوره‌های معوقه (تأیید خودکار توسط تعریف‌کننده) — تعداد: ' . $remaining]);
+            ->execute([
+                $task_id,
+                $user_id,
+                $user_id,
+                'رفع دوره‌های معوقه (تأیید خودکار توسط تعریف‌کننده) — تعداد: ' . $remaining
+            ]);
 
         $db->commit();
         echo json_encode([
@@ -170,10 +207,10 @@ try {
     $db->prepare("INSERT INTO overdue_clear_requests
         (organization_id, task_id, requested_by, periods_count, reason, status, current_approver_id)
         VALUES (?, ?, ?, ?, ?, 'pending', ?)")
-       ->execute([$task['organization_id'], $task_id, $user_id, $remaining, $reason, $approver_id]);
+        ->execute([$task['organization_id'], $task_id, $user_id, $remaining, $reason, $approver_id]);
 
     $db->prepare("UPDATE tasks SET has_pending_overdue_request = 1, updated_at = NOW() WHERE id = ?")
-       ->execute([$task_id]);
+        ->execute([$task_id]);
 
     // نوتیفیکیشن به تأییدکننده
     try {
@@ -204,7 +241,6 @@ try {
         'message' => 'درخواست رفع معوقه ثبت شد و برای تأیید ارسال گردید',
         'pending_periods' => $remaining
     ], JSON_UNESCAPED_UNICODE);
-
 } catch (Exception $e) {
     if (isset($db) && $db->inTransaction()) $db->rollBack();
     error_log('request-overdue-clear error: ' . $e->getMessage());

@@ -10,6 +10,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+
 try {
     $user_id = requireAuth();
 
@@ -94,7 +96,7 @@ try {
     $db = $database->getConnection();
 
     $stmt = $db->prepare("
-        SELECT t.id, t.creator_id, t.assignee_id, t.activity_section
+        SELECT t.id, t.creator_id, t.assignee_id, t.activity_section, t.organization_id
         FROM tasks t
         WHERE t.id = ?
     ");
@@ -112,23 +114,13 @@ try {
     if ($task['creator_id'] == $user_id || $task['assignee_id'] == $user_id) {
         $hasAccess = true;
     }
-    // امنیت: به‌جای id ثابت → سوپرادمین یا مدیرِ هم‌سازمانِ این کار
+    // سوپرادمین یا مدیرِ هم‌سازمانِ این کار
     if (!$hasAccess) {
-        $stmt = $db->prepare("
-            SELECT u.role, u.activity_section, u.organization_id, t.organization_id as task_org_id
-            FROM users u, tasks t
-            WHERE u.id = ? AND t.id = ?
-        ");
-        $stmt->execute([$user_id, $task_id]);
-        $chk = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($chk) {
-            $isSuperadmin = ((int) $user_id === 1);
-            $isOrgManager = ($chk['activity_section'] === 'management'
-                && in_array($chk['role'], ['supervisor', 'manager'], true)
-                && (int) $chk['organization_id'] === (int) $chk['task_org_id']);
-            if ($isSuperadmin || $isOrgManager) {
-                $hasAccess = true;
-            }
+        $me = loadUserForPermissions($db, $user_id);
+
+        if (hasPermission($me, 'view_all_org_tasks')
+            && isSameOrganization($me, $task['organization_id'])) {
+            $hasAccess = true;
         }
     }
     if (!$hasAccess) {

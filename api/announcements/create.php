@@ -18,8 +18,8 @@ if (!$user || !isset($user['id'])) {
 $database = new Database();
 $db = $database->getConnection();
 
-$role = $user['role'] ?? 'employee';
-$org  = $user['organization_id'] ?? null;
+$currentUser = loadUserForPermissions($db, $user_id);
+$org = $currentUser['organization_id'] ?? null;
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input || empty($input['title']) || empty($input['content'])) {
@@ -36,11 +36,7 @@ $targetUserId = null;
 
 if ($scope === 'user') {
     // ارسال به یک شخصِ خاص (فقط مدیر/سوپروایزر)
-    if (!in_array($role, ['management', 'supervisor'])) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز'], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
+    requirePermission($currentUser, 'send_org_announcement');
     $targetUserId = (int) ($input['target_user_id'] ?? 0);
     if ($targetUserId <= 0) {
         http_response_code(400);
@@ -59,7 +55,6 @@ if ($scope === 'user') {
 
     $orgId = $org;
     $targetSection = null;
-
 } elseif ($scope === 'all_orgs') {
     // فقط مدیر کل سیستم
     if (!in_array((int)$user_id, getSuperAdminIds(), true)) {
@@ -69,13 +64,8 @@ if ($scope === 'user') {
     }
     $orgId = null;
     $targetSection = null;
-
 } elseif ($scope === 'section') {
-    if (!in_array($role, ['management', 'supervisor'])) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز'], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
+    requirePermission($currentUser, 'send_section_announcement');
     $targetSection = trim($input['target_section'] ?? '');
     if ($targetSection === '') {
         http_response_code(400);
@@ -83,13 +73,8 @@ if ($scope === 'user') {
         exit;
     }
     $orgId = $org;
-
 } else { // organization (کل سازمان)
-    if (!in_array($role, ['management', 'supervisor'])) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز'], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
+    requirePermission($currentUser, 'send_org_announcement');
     $orgId = $org;
     $targetSection = null;
 }
@@ -128,7 +113,7 @@ try {
         ':organization_id' => $orgId,           // NULL = سراسری
         ':target_section'  => $targetSection,   // NULL = کل سازمان
         ':target_user_id'  => $targetUserId,    // NULL = همه/واحد، مقدار = یک شخص
-        ':author_id'       => $user['id']
+        ':author_id' => $user_id
     ]);
 
     echo json_encode([
@@ -136,7 +121,6 @@ try {
         'message' => 'اطلاعیه با موفقیت ایجاد شد',
         'id' => intval($db->lastInsertId())
     ], JSON_UNESCAPED_UNICODE);
-
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);

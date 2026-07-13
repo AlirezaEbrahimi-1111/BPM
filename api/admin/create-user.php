@@ -3,6 +3,7 @@ header('Content-Type: application/json; charset=utf-8');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -12,24 +13,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     $user_id = requireAuth();
-    
+
     // بررسی دسترسی ادمین
     $database = new Database();
     $db = $database->getConnection();
-    
-    $checkAdmin = $db->prepare("SELECT activity_section, organization_id FROM users WHERE id = ?");
-    $checkAdmin->execute([$user_id]);
-    $currentUser = $checkAdmin->fetch();
-    
-    if (!$currentUser || $currentUser['activity_section'] !== 'management') {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
-        exit;
-    }
-    
-    // ── تغییر: organization_id کاربر جاری ──
+
+    $currentUser = loadUserForPermissions($db, $user_id);
+    requirePermission($currentUser, 'manage_users');
+
     $current_org_id = $currentUser['organization_id'];
-    
+
     // ── بررسی سقف تعداد کاربران مجاز ──
     if ($current_org_id) {
         // تعداد کاربران فعلی سازمان
@@ -51,40 +44,42 @@ try {
             if ($currentCount >= $maxUsers) {
                 http_response_code(403);
                 echo json_encode([
-                    'success' => false, 
+                    'success' => false,
                     'message' => "سقف تعداد کاربران مجاز ({$maxUsers} نفر) تکمیل شده است. برای افزایش، اشتراک خود را ارتقا دهید."
                 ]);
                 exit;
             }
         }
     }
-    
+
     $input = json_decode(file_get_contents('php://input'), true);
-    
+
     // اعتبارسنجی ورودی‌ها
-    if (empty($input['username']) || empty($input['password']) || empty($input['phone']) || 
-        empty($input['first_name']) || empty($input['last_name'])) {
+    if (
+        empty($input['username']) || empty($input['password']) || empty($input['phone']) ||
+        empty($input['first_name']) || empty($input['last_name'])
+    ) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'فیلدهای الزامی را پر کنید']);
         exit;
     }
-    
+
     $auth = new Auth();
-    
+
     // اعتبارسنجی نام کاربری
     if (!$auth->validateUsername($input['username'])) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'نام کاربری نامعتبر است']);
         exit;
     }
-    
+
     // اعتبارسنجی رمز عبور
     if (!$auth->validatePassword($input['password'])) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'رمز عبور باید حداقل 4 کاراکتر باشد']);
         exit;
     }
-    
+
     // ثبت‌نام کاربر
     $result = $auth->register(
         $input['username'],
@@ -106,53 +101,50 @@ try {
         echo json_encode($result);
         exit;
     }
-    
+
     // $new_user_id = $db->lastInsertId();
     $new_user_id = $result['user']['id'];  // به جای $db->lastInsertId()
 
-    
+
     // ── تغییر: انتساب organization_id کاربر جاری به کاربر جدید ──
     if ($current_org_id) {
         $updateOrg = $db->prepare("UPDATE users SET organization_id = ? WHERE id = ?");
         $updateOrg->execute([$current_org_id, $new_user_id]);
     }
-    
+
     // بروزرسانی ایمیل اگر ارسال شده
     if (!empty($input['email'])) {
         $updateEmail = $db->prepare("UPDATE users SET email = ? WHERE id = ?");
         $updateEmail->execute([$input['email'], $new_user_id]);
     }
-    
+
     // افزودن واحدهای فعالیت
     if (!empty($input['units']) && is_array($input['units'])) {
         $insertUnit = $db->prepare("INSERT INTO user_activity_units (user_id, activity_unit, is_primary) VALUES (?, ?, ?)");
-        
+
         foreach ($input['units'] as $index => $unitCode) {
             $is_primary = ($index === 0) ? 1 : 0; // اولین واحد را اصلی در نظر بگیر
             $insertUnit->execute([$new_user_id, $unitCode, $is_primary]);
         }
-        
+
         // بروزرسانی فیلد activity_unit در جدول users
         if (count($input['units']) > 0) {
             $updateUnit = $db->prepare("UPDATE users SET activity_unit = ? WHERE id = ?");
             $updateUnit->execute([$input['units'][0], $new_user_id]);
         }
-        
+
         // ✅ همیشه activity_unit را 'all' قرار بده (صرف‌نظر از units)
         $updateUnit = $db->prepare("UPDATE users SET activity_unit = ? WHERE id = ?");
         $updateUnit->execute(['all', $new_user_id]);
-
     }
-    
+
     echo json_encode([
         'success' => true,
         'message' => 'کاربر با موفقیت ایجاد شد',
         'user_id' => $new_user_id
     ]);
-    
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور', 'error' => $e->getMessage()]);
     error_log("Create user error: " . $e->getMessage());
 }
-?>

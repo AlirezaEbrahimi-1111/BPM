@@ -16,17 +16,8 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // فقط مدیر (management + supervisor) مجاز است
-    $stmt = $db->prepare("SELECT activity_section, role FROM users WHERE id = ?");
-    $stmt->execute([$user_id]);
-    $u = $stmt->fetch(PDO::FETCH_ASSOC);
-    $isManager = $u && $u['activity_section'] === 'management' && $u['role'] === 'supervisor';
-
-    if (!$isManager) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'دسترسی فقط برای مدیر سازمان است']);
-        exit;
-    }
+    $currentUser = loadUserForPermissions($db, $user_id);
+    requirePermission($currentUser, 'manage_task_groups');
 
     // همه گروه‌های سازمان + نام سازنده + تعداد کارهای هر گروه
     $stmt = $db->prepare("

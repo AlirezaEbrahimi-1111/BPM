@@ -10,6 +10,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/TaskManager.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+
 try {
     $user_id = requireAuth();
 
@@ -38,18 +40,15 @@ try {
         $hasAccess = true;
     }
 
-    // امنیت: به‌جای id ثابت → سوپرادمین یا مدیرِ هم‌سازمانِ این کار
+    // سوپرادمین یا مدیرِ هم‌سازمانِ این کار
     if (!$hasAccess) {
-        $stmt = $db->prepare("SELECT role, activity_section, organization_id FROM users WHERE id = ?");
-        $stmt->execute([$user_id]);
-        $me = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($me) {
-            $isOrgManager = ($me['activity_section'] === 'management'
-                && in_array($me['role'], ['supervisor', 'manager'], true)
-                && (int) $me['organization_id'] === (int) ($task['organization_id'] ?? 0));
-            if ($isOrgManager) {
-                $hasAccess = true;
-            }
+        $me = loadUserForPermissions($db, $user_id);
+
+        if (
+            hasPermission($me, 'view_all_org_tasks')
+            && isSameOrganization($me, $task['organization_id'] ?? 0)
+        ) {
+            $hasAccess = true;
         }
     }
 
@@ -190,7 +189,7 @@ try {
                 // مرحله 2: گرفتن اطلاعات step از workflow_instance_steps
                 $task['workflow_current_step'] = intval($instance['current_step']);
                 error_log("✅ Workflow current_step: " . $task['workflow_current_step']);
-            
+
                 // ✅ بخش و وضعیتِ مرحلهٔ خودِ این تسک (نه current_step) — لازم برای حالت موازی
                 $stmt = $db->prepare("
                     SELECT ws.activity_section, wis.status AS step_status,
@@ -218,7 +217,7 @@ try {
     // دریافت تاریخچه
     $history = $taskManager->getTaskHistory($_GET['id']);
 
-// ✅ فیلتر تاریخچه بر اساس سیاست share_history (تعیین‌شده توسط تعریف‌کننده)
+    // ✅ فیلتر تاریخچه بر اساس سیاست share_history (تعیین‌شده توسط تعریف‌کننده)
     if (!isset($task['share_history'])) {
         $shStmt = $db->prepare("SELECT share_history FROM tasks WHERE id = ?");
         $shStmt->execute([$_GET['id']]);
@@ -245,7 +244,7 @@ try {
         }
     }
 
-// ✅ اطمینان از وجود is_deleted
+    // ✅ اطمینان از وجود is_deleted
     if (!isset($task['is_deleted'])) {
         $stmt = $db->prepare("SELECT is_deleted FROM tasks WHERE id = ?");
         $stmt->execute([$_GET['id']]);
@@ -262,11 +261,9 @@ try {
         'history' => $history,
         'can_edit' => $hasAccess
     ]);
-
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای داخلی سرور']);
     error_log("Get task detail error: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
 }
-?>

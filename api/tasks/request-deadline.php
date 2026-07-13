@@ -20,6 +20,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/JalaliHelper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 set_error_handler(function ($errno, $errstr, $errfile, $errline) {
     error_log("PHP Error: [$errno] $errstr in $errfile:$errline");
@@ -60,11 +61,10 @@ try {
 
     $is_workflow = ($task['is_workflow_task'] == 1);
 
-    // نقش کاربر درخواست‌دهنده (برای روتین: تشخیص مدیر/تأییدکننده)
-    $roleStmt = $db->prepare("SELECT role FROM users WHERE id = ?");
-    $roleStmt->execute([$user_id]);
-    $requester_role = $roleStmt->fetchColumn();
-    $requester_is_manager = in_array($requester_role, ['management', 'supervisor', 'admin']);
+    // آیا درخواست‌دهنده اجازهٔ تأیید تمدید موعد را دارد؟
+    // (پیش از این «management» و «admin» چک می‌شدند که هیچ‌کدام نقش معتبر نیستند)
+    $me = loadUserForPermissions($db, $user_id);
+    $requester_is_manager = hasPermission($me, 'approve_deadline_request');
 
     if ($is_workflow) {
         // کار روتین: assignee ندارد؛ مجوز = عضو بخشِ همین مرحله (یا مدیر)

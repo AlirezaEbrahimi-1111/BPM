@@ -6,6 +6,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $user_id = requireAuth();
@@ -56,13 +57,11 @@ try {
     error_log("task-groups/update error: " . $e->getMessage());
 }
 
-// گروه سازمانی → فقط management+supervisor ؛ گروه شخصی → فقط سازنده
 function canEditGroup($db, $user_id, $group) {
     if ($group['scope'] === 'org') {
-        $stmt = $db->prepare("SELECT activity_section, role FROM users WHERE id = ?");
-        $stmt->execute([$user_id]);
-        $u = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $u && $u['activity_section'] === 'management' && $u['role'] === 'supervisor';
+        $me = loadUserForPermissions($db, $user_id);
+        return hasPermission($me, 'manage_task_groups');
     }
+    // گروه شخصی → فقط سازنده‌اش
     return (int)$group['created_by'] === (int)$user_id;
 }

@@ -1,96 +1,283 @@
 <?php
 /**
- * ═══════════════════════════════════════════════════════════════
- *  سیستم کنترل دسترسی مبتنی بر نقش (RBAC)
- * ═══════════════════════════════════════════════════════════════
- *  این فایل، مرجعِ واحدِ همه‌ی قوانین دسترسی است.
- *  برای افزودن/حذف یک اجازه، فقط همین فایل را ویرایش کنید.
- * ═══════════════════════════════════════════════════════════════
+ * ═══════════════════════════════════════════════════════════════════
+ *  permissions.php — سیستم کنترل دسترسی (RBAC + ACL)
+ *  محل: /includes/permissions.php
+ * ───────────────────────────────────────────────────────────────────
+ *
+ *  ┌─ اصل بنیادین ───────────────────────────────────────────────┐
+ *  │                                                              │
+ *  │  role             = اختیار    (تنها مرجع کنترل دسترسی)      │
+ *  │  activity_section = جایگاه    (فقط برای ارجاع کار و گزارش)  │
+ *  │                                                              │
+ *  │  ❌ هرگز activity_section را برای دسترسی چک نکنید.          │
+ *  │     «واحد مدیریت» یک دپارتمان است، نه یک سطح اختیار.        │
+ *  └──────────────────────────────────────────────────────────────┘
+ *
+ *  ┌─ سه لایهٔ تصمیم ─────────────────────────────────────────────┐
+ *  │                                                              │
+ *  │  ۱) سوپرادمین  →  دسترسی کامل                               │
+ *  │  ۲) اختیار فردی →  مدیر سازمان به کاربر خاصی اجازهٔ         │
+ *  │                    مشخصی داده (مثل ساخت روتین)              │
+ *  │  ۳) نقش         →  اجازه‌های پایه بر اساس role              │
+ *  │                                                              │
+ *  └──────────────────────────────────────────────────────────────┘
+ *
+ *  استفاده در APIها:
+ *      require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+ *
+ *      $me = loadUserForPermissions($db, $user_id);
+ *      requirePermission($me, 'manage_users');   // اگر مجاز نبود، 403 و exit
+ *
+ *  یا برای تصمیم شرطی (بدون قطع اجرا):
+ *      if (hasPermission($me, 'view_all_org_tasks')) { ... }
+ * ═══════════════════════════════════════════════════════════════════
  */
 
-/**
- * جدول اجازه‌ها: هر اجازه به لیست نقش‌هایی که آن را دارند نگاشت می‌شود.
- * برای افزودن اجازه‌ی جدید: یک ردیف جدید اینجا اضافه کنید.
- * برای تغییر دسترسی یک نقش: نام نقش را به لیست اضافه/حذف کنید.
- */
-function getPermissionMatrix() {
-    return [
-        // کلید اجازه            => [نقش‌هایی که این اجازه را دارند]
-        'view_superadmin_panel'   => ['superadmin'],
-        'manage_users'            => ['superadmin', 'supervisor'],
-        'view_all_org_tasks'      => ['superadmin', 'supervisor'],
-        'view_section_tasks'      => ['superadmin', 'supervisor', 'manager'],
-        'create_routine_template' => ['superadmin', 'supervisor'],
-        'create_recurring_task'   => ['superadmin', 'supervisor', 'manager', 'employee'],
-        'create_workflow'         => ['superadmin', 'supervisor', 'manager', 'employee'],
-        'monitor_all_workflows'   => ['superadmin', 'supervisor'],
-        'view_reports'            => ['superadmin', 'supervisor', 'manager'],
-        'send_org_announcement'   => ['superadmin', 'supervisor'],
-        'send_section_announcement' => ['superadmin', 'supervisor', 'manager'],
-    ];
-}
+
+/* ═══════════════════════════════════════════════════════════════
+   بخش ۱ — سوپرادمین‌ها
+   ═══════════════════════════════════════════════════════════════ */
 
 /**
- * لیست کاربرانی که superadmin هستند (دسترسی به همه‌ی سازمان‌ها).
- * فعلاً بر اساس id ثابت است؛ بعداً می‌توان به یک ستون is_super_admin منتقل کرد.
+ * شناسهٔ کاربرانی که دسترسی کامل به کل سامانه دارند.
+ *
+ * ⚠️ این تنها جایی است که شناسهٔ عددی مجاز است.
+ *    قبلاً `$user_id === 1` در چند فایل پراکنده بود — همه حذف شد.
  */
-function getSuperAdminIds() {
+function getSuperAdminIds(): array
+{
     return [1, 22];
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   بخش ۲ — جدول اجازه‌های هر نقش
+   ═══════════════════════════════════════════════════════════════ */
+
 /**
- * نقشِ مؤثرِ یک کاربر را برمی‌گرداند.
- * اگر id کاربر در لیست superadminها باشد، نقش او 'superadmin' در نظر گرفته می‌شود،
- * صرف‌نظر از مقدار ستون role در دیتابیس.
+ * اجازه‌های پایهٔ هر نقش.
  *
- * $user باید آرایه‌ای شامل 'id' و 'role' باشد.
+ * برای افزودن اجازهٔ جدید، فقط همین‌جا اضافه کنید.
+ * برای افزودن نقش جدید، یک کلید جدید بسازید.
  */
-function getEffectiveRole($user) {
-    $uid = (int)($user['id'] ?? 0);
-    if (in_array($uid, getSuperAdminIds(), true)) {
-        return 'superadmin';
-    }
-    return $user['role'] ?? 'employee';
+function getPermissionMatrix(): array
+{
+    return [
+
+        // ── سرپرست سازمان ────────────────────────────────
+        'supervisor' => [
+            'manage_users',
+            'manage_activity_sections',
+            'view_org_settings',
+            'manage_task_groups',
+            'view_all_org_tasks',
+            'view_section_tasks',
+            'create_task',
+            'create_recurring_task',
+            'create_workflow',
+            'create_routine_template',
+            'monitor_all_workflows',
+            'approve_deadline_request',
+            'approve_overdue_clear',
+            'view_reports',
+            'view_payroll',
+            'send_org_announcement',
+            'send_section_announcement',
+            'grant_user_permissions',   // اجازهٔ دادنِ اختیار فردی به دیگران
+        ],
+
+        // ── مدیر واحد (فعلاً بدون کاربر — آمادهٔ آینده) ──
+        'manager' => [
+            'view_section_tasks',
+            'create_task',
+            'create_recurring_task',
+            'create_workflow',
+            'approve_deadline_request',
+            'approve_overdue_clear',
+            'view_reports',
+            'send_section_announcement',
+        ],
+
+        // ── کارمند ───────────────────────────────────────
+        'employee' => [
+            'create_task',
+            'create_recurring_task',
+        ],
+    ];
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   بخش ۳ — اختیارات فردی (لایهٔ سوم)
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * نگاشت ستون‌های دیتابیس به اجازه‌ها.
+ *
+ * مدیر سازمان از صفحهٔ users می‌تواند این سوییچ‌ها را برای هر
+ * کاربر روشن/خاموش کند — فارغ از نقش آن کاربر.
+ *
+ * مثال واقعی: کاربر «فاطمه وحدتی‌پور» نقشش employee است، اما مدیر
+ * سازمان به او اجازهٔ ساخت روتین و فرآیند داده است.
+ */
+function getIndividualGrantMap(): array
+{
+    return [
+        'can_create_routine'  => 'create_routine_template',
+        'can_create_workflow' => 'create_workflow',
+    ];
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   بخش ۴ — بارگذاری کاربر
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * اطلاعات لازم برای تصمیم‌گیری دربارهٔ دسترسی را از دیتابیس می‌خواند.
+ *
+ * ⚠️ حتماً از این تابع استفاده کنید. اگر کوئری دستی بنویسید و
+ *    ستونی (مثلاً can_create_workflow) را جا بیندازید، تصمیم اشتباه
+ *    گرفته می‌شود.
+ */
+function loadUserForPermissions(PDO $db, int $userId): ?array
+{
+    $stmt = $db->prepare("
+        SELECT id, role, organization_id, activity_section,
+               can_create_routine, can_create_workflow,
+               is_active, is_deleted
+        FROM users
+        WHERE id = ?
+    ");
+    $stmt->execute([$userId]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user)                              return null;
+    if ((int) $user['is_active'] !== 1)      return null;
+    if ((int) ($user['is_deleted'] ?? 0) === 1) return null;
+
+    return $user;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   بخش ۵ — منطق تصمیم
+   ═══════════════════════════════════════════════════════════════ */
+
+/** آیا این کاربر سوپرادمین است؟ */
+function isSuperAdmin(?array $user): bool
+{
+    if (!$user || !isset($user['id'])) return false;
+    return in_array((int) $user['id'], getSuperAdminIds(), true);
 }
 
 /**
- * بررسی می‌کند که آیا کاربر، اجازه‌ی مشخصی را دارد یا نه.
+ * آیا این کاربر اجازهٔ مشخصی را دارد؟
  *
- * مثال استفاده:
- *   if (hasPermission($user, 'manage_users')) { ... }
- *
- * $user  : آرایه‌ی اطلاعات کاربر (شامل id و role)
- * $perm  : کلید اجازه (مثل 'manage_users')
- * خروجی  : true اگر اجازه داشته باشد، وگرنه false
+ * ترتیب بررسی:
+ *   ۱) سوپرادمین؟           → بله
+ *   ۲) اختیار فردی صریح؟    → همان مقدار
+ *   ۳) نقش                  → طبق جدول
  */
-function hasPermission($user, $perm) {
-    $role = getEffectiveRole($user);
+function hasPermission(?array $user, string $permission): bool
+{
+    if (!$user) return false;
+
+    // ── لایهٔ ۱: سوپرادمین ──────────────────────────────
+    if (isSuperAdmin($user)) {
+        return true;
+    }
+
+    // ── لایهٔ ۲: اختیار فردی ────────────────────────────
+    // اگر مدیر سازمان صریحاً این اجازه را به کاربر داده باشد،
+    // بر نقشش اولویت دارد.
+    foreach (getIndividualGrantMap() as $column => $grantedPermission) {
+        if ($grantedPermission === $permission
+            && isset($user[$column])
+            && (int) $user[$column] === 1) {
+            return true;
+        }
+    }
+
+    // ── لایهٔ ۳: نقش ────────────────────────────────────
+    $role   = $user['role'] ?? 'employee';
     $matrix = getPermissionMatrix();
 
-    // اگر این اجازه اصلاً تعریف نشده باشد، برای امنیت false برمی‌گردانیم
-    if (!isset($matrix[$perm])) {
-        error_log("hasPermission: اجازه‌ی ناشناخته '$perm' درخواست شد");
+    if (!isset($matrix[$role])) {
+        // نقش ناشناخته → هیچ اجازه‌ای نده (اصل احتیاط)
+        error_log("permissions: نقش ناشناخته «{$role}» برای کاربر #{$user['id']}");
         return false;
     }
 
-    return in_array($role, $matrix[$perm], true);
+    return in_array($permission, $matrix[$role], true);
 }
 
 /**
- * مثل hasPermission، ولی اگر اجازه نداشت، مستقیماً با خطای 403 پاسخ می‌دهد و متوقف می‌شود.
- * برای استفاده در ابتدای فایل‌های API که نیاز به دسترسی خاص دارند.
+ * اگر کاربر اجازه نداشته باشد، پاسخ ۴۰۳ می‌دهد و اجرا را قطع می‌کند.
  *
- * مثال:
- *   requirePermission($user, 'manage_users');
- *   // اگر به اینجا برسد، یعنی کاربر اجازه دارد
+ * این تابع برای APIهاست. در صفحات HTML از hasPermission استفاده کنید.
  */
-function requirePermission($user, $perm) {
-    if (!hasPermission($user, $perm)) {
-        http_response_code(403);
-        echo json_encode([
-            'success' => false,
-            'message' => 'شما دسترسی لازم برای این عملیات را ندارید'
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
+function requirePermission(?array $user, string $permission): void
+{
+    if (hasPermission($user, $permission)) {
+        return;
     }
+
+    http_response_code(403);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'success' => false,
+        'message' => 'دسترسی غیرمجاز'
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+/**
+ * فهرست کامل اجازه‌های یک کاربر.
+ * مفید برای ارسال به فرانت‌اند (تا دکمه‌های غیرمجاز نمایش داده نشوند).
+ */
+function getUserPermissions(?array $user): array
+{
+    if (!$user) return [];
+
+    if (isSuperAdmin($user)) {
+        // سوپرادمین همهٔ اجازه‌ها را دارد
+        $all = [];
+        foreach (getPermissionMatrix() as $perms) {
+            $all = array_merge($all, $perms);
+        }
+        return array_values(array_unique($all));
+    }
+
+    $role   = $user['role'] ?? 'employee';
+    $matrix = getPermissionMatrix();
+    $perms  = $matrix[$role] ?? [];
+
+    // افزودن اختیارات فردی
+    foreach (getIndividualGrantMap() as $column => $permission) {
+        if (isset($user[$column]) && (int) $user[$column] === 1) {
+            $perms[] = $permission;
+        }
+    }
+
+    return array_values(array_unique($perms));
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   بخش ۶ — کمکی: هم‌سازمان بودن
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * آیا کاربر و منبع (کار، گروه، …) در یک سازمان‌اند؟
+ *
+ * سوپرادمین از این قید مستثناست.
+ */
+function isSameOrganization(?array $user, $resourceOrgId): bool
+{
+    if (!$user) return false;
+    if (isSuperAdmin($user)) return true;
+
+    return (int) ($user['organization_id'] ?? 0) === (int) $resourceOrgId;
 }

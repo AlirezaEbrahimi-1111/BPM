@@ -6,6 +6,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $user_id = requireAuth();
@@ -37,10 +38,8 @@ try {
     // بررسی دسترسی (همان منطق update)
     $allowed = false;
     if ($group['scope'] === 'org') {
-        $s = $db->prepare("SELECT activity_section, role FROM users WHERE id = ?");
-        $s->execute([$user_id]);
-        $u = $s->fetch(PDO::FETCH_ASSOC);
-        $allowed = $u && $u['activity_section'] === 'management' && $u['role'] === 'supervisor';
+        $me = loadUserForPermissions($db, $user_id);
+        $allowed = hasPermission($me, 'manage_task_groups');
     } else {
         $allowed = (int)$group['created_by'] === (int)$user_id;
     }
