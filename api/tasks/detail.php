@@ -11,7 +11,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/TaskManager.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-dates-helper.php';
 try {
     $user_id = requireAuth();
 
@@ -171,7 +172,9 @@ try {
     $stmt = $db->prepare("SELECT COUNT(*) as count FROM task_history WHERE task_id = ? AND action = 'completed'");
     $stmt->execute([$_GET['id']]);
     $task['completed_count'] = $stmt->fetch()['count'];
-
+    // ✅ موتور مشترک دوره — تا با داشبورد و لیست‌ها یکسان باشد
+    $holidays = getHolidaySet($db);
+    $task = enrichTaskDates($task, $db, $holidays, date('Y-m-d'));
     // ✅ اصلاح: دریافت اطلاعات مرحله فعال workflow (روش صحیح)
     $task['current_workflow_step'] = null;
     if ($task['is_workflow_task'] == 1 && $task['workflow_instance_id']) {

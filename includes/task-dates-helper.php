@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ═══════════════════════════════════════════════════════════════════
  *  task-dates-helper.php
@@ -17,7 +18,7 @@
  *  از این به بعد: هر تغییری در این منطق، فقط همین‌جا.
  * ═══════════════════════════════════════════════════════════════════
  */
-
+require_once __DIR__ . '/period-engine.php';
 require_once __DIR__ . '/working-days-helper.php';
 
 /**
@@ -43,85 +44,20 @@ function enrichTaskDates(array $task, PDO $db, array $holidays, string $today): 
     // ══════════════════════════════════════════════════
     //  کار دوره‌ای (continuous)
     // ══════════════════════════════════════════════════
-    if (($task['task_type'] ?? '') === 'continuous' && !empty($task['start_date'])) {
+    if (($task['task_type'] ?? '') === 'continuous') {
 
-        try {
-            $start = new DateTime($task['start_date']);
-            $start->setTime(0, 0, 0);
+        // ✅ موتور مشترک — تنها مرجع محاسبهٔ دوره
+        $s = pe_state($db, $task, $holidays, $today);
 
-            // هنوز شروع نشده
-            if ($current < $start) {
-                $task['next_due_date']  = $start->format('Y-m-d');
-                $task['days_remaining'] = (int) $current->diff($start)->format('%r%a');
-                return $task;
-            }
+        $task['overdue_periods']      = $s['overdue_periods'];
+        $task['next_due_date']        = $s['next_due_date'];
+        $task['days_remaining']       = $s['days_remaining'];
+        $task['working_days_delayed'] = $s['working_days_delayed'];
 
-            // تعداد دوره‌های انجام‌شده
-            $stmt = $db->prepare(
-                "SELECT COUNT(*) FROM task_history WHERE task_id = ? AND action = 'completed'"
-            );
-            $stmt->execute([$task['id']]);
-            $completed = (int) $stmt->fetchColumn();
-
-            // دوره‌های بخشیده‌شده (رفع معوقه)
-            $forgiven = (int) ($task['overdue_forgiven_credit'] ?? 0);
-
-            // ── معوقه‌ها (بر اساس روزهای کاری) ──────────
-            $overdue = calcOverduePeriods(
-                $task['period_type'],
-                $start,
-                $current,
-                $completed,
-                $holidays
-            );
-            $task['overdue_periods'] = max(0, $overdue - $forgiven);
-
-            // ── موعد بعدی ───────────────────────────────
-            // دوره‌های انجام‌شده + بخشیده‌شده، هر دو موعد را جلو می‌برند
-            $advance  = $completed + $forgiven;
-            $next_due = clone $start;
-
-            for ($i = 0; $i < $advance; $i++) {
-                switch ($task['period_type']) {
-                    case 'daily':
-                        // اولین روز کاری بعدی
-                        do {
-                            $next_due->modify('+1 day');
-                        } while (!isWorkingDay($next_due, $holidays));
-                        break;
-
-                    case 'weekly':
-                        $next_due->modify('+1 week');
-                        break;
-
-                    case 'monthly':
-                        $next_due->modify('+1 month');
-                        break;
-                }
-            }
-
-            $task['next_due_date'] = $next_due->format('Y-m-d');
-
-            // ── مهلت (روز مانده) ────────────────────────
-            $task['days_remaining'] = (int) $current->diff($next_due)->format('%r%a');
-
-            // ── تأخیر به روز کاری ───────────────────────
-            if ($next_due < $current) {
-                $task['working_days_delayed'] = calcPeriodicDelayWorkingDays(
-                    $next_due->format('Y-m-d'),
-                    $today,
-                    $holidays
-                );
-            }
-
-            // بازهٔ کار تمام شده؟ دیگر معوقه‌ای نیست
-            if (!empty($task['end_date']) && $today > $task['end_date']) {
-                $task['overdue_periods'] = 0;
-            }
-
-        } catch (Exception $e) {
-            error_log("enrichTaskDates (continuous) task#{$task['id']}: " . $e->getMessage());
-        }
+        // فیلدهای جدید — رابط کاربری از این‌ها استفاده می‌کند
+        $task['is_today_done']        = $s['is_today_done'];
+        $task['can_complete']         = $s['can_complete'];
+        $task['current_period_date']  = $s['current_period_date'];
 
         return $task;
     }
@@ -157,7 +93,6 @@ function enrichTaskDates(array $task, PDO $db, array $holidays, string $today): 
                     );
                 }
             }
-
         } catch (Exception $e) {
             error_log("enrichTaskDates (periodic) task#{$task['id']}: " . $e->getMessage());
         }

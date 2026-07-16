@@ -291,7 +291,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 </nav>
 <script src="<?= asset('/assets/js/table-utils.js') ?>"></script>
 <script src="<?= asset('/assets/js/date-utils.js') ?>"></script>
-    <script src="<?= asset('../assets/js/alert.js') ?>"></script>
+    <script src="/assets/js/alert.js?v=<?= filemtime($_SERVER['DOCUMENT_ROOT'] . '/assets/js/alert.js') ?>"></script>
+
 
 <script>
     // ============================================

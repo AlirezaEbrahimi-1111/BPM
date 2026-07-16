@@ -307,7 +307,10 @@ class WorkflowManager
         $execution_mode = in_array($execution_mode, ['cascade', 'parallel']) ? $execution_mode : 'cascade';
         try {
             $this->db->beginTransaction();
-
+            // ✅ محافظ: بدون سازمان، کار روتین نباید ساخته شود
+            if (empty($organization_id)) {
+                throw new Exception('شناسهٔ سازمان مشخص نیست');
+            }
             // دریافت مراحل الگو
             $stmt = $this->db->prepare("
                 SELECT * FROM workflow_steps 
@@ -369,6 +372,7 @@ class WorkflowManager
                 $stmt = $this->db->prepare("
                     INSERT INTO tasks (
                         workflow_instance_id,
+                        organization_id,
                         is_workflow_task,
                         title,
                         description,
@@ -381,11 +385,12 @@ class WorkflowManager
                         status,
                         current_stage_id
                     )
-                    VALUES (?, 1, ?, '', ?, ?, ?, 'periodic', 'high', ?, ?, ?)
+                    VALUES (?, ?, 1, ?, '', ?, ?, ?, 'periodic', 'high', ?, ?, ?)
                 ");
 
                 $stmt->execute([
                     $instance_id,
+                    $organization_id,                          // ✅ سازمان — این جا افتاده بود
                     $title . ' - ' . $step['step_name'],
                     $creator_id,
                     $step['activity_section'],

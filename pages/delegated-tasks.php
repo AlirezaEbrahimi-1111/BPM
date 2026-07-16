@@ -270,15 +270,37 @@ require_once '../includes/version.php';
             },
             onGridReady: params => {
                 const saved = localStorage.getItem('delegatedTasksGridState');
-                if (saved) params.api.applyColumnState({ state: JSON.parse(saved), applyOrder: true });
-                applyResponsiveColumns();   // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
+                if (saved) params.api.applyColumnState({
+                    state: JSON.parse(saved),
+                    applyOrder: true
+                });
+                applyResponsiveColumns(); // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
 
                 // 🆕 اگر با ?sort=overdue آمده‌ایم → سورت بر اساس موعد (معوقه‌ها اول)
                 const usp = new URLSearchParams(location.search);
                 if (usp.get('sort') === 'overdue') {
                     params.api.applyColumnState({
-                        state: [{ colId: 'col_moed', sort: 'asc' }],
-                        defaultState: { sort: null }
+                        state: [{
+                            colId: 'col_moed',
+                            sort: 'asc'
+                        }],
+                        defaultState: {
+                            sort: null
+                        }
+                    });
+                }
+
+                // 🆕 اگر با ?filter=overdue آمده‌ایم → فقط تأخیردارها را نشان بده
+                if (usp.get('filter') === 'overdue') {
+                    window._forceOverdueOnly = true;
+                    params.api.applyColumnState({
+                        state: [{
+                            colId: 'col_moed',
+                            sort: 'asc'
+                        }],
+                        defaultState: {
+                            sort: null
+                        }
                     });
                 }
             },
@@ -510,6 +532,8 @@ require_once '../includes/version.php';
             const pr = document.getElementById('filterPriority').value;
             const ty = document.getElementById('filterType').value;
 
+            const today = new Date().toISOString().slice(0, 10);
+
             filteredTasks = allTasks.filter(t => {
                 const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + (t.assignee_name || '') + ' ' + t.id;
                 t._checklistOnlyMatch = isChecklistOnlyMatch(otherText, t.checklist_titles || '', s);
@@ -521,6 +545,14 @@ require_once '../includes/version.php';
                     if (st === 'open' && (t.status === 'completed' || t.status === 'approved')) return false;
                     else if (st !== 'open' && t.status !== st) return false;
                 }
+
+                // 🆕 فیلتر اجباری تأخیردار (وقتی با ?filter=overdue آمده)
+                if (window._forceOverdueOnly) {
+                    const due = [t.due_date, t.deadline, t.original_deadline].filter(Boolean).sort().pop();
+                    const done = (t.status === 'completed' || t.status === 'approved');
+                    if (done || !due || due >= today) return false;
+                }
+
                 return true;
             });
 
@@ -543,7 +575,7 @@ require_once '../includes/version.php';
             if (gridApi) gridApi.setGridOption('rowData', filteredTasks);
         }
 
-       const statusCfg = {
+        const statusCfg = {
             not_started: ['شروع نشده', 'circle'],
             in_progress: ['در حال انجام', 'play-circle'],
             completed: ['تکمیل شده', 'check-circle'],

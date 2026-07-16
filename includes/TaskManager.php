@@ -1,5 +1,6 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/period-engine.php';
 class TaskManager
 {
     private $db;
@@ -8,7 +9,7 @@ class TaskManager
     {
         $this->db = $database;
     }
-        // 🆕 متد کمکی اعلان اتمام کار (ایمن: هیچ استثنایی پرتاب نمی‌کند)
+    // 🆕 متد کمکی اعلان اتمام کار (ایمن: هیچ استثنایی پرتاب نمی‌کند)
     private function notifyCompletion($task, $to_user_id, $pattern, $actor_id, $reason = '')
     {
         try {
@@ -173,7 +174,6 @@ class TaskManager
             }
 
             return ['success' => false, 'message' => 'خطا در ایجاد کار'];
-
         } catch (Exception $e) {
             error_log("CreateTask error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()];
@@ -285,7 +285,7 @@ class TaskManager
     {
         error_log("$label: " . print_r($data, true));
     }
-/**
+    /**
      * نهایی‌کردن «تکمیلِ بدون نیاز به تأیید».
      * - کار دوره‌ای (continuous): دوره را جلو می‌برد و کار را برای دوره بعد آماده می‌کند.
      * - کار عادی/مقطعی: مثل قبل فقط تکمیل می‌شود.
@@ -293,19 +293,48 @@ class TaskManager
     private function finalizeSelfCompletion($task, $task_id, $user_id, $notes)
     {
         if ($task['task_type'] === 'continuous') {
-            $today = date('Y-m-d');
-            $sql = "UPDATE tasks SET 
-                        last_approved_date = ?,
-                        status = 'period_done',
-                        is_pending_approval = FALSE,
-                        pending_approval_count = 0,
-                        updated_at = NOW()
-                    WHERE id = ?";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([$today, $task_id]);
 
-            $this->addTaskHistory($task_id, $user_id, null, 'completed', $notes ?: 'کار تکمیل شد');
-            return ['success' => true, 'message' => 'دوره تکمیل شد'];
+            // ✅ موتور مشترک — تنها مرجع محاسبهٔ دوره
+            $holidays = getHolidaySet($this->db);
+            $state    = pe_state($this->db, $task, $holidays);
+
+            // 🔒 محافظ: دورهٔ امروز نباید دو بار بسته شود
+            if (!$state['can_complete']) {
+                return [
+                    'success' => false,
+                    'message' => $state['is_today_done']
+                        ? 'دورهٔ امروز قبلاً تکمیل شده است'
+                        : 'این کار در وضعیت قابل تکمیل نیست'
+                ];
+            }
+
+            $today = date('Y-m-d');
+
+            $this->db->prepare("
+                UPDATE tasks SET
+                    status                 = 'period_done',
+                    last_completed_date    = ?,
+                    last_approved_date     = ?,
+                    is_pending_approval    = FALSE,
+                    pending_approval_count = 0,
+                    updated_at             = NOW()
+                WHERE id = ?
+            ")->execute([$today, $today, $task_id]);
+
+            $this->addTaskHistory(
+                $task_id,
+                $user_id,
+                null,
+                'completed',
+                $notes ?: ('دورهٔ ' . $state['current_period_date'] . ' تکمیل شد')
+            );
+
+            $after = pe_state($this->db, $task, $holidays);
+            $msg   = $after['overdue_periods'] > 0
+                ? "دورهٔ امروز تکمیل شد. {$after['overdue_periods']} دورهٔ معوقه باقی است."
+                : 'دورهٔ امروز تکمیل شد.';
+
+            return ['success' => true, 'message' => $msg];
         }
 
         // کار عادی/مقطعی — رفتار قبلی دست‌نخورده
@@ -366,7 +395,7 @@ class TaskManager
                 $sql = "UPDATE tasks SET status = 'pending_approval', is_pending_approval = TRUE, assignee_id = ?, updated_at = NOW() WHERE id = ?";
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute([$previousPerson, $task_id]);
-                
+
                 // ✅ ثبت completed قبل از pending_approval (برای ریست دور تأییدها)
                 // $this->addTaskHistory($task_id, $user_id, null, 'completed', $notes ?: 'کار تکمیل شد');
                 $this->addTaskHistory($task_id, $user_id, $previousPerson, 'pending_approval', $notes ?: 'کار تکمیل شد و منتظر تأیید است');;
@@ -434,32 +463,37 @@ class TaskManager
                 }
             }
 
-            // 4. برای workflow (روتین مرحله‌ای): کاربر در بخش مرحله فعلی باشه و وضعیت مجاز
-            if (!$hasAccess && $task['is_workflow_task'] == 1 && isset($task['current_stage_id'])) {
+           // 4. برای workflow (روتین مرحله‌ای): کاربر در بخش مرحله فعلی باشه،
+            //    مرحله «فعال» باشه (نه pending)، و وضعیت مجاز
+            if (!$hasAccess && $task['is_workflow_task'] == 1) {
                 try {
-                    $stmt = $this->db->prepare("
-                    SELECT ws.activity_section 
-                    FROM workflow_stages ws 
-                    WHERE ws.id = ? 
-                    AND ws.is_active = 1
-                ");
-                    $stmt->execute([$task['current_stage_id']]);
-                    $stageRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                    $stageSection = $stageRow ? $stageRow['activity_section'] : null;
-
-                    if ($stageSection) {
-                        $stmt = $this->db->prepare("
-                        SELECT COUNT(*) as count 
-                        FROM users u 
-                        WHERE u.id = ? 
-                        AND u.activity_section = ? 
-                        AND u.is_active = 1
+                    // 🔒 ابتدا مطمئن شو مرحلهٔ این تسک واقعاً active است.
+                    //    (جلوگیری از عمل روی مرحله‌ای که هنوز نوبتش نرسیده)
+                    $stepStmt = $this->db->prepare("
+                        SELECT wis.status AS step_status, ws.activity_section
+                        FROM workflow_instance_steps wis
+                        JOIN workflow_steps ws ON ws.id = wis.step_id
+                        WHERE wis.task_id = ?
+                        LIMIT 1
                     ");
+                    $stepStmt->execute([$task_id]);
+                    $stepRow = $stepStmt->fetch(PDO::FETCH_ASSOC);
+
+                    $stepIsActive = $stepRow && $stepRow['step_status'] === 'active';
+                    $stageSection = $stepRow ? $stepRow['activity_section'] : null;
+
+                    if ($stepIsActive && $stageSection) {
+                        $stmt = $this->db->prepare("
+                            SELECT COUNT(*) as count 
+                            FROM users u 
+                            WHERE u.id = ? 
+                            AND u.activity_section = ? 
+                            AND u.is_active = 1
+                        ");
                         $stmt->execute([$user_id, $stageSection]);
                         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                         if ($result && $result['count'] > 0) {
-                            // چک وضعیت: برای 'in_progress' فقط اگر از 'not_started' میاد، هر عضوی؛ برای 'approved' فقط assignee
                             if (
                                 ($status === 'in_progress' && $task['status'] === 'not_started') ||
                                 ($status === 'approved' && $task['status'] === 'in_progress' && $task['assignee_id'] == $user_id)
@@ -470,7 +504,6 @@ class TaskManager
                     }
                 } catch (PDOException $e) {
                     error_log("Workflow stage query error: " . $e->getMessage());
-                    // skip workflow access اگر جدول وجود نداشته باشه
                 }
             }
 
@@ -549,14 +582,12 @@ class TaskManager
                 if ($status === 'completed' && $task['task_type'] === 'periodic' && $task['due_date'] == date('Y-m-d')) {
                     $this->db->prepare("UPDATE tasks SET completed_count = COALESCE(completed_count, 0) + 1 WHERE id = ?")->execute([$task_id]);
                 }
-
             } catch (Exception $postUpdateError) {
                 error_log("Post-update error in updateTaskStatus (task_id: $task_id, status: $status): " . $postUpdateError->getMessage());
                 // ignore: status حفظ می‌شه، فقط history یا count fail می‌شه
             }
 
             return ['success' => true, 'message' => 'وضعیت کار بروزرسانی شد'];
-
         } catch (Exception $e) {
             error_log("UpdateTaskStatus error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطای سرور'];
@@ -589,77 +620,21 @@ class TaskManager
         }
     }
 
-    // مدیریت تکمیل کارهای دوره‌ای
+    /**
+     * ⚠️ منسوخ (Deprecated)
+     *
+     * منطق تکمیل کارهای دوره‌ای به finalizeSelfCompletion منتقل شد،
+     * که از موتور مشترک (period-engine) استفاده می‌کند.
+     *
+     * این تابع پیش از این با فرمول «روز تقویمی» کار می‌کرد و
+     * جمعه‌ها و تعطیلات رسمی را هم «دوره» می‌شمرد — که منشأ
+     * دوره‌های معوقهٔ جعلی بود.
+     *
+     * برای سازگاری با کدهای قدیمی، فقط به مسیر درست هدایت می‌کند.
+     */
     private function handleContinuousTaskCompletion($task_id, $task, $user_id, $notes)
     {
-        try {
-            // محاسبه تعداد دوره‌های معوقه
-            $today = date('Y-m-d');
-            $start_date = $task['start_date'];
-            $period_type = $task['period_type'];
-
-            // شمارش تکمیل‌های قبلی
-            $stmt = $this->db->prepare("SELECT COUNT(*) as count FROM task_history WHERE task_id = ? AND action = 'completed'");
-            $stmt->execute([$task_id]);
-            $completed_count = $stmt->fetch()['count'];
-
-            // محاسبه تعداد دوره‌های سپری شده
-            $expected_completions = $this->calculateExpectedCompletions($start_date, $today, $period_type);
-
-            // ✅ اضافه کردن شرط جدید: فقط تا امروز مجاز به تکمیل است
-            if ($completed_count >= $expected_completions) {
-                return ['success' => false, 'message' => 'هنوز زمان تکمیل این دوره نرسیده است (فردا به بعد)'];
-            }
-
-            // اضافه کردن توضیحات به delegation_notes
-            $new_notes = $task['delegation_notes'] ?
-                $task['delegation_notes'] . "\n---\n" . $notes : $notes;
-
-            // ثبت تکمیل
-            $this->addTaskHistory($task_id, $user_id, null, 'completed', $notes);
-            $remaining = $expected_completions - $completed_count - 1;
-
-            // ✅ تغییر شرط: حتی اگر remaining صفر باشد، باید بررسی شود که آیا فردا دوره جدیدی هست
-            $sql = "UPDATE tasks SET last_completed_date = NOW(), delegation_notes = ?, updated_at = NOW() WHERE id = ?";
-            $this->db->prepare($sql)->execute([$new_notes, $task_id]);
-
-            if ($remaining > 0) {
-                return [
-                    'success' => true,
-                    'message' => "تکمیل ثبت شد. {$remaining} دوره معوقه باقی مانده است",
-                    'remaining' => $remaining
-                ];
-            } else {
-                return [
-                    'success' => true,
-                    'message' => 'کار به‌روز شد. تمام دوره‌های معوقه تکمیل شدند',
-                    'remaining' => 0
-                ];
-            }
-
-        } catch (Exception $e) {
-            error_log("HandleContinuousTaskCompletion error: " . $e->getMessage());
-            return ['success' => false, 'message' => 'خطای سرور'];
-        }
-    }
-
-    // محاسبه تعداد دوره‌های مورد انتظار
-    private function calculateExpectedCompletions($start_date, $end_date, $period_type)
-    {
-        $start = new DateTime($start_date);
-        $end = new DateTime($end_date);
-        $interval = $start->diff($end);
-
-        switch ($period_type) {
-            case 'daily':
-                return $interval->days;
-            case 'weekly':
-                return floor($interval->days / 7);
-            case 'monthly':
-                return ($interval->y * 12) + $interval->m;
-            default:
-                return 0;
-        }
+        return $this->finalizeSelfCompletion($task, $task_id, $user_id, $notes);
     }
 
     // ارجاع کار - قانون 2
@@ -747,15 +722,15 @@ class TaskManager
             if (!$task) {
                 return ['success' => false, 'message' => 'کار پیدا نشد'];
             }
-        
-                // گرفتن نقش کاربر
+
+            // گرفتن نقش کاربر
             $stmt = $this->db->prepare("SELECT role FROM users WHERE id = ?");
             $stmt->execute([$user_id]);
             $user = $stmt->fetch();
-        
+
             $isCreator = ($task['creator_id'] == $user_id);
             $isManager = ($user && ($user['role'] == 'management' || $user['role'] == 'supervisor'));
-    
+
             if (!$isCreator && !$isManager) {
                 return ['success' => false, 'message' => 'شما مجاز به حذف این کار نیستید'];
             }
@@ -777,7 +752,6 @@ class TaskManager
             }
 
             return ['success' => false, 'message' => 'خطا در حذف کار'];
-
         } catch (Exception $e) {
             error_log("DeleteTask error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطای سرور'];
@@ -948,7 +922,7 @@ class TaskManager
     public function getCreatedTasks($user_id)
     {
         try {
-$sql = "SELECT t.*, 
+            $sql = "SELECT t.*, 
                 assignee.first_name as assignee_first_name, 
                 assignee.last_name as assignee_last_name,
                 CASE 
@@ -1088,7 +1062,7 @@ $sql = "SELECT t.*,
             $stmt->execute([$task_id]);
             $lastReset = $stmt->fetch(PDO::FETCH_ASSOC);
             $resetTime = $lastReset ? $lastReset['created_at'] : '1970-01-01 00:00:00';
-            
+
             // آیا این کاربر بعد از آخرین ریست، تأیید زده؟
             $stmt = $this->db->prepare("
                 SELECT COUNT(*) as cnt FROM task_history
@@ -1113,13 +1087,13 @@ $sql = "SELECT t.*,
     {
         for ($i = $current_index - 1; $i >= 0; $i--) {
             $candidate = (int)$full_chain[$i];
-            
+
             // ✅ جلوگیری از حلقه بی‌نهایت: اگر نفر بعدی خود کاربر فعلی باشد، skip کن
             if ($current_user_id !== null && $candidate === (int)$current_user_id) {
                 error_log("Auto-skip approver $candidate (same as current user, preventing loop in task $task_id)");
                 continue;
             }
-            
+
             if (!$this->hasAlreadyApproved($task_id, $candidate, $creator_id)) {
                 return ['index' => $i, 'user_id' => $candidate];
             }
@@ -1347,7 +1321,6 @@ $sql = "SELECT t.*,
                 $stmt->execute([$previous_person, $task_id]);
                 $this->addTaskHistory($task_id, $user_id, $previous_person, 'pending_approval', 'تأیید شد و ارسال شد برای تأیید نفر بالاتر: ' . $notes);
                 return ['success' => true, 'message' => 'کار تأیید و به مرحله بعد ارسال شد', 'continue_approval' => true];
-
             } else {
                 // رد کردن کار
                 if ($task['task_type'] === 'continuous') {
@@ -1392,7 +1365,6 @@ $sql = "SELECT t.*,
                 $this->notifyCompletion($task, $returnToPerson, 'completion_rejected', $user_id, $notes);  // 🆕
                 return ['success' => true, 'message' => 'کار رد شد و به نفر قبلی بازگشت', 'rejected' => true];
             }
-
         } catch (Exception $e) {
             error_log("ApproveOrRejectTask error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطای سرور'];
@@ -1489,7 +1461,6 @@ $sql = "SELECT t.*,
             }
 
             return null;
-
         } catch (Exception $e) {
             error_log("GetLastApprover error: " . $e->getMessage());
             return null;
@@ -1497,27 +1468,45 @@ $sql = "SELECT t.*,
     }
 
     // ✅ یافتن آخرین انجام‌دهنده (اصلاح شده - خط + حذف شده)
+    /**
+     * پیدا کردن «آخرین انجام‌دهندهٔ واقعی» کار.
+     *
+     * ⚠️ چرا از 'completed' استفاده نمی‌کنیم؟
+     *    رکوردهای 'completed' دو منشأ دارند:
+     *      ۱) انجام‌دهنده کار را تمام کرد
+     *      ۲) تأییدکننده، تأیید نهایی زد  ← from_user_id = تأییدکننده!
+     *    تشخیص این دو از هم ممکن نیست. اگر به 'completed' تکیه کنیم،
+     *    ممکن است تأییدکننده را «انجام‌دهنده» بپنداریم و کار را به
+     *    خودش برگردانیم — که باعث می‌شود کار در لیستش گیر کند.
+     *
+     * ✅ رکورد 'pending_approval' همیشه توسط انجام‌دهندهٔ واقعی ثبت
+     *    می‌شود (او کار را تمام کرد و برای تأیید فرستاد). پس مرجع
+     *    مطمئن‌تری است.
+     */
     private function getLastPerformer($task_id)
     {
         try {
-            $sql = "SELECT from_user_id FROM task_history 
-            WHERE task_id = ? 
-            AND action = 'completed'
-            ORDER BY created_at DESC 
-            LIMIT 1";
+            // ۱) آخرین کسی که کار را برای تأیید فرستاده = انجام‌دهندهٔ واقعی
+            $sql = "SELECT from_user_id FROM task_history
+                    WHERE task_id = ?
+                      AND action = 'pending_approval'
+                      AND from_user_id IS NOT NULL
+                    ORDER BY id DESC
+                    LIMIT 1";
 
             $stmt = $this->db->prepare($sql);
             $stmt->execute([$task_id]);
             $result = $stmt->fetch();
 
             if ($result && $result['from_user_id']) {
-                return $result['from_user_id'];
+                return (int) $result['from_user_id'];
             }
 
+            // ۲) اگر هرگز برای تأیید نرفته (تکمیل مستقیم) → آخرین نفر زنجیرهٔ ارجاع
             $chain = $this->getDelegationChain($task_id);
             if (!empty($chain)) {
                 $lastInChain = end($chain);
-                return $lastInChain['to_user_id'];
+                return (int) $lastInChain['to_user_id'];
             }
 
             return null;
@@ -1566,9 +1555,7 @@ $sql = "SELECT t.*,
             $stats['completed'] = (int) $stmt->fetch()['count'];
 
             // -----------------------------------------------
-            // 3) کارهای عقب‌افتاده
-            // periodic: due_date گذشته و تکمیل نشده
-            // continuous: از view محاسبه می‌شه (overdue_periods > 0)
+            // 3) کارهای معوقه — بخش اول: کارهای مقطعی
             // -----------------------------------------------
             $stmt = $this->db->prepare("
             SELECT COUNT(*) as count 
@@ -1576,16 +1563,30 @@ $sql = "SELECT t.*,
             WHERE (assignee_id = ? OR creator_id = ?)
               AND is_deleted = 0
               AND status NOT IN ('completed', 'approved', 'stopped')
-              AND (
-                  (task_type = 'periodic' AND due_date < CURDATE())
-                  OR
-                  (task_type = 'continuous' AND id IN (
-                      SELECT id FROM continuous_tasks_overdue
-                  ))
-              )
+              AND task_type = 'periodic'
+              AND due_date < CURDATE()
         ");
             $stmt->execute([$user_id, $user_id]);
             $stats['overdue'] = (int) $stmt->fetch()['count'];
+
+            // ✅ بخش دوم: کارهای دوره‌ای — از موتور مشترک
+            // (پیش از این از جدول continuous_tasks_overdue خوانده می‌شد
+            //  که کاملاً خالی بود → معوقهٔ کارهای دوره‌ای همیشه صفر شمرده می‌شد)
+            $stmt = $this->db->prepare("
+                SELECT * FROM tasks
+                WHERE (assignee_id = ? OR creator_id = ?)
+                  AND is_deleted = 0
+                  AND task_type = 'continuous'
+                  AND status NOT IN ('completed', 'approved', 'stopped')
+            ");
+            $stmt->execute([$user_id, $user_id]);
+
+            $holidays = getHolidaySet($this->db);
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
+                if (pe_state($this->db, $t, $holidays)['overdue_periods'] > 0) {
+                    $stats['overdue']++;
+                }
+            }
 
             // -----------------------------------------------
             // 4) کارهای امروز (due_date = امروز و تکمیل نشده)
@@ -1602,7 +1603,6 @@ $sql = "SELECT t.*,
             $stats['today'] = (int) $stmt->fetch()['count'];
 
             return $stats;
-
         } catch (Exception $e) {
             error_log("GetTaskStats error: " . $e->getMessage());
             return [
@@ -1717,7 +1717,10 @@ $sql = "SELECT t.*,
 
             $current_index = null;
             for ($i = count($full_chain) - 1; $i >= 0; $i--) {
-                if ($full_chain[$i] === (int)$user_id) { $current_index = $i; break; }
+                if ($full_chain[$i] === (int)$user_id) {
+                    $current_index = $i;
+                    break;
+                }
             }
             if ($current_index === null) {
                 return ['success' => false, 'message' => 'کاربر در زنجیره این کار یافت نشد'];
@@ -1736,12 +1739,21 @@ $sql = "SELECT t.*,
             $this->db->prepare("UPDATE tasks SET has_pending_renewal_request = 1 WHERE id = ?")->execute([$task_id]);
 
             $endLabel = $new_end_date ?: 'نامحدود';
-            $this->addTaskHistory($task_id, $user_id, $next_approver, 'renewal_requested',
-                "درخواست تمدید دوره: شروع {$new_start_date}، پایان {$endLabel}. دلیل: " . $reason);
+            $this->addTaskHistory(
+                $task_id,
+                $user_id,
+                $next_approver,
+                'renewal_requested',
+                "درخواست تمدید دوره: شروع {$new_start_date}، پایان {$endLabel}. دلیل: " . $reason
+            );
 
-            $this->notifyRenewal($next_approver, $task['title'], $task_id,
+            $this->notifyRenewal(
+                $next_approver,
+                $task['title'],
+                $task_id,
                 'درخواست تمدید دوره: ' . $task['title'],
-                'درخواست تمدید دورهٔ کار «' . $task['title'] . '» منتظر بررسی شماست.');
+                'درخواست تمدید دورهٔ کار «' . $task['title'] . '» منتظر بررسی شماست.'
+            );
 
             return ['success' => true, 'message' => 'درخواست تمدید دوره ارسال شد'];
         } catch (Exception $e) {
@@ -1775,9 +1787,13 @@ $sql = "SELECT t.*,
                 $this->db->prepare("UPDATE task_renewal_requests SET status='approved', decided_at=NOW() WHERE id = ?")
                     ->execute([$request_id]);
 
-                $this->notifyRenewal($req['requested_by'], $task['title'], $req['task_id'],
+                $this->notifyRenewal(
+                    $req['requested_by'],
+                    $task['title'],
+                    $req['task_id'],
                     'تمدید دوره تأیید شد: ' . $task['title'],
-                    'درخواست تمدید دورهٔ کار «' . $task['title'] . '» تأیید و اعمال شد.');
+                    'درخواست تمدید دورهٔ کار «' . $task['title'] . '» تأیید و اعمال شد.'
+                );
 
                 return ['success' => true, 'message' => 'تمدید دوره تأیید و اعمال شد', 'final_approval' => true];
             }
@@ -1786,7 +1802,10 @@ $sql = "SELECT t.*,
             $full_chain = $this->buildFullChain($req['task_id'], $creator_id);
             $current_index = null;
             for ($i = count($full_chain) - 1; $i >= 0; $i--) {
-                if ($full_chain[$i] === (int)$user_id) { $current_index = $i; break; }
+                if ($full_chain[$i] === (int)$user_id) {
+                    $current_index = $i;
+                    break;
+                }
             }
             if ($current_index === null) {
                 return ['success' => false, 'message' => 'کاربر در زنجیره این کار یافت نشد'];
@@ -1796,12 +1815,21 @@ $sql = "SELECT t.*,
             $this->db->prepare("UPDATE task_renewal_requests SET current_approver_id = ? WHERE id = ?")
                 ->execute([$next_approver, $request_id]);
 
-            $this->addTaskHistory($req['task_id'], $user_id, $next_approver, 'renewal_step_approved',
-                'تأیید شد و ارسال برای تأیید نفر بالاتر: ' . $notes);
+            $this->addTaskHistory(
+                $req['task_id'],
+                $user_id,
+                $next_approver,
+                'renewal_step_approved',
+                'تأیید شد و ارسال برای تأیید نفر بالاتر: ' . $notes
+            );
 
-            $this->notifyRenewal($next_approver, $task['title'], $req['task_id'],
+            $this->notifyRenewal(
+                $next_approver,
+                $task['title'],
+                $req['task_id'],
                 'درخواست تمدید دوره: ' . $task['title'],
-                'درخواست تمدید دورهٔ کار «' . $task['title'] . '» منتظر بررسی شماست.');
+                'درخواست تمدید دورهٔ کار «' . $task['title'] . '» منتظر بررسی شماست.'
+            );
 
             return ['success' => true, 'message' => 'تأیید شد و به مرحله بعد ارسال شد', 'continue_approval' => true];
         } catch (Exception $e) {
@@ -1832,12 +1860,21 @@ $sql = "SELECT t.*,
             $this->db->prepare("UPDATE tasks SET has_pending_renewal_request = 0 WHERE id = ?")
                 ->execute([$req['task_id']]);
 
-            $this->addTaskHistory($req['task_id'], $user_id, $req['requested_by'], 'renewal_rejected',
-                'درخواست تمدید موعد رد شد. دلیل: ' . $rejection_reason);
+            $this->addTaskHistory(
+                $req['task_id'],
+                $user_id,
+                $req['requested_by'],
+                'renewal_rejected',
+                'درخواست تمدید موعد رد شد. دلیل: ' . $rejection_reason
+            );
 
-            $this->notifyRenewal($req['requested_by'], $task['title'] ?? '', $req['task_id'],
+            $this->notifyRenewal(
+                $req['requested_by'],
+                $task['title'] ?? '',
+                $req['task_id'],
                 'درخواست تمدید دوره رد شد: ' . ($task['title'] ?? ''),
-                'درخواست تمدید دورهٔ کار «' . ($task['title'] ?? '') . '» رد شد. دلیل: ' . $rejection_reason);
+                'درخواست تمدید دورهٔ کار «' . ($task['title'] ?? '') . '» رد شد. دلیل: ' . $rejection_reason
+            );
 
             return ['success' => true, 'message' => 'درخواست رد شد'];
         } catch (Exception $e) {
@@ -1873,9 +1910,13 @@ $sql = "SELECT t.*,
             }
 
             if ((int)$task['assignee_id'] !== (int)$user_id) {
-                $this->notifyRenewal($task['assignee_id'], $task['title'], $task_id,
+                $this->notifyRenewal(
+                    $task['assignee_id'],
+                    $task['title'],
+                    $task_id,
                     'تمدید دوره: ' . $task['title'],
-                    'دورهٔ کار «' . $task['title'] . '» توسط تعریف‌کننده تمدید شد.');
+                    'دورهٔ کار «' . $task['title'] . '» توسط تعریف‌کننده تمدید شد.'
+                );
             }
 
             return ['success' => true, 'message' => 'دوره با موفقیت تمدید شد'];
@@ -1885,4 +1926,3 @@ $sql = "SELECT t.*,
         }
     }
 }
-?>

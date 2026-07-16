@@ -157,29 +157,40 @@ require_once '../includes/version.php';
             padding: 14px;
         }
 
+        /* ═══ کارت‌های آماری (بازطراحی) ═══ */
         .plan-item {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 11px;
             border: 1px solid var(--gray-200);
-            border-radius: var(--radius-sm);
-            padding: 13px 16px;
+            border-radius: 12px;
+            padding: 11px 13px;
+            cursor: pointer;
+            transition: border-color .15s, box-shadow .15s, transform .12s;
         }
 
+        .plan-item:hover {
+            border-color: #c4b5fd;
+            box-shadow: 0 3px 12px rgba(124, 92, 255, .1);
+            transform: translateY(-1px);
+        }
+
+        /* آیکون گرد (دایره) سمت چپ */
         .plan-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: var(--radius-sm);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             flex-shrink: 0;
+            order: 2;
         }
 
         .plan-icon.month {
-            background: #dcfce7;
-            color: #16a34a;
+            background: #ede9fe;
+            color: #7c3aed;
         }
 
         .plan-icon.week {
@@ -192,16 +203,22 @@ require_once '../includes/version.php';
             color: #2563eb;
         }
 
+        /* متن سمت راست */
+        .plan-text {
+            order: 1;
+            flex: 1;
+            text-align: right;
+        }
+
         .plan-label {
-            font-size: .82rem;
+            font-size: .78rem;
             font-weight: 600;
             color: var(--gray-500);
             margin-bottom: 2px;
-            /* هر سه هم‌رنگ */
         }
 
         .plan-value {
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--gray-900);
         }
@@ -224,6 +241,14 @@ require_once '../includes/version.php';
             padding: 0 12px;
             flex-shrink: 0;
             background: #fff;
+            align-items: center;
+        }
+
+        /* گروه فیلترها سمت چپ همین ردیف */
+        .dash-tabs .dash-filters {
+            margin-right: auto;
+            /* هل به چپ (RTL) */
+            padding: 6px 0;
         }
 
         .dash-tab {
@@ -373,7 +398,7 @@ require_once '../includes/version.php';
         }
 
         .task-table td {
-            padding: 10px 14px;
+            padding: 0 8px 0 8px;
             font-size: .85rem;
             color: var(--gray-700);
             vertical-align: middle;
@@ -397,6 +422,36 @@ require_once '../includes/version.php';
             white-space: nowrap;
         }
 
+        /* ستارهٔ منتخب کنار عنوان — فقط در هاور ردیف */
+        .td-star {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: .95rem;
+            color: var(--gray-300);
+            padding: 2px;
+            flex-shrink: 0;
+            opacity: 0;
+            /* پیش‌فرض پنهان */
+            transition: opacity .15s, color .15s, transform .12s;
+        }
+
+        .task-table tr:hover .td-star {
+            opacity: 1;
+        }
+
+        /* در هاور ردیف ظاهر شود */
+        .td-star:hover {
+            color: #fbbf24;
+            transform: scale(1.15);
+        }
+
+        .td-star.on {
+            opacity: 1;
+            color: var(--warning);
+        }
+
+        /* اگر منتخب است، همیشه دیده شود */
         .td-deadline {
             color: var(--gray-500);
             white-space: nowrap;
@@ -408,6 +463,93 @@ require_once '../includes/version.php';
 
         .td-ops {
             text-align: center;
+        }
+
+        /* منوی سه‌نقطهٔ جدول اصلی */
+        .row-menu-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .row-kebab {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 1.1rem;
+            padding: 4px 8px;
+            border-radius: 7px;
+            transition: background .12s, color .12s;
+        }
+
+        .row-kebab:hover {
+            background: #f0edff;
+            color: #7c5cff;
+        }
+
+        .row-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 30;
+            min-width: 150px;
+            margin-top: 4px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 11px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+            padding: 5px;
+            text-align: right;
+        }
+
+        .row-menu.open {
+            display: block;
+        }
+
+        .row-menu button {
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 11px;
+            border-radius: 7px;
+            font-size: .85rem;
+            color: #374151;
+        }
+
+        .row-menu button:hover {
+            background: #f7f6fd;
+        }
+
+        .row-menu button i {
+            font-size: .95rem;
+            width: 17px;
+        }
+
+        .row-menu .act-approve i {
+            color: #16a34a;
+        }
+
+        .row-menu .act-reject i {
+            color: #dc2626;
+        }
+
+        .row-menu .act-delegate i {
+            color: #7c5cff;
+        }
+
+        .row-menu .act-extend i {
+            color: #7c5cff;
+        }
+
+        .row-menu .empty-hint {
+            color: #9ca3af;
+            font-size: .78rem;
+            padding: 8px 11px;
         }
 
         .st-badge {
@@ -517,13 +659,13 @@ require_once '../includes/version.php';
             flex: 1.6;
             height: 9px;
             background: var(--gray-100);
-            border-radius: 999px;
+            /*border-radius: 999px;*/
             overflow: hidden;
         }
 
         .routine-bar {
             height: 100%;
-            border-radius: 999px;
+            /*border-radius: 999px;*/
         }
 
         .routine-count {
@@ -661,62 +803,500 @@ require_once '../includes/version.php';
             }
         }
 
-        /* ═══ کارت‌های آماری کلیک‌پذیر ═══ */
-        .plan-item.clickable {
-            cursor: pointer;
-            transition: border-color .15s, box-shadow .15s, transform .12s;
-            position: relative;
+        /* ═══════════ مودال برنامه کاری (بنفش) ═══════════ */
+        :root {
+            --pm-purple: #7c5cff;
+            --pm-purple-soft: #f0edff;
+            --pm-purple-dark: #6941e0;
         }
 
-        .plan-item.clickable:hover {
-            border-color: #c7d2fe;
-            box-shadow: 0 2px 10px rgba(37, 99, 235, .08);
-            transform: translateY(-1px);
-        }
-
-        .plan-arrow {
-            margin-right: auto;
-            color: #d1d5db;
-            font-size: .9rem;
-            transition: color .15s, transform .15s;
-        }
-
-        .plan-item.clickable:hover .plan-arrow {
-            color: #2563eb;
-            transform: translateX(-3px);
-        }
-
-        /* ═══════════════════════════════════════════
-           مودال برنامه کاری — تعریف واحد و ساده
-           ═══════════════════════════════════════════ */
-
-        /* هیچ دستکاری در چیدمان Bootstrap نمی‌کنیم.
-           فقط ظاهر را تنظیم می‌کنیم. */
-        #planModal .modal-content {
+        #planModal .modal-content,
+        #weekModal .modal-content {
             border: none;
-            border-radius: 14px;
+            border-radius: 18px;
+            overflow: hidden;
         }
 
-        #planModal .modal-header {
-            background: #f3f4f6;
-            border-bottom: 1px solid #e5e7eb;
-            border-radius: 14px 14px 0 0;
-            padding: 14px 18px;
+        #planModal .modal-header,
+        #weekModal .modal-header {
+            background: #fff;
+            border-bottom: 1px solid #f1f1f4;
+            padding: 18px 22px;
+            align-items: center;
         }
 
-        #planModal .modal-title {
-            font-size: 1rem;
+        #planModal .modal-title,
+        #weekModal .modal-title {
+            font-size: 1.15rem;
             font-weight: 700;
-            color: #374151;
+            color: #2d2d3a;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 11px;
+            flex-direction: row-reverse;
+        }
+
+        .pm-head-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--pm-purple-soft);
+            color: var(--pm-purple);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        #planModal .btn-close,
+        #weekModal .btn-close {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: #f3f4f6;
+            background-size: 13px;
+            opacity: 1;
+            margin: 0;
+            transition: background-color .15s;
+        }
+
+        #planModal .btn-close:hover,
+        #weekModal .btn-close:hover {
+            background-color: #e5e7eb;
         }
 
         #planModal .modal-body {
-            padding: 12px 14px;
+            padding: 14px 18px;
             max-height: 60vh;
             overflow-y: auto;
+        }
+
+        /* ── ردیف کار (ساده: عنوان + سه‌نقطه) ── */
+        .pm-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #f1f1f4;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 9px;
+            transition: background .12s, border-color .12s;
+        }
+
+        .pm-row:hover {
+            background: #faf9ff;
+            border-color: #e5e0ff;
+        }
+
+        .pm-row.removing {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: .3s;
+        }
+
+        .pm-title {
+            flex: 1;
+            min-width: 0;
+            cursor: pointer;
+            font-size: .92rem;
+            font-weight: 600;
+            color: #374151;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ── منوی سه‌نقطه ── */
+        .pm-menu-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .pm-kebab {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 1.15rem;
+            padding: 5px 9px;
+            border-radius: 8px;
+            transition: background .12s, color .12s;
+        }
+
+        .pm-kebab:hover {
+            background: var(--pm-purple-soft);
+            color: var(--pm-purple);
+        }
+
+        .pm-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 20;
+            min-width: 155px;
+            margin-top: 5px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            box-shadow: 0 8px 26px rgba(0, 0, 0, .12);
+            padding: 6px;
+            overflow: hidden;
+        }
+
+        .pm-menu.open {
+            display: block;
+        }
+
+        .pm-menu button {
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: .88rem;
+            color: #374151;
+            text-align: right;
+            transition: background .1s;
+        }
+
+        .pm-menu button:hover {
+            background: #f7f6fd;
+        }
+
+        .pm-menu button i {
+            font-size: 1rem;
+            width: 18px;
+            text-align: center;
+        }
+
+        .pm-menu button.act-approve i {
+            color: #16a34a;
+        }
+
+        .pm-menu button.act-reject i {
+            color: #dc2626;
+        }
+
+        .pm-menu button.act-delegate i {
+            color: var(--pm-purple);
+        }
+
+        .pm-menu button.act-extend i {
+            color: var(--pm-purple);
+        }
+
+        /* ── فرم عملیات ── */
+        .pm-form {
+            display: none;
+            margin-top: 11px;
+            padding-top: 11px;
+            border-top: 1px dashed #e5e7eb;
+        }
+
+        .pm-form.open {
+            display: block;
+        }
+
+        .pm-form-title {
+            font-size: .84rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 9px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pm-form textarea,
+        .pm-form select,
+        .pm-form input[type="text"] {
+            width: 100%;
+            font-size: .85rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 9px 11px;
+            margin-bottom: 9px;
+        }
+
+        .pm-form textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .pm-form-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pm-btn {
+            border: none;
+            border-radius: 9px;
+            cursor: pointer;
+            padding: 8px 18px;
+            font-size: .84rem;
+            font-weight: 600;
+            transition: opacity .12s;
+        }
+
+        .pm-btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .pm-btn-primary {
+            background: var(--pm-purple);
+            color: #fff;
+        }
+
+        .pm-btn-danger {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .pm-btn-ghost {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .pm-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+            font-size: .9rem;
+        }
+
+        .pm-empty i {
+            font-size: 2.2rem;
+            display: block;
+            margin-bottom: 10px;
+            color: #d1d5db;
+        }
+
+        /* مودال عملیات: اجازه بده تقویم بیرون بزند */
+        #rowActModal .modal-body {
+            overflow: visible;
+        }
+
+        #rowActModal .modal-content {
+            overflow: visible;
+        }
+
+        #rowActModal .persian-datepicker-wrapper {
+            position: relative;
+        }
+
+        #rowActModal .persian-datepicker {
+            position: absolute;
+            z-index: 2200;
+            /* اگر پایین ج
+            ا نبود، بالای اینپوت باز شود */
+        }
+
+        #rowActModal.modal {
+            overflow: visible;
+        }
+
+        #rowActModal .modal-dialog {
+            overflow: visible;
+        }
+
+        /* ═══════════ مودال هفتگی ═══════════ */
+        #weekModal .modal-dialog {
+            max-width: 96vw;
+        }
+
+        #weekModal .modal-body {
+            padding: 12px 16px;
+            max-height: 68vh;
+            overflow: auto;
+        }
+
+        .wk-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin-bottom: 14px;
+        }
+
+        .wk-nav button {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid #eee;
+            background: #fff;
+            cursor: pointer;
+            color: var(--pm-purple);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .12s, border-color .12s;
+        }
+
+        .wk-nav button:hover {
+            background: var(--pm-purple-soft);
+            border-color: #ddd6fe;
+        }
+
+        .wk-nav .wk-label {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #2d2d3a;
+            min-width: 90px;
+            text-align: center;
+        }
+
+        .wk-grid {
+            display: flex;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .wk-col {
+            background: #fafafa;
+            border: 1px solid #f0f0f3;
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1 1 0;
+            transition: flex-grow .25s ease;
+        }
+
+        .wk-grid:hover .wk-col {
+            opacity: .6;
+            transition: opacity .25s, flex-grow .25s;
+        }
+
+        .wk-grid:hover .wk-col:hover {
+            flex-grow: 1.5;
+            opacity: 1;
+        }
+
+        .wk-col-head {
+            text-align: center;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .wk-day {
+            font-size: .82rem;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .wk-date {
+            font-size: .68rem;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .wk-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow-y: auto;
+            max-height: 46vh;
+        }
+
+        .wk-card {
+            background: #fff;
+            border: 1px solid #f0f0f3;
+            border-radius: 9px;
+            padding: 8px 9px;
+            position: relative;
+        }
+
+        .wk-card-title {
+            font-size: .74rem;
+            color: #374151;
+            line-height: 1.4;
+            cursor: pointer;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .wk-card-time {
+            font-size: .66rem;
+            color: #9ca3af;
+            margin-top: 3px;
+        }
+
+        .wk-card .pm-kebab {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            font-size: .9rem;
+            padding: 2px 5px;
+        }
+
+        .wk-col-empty {
+            text-align: center;
+            color: #d1d5db;
+            font-size: .7rem;
+            padding: 14px 0;
+        }
+
+        /* فرم عملیات داخل کارت هفتگی */
+        .wk-card .pm-form {
+            margin-top: 8px;
+            padding-top: 8px;
+        }
+
+        .wk-card .pm-form textarea,
+        .wk-card .pm-form select,
+        .wk-card .pm-form input[type="text"] {
+            font-size: .72rem;
+            padding: 6px 8px;
+        }
+
+        .wk-card .pm-btn {
+            padding: 5px 10px;
+            font-size: .72rem;
+        }
+
+        .wk-card .pm-form-title {
+            font-size: .72rem;
+        }
+
+        /* پیام کوتاه */
+        #pmToast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #111827;
+            color: #fff;
+            padding: 11px 22px;
+            border-radius: 10px;
+            font-size: .86rem;
+            z-index: 3000;
+            opacity: 0;
+            transition: .25s;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+        }
+
+        #pmToast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        #pmToast.ok {
+            background: #15803d;
+        }
+
+        #pmToast.err {
+            background: #b91c1c;
         }
 
         /* تقویمی که به body منتقل شده */
@@ -732,14 +1312,16 @@ require_once '../includes/version.php';
             gap: 10px;
             border: 1px solid #f3f4f6;
             border-radius: 10px;
-            padding: 12px 14px;
+            padding: 8px 8px;
             margin-bottom: 8px;
             transition: background .12s, border-color .12s;
+
         }
 
         .pm-row:hover {
             background: #f9fafb;
             border-color: #e5e7eb;
+            cursor: pointer;
         }
 
         .pm-row.removing {
@@ -761,15 +1343,6 @@ require_once '../includes/version.php';
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-        }
-
-        .pm-meta {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 5px;
-            font-size: .75rem;
-            color: #9ca3af;
         }
 
         /* منوی سه‌نقطه */
@@ -984,6 +1557,84 @@ require_once '../includes/version.php';
         #planModal .persian-datepicker {
             z-index: 2100;
         }
+
+        .ra-input {
+            width: 100%;
+            font-size: .86rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 9px 11px;
+            margin-bottom: 10px;
+        }
+
+        .ra-input:focus {
+            outline: none;
+            border-color: #c4b5fd;
+        }
+
+        textarea.ra-input {
+            resize: vertical;
+        }
+
+        .ra-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* لیست کاربران قابل جستجو */
+        .ra-userlist {
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid #f1f1f4;
+            border-radius: 9px;
+            margin-bottom: 10px;
+        }
+
+        .ra-user {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 11px;
+            cursor: pointer;
+            font-size: .85rem;
+            border-bottom: 1px solid #f7f7f9;
+            transition: background .1s;
+        }
+
+        .ra-user:last-child {
+            border-bottom: none;
+        }
+
+        .ra-user:hover {
+            background: #faf9ff;
+        }
+
+        .ra-user.sel {
+            background: #f0edff;
+            color: #6941e0;
+            font-weight: 600;
+        }
+
+        .ra-user i {
+            color: #9ca3af;
+            font-size: 1rem;
+        }
+
+        .ra-user.sel i {
+            color: #7c5cff;
+        }
+
+        .ra-user-empty {
+            text-align: center;
+            color: #9ca3af;
+            font-size: .82rem;
+            padding: 14px;
+        }
+
+        /* انتخابگر تاریخ داخل این مودال بالای بقیه */
+        #rowActModal .persian-datepicker {
+            z-index: 2200;
+        }
     </style>
 
 
@@ -997,29 +1648,26 @@ require_once '../includes/version.php';
                 </div>
             </div>
             <div class="plan-grid">
-                <div class="plan-item clickable" onclick="openPlanModal('month')">
-                    <div class="plan-icon month"><i class="bi bi-calendar-check"></i></div>
-                    <div>
-                        <div class="plan-label">این ماه</div>
-                        <div class="plan-value" id="statMonth">— وظیفه</div>
-                    </div>
-                    <i class="bi bi-chevron-left plan-arrow"></i>
-                </div>
-                <div class="plan-item clickable" onclick="openPlanModal('week')">
-                    <div class="plan-icon week"><i class="bi bi-calendar-week"></i></div>
-                    <div>
-                        <div class="plan-label">این هفته</div>
-                        <div class="plan-value" id="statWeek">— وظیفه</div>
-                    </div>
-                    <i class="bi bi-chevron-left plan-arrow"></i>
-                </div>
-                <div class="plan-item clickable" onclick="openPlanModal('tomorrow')">
-                    <div class="plan-icon tomor"><i class="bi bi-calendar-event"></i></div>
-                    <div>
+                <div class="plan-item" onclick="openPlanModal('tomorrow')">
+                    <div class="plan-text">
                         <div class="plan-label">فردا</div>
                         <div class="plan-value" id="statTomorrow">— وظیفه</div>
                     </div>
-                    <i class="bi bi-chevron-left plan-arrow"></i>
+                    <div class="plan-icon tomor"><i class="bi bi-calendar-event"></i></div>
+                </div>
+                <div class="plan-item" onclick="openPlanModal('week')">
+                    <div class="plan-text">
+                        <div class="plan-label">این هفته</div>
+                        <div class="plan-value" id="statWeek">— وظیفه</div>
+                    </div>
+                    <div class="plan-icon week"><i class="bi bi-calendar-week"></i></div>
+                </div>
+                <div class="plan-item" onclick="openPlanModal('month')">
+                    <div class="plan-text">
+                        <div class="plan-label">این ماه</div>
+                        <div class="plan-value" id="statMonth">— وظیفه</div>
+                    </div>
+                    <div class="plan-icon month"><i class="bi bi-calendar-check"></i></div>
                 </div>
             </div>
         </div>
@@ -1054,12 +1702,12 @@ require_once '../includes/version.php';
                         <span>منتخب</span>
                         <i class="bi bi-pin-angle tab-pin" data-pin="starred"></i>
                     </button>
-                </div>
 
-                <div class="dash-filters">
-                    <button class="filter-chip active" data-filter="all">همه</button>
-                    <button class="filter-chip" data-filter="today">امروز</button>
-                    <button class="filter-chip" data-filter="overdue">عقب افتاده</button>
+                    <div class="dash-filters">
+                        <button class="filter-chip active" data-filter="all">همه</button>
+                        <button class="filter-chip" data-filter="today">امروز</button>
+                        <button class="filter-chip" data-filter="overdue">عقب افتاده</button>
+                    </div>
                 </div>
 
                 <div class="dash-card-body">
@@ -1067,9 +1715,9 @@ require_once '../includes/version.php';
                         <thead>
                             <tr>
                                 <th>عنوان وظیفه</th>
-                                <th>مهلت انجام</th>
-                                <th class="col-status">وضعیت</th>
-                                <th class="col-ops">عملیات</th>
+                                <th id="thDeadline">مهلت انجام</th>
+                                <th class="col-status" id="thStatus">وضعیت</th>
+                                <th class="col-ops" id="thOps">عملیات</th>
                             </tr>
                         </thead>
                         <tbody id="taskTbody">
@@ -1141,8 +1789,8 @@ require_once '../includes/version.php';
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-calendar3" id="pmIcon"></i>
                         <span id="pmTitle">برنامه کاری</span>
+                        <span class="pm-head-icon"><i class="bi bi-calendar3" id="pmIcon"></i></span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -1153,7 +1801,47 @@ require_once '../includes/version.php';
             </div>
         </div>
     </div>
-
+    <!-- ═══════════ مودال هفتگی ═══════════ -->
+    <div class="modal fade" id="weekModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="    max-width: 1200px;">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span>برنامه هفتگی</span>
+                        <span class="pm-head-icon"><i class="bi bi-calendar-week"></i></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="wk-nav">
+                        <button onclick="wkShift(-1)" title="هفتهٔ قبل"><i class="bi bi-chevron-right"></i></button>
+                        <span class="wk-label" id="wkLabel">این هفته</span>
+                        <button onclick="wkShift(1)" title="هفتهٔ بعد"><i class="bi bi-chevron-left"></i></button>
+                    </div>
+                    <div class="wk-grid" id="wkGrid"></div>
+                </div>
+                <div class="modal-footer" style="padding:12px 20px;">
+                    <a href="my-tasks.php" class="btn btn-sm" style="background:var(--pm-purple);color:#fff;">مشاهده همه کارها</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- مودال کوچک عملیات تک‌کار -->
+    <div class="modal fade" id="rowActModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content" style="border:none;border-radius:16px;">
+                <div class="modal-header" style="padding:16px 18px;border-bottom:1px solid #f1f1f4;">
+                    <h6 class="modal-title" style="display:flex;align-items:center;gap:9px;font-weight:700;">
+                        <span id="rowActTitle">عملیات</span>
+                        <i id="rowActIcon" class="bi"></i>
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        style="width:32px;height:32px;border-radius:50%;background-color:#f3f4f6;opacity:1;"></button>
+                </div>
+                <div class="modal-body" id="rowActBody" style="padding:16px 18px;"></div>
+            </div>
+        </div>
+    </div>
     <!-- پیام کوتاه -->
     <div id="pmToast"></div>
     <script src="<?= asset('/assets/js/task-filters.js') ?>"></script>
@@ -1411,7 +2099,21 @@ require_once '../includes/version.php';
         function renderTasks() {
             const tbody = document.getElementById('taskTbody');
             const list = applyFilter(getTabList());
+            // ── هدر پویا: تب فعالیت‌های اخیر، ستون «تاریخ/ساعت» دارد ──
+            const isRecentTab = (currentTab === 'recent');
+            const thDeadline = document.getElementById('thDeadline');
+            const thStatus = document.getElementById('thStatus');
+            const thOps = document.getElementById('thOps');
 
+            if (isRecentTab) {
+                thDeadline.textContent = 'تاریخ / ساعت';
+                thStatus.style.display = 'none';
+                thOps.style.display = 'none';
+            } else {
+                thDeadline.textContent = 'مهلت انجام';
+                thStatus.style.display = '';
+                thOps.style.display = '';
+            }
             if (!list.length) {
                 tbody.innerHTML = `<tr><td colspan="4" class="dash-empty">
                 <i class="bi bi-inbox"></i>کاری برای نمایش وجود ندارد</td></tr>`;
@@ -1424,27 +2126,329 @@ require_once '../includes/version.php';
                 const isWf = (t._src === 'recent');
                 const link = isWf ? `workflow-monitor.php?id=${t.id}` : `task-detail.php?id=${t.id}`;
                 const safe = (t.title || '').replace(/"/g, '&quot;');
+                const acts = isWf ? [] : pmActions(t);
 
+                // ── ردیف فعالیت اخیر: عنوان + تاریخ/ساعت ──
+                if (isWf) {
+                    return `<tr onclick="location.href='${link}'">
+                    <td>
+                        <div class="td-title">
+                            <button class="td-star${on ? ' on' : ''}"
+                                    title="${on ? 'حذف از منتخب' : 'افزودن به منتخب'}"
+                                    onclick="toggleStar('${key}', this, event)">
+                                <i class="bi bi-star${on ? '-fill' : ''}"></i>
+                            </button>
+                            <i class="bi bi-diagram-3 doc"></i>
+                            <span title="${safe}">${t.title || '—'}</span>
+                        </div>
+                    </td>
+                    <td class="td-deadline">${faDateTime(t.started_at || t.updated_at)}</td>
+                </tr>`;
+                }
+
+                // ── ردیف کار عادی ──
                 return `<tr onclick="location.href='${link}'">
                 <td>
                     <div class="td-title">
+                        <button class="td-star${on ? ' on' : ''}"
+                                title="${on ? 'حذف از منتخب' : 'افزودن به منتخب'}"
+                                onclick="toggleStar('${key}', this, event)">
+                            <i class="bi bi-star${on ? '-fill' : ''}"></i>
+                        </button>
                         <i class="bi bi-file-earmark-text doc"></i>
                         <span title="${safe}">${t.title || '—'}</span>
                     </div>
                 </td>
                 <td class="td-deadline">${faDate(TF.effectiveDue(t))}</td>
                 <td class="td-status">${TF.statusBadge(t, currentUser)}</td>
-                <td class="td-ops">
-                    <button class="star-btn${on ? ' on' : ''}"
-                            title="${on ? 'حذف از منتخب' : 'افزودن به منتخب'}"
-                            onclick="toggleStar('${key}', this, event)">
-                        <i class="bi bi-star${on ? '-fill' : ''}"></i>
-                    </button>
-                </td>
+                <td class="td-ops">${rowMenuHtml(t.id, acts)}</td>
             </tr>`;
             }).join('');
         }
 
+        /* منوی سه‌نقطهٔ جدول اصلی */
+        function rowMenuHtml(taskId, acts) {
+            const items = [];
+            if (acts.includes('approve')) items.push(`<button class="act-approve" onclick="rowAction(${taskId},'approve',event)"><i class="bi bi-check-lg"></i> تایید</button>`);
+            if (acts.includes('reject')) items.push(`<button class="act-reject" onclick="rowAction(${taskId},'reject',event)"><i class="bi bi-x-lg"></i> رد</button>`);
+            if (acts.includes('delegate')) items.push(`<button class="act-delegate" onclick="rowAction(${taskId},'delegate',event)"><i class="bi bi-arrow-left-right"></i> ارجاع</button>`);
+            if (acts.includes('extend')) items.push(`<button class="act-extend" onclick="rowAction(${taskId},'extend',event)"><i class="bi bi-calendar-plus"></i> تمدید موعد</button>`);
+
+            const body = items.length ? items.join('') : `<div class="empty-hint">عملیاتی موجود نیست</div>`;
+
+            return `
+            <div class="row-menu-wrap">
+                <button class="row-kebab" onclick="rowToggleMenu(${taskId}, event)"><i class="bi bi-three-dots-vertical"></i></button>
+                <div class="row-menu" id="rowMenu-${taskId}">${body}</div>
+            </div>`;
+        }
+
+        /* باز/بسته کردن منوی جدول */
+        function rowToggleMenu(taskId, ev) {
+            ev.stopPropagation();
+            const menu = document.getElementById('rowMenu-' + taskId);
+            const wasOpen = menu.classList.contains('open');
+            document.querySelectorAll('.row-menu.open').forEach(m => m.classList.remove('open'));
+            if (!wasOpen) menu.classList.add('open');
+        }
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.row-menu.open').forEach(m => m.classList.remove('open'));
+        });
+
+        /* اجرای عملیات از جدول — از مودال استفاده می‌کند */
+        function rowAction(taskId, action, ev) {
+            ev.stopPropagation();
+            document.querySelectorAll('.row-menu.open').forEach(m => m.classList.remove('open'));
+
+            // کار موردنظر را پیدا کن و در مودال باز کن
+            const t = store.mine.find(x => Number(x.id) === Number(taskId)) ||
+                store.delegated.find(x => Number(x.id) === Number(taskId));
+            if (!t) {
+                pmToast('کار یافت نشد', 'err');
+                return;
+            }
+
+            // از همان مودال «برنامه کاری» به‌عنوان بستر فرم استفاده می‌کنیم
+            rowActionInModal(t, action);
+        }
+        /* ═══════════════════════════════════════════════
+                   عملیات تک‌کار از جدول (مودال کوچک مینیمال)
+                   ═══════════════════════════════════════════════ */
+
+        let rowModal = null;
+
+        function rowActionInModal(task, action) {
+
+            // ── تأیید: بدون فرم، مستقیم ──────────────────
+            if (action === 'approve') {
+                rowSubmit(task.id, 'approve', null);
+                return;
+            }
+
+            // ── بقیه: مودال کوچک ─────────────────────────
+            const titles = {
+                reject: ['رد کار', 'bi-x-lg', '#dc2626'],
+                delegate: ['ارجاع کار', 'bi-arrow-left-right', '#7c5cff'],
+                extend: ['تمدید موعد', 'bi-calendar-plus', '#7c5cff'],
+            };
+            const [title, icon, color] = titles[action];
+
+            document.getElementById('rowActTitle').textContent = title;
+            document.getElementById('rowActIcon').className = 'bi ' + icon;
+            document.getElementById('rowActIcon').style.color = color;
+
+            document.getElementById('rowActBody').innerHTML = rowFormHtml(task, action);
+
+            if (!rowModal) {
+                rowModal = new bootstrap.Modal(document.getElementById('rowActModal'));
+            }
+            rowModal.show();
+            if (action === 'delegate') {
+                const setup = () => {
+                    AssigneePicker.init({
+                        container: '#rowAssigneePicker',
+                        users: pmUsers,
+                        sections: (typeof sectionList !== 'undefined') ? sectionList : [],
+                        sectionMap: (typeof sectionMap !== 'undefined') ? sectionMap : {},
+                        showSections: false, // فقط کاربر (نه واحد) برای ارجاع
+                        allowAll: false
+                    });
+                };
+                if (pmUsers.length === 0) {
+                    pmLoadUsers().then(setup);
+                } else {
+                    setTimeout(setup, 120);
+                }
+            }
+            // انتخابگر تاریخ برای تمدید
+            if (action === 'extend' && typeof window.reinitPersianDatepickers === 'function') {
+                setTimeout(() => window.reinitPersianDatepickers(), 120);
+            }
+
+            if (action === 'delegate') {
+                if (pmUsers.length === 0) {
+                    pmLoadUsers().then(() => rowFillUsers());
+                } else {
+                    setTimeout(rowFillUsers, 100);
+                }
+            }
+        }
+
+        /* قالب فرم هر عملیات — مینیمال */
+        function rowFormHtml(task, action) {
+
+            if (action === 'reject') {
+                return `
+                    <textarea id="rowNote" class="ra-input"
+                              placeholder="دلیل رد (الزامی)" rows="3"></textarea>
+                    <div class="ra-actions">
+                        <button class="pm-btn pm-btn-danger" onclick="rowSubmit(${task.id},'reject',this)">رد کردن</button>
+                        <button class="pm-btn pm-btn-ghost" onclick="rowModal.hide()">انصراف</button>
+                    </div>`;
+            }
+
+            if (action === 'delegate') {
+                return `
+                    <div id="rowAssigneePicker"></div>
+                    <div class="ra-actions" style="margin-top:10px;">
+                        <button class="pm-btn pm-btn-primary" onclick="rowSubmit(${task.id},'delegate',this)">ارجاع</button>
+                        <button class="pm-btn pm-btn-ghost" onclick="rowModal.hide()">انصراف</button>
+                    </div>`;
+            }
+
+            if (action === 'extend') {
+                return `
+                    <div class="persian-datepicker-wrapper">
+                        <input type="text" class="persian-datepicker-input ra-input"
+                               id="rowDate" placeholder="انتخاب موعد جدید..." readonly>
+                        <div class="persian-datepicker">
+                            <div class="datepicker-header">
+                                <button type="button" class="datepicker-nav" data-action="prev">►</button>
+                                <span class="datepicker-current"></span>
+                                <button type="button" class="datepicker-nav" data-action="next">◄</button>
+                            </div>
+                            <div class="datepicker-weekdays">
+                                <div class="datepicker-weekday">ش</div><div class="datepicker-weekday">ی</div>
+                                <div class="datepicker-weekday">د</div><div class="datepicker-weekday">س</div>
+                                <div class="datepicker-weekday">چ</div><div class="datepicker-weekday">پ</div>
+                                <div class="datepicker-weekday">ج</div>
+                            </div>
+                            <div class="datepicker-days"></div>
+                            <button type="button" class="datepicker-today-btn">امروز</button>
+                        </div>
+                    </div>
+                    <div class="ra-actions">
+                        <button class="pm-btn pm-btn-primary" onclick="rowSubmit(${task.id},'extend',this)">ثبت درخواست</button>
+                        <button class="pm-btn pm-btn-ghost" onclick="rowModal.hide()">انصراف</button>
+                    </div>`;
+            }
+            return '';
+        }
+
+        /* ─── لیست کاربران قابل جستجو (ارجاع) ─── */
+        function rowFillUsers() {
+            const box = document.getElementById('rowUserList');
+            if (!box) return;
+            rowRenderUsers(pmUsers);
+        }
+
+        function rowFilterUsers() {
+            const q = document.getElementById('rowUserSearch').value.trim().toLowerCase();
+            const filtered = pmUsers.filter(u =>
+                Number(u.id) !== Number(currentUser.id) &&
+                `${u.first_name} ${u.last_name}`.toLowerCase().includes(q)
+            );
+            rowRenderUsers(filtered);
+        }
+
+        function rowRenderUsers(users) {
+            const box = document.getElementById('rowUserList');
+            if (!box) return;
+            const list = users.filter(u => Number(u.id) !== Number(currentUser.id));
+            if (!list.length) {
+                box.innerHTML = `<div class="ra-user-empty">کاربری یافت نشد</div>`;
+                return;
+            }
+            box.innerHTML = list.slice(0, 50).map(u => `
+                <div class="ra-user" onclick="rowPickUser(${u.id}, this, '${(u.first_name + ' ' + u.last_name).replace(/'/g, '')}')">
+                    <i class="bi bi-person-circle"></i>
+                    <span>${u.first_name} ${u.last_name}</span>
+                </div>`).join('');
+        }
+
+        function rowPickUser(id, el, name) {
+            document.getElementById('rowUserId').value = id;
+            document.querySelectorAll('.ra-user.sel').forEach(x => x.classList.remove('sel'));
+            el.classList.add('sel');
+            document.getElementById('rowUserSearch').value = name;
+        }
+
+        /* ─── ارسال به سرور ─── */
+        async function rowSubmit(taskId, action, btn) {
+            let url, payload;
+
+            if (action === 'approve') {
+                url = '../api/tasks/approve.php';
+                payload = {
+                    task_id: taskId,
+                    approve: true,
+                    notes: ''
+                };
+            } else if (action === 'reject') {
+                const note = document.getElementById('rowNote').value.trim();
+                if (!note) {
+                    pmToast('لطفاً دلیل رد را بنویسید', 'err');
+                    return;
+                }
+                url = '../api/tasks/approve.php';
+                payload = {
+                    task_id: taskId,
+                    approve: false,
+                    notes: note
+                };
+            } else if (action === 'delegate') {
+                const sel = AssigneePicker.getValue();
+                if (!sel || sel.type !== 'user' || !sel.value || sel.value === '__all_users__') {
+                    pmToast('لطفاً کاربر مقصد را انتخاب کنید', 'err');
+                    return;
+                }
+                url = '../api/tasks/delegate.php';
+                payload = {
+                    task_id: taskId,
+                    to_user_id: Number(sel.value),
+                    notes: '',
+                    share_history: true
+                };
+            } else if (action === 'extend') {
+                const d = document.getElementById('rowDate').getAttribute('data-date');
+                if (!d) {
+                    pmToast('لطفاً موعد جدید را انتخاب کنید', 'err');
+                    return;
+                }
+                url = '../api/tasks/request-deadline.php';
+                payload = {
+                    task_id: taskId,
+                    new_deadline: d,
+                    reason: 'تمدید از داشبورد'
+                };
+            }
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            }
+
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'عملیات ناموفق بود');
+
+                const msgs = {
+                    approve: 'کار تایید شد',
+                    reject: 'کار رد شد',
+                    delegate: 'کار ارجاع شد',
+                    extend: 'درخواست تمدید ثبت شد'
+                };
+                pmToast(msgs[action] || 'انجام شد', 'ok');
+
+                if (rowModal) rowModal.hide();
+                pmRefresh();
+
+            } catch (err) {
+                pmToast(err.message || 'خطا', 'err');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'تلاش دوباره';
+                }
+            }
+        }
         /* ───────── فرآیندهای جاری ───────── */
         function renderRoutines(data) {
             const box = document.getElementById('routineList');
@@ -1462,7 +2466,7 @@ require_once '../includes/version.php';
             box.innerHTML = list.map((r, i) => {
                 const pct = Math.round((r.active_count / max) * 100);
                 const name = (r.template_name || '').replace(/'/g, "\\'");
-                return `<div class="routine-row" onclick="openInstances(${r.template_id}, '${name}')">
+                return `<div class="routine-row" onclick="location.href='workflow-monitor.php?template=${r.template_id}'">
                 <div class="routine-name" title="${r.template_name}">${r.template_name}</div>
                 <div class="routine-bar-wrap">
                     <div class="routine-bar" style="width:${pct}%; background:${colors[i % colors.length]};"></div>
@@ -1531,7 +2535,6 @@ require_once '../includes/version.php';
                 const who = [t.assignee_first_name, t.assignee_last_name].filter(Boolean).join(' ');
                 const safe = (t.title || '').replace(/"/g, '&quot;');
                 return `<div class="dlg-row" onclick="location.href='task-detail.php?id=${t.id}'">
-                <i class="bi bi-file-earmark-text" style="color:#93c5fd;"></i>
                 <div class="dlg-main">
                     <div class="dlg-title" title="${safe}">${t.title || '—'}</div>
                     ${who ? `<div class="dlg-sub">مسئول: ${who}</div>` : ''}
@@ -1558,6 +2561,13 @@ require_once '../includes/version.php';
             currentTab = tab;
             document.querySelectorAll('.dash-tab').forEach(b =>
                 b.classList.toggle('active', b.dataset.tab === tab));
+
+            // فیلترها در تب فعالیت‌های اخیر معنا ندارند → مخفی
+            const filters = document.querySelector('.dash-filters');
+            if (filters) {
+                filters.style.display = (tab === 'recent') ? 'none' : '';
+            }
+
             updateTasksSeeAll();
             renderTasks();
         }
@@ -1582,7 +2592,8 @@ require_once '../includes/version.php';
             // «مشاهده همه»ی کارهای واگذار تأخیردار
             document.getElementById('delayedSeeAll').addEventListener('click', ev => {
                 ev.preventDefault();
-                location.href = 'delegated-tasks.php?sort=overdue';
+                // «مشاهده همه»ی کارهای واگذار تأخیردار
+                location.href = 'delegated-tasks.php?filter=overdue';
             });
 
             refreshPins();
@@ -1612,7 +2623,17 @@ require_once '../includes/version.php';
         let pmModal = null; // نمونهٔ Bootstrap Modal
         let pmOpenMenu = null; // منوی سه‌نقطهٔ باز (فقط یکی هم‌زمان)
 
-
+        /* تاریخ شمسی + ساعت */
+        function faDateTime(str) {
+            if (!str) return '—';
+            const d = new Date(str);
+            if (isNaN(d)) return '—';
+            const [jy, jm, jd] = jalaliOf(d);
+            const p = n => String(n).padStart(2, '0');
+            const date = `${jy}/${p(jm)}/${p(jd)}`;
+            const time = `${p(d.getHours())}:${p(d.getMinutes())}`;
+            return toFa(`${date} - ${time}`);
+        }
         /* ═══════════════════════════════════════════════════
            ۱) فیلتر بازه
            ═══════════════════════════════════════════════════ */
@@ -1708,6 +2729,12 @@ require_once '../includes/version.php';
         };
 
         async function openPlanModal(scope) {
+            // «این هفته» → مودال هفتگی جداگانه
+            if (scope === 'week') {
+                openWeekModal();
+                return;
+            }
+
             pmScope = scope;
 
             const meta = PM_META[scope];
@@ -1716,93 +2743,78 @@ require_once '../includes/version.php';
 
             if (!pmModal) {
                 pmModal = new bootstrap.Modal(document.getElementById('planModal'));
-                // 🆕 موقع بسته شدن مودال، عناصر شناور را پاک کن
-                document.getElementById('planModal')
-                    .addEventListener('hidden.bs.modal', pmCleanupFloating);
             }
             pmModal.show();
 
             pmRender();
 
-            // لیست کاربران را یک‌بار (و فقط در صورت نیاز) بگیر
             if (pmUsers.length === 0) {
                 pmLoadUsers();
             }
         }
-
 
         /* ═══════════════════════════════════════════════════
            ۴) رسم لیست
            ═══════════════════════════════════════════════════ */
 
         function pmRender() {
-            pmCleanupFloating(); // ← جایگزین pmCloseMenus() و حذف تقویم
-
-            document.querySelectorAll('body > .persian-datepicker.pm-floating')
-                .forEach(c => c.remove());
             const box = document.getElementById('pmBody');
             const list = store.mine.filter(t => pmInScope(t, pmScope));
 
             if (!list.length) {
                 box.innerHTML = `
-            <div class="dash-empty">
-                <i class="bi bi-check2-circle"></i>
-                کاری در این بازه وجود ندارد
-            </div>`;
+                    <div class="pm-empty">
+                        <i class="bi bi-check2-circle"></i>
+                        کاری در این بازه وجود ندارد
+                    </div>`;
                 return;
             }
 
-            // کارهایی که منتظر اقدام من‌اند، بالاتر بیایند
+            // کارهای منتظر اقدام، بالاتر
             list.sort((a, b) => pmActions(b).length - pmActions(a).length);
 
             box.innerHTML = list.map(t => {
                 const acts = pmActions(t);
-                const who = [t.assignee_first_name, t.assignee_last_name].filter(Boolean).join(' ');
                 const safe = (t.title || '').replace(/"/g, '&quot;');
-                const badge = TF.statusBadge(t, currentUser);
 
                 return `
-        <div class="pm-row" id="pmRow-${t.id}">
-            <div style="flex:1; min-width:0;">
-                <div class="pm-main" onclick="location.href='task-detail.php?id=${t.id}'">
-                    <div class="pm-title" title="${safe}">${t.title || '—'}</div>
-                    <div class="pm-meta">
-                        ${badge}
-                        ${who ? `<span><i class="bi bi-person"></i> ${who}</span>` : ''}
-                        <span><i class="bi bi-calendar3"></i> ${faDate(TF.effectiveDue(t))}</span>
+                <div class="pm-row" id="pmRow-${t.id}">
+                    <div style="flex:1; min-width:0;">
+                        <div class="pm-title" onclick="location.href='task-detail.php?id=${t.id}'"
+                             title="${safe}">${t.title || '—'}</div>
+                        <div class="pm-form" id="pmForm-${t.id}"></div>
                     </div>
-                </div>
+                    ${acts.length ? pmKebabHtml(t.id, acts) : ''}
+                </div>`;
+            }).join('');
+        }
 
-                <!-- فرم عملیات — هنگام انتخاب گزینه باز می‌شود -->
-                <div class="pm-form" id="pmForm-${t.id}"></div>
-            </div>
-
-            ${acts.length ? `
+        /* منوی سه‌نقطه — مشترک بین مودال روزانه و هفتگی */
+        function pmKebabHtml(taskId, acts) {
+            return `
             <div class="pm-menu-wrap">
-                <button class="pm-kebab" onclick="pmToggleMenu(${t.id}, event)" title="عملیات">
+                <button class="pm-kebab" onclick="pmToggleMenu(${taskId}, event)" title="عملیات">
                     <i class="bi bi-three-dots-vertical"></i>
                 </button>
-                <div class="pm-menu" id="pmMenu-${t.id}">
+                <div class="pm-menu" id="pmMenu-${taskId}">
                     ${acts.includes('approve') ? `
-                        <button class="act-approve" onclick="pmOpenForm(${t.id}, 'approve')">
+                        <button class="act-approve" onclick="pmOpenForm(${taskId}, 'approve')">
                             <i class="bi bi-check-lg"></i> تایید
                         </button>` : ''}
                     ${acts.includes('reject') ? `
-                        <button class="act-reject" onclick="pmOpenForm(${t.id}, 'reject')">
+                        <button class="act-reject" onclick="pmOpenForm(${taskId}, 'reject')">
                             <i class="bi bi-x-lg"></i> رد
                         </button>` : ''}
                     ${acts.includes('delegate') ? `
-                        <button class="act-delegate" onclick="pmOpenForm(${t.id}, 'delegate')">
+                        <button class="act-delegate" onclick="pmOpenForm(${taskId}, 'delegate')">
                             <i class="bi bi-arrow-left-right"></i> ارجاع
                         </button>` : ''}
                     ${acts.includes('extend') ? `
-                        <button class="act-extend" onclick="pmOpenForm(${t.id}, 'extend')">
+                        <button class="act-extend" onclick="pmOpenForm(${taskId}, 'extend')">
                             <i class="bi bi-calendar-plus"></i> تمدید موعد
                         </button>` : ''}
                 </div>
-            </div>` : ''}
-        </div>`;
-            }).join('');
+            </div>`;
         }
 
 
@@ -2379,7 +3391,11 @@ require_once '../includes/version.php';
 
                 renderStats(); // عدد کارت‌ها
                 renderTasks(); // جدول پشت مودال
-
+                // اگر مودال هفتگی باز است، آن را هم تازه کن
+                const wkEl = document.getElementById('weekModal');
+                if (wkEl && wkEl.classList.contains('show')) {
+                    wkRender();
+                }
             } catch (e) {
                 console.error('خطا در به‌روزرسانی:', e);
             }
@@ -2401,6 +3417,113 @@ require_once '../includes/version.php';
             pmToastTimer = setTimeout(() => {
                 el.className = type;
             }, 2600);
+        }
+        /* ═══════════════════════════════════════════════
+           مودال هفتگی
+           ═══════════════════════════════════════════════ */
+
+        let wkOffset = 0; // 0 = این هفته، -1 = قبل، +1 = بعد
+        let wkModal = null;
+
+        function openWeekModal() {
+            wkOffset = 0;
+            if (!wkModal) {
+                wkModal = new bootstrap.Modal(document.getElementById('weekModal'));
+            }
+            wkModal.show();
+            wkRender();
+
+            if (pmUsers.length === 0) pmLoadUsers();
+        }
+
+        function wkShift(dir) {
+            wkOffset += dir;
+            wkRender();
+        }
+
+        /* شنبهٔ هفتهٔ هدف را برمی‌گرداند */
+        function wkSaturdayOf(offset) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            // شنبه = اولین روز هفتهٔ شمسی. getDay(): شنبه=6
+            const back = (today.getDay() + 1) % 7; // فاصله تا شنبهٔ همین هفته
+            const sat = new Date(today);
+            sat.setDate(today.getDate() - back + offset * 7);
+            return sat;
+        }
+
+        function wkRender() {
+            const sat = wkSaturdayOf(wkOffset);
+
+            // برچسب ناوبری
+            const label = wkOffset === 0 ? 'این هفته' :
+                wkOffset === -1 ? 'هفتهٔ قبل' :
+                wkOffset === 1 ? 'هفتهٔ بعد' :
+                `${toFa(Math.abs(wkOffset))} هفته ${wkOffset < 0 ? 'قبل' : 'بعد'}`;
+            document.getElementById('wkLabel').textContent = label;
+
+            const dayNames = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'];
+            const months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+
+            let html = '';
+
+            for (let i = 0; i < 6; i++) { // شنبه تا پنج‌شنبه (جمعه حذف)
+                const day = new Date(sat);
+                day.setDate(sat.getDate() + i);
+                day.setHours(0, 0, 0, 0);
+
+                const [jy, jm, jd] = jalaliOf(day);
+                const dateStr = day.toISOString().slice(0, 10);
+
+                // کارهای این روز (فقط کارهای کاربر جاری)
+                const dayTasks = store.mine.filter(t => {
+                    const due = TF.effectiveDue(t);
+                    if (!due) return false;
+                    if (TF.isDone(t)) return false;
+                    const d = new Date(due);
+                    d.setHours(0, 0, 0, 0);
+                    return d.getTime() === day.getTime();
+                });
+
+                let cards = '';
+                if (dayTasks.length) {
+                    cards = dayTasks.map(t => {
+                        const acts = pmActions(t);
+                        const safe = (t.title || '').replace(/"/g, '&quot;');
+                        const time = wkTimeOf(t);
+                        return `
+                        <div class="wk-card" id="pmRow-${t.id}">
+                            ${acts.length ? pmKebabHtml(t.id, acts) : ''}
+                            <div class="wk-card-title" onclick="location.href='task-detail.php?id=${t.id}'"
+                                 title="${safe}">${t.title || '—'}</div>
+                            ${time ? `<div class="wk-card-time">${time}</div>` : ''}
+                            <div class="pm-form" id="pmForm-${t.id}"></div>
+                        </div>`;
+                    }).join('');
+                } else {
+                    cards = `<div class="wk-col-empty">—</div>`;
+                }
+
+                html += `
+                <div class="wk-col">
+                    <div class="wk-col-head">
+                        <div class="wk-day">${dayNames[i]}</div>
+                        <div class="wk-date">${toFa(jd)} ${months[jm - 1]}</div>
+                    </div>
+                    <div class="wk-cards">${cards}</div>
+                </div>`;
+            }
+
+            document.getElementById('wkGrid').innerHTML = html;
+        }
+
+        /* ساعت کار، فقط اگر واقعاً وجود داشت (نه 00:00) */
+        function wkTimeOf(t) {
+            const raw = t.deadline || '';
+            if (!raw || raw.indexOf(' ') === -1) return '';
+            const hm = raw.split(' ')[1] || '';
+            if (!hm || hm.startsWith('00:00')) return '';
+            return toFa(hm.slice(0, 5));
         }
     </script>
 
