@@ -136,14 +136,19 @@ try {
                 }
             }
         } elseif ($task['status'] == 'in_progress') {
-            // شروع مرحله
+            // شروع مرحله — فقط اگر واقعاً نوبتش رسیده باشد
+            // (مرحله‌ای که هنوز pending است، نباید با شروع کار active شود؛
+            //  فعال‌سازی مراحل آبشاری فقط از طریق completeStep انجام می‌شود)
             $stmt = $db->prepare("
                 UPDATE workflow_instance_steps 
                 SET status = 'active',
                     started_at = NOW()
-                WHERE task_id = ? AND started_at IS NULL
+                WHERE task_id = ? 
+                  AND started_at IS NULL
+                  AND status = 'active'
             ");
             $stmt->execute([$task_id]);
+            
         } elseif ($task['status'] == 'delegated') {
             // ارجاع مرحله
             $stmt = $db->prepare("

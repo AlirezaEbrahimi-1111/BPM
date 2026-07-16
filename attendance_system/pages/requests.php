@@ -1047,7 +1047,6 @@ function formatDateJalali($gregorianDate)
     <link rel="stylesheet" href="../../assets/css/persian-datepicker.css">
     <link rel="stylesheet" href="../../assets/css/deadline-toast.css">
     <link rel="stylesheet" href="../../assets/css/custom.css">
-
     <script src="../../assets/js/ag-grid-community.min.js"></script>
     <script src="../../assets/js/undo-toast.js"></script>
 
@@ -2593,6 +2592,7 @@ function formatDateJalali($gregorianDate)
 <body>
     <!-- استفاده از header.php واقعی -->
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/pages/header.php'; ?>
+
     <!-- تنظیمات سیستم برای JavaScript -->
     <script>
         // ── مبدل سراسری: همهٔ alertها به toast تبدیل می‌شوند ──
@@ -3401,7 +3401,8 @@ function formatDateJalali($gregorianDate)
             });
         })();
     </script>
-    <script src="<?= asset('../assets/js/alert.js') ?>"></script>
+    <script src="/assets/js/alert.js?v=<?= filemtime($_SERVER['DOCUMENT_ROOT'] . '/assets/js/alert.js') ?>"></script>
+
     <script>
         (async function checkAuth() {
             const authToken = localStorage.getItem('auth_token');

@@ -16,32 +16,23 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/period-engine.php';
 /**
  * محاسبهٔ تعداد دوره‌های معوقه و باقی‌مانده (هم‌خوان با complete-recurring.php)
  * باقی‌مانده = معوقه − تکمیل‌شده − اعتبار بخشش
  */
-function oc_calc_remaining(PDO $db, array $task): array
-{
-    if (($task['task_type'] ?? '') !== 'continuous' || empty($task['start_date'])) {
-        return ['overdue' => 0, 'remaining' => 0];
-    }
-    $start = new DateTime($task['start_date']);
-    $start->setTime(0, 0, 0);
-    $today = new DateTime();
-    $today->setTime(0, 0, 0);
-    if ($today < $start) return ['overdue' => 0, 'remaining' => 0];
-
-    // ✅ همان فرمول my-tasks: فقط روزهای کاری (بدون جمعه و تعطیلات)
+/**
+ * ✅ موتور مشترک — دیگر فرمول محلی نداریم.
+ *    منبع واحد: includes/period-engine.php
+ */
+function oc_calc_remaining(PDO $db, array $task): array {
     $holidays = getHolidaySet($db);
-    $overdue  = calcOverduePeriods($task['period_type'], $start, $today, 0, $holidays);
+    $state    = pe_state($db, $task, $holidays);
 
-    $stmt = $db->prepare("SELECT COUNT(*) FROM task_history WHERE task_id = ? AND action = 'completed'");
-    $stmt->execute([$task['id']]);
-    $completed = (int) $stmt->fetchColumn();
-
-    $forgiven  = (int) ($task['overdue_forgiven_credit'] ?? 0);
-    return ['overdue' => $overdue, 'remaining' => max(0, $overdue - $completed - $forgiven)];
+    return [
+        'overdue'   => $state['overdue_raw'],       // پیش از کسر بخشش
+        'remaining' => $state['overdue_periods'],   // معوقهٔ واقعی
+    ];
 }
 
 /**

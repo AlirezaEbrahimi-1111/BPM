@@ -46,10 +46,20 @@ try {
         exit;
     }
 
-    // آیتم تیک‌خورده قابل ویرایش نیست
+   // آیتم تیک‌خورده قابل ویرایش نیست
     if ((int)$row['is_done'] === 1) {
         http_response_code(409);
         echo json_encode(['success' => false, 'message' => 'این آیتم انجام شده و قابل ویرایش نیست']);
+        exit;
+    }
+
+    // 🔒 آیتم ارجاع‌شده قابل ویرایش نیست (فقط حذف و ساخت دوباره)
+    if (!empty($row['assignee_type']) && !empty($row['assignee_value'])) {
+        http_response_code(409);
+        echo json_encode([
+            'success' => false,
+            'message' => 'این آیتم ارجاع داده شده و قابل ویرایش نیست. برای تغییر، ابتدا آن را حذف کنید.'
+        ], JSON_UNESCAPED_UNICODE);
         exit;
     }
 

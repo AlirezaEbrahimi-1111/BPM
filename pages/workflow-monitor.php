@@ -305,7 +305,7 @@ require_once '../includes/version.php';
             gap: 0.75rem;
             margin-bottom: 1rem;
             padding-left: 2.2rem;
-            /* جا برای دکمه حذف */
+            /* جا برای دکمه حذف */ 
         }
 
         .wf-title {
@@ -314,6 +314,21 @@ require_once '../includes/version.php';
             color: var(--gray-900);
             margin: 0;
             line-height: 1.4;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .wf-id-badge {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: .8rem;
+            font-weight: 700;
+            color: var(--gray-700);
+            background: var(--gray-100);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            flex-shrink: 0;
+            letter-spacing: 0.02em;
         }
 
         .wf-badges {
@@ -740,6 +755,104 @@ require_once '../includes/version.php';
             }
         }
 
+        /* ── Search Box ── */
+        .search-box-wrap {
+            position: relative;
+            margin-left: auto;
+            margin-left: 0;
+            flex-shrink: 0;
+        }
+
+        .search-box-wrap .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-size: 0.85rem;
+            pointer-events: none;
+            transition: color 0.15s;
+        }
+
+        .search-box-wrap input {
+            width: 380px;
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            padding: 0.45rem 2.4rem 0.45rem 1rem;
+            font-size: 0.8rem;
+            font-family: inherit;
+            direction: rtl;
+            outline: none;
+            background: white;
+            color: var(--gray-800);
+            transition: all 0.15s ease;
+        }
+
+        .search-box-wrap input::placeholder {
+            color: var(--gray-400);
+        }
+
+        .search-box-wrap input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-box-wrap input:focus~.search-icon {
+            color: var(--primary);
+        }
+
+        .search-box-wrap .search-clear {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 22px;
+            height: 22px;
+            border: none;
+            border-radius: 50%;
+            background: var(--gray-200);
+            color: var(--gray-500);
+            font-size: 0.7rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .search-box-wrap .search-clear:hover {
+            background: var(--gray-300);
+            color: var(--gray-700);
+        }
+
+        .search-box-wrap .search-clear.visible {
+            display: flex;
+        }
+
+        @media (max-width: 640px) {
+            .search-box-wrap input {
+                width: 100%;
+            }
+
+            .search-box-wrap {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 0.5rem;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-bar>*:not(.search-box-wrap) {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
         .role-icon {
             display: inline-flex;
             align-items: center;
@@ -817,6 +930,17 @@ require_once '../includes/version.php';
 
         <!-- Filters -->
         <div class="filter-bar" id="filterBar">
+            
+                        <!-- جستجو بر اساس عنوان یا شناسه -->
+            <div class="search-box-wrap">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="جستجو بر اساس عنوان یا شناسه..."
+                    oninput="handleSearch(this.value)" autocomplete="off">
+                <button class="search-clear" id="searchClearBtn" onclick="clearSearch()" title="پاک کردن">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            
             <button class="filter-pill active" data-filter="all" onclick="setStatusFilter('all', this)">
                 <i class="bi bi-list-ul"></i>همه
             </button>
@@ -874,6 +998,7 @@ require_once '../includes/version.php';
                 style="display:none; background:#fef2f2; border-color:#fecaca; color:#b91c1c;">
                 <i class="bi bi-x-circle"></i>پاک کردن فیلترها
             </button>
+
         </div>
 
         <!-- Workflows Grid -->
@@ -958,7 +1083,9 @@ require_once '../includes/version.php';
         } catch (e) {
             isManagerUser = false;
         }
+        let searchQuery = ''; // عبارت جستجوی کاربر
         let currentRoutine = null; // id روتین انتخاب‌شده
+        let _hideCompletedFromUrl = false; // وقتی از داشبورد با template آمده‌ایم
         let currentSection = null; // key واحد انتخاب‌شده
         let onlyMyRoutines = false; // فیلتر: فقط روتین‌های ساخته‌ی من
         // شناسه و واحدِ کاربر جاری (برای تشخیص نقش‌ها)
@@ -997,7 +1124,24 @@ require_once '../includes/version.php';
             document.getElementById('delayedWorkflows').textContent = toFa(count('delayed'));
             document.getElementById('completedWorkflows').textContent = toFa(count('completed'));
         }
+        /* ─── Search ─── */
+        function handleSearch(value) {
+            searchQuery = (value || '').trim();
+            const clearBtn = document.getElementById('searchClearBtn');
+            clearBtn.classList.toggle('visible', searchQuery.length > 0);
+            updateResetBtn();
+            applyFilter();
+        }
 
+        function clearSearch() {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            searchQuery = '';
+            document.getElementById('searchClearBtn').classList.remove('visible');
+            input.focus();
+            updateResetBtn();
+            applyFilter();
+        }
         async function loadWorkflows() {
             try {
                 const res = await fetch('../api/workflows/list.php', {
@@ -1010,6 +1154,10 @@ require_once '../includes/version.php';
                     allWorkflows = data.workflows || [];
                     loadStats();
                     updateAvgProgress();
+
+                    // 🆕 اگر با ?template=ID آمده‌ایم، همان روتین را فیلتر کن (یک‌بار)
+                    applyTemplateFromUrl();
+
                     applyFilter(); // ← render با فیلتر فعلی، نه reset
                 } else {
                     showError(data.message);
@@ -1032,6 +1180,7 @@ require_once '../includes/version.php';
         /* ─── Filter ─── */
         function setStatusFilter(filter, btn) {
             currentFilter = filter;
+            _hideCompletedFromUrl = false; // 🆕 کاربر دستی وضعیت انتخاب کرد، محدودیت برداشته شود
             document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
             if (btn) btn.classList.add('active');
             updateResetBtn();
@@ -1043,6 +1192,27 @@ require_once '../includes/version.php';
             if (btn) btn.classList.toggle('active', onlyMyRoutines);
             updateResetBtn();
             applyFilter();
+        }
+        /* 🆕 خواندن ?template=ID از URL و اعمال فیلتر روتین */
+        let _templateUrlApplied = false;
+
+        function applyTemplateFromUrl() {
+            if (_templateUrlApplied) return;
+
+            const tpl = new URLSearchParams(location.search).get('template');
+            if (!tpl) return;
+
+            // نام قالب را از لیست روتین‌ها بگیر (r.name = نام قالب، نه عنوان نمونه)
+            const routine = (typeof allRoutines !== 'undefined') ?
+                allRoutines.find(r => String(r.id) === String(tpl)) :
+                null;
+
+            // اگر لیست روتین‌ها هنوز نیامده، بعداً دوباره تلاش کن
+            if (!routine) return;
+
+            _templateUrlApplied = true;
+            _hideCompletedFromUrl = true; // فقط جاری‌ها (فعال + تأخیردار + در حال انجام)
+            selectRoutine(tpl, routine.name);
         }
 
         function applyFilter() {
@@ -1058,6 +1228,11 @@ require_once '../includes/version.php';
                 list = list.filter(w => String(w.workflow_id) === String(currentRoutine));
             }
 
+            // 🆕 حالت ورود از داشبورد: تکمیل‌شده‌ها را نشان نده
+            if (_hideCompletedFromUrl) {
+                list = list.filter(w => w.status !== 'completed');
+            }
+
             // فیلتر واحد — فقط روتین‌هایی که مرحله فعلی‌شان از این بخش است
             if (currentSection !== null) {
                 list = list.filter(w => w.current_section === currentSection);
@@ -1067,7 +1242,15 @@ require_once '../includes/version.php';
             if (onlyMyRoutines && currentUserId !== null) {
                 list = list.filter(w => parseInt(w.created_by) === currentUserId);
             }
-
+            // فیلتر جستجو — بر اساس عنوان یا شناسه
+            if (searchQuery.length > 0) {
+                const q = searchQuery.toLowerCase();
+                list = list.filter(w => {
+                    const titleMatch = (w.title || '').toLowerCase().includes(q);
+                    const idMatch = String(w.id || '').includes(q);
+                    return titleMatch || idMatch;
+                });
+            }
             renderWorkflows(list);
         }
 
@@ -1128,9 +1311,11 @@ require_once '../includes/version.php';
 
         function resetAllFilters() {
             currentFilter = 'all';
+            _hideCompletedFromUrl = false; // 🆕 محدودیت داشبورد هم برداشته شود
             currentRoutine = null;
             currentSection = null;
             onlyMyRoutines = false; // 🆕 پاک‌کردن فیلتر «روتین‌های من»
+            searchQuery = ''; // 🆕 پاک کردن سرچ
 
             document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
             document.querySelector('.filter-pill[data-filter="all"]').classList.add('active');
@@ -1139,15 +1324,18 @@ require_once '../includes/version.php';
             document.getElementById('routineDropdownBtn').classList.remove('active');
             document.getElementById('sectionDropdownLabel').textContent = 'واحد';
             document.getElementById('sectionDropdownBtn').classList.remove('active');
-
             document.querySelectorAll('.filter-dropdown-item').forEach(i => i.classList.remove('selected'));
+
+            // 🆕 پاک کردن فیلد سرچ
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchClearBtn').classList.remove('visible');
 
             updateResetBtn();
             applyFilter();
         }
 
         function updateResetBtn() {
-            const hasExtra = currentRoutine !== null || currentSection !== null || currentFilter !== 'all' || onlyMyRoutines;
+            const hasExtra = currentRoutine !== null || currentSection !== null || currentFilter !== 'all' || onlyMyRoutines || searchQuery.length > 0; // 🆕
             document.getElementById('resetFiltersBtn').style.display = hasExtra ? 'inline-flex' : 'none';
         }
 
@@ -1196,6 +1384,8 @@ require_once '../includes/version.php';
                         <i class="bi bi-check check-icon"></i>
                     </div>
                 `).join('');
+                // اگر با ?template آمده‌ایم و منتظر لیست روتین‌ها بودیم
+                applyTemplateFromUrl();
             } catch (e) {
                 console.error('loadRoutinesList:', e);
             }
@@ -1304,7 +1494,7 @@ require_once '../includes/version.php';
             <div class="wf-card ${statusCls}" onclick="showDetails(${wf.id})">
                 ${deleteBtn}
                 <div class="wf-header">
-                    <h6 class="wf-title">${wf.title}</h6>
+                    <h6 class="wf-title"><span class="wf-id-badge">${toFa(wf.id)}</span>${wf.title}</h6>
                     <div class="wf-badges">${statusBadge}${modeBadge}${bottleneck}</div>
                 </div>
 

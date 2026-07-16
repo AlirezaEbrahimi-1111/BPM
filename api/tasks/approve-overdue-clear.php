@@ -14,25 +14,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/period-engine.php';
 /** باقی‌ماندهٔ معوقه (هم‌خوان با complete-recurring.php) */
+/** ✅ موتور مشترک — منبع واحد: includes/period-engine.php */
 function oc_calc_remaining(PDO $db, array $task): int {
-    if (($task['task_type'] ?? '') !== 'continuous' || empty($task['start_date'])) return 0;
-    $start = new DateTime($task['start_date']); $start->setTime(0, 0, 0);
-    $today = new DateTime();                     $today->setTime(0, 0, 0);
-    if ($today < $start) return 0;
-
     $holidays = getHolidaySet($db);
-    $expected = calcOverduePeriods($task['period_type'], $start, $today, 0, $holidays);
-
-    // ⚠️ باگ رفع شد: اینجا $task['id'] در واقع شناسهٔ درخواست بود، نه کار!
-    $tid = $task['task_id'] ?? $task['id'];
-    $stmt = $db->prepare("SELECT COUNT(*) FROM task_history WHERE task_id = ? AND action = 'completed'");
-    $stmt->execute([$tid]);
-    $completed = (int) $stmt->fetchColumn();
-
-    $forgiven = (int) ($task['overdue_forgiven_credit'] ?? 0);
-    return max(0, $expected - $completed - $forgiven);
+    $state    = pe_state($db, $task, $holidays);
+    return $state['overdue_periods'];
 }
 
 try {

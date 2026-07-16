@@ -4,7 +4,8 @@ header('Content-Type: application/json; charset=utf-8');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/period-engine.php';
 try {
     $user_id = requireAuth();
     $input = json_decode(file_get_contents('php://input'), true);
@@ -30,67 +31,49 @@ try {
         exit;
     }
 
-    // محاسبه تعداد دوره‌های معوقه
-    $start_date = new DateTime($task['start_date']);
-    $today = new DateTime();
-    $today->setTime(0, 0, 0);
+    // ✅ موتور مشترک دوره
+    $holidays = getHolidaySet($db);
+    $state    = pe_state($db, $task, $holidays);
 
-    $overdue_count = 0;
-    switch ($task['period_type']) {
-        case 'daily':
-            $interval = new DateInterval('P1D');
-            break;
-        case 'weekly':
-            $interval = new DateInterval('P7D');
-            break;
-        case 'monthly':
-            $interval = new DateInterval('P1M');
-            break;
-    }
-
-    $current = clone $start_date;
-    while ($current < $today) {
-        $overdue_count++;
-        $current->add($interval);
-    }
-
-    // دریافت تعداد تکمیل‌های انجام شده
-    $stmt = $db->prepare("SELECT COUNT(*) as count FROM task_history WHERE task_id = ? AND action = 'completed'");
-    $stmt->execute([$task_id]);
-    $completed_count = $stmt->fetch()['count'];
-
-    $forgiven_credit = (int)($task['overdue_forgiven_credit'] ?? 0);
-    $remaining = $overdue_count - $completed_count - $forgiven_credit;
-
-    if ($remaining <= 0) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'این کار به‌روز است و نمی‌توانید آن را تکمیل کنید',
-            'overdue_count' => $overdue_count,
-            'completed_count' => $completed_count
-        ]);
+    if (!$state['can_complete']) {
+        $msg = $state['is_today_done']
+            ? 'دورهٔ امروز قبلاً تکمیل شده است'
+            : 'این کار در وضعیت قابل تکمیل نیست';
+        echo json_encode(['success' => false, 'message' => $msg], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
-    // ثبت تکمیل
-    $stmt = $db->prepare("INSERT INTO task_history (task_id, from_user_id, action, notes) VALUES (?, ?, 'completed', ?)");
-    $stmt->execute([$task_id, $user_id, "تکمیل دوره شماره " . ($completed_count + 1)]);
+    // ثبت تکمیل — دورهٔ امروز بسته می‌شود
+    $stmt = $db->prepare("
+        INSERT INTO task_history (task_id, from_user_id, action, notes)
+        VALUES (?, ?, 'completed', ?)
+    ");
+    $stmt->execute([
+        $task_id,
+        $user_id,
+        'دورهٔ ' . $state['current_period_date'] . ' تکمیل شد'
+    ]);
 
-// اگر همه دوره‌ها تکمیل شد → کار به‌روز است → period_done
-    if ($remaining == 1) {
-        $db->prepare("UPDATE tasks SET status = 'period_done', last_approved_date = CURDATE(), updated_at = NOW() WHERE id = ?")->execute([$task_id]);
-        $message = 'کار تکمیل شد. همه دوره‌های معوقه انجام شده است.';
-    } else {
-        $message = "یک دوره تکمیل شد. $remaining دوره دیگر باقی مانده است.";
-    }
+    // وضعیت و تاریخ آخرین تکمیل
+    $db->prepare("
+        UPDATE tasks
+        SET status = 'period_done',
+            last_completed_date = ?,
+            updated_at = NOW()
+        WHERE id = ?
+    ")->execute([date('Y-m-d'), $task_id]);
+
+    // وضعیت تازه (بعد از ثبت تکمیل)
+    $after = pe_state($db, $task, $holidays);
 
     echo json_encode([
-        'success' => true,
-        'message' => $message,
-        'remaining' => $remaining - 1,
-        'completed_count' => $completed_count + 1,
-        'overdue_count' => $overdue_count
-    ]);
+        'success'         => true,
+        'message'         => $after['overdue_periods'] > 0
+            ? "دورهٔ امروز تکمیل شد. {$after['overdue_periods']} دورهٔ معوقه باقی است."
+            : 'دورهٔ امروز تکمیل شد.',
+        'next_due_date'   => $after['next_due_date'],
+        'overdue_periods' => $after['overdue_periods'],
+    ], JSON_UNESCAPED_UNICODE);
 } catch (Exception $e) {
     http_response_code(500);
     error_log("Complete recurring task error: " . $e->getMessage());

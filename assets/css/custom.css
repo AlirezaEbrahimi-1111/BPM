@@ -283,8 +283,10 @@ h6 {
 .badge {
     padding: 0.375rem 0.75rem;
     font-size: 0.75rem;
-    font-weight: 500;
-    border-radius: var(--radius-xs);
+    font-weight: 600;
+    /* بود: 500 — متن پررنگ‌تر */
+    border-radius: 6px;
+    /* مستطیلی با گوشهٔ ملایم */
     display: inline-flex;
     align-items: center;
     gap: 0.2rem;
@@ -371,37 +373,6 @@ h6 {
     color: #374151;
 }
 
-/* --- Badge وضعیت وظایف (task status) --- */
-.status-not_started {
-    background: #f3f4f6;
-    color: #6b7280;
-}
-
-.status-termination_requested {
-    background: #edfff5;
-    color: #299e7d;
-}
-
-.status-in_progress {
-    background: #dbeafe;
-    color: #1d4ed8;
-}
-
-.status-completed {
-    background: #d1fae5;
-    color: #047857;
-}
-
-.status-pending_approval {
-    background: #fef3c7;
-    color: #b45309;
-}
-
-.status-approved {
-    background: #d4edda;
-    color: #155724;
-}
-
 .status-period_done {
     background: #cffafe;
     color: #0e7490;
@@ -412,19 +383,65 @@ h6 {
     color: #b91c1c;
 }
 
+.status-not_started {
+    background: #f1f3f5;
+    /* بود: #f3f4f6 */
+    color: #495057;
+    /* بود: #6b7280 — تیره‌تر */
+}
+
+.status-in_progress {
+    background: #e7f0ff;
+    /* بود: #dbeafe */
+    color: #1554d1;
+    /* بود: #1d4ed8 — شارپ‌تر */
+}
+
+.status-completed {
+    background: #e3faf0;
+    /* بود: #d1fae5 */
+    color: #037a52;
+    /* بود: #047857 */
+}
+
+.status-pending_approval {
+    background: #fff4d6;
+    /* بود: #fef3c7 */
+    color: #a16207;
+    /* بود: #b45309 */
+}
+
+.status-approved {
+    background: #dcf5e3;
+    /* بود: #d4edda */
+    color: #0f7a2e;
+    /* بود: #155724 */
+}
+
 .status-delegated {
-    background: #e0e7ff;
-    color: #4338ca;
+    background: #e8eaff;
+    /* بود: #e0e7ff */
+    color: #3730d4;
+    /* بود: #4338ca */
 }
 
 .status-stopped {
-    background: #f3f4f6;
-    color: #6b7280;
+    background: #f1f3f5;
+    color: #495057;
 }
 
 .status-rejected {
-    background: #f8d7da;
-    color: #721c24;
+    background: #ffe3e6;
+    /* بود: #f8d7da */
+    color: #c81e1e;
+    /* بود: #721c24 — قرمز شارپ */
+}
+
+.status-termination_requested {
+    background: #e0fff2;
+    /* بود: #edfff5 */
+    color: #158463;
+    /* بود: #299e7d */
 }
 
 .status-waiting {
@@ -437,31 +454,39 @@ h6 {
     color: #0c5460;
 }
 
-/* --- Badge اولویت --- */
 .priority-high {
-    background: #fee2e2;
-    color: #dc2626;
+    background: #ffe3e3;
+    /* بود: #fee2e2 */
+    color: #cc1f1f;
+    /* بود: #dc2626 */
 }
 
 .priority-medium {
-    background: #fef3c7;
-    color: #d97706;
+    background: #fff0d0;
+    /* بود: #fef3c7 */
+    color: #c26a06;
+    /* بود: #d97706 */
 }
 
 .priority-low {
-    background: #d1fae5;
-    color: #059669;
+    background: #dcf7e6;
+    /* بود: #d1fae5 */
+    color: #04794a;
+    /* بود: #059669 */
 }
 
-/* --- Badge نوع وظیفه --- */
 .type-periodic {
-    background: #e0e7ff;
-    color: #4f46e5;
+    background: #e6e9ff;
+    /* بود: #e0e7ff */
+    color: #3f38d6;
+    /* بود: #4f46e5 */
 }
 
 .type-continuous {
-    background: #fce7f3;
-    color: #db2777;
+    background: #ffe6f2;
+    /* بود: #fce7f3 */
+    color: #c91f74;
+    /* بود: #db2777 */
 }
 
 /* --- Badge روزها (مهلت) --- */
@@ -473,21 +498,39 @@ h6 {
 }
 
 .days-overdue {
-    background: #fef2f2;
-    color: #dc2626;
+    background: #ffe8e8;
+    /* بود: #fef2f2 */
+    color: #d61f1f;
+    /* بود: #dc2626 — قرمز شارپ‌تر */
+    font-weight: 600;
+    /* پررنگ‌تر */
 }
 
 .days-today {
-    background: #fffbeb;
-    color: #d97706;
+    background: #fff3d6;
+    /* بود: #fffbeb */
+    color: #c2740a;
+    /* بود: #d97706 */
+    font-weight: 600;
 }
 
 .days-soon {
-    background: #fef3c7;
-    color: #b45309;
+    background: #fff0cc;
+    /* بود: #fef3c7 */
+    color: #a5620a;
+    /* بود: #b45309 */
+    font-weight: 600;
 }
 
 .days-normal {
+    background: #e6faec;
+    /* بود: #f0fdf4 */
+    color: #12772c;
+    /* بود: #15803d */
+    font-weight: 600;
+}
+
+s-normal {
     background: #f0fdf4;
     color: #15803d;
 }

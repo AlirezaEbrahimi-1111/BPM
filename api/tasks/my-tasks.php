@@ -132,6 +132,7 @@ SELECT DISTINCT
     dr.current_approver_id,
     dr.created_at AS deadline_request_date,
     t.has_pending_deadline_request,
+    t.has_pending_overdue_request,
     ph.last_pending_date,
     creator.first_name as creator_first_name,
     creator.last_name as creator_last_name,
@@ -148,6 +149,7 @@ LEFT JOIN users creator ON t.creator_id = creator.id
 LEFT JOIN users assignee ON t.assignee_id = assignee.id
 LEFT JOIN task_groups tg ON t.group_id = tg.id
 LEFT JOIN deadline_requests dr ON t.id = dr.task_id AND dr.status = 'pending'
+LEFT JOIN overdue_clear_requests ocr ON t.id = ocr.task_id AND ocr.status = 'pending'
 LEFT JOIN (
     SELECT h1.task_id, h1.created_at as last_pending_date
     FROM task_history h1
@@ -174,8 +176,10 @@ WHERE t.is_deleted = 0
 AND t.status != 'rejected'
   AND (
     dr.current_approver_id = ?
+    OR ocr.current_approver_id = ?
     OR (
-      dr.current_approver_id IS NULL 
+      dr.current_approver_id IS NULL
+      AND ocr.current_approver_id IS NULL
       AND (
         (
           -- ✅ اگر تسک صراحتاً به این کاربر تخصیص یافته (تعریف/ارجاع/claim)، همین کافی است؛
@@ -210,6 +214,7 @@ AND t.status != 'rejected'
 
 ORDER BY 
     CASE WHEN t.has_pending_deadline_request = 1 AND t.creator_id = ? THEN 0 ELSE 1 END,
+    CASE WHEN t.has_pending_overdue_request = 1 AND ocr.current_approver_id = ? THEN 0 ELSE 1 END,
     CASE WHEN t.is_pending_approval = 1 THEN 1 ELSE 2 END,
 
     -- مرتب‌سازی بر اساس موعد واقعی
@@ -225,15 +230,17 @@ ORDER BY
 
     $stmt = $db->prepare($sql);
     $stmt->execute([
-        $user_id,            // dr.current_approver_id
-        $user_id,            // t.assignee_id
+        $user_id,            // dr.current_approver_id = ?
+        $user_id,            // ocr.current_approver_id = ?
+        $user_id,            // t.assignee_id = ?
         $activity_section,   // واحدِ کار روتین
-        $org_id,             // 🆕 t.organization_id = ? (فقط سازمان خودش)
+        $org_id,             // t.organization_id = ?
         $user_id,            // assignee در حالت pending
-        (string) $user_id,    // 🆕 ارجاع چک‌لیست به این کاربر
-        $activity_section,   // 🆕 ارجاع چک‌لیست به واحدِ این کاربر
-        $org_id,             // 🆕 t.organization_id = ? (فقط سازمان خودش)
-        $user_id             // ORDER BY: creator_id
+        (string) $user_id,   // ارجاع چک‌لیست به این کاربر
+        $activity_section,   // ارجاع چک‌لیست به واحدِ این کاربر
+        $org_id,             // t.organization_id در چک‌لیست
+        $user_id,            // ORDER BY: has_pending_deadline_request — creator_id
+        $user_id,            // ORDER BY: has_pending_overdue_request — ocr.current_approver_id
     ]);
 
     $all_tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -244,8 +251,10 @@ ORDER BY
     foreach ($all_tasks as $task) {
         $task = enrichTaskDates($task, $db, $holidays, $today);
         // کار دوره‌ای که بازه‌اش تمام شده → نمایش نده
-        if ($task['task_type'] === 'continuous' && !empty($task['end_date'])
-            && $task['next_due_date'] > $task['end_date']) {
+        if (
+            $task['task_type'] === 'continuous' && !empty($task['end_date'])
+            && $task['next_due_date'] > $task['end_date']
+        ) {
             continue;
         }
         $processed_tasks[] = $task;

@@ -67,6 +67,20 @@ try {
     $requester_is_manager = hasPermission($me, 'approve_deadline_request');
 
     if ($is_workflow) {
+        // 🔒 مرحلهٔ این تسک باید «فعال» باشد — روی مرحله‌ای که هنوز
+        //    نوبتش نرسیده (pending) نمی‌توان تمدید موعد داد
+        $stepChk = $db->prepare("
+            SELECT status FROM workflow_instance_steps
+            WHERE task_id = ? LIMIT 1
+        ");
+        $stepChk->execute([$task_id]);
+        $stepStatus = $stepChk->fetchColumn();
+
+        if ($stepStatus !== 'active' && !$requester_is_manager) {
+            http_response_code(403);
+            throw new Exception('این مرحله هنوز فعال نشده است');
+        }
+
         // کار روتین: assignee ندارد؛ مجوز = عضو بخشِ همین مرحله (یا مدیر)
         $secChk = $db->prepare("SELECT COUNT(*) AS c FROM users WHERE id = ? AND activity_section = ? AND is_active = 1");
         $secChk->execute([$user_id, $task['activity_section']]);
