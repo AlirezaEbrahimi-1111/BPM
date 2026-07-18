@@ -36,7 +36,7 @@ class WorkflowManager
         } catch (Exception $e) {
             $this->db->rollBack();
             error_log("CreateTemplate error: " . $e->getMessage());
-            return ['success' => false, 'message' => 'خطا در ایجاد الگو'];
+            return ['success' => false, 'message' => 'خطا: ' . $e->getMessage()];  // موقت
         }
     }
     private function updateStep($step_id, $step_data, $step_order)
@@ -51,6 +51,10 @@ class WorkflowManager
             $stmt->execute([$assignee_user_id]);
             $u = $stmt->fetch(PDO::FETCH_ASSOC);
             $activity_section = $u ? $u['activity_section'] : $activity_section;
+        } elseif ($assignee_type === 'creator') {
+            // 🆕 مسئول = ایجادکنندهٔ روتین
+            $assignee_user_id = null;
+            $activity_section = null;
         } else {
             $assignee_type = 'section';
             $activity_section = $step_data['assignee_value'] ?? $activity_section;
@@ -89,6 +93,10 @@ class WorkflowManager
             $stmt->execute([$assignee_user_id]);
             $u = $stmt->fetch(PDO::FETCH_ASSOC);
             $activity_section = $u ? $u['activity_section'] : $activity_section;
+        } elseif ($assignee_type === 'creator') {
+            // 🆕 مسئول = ایجادکنندهٔ روتین (موقع اجرا معلوم می‌شود)
+            $assignee_user_id = null;
+            $activity_section = '';   // رشتهٔ خالی به‌جای NULL (ستون NOT NULL است)
         } else {
             $assignee_type = 'section';
             $activity_section = $step_data['assignee_value'] ?? $activity_section;
@@ -355,7 +363,7 @@ class WorkflowManager
                 // محاسبه deadline
                 $deadline = date('Y-m-d H:i:s', strtotime("+{$step['time_limit_hours']} hours"));
 
-                // ✅ تشخیص مسئولِ واقعیِ این مرحله (کاربرِ مشخص یا بازگشت به واحد)
+                // ✅ تشخیص مسئولِ واقعیِ این مرحله (کاربرِ مشخص، ایجادکننده، یا بازگشت به واحد)
                 $resolved_assignee_id = null;
                 if (($step['assignee_type'] ?? 'section') === 'user' && !empty($step['assignee_user_id'])) {
                     $checkStmt = $this->db->prepare("SELECT id FROM users WHERE id = ? AND is_active = 1");
@@ -363,6 +371,9 @@ class WorkflowManager
                     if ($checkStmt->fetch()) {
                         $resolved_assignee_id = $step['assignee_user_id'];
                     }
+                } elseif (($step['assignee_type'] ?? '') === 'creator') {
+                    // 🆕 مسئول = ایجادکنندهٔ همین نمونهٔ روتین
+                    $resolved_assignee_id = $creator_id;
                 }
 
                 // ✅ ایجاد task برای این مرحله

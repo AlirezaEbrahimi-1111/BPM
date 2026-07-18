@@ -1697,10 +1697,13 @@ require_once '../includes/version.php';
                         </div>
                     </div>
                     <div class="meta-row">
-                        <div>${step.assignee_type === 'user'
+                        <div>${
+                            step.assignee_type === 'user'
                             ? '<span class="lbl">مسئول: </span>' + ((step.assignee_first_name || step.assignee_last_name)
                                 ? `${step.assignee_first_name || ''} ${step.assignee_last_name || ''}`.trim()
                                 : 'نامشخص')
+                            : step.assignee_type === 'creator'
+                            ? '<span class="lbl">مسئول: </span>↩ ایجادکنندهٔ روتین'
                             : '<span class="lbl">بخش: </span>' + (step.activity_section ? getSectionLabel(step.activity_section) : '<em class="text-muted">مرحله حذف‌شده</em>')
                         }</div>
                         ${step.started_at   ? `<div><span class="lbl">شروع: </span>${formatDateTime(step.started_at)}</div>` : ''}

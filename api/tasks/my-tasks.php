@@ -178,28 +178,31 @@ AND t.status != 'rejected'
     dr.current_approver_id = ?
     OR ocr.current_approver_id = ?
     OR (
-      dr.current_approver_id IS NULL
-      AND ocr.current_approver_id IS NULL
-      AND (
-        (
-          -- ✅ اگر تسک صراحتاً به این کاربر تخصیص یافته (تعریف/ارجاع/claim)، همین کافی است؛
-          -- به status جدولِ workflow_instance_steps گره نمی‌زنیم چون ممکن است از حالتِ
-          -- تسکِ خودش عقب بماند (مثلاً بعد از ارجاع) و تسک را از لیست کاربر پنهان کند
-          t.assignee_id = ?
+      dr.current_approver_id IS NULL 
+    AND (
+      (
+        t.assignee_id = ?
+        AND NOT (
+          t.is_workflow_task = 1
+          AND NOT EXISTS (
+              SELECT 1 FROM workflow_instance_steps wis
+              WHERE wis.task_id = t.id AND wis.status = 'active'
+          )
         )
-        OR (
-  t.is_workflow_task = 1
-  AND t.activity_section = ?
-  AND t.organization_id = ?
-  AND t.status NOT IN ('completed', 'cancelled')
-  AND (t.assignee_id IS NULL OR t.assignee_id = 0)
-  AND EXISTS (
-      SELECT 1 FROM workflow_instance_steps wis
-      WHERE wis.task_id = t.id AND wis.status = 'active'
-  )
-)
-        OR (t.is_pending_approval = 1 AND t.assignee_id = ?)
       )
+      OR (
+        t.is_workflow_task = 1 
+        AND t.activity_section = ?
+        AND t.organization_id = ?
+        AND t.status NOT IN ('completed', 'cancelled')
+        AND (t.assignee_id IS NULL OR t.assignee_id = 0)
+        AND EXISTS (
+            SELECT 1 FROM workflow_instance_steps wis
+            WHERE wis.task_id = t.id AND wis.status = 'active'
+        )
+      )
+      OR (t.is_pending_approval = 1 AND t.assignee_id = ?)
+    )
     )
      OR EXISTS (
         SELECT 1 FROM task_checklist_items ci

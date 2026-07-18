@@ -696,8 +696,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         <div class="step-info">
             <strong>${step.step_name}</strong>
             <div>
-                <span class="step-unit">${step.assignee_type === 'user'
-                    ? ('مسئول: ' + (step.assignee_user_name || 'نامشخص'))
+                <span class="step-unit">${
+                    step.assignee_type === 'user'
+                        ? ('مسئول: ' + (step.assignee_user_name || 'نامشخص'))
+                    : step.assignee_type === 'creator'
+                        ? '↩ ایجادکنندهٔ روتین'
                     : ('واحد: ' + (acticity_section[step.activity_section] || step.activity_section))
                 }</span>
                 <span class="step-time"><i class="bi bi-clock me-1"></i> ${String(enTofaNumber(step.time_limit_hours))} ساعت</span>
