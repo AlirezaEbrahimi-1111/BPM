@@ -86,6 +86,14 @@ require_once '../includes/version.php';
 
 
                 </div>
+                <!-- 🆕 نوار فیلتر فعال (وقتی از داشبورد می‌آییم) -->
+                <div id="activeFilterBar" style="display:none; margin-top:10px; padding:10px 14px; background:#fff8f0; border:1px solid #fed7aa; border-radius:10px; align-items:center; gap:10px;">
+                    <i class="bi bi-funnel-fill" style="color:#ea580c;"></i>
+                    <span id="activeFilterText" style="font-size:.86rem; color:#9a3412; flex:1;"></span>
+                    <button onclick="clearDashboardFilters()" style="background:#fff; border:1px solid #fed7aa; color:#ea580c; border-radius:8px; padding:5px 14px; font-size:.8rem; cursor:pointer;">
+                        پاک کردن فیلتر
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -351,7 +359,61 @@ require_once '../includes/version.php';
             if (p.get('page')) currentPage = parseInt(p.get('page')) || 1;
             if (p.get('sort')) sortColumn = p.get('sort');
             if (p.get('dir')) sortDirection = p.get('dir');
+
+            // 🆕 فیلترهای ورودی از داشبورد
+            if (p.get('assignee')) filterAssigneeId = p.get('assignee');
+            if (p.get('section')) window._filterSection = p.get('section');
+            if (p.get('filter') === 'overdue') window._filterOverdue = true;
+
+            // نمایش نوار فیلتر فعال
+            showActiveFilterBar(p);
         }
+
+        /* 🆕 نمایش نوار فیلتر فعال بر اساس پارامترهای داشبورد */
+        function showActiveFilterBar(p) {
+            const parts = [];
+
+            if (window._filterOverdue) parts.push('فقط کارهای تأخیردار');
+
+            if (p.get('section')) {
+                const secFa = (typeof acticity_section !== 'undefined' && acticity_section[p.get('section')]) ?
+                    acticity_section[p.get('section')] : p.get('section');
+                parts.push(`واحد: ${secFa}`);
+            }
+
+            // نام کاربر بعد از لود کاربران اضافه می‌شود (در loadUsers)
+            if (p.get('assignee')) {
+                window._pendingAssigneeName = true;
+            }
+
+            if (parts.length || p.get('assignee')) {
+                const bar = document.getElementById('activeFilterBar');
+                bar.style.display = 'flex';
+                document.getElementById('activeFilterText').textContent =
+                    'فیلتر فعال: ' + (parts.join(' • ') || '...');
+                window._activeFilterParts = parts;
+            }
+        }
+
+        /* 🆕 پاک کردن فیلترهای داشبورد */
+        function clearDashboardFilters() {
+            window._filterOverdue = false;
+            window._filterSection = null;
+            filterAssigneeId = '';
+
+            document.getElementById('activeFilterBar').style.display = 'none';
+
+            // ریست کردن picker مسئول (اگر ممکن)
+            if (window._assigneePickerRef && typeof window._assigneePickerRef.setValue === 'function') {
+                window._assigneePickerRef.setValue('');
+            }
+
+            // پاک کردن URL
+            window.history.replaceState({}, '', window.location.pathname);
+
+            applyFilters();
+        }
+
 
         function saveFiltersToURL() {
             const p = new URLSearchParams();
@@ -475,7 +537,7 @@ require_once '../includes/version.php';
                             applyFilters();
                         }
                     });
-                    AssigneePicker.create({
+                    const assigneePicker = AssigneePicker.create({
                         ...pickerCfg,
                         container: '#filterAssigneePicker',
                         placeholder: 'همه مسئولان',
@@ -484,6 +546,22 @@ require_once '../includes/version.php';
                             applyFilters();
                         }
                     });
+
+                    // 🆕 اگر از داشبورد با ?assignee آمده‌ایم، pre-select کن
+                    window._assigneePickerRef = assigneePicker;
+                    if (filterAssigneeId && assigneePicker && typeof assigneePicker.setValue === 'function') {
+                        assigneePicker.setValue(filterAssigneeId);
+                    }
+
+                    // نام کاربر را به نوار فیلتر فعال اضافه کن
+                    if (window._pendingAssigneeName && filterAssigneeId) {
+                        const u = users.find(x => String(x.id) === String(filterAssigneeId));
+                        if (u) {
+                            const parts = window._activeFilterParts || [];
+                            parts.unshift(`مسئول: ${u.first_name} ${u.last_name}`);
+                            document.getElementById('activeFilterText').textContent = 'فیلتر فعال: ' + parts.join(' • ');
+                        }
+                    }
                 }
             } catch (error) {
                 console.error('Error loading users:', error);
@@ -536,6 +614,8 @@ require_once '../includes/version.php';
             const pr = document.getElementById('filterPriority').value;
             const ty = document.getElementById('filterType').value;
 
+            const today = new Date().toISOString().slice(0, 10);
+
             filteredTasks = allTasks.filter(t => {
                 const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + t.id;
                 t._checklistOnlyMatch = isChecklistOnlyMatch(otherText, t.checklist_titles || '', s);
@@ -548,6 +628,24 @@ require_once '../includes/version.php';
                     if (st === 'open' && (t.status === 'completed' || t.status === 'approved')) return false;
                     else if (st !== 'open' && t.status !== st) return false;
                 }
+
+                // 🆕 فیلتر واحد (از داشبورد)
+                if (window._filterSection && t.activity_section !== window._filterSection) return false;
+
+                // 🆕 فیلتر تأخیردار (از داشبورد) — هر دو نوع کار
+                if (window._filterOverdue) {
+                    // کارهای بسته‌شده تأخیردار محسوب نمی‌شوند
+                    const closed = ['completed', 'approved', 'rejected', 'stopped'].includes(t.status);
+                    if (closed) return false;
+
+                    if (t.task_type === 'continuous') {
+                        if (!((t.overdue_periods || 0) > 0)) return false;
+                    } else {
+                        const due = [t.due_date, t.deadline, t.original_deadline].filter(Boolean).sort().pop();
+                        if (!due || due >= today) return false;
+                    }
+                }
+
                 return true;
             });
 
