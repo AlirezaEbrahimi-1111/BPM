@@ -381,6 +381,34 @@ require_once '../includes/version.php';
             border-color: var(--primary);
         }
 
+        .sr-assignee-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .sr-creator-check {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: .72rem;
+            color: #6b7280;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .sr-creator-check input {
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .sr-creator-check:hover {
+            color: #7c5cff;
+        }
+
         /* ─── Section Divider ─── */
         .section-label {
             display: flex;
@@ -1217,6 +1245,22 @@ require_once '../includes/version.php';
         // ─── افزودن مرحله ────────────────────────────────
         let stepPickers = {}; // stepId -> picker instance
         let stepOriginalData = {}; // stepId -> { type, value } (برای حالت ویرایش‌نشده)
+        /* 🆕 تیک «به ایجادکننده» → غیرفعال‌کردن AssigneePicker */
+        function toggleCreatorMode(stepId, checkbox) {
+            const wrap = document.getElementById('step_assignee_' + stepId);
+            if (!wrap) return;
+
+            if (checkbox.checked) {
+                wrap.style.opacity = '.4';
+                wrap.style.pointerEvents = 'none';
+                // علامت‌گذاری این مرحله
+                checkbox.closest('.step-item').dataset.creatorMode = '1';
+            } else {
+                wrap.style.opacity = '';
+                wrap.style.pointerEvents = '';
+                delete checkbox.closest('.step-item').dataset.creatorMode;
+            }
+        }
 
         function addStep(stepData = null) {
             stepCounter++;
@@ -1246,7 +1290,15 @@ require_once '../includes/version.php';
                            value="${escAttr(stepData ? stepData.step_name : '')}"
                            placeholder="نام مرحله" oninput="updateExecPreview()" required>
 
-                    <div class="sr-assignee" id="step_assignee_${stepId}"></div>
+                    <div class="sr-assignee-wrap">
+                        <div class="sr-assignee" id="step_assignee_${stepId}"></div>
+                        <label class="sr-creator-check" title="این مرحله به کسی که روتین را شروع می‌کند سپرده شود">
+                            <input type="checkbox" class="step-creator-toggle"
+                                   onchange="toggleCreatorMode('${stepId}', this)"
+                                   ${stepData && stepData.assignee_type === 'creator' ? 'checked' : ''}>
+                            <span>به ایجادکننده</span>
+                        </label>
+                    </div>
 
                     <input type="number" class="form-control form-control-sm step-time sr-time"
                            value="${stepData ? stepData.time_limit_hours : 24}"
@@ -1272,6 +1324,12 @@ require_once '../includes/version.php';
                 showSections: true,
                 placeholder: assigneePlaceholder
             });
+
+            // 🆕 اگر این مرحله از نوع «ایجادکننده» است، picker را غیرفعال کن
+            if (stepData && stepData.assignee_type === 'creator') {
+                const cb = document.querySelector(`.step-item[data-step-id="${stepId}"] .step-creator-toggle`);
+                if (cb) toggleCreatorMode(stepId, cb);
+            }
 
             updateStepNumbers();
             initDragAndDrop();
@@ -1400,6 +1458,25 @@ require_once '../includes/version.php';
                 const sName = item.querySelector('.step-name').value.trim();
                 const sTime = item.querySelector('.step-time').value;
 
+                const sMode = item.querySelector('.step-mode-toggle')?.dataset.mode === 'parallel' ? 'parallel' : 'cascade';
+
+                // 🆕 حالت «به ایجادکننده»
+                if (item.dataset.creatorMode === '1') {
+                    if (!sName || !sTime) {
+                        valid = false;
+                        return;
+                    }
+                    steps.push({
+                        step_order: i + 1,
+                        step_name: sName,
+                        time_limit_hours: parseInt(sTime),
+                        assignee_type: 'creator',
+                        assignee_value: 'creator', // مقدار نمادین (بک‌اند نادیده می‌گیرد)
+                        execution_mode: sMode
+                    });
+                    return;
+                }
+
                 const picked = stepPickers[stepId] ? stepPickers[stepId].getValue() : null;
                 let assignee = (picked && picked.value !== '__all__' && picked.value !== '__all_users__') ? {
                         type: picked.type,
@@ -1414,7 +1491,6 @@ require_once '../includes/version.php';
                     valid = false;
                     return;
                 }
-                const sMode = item.querySelector('.step-mode-toggle')?.dataset.mode === 'parallel' ? 'parallel' : 'cascade';
                 steps.push({
                     step_order: i + 1,
                     step_name: sName,
