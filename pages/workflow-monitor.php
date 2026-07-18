@@ -305,7 +305,7 @@ require_once '../includes/version.php';
             gap: 0.75rem;
             margin-bottom: 1rem;
             padding-left: 2.2rem;
-            /* جا برای دکمه حذف */ 
+            /* جا برای دکمه حذف */
         }
 
         .wf-title {
@@ -318,7 +318,7 @@ require_once '../includes/version.php';
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .wf-id-badge {
             font-family: 'Courier New', Courier, monospace;
             font-size: .8rem;
@@ -930,8 +930,8 @@ require_once '../includes/version.php';
 
         <!-- Filters -->
         <div class="filter-bar" id="filterBar">
-            
-                        <!-- جستجو بر اساس عنوان یا شناسه -->
+
+            <!-- جستجو بر اساس عنوان یا شناسه -->
             <div class="search-box-wrap">
                 <i class="bi bi-search search-icon"></i>
                 <input type="text" id="searchInput" placeholder="جستجو بر اساس عنوان یا شناسه..."
@@ -940,7 +940,7 @@ require_once '../includes/version.php';
                     <i class="bi bi-x"></i>
                 </button>
             </div>
-            
+
             <button class="filter-pill active" data-filter="all" onclick="setStatusFilter('all', this)">
                 <i class="bi bi-list-ul"></i>همه
             </button>
@@ -1159,6 +1159,12 @@ require_once '../includes/version.php';
                     applyTemplateFromUrl();
 
                     applyFilter(); // ← render با فیلتر فعلی، نه reset
+
+                    // 🆕 اگر با ?instance=ID آمده‌ایم، مستقیم جزئیات همان نمونه را باز کن
+                    const _inst = new URLSearchParams(location.search).get('instance');
+                    if (_inst) {
+                        showDetails(_inst);
+                    }
                 } else {
                     showError(data.message);
                 }

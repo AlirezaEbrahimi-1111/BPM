@@ -463,7 +463,7 @@ class TaskManager
                 }
             }
 
-           // 4. برای workflow (روتین مرحله‌ای): کاربر در بخش مرحله فعلی باشه،
+            // 4. برای workflow (روتین مرحله‌ای): کاربر در بخش مرحله فعلی باشه،
             //    مرحله «فعال» باشه (نه pending)، و وضعیت مجاز
             if (!$hasAccess && $task['is_workflow_task'] == 1) {
                 try {
@@ -1633,6 +1633,12 @@ class TaskManager
     // اعمال واقعیِ تمدید (مشترک بین مسیر مستقیم و مسیر تأیید زنجیره‌ای)
     private function applyRenewalChanges($task_id, $new_start_date, $new_end_date, $performer_id)
     {
+        // ✅ قدم 1: خواندن تاریخ‌های قبلی از دیتابیس، قبل از اینکه پاک شوند!
+        $task = $this->getTask($task_id);
+        $old_start_date = $task['start_date'] ?? 'نامشخص';
+        $old_end_date = $task['end_date'] ?? 'نامشخص';
+
+        // ✅ قدم 2: حالا که تاریخ‌های قبلی را در متغیرها داریم، دیتابیس را آپدیت می‌کنیم
         $sql = "UPDATE tasks SET
                     start_date = ?,
                     end_date = ?,
@@ -1646,13 +1652,18 @@ class TaskManager
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$new_start_date, $new_end_date, $task_id]);
 
+        // ✅ قدم 3: ثبت در تاریخچه، همراه با تاریخ قبلی و جدید
         $endLabel = $new_end_date ? $new_end_date : 'نامحدود';
+        $oldEndLabel = $old_end_date ? $old_end_date : 'نامحدود';
+
+        $history_message = "تمدید دوره اعمال شد. \n تاریخ قبلی: از {$old_start_date} تا {$oldEndLabel} \n تاریخ جدید: از {$new_start_date} تا {$endLabel}. شمارش دوره‌های قبلی بازنشانی شد.";
+
         $this->addTaskHistory(
             $task_id,
             $performer_id,
             null,
             'renewal_applied',
-            "تمدید دوره اعمال شد. شروع جدید: {$new_start_date} — پایان جدید: {$endLabel}. شمارش دوره‌های قبلی بازنشانی شد."
+            $history_message
         );
     }
 

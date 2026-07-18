@@ -121,7 +121,7 @@ require_once '../includes/version.php';
             flex: 1;
             min-height: 0;
             overflow-y: auto;
-            direction: rtl;
+            direction: ltr;
         }
 
         .dash-card-body>* {
@@ -227,10 +227,7 @@ require_once '../includes/version.php';
         .tasks-row {
             flex: 1.15;
             min-height: 0;
-            display: grid;
-            grid-template-columns: 1fr 1.4fr;
-            /* فرآیندها باریک‌تر، کارها عریض‌تر */
-            gap: 14px;
+            display: flex;
         }
 
         .tasks-row .dash-card {
@@ -637,7 +634,7 @@ require_once '../includes/version.php';
             flex: 1;
             min-height: 0;
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 14px;
         }
 
@@ -916,12 +913,6 @@ require_once '../includes/version.php';
             white-space: nowrap;
         }
 
-        /* placeholder موقت */
-        #topDelayedList .dash-empty {
-            color: #9ca3af;
-            font-style: italic;
-        }
-
         /* ── منوی سه‌نقطه ── */
         .pm-menu-wrap {
             position: relative;
@@ -1004,45 +995,6 @@ require_once '../includes/version.php';
 
         .pm-menu button.act-extend i {
             color: var(--pm-purple);
-        }
-
-        /* ردیف گلوگاه */
-        .bottleneck-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px;
-            cursor: pointer;
-            transition: background .12s, border-color .12s;
-        }
-
-        .bottleneck-row:hover {
-            background: #eeeeee8a;
-            border-color: #b6b6b6;
-        }
-
-        .bn-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .bn-stage {
-            font-size: .88rem;
-            font-weight: 600;
-            color: #374151;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .bn-count {
-            font-size: .76rem;
-            color: #dc2626;
-        }
-
-        .bn-arrow {
-            color: #d1d5db;
-            font-size: .9rem;
         }
 
         /* ── فرم عملیات ── */
@@ -1322,71 +1274,6 @@ require_once '../includes/version.php';
 
         .wk-card .pm-form-title {
             font-size: .72rem;
-        }
-
-        /* ردیف کاربر تأخیردار */
-        .td-user-row {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 6px;
-            cursor: pointer;
-            transition: background .12s, border-color .12s;
-        }
-
-        .td-user-row:hover {
-            background: #eeeeee8a;
-            border-color: #b6b6b6;
-        }
-
-        .td-user-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: #fff1e6;
-            color: #ea580c;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.05rem;
-            flex-shrink: 0;
-        }
-
-        .td-user-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .td-user-name {
-            font-size: .88rem;
-            font-weight: 600;
-            color: #374151;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .td-user-breakdown {
-            font-size: .72rem;
-            color: #9ca3af;
-
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .td-user-count {
-            font-size: .8rem;
-            font-weight: 700;
-            color: #ea580c;
-            background: #fff1e6;
-            border-radius: 8px;
-            min-width: 34px;
-            height: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
         }
 
         /* پیام کوتاه */
@@ -1793,27 +1680,8 @@ require_once '../includes/version.php';
         </div>
 
 
-        <!-- ═══ ردیف بالا: فرآیندهای جاری + کارها ═══ -->
+        <!-- ═══ کارها ═══ -->
         <div class="tasks-row">
-
-            <!-- فرآیندهای جاری -->
-            <div class="dash-card">
-                <div class="dash-card-head">
-                    <div class="dash-card-title">
-                        <i class="bi bi-arrow-repeat"></i><span>فرآیندهای جاری</span>
-                    </div>
-                    <a href="workflow-monitor.php" class="dash-see-all">
-                        مشاهده همه <i class="bi bi-chevron-left"></i>
-                    </a>
-                </div>
-                <div class="dash-card-body">
-                    <div id="routineList">
-                        <div class="dash-empty">در حال بارگذاری…</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- کارها -->
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
@@ -1867,36 +1735,33 @@ require_once '../includes/version.php';
                     </table>
                 </div>
             </div>
-
         </div>
 
 
-        <!-- ═══ ردیف پایین: کاربران تأخیر + واگذار شده + گلوگاه ═══ -->
+        <!-- ═══ ردیف پایین ═══ -->
         <div class="bottom-row">
 
-            <!-- کاربران با بیشترین تأخیر (فاز ۲) -->
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-person-exclamation"></i><span>کاربران با بیشترین تأخیر</span>
+                        <i class="bi bi-arrow-repeat"></i><span>فرآیندهای جاری</span>
                     </div>
-                    <a href="#" class="dash-see-all" id="topDelayedSeeAll">
+                    <a href="workflow-monitor.php" class="dash-see-all">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
                     </a>
                 </div>
                 <div class="dash-card-body">
-                    <div id="topDelayedList">
-                        <div class="dash-empty">به‌زودی…</div>
+                    <div id="routineList">
+                        <div class="dash-empty">در حال بارگذاری…</div>
                     </div>
                 </div>
             </div>
 
-            <!-- کارهای واگذار شده (تأخیردار) -->
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
                         <i class="bi bi-clock-history"></i>
-                        <span>کارهای واگذار شده تاخیر دار</span>
+                        <span>کارهای واگذار شده (تاخیر دار)</span>
                     </div>
                     <a href="#" class="dash-see-all" id="delayedSeeAll">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -1904,23 +1769,6 @@ require_once '../includes/version.php';
                 </div>
                 <div class="dash-card-body">
                     <div id="delayedList">
-                        <div class="dash-empty">در حال بارگذاری…</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- گزارش گلوگاه‌ها -->
-            <div class="dash-card">
-                <div class="dash-card-head">
-                    <div class="dash-card-title">
-                        <i class="bi bi-exclamation-triangle"></i><span>گزارش گلوگاه‌ها</span>
-                    </div>
-                    <a href="bottleneck-report.php" class="dash-see-all" id="bottleneckSeeAll">
-                        مشاهده همه <i class="bi bi-chevron-left"></i>
-                    </a>
-                </div>
-                <div class="dash-card-body">
-                    <div id="bottleneckList">
                         <div class="dash-empty">در حال بارگذاری…</div>
                     </div>
                 </div>
@@ -2156,30 +2004,21 @@ require_once '../includes/version.php';
         }
 
         async function loadAll() {
-            // نام فارسی واحدها را اول بارگذاری کن (تا در همه‌ی رندرها موجود باشد)
-            if (typeof loadSectionMap === 'function') {
-                await loadSectionMap();
-            }
-
-            const [mine, delegated, recent, routines, topDelayed] = await Promise.all([
+            const [mine, delegated, recent, routines] = await Promise.all([
                 apiGet('../api/tasks/my-tasks.php'),
                 apiGet('../api/tasks/delegated-tasks.php'),
                 apiGet('../api/workflows/list.php'),
-                apiGet('../api/workflows/active-summary.php'),
-                apiGet('../api/reports/top-delayed-users.php')
+                apiGet('../api/workflows/active-summary.php')
             ]);
 
             store.mine = pickList(mine);
             store.delegated = pickList(delegated);
             store.recent = pickList(recent);
-            store.topDelayed = (topDelayed && topDelayed.users) ? topDelayed.users : [];
 
             renderStats();
             renderTasks();
             renderRoutines(routines);
             renderDelayed();
-            renderBottlenecks(); // 🆕 فاز ۱
-            renderTopDelayed(); // 🆕 فاز ۲
         }
 
         /* ───────── کارت‌های آماری (بر پایه‌ی تقویم) ───────── */
@@ -2360,10 +2199,7 @@ require_once '../includes/version.php';
         document.addEventListener('click', () => {
             document.querySelectorAll('.row-menu.open').forEach(m => m.classList.remove('open'));
         });
-        document.getElementById('topDelayedSeeAll')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            location.href = 'tasks-overview.php?filter=overdue';
-        });
+
         /* اجرای عملیات از جدول — از مودال استفاده می‌کند */
         function rowAction(taskId, action, ev) {
             ev.stopPropagation();
@@ -2617,104 +2453,6 @@ require_once '../includes/version.php';
                     btn.innerHTML = 'تلاش دوباره';
                 }
             }
-        }
-        /* ═══ کاربران با بیشترین تأخیر ═══ */
-        function renderTopDelayed() {
-            const box = document.getElementById('topDelayedList');
-            if (!box) return;
-
-            const list = store.topDelayed || [];
-
-            if (!list.length) {
-                box.innerHTML = `<div class="dash-empty"><i class="bi bi-check2-circle"></i>کاربری با تأخیر یافت نشد</div>`;
-                return;
-            }
-
-            // فقط ۸ ردیف اول در داشبورد (بقیه در «مشاهده همه»)
-            box.innerHTML = list.slice(0, 8).map(u => {
-                const isSection = u.kind === 'section';
-                const displayName = isSection ? sectionToFa(u.name) : u.name;
-                const icon = isSection ? 'bi-building' : 'bi-person-circle';
-
-                // ساخت تفکیک نوع (فقط آن‌هایی که > 0)
-                const parts = [];
-                if (u.periodic > 0) parts.push(`${toFa(u.periodic)} مقطعی`);
-                if (u.continuous > 0) parts.push(`${toFa(u.continuous)} دوره‌ای`);
-                if (u.workflow > 0) parts.push(`${toFa(u.workflow)} روتین`);
-                const breakdown = parts.join(' • ');
-
-                return `
-                <div class="td-user-row" onclick="openDelayedUser('${u.kind}', '${String(u.ref_id).replace(/'/g, "\\'")}', '${displayName.replace(/'/g, "\\'")}')">
-                    <div class="td-user-icon"><i class="bi ${icon}"></i></div>
-                    <div class="td-user-info">
-                        <div class="td-user-name">${displayName}</div>
-                        <div class="td-user-breakdown">${breakdown}</div>
-                    </div>
-                    <div class="td-user-count">${toFa(u.total)}</div>
-                </div>`;
-            }).join('');
-        }
-
-        /* نام فارسی واحد (اگر sectionMap داری) */
-        function sectionToFa(sec) {
-            if (typeof sectionMap !== 'undefined' && sectionMap[sec]) return sectionMap[sec];
-            return sec;
-        }
-
-        /* کلیک روی کاربر/واحد → صفحه نظارت بر کارها با فیلتر */
-        function openDelayedUser(kind, refId, name) {
-            if (kind === 'section') {
-                location.href = `tasks-overview.php?section=${encodeURIComponent(refId)}&filter=overdue`;
-            } else {
-                location.href = `tasks-overview.php?assignee=${refId}&filter=overdue`;
-            }
-        }
-        /* ═══ گزارش گلوگاه‌ها ═══ */
-        function renderBottlenecks() {
-            const box = document.getElementById('bottleneckList');
-            if (!box) return;
-
-            // روتین‌های تأخیردار را بر اساس نام مرحله گروه‌بندی کن
-            const delayed = (store.recent || []).filter(w => w.is_delayed == 1 && w.current_stage_name);
-
-            if (!delayed.length) {
-                box.innerHTML = `<div class="dash-empty"><i class="bi bi-check2-circle"></i>گلوگاهی یافت نشد</div>`;
-                return;
-            }
-
-            // شمارش بر اساس (قالب + مرحله) — هم‌کلید با صفحهٔ گلوگاه
-            const groups = {};
-            delayed.forEach(w => {
-                const tpl = w.workflow_id || 0;
-                const stage = w.current_stage_name;
-                const key = `${tpl}::${stage}`;
-                if (!groups[key]) {
-                    groups[key] = {
-                        count: 0,
-                        stage: stage,
-                        key: key
-                    };
-                }
-                groups[key].count++;
-            });
-
-            // مرتب‌سازی نزولی بر اساس تعداد
-            const sorted = Object.values(groups).sort((a, b) => b.count - a.count);
-
-            box.innerHTML = sorted.map(g => `
-                <div class="bottleneck-row" onclick="showBottleneckDetail('${g.key.replace(/'/g, "\\'")}')">
-                    <div class="bn-info">
-                        <div class="bn-stage" title="${g.stage}">${g.stage}</div>
-                        <div class="bn-count">${toFa(g.count)} روتین درگیر</div>
-                    </div>
-                    <i class="bi bi-chevron-left bn-arrow"></i>
-                </div>
-            `).join('');
-        }
-
-        function showBottleneckDetail(stageKey) {
-            // به صفحهٔ گلوگاه برو و همان آکاردئون را باز کن
-            location.href = 'bottleneck-report.php?stage=' + encodeURIComponent(stageKey);
         }
         /* ───────── فرآیندهای جاری ───────── */
         function renderRoutines(data) {
