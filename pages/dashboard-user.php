@@ -45,7 +45,7 @@ require_once '../includes/version.php';
         .dash-wrap {
             max-width: 1440px;
             margin: 0 auto;
-            padding: 14px 24px 18px;
+            padding: 14px 150px 14px 150px;
             height: calc(100vh - 3.5rem);
             display: flex;
             flex-direction: column;
@@ -153,20 +153,22 @@ require_once '../includes/version.php';
         .plan-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
+            gap: 100px;
             padding: 14px;
+            margin: auto !important;
         }
 
         /* ═══ کارت‌های آماری (بازطراحی) ═══ */
         .plan-item {
             display: flex;
             align-items: center;
-            gap: 11px;
+            gap: 0px;
             border: 1px solid var(--gray-200);
             border-radius: 12px;
             padding: 11px 13px;
             cursor: pointer;
             transition: border-color .15s, box-shadow .15s, transform .12s;
+            width: 250px;
         }
 
         .plan-item:hover {
@@ -207,7 +209,7 @@ require_once '../includes/version.php';
         .plan-text {
             order: 1;
             flex: 1;
-            text-align: right;
+            text-align: center;
         }
 
         .plan-label {
@@ -274,7 +276,11 @@ require_once '../includes/version.php';
             font-weight: 600;
         }
 
-
+.status-badge{
+    border-radius:5px;
+        padding: 4px 9px 4px 9px;
+        font-size: 12px;
+}
         /* راهنمای خالی، فضای بیهوده می‌گیرد */
         #planModal .ap-hint:empty {
             display: none !important;
@@ -308,6 +314,7 @@ require_once '../includes/version.php';
             gap: 6px;
             padding: 10px 14px;
             flex-shrink: 0;
+            align-self: self-end;
         }
 
         .filter-chip {
@@ -664,9 +671,9 @@ require_once '../includes/version.php';
 
         .routine-bar-wrap {
             flex: 1.6;
-            height: 9px;
+            height: 13px;
             background: var(--gray-100);
-            /*border-radius: 999px;*/
+            border-radius: 5px;
             overflow: hidden;
         }
 
@@ -935,21 +942,22 @@ require_once '../includes/version.php';
             color: var(--pm-purple);
         }
 
-        .pm-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            z-index: 20;
-            min-width: 155px;
-            margin-top: 5px;
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 12px;
-            box-shadow: 0 8px 26px rgba(0, 0, 0, .12);
-            padding: 6px;
-            overflow: hidden;
-        }
+        /*.pm-menu {*/
+        /*    display: none;*/
+        /*    position: absolute;*/
+        /*    top: 100%;*/
+        /*    left: 0;*/
+        /*    z-index: 20;*/
+        /*    min-width: 155px;*/
+        /*    margin-top: 5px;*/
+        /*    background: #fff;*/
+        /*    border: 1px solid #eee;*/
+        /*    border-radius: 12px;*/
+        /*    box-shadow: 0 8px 26px rgba(0, 0, 0, .12);*/
+        /*    padding: 6px;*/
+        /*    overflow: hidden;*/
+        /*    margin-right:120px;*/
+        /*}*/
 
         .pm-menu.open {
             display: block;
@@ -1124,39 +1132,26 @@ require_once '../includes/version.php';
         }
 
         .wk-nav {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 18px;
-            margin-bottom: 14px;
+            display: flex; align-items: center; gap: 6px;
+            margin-right: auto;              /* هل به سمت چپ (RTL) */
+            margin-left: 12px;
+            background: var(--pm-purple);
+            border-radius: 10px;
+            padding: 4px 6px;
+            gap:0px;
         }
-
         .wk-nav button {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            border: 1px solid #eee;
-            background: #fff;
-            cursor: pointer;
-            color: var(--pm-purple);
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background .12s, border-color .12s;
+            border-radius: 8px;
+            border: none; cursor: pointer;
+            color: white; font-size: .95rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: background .12s;
+            background-color: transparent;
         }
-
-        .wk-nav button:hover {
-            background: var(--pm-purple-soft);
-            border-color: #ddd6fe;
-        }
-
+        .wk-nav button:hover { background: #fff; }
         .wk-nav .wk-label {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #2d2d3a;
-            min-width: 90px;
-            text-align: center;
+            font-size: .88rem; font-weight: 700; color: white;
+            min-width: 78px; text-align: center;
         }
 
         .wk-grid {
@@ -1212,6 +1207,8 @@ require_once '../includes/version.php';
             gap: 6px;
             overflow-y: auto;
             max-height: 46vh;
+            direction: ltr;
+            text-align: right;
         }
 
         .wk-card {
@@ -1231,6 +1228,7 @@ require_once '../includes/version.php';
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            padding-left:30px;
         }
 
         .wk-card-time {
@@ -1241,10 +1239,9 @@ require_once '../includes/version.php';
 
         .wk-card .pm-kebab {
             position: absolute;
-            top: 3px;
             left: 3px;
             font-size: .9rem;
-            padding: 2px 5px;
+            padding: 0px 5px;
         }
 
         .wk-col-empty {
@@ -1383,7 +1380,6 @@ require_once '../includes/version.php';
         /* دکمه همیشه بالای ردیف بماند، نه وسط */
         .pm-menu-wrap {
             align-self: flex-start;
-            margin-top: 2px;
         }
 
         .pm-menu {
@@ -1399,6 +1395,7 @@ require_once '../includes/version.php';
             box-shadow: 0 6px 20px rgba(0, 0, 0, .1);
             padding: 5px;
             overflow: hidden;
+            margin:5px 120px;
         }
 
         .pm-menu.open {
@@ -1811,20 +1808,23 @@ require_once '../includes/version.php';
     <!-- ═══════════ مودال هفتگی ═══════════ -->
     <div class="modal fade" id="weekModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="    max-width: 1200px;">
+            <div class="modal-content" style="    max-width: 1300px;">
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <span>برنامه هفتگی</span>
                         <span class="pm-head-icon"><i class="bi bi-calendar-week"></i></span>
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
+
+                    <!-- ناوبری هفته — کنار دکمهٔ بستن -->
                     <div class="wk-nav">
                         <button onclick="wkShift(-1)" title="هفتهٔ قبل"><i class="bi bi-chevron-right"></i></button>
                         <span class="wk-label" id="wkLabel">این هفته</span>
                         <button onclick="wkShift(1)" title="هفتهٔ بعد"><i class="bi bi-chevron-left"></i></button>
                     </div>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
                     <div class="wk-grid" id="wkGrid"></div>
                 </div>
                 <div class="modal-footer" style="padding:12px 20px;">
