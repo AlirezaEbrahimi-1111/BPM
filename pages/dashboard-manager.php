@@ -45,7 +45,7 @@ require_once '../includes/version.php';
         .dash-wrap {
             max-width: 1440px;
             margin: 0 auto;
-            padding: 14px 24px 18px;
+            padding: 14px 150px 14px 150px;
             height: calc(100vh - 3.5rem);
             display: flex;
             flex-direction: column;
@@ -121,7 +121,7 @@ require_once '../includes/version.php';
             flex: 1;
             min-height: 0;
             overflow-y: auto;
-            direction: rtl;
+            direction: ltr;
         }
 
         .dash-card-body>* {
@@ -144,7 +144,11 @@ require_once '../includes/version.php';
         .dash-card-body::-webkit-scrollbar-thumb:hover {
             background: var(--gray-400);
         }
-
+.status-badge{
+    border-radius:5px;
+        padding: 4px 9px 4px 9px;
+        font-size: 12px;
+}
         /* ═══ برنامه کاری ═══ */
         .plan-row {
             flex-shrink: 0;
@@ -153,20 +157,22 @@ require_once '../includes/version.php';
         .plan-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
+            gap: 100px;
             padding: 14px;
+            margin: auto !important;
         }
 
         /* ═══ کارت‌های آماری (بازطراحی) ═══ */
         .plan-item {
             display: flex;
             align-items: center;
-            gap: 11px;
+            gap: 0px;
             border: 1px solid var(--gray-200);
             border-radius: 12px;
             padding: 11px 13px;
             cursor: pointer;
             transition: border-color .15s, box-shadow .15s, transform .12s;
+            width: 250px;
         }
 
         .plan-item:hover {
@@ -207,7 +213,7 @@ require_once '../includes/version.php';
         .plan-text {
             order: 1;
             flex: 1;
-            text-align: right;
+            text-align: center;
         }
 
         .plan-label {
@@ -228,7 +234,7 @@ require_once '../includes/version.php';
             flex: 1.15;
             min-height: 0;
             display: grid;
-            grid-template-columns: 1fr 1.4fr;
+            grid-template-columns: 1fr 0.49fr;
             /* فرآیندها باریک‌تر، کارها عریض‌تر */
             gap: 14px;
         }
@@ -311,6 +317,7 @@ require_once '../includes/version.php';
             gap: 6px;
             padding: 10px 14px;
             flex-shrink: 0;
+            align-self: self-end;
         }
 
         .filter-chip {
@@ -667,9 +674,9 @@ require_once '../includes/version.php';
 
         .routine-bar-wrap {
             flex: 1.6;
-            height: 9px;
+            height: 13px;
             background: var(--gray-100);
-            /*border-radius: 999px;*/
+            border-radius: 5px;
             overflow: hidden;
         }
 
@@ -799,9 +806,7 @@ require_once '../includes/version.php';
                 height: auto;
             }
 
-            .plan-grid {
-                grid-template-columns: 1fr;
-            }
+
 
             .bottom-row {
                 grid-template-columns: 1fr;
@@ -944,21 +949,22 @@ require_once '../includes/version.php';
             color: var(--pm-purple);
         }
 
-        .pm-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            z-index: 20;
-            min-width: 155px;
-            margin-top: 5px;
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 12px;
-            box-shadow: 0 8px 26px rgba(0, 0, 0, .12);
-            padding: 6px;
-            overflow: hidden;
-        }
+        /*.pm-menu {*/
+        /*    display: none;*/
+        /*    position: absolute;*/
+        /*    top: 100%;*/
+        /*    left: 0;*/
+        /*    z-index: 20;*/
+        /*    min-width: 155px;*/
+        /*    margin-top: 5px;*/
+        /*    background: #fff;*/
+        /*    border: 1px solid #eee;*/
+        /*    border-radius: 12px;*/
+        /*    box-shadow: 0 8px 26px rgba(0, 0, 0, .12);*/
+        /*    padding: 6px;*/
+        /*    overflow: hidden;*/
+        /*    margin-right:120px;*/
+        /*}*/
 
         .pm-menu.open {
             display: block;
@@ -1171,40 +1177,28 @@ require_once '../includes/version.php';
             overflow: auto;
         }
 
+        /* ناوبری هفته — در هدر، کنار دکمهٔ بستن، زمینهٔ بنفش */
         .wk-nav {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 18px;
-            margin-bottom: 14px;
+            display: flex; align-items: center; gap: 6px;
+            margin-right: auto;              /* هل به سمت چپ (RTL) */
+            margin-left: 12px;
+            background: var(--pm-purple);
+            border-radius: 10px;
+            padding: 4px 6px;
+            gap:0px;
         }
-
         .wk-nav button {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            border: 1px solid #eee;
-            background: #fff;
-            cursor: pointer;
-            color: var(--pm-purple);
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background .12s, border-color .12s;
+            border-radius: 8px;
+            border: none; cursor: pointer;
+            color: white; font-size: .95rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: background .12s;
+            background-color: transparent;
         }
-
-        .wk-nav button:hover {
-            background: var(--pm-purple-soft);
-            border-color: #ddd6fe;
-        }
-
+        .wk-nav button:hover { background: #fff; }
         .wk-nav .wk-label {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #2d2d3a;
-            min-width: 90px;
-            text-align: center;
+            font-size: .88rem; font-weight: 700; color: white;
+            min-width: 78px; text-align: center;
         }
 
         .wk-grid {
@@ -1260,6 +1254,8 @@ require_once '../includes/version.php';
             gap: 6px;
             overflow-y: auto;
             max-height: 46vh;
+            direction: ltr;
+            text-align: right;
         }
 
         .wk-card {
@@ -1279,6 +1275,7 @@ require_once '../includes/version.php';
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            padding-left:30px;
         }
 
         .wk-card-time {
@@ -1289,10 +1286,9 @@ require_once '../includes/version.php';
 
         .wk-card .pm-kebab {
             position: absolute;
-            top: 3px;
             left: 3px;
             font-size: .9rem;
-            padding: 2px 5px;
+            padding: 0px 5px;
         }
 
         .wk-col-empty {
@@ -1343,8 +1339,8 @@ require_once '../includes/version.php';
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            background: #fff1e6;
-            color: #ea580c;
+            background: #fff4f4;
+            color: #ff0000;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1496,7 +1492,6 @@ require_once '../includes/version.php';
         /* دکمه همیشه بالای ردیف بماند، نه وسط */
         .pm-menu-wrap {
             align-self: flex-start;
-            margin-top: 2px;
         }
 
         .pm-menu {
@@ -1512,6 +1507,7 @@ require_once '../includes/version.php';
             box-shadow: 0 6px 20px rgba(0, 0, 0, .1);
             padding: 5px;
             overflow: hidden;
+            margin:5px 120px;
         }
 
         .pm-menu.open {
@@ -1796,22 +1792,7 @@ require_once '../includes/version.php';
         <!-- ═══ ردیف بالا: فرآیندهای جاری + کارها ═══ -->
         <div class="tasks-row">
 
-            <!-- فرآیندهای جاری -->
-            <div class="dash-card">
-                <div class="dash-card-head">
-                    <div class="dash-card-title">
-                        <i class="bi bi-arrow-repeat"></i><span>فرآیندهای جاری</span>
-                    </div>
-                    <a href="workflow-monitor.php" class="dash-see-all">
-                        مشاهده همه <i class="bi bi-chevron-left"></i>
-                    </a>
-                </div>
-                <div class="dash-card-body">
-                    <div id="routineList">
-                        <div class="dash-empty">در حال بارگذاری…</div>
-                    </div>
-                </div>
-            </div>
+            
 
             <!-- کارها -->
             <div class="dash-card">
@@ -1841,14 +1822,14 @@ require_once '../includes/version.php';
                         <span>منتخب</span>
                         <i class="bi bi-pin-angle tab-pin" data-pin="starred"></i>
                     </button>
-
-                    <div class="dash-filters">
+<div class="dash-filters">
                         <button class="filter-chip active" data-filter="all">همه</button>
                         <button class="filter-chip" data-filter="today">امروز</button>
                         <button class="filter-chip" data-filter="overdue">عقب افتاده</button>
                     </div>
-                </div>
 
+                </div>
+                    
                 <div class="dash-card-body">
                     <table class="task-table">
                         <thead>
@@ -1867,7 +1848,22 @@ require_once '../includes/version.php';
                     </table>
                 </div>
             </div>
-
+<!-- فرآیندهای جاری -->
+            <div class="dash-card">
+                <div class="dash-card-head">
+                    <div class="dash-card-title">
+                        <i class="bi bi-arrow-repeat"></i><span>فرآیندهای جاری</span>
+                    </div>
+                    <a href="workflow-monitor.php" class="dash-see-all">
+                        مشاهده همه <i class="bi bi-chevron-left"></i>
+                    </a>
+                </div>
+                <div class="dash-card-body">
+                    <div id="routineList">
+                        <div class="dash-empty">در حال بارگذاری…</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
 
@@ -1878,7 +1874,7 @@ require_once '../includes/version.php';
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-person-exclamation"></i><span>کاربران با بیشترین تأخیر</span>
+                        <i class="bi bi-people"></i><span>کاربران با بیشترین تأخیر کار</span>
                     </div>
                     <a href="#" class="dash-see-all" id="topDelayedSeeAll">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -1896,7 +1892,7 @@ require_once '../includes/version.php';
                 <div class="dash-card-head">
                     <div class="dash-card-title">
                         <i class="bi bi-clock-history"></i>
-                        <span>کارهای واگذار شده تاخیر دار</span>
+                        <span>کارهای واگذار شده (تاخیردار)</span>
                     </div>
                     <a href="#" class="dash-see-all" id="delayedSeeAll">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -1963,20 +1959,23 @@ require_once '../includes/version.php';
     <!-- ═══════════ مودال هفتگی ═══════════ -->
     <div class="modal fade" id="weekModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="    max-width: 1200px;">
+            <div class="modal-content" style="    max-width: 1300px;">
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <span>برنامه هفتگی</span>
                         <span class="pm-head-icon"><i class="bi bi-calendar-week"></i></span>
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
+
+                    <!-- ناوبری هفته — کنار دکمهٔ بستن -->
                     <div class="wk-nav">
                         <button onclick="wkShift(-1)" title="هفتهٔ قبل"><i class="bi bi-chevron-right"></i></button>
                         <span class="wk-label" id="wkLabel">این هفته</span>
                         <button onclick="wkShift(1)" title="هفتهٔ بعد"><i class="bi bi-chevron-left"></i></button>
                     </div>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
                     <div class="wk-grid" id="wkGrid"></div>
                 </div>
                 <div class="modal-footer" style="padding:12px 20px;">
@@ -2669,49 +2668,52 @@ require_once '../includes/version.php';
                 location.href = `tasks-overview.php?assignee=${refId}&filter=overdue`;
             }
         }
-        /* ═══ گزارش گلوگاه‌ها ═══ */
         function renderBottlenecks() {
             const box = document.getElementById('bottleneckList');
             if (!box) return;
 
-            // روتین‌های تأخیردار را بر اساس نام مرحله گروه‌بندی کن
-            const delayed = (store.recent || []).filter(w => w.is_delayed == 1 && w.current_stage_name);
+            // کل روتین‌های فعال (تکمیل‌نشده، حذف‌نشده) — مخرج درصد
+            const activeRoutines = (store.recent || []).filter(w =>
+                w.status !== 'completed' && w.status !== 'cancelled'
+            );
+            const totalActive = activeRoutines.length || 1;
+
+            // روتین‌های تأخیردار، بر اساس (قالب + مرحله)
+            const delayed = activeRoutines.filter(w => w.is_delayed == 1 && w.current_stage_name);
 
             if (!delayed.length) {
                 box.innerHTML = `<div class="dash-empty"><i class="bi bi-check2-circle"></i>گلوگاهی یافت نشد</div>`;
                 return;
             }
 
-            // شمارش بر اساس (قالب + مرحله) — هم‌کلید با صفحهٔ گلوگاه
             const groups = {};
             delayed.forEach(w => {
                 const tpl = w.workflow_id || 0;
                 const stage = w.current_stage_name;
                 const key = `${tpl}::${stage}`;
                 if (!groups[key]) {
-                    groups[key] = {
-                        count: 0,
-                        stage: stage,
-                        key: key
-                    };
+                    groups[key] = { count: 0, stage: stage, key: key };
                 }
                 groups[key].count++;
             });
 
             // مرتب‌سازی نزولی بر اساس تعداد
             const sorted = Object.values(groups).sort((a, b) => b.count - a.count);
+            const colors = ['#dc2626', '#ea580c', '#d97706', '#ca8a04', '#7c3aed'];
 
-            box.innerHTML = sorted.map(g => `
-                <div class="bottleneck-row" onclick="showBottleneckDetail('${g.key.replace(/'/g, "\\'")}')">
-                    <div class="bn-info">
-                        <div class="bn-stage" title="${g.stage}">${g.stage}</div>
-                        <div class="bn-count">${toFa(g.count)} روتین درگیر</div>
+            box.innerHTML = sorted.map((g, i) => {
+                const pct = Math.round((g.count / totalActive) * 100);
+                return `
+                <div class="routine-row" onclick="showBottleneckDetail('${g.key.replace(/'/g, "\\'")}')">
+                    <div class="routine-name" title="${g.stage}">${g.stage}</div>
+                    <div class="routine-bar-wrap">
+                        <div class="routine-bar" style="width:${pct}%; background:${colors[i % colors.length]};"></div>
                     </div>
-                    <i class="bi bi-chevron-left bn-arrow"></i>
-                </div>
-            `).join('');
+                    <div class="routine-count">${toFa(pct)}٪</div>
+                </div>`;
+            }).join('');
         }
-
+        
         function showBottleneckDetail(stageKey) {
             // به صفحهٔ گلوگاه برو و همان آکاردئون را باز کن
             location.href = 'bottleneck-report.php?stage=' + encodeURIComponent(stageKey);
@@ -3770,9 +3772,9 @@ require_once '../includes/version.php';
                 } else {
                     cards = `<div class="wk-col-empty">—</div>`;
                 }
-
+ 
                 html += `
-                <div class="wk-col">
+                <div class="wk-col">ت
                     <div class="wk-col-head">
                         <div class="wk-day">${dayNames[i]}</div>
                         <div class="wk-date">${toFa(jd)} ${months[jm - 1]}</div>

@@ -3544,7 +3544,7 @@ require_once '../includes/version.php';
                             notesHTML = `<div class="ml-notes">${item.notes}</div>`;
                         }
                     } else if (item.notes) {
-                        const txt = item.notes.replace(/\n/g, '<br>').replace(/\r\n/g, '<br>');
+                        const txt = item.notes.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
                         notesHTML = `<div class="ml-notes">${txt}</div>`;
                     }
                     // ✅ ساخت متن توضیحات خاص برای هر action
@@ -3560,7 +3560,8 @@ require_once '../includes/version.php';
                         }
                         // ✅ نمایش توضیحات کار در تاریخچه ایجاد
                         if (taskData && taskData.description) {
-                            customNotesHTML += `<div class="ml-notes" style="color:#6c757d;">توضیحات: ${taskData.description}</div>`;
+                            const descTxt = taskData.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
+                            customNotesHTML += `<div class="ml-notes" style="color:#6c757d;">توضیحات: ${descTxt}</div>`;
                         }
                     }
 

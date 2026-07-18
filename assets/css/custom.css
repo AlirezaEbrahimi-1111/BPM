@@ -4352,6 +4352,8 @@ body.drawer-body-open {
     font-size: 0.8rem;
     color: #666;
     line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .ml-deadline-inline {
