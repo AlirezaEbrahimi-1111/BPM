@@ -172,8 +172,8 @@ require_once '../includes/version.php';
         }
 
         .plan-item:hover {
-            border-color: #c4b5fd;
-            box-shadow: 0 3px 12px rgba(124, 92, 255, .1);
+            border-color: #D5C1FF;
+            box-shadow: 0 3px 12px rgba(149, 99, 255, .1);
             transform: translateY(-1px);
         }
 
@@ -191,8 +191,8 @@ require_once '../includes/version.php';
         }
 
         .plan-icon.month {
-            background: #ede9fe;
-            color: #7c3aed;
+            background: #F4EFFF;
+            color: #9563FF;
         }
 
         .plan-icon.week {
@@ -490,8 +490,8 @@ require_once '../includes/version.php';
         }
 
         .row-kebab:hover {
-            background: #f0edff;
-            color: #7c5cff;
+            background: #F4EFFF;
+            color: #9563FF;
         }
 
         .row-menu {
@@ -537,7 +537,7 @@ require_once '../includes/version.php';
         }
 
         .row-menu .act-approve i {
-            color: #20aa27;
+            color: #00BF8F;
             padding-top: 5px;
             font-size: 180%;
         }
@@ -587,8 +587,8 @@ require_once '../includes/version.php';
 
         .st-completed,
         .st-approved {
-            background: #dcfce7;
-            color: #15803d;
+            background: #DFF8F1;
+            color: #00805F;
         }
 
         .st-pending_approval,
@@ -819,9 +819,18 @@ require_once '../includes/version.php';
 
         /* ═══════════ مودال برنامه کاری (بنفش) ═══════════ */
         :root {
-            --pm-purple: #7c5cff;
-            --pm-purple-soft: #f0edff;
-            --pm-purple-dark: #6941e0;
+            --pm-purple: #9563FF;
+            --pm-purple-soft: #F4EFFF;
+            --pm-purple-dark: #7C4DE0;
+            --pm-green: #00BF8F;
+            --pm-green-soft: #DFF8F1;
+            --pm-green-dark: #00805F;
+            --primary: #9563FF;
+            --primary-dark: #7C4DE0;
+            --primary-light: #B592FF;
+            --primary-gradient: linear-gradient(135deg, #9563FF 0%, #B592FF 100%);
+            --success: #00BF8F;
+            --success-dark: #00805F;
         }
 
         #planModal .modal-content,
@@ -898,8 +907,8 @@ require_once '../includes/version.php';
         }
 
         .pm-row:hover {
-            background: #faf9ff;
-            border-color: #e5e0ff;
+            background: #FBF8FF;
+            border-color: #D5C1FF;
         }
 
         .pm-row.removing {
@@ -990,7 +999,7 @@ require_once '../includes/version.php';
         }
 
         .pm-menu button.act-approve i {
-            color: #16a34a;
+            color: #00BF8F;
         }
 
         .pm-menu button.act-reject i {
@@ -1296,7 +1305,7 @@ require_once '../includes/version.php';
         }
 
         #pmToast.ok {
-            background: #15803d;
+            background: #00805F;
         }
 
         #pmToast.err {
@@ -1428,7 +1437,7 @@ require_once '../includes/version.php';
         }
 
         .pm-menu button.act-approve i {
-            color: #16a34a;
+            color: #00BF8F;
         }
 
         .pm-menu button.act-reject i {
@@ -1550,7 +1559,7 @@ require_once '../includes/version.php';
         }
 
         #pmToast.ok {
-            background: #15803d;
+            background: #00805F;
         }
 
         #pmToast.err {
@@ -1573,7 +1582,7 @@ require_once '../includes/version.php';
 
         .ra-input:focus {
             outline: none;
-            border-color: #c4b5fd;
+            border-color: #D5C1FF;
         }
 
         textarea.ra-input {
@@ -1610,12 +1619,12 @@ require_once '../includes/version.php';
         }
 
         .ra-user:hover {
-            background: #faf9ff;
+            background: #FBF8FF;
         }
 
         .ra-user.sel {
-            background: #f0edff;
-            color: #6941e0;
+            background: #F4EFFF;
+            color: #7C4DE0;
             font-weight: 600;
         }
 
@@ -1625,7 +1634,7 @@ require_once '../includes/version.php';
         }
 
         .ra-user.sel i {
-            color: #7c5cff;
+            color: #9563FF;
         }
 
         .ra-user-empty {
@@ -2233,8 +2242,8 @@ require_once '../includes/version.php';
             // ── بقیه: مودال کوچک ─────────────────────────
             const titles = {
                 reject: ['رد کار', 'bi-x-lg', '#dc2626'],
-                delegate: ['ارجاع کار', 'bi-arrow-left-right', '#7c5cff'],
-                extend: ['تمدید موعد', 'bi-calendar-plus', '#7c5cff'],
+                delegate: ['ارجاع کار', 'bi-arrow-left-right', '#9563FF'],
+                extend: ['تمدید موعد', 'bi-calendar-plus', '#9563FF'],
             };
             const [title, icon, color] = titles[action];
 
@@ -2466,7 +2475,7 @@ require_once '../includes/version.php';
             }
 
             const max = Math.max(...list.map(r => r.active_count), 1);
-            const colors = ['#2563eb', '#0d9488', '#16a34a', '#ea580c', '#7c3aed'];
+            const colors = ['#2563eb', '#0d9488', '#00BF8F', '#ea580c', '#9563FF'];
 
             box.innerHTML = list.map((r, i) => {
                 const pct = Math.round((r.active_count / max) * 100);
@@ -3136,7 +3145,7 @@ require_once '../includes/version.php';
             if (action === 'approve') {
                 return `
             <div class="pm-form-title">
-                <i class="bi bi-check-lg" style="color:#16a34a"></i> تایید کار
+                <i class="bi bi-check-lg" style="color:#00BF8F"></i> تایید کار
             </div>
             <textarea id="pmNote-${taskId}" placeholder="یادداشت (اختیاری)"></textarea>
             <div class="pm-form-actions">
