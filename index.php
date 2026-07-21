@@ -233,7 +233,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 28px;
+            margin-top: 28px;
             direction: rtl;
         }
 
@@ -263,6 +263,65 @@
 
         .forgot-link:hover {
             opacity: 0.75;
+        }
+
+        /* چیپ کاربر (مرحله ۲) */
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            background: #f0edff;
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin-bottom: 18px;
+            font-size: .9rem;
+            color: #4b3fa0;
+        }
+
+        .user-chip svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .user-chip b {
+            color: #2d2d3a;
+            font-weight: 700;
+        }
+
+        /* خط جداکننده بین ورود و OTP */
+        .step-divider {
+            height: 1px;
+            background: #eee;
+            margin: 18px 0;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            width: auto;
+            margin: 0 0 18px 0;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            color: #6b7280;
+            font-size: .85rem;
+            font-weight: 600;
+            padding: 7px 13px;
+            border-radius: 10px;
+            transition: background .12s, color .12s;
+        }
+
+        .btn-back:hover {
+            background: #e5e7eb;
+            color: #4b3fa0;
+        }
+
+        .btn-back svg {
+            width: 16px;
+            height: 16px;
+            transform: scaleX(-1);
         }
 
         /* دکمه ورود */
@@ -703,75 +762,106 @@
                 <div id="alertContainer"></div>
 
                 <!-- سوییچ روش ورود -->
-                <div class="method-switch" role="tablist">
-                    <button type="button" class="method-tab active" id="tabPassword" role="tab" aria-selected="true">رمز عبور</button>
-                    <button type="button" class="method-tab" id="tabOtp" role="tab" aria-selected="false">کد یکبارمصرف</button>
-                    <span class="method-tab-indicator" id="tabIndicator"></span>
-                </div>
-
                 <form id="loginForm" novalidate>
 
-                    <!-- مرحلهٔ شماره موبایل / نام کاربری -->
-                    <div class="field-group" id="usernameGroup">
-                        <label class="field-label" for="username" id="usernameLabel">شماره موبایل یا نام کاربری</label>
-                        <div class="input-wrap">
-                            <input type="text" class="field-input" id="username"
-                                placeholder="شماره موبایل یا نام کاربری خود را وارد کنید"
-                                required autocomplete="username" inputmode="numeric">
-                            <svg class="input-icon-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                <circle cx="12" cy="7" r="4" />
-                            </svg>
-                        </div>
-                    </div>
-
-                    <!-- رمز عبور (فقط در حالت رمز عبور) -->
-                    <div class="field-group" id="passwordGroup">
-                        <label class="field-label" for="password">رمز عبور</label>
-                        <div class="input-wrap">
-                            <input type="password" class="field-input" id="password"
-                                placeholder="رمز عبور خود را وارد کنید"
-                                required autocomplete="current-password">
-                            <svg class="input-icon-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                            </svg>
-                            <button type="button" class="input-icon-left" id="togglePassword" aria-label="نمایش رمز عبور">
-                                <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                    <circle cx="12" cy="12" r="3" />
+                    <!-- ═══════════ مرحله ۱: موبایل ═══════════ -->
+                    <div class="login-step" id="step1">
+                        <div class="field-group">
+                            <label class="field-label" for="username">شماره موبایل</label>
+                            <div class="input-wrap">
+                                <input type="text" class="field-input" id="username"
+                                    placeholder="شماره موبایل خود را وارد کنید"
+                                    required autocomplete="username" inputmode="numeric" maxlength="11">
+                                <svg class="input-icon-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
                                 </svg>
-                            </button>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn-login" id="continueBtn" disabled>
+                            <span class="btn-text">ادامه</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1);">
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                                <polyline points="12 5 19 12 12 19" />
+                            </svg>
+                        </button>
+
+                        <div class="register-cta">
+                            <a href="/pages/registerCo.php" class="btn-secondary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="16" />
+                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                </svg>
+                                ثبت نام سازمان جدید
+                            </a>
                         </div>
                     </div>
 
-                    <div class="options-row" id="optionsRow">
-                        <label class="remember-label">
-                            <input type="checkbox" id="rememberMe">
-                            <span>مرا به خاطر بسپار</span>
-                        </label>
-                        <a href="#" class="forgot-link" id="forgotBtn">فراموشی رمز عبور</a>
+                    <!-- ═══════════ مرحله ۲: رمز عبور ═══════════ -->
+                    <div class="login-step" id="step2" style="display:none;">
+                        <button type="button" class="btn-back back-in-step" onclick="window._goBack()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="19" y1="12" x2="5" y2="12" />
+                                <polyline points="12 19 5 12 12 5" />
+                            </svg>
+                            بازگشت
+                        </button>
+
+                        <div class="field-group">
+                            <label class="field-label" for="password">رمز عبور</label>
+                            <div class="input-wrap">
+                                <input type="password" class="field-input" id="password"
+                                    placeholder="رمز عبور خود را وارد کنید" autocomplete="current-password">
+                                <svg class="input-icon-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                </svg>
+                                <button type="button" class="input-icon-left" id="togglePassword" aria-label="نمایش رمز عبور">
+                                    <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-login" id="loginBtn">
+                            <span class="btn-text">ورود به سیستم</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1);">
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                                <polyline points="12 5 19 12 12 19" />
+                            </svg>
+                        </button>
+                        <div class="options-row">
+                            <label class="remember-label">
+                                <input type="checkbox" id="rememberMe">
+                                <span>مرا به خاطر بسپار</span>
+                            </label>
+                            <a href="#" class="forgot-link" id="forgotBtn">فراموشی رمز عبور</a>
+                        </div>
+
+
+
+                        <div class="step-divider"></div>
+
+                        <button type="button" class="btn-secondary" id="otpSendBtn">
+                            <span class="btn-text">ورود با کد یکبار مصرف</span>
+                        </button>
                     </div>
 
-                    <!-- دکمه ورود با رمز عبور -->
-                    <button type="submit" class="btn-login" id="loginBtn">
-                        <span class="btn-text">ورود به سیستم</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1);">
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                            <polyline points="12 5 19 12 12 19" />
-                        </svg>
-                    </button>
+                    <!-- ═══════════ مرحله ۳: کد یکبارمصرف ═══════════ -->
+                    <div class="login-step" id="step3" style="display:none;">
+                        <button type="button" class="btn-back back-in-step" onclick="window._goBack()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="19" y1="12" x2="5" y2="12" />
+                                <polyline points="12 19 5 12 12 5" />
+                            </svg>
+                            بازگشت
+                        </button>
 
-                    <!-- دکمه ارسال کد (حالت OTP، مرحله ۱) -->
-                    <button type="button" class="btn-login" id="otpSendBtn" style="display:none;">
-                        <span class="btn-text">ارسال کد تأیید</span>
-                    </button>
-
-                    <!-- تأیید کد (حالت OTP، مرحله ۲) -->
-                    <div id="otpVerifyGroup" style="display:none;">
                         <div class="otp-phone-display">
                             <span>کد تأیید به <b id="otpPhoneShown"></b> ارسال شد</span>
-                            <button type="button" class="otp-edit-btn" id="otpEditPhone">ویرایش شماره</button>
                         </div>
 
                         <div class="field-group">
@@ -796,18 +886,6 @@
                         </div>
                     </div>
 
-                    <!-- ثبت‌نام سازمان — همیشه در دسترس، مستقل از روش ورود -->
-                    <div class="register-cta">
-                        <a href="/pages/registerCo.php" class="btn-secondary">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="12" y1="8" x2="12" y2="16" />
-                                <line x1="8" y1="12" x2="16" y2="12" />
-                            </svg>
-                            ثبت نام سازمان جدید
-                        </a>
-                    </div>
-
                     <div class="security-bar">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -826,50 +904,62 @@
         // ========== سوییچ روش ورود + ورود با کد یکبارمصرف (OTP) ==========
         document.addEventListener('DOMContentLoaded', function() {
 
-            const tabPassword = document.getElementById('tabPassword');
-            const tabOtp = document.getElementById('tabOtp');
-            const tabIndicator = document.getElementById('tabIndicator');
             const usernameInput = document.getElementById('username');
-            const usernameLabel = document.getElementById('usernameLabel');
-            const passwordGroup = document.getElementById('passwordGroup');
-            const optionsRow = document.getElementById('optionsRow');
             const loginBtn = document.getElementById('loginBtn');
             const otpSendBtn = document.getElementById('otpSendBtn');
-            const otpVerifyGroup = document.getElementById('otpVerifyGroup');
             const otpPhoneShown = document.getElementById('otpPhoneShown');
-            const otpEditPhone = document.getElementById('otpEditPhone');
             const otpBoxes = Array.from(document.querySelectorAll('.otp-box'));
             const otpResendBtn = document.getElementById('otpResendBtn');
             const otpTimerText = document.getElementById('otpTimerText');
 
             let otpMode = false;
             let resendTimerId = null;
+            // ═══════════ ناوبری مراحل ═══════════
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const step3 = document.getElementById('step3');
+            const continueBtn = document.getElementById('continueBtn');
+            const backBtn = document.getElementById('backBtn');
+            let currentStep = 1;
 
-            // ---------- سوییچ رمز عبور / کد یکبارمصرف ----------
-            function setMode(mode) {
-                otpMode = mode === 'otp';
-
-                tabPassword.classList.toggle('active', !otpMode);
-                tabOtp.classList.toggle('active', otpMode);
-                tabPassword.setAttribute('aria-selected', String(!otpMode));
-                tabOtp.setAttribute('aria-selected', String(otpMode));
-                tabIndicator.classList.toggle('pos-1', otpMode);
-
-                passwordGroup.style.display = otpMode ? 'none' : 'block';
-                optionsRow.style.display = otpMode ? 'none' : 'flex';
-                loginBtn.style.display = otpMode ? 'none' : 'flex';
-                otpSendBtn.style.display = otpMode ? 'flex' : 'none';
-                otpVerifyGroup.style.display = 'none';
-
-                usernameLabel.textContent = otpMode ? 'شماره موبایل' : 'شماره موبایل یا نام کاربری';
-                usernameInput.placeholder = otpMode ? 'شماره موبایل خود را وارد کنید' : 'شماره موبایل یا نام کاربری خود را وارد کنید';
-                document.getElementById('usernameGroup').style.display = 'block';
-
-                stopResendTimer();
+            function goStep(n) {
+                currentStep = n;
+                step1.style.display = (n === 1) ? 'block' : 'none';
+                step2.style.display = (n === 2) ? 'block' : 'none';
+                step3.style.display = (n === 3) ? 'block' : 'none';
             }
+            // فعال‌سازی دکمهٔ «ادامه» فقط با موبایل معتبر
+            usernameInput.addEventListener('input', function() {
+                const ok = /^09[0-9]{9}$/.test(this.value.trim());
+                continueBtn.disabled = !ok;
+            });
 
-            tabPassword.addEventListener('click', () => setMode('password'));
-            tabOtp.addEventListener('click', () => setMode('otp'));
+            // مرحله ۱ → ۲
+            continueBtn.addEventListener('click', function() {
+                const phone = usernameInput.value.trim();
+                if (!/^09[0-9]{9}$/.test(phone)) return;
+                goStep(2);
+                document.getElementById('password').focus();
+            });
+
+            // Enter در فیلد موبایل = ادامه
+            usernameInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !continueBtn.disabled) {
+                    e.preventDefault();
+                    continueBtn.click();
+                }
+            });
+
+            // بازگشت (تابع سراسری — چون دکمه در هر مرحله جداست)
+            window._goBack = function() {
+                if (currentStep === 3) {
+                    goStep(2);
+                    stopResendTimer();
+                } else {
+                    goStep(1);
+                    usernameInput.focus();
+                }
+            };
 
             // ---------- ارسال کد ----------
             otpSendBtn.addEventListener('click', async function() {
@@ -894,9 +984,7 @@
                     if (result.success) {
                         showAlert('کد تأیید به شماره شما ارسال شد', 'success');
                         otpPhoneShown.textContent = phone;
-                        document.getElementById('usernameGroup').style.display = 'none';
-                        otpVerifyGroup.style.display = 'block';
-                        otpSendBtn.style.display = 'none';
+                        goStep(3);
                         otpBoxes.forEach(b => b.value = '');
                         otpBoxes[0].focus();
                         startResendTimer();
@@ -909,16 +997,6 @@
                     otpSendBtn.classList.remove('loading');
                 }
             });
-
-            // ---------- ویرایش شماره ----------
-            otpEditPhone.addEventListener('click', function() {
-                otpVerifyGroup.style.display = 'none';
-                otpSendBtn.style.display = 'flex';
-                document.getElementById('usernameGroup').style.display = 'block';
-                usernameInput.focus();
-                stopResendTimer();
-            });
-
             // ---------- جعبه‌های کد تأیید (ورود خودکار به خانهٔ بعد + Backspace + Paste) ----------
             otpBoxes.forEach((box, idx) => {
                 box.addEventListener('input', () => {
@@ -1027,7 +1105,7 @@
                     const result = await resp.json();
                     if (result.success) {
                         // ✅ ذخیرهٔ توکن و اطلاعات کاربر (مثل مسیر ورود با رمز)
-                        localStorage.setItem('authToken', result.token);
+                        localStorage.setItem('auth_token', result.token);
                         localStorage.setItem('user_info', JSON.stringify(result.user));
 
                         showAlert('ورود موفقیت‌آمیز', 'success');

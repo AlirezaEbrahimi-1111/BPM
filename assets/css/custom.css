@@ -2948,7 +2948,7 @@ td:nth-child(2) {
 }
 
 /* Responsive برای admin submenu */
-@media (max-width: 992px) {
+@media (max-width: 1399px) {
     .admin-submenu {
         background: white;
         box-shadow: none;
@@ -3319,7 +3319,7 @@ td:nth-child(2) {
     align-self: center;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1399px) {
     .navbar-divider {
         display: none;
     }
@@ -4059,7 +4059,7 @@ span.deadline-request-icon.disabled:hover {
 }
 
 /* --- ③ دسکتاپ: drawer → navbar عادی --- */
-@media (min-width: 992px) {
+@media (min-width: 1400px) {
 
     .mobile-drawer,
     .mobile-drawer.drawer-open {
@@ -4100,7 +4100,7 @@ span.deadline-request-icon.disabled:hover {
 }
 
 /* --- ④ موبایل --- */
-@media (max-width: 991px) {
+@media (max-width: 1399px) {
 
     /* همبرگر: نمایش */
     .mobile-menu-btn {
