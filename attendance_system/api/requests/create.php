@@ -3,7 +3,7 @@
 
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php'; // ✅ این خط را اضافه کنید
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
@@ -371,6 +371,61 @@ if ($type === 'pass') {
     if (!$pass_date || !$start_time || !$end_time || !$reason) {
         echo json_encode(['success' => false, 'message' => 'فیلدهای الزامی خالی است']);
         exit;
+    }
+
+    // ✅ دریافت تنظیمات سیستم
+    $app_settings = loadSettings($db);
+    $limit_count_monthly = intval($app_settings['pass_max_count_monthly'] ?? 0);
+    $limit_hours_daily = intval($app_settings['pass_max_hours_daily'] ?? 0);
+
+    // ==========================================
+    // ✅ اعتبارسنجی ۱: محدودیت ساعت برای هر درخواست پاس
+    // ==========================================
+    if ($limit_hours_daily > 0) {
+        $start_min = (int)substr($start_time, 0, 2) * 60 + (int)substr($start_time, 3, 2);
+        $end_min = (int)substr($end_time, 0, 2) * 60 + (int)substr($end_time, 3, 2);
+        
+        if ($end_min <= $start_min) {
+            echo json_encode(['success' => false, 'message' => 'ساعت پایان نمی‌تواند قبل از ساعت شروع باشد.']);
+            exit;
+        }
+
+        $duration_hours = ($end_min - $start_min) / 60;
+
+        if ($duration_hours > $limit_hours_daily) {
+            echo json_encode(['success' => false, 'message' => 'مدت زمان هر درخواست پاس نهایتاً نمی‌تواند ' . $limit_hours_daily . ' ساعت باشد.']);
+            exit;
+        }
+    }
+
+    // ==========================================
+    // ✅ اعتبارسنجی ۲: محدودیت تعداد پاس در ماه جاری (شمسی)
+    // ==========================================
+    if ($limit_count_monthly > 0) {
+        $today = date('Y-m-d');
+        list($g_y, $g_m, $g_d) = explode('-', $today);
+        
+        // تبدیل تاریخ امروز به شمسی برای پیدا کردن ماه جاری شمسی
+        list($j_y, $j_m, $j_d) = gregorianToJalali($g_y, $g_m, $g_d);
+
+        // پیدا کردن بازه اول ماه و آخر ماه شمسی به میلادی (برای کوئری دیتابیس)
+        list($gs_y, $gs_m, $gs_d) = jalaliToGregorian($j_y, $j_m, 1);
+        $start_of_month = sprintf('%04d-%02d-%02d', $gs_y, $gs_m, $gs_d);
+
+        $nj_y = ($j_m == 12) ? $j_y + 1 : $j_y;
+        $nj_m = ($j_m == 12) ? 1 : $j_m + 1;
+        list($ge_y, $ge_m, $ge_d) = jalaliToGregorian($nj_y, $nj_m, 1);
+        $end_of_month = sprintf('%04d-%02d-%02d', $ge_y, $ge_m, $ge_d);
+
+        // شمارش پاس‌های ماه جاری این کاربر (درخواست‌های لغو شده حساب نمی‌شوند)
+        $stmt = $db->prepare("SELECT COUNT(*) FROM pass_requests WHERE user_id = ? AND pass_date >= ? AND pass_date < ? AND (status IS NULL OR status != 'cancelled')");
+        $stmt->execute([$user_id, $start_of_month, $end_of_month]);
+        $current_count = $stmt->fetchColumn();
+
+        if ($current_count >= $limit_count_monthly) {
+            echo json_encode(['success' => false, 'message' => 'شما سقف مجاز ' . $limit_count_monthly . ' درخواست پاس در ماه جاری را استفاده کرده‌اید.']);
+            exit;
+        }
     }
 
     // ✅ JavaScript الان میلادی می‌فرسته: "2025-12-30"

@@ -3369,7 +3369,8 @@ function formatDateJalali($gregorianDate)
                 if (window.__reqGridApi) window.__reqGridApi.onFilterChanged();
             };
             initPagination = function() {
-                /* صفحه‌بندی داخلیِ گرید */ };
+                /* صفحه‌بندی داخلیِ گرید */
+            };
 
             document.addEventListener('DOMContentLoaded', function() {
                 buildRequestsGrid();
@@ -4369,13 +4370,15 @@ function formatDateJalali($gregorianDate)
             if (e && e.preventDefault) {
                 e.preventDefault();
             }
+            const submitBtn = document.getElementById('submitBtn');
+            // ✅ قفل کردن دکمه در همان لحظه اول
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'در حال ارسال...';
 
             const type = ['mission', 'leave', 'pass', 'forget', 'technical'][currentTab];
             let data = {
                 type
             };
-
-
 
             if (type === 'mission') {
                 const startDate = document.getElementById('missionStartDate').getAttribute('data-date');
@@ -4496,11 +4499,9 @@ function formatDateJalali($gregorianDate)
                     alert('❌ ساعت پایان باید بعد از ساعت شروع باشد');
                     return;
                 }
-                console.log('aaaaa:   ' + APP_SETTINGS.pass_max_count_monthly);
                 // ✅ اعتبارسنجی سقف تعداد پاس در ماه
                 if (APP_SETTINGS.pass_max_count_monthly > 0) {
                     try {
-                        console.log('aaaaa:   ' + APP_SETTINGS.pass_max_count_monthly);
                         const checkRes = await fetch(`/attendance_system/api/requests/check-limits.php?type=pass&date=${passDate}`, {
                             headers: {
                                 'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
@@ -4509,10 +4510,18 @@ function formatDateJalali($gregorianDate)
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
                             alert('❌ ' + checkData.message);
+                            return; // متوقف کردن ارسال
+                        }
+                        // اگر سرور پاسخی جز success داد
+                        if (!checkData.success) {
+                            alert('❌ خطایی در بررسی سقف رخ داد. لطفاً دوباره تلاش کنید.');
                             return;
                         }
                     } catch (e) {
                         console.error('خطا در بررسی سقف:', e);
+                        // ✅ این بسیار مهم است: اگر اینترنت قطع شد یا سرور ارور داد، اجازه ثبت نده!
+                        alert('❌ خطا در ارتباط با سرور برای بررسی محدودیت‌ها. درخواست ثبت نشد.');
+                        return;
                     }
                 }
 
