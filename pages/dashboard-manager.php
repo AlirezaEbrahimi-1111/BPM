@@ -11,7 +11,7 @@ require_once '../includes/version.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبورد مدیریت - سیستم مدیریت کار</title>
 
-    <!-- Bootstrap 5 RTL -->
+    
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <link href="<?= asset('../assets/js/cdn/fonts/bootstrap-icons.woff2?30af91bf14e37666a085fb8a161ff36d') ?>" rel="stylesheet">

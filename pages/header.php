@@ -197,6 +197,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         </li>
                     </ul>
                 </li>
+                <li class="nav-item" id="drawerLogoutDivider">
+                    <hr class="dropdown-divider" style="margin: 8px 14px; opacity: .15;">
+                </li>
+                <li class="nav-item" id="drawerLogoutItem">
+                    <a class="nav-link" href="#" onclick="logoutConfirm()">
+                        <i class="bi bi-box-arrow-right me-2"></i>خروج
+                    </a>
+                </li>
             </ul>
         </div>
         <!-- Overlay تاریک پشت منو -->
@@ -204,16 +212,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
         <div class="navbar-divider"></div>
 
-        <!-- حضور و غیاب - Minimal -->
-        <div class="attendance-container" id="attendanceContainer">
-            <div class="attendance-loading">
-                <div class="spinner-border spinner-border-sm" role="status"></div>
-            </div>
-        </div>
-
-
         <!-- آیکون‌های تنظیمات و خروج -->
         <div class="navbar-nav me-0" style="flex-direction: row;">
+            <!-- حضور و غیاب - Minimal -->
+            <div class="attendance-container" id="attendanceContainer">
+                <div class="attendance-loading">
+                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                </div>
+            </div>
+            <div class="navbar-divider"></div>
             <div class="nav-item">
                 <a class="nav-link settings-btn" href="../../pages/tickets.php" title="تیکت‌ها">
                     <i class="bi bi-headset" style="font-size:1.2rem;color:#744CA4;"></i>
@@ -281,7 +288,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                     </div>
                 </div>
             </div>
-            <div class="nav-item ">
+            <div class="nav-item" id="logoutIconItem">
                 <a class="nav-link settings-btn" href="#" onclick="logoutConfirm()" title="خروج">
                     <i class="bi bi-box-arrow-right"></i>
                 </a>
@@ -1225,8 +1232,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 link.getAttribute('href') !== '#' &&
                 !link.getAttribute('href').startsWith('#')) {
 
-                // اگه در موبایل هستیم و drawer بازه
-                if (window.innerWidth < 992) {
+                // اگه در موبایل/لپ‌تاپ کوچک هستیم و drawer بازه
+                if (window.innerWidth < 1400) {
                     setTimeout(forceCloseDrawer, 10);
                 }
             }
@@ -1246,7 +1253,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 e.stopPropagation();
                 e.preventDefault();
 
-                if (window.innerWidth >= 992) return;
+                if (window.innerWidth >= 1400) return;
 
                 drawer.classList.add('drawer-open');
                 if (overlay) overlay.classList.add('overlay-active');

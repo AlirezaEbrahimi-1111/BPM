@@ -8,6 +8,7 @@
  */
 
 require_once __DIR__ . '/period-engine.php';
+require_once __DIR__ . '/JalaliHelper.php';
 
 /**
  * اگر دورهٔ جدید فرا رسیده باشد، کار را از period_done به حالت فعال برمی‌گرداند.
@@ -31,17 +32,12 @@ function maybeStartNextPeriod($db, &$task, $user_id, $holidays = null)
         // دورهٔ امروز هنوز بسته نشده → کار را باز کن
         if (!$state['is_today_done'] && !$state['finished'] && $state['started']) {
 
+            // فقط وضعیت را برمی‌گردانیم؛ رکورد تاریخچه ثبت نمی‌شود.
+            // این یک عمل سیستمیِ داخلی است و نمایشش به کاربر گیج‌کننده است
+            // (حس می‌کند کسی با حسابش کار کرده).
             $db->prepare(
                 "UPDATE tasks SET status = 'not_started', updated_at = NOW() WHERE id = ?"
             )->execute([$task['id']]);
-
-            $db->prepare(
-                "INSERT INTO task_history (task_id, from_user_id, action, notes)
-                 VALUES (?, NULL, 'created', ?)"
-            )->execute([
-                $task['id'],
-                'دورهٔ ' . $state['current_period_date'] . ' آغاز شد (خودکار)'
-            ]);
 
             $task['status'] = 'not_started';
             return true;

@@ -201,8 +201,9 @@ textarea,
 /* ============================================
    HEADER RESPONSIVE — نسخه قطعی و تمیز
    اصول:
-   ① دسکتاپ (≥992px): همه چیز عادی، drawer پنهان
-   ② موبایل (<992px): همبرگر نمایش، attendance+icons پنهان
+   ① دسکتاپ (≥1400px): همه چیز عادی، drawer پنهان
+   ② موبایل/تبلت/لپ‌تاپ کوچک (<1400px): همبرگر نمایش
+      (شامل لپ‌تاپ‌های 1366×768 با اسکیل 100–125%)
    ③ Drawer: همیشه پنهان مگر با .drawer-open
    ============================================ */
 
@@ -264,7 +265,7 @@ textarea,
 /* ------------------------------------------
    ③ Drawer — همیشه پنهان، فقط با drawer-open باز میشه
    این قانون روی همه breakpoint‌ها اعمال میشه
-   مگر اینکه در ≥992px override بشه
+   مگر اینکه در ≥1400px override بشه
    ------------------------------------------ */
 .mobile-drawer {
   position: fixed;
@@ -293,9 +294,9 @@ textarea,
 }
 
 /* ------------------------------------------
-   ④ دسکتاپ (≥992px): drawer = navbar عادی
+   ④ دسکتاپ (≥1400px): drawer = navbar عادی
    ------------------------------------------ */
-@media (min-width: 992px) {
+@media (min-width: 1400px) {
 
   /* drawer به navbar flex عادی تبدیل میشه */
   .mobile-drawer {
@@ -326,6 +327,12 @@ textarea,
 
   /* همبرگر پنهان */
   .mobile-menu-btn {
+    display: none !important;
+  }
+
+  /* آیتم خروج داخل دراور فقط مخصوص موبایل/لپ‌تاپ کوچک — در دسکتاپ مخفی */
+  #drawerLogoutItem,
+  #drawerLogoutDivider {
     display: none !important;
   }
 }
@@ -380,18 +387,13 @@ body.drawer-body-open {
 }
 
 /* ------------------------------------------
-   ⑥ موبایل (<992px)
+   ⑥ موبایل/لپ‌تاپ کوچک (<1400px)
    ------------------------------------------ */
-@media (max-width: 991px) {
+@media (max-width: 1399px) {
 
   /* همبرگر: نمایش */
   .mobile-menu-btn {
     display: flex;
-  }
-
-  /* فقط divider مخفی میشه */
-  .navbar-divider {
-    display: none !important;
   }
 
   /* attendance و آیکون‌ها: همیشه نمایش در موبایل */
@@ -407,6 +409,11 @@ body.drawer-body-open {
     align-items: center;
     flex-shrink: 0;
     order: 4;
+  }
+
+  /* آیکن خروج در موبایل/لپ‌تاپ کوچک از گروه آیکن‌ها حذف می‌شه، چون داخل دراور نمایش داده می‌شه */
+  #logoutIconItem {
+    display: none !important;
   }
 
   /* drawer-header نمایش */

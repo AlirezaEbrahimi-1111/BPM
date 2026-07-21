@@ -41,7 +41,6 @@
  */
 
 require_once __DIR__ . '/working-days-helper.php';
-
 /** سقف ایمنی برای جلوگیری از حلقهٔ بی‌پایان */
 const PE_MAX_PERIODS = 3000;
 
