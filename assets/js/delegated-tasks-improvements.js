@@ -11,11 +11,18 @@ function searchDelegatedTasks(query) {
     let filteredTasks = delegatedTasksData;
     
     if (searchTerm) {
-        filteredTasks = delegatedTasksData.filter(task => 
-            task.title.toLowerCase().includes(searchTerm) ||
-            (task.description && task.description.toLowerCase().includes(searchTerm)) ||
-            (task.assignee_name && task.assignee_name.toLowerCase().includes(searchTerm))
-        );
+        const normalizeDigits = s => String(s || '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+        const q = normalizeDigits(searchTerm);
+        filteredTasks = delegatedTasksData.filter(task => {
+            const haystack = normalizeDigits(
+                (task.title || '') + ' ' +
+                (task.description || '') + ' ' +
+                (task.assignee_name || '') + ' ' +
+                (task.id || '') + ' ' +
+                (task.history_text || '')
+            ).toLowerCase();
+            return haystack.includes(q);
+        });
     }
     
     renderDelegatedTasks(filteredTasks);
