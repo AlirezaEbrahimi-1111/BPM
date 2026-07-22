@@ -140,6 +140,14 @@ SELECT DISTINCT
     assignee.first_name as assignee_first_name,
     assignee.last_name as assignee_last_name,
     CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,
+    (
+        SELECT GROUP_CONCAT(th.notes SEPARATOR ' ')
+        FROM task_history th
+        WHERE th.task_id = t.id
+          AND th.notes IS NOT NULL
+          AND th.notes != ''
+          AND th.notes NOT LIKE '{%'
+    ) AS history_text,
         t.group_id,
     tg.name as group_name,
     tg.color as group_color,

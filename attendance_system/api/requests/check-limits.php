@@ -121,7 +121,6 @@ switch ($type) {
     case 'pass':
         // بررسی تعداد پاس در ماه
         $max_count = intval($app_settings['pass_max_count_monthly'] ?? 0);
-        echo "مقدار max_count در این لحظه: " . $max_count . "<br>";
         if ($max_count > 0) {
             $stmt = $db->prepare("
                 SELECT COUNT(*) FROM pass_requests 

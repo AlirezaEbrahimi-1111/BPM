@@ -91,8 +91,8 @@ try {
         FROM leave_requests lr
         JOIN users u ON lr.user_id = u.id
         LEFT JOIN users su ON lr.substitute_id = su.id
-        JOIN substitutes s ON s.user_id = lr.user_id AND s.substitute_user_id = ? AND s.is_active = 1
-        WHERE lr.substitute_approval = 'pending'
+        WHERE lr.substitute_id = ?
+        AND lr.substitute_approval = 'pending'
         AND lr.status = 'pending'
     ");
     $stmt->execute([$user_id]);
