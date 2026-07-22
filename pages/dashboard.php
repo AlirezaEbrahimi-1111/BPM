@@ -816,7 +816,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
 
             if (searchTerm) {
                 filtered = filtered.filter(task => {
-                    const otherText = (task.title || '') + ' ' + (task.description || '') + ' ' + task.id;
+                    const otherText = (task.title || '') + ' ' + (task.description || '') + ' ' + task.id + ' ' + (task.history_text || '');
                     task._checklistOnlyMatch = isChecklistOnlyMatch(otherText, task.checklist_titles || '', searchTerm);
                     return matchesAllWords(otherText + ' ' + (task.checklist_titles || ''), searchTerm);
                 });
