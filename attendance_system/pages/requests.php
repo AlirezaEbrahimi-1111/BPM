@@ -890,9 +890,11 @@ foreach ($all_requests as $req) {
             $has_action = in_array($status, ['approved', 'rejected', 'cancelled']);
             if (!$has_action) {
                 if ($type === 'leave') {
-                    if (($req['substitute_approval'] ?? 'pending') !== 'pending' || ($req['manager_approval'] ?? 'pending') !== 'pending' || ($req['supervisor_approval'] ?? 'pending') !== 'pending') $has_action = true;
+                    // supervisor از اول approved است؛ فقط جانشین و مدیر شمرده می‌شوند
+                    if (($req['substitute_approval'] ?? 'pending') !== 'pending' || ($req['manager_approval'] ?? 'pending') !== 'pending') $has_action = true;
                 } elseif ($type === 'mission' || $type === 'forget') {
-                    if (($req['manager_approval'] ?? 'pending') !== 'pending' || ($req['supervisor_approval'] ?? 'pending') !== 'pending') $has_action = true;
+                    // supervisor از اول approved است؛ فقط مدیر شمرده می‌شود
+                    if (($req['manager_approval'] ?? 'pending') !== 'pending') $has_action = true;
                 } elseif ($type === 'technical') {
                     if (!empty($req['admin_id'])) $has_action = true;
                 }
@@ -957,6 +959,7 @@ foreach ($all_requests as $req) {
         'created_at'     => $req['created_at'] ?? '',
         'can_edit'       => (bool) $can_edit,
         'can_delete'     => (bool) $can_delete,
+        '_debug'         => "type={$type} status={$status} sub=" . ($req['substitute_approval'] ?? 'NULL') . " mgr=" . ($req['manager_approval'] ?? 'NULL') . " sup=" . ($req['supervisor_approval'] ?? 'NULL') . " can_del=" . ($can_delete ? '1' : '0'),
     ];
 }
 usort($all_requests, function ($a, $b) {
