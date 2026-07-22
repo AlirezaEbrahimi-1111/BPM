@@ -535,7 +535,7 @@ require_once '../includes/version.php';
             const today = new Date().toISOString().slice(0, 10);
 
             filteredTasks = allTasks.filter(t => {
-                const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + (t.assignee_name || '') + ' ' + t.id;
+                const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + (t.assignee_name || '') + ' ' + t.id + ' ' + (t.history_text || '');
                 t._checklistOnlyMatch = isChecklistOnlyMatch(otherText, t.checklist_titles || '', s);
                 if (s && !matchesAllWords(otherText + ' ' + (t.checklist_titles || ''), s)) return false;
                 if (as && t.assignee_id != as) return false;
