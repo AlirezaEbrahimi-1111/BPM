@@ -885,6 +885,14 @@ class TaskManager
                         assignee.last_name as assignee_last_name,
                         CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
                         CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,
+                        (
+                            SELECT GROUP_CONCAT(th.notes SEPARATOR ' ')
+                            FROM task_history th
+                            WHERE th.task_id = t.id
+                            AND th.notes IS NOT NULL
+                            AND th.notes != ''
+                            AND th.notes NOT LIKE '{%'
+                        ) AS history_text,
                         tg.name  as group_name,
                         tg.color as group_color,
                         tg.icon  as group_icon,
@@ -932,6 +940,14 @@ class TaskManager
                         THEN oas.section_label
                     ELSE ''
                 END as assignee_name,
+                (
+                    SELECT GROUP_CONCAT(th.notes SEPARATOR ' ')
+                    FROM task_history th
+                    WHERE th.task_id = t.id
+                      AND th.notes IS NOT NULL
+                      AND th.notes != ''
+                      AND th.notes NOT LIKE '{%'
+                ) AS history_text,
                 (SELECT COUNT(*) FROM task_history WHERE task_id = t.id AND action = 'completed') as completed_count
             FROM tasks t 
             LEFT JOIN users assignee ON t.assignee_id = assignee.id

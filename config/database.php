@@ -1,7 +1,6 @@
 <?php
 $config = require __DIR__ . '/config.php';
 
-
 if (!class_exists('Database')) {
     class Database {
         private $host;
@@ -46,9 +45,16 @@ if (!class_exists('Database')) {
                 $this->conn->exec("SET CHARACTER SET utf8mb4");
                 
             } catch (PDOException $e) {
-                error_log("Database connection error: " . $e->getMessage());
-                throw new Exception("خطا در اتصال به پایگاه داده");
-            }
+
+        die(
+            "<pre>" .
+            $e->getMessage() .
+            "\n\nDSN = " . $dsn .
+            "\nUSER = " . $this->username .
+            "</pre>"
+        );
+
+    }
         }
         
         public function getConnection() {
@@ -70,10 +76,8 @@ if (!isset($db)) {
     try {
         $database = new Database();
         $db = $database->getConnection();
-    } catch (Exception $e) {
-        error_log("DB init error: " . $e->getMessage());
-        $db = null;
-    }
+    } catch (PDOException $e) {
+}
 }
 
 ?>

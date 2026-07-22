@@ -1,6 +1,4 @@
 <?php
-
-
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -14,16 +12,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-    require_once __DIR__ . '/../../config/database.php';
-    require_once __DIR__ . '/../../includes/auth.php';
-    
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sms.php';
+require_once __DIR__ . '/../../includes/sms_patterns.php';
+
+// ------------------- توابع کمکی (قبلی) -------------------
 function checkRateLimit($ip, $db) {
-    // تعدادِ تلاش‌های ناموفقِ ۱۵ دقیقهٔ اخیر از این IP
     $stmt = $db->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND attempted_at > (NOW() - INTERVAL 15 MINUTE)");
     $stmt->execute([$ip]);
     $count = (int) $stmt->fetchColumn();
-
-    // بیش از ۵ تلاش → مسدود تا پایانِ پنجرهٔ ۱۵ دقیقه‌ای
     if ($count >= 5) {
         http_response_code(429);
         echo json_encode([
@@ -40,48 +38,193 @@ function recordFailedLogin($ip, $db) {
 }
 
 function resetRateLimit($ip, $db) {
-    // بعد از ورودِ موفق، تلاش‌های این IP پاک شوند
     $stmt = $db->prepare("DELETE FROM login_attempts WHERE ip = ?");
     $stmt->execute([$ip]);
 }
 
-try {
-
-    // ✅ چک rate limit
-    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-    checkRateLimit($ip, $db);
-    
-    $data = json_decode(file_get_contents('php://input'), true);
-
-    // ✅ اعتبارسنجی قوی‌تر
-    if (!is_array($data) || 
-        empty($data['username']) ||
-        empty($data['password']) ||
-        !is_string($data['username']) ||
-        !is_string($data['password'])) {
-        http_response_code(400);
+// ------------------- توابع جدید OTP -------------------
+function checkOtpRateLimit($phone, $db) {
+    // حداکثر ۳ درخواست کد در ۱۵ دقیقه
+    $stmt = $db->prepare("SELECT COUNT(*) FROM otp_codes WHERE phone = ? AND created_at > (NOW() - INTERVAL 15 MINUTE)");
+    $stmt->execute([$phone]);
+    $count = (int) $stmt->fetchColumn();
+    if ($count >= 3) {
+        http_response_code(429);
         echo json_encode([
             'success' => false,
-            'message' => 'اطلاعات ورود نامعتبر است'
+            'message' => 'تعداد درخواست‌های کد تأیید زیاد است. ۱۵ دقیقه صبر کنید.'
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    
-    // ✅ Trim و چک طول
-    $username = trim($data['username']);
-    $password = $data['password'];  // password را trim نکنید
+}
 
-    if (!isset($data['username']) || !isset($data['password'])) {
-        throw new Exception('نام کاربری و رمز عبور الزامی است');
+function generateOtpCode() {
+    return str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+}
+
+// ------------------- پردازش درخواست -------------------
+try {
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    if (!is_array($data)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'درخواست نامعتبر']);
+        exit;
     }
 
+    $action = $data['action'] ?? 'login'; // پیش‌فرض: ورود با رمز
+
+    // ---------- ارسال کد OTP (جدید) ----------
+    if ($action === 'send_otp') {
+        $phone = trim($data['phone'] ?? '');
+        if (empty($phone) || !preg_match('/^09[0-9]{9}$/', $phone)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'شماره موبایل نامعتبر است']);
+            exit;
+        }
+
+        // بررسی وجود کاربر با این شماره
+        $stmt = $db->prepare("SELECT id FROM users WHERE phone = ? AND is_active = 1");
+        $stmt->execute([$phone]);
+        if (!$stmt->fetch()) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'کاربری با این شماره یافت نشد']);
+            exit;
+        }
+
+        checkOtpRateLimit($phone, $db);
+
+        $code = generateOtpCode();
+        $expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+        $stmt = $db->prepare("INSERT INTO otp_codes (phone, code, expires_at) VALUES (?, ?, ?)");
+        $stmt->execute([$phone, $code, $expires]);
+
+        // ارسال پیامک
+        $sms = new SMS($db);
+        $bodyId = resolveBodyId('otp'); // یا مستقیم 495565
+        $userStmt = $db->prepare("SELECT id FROM users WHERE phone = ?");
+        $userStmt->execute([$phone]);
+        $userId = $userStmt->fetchColumn();
+        $sent = false;
+        if ($userId) {
+            $sent = $sms->sendPattern($userId, $bodyId, [$code], null);
+        } else {
+            // Fallback: ارسال مستقیم با متد send
+            $sent = $sms->send(null, $phone, "کد تأیید شما: $code\nلغو11", 'otp', null);
+        }
+
+        if ($sent) {
+            echo json_encode(['success' => true, 'message' => 'کد تأیید ارسال شد']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'ارسال پیامک ناموفق بود']);
+        }
+        exit;
+    }
+
+    // ---------- تأیید کد OTP و ورود (جدید) ----------
+    if ($action === 'verify_otp') {
+        $phone = trim($data['phone'] ?? '');
+        $code = trim($data['code'] ?? '');
+        if (empty($phone) || empty($code) || !preg_match('/^[0-9]{6}$/', $code)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'شماره یا کد نامعتبر است']);
+            exit;
+        }
+
+        $stmt = $db->prepare("SELECT id, code, expires_at, used, attempts FROM otp_codes WHERE phone = ? ORDER BY id DESC LIMIT 1");
+        $stmt->execute([$phone]);
+        $otp = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$otp) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'کد تأیید یافت نشد']);
+            exit;
+        }
+        if (strtotime($otp['expires_at']) < time()) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'کد تأیید منقضی شده است']);
+            exit;
+        }
+        if ($otp['used']) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'این کد قبلاً استفاده شده است']);
+            exit;
+        }
+        if ($otp['code'] !== $code) {
+            $stmt = $db->prepare("UPDATE otp_codes SET attempts = attempts + 1 WHERE id = ?");
+            $stmt->execute([$otp['id']]);
+            if ($otp['attempts'] + 1 >= 5) {
+                $stmt = $db->prepare("UPDATE otp_codes SET used = 1 WHERE id = ?");
+                $stmt->execute([$otp['id']]);
+            }
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'کد تأیید اشتباه است']);
+            exit;
+        }
+
+        // کد صحیح است
+        $stmt = $db->prepare("UPDATE otp_codes SET used = 1 WHERE id = ?");
+        $stmt->execute([$otp['id']]);
+
+        $userStmt = $db->prepare("SELECT * FROM users WHERE phone = ? AND is_active = 1");
+        $userStmt->execute([$phone]);
+        $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$user) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'کاربر یافت نشد']);
+            exit;
+        }
+
+        // ورود
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_name'] = $user['first_name'];
+        $_SESSION['organization_id'] = $user['organization_id'];
+        try {
+            $orgStmt = $db->prepare("SELECT name FROM organizations WHERE id = ?");
+            $orgStmt->execute([$user['organization_id']]);
+            $org = $orgStmt->fetch(PDO::FETCH_ASSOC);
+            $_SESSION['organization_name'] = $org ? $org['name'] : 'یکتا همراهان ملک';
+        } catch (Exception $e) {
+            $_SESSION['organization_name'] = 'یکتا همراهان ملک';
+        }
+
+        // ✅ ساخت توکن JWT — بدون این خط، header.php کاربر را به لاگین برمی‌گرداند
+        $auth = new Auth();
+        $token = $auth->generateJWTToken($user['id'], null, $user['organization_id']);
+
+        unset($user['password']);
+        echo json_encode([
+            'success' => true,
+            'token' => $token,
+            'user' => $user,
+            'message' => 'ورود موفقیت‌آمیز'
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    // ---------- ورود با رمز عبور (action = login یا بدون action) ----------
+    // (همان کد قبلی)
+    checkRateLimit($ip, $db);
+
+    if (empty($data['username']) || empty($data['password']) ||
+        !is_string($data['username']) || !is_string($data['password'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'اطلاعات ورود نامعتبر است'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    $username = trim($data['username']);
+    $password = $data['password'];
+
     $auth = new Auth();
-    $result = $auth->login($data['username'], $data['password']);
+    $result = $auth->login($username, $password);
 
     if ($result['success']) {
-         resetRateLimit($ip, $db);
+        resetRateLimit($ip, $db);
         session_regenerate_id(true);
-
         $_SESSION['user_id'] = $result['user']['id'];
         $_SESSION['user_name'] = $result['user']['first_name'];
         $_SESSION['organization_id'] = $result['user']['organization_id'];
@@ -89,11 +232,9 @@ try {
         try {
             $database = new Database();
             $db = $database->getConnection();
-            
             $stmt = $db->prepare("SELECT name FROM organizations WHERE id = ?");
             $stmt->execute([$result['user']['organization_id']]);
             $org = $stmt->fetch(PDO::FETCH_ASSOC);
-            
             $_SESSION['organization_name'] = $org ? $org['name'] : 'یکتا همراهان ملک';
         } catch (Exception $e) {
             $_SESSION['organization_name'] = 'یکتا همراهان ملک';
@@ -101,7 +242,7 @@ try {
 
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
     } else {
-        recordFailedLogin($ip, $db);  // ورود ناموفق → ثبتِ تلاش
+        recordFailedLogin($ip, $db);
         http_response_code(401);
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
     }

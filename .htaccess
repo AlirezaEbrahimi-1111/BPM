@@ -1,16 +1,16 @@
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    # هدایتِ اجباری به HTTPS
-    RewriteCond %{HTTPS} off
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-</IfModule>
+# <IfModule mod_rewrite.c>
+#     RewriteEngine On
+#     RewriteCond %{HTTPS} off
+#     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>
 
 # .htaccess
 RewriteEngine On
 
-# انتقال Authorization Header
-RewriteCond %{HTTP:Authorization} ^(.*)
-RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+# فعال فقط روی هاست واقعی
+RewriteCond %{HTTP_HOST} !^(localhost|bpm\.local) [NC]
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # یا این روش:
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
