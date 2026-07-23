@@ -51,6 +51,17 @@ try {
     $stmt->execute([$task_id]);
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // 🔒 کاربری که فقط مسئول چک‌لیست است: فقط آیتم‌های خودش یا واحدش را ببیند
+    if ($onlyChecklistAssignee) {
+        $items = array_values(array_filter($items, function ($it) use ($user_id, $user_section) {
+            $type  = $it['assignee_type']  ?? null;
+            $value = $it['assignee_value'] ?? null;
+            if ($type === 'user')    return ((string)$value === (string)$user_id);
+            if ($type === 'section') return ($value === $user_section);
+            return false;   // آیتم بدون ارجاع → متعلق به تعریف‌کننده/مسئول کار
+        }));
+    }
+
     // تمیزکردن نام مسئول (اگر کاربر نبود، رشته خالی شود نه یک فاصله)
     foreach ($items as &$it) {
         $it['assignee_user_name']    = trim($it['assignee_user_name'] ?? '');
@@ -58,7 +69,7 @@ try {
     }
     unset($it);
 
-// تعیین اینکه کاربر مجاز به تیک‌زدن هر آیتم هست یا نه (هماهنگ با toggle.php)
+    // تعیین اینکه کاربر مجاز به تیک‌زدن هر آیتم هست یا نه (هماهنگ با toggle.php)
     $__locked = isChecklistLocked($task);   // 🔒 کار به پایان رسیده؟
     foreach ($items as &$it) {
         $type  = $it['assignee_type']  ?? null;
@@ -80,7 +91,18 @@ try {
 
     $p = checklistProgress($db, $task_id);
 
-$locked = isChecklistLocked($task);   // 🔒 آیا کار به پایان رسیده؟
+    // 🔒 برای کاربر چک‌لیستی، پیشرفت فقط بر اساس آیتم‌های قابل‌مشاهدهٔ خودش
+    if ($onlyChecklistAssignee) {
+        $visibleTotal = count($items);
+        $visibleDone  = count(array_filter($items, fn($it) => (int)$it['is_done'] === 1));
+        $p = [
+            'total'   => $visibleTotal,
+            'done'    => $visibleDone,
+            'percent' => $visibleTotal > 0 ? (int) round($visibleDone / $visibleTotal * 100) : 0,
+        ];
+    }
+
+    $locked = isChecklistLocked($task);   // 🔒 آیا کار به پایان رسیده؟
     echo json_encode([
         'success' => true,
         'items'   => $items,
@@ -91,7 +113,6 @@ $locked = isChecklistLocked($task);   // 🔒 آیا کار به پایان رس
         'can_toggle' => !$locked,
         'is_locked' => $locked,
     ], JSON_UNESCAPED_UNICODE);
-
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور']);
