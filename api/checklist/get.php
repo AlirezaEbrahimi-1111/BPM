@@ -29,10 +29,8 @@ try {
     // آیا کاربر فقط «مسئول چک‌لیست» است؟ (نه creator و نه assignee تسک)
     $onlyChecklistAssignee = !$task['_is_creator'] && !$task['_is_assignee'];
 
-    // واحدِ کاربر (برای تشخیص آیتم‌های ارجاع‌شده به واحدش)
-    $secStmt = $db->prepare("SELECT activity_section FROM users WHERE id = ?");
-    $secStmt->execute([$user_id]);
-    $user_section = $secStmt->fetchColumn() ?: '';
+    // 🆕 همهٔ واحدهای کاربر (برای تشخیص آیتم‌های ارجاع‌شده به واحدهایش)
+    $userSections = us_getUserSections($db, $user_id);
     // آیتم‌ها + نام تیک‌زننده
     $stmt = $db->prepare("
         SELECT ci.id, ci.title, ci.description, ci.is_done, ci.sort_order, ci.done_at,
@@ -53,12 +51,12 @@ try {
 
     // 🔒 کاربری که فقط مسئول چک‌لیست است: فقط آیتم‌های خودش یا واحدش را ببیند
     if ($onlyChecklistAssignee) {
-        $items = array_values(array_filter($items, function ($it) use ($user_id, $user_section) {
+        $items = array_values(array_filter($items, function ($it) use ($user_id, $userSections) {
             $type  = $it['assignee_type']  ?? null;
             $value = $it['assignee_value'] ?? null;
             if ($type === 'user')    return ((string)$value === (string)$user_id);
-            if ($type === 'section') return ($value === $user_section);
-            return false;   // آیتم بدون ارجاع → متعلق به تعریف‌کننده/مسئول کار
+            if ($type === 'section') return in_array($value, $userSections, true);
+            return false;
         }));
     }
 
@@ -81,7 +79,7 @@ try {
         } elseif ($type === 'user') {
             $it['can_toggle_this'] = ((string)$value === (string)$user_id);
         } elseif ($type === 'section') {
-            $it['can_toggle_this'] = ($value === $user_section);
+            $it['can_toggle_this'] = in_array($value, $userSections, true);
         } else {
             // بدون ارجاع → creator یا assignee تسک
             $it['can_toggle_this'] = (!empty($task['_is_creator']) || !empty($task['_is_assignee']));
