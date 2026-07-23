@@ -138,6 +138,7 @@ try {
         }
     }
     // 6. کاربرانی که آیتم چک‌لیست به آن‌ها (یا واحدشان) ارجاع شده
+    $is_checklist_only = false;   // 🆕 دسترسی فقط از راه چک‌لیست؟
     if (!$hasAccess) {
         // واحد و سازمانِ کاربر را بخوان (برای ارجاع‌های نوع section)
         $secStmt = $db->prepare("SELECT activity_section, organization_id FROM users WHERE id = ?");
@@ -160,6 +161,7 @@ try {
 
         if ($checklistCount > 0) {
             $hasAccess = true;
+            $is_checklist_only = true;   // 🆕 نه سازنده، نه مسئول، نه مدیر — فقط چک‌لیست
         }
     }
     if (!$hasAccess) {
@@ -258,10 +260,16 @@ try {
     // 🔄 بررسی برگشت از period_done به حالت فعال (اگر دوره‌ی بعدی رسیده باشد)
     maybeStartNextPeriod($db, $task, $user_id);
 
+    // 🔒 کاربری که فقط آیتم چک‌لیست به او ارجاع شده، تاریخچه را نمی‌بیند
+    if ($is_checklist_only) {
+        $history = [];
+    }
+
     echo json_encode([
         'success' => true,
         'task' => $task,
         'history' => $history,
+        'is_checklist_only' => $is_checklist_only,
         'can_edit' => $hasAccess
     ]);
 } catch (Exception $e) {

@@ -137,7 +137,7 @@ require_once '../includes/version.php';
             <div id="completionCounter" style="display: none;"></div>
 
             <!-- اطلاعات اصلی -->
-            <div class="info-section">
+            <div class="info-section" id="historySection">
                 <h5><i class="bi bi-info-circle ms-2"></i>اطلاعات کار</h5>
                 <div id="taskInfo"></div>
             </div>
@@ -217,7 +217,7 @@ require_once '../includes/version.php';
                 </div>
             </div>
             <!-- تاریخچه -->
-            <div class="info-section">
+            <div class="info-section" id="historySection">
                 <h5><i class="bi bi-clock-history ms-2"></i>تاریخچه فعالیت‌ها</h5>
                 <div class="history-timeline" id="taskHistory"></div>
             </div>
@@ -1448,6 +1448,7 @@ require_once '../includes/version.php';
             }
             // تازه‌سازی فقط بخش تاریخچه (بدون رفرش کل صفحه)
             async function refreshHistory() {
+                if (window._isChecklistOnly) return; // 🔒 تاریخچه برای این کاربر مخفی است
                 try {
                     const response = await fetch(`../api/tasks/detail.php?id=${taskId}`, {
                         headers: {
@@ -2081,7 +2082,16 @@ require_once '../includes/version.php';
                         currentUser = JSON.parse(localStorage.getItem('user_info'));
                         window.userId = currentUser.id;
 
-                        displayTaskDetails(taskData, data.history);
+                        // 🔒 کاربری که فقط آیتم چک‌لیست به او ارجاع شده:
+                        //    تاریخچه را نبیند (پرچم از بک‌اند می‌آید)
+                        window._isChecklistOnly = (data.is_checklist_only === true);
+                        if (window._isChecklistOnly) {
+                            taskHistory = [];
+                            const hs = document.getElementById('historySection');
+                            if (hs) hs.style.display = 'none';
+                        }
+
+                        displayTaskDetails(taskData, window._isChecklistOnly ? [] : data.history);
                         renderTaskGroup(taskData); // 🆕
                         setupActionButtons(taskData); // ← isAssignee اینجا مقدار می‌گیرد
                         updateDeadlineDisplay(taskData);
@@ -3473,6 +3483,12 @@ require_once '../includes/version.php';
             }
 
             function displayHistory(history) {
+                // 🔒 کاربری که فقط آیتم چک‌لیست به او ارجاع شده: کل بخش تاریخچه پنهان
+                if (window._isChecklistOnly) {
+                    const hs = document.getElementById('historySection');
+                    if (hs) hs.style.display = 'none';
+                    return;
+                }
                 if (!history || history.length === 0) {
                     document.getElementById('taskHistory').innerHTML = '<p class="text-muted">بدون تاریخچه</p>';
                     return;
