@@ -47,7 +47,7 @@
  */
 function getSuperAdminIds(): array
 {
-    return [1, 22];
+    return [1, 19];
 }
 
 

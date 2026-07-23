@@ -60,6 +60,7 @@ try {
             FROM task_history 
             WHERE task_id = ? 
             AND (from_user_id = ? OR to_user_id = ?)
+            AND action NOT LIKE 'checklist\_%'
         ");
         $stmt->execute([$_GET['id'], $user_id, $user_id]);
         $historyCount = $stmt->fetch()['count'];
@@ -260,9 +261,15 @@ try {
     // 🔄 بررسی برگشت از period_done به حالت فعال (اگر دوره‌ی بعدی رسیده باشد)
     maybeStartNextPeriod($db, $task, $user_id);
 
-    // 🔒 کاربری که فقط آیتم چک‌لیست به او ارجاع شده، تاریخچه را نمی‌بیند
+    // 🔒 کاربر چک‌لیستی: فقط رویدادهای مربوط به خودش یا واحدش
     if ($is_checklist_only) {
-        $history = [];
+        $mySection = $user_section ?? '';   // در بلوک ۶ خوانده شده است
+        $history = array_values(array_filter($history, function ($h) use ($user_id, $mySection) {
+            if ((int)($h['from_user_id'] ?? 0) === (int)$user_id) return true;
+            if ((int)($h['to_user_id']   ?? 0) === (int)$user_id) return true;
+            if ($mySection !== '' && ($h['checklist_section'] ?? '') === $mySection) return true;
+            return false;
+        }));
     }
 
     echo json_encode([
