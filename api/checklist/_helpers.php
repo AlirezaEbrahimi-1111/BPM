@@ -287,7 +287,17 @@ function syncTaskStatusWithChecklist($db, $task, $user_id)
         addChecklistStatusHistory($db, $task['id'], $user_id, 'in_progress', $msg);
     }
 }
-
+/**
+ * ثبت رویدادهای چک‌لیست در تاریخچهٔ کار.
+ * ⚠️ اکشن‌ها با پیشوند checklist_ هستند تا در بررسی دسترسی
+ *    (زنجیرهٔ ارجاعات) به‌حساب نیایند.
+ */
+function addChecklistEvent($db, $task_id, $action, $from_user_id, $to_user_id, $note, $section = null)
+{
+    $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, checklist_section, action, notes)
+                  VALUES (?, ?, ?, ?, ?, ?)")
+        ->execute([$task_id, $from_user_id, $to_user_id, $section, $action, $note]);
+}
 /**
  * ثبت یک رکورد تاریخچه برای تغییر وضعیتِ ناشی از چک‌لیست.
  * action را 'updated' می‌گذاریم تا با اکشن‌های اصلی قاطی نشود،

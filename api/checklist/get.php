@@ -36,7 +36,7 @@ try {
     // آیتم‌ها + نام تیک‌زننده
     $stmt = $db->prepare("
         SELECT ci.id, ci.title, ci.description, ci.is_done, ci.sort_order, ci.done_at,
-               ci.assignee_type, ci.assignee_value,
+               ci.assignee_type, ci.assignee_value, ci.done_note,
                CONCAT(COALESCE(u.first_name,''),' ',COALESCE(u.last_name,'')) AS done_by_name,
                CONCAT(COALESCE(au.first_name,''),' ',COALESCE(au.last_name,'')) AS assignee_user_name,
                sec.section_label AS assignee_section_name

@@ -100,7 +100,63 @@ require_once '../includes/version.php';
             background: #f8f9fa;
             border-radius: 6px;
         }
+/* ── کشوی یادداشت انجام (مدل درجا) ── */
+        .chk-note-drawer {
+            display: none;
+            margin: 8px 0 4px 26px;
+            padding: 11px 13px;
+            background: #faf9ff;
+            border: 1px solid #e5e0ff;
+            border-radius: 10px;
+            animation: chkSlide .18s ease;
+        }
+        .checklist-detail-item-wrap.noting .chk-note-drawer { display: block; }
 
+        @keyframes chkSlide {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .chk-note-drawer label {
+            display: block;
+            font-size: .78rem;
+            color: #4b5563;
+            margin-bottom: 6px;
+        }
+        .chk-note-drawer textarea {
+            width: 100%;
+            font-family: inherit;
+            font-size: .84rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px 10px;
+            resize: vertical;
+        }
+        .chk-note-drawer textarea:focus {
+            outline: none;
+            border-color: #6c3ff4;
+        }
+        .chk-note-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 9px;
+        }
+
+        /* یادداشت ثبت‌شده زیر آیتم */
+        .chk-done-note {
+            margin: 6px 0 4px 26px;
+            padding: 7px 11px;
+            background: #f3f4f6;
+            border-right: 3px solid #ddd6fe;
+            border-radius: 8px;
+            font-size: .8rem;
+            color: #4b5563;
+        }
+        .chk-done-note b { color: #5b32d6; font-weight: 600; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .chk-note-drawer { animation: none; }
+        }
         @media (max-width: 576px) {
             #taskInfo .col-6 {
                 flex: 0 0 100%;
@@ -1448,7 +1504,6 @@ require_once '../includes/version.php';
             }
             // تازه‌سازی فقط بخش تاریخچه (بدون رفرش کل صفحه)
             async function refreshHistory() {
-                if (window._isChecklistOnly) return; // 🔒 تاریخچه برای این کاربر مخفی است
                 try {
                     const response = await fetch(`../api/tasks/detail.php?id=${taskId}`, {
                         headers: {
@@ -1592,7 +1647,7 @@ require_once '../includes/version.php';
                  style="${itemStyle}">
               <input type="checkbox" ${item.is_done == 1 ? 'checked' : ''}
                      ${(item.can_toggle_this === false || item.is_done == 1) ? 'disabled' : ''}
-                     onchange="toggleChecklistItem(${item.id}, this.checked)"
+                     onchange="openDoneNote(${item.id}, this)"
                      ${checkboxTitle}>
               <span class="chk-title">${item.title}</span>
               <span class="chk-desc-zone" id="chk-desc-zone-${item.id}">${descZoneHTML}</span>
@@ -1601,7 +1656,23 @@ require_once '../includes/version.php';
               <span class="chk-meta">${doneMetaHTML}</span>
               ${actionsHTML}
             </div>
-          </div>`;
+
+                    ${item.is_done == 1 && item.done_note
+                        ? `<div class="chk-done-note"><b>یادداشت:</b> ${String(item.done_note).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`
+                        : ''}
+
+                    ${item.is_done != 1 && item.can_toggle_this !== false ? `
+                    <div class="chk-note-drawer">
+                        <label for="chk-note-${item.id}">چه چیزی را ثبت می‌کنید؟ (اختیاری)</label>
+                        <textarea id="chk-note-${item.id}" rows="2"
+                                  placeholder="مثلاً: فاکتور با شماره ۴۸۲۱ صادر شد"></textarea>
+                        <div class="chk-note-actions">
+                            <button class="btn btn-primary btn-sm" onclick="saveDoneNote(${item.id}, true)">ثبت و انجام شد</button>
+                            <button class="btn btn-light btn-sm" onclick="saveDoneNote(${item.id}, false)">بدون یادداشت</button>
+                            <button class="btn btn-link btn-sm text-muted" onclick="cancelDoneNote(${item.id})">انصراف</button>
+                        </div>
+                    </div>` : ''}
+                  </div>`;
                 }).join('');
             }
             // شروع ویرایش درجای توضیحات یک آیتم
@@ -1731,8 +1802,32 @@ require_once '../includes/version.php';
         <i class="bi ${icon} me-1"></i>${label}
     </span>`;
             }
+/* باز کردن کشوی یادداشت — تیک هنوز ثبت نشده */
+            function openDoneNote(itemId, cb) {
+                if (cb) cb.checked = false;   // تا تأیید نشود، تیک نمی‌خورد
 
-            async function toggleChecklistItem(itemId, isDone) {
+                document.querySelectorAll('.checklist-detail-item-wrap.noting')
+                    .forEach(w => w.classList.remove('noting'));
+
+                const wrap = document.getElementById('chk-' + itemId)?.closest('.checklist-detail-item-wrap');
+                if (!wrap) return;
+                wrap.classList.add('noting');
+                setTimeout(() => document.getElementById('chk-note-' + itemId)?.focus(), 50);
+            }
+
+            function cancelDoneNote(itemId) {
+                document.getElementById('chk-' + itemId)
+                    ?.closest('.checklist-detail-item-wrap')
+                    ?.classList.remove('noting');
+            }
+
+            /* ثبت نهایی — با یادداشت یا بدون آن */
+            function saveDoneNote(itemId, withNote) {
+                const box = document.getElementById('chk-note-' + itemId);
+                const note = (withNote && box) ? box.value.trim() : '';
+                toggleChecklistItem(itemId, true, note);
+            }
+           async function toggleChecklistItem(itemId, isDone, note = '') {
                 try {
                     const res = await fetch('../api/checklist/toggle.php', {
                         method: 'POST',
@@ -1742,7 +1837,8 @@ require_once '../includes/version.php';
                         },
                         body: JSON.stringify({
                             item_id: itemId,
-                            is_done: isDone ? 1 : 0
+                            is_done: isDone ? 1 : 0,
+                            note: note
                         })
                     });
                     const data = await res.json();
@@ -2082,16 +2178,10 @@ require_once '../includes/version.php';
                         currentUser = JSON.parse(localStorage.getItem('user_info'));
                         window.userId = currentUser.id;
 
-                        // 🔒 کاربری که فقط آیتم چک‌لیست به او ارجاع شده:
-                        //    تاریخچه را نبیند (پرچم از بک‌اند می‌آید)
+                        // تاریخچه از سمت سرور فیلتر شده است
                         window._isChecklistOnly = (data.is_checklist_only === true);
-                        if (window._isChecklistOnly) {
-                            taskHistory = [];
-                            const hs = document.getElementById('historySection');
-                            if (hs) hs.style.display = 'none';
-                        }
 
-                        displayTaskDetails(taskData, window._isChecklistOnly ? [] : data.history);
+                        displayTaskDetails(taskData, data.history);
                         renderTaskGroup(taskData); // 🆕
                         setupActionButtons(taskData); // ← isAssignee اینجا مقدار می‌گیرد
                         updateDeadlineDisplay(taskData);
@@ -3505,7 +3595,9 @@ require_once '../includes/version.php';
                     'delegated': 'ab-delegated',
                     'updated': 'ab-updated',
                     'deadline_extended': 'ab-deadline',
-                    'checklist_sync': 'ab-updated'
+                    'checklist_sync': 'ab-updated',
+                    'checklist_assigned': 'ab-delegated',
+                    'checklist_done': 'ab-completed'
                 };
 
                 let html = '';
@@ -3998,6 +4090,8 @@ require_once '../includes/version.php';
                     'deadline_extended': 'تمدید موعد',
                     'termination_requested': 'درخواست اتمام',
                     'checklist_sync': 'به‌روزرسانی چک‌لیست',
+                    'checklist_assigned': 'ارجاع آیتم چک‌لیست',
+                    'checklist_done': 'انجام آیتم چک‌لیست',
                     'period_done': 'دوره انجام شد',
                 };
                 return labels[action] || action;

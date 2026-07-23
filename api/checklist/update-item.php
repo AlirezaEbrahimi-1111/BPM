@@ -46,7 +46,7 @@ try {
         exit;
     }
 
-   // آیتم تیک‌خورده قابل ویرایش نیست
+    // آیتم تیک‌خورده قابل ویرایش نیست
     if ((int)$row['is_done'] === 1) {
         http_response_code(409);
         echo json_encode(['success' => false, 'message' => 'این آیتم انجام شده و قابل ویرایش نیست']);
@@ -69,7 +69,7 @@ try {
         echo json_encode(['success' => false, 'message' => 'فقط تعریف‌کننده کار می‌تواند آیتم را ویرایش کند']);
         exit;
     }
-// 🔒 اگر کار تکمیل/تأیید/متوقف/لغو شده، چک‌لیست قفل است
+    // 🔒 اگر کار تکمیل/تأیید/متوقف/لغو شده، چک‌لیست قفل است
     if (isChecklistLocked($task)) {
         http_response_code(409);
         echo json_encode(['success' => false, 'message' => 'این کار به پایان رسیده و چک‌لیست آن قفل شده است']);
@@ -96,13 +96,32 @@ try {
 
             if ($changed && ($assignee_type === 'user' || $assignee_type === 'section') && $assignee_value) {
                 notifyChecklistAssignee($db, $assignee_type, $assignee_value, $task, $user_id, $title);
+
+                // 🆕 ثبت ارجاع در تاریخچهٔ کار
+                if ($assignee_type === 'user') {
+                    $nStmt = $db->prepare("SELECT CONCAT(COALESCE(first_name,''),' ',COALESCE(last_name,'')) FROM users WHERE id = ?");
+                    $nStmt->execute([$assignee_value]);
+                    $target = trim($nStmt->fetchColumn() ?: '') ?: 'کاربر';
+                    $toId   = (int)$assignee_value;
+                } else {
+                    $sStmt = $db->prepare("SELECT section_label FROM organization_activity_sections WHERE section_key = ? LIMIT 1");
+                    $sStmt->execute([$assignee_value]);
+                    $target = $sStmt->fetchColumn() ?: $assignee_value;
+                    $toId   = null;
+                }
+
+                $note = "آیتم چک‌لیست «{$title}» به {$target} ارجاع شد";
+                if ($description !== '') {
+                    $note .= " — توضیحات: {$description}";
+                }
+                $sectionKey = ($assignee_type === 'section') ? $assignee_value : null;
+                addChecklistEvent($db, $row['task_id'], 'checklist_assigned', $user_id, $toId, $note, $sectionKey);
             }
         } catch (Exception $notifyErr) {
             error_log("checklist update notify failed: " . $notifyErr->getMessage());
         }
     }
     echo json_encode(['success' => true, 'message' => 'آیتم به‌روزرسانی شد'], JSON_UNESCAPED_UNICODE);
-
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور']);
