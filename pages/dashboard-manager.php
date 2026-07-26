@@ -176,7 +176,7 @@ require_once '../includes/version.php';
         }
 
         .plan-item:hover {
-            border-color: #D5C1FF;
+            border-color: #9563FF;
             box-shadow: 0 3px 12px rgba(149, 99, 255, .1);
             transform: translateY(-1px);
         }
@@ -195,7 +195,7 @@ require_once '../includes/version.php';
         }
 
         .plan-icon.month {
-            background: #F4EFFF;
+            background: #f0e9fd;
             color: #9563FF;
         }
 
@@ -493,7 +493,7 @@ require_once '../includes/version.php';
         }
 
         .row-kebab:hover {
-            background: #F4EFFF;
+            background: #9563FF;
             color: #9563FF;
         }
 
@@ -531,7 +531,7 @@ require_once '../includes/version.php';
         }
 
         .row-menu button:hover {
-            background: #f7f6fd;
+            background: #9563FF;
         }
 
         .row-menu button i {
@@ -590,8 +590,8 @@ require_once '../includes/version.php';
 
         .st-completed,
         .st-approved {
-            background: #DFF8F1;
-            color: #00805F;
+            background: #00BF8F;
+            color: #00BF8F;
         }
 
         .st-pending_approval,
@@ -821,17 +821,17 @@ require_once '../includes/version.php';
         /* ═══════════ مودال برنامه کاری (بنفش) ═══════════ */
         :root {
             --pm-purple: #9563FF;
-            --pm-purple-soft: #F4EFFF;
-            --pm-purple-dark: #7C4DE0;
+            --pm-purple-soft: #9563FF;
+            --pm-purple-dark: #9563FF;
             --pm-green: #00BF8F;
-            --pm-green-soft: #DFF8F1;
-            --pm-green-dark: #00805F;
+            --pm-green-soft: #00BF8F;
+            --pm-green-dark: #00BF8F;
             --primary: #9563FF;
-            --primary-dark: #7C4DE0;
-            --primary-light: #B592FF;
-            --primary-gradient: linear-gradient(135deg, #9563FF 0%, #B592FF 100%);
+            --primary-dark: #9563FF;
+            --primary-light: #9563FF;
+            --primary-gradient: linear-gradient(135deg, #9563FF 0%, #9563FF 100%);
             --success: #00BF8F;
-            --success-dark: #00805F;
+            --success-dark: #00BF8F;
         }
 
         #planModal .modal-content,
@@ -908,8 +908,8 @@ require_once '../includes/version.php';
         }
 
         .pm-row:hover {
-            background: #FBF8FF;
-            border-color: #D5C1FF;
+            background: #9563FF;
+            border-color: #9563FF;
         }
 
         .pm-row.removing {
@@ -996,7 +996,7 @@ require_once '../includes/version.php';
         }
 
         .pm-menu button:hover {
-            background: #f7f6fd;
+            background: #9563FF;
         }
 
         .pm-menu button i {
@@ -1417,7 +1417,7 @@ require_once '../includes/version.php';
         }
 
         #pmToast.ok {
-            background: #00805F;
+            background: #00BF8F;
         }
 
         #pmToast.err {
@@ -1671,7 +1671,7 @@ require_once '../includes/version.php';
         }
 
         #pmToast.ok {
-            background: #00805F;
+            background: #00BF8F;
         }
 
         #pmToast.err {
@@ -1694,7 +1694,7 @@ require_once '../includes/version.php';
 
         .ra-input:focus {
             outline: none;
-            border-color: #D5C1FF;
+            border-color: #9563FF;
         }
 
         textarea.ra-input {
@@ -1731,12 +1731,12 @@ require_once '../includes/version.php';
         }
 
         .ra-user:hover {
-            background: #FBF8FF;
+            background: #9563FF;
         }
 
         .ra-user.sel {
-            background: #F4EFFF;
-            color: #7C4DE0;
+            background: #9563FF;
+            color: #9563FF;
             font-weight: 600;
         }
 
@@ -1769,7 +1769,7 @@ require_once '../includes/version.php';
         <div class="dash-card plan-row">
             <div class="dash-card-head">
                 <div class="dash-card-title">
-                    <i class="bi bi-calendar3"></i><span>برنامه کاری</span>
+                    <i class="bi bi-calendar3" style="background:#dbeafe;color:#2563eb;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"></i><span>برنامه کاری</span>
                 </div>
             </div>
             <div class="plan-grid">
@@ -1807,7 +1807,7 @@ require_once '../includes/version.php';
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-list-task"></i><span>کارها</span>
+                        <i class="bi bi-calendar3" style="background:#dbeafe;color:#2563eb;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"></i><span>کارها</span>
                     </div>
                     <a href="#" class="dash-see-all" id="tasksSeeAll">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -1861,7 +1861,7 @@ require_once '../includes/version.php';
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-arrow-repeat"></i><span>فرآیندهای جاری</span>
+                        <i class="bi bi-arrow-repeat" style="background:#f0e9fd;color:#9563FF;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"></i><span>فرآیندهای جاری</span>
                     </div>
                     <a href="workflow-monitor.php" class="dash-see-all">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -1883,7 +1883,7 @@ require_once '../includes/version.php';
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-people"></i><span>کاربران با بیشترین تأخیر کار</span>
+                        <i class="bi bi-people" style="background:#DFF8F1;color:#00BF8F;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"></i><span>کاربران با بیشترین تأخیر کار</span>
                     </div>
                     <a href="#" class="dash-see-all" id="topDelayedSeeAll">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -1900,7 +1900,7 @@ require_once '../includes/version.php';
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-clock-history"></i>
+                        <i class="bi bi-clock" style="background:#fee2e2;color:#dc2626;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"></i>
                         <span>کارهای واگذار شده (تاخیردار)</span>
                     </div>
                     <a href="#" class="dash-see-all" id="delayedSeeAll">
@@ -1918,7 +1918,7 @@ require_once '../includes/version.php';
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-exclamation-triangle"></i><span>گزارش گلوگاه‌ها</span>
+                        <i class="bi bi-graph-up-arrow" style="background:#f0e9fd;color:#9563FF;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"></i><span>گزارش گلوگاه‌ها</span>
                     </div>
                     <a href="bottleneck-report.php" class="dash-see-all" id="bottleneckSeeAll">
                         مشاهده همه <i class="bi bi-chevron-left"></i>

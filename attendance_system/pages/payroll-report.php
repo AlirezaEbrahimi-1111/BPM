@@ -251,11 +251,17 @@ if (!$is_superadmin && !$is_manager) {
             const cols = [
                 { headerName: 'نام', field: 'name', flex: 1, minWidth: 150 },
                 { headerName: 'واحد', field: 'section', width: 130 },
+                { headerName: 'جمع مرخصی/پاس', field: 'leave_pass_hms', width: 130, valueFormatter: p => faNum(p.value || '0:00') },
+                {
+                    headerName: 'سهمیه مانده', field: 'leave_pass_remaining_hms', width: 100,
+                    valueFormatter: p => faNum(p.value || '0:00'),
+                    cellClass: p => (p.data.leave_pass_remaining_minutes < 0 ? 'neg' : 'pos')
+                },
                 { headerName: 'حقوق پایه (تومان)', width: 160, valueGetter: p => p.data.base_salary, valueFormatter: p => fmtToman(p.value) },
                 { headerName: 'کسری ×۲', field: 'final_hms', width: 110, valueFormatter: p => faNum(p.value || '0:00') },
                 { headerName: 'جریمهٔ کسری (تومان)', width: 170, valueGetter: p => p.data.shortage_money, valueFormatter: p => fmtToman(p.value) },
                 {
-                    headerName: 'حقوق دریافتی تا دیروز (تومان)', flex: 1, minWidth: 190,
+                    headerName: 'حقوق تا دیروز', flex: 1, minWidth: 170,
                     valueGetter: p => p.data.salary_received,
                     valueFormatter: p => fmtToman(p.value),
                     cellClass: p => (p.value < 0 ? 'neg' : 'pos')
@@ -314,11 +320,13 @@ if (!$is_superadmin && !$is_manager) {
 
         function exportExcel() {
             if (!lastRows.length) { alert('داده‌ای برای خروجی نیست'); return; }
-            const aoa = [['نام', 'واحد', 'حقوق پایه (تومان)', 'کسری ×۲ (ساعت:دقیقه)', 'جریمهٔ کسری (تومان)', 'حقوق دریافتی تا دیروز (تومان)']];
+            const aoa = [['نام', 'واحد', 'جمع مرخصی/پاس (ساعت:دقیقه)', 'سهمیهٔ باقی‌مانده/تجاوز (ساعت:دقیقه)', 'حقوق پایه (تومان)', 'کسری ×۲ (ساعت:دقیقه)', 'جریمهٔ کسری (تومان)', 'حقوق دریافتی تا دیروز (تومان)']];
             lastRows.forEach(r => {
                 aoa.push([
                     r.name,
                     r.section,
+                    r.leave_pass_hms,
+                    r.leave_pass_remaining_hms,
                     toToman(r.base_salary),
                     r.final_hms,
                     toToman(r.shortage_money),
@@ -328,6 +336,8 @@ if (!$is_superadmin && !$is_manager) {
             // ردیف جمع
             aoa.push([
                 'جمع کل', '',
+                lastTotals.leave_pass_hms,
+                lastTotals.leave_pass_remaining_hms,
                 toToman(lastTotals.base_salary),
                 lastTotals.final_hms,
                 toToman(lastTotals.shortage_money),
@@ -335,7 +345,7 @@ if (!$is_superadmin && !$is_manager) {
             ]);
 
             const ws = XLSX.utils.aoa_to_sheet(aoa);
-            ws['!cols'] = [{ wch: 22 }, { wch: 14 }, { wch: 18 }, { wch: 16 }, { wch: 18 }, { wch: 24 }];
+            ws['!cols'] = [{ wch: 22 }, { wch: 14 }, { wch: 20 }, { wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 18 }, { wch: 24 }];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'حقوق');
             XLSX.writeFile(wb, 'payroll-' + lastLabel.replace(/\s/g, '-') + '.xlsx');

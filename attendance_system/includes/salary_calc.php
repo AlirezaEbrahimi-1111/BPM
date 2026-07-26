@@ -35,6 +35,15 @@ if (!function_exists('sc_minutesToHM')) {
     }
 }
 
+if (!function_exists('sc_minutesToSignedHM')) {
+    function sc_minutesToSignedHM($minutes)
+    {
+        $minutes = (int) round($minutes);
+        $neg = $minutes < 0;
+        return ($neg ? '-' : '') . sc_minutesToHM(abs($minutes));
+    }
+}
+
 if (!function_exists('sc_overlapMinutes')) {
     function sc_overlapMinutes($start1, $end1, $start2, $end2)
     {
@@ -438,6 +447,56 @@ if (!function_exists('sc_computeUserSalaryReport')) {
             'shortage_money' => $total_money,            // ریال (جریمه تا دیروز)
             'salary_received' => $salary_received,       // ریال (حقوق − جریمه)
             'days' => $days,                             // جزئیات روزانه (فقط وقتی $collect_days=true پر می‌شود)
+        ];
+    }
+}
+
+/**
+ * جمع کل ساعتِ مرخصی + پاسِ معتبرِ یک کاربر در کلِ بازهٔ ماه (بدون محدودیتِ «تا دیروز»)
+ * و مقایسه با سهمیهٔ ماهانه (۲ روزِ کاریِ همان کاربر، بر اساسِ daily_work_hours).
+ *
+ * قراردادِ اعتبارِ درخواست‌ها هماهنگ با sc_calculateDailyShortage است:
+ *   - مرخصی: فقط status = 'approved'
+ *   - پاس: هر چیزی جز status = 'cancelled'
+ * مرخصیِ بدون start_time/end_time (تمام‌روز) معادلِ یک روزِ کاریِ کامل (daily_work_hours) حساب می‌شود.
+ * فقط تاریخ شروع (start_date / pass_date) ملاک است — هماهنگ با کوئریِ مشابه در sc_computeUserSalaryReport.
+ */
+if (!function_exists('sc_computeLeavePassQuota')) {
+    function sc_computeLeavePassQuota($db, $userRow, $start_of_month, $end_of_month)
+    {
+        $userId = (int) $userRow['id'];
+        $daily_work_hours = (float) ($userRow['daily_work_hours'] ?? 0);
+        $full_day_minutes = $daily_work_hours * 60;
+
+        $total_minutes = 0;
+
+        $stmt = $db->prepare("SELECT start_time, end_time FROM leave_requests WHERE user_id = ? AND start_date >= ? AND start_date <= ? AND status = 'approved'");
+        $stmt->execute([$userId, $start_of_month, $end_of_month]);
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            if (empty($r['start_time']) || empty($r['end_time'])) {
+                $total_minutes += $full_day_minutes;
+            } else {
+                $total_minutes += max(0, sc_timeToMinutes(substr($r['end_time'], 0, 5)) - sc_timeToMinutes(substr($r['start_time'], 0, 5)));
+            }
+        }
+
+        $stmt = $db->prepare("SELECT start_time, end_time FROM pass_requests WHERE user_id = ? AND pass_date >= ? AND pass_date <= ? AND status != 'cancelled'");
+        $stmt->execute([$userId, $start_of_month, $end_of_month]);
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            if (!empty($r['start_time']) && !empty($r['end_time'])) {
+                $total_minutes += max(0, sc_timeToMinutes(substr($r['end_time'], 0, 5)) - sc_timeToMinutes(substr($r['start_time'], 0, 5)));
+            }
+        }
+
+        $quota_minutes = 2 * $full_day_minutes;
+        $remaining_minutes = $quota_minutes - $total_minutes;
+
+        return [
+            'used_minutes' => (int) round($total_minutes),
+            'used_hms' => sc_minutesToHM((int) round($total_minutes)),
+            'quota_minutes' => (int) round($quota_minutes),
+            'remaining_minutes' => (int) round($remaining_minutes),
+            'remaining_hms' => sc_minutesToSignedHM($remaining_minutes),
         ];
     }
 }

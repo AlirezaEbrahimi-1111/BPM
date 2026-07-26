@@ -104,9 +104,12 @@ try {
     $sum_penalty = 0.0;
     $sum_received = 0.0;
     $sum_final_minutes = 0;
+    $sum_leave_pass_minutes = 0;
+    $sum_leave_pass_remaining_minutes = 0;
 
     foreach ($users as $u) {
         $rep = sc_computeUserSalaryReport($db, $u, $start_of_month, $end_of_month, $today, $app_settings, $holiday_dates);
+        $lp = sc_computeLeavePassQuota($db, $u, $start_of_month, $end_of_month);
 
         $name = trim(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? ''));
         if ($name === '')
@@ -124,12 +127,19 @@ try {
             'before_hms' => $rep['before_hms'],
             'shortage_money' => $rep['shortage_money'],   // ریال (جریمه تا دیروز)
             'salary_received' => $rep['salary_received'], // ریال (حقوق − جریمه)
+            'leave_pass_minutes' => $lp['used_minutes'],             // جمع کل مرخصی+پاس در کل ماه (دقیقه)
+            'leave_pass_hms' => $lp['used_hms'],
+            'leave_pass_quota_minutes' => $lp['quota_minutes'],      // سهمیهٔ ماهانه (۲ روزِ کاریِ کاربر)
+            'leave_pass_remaining_minutes' => $lp['remaining_minutes'], // مثبت = باقیمانده، منفی = تجاوز
+            'leave_pass_remaining_hms' => $lp['remaining_hms'],
         ];
 
         $sum_base += $rep['monthly_salary'];
         $sum_penalty += $rep['shortage_money'];
         $sum_received += $rep['salary_received'];
         $sum_final_minutes += $rep['final_minutes'];
+        $sum_leave_pass_minutes += $lp['used_minutes'];
+        $sum_leave_pass_remaining_minutes += $lp['remaining_minutes'];
     }
 
     echo json_encode([
@@ -147,6 +157,10 @@ try {
             'salary_received' => $sum_received,
             'final_minutes' => $sum_final_minutes,
             'final_hms' => sc_minutesToHM($sum_final_minutes),
+            'leave_pass_minutes' => $sum_leave_pass_minutes,
+            'leave_pass_hms' => sc_minutesToHM($sum_leave_pass_minutes),
+            'leave_pass_remaining_minutes' => $sum_leave_pass_remaining_minutes,
+            'leave_pass_remaining_hms' => sc_minutesToSignedHM($sum_leave_pass_remaining_minutes),
         ],
     ], JSON_UNESCAPED_UNICODE);
 
