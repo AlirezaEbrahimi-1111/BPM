@@ -103,7 +103,6 @@ try {
         'message' => 'خطای داخلی سرور',
         'error' => $e->getMessage()
     ]);
-    error_log("Submit report error: " . $e->getMessage());
 }
 
 // تابع تولید کد یونیک

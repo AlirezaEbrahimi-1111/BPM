@@ -78,14 +78,11 @@ function notifyChecklistAssignee($db, $assignee_type, $assignee_value, $task, $a
     if ($assignee_type === 'user') {
         $recipients[] = (int)$assignee_value;
     } elseif ($assignee_type === 'section') {
-        // همه‌ی اعضای فعالِ آن واحد در همان سازمان
-        $stmt = $db->prepare("
-            SELECT id FROM users
-            WHERE activity_section = ? AND is_active = 1
-              AND organization_id = (SELECT organization_id FROM users WHERE id = ?)
-        ");
-        $stmt->execute([$assignee_value, $actor_id]);
-        $recipients = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+        // 🆕 همه‌ی اعضای آن واحد (شاملِ کسانی که این واحد، واحدِ دومشان است)
+        $orgStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
+        $orgStmt->execute([$actor_id]);
+        $actor_org = $orgStmt->fetchColumn();
+        $recipients = us_getSectionUserIds($db, $assignee_value, $actor_org);
     }
 
     $taskTitle = $task['title'] ?? 'کار';
@@ -237,7 +234,6 @@ function registerRecurringPeriod($db, $task, $user_id)
         return true;
     } catch (Exception $e) {
         $db->rollBack();
-        error_log("registerRecurringPeriod error task#{$task_id}: " . $e->getMessage());
         return false;
     }
 }

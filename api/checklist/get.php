@@ -42,11 +42,13 @@ try {
         LEFT JOIN users u  ON ci.done_by = u.id
         LEFT JOIN users au ON (ci.assignee_type = 'user' AND ci.assignee_value = au.id)
         LEFT JOIN organization_activity_sections sec
-               ON (ci.assignee_type = 'section' AND ci.assignee_value = sec.section_key)
+               ON (ci.assignee_type = 'section'
+                   AND ci.assignee_value = sec.section_key
+                   AND sec.organization_id = ?)
         WHERE ci.task_id = ?
         ORDER BY ci.sort_order ASC, ci.id ASC
     ");
-    $stmt->execute([$task_id]);
+    $stmt->execute([$task['organization_id'], $task_id]);
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // 🔒 کاربری که فقط مسئول چک‌لیست است: فقط آیتم‌های خودش یا واحدش را ببیند
@@ -114,5 +116,5 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور']);
-    error_log("checklist/get error: " . $e->getMessage());
+
 }

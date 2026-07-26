@@ -5,6 +5,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
 
 $user_id = requireAuth();
 
@@ -101,11 +102,11 @@ try {
     $stmtOld = $db->prepare('SELECT * FROM users WHERE id = ?');
     $stmtOld->execute([$uid]);
     $oldData = $stmtOld->fetch(PDO::FETCH_ASSOC);
-    
+
     $setParts = array_map(fn($k) => "`$k` = :$k", array_keys($fields));
     $sql = 'UPDATE users SET ' . implode(', ', $setParts) . ' WHERE id = :__id';
     $fields['__id'] = $uid;
-    
+
     $stmt = $db->prepare($sql);
     $stmt->execute($fields);
 
@@ -128,13 +129,27 @@ try {
         }
     }
 
+    // ─── ۲.۵ واحدهای فعالیتِ BPM (جدا از units گزارش‌ها) ─────
+    // (بلوک sections به بعد از commit منتقل شد)
+
     // ثبت لاگ تغییرات
-    $logFields = ['first_name','last_name','phone','email','role','is_active',
-                  'shift_type','monthly_salary','can_create_routine','can_create_workflow',
-                  'manager_id','activity_section'];
-    
+    $logFields = [
+        'first_name',
+        'last_name',
+        'phone',
+        'email',
+        'role',
+        'is_active',
+        'shift_type',
+        'monthly_salary',
+        'can_create_routine',
+        'can_create_workflow',
+        'manager_id',
+        'activity_section'
+    ];
+
     $stmtLog = $db->prepare('INSERT INTO user_change_logs (user_id, changed_by, field_name, old_value, new_value) VALUES (?,?,?,?,?)');
-    
+
     foreach ($logFields as $f) {
         $oldVal = $oldData[$f] ?? null;
         $newVal = $fields[$f]  ?? null;
@@ -142,11 +157,17 @@ try {
             $stmtLog->execute([$uid, $user_id, $f, $oldVal, $newVal]);
         }
     }
-        $db->commit();
+    $db->commit();
 
-echo json_encode(['success' => true, 'message' => 'کاربر با موفقیت بروزرسانی شد']);
+    // ─── واحدهای BPM (بعد از commit، چون us_setUserSections تراکنش خودش را دارد) ───
+    if (isset($input['sections']) && is_array($input['sections']) && count($input['sections']) > 0) {
+        $primary = $input['primary_section'] ?? ($input['activity_section'] ?? $input['sections'][0]);
+        us_setUserSections($db, $uid, $input['sections'], $primary);
+    }
+
+    echo json_encode(['success' => true, 'message' => 'کاربر با موفقیت بروزرسانی شد']);
 } catch (PDOException $e) {
-    $db->rollBack();
+    if ($db->inTransaction()) $db->rollBack();
     // بررسی duplicate
     if ($e->getCode() === '23000') {
         echo json_encode(['success' => false, 'message' => 'شماره موبایل یا نام کاربری تکراری است']);

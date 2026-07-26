@@ -1257,19 +1257,21 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 }
             }
 
-            // تعیین لیست assignee ها
-            let targetUsers = [];
-            if (sectionKey === '__all__') {
-                targetUsers = users.map(u => u.id);
-            } else {
-                targetUsers = users
-                    .filter(u => u.activity_section === sectionKey)
-                    .map(u => u.id);
-            }
+          // تعیین لیست assignee ها
+            //  • «همه واحدها» → لیست را فرانت می‌فرستد
+            //  • یک واحد خاص → فقط section_key؛ بک‌اند کاربرانِ همهٔ واحدها را پیدا می‌کند
+            //    (تا کاربرِ چندواحدی که این واحد، واحدِ دومش است هم بیفتد)
+            let bulkBody = { base_task: baseTask };
 
-            if (targetUsers.length === 0) {
-                showToast('هیچ کاربری در واحد انتخابی یافت نشد', 'warning');
-                return null;
+            if (sectionKey === '__all__') {
+                const targetUsers = users.map(u => u.id);
+                if (targetUsers.length === 0) {
+                    showToast('هیچ کاربری یافت نشد', 'warning');
+                    return null;
+                }
+                bulkBody.assignee_ids = targetUsers;
+            } else {
+                bulkBody.section_key = sectionKey;
             }
 
             try {
@@ -1279,10 +1281,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + authToken
                     },
-                    body: JSON.stringify({
-                        base_task: baseTask,
-                        assignee_ids: targetUsers
-                    })
+                    body: JSON.stringify(bulkBody)
                 });
 
                 const responseText = await response.text();

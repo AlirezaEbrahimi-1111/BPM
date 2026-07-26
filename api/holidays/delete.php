@@ -94,7 +94,6 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
-    error_log("Holiday delete error: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
 }
 ?>

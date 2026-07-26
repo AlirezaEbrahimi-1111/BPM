@@ -80,8 +80,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
         ob_end_clean();
     }
     
-    error_log("❌ Error: " . $e->getMessage());
-    
     http_response_code(500);
     echo json_encode([
         'success' => false, 
