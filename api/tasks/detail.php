@@ -13,6 +13,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-dates-helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
 try {
     $user_id = requireAuth();
 
@@ -60,7 +61,9 @@ try {
             FROM task_history 
             WHERE task_id = ? 
             AND (from_user_id = ? OR to_user_id = ?)
-            AND action NOT LIKE 'checklist\_%'
+            AND action NOT LIKE 'checklist%'
+            AND action <> ''
+            AND action IS NOT NULL
         ");
         $stmt->execute([$_GET['id'], $user_id, $user_id]);
         $historyCount = $stmt->fetch()['count'];
@@ -98,18 +101,8 @@ try {
                 $currentStep = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($currentStep && $currentStep['activity_section']) {
-                    $stmt = $db->prepare("
-                        SELECT COUNT(*) as count
-                        FROM users
-                        WHERE id = ?
-                        AND activity_section = ?
-                        AND organization_id = ?
-                        AND is_active = 1
-                    ");
-                    $stmt->execute([$user_id, $currentStep['activity_section'], $task['organization_id'] ?? 0]);
-                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                    if ($result['count'] > 0) {
+                    // 🆕 عضویت در هر یک از واحدهای کاربر (چندواحدی)
+                    if (us_userInSection($db, $user_id, $currentStep['activity_section'])) {
                         if (in_array($task['status'], ['in_progress', 'pending', 'not_started', 'delegated'])) {
                             $hasAccess = true;
                         }
@@ -121,43 +114,36 @@ try {
         }
     }
 
-    // 5. برای کارهای روتین (periodic/continuous)، همه اعضای بخش مربوطه
+   // 5. برای کارهای روتین (periodic/continuous)، همه اعضای بخش مربوطه
     if (!$hasAccess && in_array($task['task_type'], ['periodic', 'continuous']) && $task['activity_section']) {
-        $stmt = $db->prepare("
-            SELECT COUNT(*) as count
-            FROM users
-            WHERE id = ?
-            AND activity_section = ?
-            AND organization_id = ?
-            AND is_active = 1
-        ");
-        $stmt->execute([$user_id, $task['activity_section'], $task['organization_id'] ?? 0]);
-        $result = $stmt->fetch();
-
-        if ($result['count'] > 0) {
+        // 🆕 عضویت در هر یک از واحدهای کاربر (چندواحدی)
+        if (us_userInSection($db, $user_id, $task['activity_section'])) {
             $hasAccess = true;
         }
     }
     // 6. کاربرانی که آیتم چک‌لیست به آن‌ها (یا واحدشان) ارجاع شده
     $is_checklist_only = false;   // 🆕 دسترسی فقط از راه چک‌لیست؟
     if (!$hasAccess) {
-        // واحد و سازمانِ کاربر را بخوان (برای ارجاع‌های نوع section)
-        $secStmt = $db->prepare("SELECT activity_section, organization_id FROM users WHERE id = ?");
+        // سازمانِ کاربر را بخوان
+        $secStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
         $secStmt->execute([$user_id]);
         $user_row = $secStmt->fetch(PDO::FETCH_ASSOC) ?: [];
-        $user_section = $user_row['activity_section'] ?? '';
-        $sameOrg = isset($user_row['organization_id']) && (int)$user_row['organization_id'] === (int)($task['organization_id'] ?? -1);
 
-        $stmt = $db->prepare("
-            SELECT COUNT(*) as count
-            FROM task_checklist_items ci
+        $sameOrg = isset($user_row['organization_id']) && (int)$user_row['organization_id'] === (int)$task['organization_id'];
+
+        // 🆕 همهٔ واحدهای کاربر
+        $userSections = $sameOrg ? us_getUserSections($db, $user_id) : [];
+        $ph = us_placeholders($userSections);
+
+        $chkStmt = $db->prepare("
+            SELECT COUNT(*) FROM task_checklist_items ci
             WHERE ci.task_id = ?
               AND (
                   (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
-                  OR (ci.assignee_type = 'section' AND ci.assignee_value = ? AND ? = 1)
+                  OR (ci.assignee_type = 'section' AND ci.assignee_value IN ($ph))
               )
         ");
-        $stmt->execute([$_GET['id'], (string)$user_id, $user_section, $sameOrg ? 1 : 0]);
+        $chkStmt->execute(array_merge([$_GET['id'], (string)$user_id], $userSections));
         $checklistCount = $stmt->fetch()['count'];
 
         if ($checklistCount > 0) {
@@ -261,13 +247,15 @@ try {
     // 🔄 بررسی برگشت از period_done به حالت فعال (اگر دوره‌ی بعدی رسیده باشد)
     maybeStartNextPeriod($db, $task, $user_id);
 
-    // 🔒 کاربر چک‌لیستی: فقط رویدادهای مربوط به خودش یا واحدش
+    // 🔒 کاربر چک‌لیستی: فقط رویدادهای مربوط به خودش یا واحدهایش
     if ($is_checklist_only) {
-        $mySection = $user_section ?? '';   // در بلوک ۶ خوانده شده است
-        $history = array_values(array_filter($history, function ($h) use ($user_id, $mySection) {
+        // 🆕 همهٔ واحدهای کاربر (در بلوک ۶ خوانده شده است)
+        $mySections = $userSections ?? [];
+        $history = array_values(array_filter($history, function ($h) use ($user_id, $mySections) {
             if ((int)($h['from_user_id'] ?? 0) === (int)$user_id) return true;
             if ((int)($h['to_user_id']   ?? 0) === (int)$user_id) return true;
-            if ($mySection !== '' && ($h['checklist_section'] ?? '') === $mySection) return true;
+            $hs = $h['checklist_section'] ?? '';
+            if ($hs !== '' && in_array($hs, $mySections, true)) return true;
             return false;
         }));
     }

@@ -139,7 +139,6 @@ try {
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
-    error_log("API Error in user-units.php: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,

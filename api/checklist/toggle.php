@@ -117,7 +117,6 @@ try {
                 $user_id, null, $histNote
             );
         } catch (Exception $hErr) {
-            error_log("checklist history failed: " . $hErr->getMessage());
         }
     }
 
@@ -132,7 +131,6 @@ try {
                 notifyChecklistItemDone($db, $itemRow, $task, $user_id);
             }
         } catch (Exception $notifyErr) {
-            error_log("checklist toggle notify failed: " . $notifyErr->getMessage());
         }
     }
     // همگام‌سازی وضعیت کار با چک‌لیست (هر دو جهت)
@@ -159,5 +157,4 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور']);
-    error_log("checklist/toggle error: " . $e->getMessage());
 }

@@ -21,6 +21,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/JalaliHelper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
 
 set_error_handler(function ($errno, $errstr, $errfile, $errline) {
     error_log("PHP Error: [$errno] $errstr in $errfile:$errline");
@@ -81,10 +82,9 @@ try {
             throw new Exception('این مرحله هنوز فعال نشده است');
         }
 
-        // کار روتین: assignee ندارد؛ مجوز = عضو بخشِ همین مرحله (یا مدیر)
-        $secChk = $db->prepare("SELECT COUNT(*) AS c FROM users WHERE id = ? AND activity_section = ? AND is_active = 1");
-        $secChk->execute([$user_id, $task['activity_section']]);
-        if ((int)$secChk->fetch(PDO::FETCH_ASSOC)['c'] === 0 && !$requester_is_manager) {
+        // کار روتین: assignee ندارد؛ مجوز = عضو یکی از واحدهای همین مرحله (یا مدیر)
+        $inSection = us_userInSection($db, $user_id, $task['activity_section']);
+        if (!$inSection && !$requester_is_manager) {
             http_response_code(403);
             throw new Exception('فقط کاربران بخش این مرحله می‌توانند درخواست تمدید بدهند');
         }

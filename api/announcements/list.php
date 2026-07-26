@@ -27,6 +27,11 @@ try {
     $org      = intval($user['organization_id'] ?? 0);
     $section  = $user['activity_section'] ?? null;
 
+    // 🆕 همهٔ واحدهای کاربر به‌صورت رشتهٔ CSV (برای FIND_IN_SET)
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
+    $userSections = us_getUserSections($db, $userId);
+    $sectionsCsv  = implode(',', $userSections);   // مثل 'warehouse,technical'
+
     $isSuper   = ($userId === 1);
     $canManage = in_array($role, ['management', 'supervisor']);
     $showAll   = isset($_GET['all']) && $_GET['all'] == '1' && ($isSuper || $canManage);
@@ -82,7 +87,7 @@ try {
                               a.organization_id IS NULL
                               OR (
                                   a.organization_id = :org
-                                  AND (a.target_section IS NULL OR a.target_section = :section)
+                                  AND (a.target_section IS NULL OR FIND_IN_SET(a.target_section, :sections_csv))
                               )
                           )
                       )
@@ -96,7 +101,7 @@ try {
         $stmt->bindValue(':now', $now, PDO::PARAM_STR);
         $stmt->bindValue(':now2', $now, PDO::PARAM_STR);
         $stmt->bindValue(':org', $org, PDO::PARAM_INT);
-        $stmt->bindValue(':section', $section, $section !== null ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $stmt->bindValue(':sections_csv', $sectionsCsv, PDO::PARAM_STR);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
@@ -118,7 +123,7 @@ try {
                                 a.organization_id IS NULL
                                 OR (
                                     a.organization_id = :org
-                                    AND (a.target_section IS NULL OR a.target_section = :section)
+                                    AND (a.target_section IS NULL OR FIND_IN_SET(a.target_section, :sections_csv))
                                 )
                             )
                         )
@@ -129,7 +134,7 @@ try {
     $unreadStmt->bindValue(':now', $now, PDO::PARAM_STR);
     $unreadStmt->bindValue(':now2', $now, PDO::PARAM_STR);
     $unreadStmt->bindValue(':org', $org, PDO::PARAM_INT);
-    $unreadStmt->bindValue(':section', $section, $section !== null ? PDO::PARAM_STR : PDO::PARAM_NULL);
+    $unreadStmt->bindValue(':sections_csv', $sectionsCsv, PDO::PARAM_STR);
     $unreadStmt->bindValue(':uid', $userId, PDO::PARAM_INT);
     $unreadStmt->bindValue(':uid_self', $userId, PDO::PARAM_INT);
     $unreadStmt->execute();

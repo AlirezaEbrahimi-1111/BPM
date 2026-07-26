@@ -1,5 +1,5 @@
 <?php
-
+require_once __DIR__ . '/user-sections.php';
 class WorkflowManager
 {
     private $db;
@@ -860,13 +860,12 @@ class WorkflowManager
             $stmt->execute([$related_id]);
             $organization_id = $stmt->fetchColumn();
 
-            $stmt = $this->db->prepare("SELECT id FROM users WHERE activity_section = ? AND is_active = 1 AND organization_id = ?");
-            $stmt->execute([$section, $organization_id]);
-            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // 🆕 همه‌ی اعضای واحد (شاملِ کسانی که این واحد، واحدِ دومشان است)
+            $userIds = us_getSectionUserIds($this->db, $section, $organization_id);
 
-            foreach ($users as $user) {
+            foreach ($userIds as $uid) {
                 $notification->create([
-                    'to_user_id' => $user['id'],
+                    'to_user_id' => $uid,
                     'title' => $title,
                     'message' => $message,
                     'type' => $type,

@@ -61,6 +61,5 @@ try {
     $db->rollBack();
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور']);
-    error_log("Create routine error: " . $e->getMessage());
 }
 ?>

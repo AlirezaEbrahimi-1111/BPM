@@ -31,6 +31,5 @@ try {
         'success' => false,
         'message' => 'خطای سرور'
     ]);
-    error_log("Get today reports error: " . $e->getMessage());
 }
 ?>
