@@ -74,11 +74,8 @@ try {
         // فقط همان کاربر
         $canToggle = ((string)$assigneeValue === (string)$user_id);
     } elseif ($assigneeType === 'section') {
-        // فقط اعضای همان واحد
-        $secStmt = $db->prepare("SELECT activity_section FROM users WHERE id = ?");
-        $secStmt->execute([$user_id]);
-        $user_section = $secStmt->fetchColumn() ?: '';
-        $canToggle = ($assigneeValue === $user_section);
+        // 🆕 عضو هر یک از واحدهای کاربر
+        $canToggle = in_array($assigneeValue, us_getUserSections($db, $user_id), true);
     } else {
         // بدون ارجاع → creator یا assignee تسک
         $canToggle = ($task['_is_creator'] || $task['_is_assignee']);
@@ -120,7 +117,6 @@ try {
                 $user_id, null, $histNote
             );
         } catch (Exception $hErr) {
-            error_log("checklist history failed: " . $hErr->getMessage());
         }
     }
 
@@ -135,7 +131,6 @@ try {
                 notifyChecklistItemDone($db, $itemRow, $task, $user_id);
             }
         } catch (Exception $notifyErr) {
-            error_log("checklist toggle notify failed: " . $notifyErr->getMessage());
         }
     }
     // همگام‌سازی وضعیت کار با چک‌لیست (هر دو جهت)
@@ -162,5 +157,4 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور']);
-    error_log("checklist/toggle error: " . $e->getMessage());
 }

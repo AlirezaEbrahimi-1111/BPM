@@ -100,7 +100,8 @@ require_once '../includes/version.php';
             background: #f8f9fa;
             border-radius: 6px;
         }
-/* ── کشوی یادداشت انجام (مدل درجا) ── */
+
+        /* ── کشوی یادداشت انجام (مدل درجا) ── */
         .chk-note-drawer {
             display: none;
             margin: 8px 0 4px 26px;
@@ -110,11 +111,21 @@ require_once '../includes/version.php';
             border-radius: 10px;
             animation: chkSlide .18s ease;
         }
-        .checklist-detail-item-wrap.noting .chk-note-drawer { display: block; }
+
+        .checklist-detail-item-wrap.noting .chk-note-drawer {
+            display: block;
+        }
 
         @keyframes chkSlide {
-            from { opacity: 0; transform: translateY(-4px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .chk-note-drawer label {
@@ -123,6 +134,7 @@ require_once '../includes/version.php';
             color: #4b5563;
             margin-bottom: 6px;
         }
+
         .chk-note-drawer textarea {
             width: 100%;
             font-family: inherit;
@@ -132,10 +144,12 @@ require_once '../includes/version.php';
             padding: 8px 10px;
             resize: vertical;
         }
+
         .chk-note-drawer textarea:focus {
             outline: none;
             border-color: #6c3ff4;
         }
+
         .chk-note-actions {
             display: flex;
             gap: 8px;
@@ -152,11 +166,18 @@ require_once '../includes/version.php';
             font-size: .8rem;
             color: #4b5563;
         }
-        .chk-done-note b { color: #5b32d6; font-weight: 600; }
+
+        .chk-done-note b {
+            color: #5b32d6;
+            font-weight: 600;
+        }
 
         @media (prefers-reduced-motion: reduce) {
-            .chk-note-drawer { animation: none; }
+            .chk-note-drawer {
+                animation: none;
+            }
         }
+
         @media (max-width: 576px) {
             #taskInfo .col-6 {
                 flex: 0 0 100%;
@@ -193,7 +214,7 @@ require_once '../includes/version.php';
             <div id="completionCounter" style="display: none;"></div>
 
             <!-- اطلاعات اصلی -->
-            <div class="info-section" id="historySection">
+            <div class="info-section">
                 <h5><i class="bi bi-info-circle ms-2"></i>اطلاعات کار</h5>
                 <div id="taskInfo"></div>
             </div>
@@ -1802,9 +1823,9 @@ require_once '../includes/version.php';
         <i class="bi ${icon} me-1"></i>${label}
     </span>`;
             }
-/* باز کردن کشوی یادداشت — تیک هنوز ثبت نشده */
+            /* باز کردن کشوی یادداشت — تیک هنوز ثبت نشده */
             function openDoneNote(itemId, cb) {
-                if (cb) cb.checked = false;   // تا تأیید نشود، تیک نمی‌خورد
+                if (cb) cb.checked = false; // تا تأیید نشود، تیک نمی‌خورد
 
                 document.querySelectorAll('.checklist-detail-item-wrap.noting')
                     .forEach(w => w.classList.remove('noting'));
@@ -1827,7 +1848,7 @@ require_once '../includes/version.php';
                 const note = (withNote && box) ? box.value.trim() : '';
                 toggleChecklistItem(itemId, true, note);
             }
-           async function toggleChecklistItem(itemId, isDone, note = '') {
+            async function toggleChecklistItem(itemId, isDone, note = '') {
                 try {
                     const res = await fetch('../api/checklist/toggle.php', {
                         method: 'POST',
@@ -4597,33 +4618,37 @@ require_once '../includes/version.php';
 
             // بارگذاری فایل‌های پیوست
             async function loadAttachments() {
-                if (!taskId) return;
-
                 try {
-                    const response = await fetch(`../api/tasks/get-attachments.php?task_id=${taskId}`, {
-                        headers: {
-                            'Authorization': 'Bearer ' + authToken
-                        }
-                    });
+                    if (!taskId) return;
 
-                    const data = await response.json();
+                    try {
+                        const response = await fetch(`../api/tasks/get-attachments.php?task_id=${taskId}`, {
+                            headers: {
+                                'Authorization': 'Bearer ' + authToken
+                            }
+                        });
 
-                    if (data.success) {
-                        displayAttachments(data.attachments);
-                        // اگر فایل وجود داره، آکاردئون رو باز کن
-                        if (data.attachments && data.attachments.length > 0) {
-                            const attachmentsBody = document.getElementById('attachmentsBody');
-                            const attachmentsChevron = document.getElementById('attachmentsChevron');
-                            if (attachmentsBody && attachmentsBody.style.display === 'none') {
-                                attachmentsBody.style.display = 'block';
-                                if (attachmentsChevron) {
-                                    attachmentsChevron.style.transform = 'rotate(180deg)';
+                        const data = await response.json();
+
+                        if (data.success) {
+                            displayAttachments(data.attachments);
+                            // اگر فایل وجود داره، آکاردئون رو باز کن
+                            if (data.attachments && data.attachments.length > 0) {
+                                const attachmentsBody = document.getElementById('attachmentsBody');
+                                const attachmentsChevron = document.getElementById('attachmentsChevron');
+                                if (attachmentsBody && attachmentsBody.style.display === 'none') {
+                                    attachmentsBody.style.display = 'block';
+                                    if (attachmentsChevron) {
+                                        attachmentsChevron.style.transform = 'rotate(180deg)';
+                                    }
                                 }
                             }
                         }
+                    } catch (error) {
+                        console.error('Error loading attachments:', error);
                     }
-                } catch (error) {
-                    console.error('Error loading attachments:', error);
+                } catch (e) {
+                    console.warn('attachments load failed:', e);
                 }
             }
 

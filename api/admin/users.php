@@ -38,12 +38,27 @@ try {
     $stmt->execute([$org_id]);
     $users = $stmt->fetchAll();
     
-    // دریافت واحدهای هر کاربر
+   // دریافت واحدهای هر کاربر
     foreach ($users as &$user) {
         $unitsStmt = $db->prepare("SELECT activity_unit, is_primary FROM user_activity_units WHERE user_id = ?  ORDER BY is_primary DESC");
         $unitsStmt->execute([$user['id']]);
         $user['units'] = $unitsStmt->fetchAll();
+
+        // 🆕 واحدهای BPM (چندواحدی) با برچسب فارسی — اصلی اول
+        $bpmStmt = $db->prepare("
+            SELECT uas.section_key, uas.is_primary,
+                   COALESCE(oas.section_label, uas.section_key) AS section_label
+            FROM user_activity_sections uas
+            LEFT JOIN organization_activity_sections oas
+                   ON oas.section_key = uas.section_key COLLATE utf8mb4_general_ci
+                  AND oas.organization_id = ?
+            WHERE uas.user_id = ?
+            ORDER BY uas.is_primary DESC, section_label ASC
+        ");
+        $bpmStmt->execute([$org_id, $user['id']]);
+        $user['bpm_sections'] = $bpmStmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    unset($user);
     
     echo json_encode([
         'success' => true,

@@ -31,6 +31,11 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
+    // 🆕 همهٔ واحدهای کاربر (چندواحدی)
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
+    $userSections = us_getUserSections($db, $user_id);
+    $secPh = us_placeholders($userSections);   // مثل '?,?' یا 'NULL'
+
     if (!$db) {
         throw new Exception('اتصال به پایگاه داده ناموفق');
     }
@@ -60,9 +65,9 @@ try {
               AND EXISTS (
                   SELECT 1 FROM task_checklist_items ci
                   WHERE ci.task_id = t.id
-                    AND (
+                   AND (
                         (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
-                        OR (ci.assignee_type = 'section' AND ci.assignee_value = ?)
+                        OR (ci.assignee_type = 'section' AND ci.assignee_value IN ($secPh))
                     )
               )
               -- ولی هیچ آیتمِ ناتمامی برای کاربر/واحدش باقی نمانده باشد
@@ -72,21 +77,23 @@ try {
                     AND ci2.is_done = 0
                     AND (
                         (ci2.assignee_type = 'user'    AND ci2.assignee_value = ?)
-                        OR (ci2.assignee_type = 'section' AND ci2.assignee_value = ?)
+                        OR (ci2.assignee_type = 'section' AND ci2.assignee_value IN ($secPh))
                     )
               )
             ORDER BY t.created_at DESC
         ";
 
         $stmt = $db->prepare($archiveSql);
-        $stmt->execute([
-            $org_id,              // t.organization_id = ? (فقط سازمان خودش)
-            $user_id,            // t.assignee_id <> ?  (نباید assignee باشد)
-            (string) $user_id,    // EXISTS: ارجاع به کاربر
-            $activity_section,   // EXISTS: ارجاع به واحد
-            (string) $user_id,    // NOT EXISTS: کاربر
-            $activity_section    // NOT EXISTS: واحد
-        ]);
+        $stmt->execute(array_merge(
+            [
+                $org_id,           // t.organization_id = ?
+                $user_id,          // t.assignee_id <> ?
+                (string) $user_id, // EXISTS: ارجاع به کاربر
+            ],
+            $userSections,         // EXISTS: ارجاع به واحدها (IN)
+            [(string) $user_id], // NOT EXISTS: کاربر
+            $userSections          // NOT EXISTS: واحدها (IN)
+        ));
         $archived = $stmt->fetchAll(PDO::FETCH_ASSOC);
         attachChecklistTitles($db, $archived);
         echo json_encode([
@@ -200,7 +207,7 @@ AND t.status != 'rejected'
       )
       OR (
         t.is_workflow_task = 1 
-        AND t.activity_section = ?
+        AND t.activity_section IN ($secPh)
         AND t.organization_id = ?
         AND t.status NOT IN ('completed', 'cancelled')
         AND (t.assignee_id IS NULL OR t.assignee_id = 0)
@@ -218,11 +225,10 @@ AND t.status != 'rejected'
         AND ci.is_done = 0
           AND (
               (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
-              OR (ci.assignee_type = 'section' AND ci.assignee_value = ? AND t.organization_id = ?)
+              OR (ci.assignee_type = 'section' AND ci.assignee_value IN ($secPh) AND t.organization_id = ?)
           )
     )
   )
-
 ORDER BY 
     CASE WHEN t.has_pending_deadline_request = 1 AND t.creator_id = ? THEN 0 ELSE 1 END,
     CASE WHEN t.has_pending_overdue_request = 1 AND ocr.current_approver_id = ? THEN 0 ELSE 1 END,
@@ -240,19 +246,25 @@ ORDER BY
 ";
 
     $stmt = $db->prepare($sql);
-    $stmt->execute([
-        $user_id,            // dr.current_approver_id = ?
-        $user_id,            // ocr.current_approver_id = ?
-        $user_id,            // t.assignee_id = ?
-        $activity_section,   // واحدِ کار روتین
-        $org_id,             // t.organization_id = ?
-        $user_id,            // assignee در حالت pending
-        (string) $user_id,   // ارجاع چک‌لیست به این کاربر
-        $activity_section,   // ارجاع چک‌لیست به واحدِ این کاربر
-        $org_id,             // t.organization_id در چک‌لیست
-        $user_id,            // ORDER BY: has_pending_deadline_request — creator_id
-        $user_id,            // ORDER BY: has_pending_overdue_request — ocr.current_approver_id
-    ]);
+    $stmt->execute(array_merge(
+        [
+            $user_id,          // ۱. dr.current_approver_id = ?
+            $user_id,          // ۲. ocr.current_approver_id = ?
+            $user_id,          // ۳. t.assignee_id = ?
+        ],
+        $userSections,         // ۴. activity_section IN
+        [
+            $org_id,           // ۴.۵ 🆕 organization_id کار روتین
+            $user_id,          // ۵. is_pending assignee
+            (string) $user_id, // ۶. چک‌لیست کاربر
+        ],
+        $userSections,         // ۷. 🆕 ارجاع چک‌لیست به واحدها IN (...)
+        [
+            $org_id,           // ۸. t.organization_id در چک‌لیست
+            $user_id,          // ۹. ORDER BY: creator_id
+            $user_id,          // ۱۰. ORDER BY: ocr.current_approver_id
+        ]
+    ));
 
     $all_tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

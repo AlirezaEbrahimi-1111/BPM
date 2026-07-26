@@ -118,12 +118,10 @@ try {
                 addChecklistEvent($db, $row['task_id'], 'checklist_assigned', $user_id, $toId, $note, $sectionKey);
             }
         } catch (Exception $notifyErr) {
-            error_log("checklist update notify failed: " . $notifyErr->getMessage());
         }
     }
     echo json_encode(['success' => true, 'message' => 'آیتم به‌روزرسانی شد'], JSON_UNESCAPED_UNICODE);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور']);
-    error_log("checklist/update-item error: " . $e->getMessage());
 }

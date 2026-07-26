@@ -2,6 +2,8 @@
 // api/checklist/_helpers.php — توابع مشترک چک‌لیست
 // این فایل توسط بقیه API‌های چک‌لیست require می‌شود.
 
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
+
 /**
  * گرفتن کار + بررسی دسترسی پایه (کاربر باید creator یا assignee باشد)
  * خروجی: آرایه task یا null
@@ -21,25 +23,28 @@ function getTaskForChecklist($db, $task_id, $user_id)
     // آیا کاربر مسئولِ حداقل یک آیتم چک‌لیست است؟ (مستقیم یا از طریق واحدش)
     $isChecklistAssignee = false;
     if (!$isCreator && !$isAssignee) {
-        // واحد و سازمانِ کاربر را بخوان
-        $secStmt = $db->prepare("SELECT activity_section, organization_id FROM users WHERE id = ?");
+        // سازمانِ کاربر را بخوان
+        $secStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
         $secStmt->execute([$user_id]);
         $user_row = $secStmt->fetch(PDO::FETCH_ASSOC) ?: [];
-        $user_section = $user_row['activity_section'] ?? '';
 
         // ارجاعِ «واحد» فقط وقتی معتبر است که کاربر در همان سازمانِ کار باشد
-        // (چون رشته‌ی activity_section می‌تواند بین سازمان‌های مختلف یکسان باشد)
+        // (چون رشته‌ی section_key می‌تواند بین سازمان‌های مختلف یکسان باشد)
         $sameOrg = isset($user_row['organization_id']) && (int)$user_row['organization_id'] === (int)$task['organization_id'];
+
+        // 🆕 همهٔ واحدهای کاربر (نه فقط واحد اصلی)
+        $userSections = $sameOrg ? us_getUserSections($db, $user_id) : [];
+        $ph = us_placeholders($userSections);
 
         $chkStmt = $db->prepare("
             SELECT COUNT(*) FROM task_checklist_items ci
             WHERE ci.task_id = ?
               AND (
                   (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
-                  OR (ci.assignee_type = 'section' AND ci.assignee_value = ? AND ? = 1)
+                  OR (ci.assignee_type = 'section' AND ci.assignee_value IN ($ph))
               )
         ");
-        $chkStmt->execute([$task_id, (string)$user_id, $user_section, $sameOrg ? 1 : 0]);
+        $chkStmt->execute(array_merge([$task_id, (string)$user_id], $userSections));
         $isChecklistAssignee = ((int)$chkStmt->fetchColumn() > 0);
     }
 
@@ -73,14 +78,11 @@ function notifyChecklistAssignee($db, $assignee_type, $assignee_value, $task, $a
     if ($assignee_type === 'user') {
         $recipients[] = (int)$assignee_value;
     } elseif ($assignee_type === 'section') {
-        // همه‌ی اعضای فعالِ آن واحد در همان سازمان
-        $stmt = $db->prepare("
-            SELECT id FROM users
-            WHERE activity_section = ? AND is_active = 1
-              AND organization_id = (SELECT organization_id FROM users WHERE id = ?)
-        ");
-        $stmt->execute([$assignee_value, $actor_id]);
-        $recipients = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+        // 🆕 همه‌ی اعضای آن واحد (شاملِ کسانی که این واحد، واحدِ دومشان است)
+        $orgStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
+        $orgStmt->execute([$actor_id]);
+        $actor_org = $orgStmt->fetchColumn();
+        $recipients = us_getSectionUserIds($db, $assignee_value, $actor_org);
     }
 
     $taskTitle = $task['title'] ?? 'کار';
@@ -232,7 +234,6 @@ function registerRecurringPeriod($db, $task, $user_id)
         return true;
     } catch (Exception $e) {
         $db->rollBack();
-        error_log("registerRecurringPeriod error task#{$task_id}: " . $e->getMessage());
         return false;
     }
 }

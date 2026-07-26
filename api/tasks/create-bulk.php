@@ -13,6 +13,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/TaskManager.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     ob_end_clean();
     http_response_code(405);
@@ -42,11 +43,19 @@ try {
     // ── اعتبارسنجی ورودی ─────────────────────────────────────────────────────
     $base_task    = $input['base_task']    ?? null;
     $assignee_ids = $input['assignee_ids'] ?? [];
+    $section_key  = $input['section_key']  ?? null;   // 🆕 اگر بیاید، کاربران واحد را بک‌اند پیدا می‌کند
 
-    if (empty($base_task) || empty($assignee_ids) || !is_array($assignee_ids)) {
+    // base_task همیشه لازم است؛ assignee_ids یا section_key — یکی کافی است
+    if (empty($base_task)) {
         ob_end_clean();
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'base_task و assignee_ids الزامی هستند']);
+        echo json_encode(['success' => false, 'message' => 'base_task الزامی است']);
+        exit;
+    }
+    if (empty($assignee_ids) && empty($section_key)) {
+        ob_end_clean();
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'assignee_ids یا section_key الزامی است']);
         exit;
     }
 
@@ -81,6 +90,18 @@ try {
     $organization_id = $creator['organization_id'] ?? null;
     $creator_name    = trim(($creator['first_name'] ?? '') . ' ' . ($creator['last_name'] ?? ''));
     if (empty($creator_name)) $creator_name = $creator['phone'] ?? 'کاربر';
+
+    // 🆕 اگر section_key آمده، کاربرانِ همهٔ واحدها را بک‌اند پیدا می‌کند
+    //    (شاملِ کاربرانی که این واحد، واحدِ دومشان است)
+    if (!empty($section_key)) {
+        $assignee_ids = us_getSectionUserIds($db, $section_key, $organization_id);
+        if (empty($assignee_ids)) {
+            ob_end_clean();
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'هیچ کاربری در واحد انتخابی یافت نشد']);
+            exit;
+        }
+    }
 
     // ── اعتبارسنجی assignee_ids: فقط کاربران همین سازمان ─────────────────────
     $placeholders = implode(',', array_fill(0, count($assignee_ids), '?'));
@@ -168,7 +189,6 @@ try {
         'errors'        => $errors   // اگر برخی fail شدن، لاگ میشه
     ]);
     exit;
-
 } catch (Exception $e) {
     error_log("create-bulk error: " . $e->getMessage());
     ob_end_clean();

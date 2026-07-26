@@ -1,6 +1,8 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/period-engine.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
+
 class TaskManager
 {
     private $db;
@@ -177,62 +179,6 @@ class TaskManager
         } catch (Exception $e) {
             error_log("CreateTask error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()];
-        }
-    }
-
-    // ✅ متد اصلاح شده getMyTasks
-    public function getMyTasks($user_id, $date = null)
-    {
-        try {
-            $today = $date ? $date : date('Y-m-d');
-            $sql = "
-            SELECT t.*, 
-                   creator.first_name as creator_first_name, 
-                   creator.last_name as creator_last_name,
-                   CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name
-            FROM tasks t 
-            LEFT JOIN users creator ON t.creator_id = creator.id 
-            WHERE (
-                t.assignee_id = ? 
-                OR t.creator_id = ?
-            )
-            AND t.status IN ('not_started', 'in_progress', 'delegated')
-            AND t.is_deleted = 0
-            AND (
-                t.is_workflow_task = 0
-                OR (
-                    t.is_workflow_task = 1 
-                    AND EXISTS (
-                        SELECT 1 FROM workflow_steps ws 
-                        WHERE ws.id = t.current_stage_id 
-                        AND ws.activity_section = (SELECT activity_section FROM users WHERE id = ?)
-                    )
-                )
-            )";
-
-            if ($date) {
-                $sql .= " AND (
-                        (t.due_date = ? OR (t.due_date < ? AND t.status != 'completed' AND t.status != 'approved'))
-                        OR t.due_date IS NULL
-                    )";
-            }
-
-            $sql .= " ORDER BY 
-                    CASE WHEN t.due_date < CURDATE() AND t.status != 'completed' THEN 1 ELSE 2 END,
-                    t.priority = 'high' DESC,
-                    t.priority = 'medium' DESC,
-                    t.due_date ASC";
-
-            $stmt = $this->db->prepare($sql);
-            if ($date) {
-                $stmt->execute([$user_id, $user_id, $user_id, $today, $today]);
-            } else {
-                $stmt->execute([$user_id, $user_id, $user_id]);
-            }
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            error_log("GetMyTasks error: " . $e->getMessage());
-            return [];
         }
     }
 
@@ -483,17 +429,8 @@ class TaskManager
                     $stageSection = $stepRow ? $stepRow['activity_section'] : null;
 
                     if ($stepIsActive && $stageSection) {
-                        $stmt = $this->db->prepare("
-                            SELECT COUNT(*) as count 
-                            FROM users u 
-                            WHERE u.id = ? 
-                            AND u.activity_section = ? 
-                            AND u.is_active = 1
-                        ");
-                        $stmt->execute([$user_id, $stageSection]);
-                        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                        if ($result && $result['count'] > 0) {
+                        // 🆕 عضویت در هر یک از واحدهای کاربر (چندواحدی)
+                        if (us_userInSection($this->db, $user_id, $stageSection)) {
                             if (
                                 ($status === 'in_progress' && $task['status'] === 'not_started') ||
                                 ($status === 'approved' && $task['status'] === 'in_progress' && $task['assignee_id'] == $user_id)
@@ -509,17 +446,8 @@ class TaskManager
 
             // 5. برای کارهای روتین (periodic/continuous)، همه اعضای بخش مربوطه
             if (!$hasAccess && in_array($task['task_type'], ['periodic', 'continuous']) && $task['activity_section']) {
-                $stmt = $this->db->prepare("
-                SELECT COUNT(*) as count 
-                FROM users 
-                WHERE id = ? 
-                AND activity_section = ? 
-                AND is_active = 1
-            ");
-                $stmt->execute([$user_id, $task['activity_section']]);
-                $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                if ($result && $result['count'] > 0) {
+                // 🆕 عضویت در هر یک از واحدهای کاربر (چندواحدی)
+                if (us_userInSection($this->db, $user_id, $task['activity_section'])) {
                     $hasAccess = true;
                 }
             }

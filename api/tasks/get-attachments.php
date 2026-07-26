@@ -9,6 +9,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
 try {
     $user_id = requireAuth();
 
@@ -25,7 +26,7 @@ try {
 
     // چک دسترسی به task
 $stmt = $db->prepare("
-    SELECT t.id, t.creator_id, t.assignee_id, 
+    SELECT t.id, t.creator_id, t.assignee_id, t.organization_id,
            t.is_workflow_task, t.workflow_instance_id
     FROM tasks t
     WHERE t.id = ?
@@ -72,6 +73,9 @@ $task = $stmt->fetch(PDO::FETCH_ASSOC);
             FROM task_history 
             WHERE task_id = ? 
             AND (from_user_id = ? OR to_user_id = ?)
+            AND action NOT LIKE 'checklist%'
+            AND action <> ''
+            AND action IS NOT NULL
         ");
         $stmt->execute([$task_id, $user_id, $user_id]);
         $historyCount = $stmt->fetch()['count'];
@@ -95,17 +99,37 @@ $task = $stmt->fetch(PDO::FETCH_ASSOC);
         $wfStep = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($wfStep && $wfStep['activity_section']) {
-            $stmt = $db->prepare("
-                SELECT COUNT(*) as count 
-                FROM users 
-                WHERE id = ? 
-                AND activity_section = ? 
-                AND is_active = 1
-            ");
-            $stmt->execute([$user_id, $wfStep['activity_section']]);
-            if ($stmt->fetch()['count'] > 0) {
+            // 🆕 عضویت در هر یک از واحدهای کاربر
+            if (us_userInSection($db, $user_id, $wfStep['activity_section'])) {
                 $hasAccess = true;
             }
+        }
+    }
+
+    // 🆕 کاربرانی که آیتم چک‌لیست به آن‌ها (یا یکی از واحدهایشان) ارجاع شده
+    $is_checklist_only = false;
+    if (!$hasAccess) {
+        $orgStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
+        $orgStmt->execute([$user_id]);
+        $userOrg = $orgStmt->fetchColumn();
+        $sameOrg = ((int)$userOrg === (int)($task['organization_id'] ?? -1));
+
+        $userSections = $sameOrg ? us_getUserSections($db, $user_id) : [];
+        $ph = us_placeholders($userSections);
+
+        $stmt = $db->prepare("
+            SELECT COUNT(*) as count
+            FROM task_checklist_items ci
+            WHERE ci.task_id = ?
+              AND (
+                  (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
+                  OR (ci.assignee_type = 'section' AND ci.assignee_value IN ($ph))
+              )
+        ");
+        $stmt->execute(array_merge([$task_id, (string)$user_id], $userSections));
+        if ((int)$stmt->fetch()['count'] > 0) {
+            $hasAccess = true;
+            $is_checklist_only = true;   // دسترسی فقط از راه چک‌لیست
         }
     }
 
@@ -211,9 +235,16 @@ $attachments = array_values(array_filter($attachments, function($att) use ($curr
     return in_array($current_step, $steps);
 }));
 
+// 🔒 کاربر چک‌لیستی: فقط فایل‌هایی که خودش بارگذاری کرده
+if ($is_checklist_only) {
+    $attachments = array_values(array_filter($attachments, function ($a) use ($user_id) {
+        return (int)$a['uploader_id'] === (int)$user_id;
+    }));
+}
+
     // بررسی: آیا بعد از آپلود هر فایل، ارجاعی اتفاق افتاده؟
     $stmt = $db->prepare("
-    SELECT MIN(created_at) as first_delegation_at 
+    SELECT MIN(created_at) as first_delegation_at
     FROM task_history 
     WHERE task_id = ? AND action = 'delegated'
 ");

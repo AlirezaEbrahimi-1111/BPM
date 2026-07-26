@@ -60,7 +60,6 @@ try {
 } catch (Exception $e) {
     ob_end_clean();
     http_response_code(500);
-    error_log("Get requests error: " . $e->getMessage());
     echo json_encode([
         'success' => false,
         'message' => 'خطای داخلی سرور'
