@@ -65,7 +65,7 @@ require_once '../includes/version.php';
         }
 
         .dash-card-head {
-            background: var(--gray-100);
+            background: #e9e9e9;
             /* هدر خاکستری */
             border-bottom: 1px solid var(--gray-200);
             padding: 10px 14px;
@@ -79,9 +79,9 @@ require_once '../includes/version.php';
             display: flex;
             align-items: center;
             gap: 8px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: .95rem;
-            color: var(--gray-700);
+            color: #000;
         }
 
         .dash-card-title i {
@@ -148,6 +148,8 @@ require_once '../includes/version.php';
     border-radius:5px;
         padding: 4px 9px 4px 9px;
         font-size: 12px;
+        width: 130px;
+        text-align: center;
 }
         /* ═══ برنامه کاری ═══ */
         .plan-row {
@@ -167,10 +169,12 @@ require_once '../includes/version.php';
             display: flex;
             align-items: center;
             gap: 0px;
+            background: #fff;
             border: 1px solid var(--gray-200);
             border-radius: 12px;
             padding: 11px 13px;
             cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .07);
             transition: border-color .15s, box-shadow .15s, transform .12s;
             width: 250px;
         }
@@ -221,6 +225,18 @@ require_once '../includes/version.php';
             font-weight: 600;
             color: var(--gray-500);
             margin-bottom: 2px;
+        }
+
+        .plan-label.tomor {
+            color: #dc2626;
+        }
+
+        .plan-label.week {
+            color: #2563eb;
+        }
+
+        .plan-label.month {
+            color: #9563FF;
         }
 
         .plan-value {
@@ -322,7 +338,7 @@ require_once '../includes/version.php';
 
         .filter-chip {
             border: 1px solid var(--gray-200);
-            background: #fff;
+            background: #e9e9e9;
             border-radius: var(--radius-sm);
             padding: 5px 14px;
             font-size: .8rem;
@@ -332,7 +348,7 @@ require_once '../includes/version.php';
         }
 
         .filter-chip:hover {
-            background: var(--gray-50);
+            background: #d8d8d8;
         }
 
         .filter-chip.active {
@@ -410,7 +426,8 @@ require_once '../includes/version.php';
         .task-table td {
             padding: 0 8px 0 8px;
             font-size: .85rem;
-            color: var(--gray-700);
+            color: #000;
+            font-weight: 500;
             vertical-align: middle;
         }
 
@@ -485,7 +502,7 @@ require_once '../includes/version.php';
             background: none;
             border: none;
             cursor: pointer;
-            color: #9ca3af;
+            color: #000000;
             font-size: 1.1rem;
             padding: 4px 8px;
             border-radius: 7px;
@@ -527,7 +544,7 @@ require_once '../includes/version.php';
             gap: 9px;
             border-radius: 7px;
             font-size: .85rem;
-            color: #374151;
+            color: #000;
         }
 
         .row-menu button:hover {
@@ -665,8 +682,8 @@ require_once '../includes/version.php';
         .routine-name {
             flex: 1;
             font-size: .86rem;
-            color: var(--gray-700);
-            font-weight: 500;
+            color: #000;
+            font-weight: 600;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -688,7 +705,7 @@ require_once '../includes/version.php';
         .routine-count {
             font-size: .85rem;
             font-weight: 700;
-            color: var(--gray-700);
+            color: #000;
             min-width: 26px;
             text-align: center;
         }
@@ -714,8 +731,8 @@ require_once '../includes/version.php';
 
         .dlg-title {
             font-size: .85rem;
-            color: var(--gray-700);
-            font-weight: 500;
+            color: #000;
+            font-weight: 600;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -773,7 +790,7 @@ require_once '../includes/version.php';
         .inst-title {
             font-weight: 600;
             font-size: .9rem;
-            color: var(--gray-700);
+            color: #000;
         }
 
         .inst-meta {
@@ -864,29 +881,36 @@ require_once '../includes/version.php';
             width: 42px;
             height: 42px;
             border-radius: 50%;
-            background: var(--pm-purple-soft);
+            background: #f0e9fd;
             color: var(--pm-purple);
             display: flex;
             align-items: center;
             justify-content: center;
+            line-height: 1;
             font-size: 1.2rem;
+        }
+
+        .pm-head-icon i {
+            line-height: 1;
         }
 
         #planModal .btn-close,
         #weekModal .btn-close {
-            width: 38px;
-            height: 38px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            background-color: #f3f4f6;
-            background-size: 13px;
+            background-color: #fff;
+            border: 1px solid var(--gray-300);
+            background-size: 10px;
             opacity: 1;
             margin: 0;
-            transition: background-color .15s;
+            transition: background-color .15s, border-color .15s;
         }
 
         #planModal .btn-close:hover,
         #weekModal .btn-close:hover {
-            background-color: #e5e7eb;
+            background-color: var(--gray-100);
+            border-color: var(--gray-400);
         }
 
         #planModal .modal-body {
@@ -990,7 +1014,7 @@ require_once '../includes/version.php';
             padding: 10px 12px;
             border-radius: 8px;
             font-size: .88rem;
-            color: #374151;
+            color: #000;
             text-align: right;
             transition: background .1s;
         }
@@ -1044,7 +1068,7 @@ require_once '../includes/version.php';
         .bn-stage {
             font-size: .88rem;
             font-weight: 600;
-            color: #374151;
+            color: #000;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -1248,7 +1272,7 @@ require_once '../includes/version.php';
         .wk-day {
             font-size: .82rem;
             font-weight: 700;
-            color: #374151;
+            color: #000;
         }
 
         .wk-date {
@@ -1277,7 +1301,8 @@ require_once '../includes/version.php';
 
         .wk-card-title {
             font-size: .74rem;
-            color: #374151;
+            color: #000;
+            font-weight: 600;
             line-height: 1.4;
             cursor: pointer;
             display: -webkit-box;
@@ -1348,7 +1373,7 @@ require_once '../includes/version.php';
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            background: #fff4f4;
+            background: transparent;
             color: #ff0000;
             display: flex;
             align-items: center;
@@ -1365,7 +1390,7 @@ require_once '../includes/version.php';
         .td-user-name {
             font-size: .88rem;
             font-weight: 600;
-            color: #374151;
+            color: #000;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -1383,8 +1408,8 @@ require_once '../includes/version.php';
         .td-user-count {
             font-size: .8rem;
             font-weight: 700;
-            color: #ea580c;
-            background: #fff1e6;
+            color: #b91c1c;
+            background: #fee2e2;
             border-radius: 8px;
             min-width: 34px;
             height: 34px;
@@ -1534,7 +1559,7 @@ require_once '../includes/version.php';
             padding: 9px 11px;
             border-radius: 7px;
             font-size: .85rem;
-            color: #374151;
+            color: #000;
             text-align: right;
             transition: background .1s;
         }
@@ -1775,21 +1800,21 @@ require_once '../includes/version.php';
             <div class="plan-grid">
                 <div class="plan-item" onclick="openPlanModal('tomorrow')">
                     <div class="plan-text">
-                        <div class="plan-label">فردا</div>
+                        <div class="plan-label tomor">فردا</div>
                         <div class="plan-value" id="statTomorrow">— وظیفه</div>
                     </div>
                     <div class="plan-icon tomor"><i class="bi bi-calendar-event"></i></div>
                 </div>
                 <div class="plan-item" onclick="openPlanModal('week')">
                     <div class="plan-text">
-                        <div class="plan-label">این هفته</div>
+                        <div class="plan-label week">این هفته</div>
                         <div class="plan-value" id="statWeek">— وظیفه</div>
                     </div>
                     <div class="plan-icon week"><i class="bi bi-calendar-week"></i></div>
                 </div>
                 <div class="plan-item" onclick="openPlanModal('month')">
                     <div class="plan-text">
-                        <div class="plan-label">این ماه</div>
+                        <div class="plan-label month">این ماه</div>
                         <div class="plan-value" id="statMonth">— وظیفه</div>
                     </div>
                     <div class="plan-icon month"><i class="bi bi-calendar-check"></i></div>

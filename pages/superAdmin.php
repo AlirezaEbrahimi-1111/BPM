@@ -36,7 +36,8 @@ $stmt = $db->query("
     SELECT
       o.id, o.name, o.is_active, o.created_at,
       s.plan_type, s.end_date, s.is_active AS sub_active, s.max_users,
-      COUNT(u.id) AS user_count
+      COUNT(u.id) AS user_count,
+      MAX(u.last_login) AS last_login
     FROM organizations o
     LEFT JOIN subscriptions s ON s.organization_id = o.id AND s.is_active = 1
     LEFT JOIN users u ON u.organization_id = o.id AND u.is_active = 1
@@ -66,6 +67,9 @@ foreach ($orgs as $org) {
         'days_left'  => $days_left,
         'is_expired' => $is_expired ? 1 : 0,
         'is_active'  => (int)$org['is_active'],
+        'last_login' => $org['last_login']
+            ? JalaliHelper::formatJalaliDate(substr((string)$org['last_login'], 0, 10)) . ' - ' . substr((string)$org['last_login'], 11, 5)
+            : 'هرگز',
     ];
 }
 ?>
@@ -287,6 +291,11 @@ function cStatus(p) {
     ? `<span class="pill no">منقضی</span>`
     : `<span class="pill ok">فعال</span>`;
 }
+function cLastLogin(p) {
+  const v = p.data.last_login;
+  const muted = (v === 'هرگز');
+  return `<span style="font-size:12.5px;color:${muted ? '#A0AEC0' : '#2D3748'}">${faNum(esc(v))}</span>`;
+}
 function cActions(p) {
   const d = p.data;
   return `
@@ -307,6 +316,7 @@ const gridApi = agGrid.createGrid(document.getElementById('orgGrid'), {
     { headerName: 'پلن', width: 110, cellRenderer: cPlan, valueGetter: p => p.data.plan_label, getQuickFilterText: () => '' },
     { headerName: 'انقضا', width: 150, cellRenderer: cExpiry, valueGetter: p => (p.data.is_expired ? -1 : p.data.days_left), getQuickFilterText: () => '' },
     { headerName: 'وضعیت', width: 120, cellRenderer: cStatus, valueGetter: p => p.data.is_active, getQuickFilterText: () => '' },
+    { headerName: 'آخرین ورود کاربر', width: 185, cellRenderer: cLastLogin, valueGetter: p => p.data.last_login, getQuickFilterText: () => '' },
     { headerName: 'عملیات', width: 160, cellRenderer: cActions, sortable: false, getQuickFilterText: () => '' },
   ],
   rowData: ORGS,
