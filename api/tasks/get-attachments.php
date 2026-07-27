@@ -10,6 +10,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 try {
     $user_id = requireAuth();
 
@@ -47,23 +48,17 @@ $task = $stmt->fetch(PDO::FETCH_ASSOC);
         $hasAccess = true;
     }
 
-    // امنیت: به‌جای id ثابت → سوپرادمین یا مدیرِ هم‌سازمانِ این کار
+    // 🔒 سوپرادمین، یا supervisor/adminِ هم‌سازمان، یا managerِ فقط اگر
+    // سازنده/مسئولِ این کار زیرمجموعهٔ خودش باشد (نه هر «مدیر»ی در سازمان)
     if (!$hasAccess) {
-        $stmt = $db->prepare("
-            SELECT u.role, u.activity_section, u.organization_id, t.organization_id as task_org_id
-            FROM users u, tasks t
-            WHERE u.id = ? AND t.id = ?
-        ");
-        $stmt->execute([$user_id, $task_id]);
-        $chk = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($chk) {
-            $isSuperadmin = ((int) $user_id === 1);
-            $isOrgManager = ($chk['activity_section'] === 'management'
-                && in_array($chk['role'], ['supervisor', 'manager'], true)
-                && (int) $chk['organization_id'] === (int) $chk['task_org_id']);
-            if ($isSuperadmin || $isOrgManager) {
-                $hasAccess = true;
-            }
+        $stmt = $db->prepare("SELECT id, role, organization_id FROM users WHERE id = ?");
+        $stmt->execute([$user_id]);
+        $me = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($me
+            && (canManageTargetUser($db, $me, (int) $task['creator_id'])
+                || canManageTargetUser($db, $me, (int) $task['assignee_id']))
+        ) {
+            $hasAccess = true;
         }
     }
 

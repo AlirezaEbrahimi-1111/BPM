@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 // ✅ بعد
 try {
@@ -70,8 +71,10 @@ try {
         exit;
     }
 
-    // بررسی دسترسی: manager/supervisor همه رو می‌بینن، بقیه فقط مال خودشون
-    if (!in_array($role, ['manager', 'supervisor']) && $user_id !== 1 && (int)$ticket['created_by'] !== $user_id) {
+    // بررسی دسترسی: supervisor کل سازمان، manager فقط زیرمجموعهٔ خودش،
+    // بقیه فقط تیکتِ خودشان
+    $me = ['id' => $user_id, 'role' => $role, 'organization_id' => $orgId];
+    if (!canManageTargetUser($db, $me, (int) $ticket['created_by'])) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
         exit;

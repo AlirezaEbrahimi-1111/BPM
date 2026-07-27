@@ -83,6 +83,7 @@ try {
                     'periodic'   => 0,
                     'continuous' => 0,
                     'workflow'   => 0,
+                    'delay_days' => 0,
                 ];
             }
             return $key;
@@ -98,6 +99,7 @@ try {
                 'periodic'   => 0,
                 'continuous' => 0,
                 'workflow'   => 0,
+                'delay_days' => 0,
             ];
         }
         return $key;
@@ -107,7 +109,7 @@ try {
     //  ۱) کارهای مقطعی تأخیردار
     // ══════════════════════════════════════════════
     $stmt = $db->prepare("
-        SELECT id, assignee_id, activity_section
+        SELECT id, assignee_id, activity_section, due_date
         FROM tasks
         WHERE organization_id = ?
           AND is_deleted = 0
@@ -119,6 +121,7 @@ try {
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
         $k = $bucket($t['assignee_id'], $t['activity_section']);
         $acc[$k]['periodic']++;
+        $acc[$k]['delay_days'] += calcPeriodicDelayWorkingDays($t['due_date'], $today, $holidays);
     }
 
     // ══════════════════════════════════════════════
@@ -137,6 +140,7 @@ try {
         if ($state['overdue_periods'] > 0) {
             $k = $bucket($t['assignee_id'], $t['activity_section']);
             $acc[$k]['continuous']++;
+            $acc[$k]['delay_days'] += $state['working_days_delayed'];
         }
     }
 
@@ -144,7 +148,7 @@ try {
     //  ۳) کارهای روتین تأخیردار (مرحلهٔ active و از موعد گذشته)
     // ══════════════════════════════════════════════
     $stmt = $db->prepare("
-        SELECT t.id, t.assignee_id, t.activity_section
+        SELECT t.id, t.assignee_id, t.activity_section, t.deadline
         FROM tasks t
         JOIN workflow_instance_steps wis ON wis.task_id = t.id
         WHERE t.organization_id = ?
@@ -159,14 +163,15 @@ try {
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
         $k = $bucket($t['assignee_id'], $t['activity_section']);
         $acc[$k]['workflow']++;
+        $deadlineDate = substr($t['deadline'], 0, 10); // 'Y-m-d H:i:s' → 'Y-m-d'
+        $acc[$k]['delay_days'] += calcPeriodicDelayWorkingDays($deadlineDate, $today, $holidays);
     }
 
-    // ── خروجی: مرتب نزولی بر اساس مجموع ──────────────
+    // ── خروجی: مرتب نزولی بر اساس مجموعِ روزهای تأخیر ──
     $result = [];
     foreach ($acc as $row) {
-        $total = $row['periodic'] + $row['continuous'] + $row['workflow'];
-        if ($total <= 0) continue;
-        $row['total'] = $total;
+        if ($row['delay_days'] <= 0) continue;
+        $row['total'] = $row['delay_days'];
         $result[] = $row;
     }
 

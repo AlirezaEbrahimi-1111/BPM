@@ -18,20 +18,27 @@ try {
     
     $query = $_GET['q'];
     $unit = $_GET['unit'] ?? null;
-    
+
     $database = new Database();
     $db = $database->getConnection();
-    
+
+    // 🔒 خط قرمز: مجوز «management» فقط باید داخل همان سازمانِ کاربر جاری
+    // اعمال شود، وگرنه گزارش‌های واحد مدیریتِ یک سازمان برای جستجوکنندهٔ
+    // سازمان دیگر هم نمایش داده می‌شود
+    $orgStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
+    $orgStmt->execute([$user_id]);
+    $my_org_id = $orgStmt->fetchColumn();
+
     $sql = "SELECT r.id, r.unique_code, r.activity_unit, r.report_date,
                    SUBSTRING(r.content, 1, 200) as content_preview,
                    r.created_at,
                    u.first_name, u.last_name
             FROM reports r
             JOIN users u ON r.user_id = u.id
-            WHERE (r.user_id = ? OR u.activity_section = 'management')
+            WHERE (r.user_id = ? OR (u.activity_section = 'management' AND u.organization_id = ?))
             AND MATCH(r.content) AGAINST(? IN NATURAL LANGUAGE MODE)";
-    
-    $params = [$user_id, $query];
+
+    $params = [$user_id, $my_org_id, $query];
     
     if ($unit) {
         $sql .= " AND r.activity_unit = ?";

@@ -60,7 +60,12 @@ try {
     // ── تعیین مسئولِ این آیتم و کنترل دسترسی تیک‌زدن ──────────────────
     // قانون:
     //   • آیتمِ دارای ارجاع → فقط مسئولش (کاربر یا اعضای واحد) می‌تواند تیک بزند
-    //   • آیتمِ بدون ارجاع → creator یا assignee تسک می‌تواند
+    //   • آیتمِ بدون ارجاع → فقط مسئولِ فعلیِ کار (assignee) می‌تواند تیک بزند.
+    //     ✅ تعریف‌کننده (creator) پس از واگذاریِ کار به شخص دیگر، دیگر حق
+    //     تیک‌زدن ندارد — فقط می‌تواند آیتم اضافه/حذف کند (add-item.php،
+    //     delete-item.php). اگر creator خودش هنوز assignee باشد (کار
+    //     واگذار نشده)، همان‌طور که قبلاً بود می‌تواند تیک بزند، چون
+    //     _is_assignee در آن حالت هم true است.
     $itemStmt = $db->prepare("SELECT assignee_type, assignee_value FROM task_checklist_items WHERE id = ?");
     $itemStmt->execute([$item_id]);
     $item = $itemStmt->fetch(PDO::FETCH_ASSOC);
@@ -77,8 +82,8 @@ try {
         // 🆕 عضو هر یک از واحدهای کاربر
         $canToggle = in_array($assigneeValue, us_getUserSections($db, $user_id), true);
     } else {
-        // بدون ارجاع → creator یا assignee تسک
-        $canToggle = ($task['_is_creator'] || $task['_is_assignee']);
+        // بدون ارجاع → فقط مسئولِ فعلیِ کار
+        $canToggle = $task['_is_assignee'];
     }
 
     if (!$canToggle) {
@@ -146,7 +151,21 @@ try {
         syncTaskStatusWithChecklist($db, $task, $user_id);
     }
 
-    $p = checklistProgress($db, $row['task_id']);
+    // 🔒 هم‌راستا با get.php: مسئولِ صرفِ یک/چند آیتم، فقط پیشرفتِ همان
+    // آیتم‌های خودش را ببیند، نه کل چک‌لیستِ کار را
+    $onlyChecklistAssignee = !$task['_is_creator'] && !$task['_is_assignee'];
+    if ($onlyChecklistAssignee) {
+        $userSections = us_getUserSections($db, $user_id);
+
+        $allStmt = $db->prepare("SELECT is_done, assignee_type, assignee_value FROM task_checklist_items WHERE task_id = ?");
+        $allStmt->execute([$row['task_id']]);
+        $allItems = $allStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $ownItems = filterChecklistItemsForViewer($allItems, true, $user_id, $userSections);
+        $p = checklistProgressFromItems($ownItems);
+    } else {
+        $p = checklistProgress($db, $row['task_id']);
+    }
     echo json_encode([
         'success' => true,
         'auto_completed' => $auto,

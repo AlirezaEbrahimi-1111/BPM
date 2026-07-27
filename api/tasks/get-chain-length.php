@@ -16,9 +16,19 @@ try {
     }
     
     $db = (new Database())->getConnection();
+
+    // 🔒 دسترسی: فقط کسی که با این کار ارتباط دارد
+    $stmt = $db->prepare("SELECT id FROM tasks WHERE id = ? AND (creator_id = ? OR assignee_id = ?)");
+    $stmt->execute([$input['task_id'], $user_id, $user_id]);
+    if (!$stmt->fetch()) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
+        exit;
+    }
+
     $tm = new TaskManager($db);
     $chain = $tm->getDelegationChain($input['task_id']);
-    
+
     echo json_encode([
         'success' => true,
         'chain_length' => count($chain)

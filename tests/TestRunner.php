@@ -106,6 +106,15 @@ class TestRunner
     private int $passed = 0;
     private int $failed = 0;
 
+    /** بارگذاری یک مجموعه‌تست از یک آرایه (برای اسکریپت‌های تستِ مستقل/موقت) */
+    public function loadFromArray(array $suite): void
+    {
+        if (!isset($suite['tests'])) return;
+
+        $suite['file'] = $suite['file'] ?? ($suite['name'] ?? 'inline');
+        $this->suites[] = $suite;
+    }
+
     /** بارگذاری تمام فایل‌های تست از یک پوشه */
     public function loadDir(string $dir): void
     {

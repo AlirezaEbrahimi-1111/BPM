@@ -23,6 +23,19 @@ try {
     exit;
 }
 
+// 🔒 خط قرمز: این فایل قبلاً هیچ احراز هویتی نداشت — هر کاربرِ ناشناس با
+// فقط دانستنِ id/type می‌توانست جزئیات درخواستِ هر کارمندی را ببیند
+$auth = new Auth($db);
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) $user_id = $auth->getUserFromToken();
+if (!$user_id && isset($_COOKIE['auth_token'])) $user_id = $auth->validateToken($_COOKIE['auth_token']);
+
+if (!$user_id) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'لطفاً وارد شوید']);
+    exit;
+}
+
 $request_id = $_GET['id'] ?? null;
 $request_type = $_GET['type'] ?? null;
 
@@ -55,6 +68,20 @@ try {
 
     if (!$request) {
         echo json_encode(['success' => false, 'message' => 'درخواست یافت نشد']);
+        exit;
+    }
+
+    // 🔒 دسترسی: فقط خودِ درخواست‌دهنده یا یکی از تأییدکنندگانِ این درخواست
+    $related_ids = array_filter([
+        $request['user_id'] ?? null,
+        $request['substitute_id'] ?? null,
+        $request['manager_id'] ?? null,
+        $request['supervisor_id'] ?? null,
+        $request['admin_id'] ?? null,
+    ]);
+    if (!in_array((int)$user_id, array_map('intval', $related_ids), true)) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
         exit;
     }
 

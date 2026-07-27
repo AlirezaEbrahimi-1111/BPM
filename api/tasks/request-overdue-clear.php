@@ -136,6 +136,16 @@ try {
             $isSection = true;   // اجازه بده عبور کند
         }
     }
+    // managerِ فقط اگر سازنده/مسئولِ این کار زیرمجموعهٔ خودش باشد
+    if (!$isAssignee && !$isCreator && !$isSection) {
+        $me = $me ?? loadUserForPermissions($db, $user_id);
+        if (
+            canManageTargetUser($db, $me, (int) $task['creator_id'])
+            || canManageTargetUser($db, $me, (int) $task['assignee_id'])
+        ) {
+            $isSection = true;
+        }
+    }
     if (!$isAssignee && !$isCreator && !$isSection) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'شما مجاز به این عملیات نیستید'], JSON_UNESCAPED_UNICODE);

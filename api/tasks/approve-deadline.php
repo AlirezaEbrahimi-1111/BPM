@@ -42,7 +42,7 @@ try {
 
     // دریافت اطلاعات درخواست
     $stmt = $db->prepare("
-        SELECT dr.*, t.title, t.creator_id, t.assignee_id, t.deadline, t.is_workflow_task, t.workflow_instance_id
+        SELECT dr.*, t.title, t.creator_id, t.assignee_id, t.deadline, t.is_workflow_task, t.workflow_instance_id, t.organization_id
         FROM deadline_requests dr
         JOIN tasks t ON dr.task_id = t.id
         WHERE dr.id = ? AND dr.status = 'pending'
@@ -60,10 +60,13 @@ try {
     error_log("Request info: " . json_encode($request));
 
     // نقش کاربر فعلی (برای اجازهٔ تأیید توسط مدیر)
-    $roleStmt = $db->prepare("SELECT role FROM users WHERE id = ?");
+    // 🔒 خط قرمز: اختیار «مدیر» فقط داخل همان سازمانِ کار معتبر است
+    $roleStmt = $db->prepare("SELECT role, organization_id FROM users WHERE id = ?");
     $roleStmt->execute([$user_id]);
-    $myRole = $roleStmt->fetchColumn();
-    $isManager = in_array($myRole, ['management', 'supervisor', 'admin']);
+    $me = $roleStmt->fetch(PDO::FETCH_ASSOC);
+    $isManager = $me
+        && in_array($me['role'], ['management', 'supervisor', 'admin'])
+        && (int)$me['organization_id'] === (int)$request['organization_id'];
 
     $is_workflow  = ($request['is_workflow_task'] == 1);
     $task_id      = $request['task_id'];

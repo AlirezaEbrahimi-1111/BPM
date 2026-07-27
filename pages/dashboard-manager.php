@@ -65,8 +65,8 @@ require_once '../includes/version.php';
         }
 
         .dash-card-head {
-            background: #e9e9e9;
-            /* هدر خاکستری */
+            background: #eaedf3;
+            /* هدر خاکستری — کمی پررنگ‌تر */
             border-bottom: 1px solid var(--gray-200);
             padding: 10px 14px;
             display: flex;
@@ -86,11 +86,13 @@ require_once '../includes/version.php';
 
         .dash-card-title i {
             font-size: 1rem;
-            color: var(--gray-500);
+            color: var(--pm-purple, #9563FF);
+            background: none;
         }
 
         .dash-see-all {
             font-size: .8rem;
+            font-weight: 700;
             color: var(--primary);
             text-decoration: none;
             display: flex;
@@ -282,7 +284,8 @@ require_once '../includes/version.php';
             border-bottom: 2px solid transparent;
             padding: 10px 14px 9px;
             font-size: .87rem;
-            color: var(--gray-500);
+            color: var(--gray-900);
+            font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -342,7 +345,8 @@ require_once '../includes/version.php';
             border-radius: var(--radius-sm);
             padding: 5px 14px;
             font-size: .8rem;
-            color: var(--gray-500);
+            color: var(--gray-900);
+            font-weight: 700;
             cursor: pointer;
             transition: all .15s;
         }
@@ -395,8 +399,8 @@ require_once '../includes/version.php';
             z-index: 2;
             background: #fff;
             font-size: .78rem;
-            font-weight: 600;
-            color: var(--gray-400);
+            font-weight: 700;
+            color: var(--gray-900);
             text-align: right;
             padding: 8px 14px;
             border-bottom: 1px solid var(--gray-100);
@@ -750,7 +754,7 @@ require_once '../includes/version.php';
         .dlg-days {
             background: #fee2e2;
             color: #b91c1c;
-            border-radius: 999px;
+            border-radius: 8px;
             padding: 3px 10px;
             font-size: .74rem;
             font-weight: 600;
@@ -1785,6 +1789,49 @@ require_once '../includes/version.php';
         #rowActModal .persian-datepicker {
             z-index: 2200;
         }
+
+        /* ═══ استثنا: فقط در این صفحه، هدر بالا بنفش با متن/آیکون سفید ═══ */
+        body .navbar {
+            background: var(--pm-purple) !important;
+        }
+
+        body .navbar-brand {
+            background: none !important;
+            -webkit-text-fill-color: #fff !important;
+            color: #fff !important;
+        }
+
+        body .navbar #userName {
+            color: #fff !important;
+        }
+
+        body .navbar .nav-link {
+            color: #fff !important;
+        }
+
+        body .navbar .nav-link:hover {
+            color: #F4EFFF !important;
+        }
+
+        body .navbar .settings-btn i,
+        body .navbar .settings-btn svg,
+        body .navbar .notification-bell,
+        body .navbar .announcement-bell {
+            color: #fff !important;
+            stroke: #fff !important;
+        }
+
+        body .navbar .navbar-divider {
+            background: rgba(255, 255, 255, .35);
+        }
+
+        body .navbar .navbar-toggler-icon {
+            filter: brightness(0) invert(1);
+        }
+
+        body .mobile-menu-btn .hamburger-line {
+            background: #fff !important;
+        }
     </style>
 
 
@@ -2683,7 +2730,7 @@ require_once '../includes/version.php';
                         <div class="td-user-name">${displayName}</div>
                         <div class="td-user-breakdown">${breakdown}</div>
                     </div>
-                    <div class="td-user-count">${toFa(u.total)}</div>
+                    <div class="td-user-count">${toFa(u.total)} روز</div>
                 </div>`;
             }).join('');
         }

@@ -53,10 +53,14 @@ try {
         exit;
     }
 
-    // مجوز: تأییدکنندهٔ فعلی یا مدیر
-    $roleStmt = $db->prepare("SELECT role FROM users WHERE id = ?");
+    // مجوز: تأییدکنندهٔ فعلی یا مدیرِ همان سازمان
+    // 🔒 خط قرمز: اختیار «مدیر» فقط داخل همان سازمانِ کار معتبر است
+    $roleStmt = $db->prepare("SELECT role, organization_id FROM users WHERE id = ?");
     $roleStmt->execute([$user_id]);
-    $isManager = in_array($roleStmt->fetchColumn(), ['management', 'supervisor', 'admin'], true);
+    $me = $roleStmt->fetch(PDO::FETCH_ASSOC);
+    $isManager = $me
+        && in_array($me['role'], ['management', 'supervisor', 'admin'], true)
+        && (int)$me['organization_id'] === (int)$req['organization_id'];
     if ((int)$req['current_approver_id'] !== $user_id && !$isManager) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'شما مجاز به تأیید این درخواست نیستید'], JSON_UNESCAPED_UNICODE);

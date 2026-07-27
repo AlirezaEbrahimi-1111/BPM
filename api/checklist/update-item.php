@@ -75,6 +75,25 @@ try {
         echo json_encode(['success' => false, 'message' => 'این کار به پایان رسیده و چک‌لیست آن قفل شده است']);
         exit;
     }
+
+    // 🔒 خط قرمز: ارجاع باید به کاربر/واحدِ همین سازمان باشد (هم‌راستا با save.php)،
+    // وگرنه می‌شود آیتم را به کاربرِ سازمان کاملاً دیگری ارجاع داد
+    if ($has_assignee && $assignee_type === 'user') {
+        $chk = $db->prepare("SELECT id FROM users WHERE id = ? AND organization_id = ?");
+        $chk->execute([$assignee_value, $task['organization_id']]);
+        if (!$chk->fetch()) {
+            $assignee_type = null;
+            $assignee_value = null;
+        }
+    } elseif ($has_assignee && $assignee_type === 'section') {
+        $chk = $db->prepare("SELECT section_key FROM organization_activity_sections WHERE section_key = ? AND organization_id = ? AND is_active = 1");
+        $chk->execute([$assignee_value, $task['organization_id']]);
+        if (!$chk->fetch()) {
+            $assignee_type = null;
+            $assignee_value = null;
+        }
+    }
+
     if ($has_assignee) {
         // عنوان، توضیحات و ارجاع آپدیت می‌شود
         $stmt = $db->prepare("UPDATE task_checklist_items

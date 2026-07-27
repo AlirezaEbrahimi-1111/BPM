@@ -6,6 +6,7 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $database = new Database();
@@ -55,8 +56,10 @@ WHERE ta.id = ? AND t.deleted_at IS NULL
         exit;
     }
 
-    // بررسی دسترسی
-if ($user_id !== 1 && !in_array($role, ['manager', 'supervisor']) && (int)$file['created_by'] !== $user_id) {
+    // بررسی دسترسی: supervisor کل سازمان، manager فقط زیرمجموعهٔ خودش،
+    // بقیه فقط فایلِ خودشان
+    $me = ['id' => $user_id, 'role' => $role, 'organization_id' => $orgId];
+    if (!canManageTargetUser($db, $me, (int) $file['created_by'])) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
         exit;

@@ -300,8 +300,13 @@ if ($type === 'leave') {
     }
 
     // بررسی وجود جانشین
-    $stmt = $db->prepare("SELECT id FROM users WHERE id = ?");
-    $stmt->execute([$substitute_id]);
+    // 🔒 خط قرمز: جانشین باید از همان سازمانِ درخواست‌دهنده باشد
+    $stmt = $db->prepare("
+        SELECT u.id FROM users u
+        WHERE u.id = ?
+          AND u.organization_id = (SELECT organization_id FROM users WHERE id = ?)
+    ");
+    $stmt->execute([$substitute_id, $user_id]);
     if (!$stmt->fetch()) {
         echo json_encode(['success' => false, 'message' => 'جانشین انتخاب شده معتبر نیست']);
         exit;

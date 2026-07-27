@@ -2,6 +2,7 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php'; // ⚠️ مسیر فایل کلاس Auth خودت
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/payment/zarinpal.php'; // ⚠️ مسیر فایل zarinpal.php خودت
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 header('Content-Type: application/json; charset=utf-8');
 
 /* ── تشخیص کاربر از روی توکن ── */
@@ -16,7 +17,7 @@ if (!$user_id) {
 
 /* ── نقش و سازمان را از دیتابیس بخوان ── */
 $me = $db->prepare("
-    SELECT organization_id, role
+    SELECT id, organization_id, role
     FROM users
     WHERE id = ? AND is_active = 1 AND is_deleted = 0
     LIMIT 1
@@ -24,7 +25,9 @@ $me = $db->prepare("
 $me->execute([$user_id]);
 $me = $me->fetch(PDO::FETCH_ASSOC);
 
-if (!$me || !in_array($me['role'], ['manager', 'admin'], true)) {
+// 🔒 تمدیدِ اشتراکِ سازمان یک تصمیمِ مالیِ سراسری است، نه چیزی که به
+// زیرمجموعهٔ یک مدیر محدود شود؛ پس فقط supervisor/admin
+if (!isOrgWideRole($me)) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز'], JSON_UNESCAPED_UNICODE);
     exit;

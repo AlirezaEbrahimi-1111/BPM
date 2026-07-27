@@ -7,17 +7,32 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $user_id = requireAuth();
-    
+
     $database = new Database();
     $db = $database->getConnection();
-    
+
+    $me = loadUserForPermissions($db, $user_id);
+
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         // دریافت جانشین‌های کاربر
         $target_user = isset($_GET['user_id']) ? (int)$_GET['user_id'] : $user_id;
-        
+
+        // 🔒 خط قرمز: دیدنِ جانشین‌های کاربرِ دیگر، نیاز به اختیارِ مدیریتی
+        // دارد (نه صرفاً هم‌سازمان‌بودن) — supervisor/admin کل سازمان،
+        // manager فقط زیرمجموعهٔ خودش
+        if ($target_user !== (int)$user_id) {
+            requirePermission($me, 'manage_users');
+            if (!canManageTargetUser($db, $me, $target_user)) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'کاربر یافت نشد']);
+                exit;
+            }
+        }
+
         $stmt = $db->prepare("
             SELECT s.*, u.first_name, u.last_name, u.phone
             FROM substitutes s
@@ -53,11 +68,18 @@ try {
         }
         
         // بررسی: نمی‌تواند مسئول را جانشین خود انتخاب کند
-        $stmt = $db->prepare("SELECT is_supervisor FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT is_supervisor, organization_id FROM users WHERE id = ?");
         $stmt->execute([$substitute_id]);
         $substitute_user = $stmt->fetch();
-        
-        if ($substitute_user && $substitute_user['is_supervisor']) {
+
+        // 🔒 خط قرمز: جانشین باید از همان سازمان باشد
+        if (!$substitute_user || !isSameOrganization($me, $substitute_user['organization_id'])) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'کاربر یافت نشد']);
+            exit;
+        }
+
+        if ($substitute_user['is_supervisor']) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'نمی‌توانید مسئول را به عنوان جانشین انتخاب کنید']);
             exit;

@@ -30,7 +30,7 @@ try {
     $db = $database->getConnection();
 
     $stmt = $db->prepare("
-        SELECT r.*, t.title
+        SELECT r.*, t.title, t.organization_id
         FROM overdue_clear_requests r
         JOIN tasks t ON r.task_id = t.id
         WHERE r.id = ? AND r.status = 'pending'
@@ -44,9 +44,13 @@ try {
         exit;
     }
 
-    $roleStmt = $db->prepare("SELECT role FROM users WHERE id = ?");
+    // 🔒 خط قرمز: اختیار «مدیر» فقط داخل همان سازمانِ کار معتبر است
+    $roleStmt = $db->prepare("SELECT role, organization_id FROM users WHERE id = ?");
     $roleStmt->execute([$user_id]);
-    $isManager = in_array($roleStmt->fetchColumn(), ['management', 'supervisor', 'admin'], true);
+    $me = $roleStmt->fetch(PDO::FETCH_ASSOC);
+    $isManager = $me
+        && in_array($me['role'], ['management', 'supervisor', 'admin'], true)
+        && (int)$me['organization_id'] === (int)$req['organization_id'];
     if ((int)$req['current_approver_id'] !== $user_id && !$isManager) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'شما مجاز به رد این درخواست نیستید'], JSON_UNESCAPED_UNICODE);

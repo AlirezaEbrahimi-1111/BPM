@@ -83,24 +83,19 @@ try {
         } elseif ($type === 'section') {
             $it['can_toggle_this'] = in_array($value, $userSections, true);
         } else {
-            // بدون ارجاع → creator یا assignee تسک
-            $it['can_toggle_this'] = (!empty($task['_is_creator']) || !empty($task['_is_assignee']));
+            // بدون ارجاع → فقط مسئولِ فعلیِ کار (هماهنگ با قانونِ toggle.php:
+            // تعریف‌کننده پس از واگذاری کار به شخص دیگر، حق تیک‌زدن ندارد)
+            $it['can_toggle_this'] = !empty($task['_is_assignee']);
         }
     }
     unset($it);
 
-    $p = checklistProgress($db, $task_id);
-
-    // 🔒 برای کاربر چک‌لیستی، پیشرفت فقط بر اساس آیتم‌های قابل‌مشاهدهٔ خودش
-    if ($onlyChecklistAssignee) {
-        $visibleTotal = count($items);
-        $visibleDone  = count(array_filter($items, fn($it) => (int)$it['is_done'] === 1));
-        $p = [
-            'total'   => $visibleTotal,
-            'done'    => $visibleDone,
-            'percent' => $visibleTotal > 0 ? (int) round($visibleDone / $visibleTotal * 100) : 0,
-        ];
-    }
+    // برای مسئولِ صرفِ یک/چند آیتم، پیشرفت هم فقط روی همان آیتم‌های
+    // قابل‌دیدنش حساب شود — وگرنه با ۱ آیتمِ نمایش‌داده‌شده ولی درصدِ
+    // کل چک‌لیست، گیج‌کننده می‌شود
+    $p = $onlyChecklistAssignee
+        ? checklistProgressFromItems($items)
+        : checklistProgress($db, $task_id);
 
     $locked = isChecklistLocked($task);   // 🔒 آیا کار به پایان رسیده؟
     echo json_encode([

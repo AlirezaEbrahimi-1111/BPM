@@ -7,59 +7,30 @@ try {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-dates-helper.php';
 
     // overdue_periods + next_due_date برای کارهای دوره‌ای (هم‌راستا با my-tasks.php/delegated-tasks.php)
+    //
+    // ⚠️ رفع باگ: قبلاً اینجا یک فرمولِ جداگانه و قدیمی (calcOverduePeriods بر
+    // مبنای شمارشِ خامِ completed_count) استفاده می‌شد که می‌توانست با آنچه
+    // my-tasks.php/delegated-tasks.php/task-detail.php نشان می‌دهند فرق داشته
+    // باشد (مثلاً اگر برای یک روز دو رکورد completed ثبت شده باشد، آن فرمول
+    // عدد معوقهٔ اشتباه می‌داد). حالا همه‌جا از یک مرجع مشترک استفاده می‌شود:
+    // enrichTaskDates() → pe_state() در includes/period-engine.php.
     function attachContinuousFields($db, &$tasks, $user_id)
     {
         $holidays = getHolidaySet($db);
         $today = date('Y-m-d');
         foreach ($tasks as &$task) {
-            $task['overdue_periods'] = 0;
-            $task['next_due_date'] = null;
             if ($task['task_type'] === 'continuous' && !empty($task['start_date'])) {
-                try {
-                    $start_date = new DateTime($task['start_date']);
-                    $current_date = new DateTime($today);
-                    $current_date->setTime(0, 0, 0);
-                    maybeStartNextPeriod($db, $task, $user_id, $holidays);
-                    if ($current_date < $start_date) {
-                        $task['next_due_date'] = $task['start_date'];
-                    } else {
-                        $completed_count = (int) ($task['completed_count'] ?? 0);
-                        if (!isset($task['completed_count'])) {
-                            $cstmt = $db->prepare("SELECT COUNT(*) FROM task_history WHERE task_id = ? AND action = 'completed'");
-                            $cstmt->execute([$task['id']]);
-                            $completed_count = (int) $cstmt->fetchColumn();
-                        }
-                        $task['overdue_periods'] = calcOverduePeriods($task['period_type'], $start_date, $current_date, $completed_count, $holidays);
-                        $forgiven = (int) ($task['overdue_forgiven_credit'] ?? 0);
-                        $task['overdue_periods'] = max(0, $task['overdue_periods'] - $forgiven);
-
-                        $next_due = clone $start_date;
-                        for ($i = 0; $i < $completed_count; $i++) {
-                            switch ($task['period_type']) {
-                                case 'daily':
-                                    do {
-                                        $next_due->modify('+1 day');
-                                    } while (!isWorkingDay($next_due, $holidays));
-                                    break;
-                                case 'weekly':
-                                    $next_due->modify('+1 week');
-                                    break;
-                                case 'monthly':
-                                    $next_due->modify('+1 month');
-                                    break;
-                            }
-                        }
-                        $task['next_due_date'] = $next_due->format('Y-m-d');
-                    }
-                } catch (Exception $e) {
-                    error_log("overview.php continuous calc error task#{$task['id']}: " . $e->getMessage());
-                }
+                // برگشت از period_done به دوره‌ی بعدی (اگر موعدش رسیده)
+                maybeStartNextPeriod($db, $task, $user_id, $holidays);
             }
+            $task = enrichTaskDates($task, $db, $holidays, $today);
         }
         unset($task);
     }
+
     // ========================================
     // تابع کمکی: آیا کاربر اجازه ارسال یادآوری دارد؟
     // شرط 1: کاربر creator تسک باشد

@@ -42,13 +42,26 @@ try {
         $hasAccess = true;
     }
 
-    // سوپرادمین یا مدیرِ هم‌سازمانِ این کار
+    // سوپرادمین یا supervisor/adminِ هم‌سازمانِ این کار
     if (!$hasAccess) {
         $me = loadUserForPermissions($db, $user_id);
 
         if (
             hasPermission($me, 'view_all_org_tasks')
             && isSameOrganization($me, $task['organization_id'] ?? 0)
+        ) {
+            $hasAccess = true;
+        }
+    }
+
+    // managerِ فقط اگر سازنده/مسئولِ این کار زیرمجموعهٔ خودش باشد
+    // (نه هر «مدیر»ی در سازمان)
+    if (!$hasAccess) {
+        $me = $me ?? loadUserForPermissions($db, $user_id);
+
+        if (
+            canManageTargetUser($db, $me, (int) $task['creator_id'])
+            || canManageTargetUser($db, $me, (int) $task['assignee_id'])
         ) {
             $hasAccess = true;
         }
@@ -72,7 +85,27 @@ try {
             $hasAccess = true;
         }
     }
+    // 5. مسئولِ حداقل یک آیتم چک‌لیست (کاربر مستقیم یا واحدش)
+    // این قانون با getTaskForChecklist و my-tasks.php هماهنگ است
+    if (!$hasAccess) {
+        // واحدِ کاربر جاری را می‌خوانیم (برای آیتم‌های ارجاع‌شده به واحد)
+        $secStmt = $db->prepare("SELECT activity_section FROM users WHERE id = ?");
+        $secStmt->execute([$user_id]);
+        $user_section = $secStmt->fetchColumn() ?: '';
 
+        $chkStmt = $db->prepare("
+            SELECT COUNT(*) FROM task_checklist_items ci
+            WHERE ci.task_id = ?
+              AND (
+                  (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
+                  OR (ci.assignee_type = 'section' AND ci.assignee_value = ?)
+              )
+        ");
+        $chkStmt->execute([$_GET['id'], (string)$user_id, $user_section]);
+        if ((int)$chkStmt->fetchColumn() > 0) {
+            $hasAccess = true;
+        }
+    }
     // 4. چک دسترسی برای workflow tasks
     if (!$hasAccess && $task['is_workflow_task'] == 1 && $task['workflow_instance_id']) {
         try {

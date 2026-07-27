@@ -22,6 +22,8 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
+    // 🔒 خط قرمز: فقط کسی که با این درخواست ارتباط دارد (درخواست‌دهنده،
+    // تأییدکنندهٔ فعلی، سازنده یا مسئول کار) — نه هر کاربر لاگین‌کرده‌ای
     $stmt = $db->prepare("
         SELECT
             r.id,
@@ -35,11 +37,16 @@ try {
             CONCAT(u.first_name, ' ', u.last_name) AS requester_name
         FROM task_renewal_requests r
         LEFT JOIN users u ON u.id = r.requested_by
+        JOIN tasks t ON r.task_id = t.id
         WHERE r.task_id = ? AND r.status = 'pending'
+          AND (
+              r.requested_by = ? OR r.current_approver_id = ?
+              OR t.creator_id = ? OR t.assignee_id = ?
+          )
         ORDER BY r.created_at DESC
         LIMIT 1
     ");
-    $stmt->execute([$task_id]);
+    $stmt->execute([$task_id, $user_id, $user_id, $user_id, $user_id]);
     $request = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$request) {

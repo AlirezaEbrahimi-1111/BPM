@@ -46,6 +46,51 @@ const PE_MAX_PERIODS = 3000;
 
 
 /* ═══════════════════════════════════════════════════════════════
+   بخش ۰ — کمکیِ ماه‌شمار با لنگرِ روزِ ثابت
+   ───────────────────────────────────────────────────────────────
+   ⚠️ چرا لازم است؟
+   فراخوانی پیاپیِ DateTime::modify('+1 month') روی یک cursor باعث
+   سرریز تقویمی می‌شود: مثلاً ۳۱ فروردین + ۱ ماه در PHP به‌جای
+   «آخرِ اردیبهشت»، به ۳ خرداد می‌رود (چون اردیبهشت ۳۱ روز ندارد و
+   PHP آن ۳ روزِ اضافه را به ماهِ بعد سرریز می‌کند) — یعنی کل یک ماه
+   پریده می‌شود و از آن به بعد، لنگرِ روز برای همیشه از ۳۱ به ۳
+   منحرف می‌ماند. راه‌حل: هر دوره را مستقیماً از تاریخ شروع (نه از
+   دورهٔ محاسبه‌شدهٔ قبلی) با شمارهٔ ماه بسازیم و فقط در همان محاسبه
+   روز را به آخرِ ماهِ مقصد محدود (clamp) کنیم.
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * افزودن N ماه به یک تاریخِ لنگر با روزِ ثابت — بدون سرریزِ تقویمیِ PHP.
+ * اگر روزِ لنگر در ماهِ مقصد وجود نداشت، به آخرین روزِ همان ماه محدود
+ * می‌شود؛ به‌جای سرریز به ماهِ بعدتر.
+ */
+function pe_addMonthsClamped(DateTime $anchor, int $months): DateTime
+{
+    $day = (int) $anchor->format('d');
+    $y   = (int) $anchor->format('Y');
+    $m   = (int) $anchor->format('n') + $months;
+
+    $y += intdiv($m - 1, 12);
+    $m  = (($m - 1) % 12) + 1;
+
+    $lastDay = (int) (new DateTime(sprintf('%04d-%02d-01', $y, $m)))->format('t');
+    $day     = min($day, $lastDay);
+
+    $result = new DateTime(sprintf('%04d-%02d-%02d', $y, $m, $day));
+    $result->setTime(0, 0, 0);
+    return $result;
+}
+
+/** تعداد ماهِ کامل بین دو تاریخ، بر اساس سال/ماه (صرف‌نظر از روز) */
+function pe_monthsBetween(DateTime $anchor, DateTime $date): int
+{
+    $y = (int) $date->format('Y') - (int) $anchor->format('Y');
+    $m = (int) $date->format('n') - (int) $anchor->format('n');
+    return $y * 12 + $m;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
    بخش ۱ — تولید تاریخ‌های سررسید دوره‌ها
    ═══════════════════════════════════════════════════════════════ */
 
@@ -101,17 +146,38 @@ function pe_periodDates(
         return $dates;
     }
 
-    // ── هفتگی و ماهانه: بازهٔ تقویمی ثابت ────────────────
-    $step = ($periodType === 'weekly') ? '+1 week' : '+1 month';
+    // ── هفتگی: هر ۷ روز، بدون هیچ مشکل تقویمی (۷ روز همیشه ۷ روز است) ──
+    if ($periodType === 'weekly') {
+        $guard = 0;
+        while ($cursor <= $limit && $guard++ < PE_MAX_PERIODS) {
 
-    $guard = 0;
-    while ($cursor <= $limit && $guard++ < PE_MAX_PERIODS) {
+            $d = $cursor->format('Y-m-d');
+            if ($endDate !== null && $d > $endDate) break;
 
-        $d = $cursor->format('Y-m-d');
-        if ($endDate !== null && $d > $endDate) break;
+            $dates[] = $d;
+            $cursor->modify('+1 week');
+        }
 
-        $dates[] = $d;
-        $cursor->modify($step);
+        return $dates;
+    }
+
+    // ── ماهانه: لنگرِ روزِ ثابت — هر دوره مستقیم از start محاسبه می‌شود ──
+    // (نه با modify('+1 month') پیاپی؛ دلیل را در توضیح pe_addMonthsClamped ببینید)
+    if ($periodType === 'monthly') {
+        $guard = 0;
+        $i = 0;
+        while ($guard++ < PE_MAX_PERIODS) {
+            $periodDate = pe_addMonthsClamped($start, $i);
+            if ($periodDate > $limit) break;
+
+            $d = $periodDate->format('Y-m-d');
+            if ($endDate !== null && $d > $endDate) break;
+
+            $dates[] = $d;
+            $i++;
+        }
+
+        return $dates;
     }
 
     return $dates;
@@ -280,7 +346,7 @@ function pe_state(PDO $db, array $task, array $holidays, ?string $today = null):
         // ── موعد بعدی ──────────────────────────────────
         if ($out['is_today_done']) {
             // دورهٔ امروز انجام شده → موعد بعدی، دورهٔ بعدی است
-            $next = pe_nextPeriodAfter($task['period_type'], $currentPeriod, $holidays);
+            $next = pe_nextPeriodAfter($task['period_type'], $currentPeriod, $holidays, $start);
 
             if ($endDate !== null && $next > $endDate) {
                 $out['next_due_date'] = null;   // دورهٔ دیگری نمانده
@@ -320,8 +386,13 @@ function pe_state(PDO $db, array $task, array $holidays, ?string $today = null):
 
 /**
  * تاریخ سررسید دورهٔ بعدی، پس از یک تاریخ مشخص.
+ *
+ * @param DateTime|null $anchor  برای ماهانه: تاریخ شروع اصلیِ کار (لنگرِ روز).
+ *                               اگر داده نشود، $afterDate خودش لنگر فرض می‌شود —
+ *                               اما در این حالت اگر $afterDate قبلاً clamp شده
+ *                               باشد (مثلاً ۲۸ اسفند به‌جای ۳۱)، لنگر گم می‌شود.
  */
-function pe_nextPeriodAfter(string $periodType, string $afterDate, array $holidays): string
+function pe_nextPeriodAfter(string $periodType, string $afterDate, array $holidays, ?DateTime $anchor = null): string
 {
     $d = new DateTime($afterDate);
     $d->setTime(0, 0, 0);
@@ -338,7 +409,13 @@ function pe_nextPeriodAfter(string $periodType, string $afterDate, array $holida
             break;
 
         case 'monthly':
-            $d->modify('+1 month');
+            // ⚠️ به‌جای «+۱ ماه» روی afterDate (که ممکن است قبلاً به آخرِ یک
+            // ماهِ کوتاه‌تر clamp شده باشد)، از لنگرِ اصلیِ start_date محاسبه
+            // می‌کنیم تا روزِ تکرار برای همیشه ثابت بماند (نگاه کنید به
+            // pe_addMonthsClamped بالاتر برای دلیل کامل).
+            $anchorDate  = $anchor ?? $d;
+            $monthsSoFar = pe_monthsBetween($anchorDate, $d);
+            $d = pe_addMonthsClamped($anchorDate, $monthsSoFar + 1);
             break;
     }
 

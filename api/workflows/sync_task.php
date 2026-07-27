@@ -8,7 +8,15 @@ try {
     }
 
     require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
+
+    // 🔒 خط قرمز: این فایل قبلاً بدون هیچ احراز هویتی، اجازهٔ تغییر وضعیت
+    // هر workflow instance را (در هر سازمانی) با فقط دادن یک task_id می‌داد
+    $user_id = requireAuth();
+    $user    = getUserInfo($user_id);
+    $org_id  = $user['organization_id'];
 
     $database = new Database();
     $db = $database->getConnection();
@@ -21,9 +29,9 @@ try {
 
     $task_id = (int)$input['task_id'];
 
-    // دریافت اطلاعات task
-    $stmt = $db->prepare("SELECT * FROM tasks WHERE id = ? AND is_workflow_task = 1");
-    $stmt->execute([$task_id]);
+    // دریافت اطلاعات task — فقط اگر متعلق به همین سازمان باشد
+    $stmt = $db->prepare("SELECT * FROM tasks WHERE id = ? AND is_workflow_task = 1 AND organization_id = ?");
+    $stmt->execute([$task_id, $org_id]);
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$task) {

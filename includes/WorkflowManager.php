@@ -319,10 +319,20 @@ class WorkflowManager
             if (empty($organization_id)) {
                 throw new Exception('شناسهٔ سازمان مشخص نیست');
             }
+
+            // 🔒 خط قرمز: قالب باید متعلق به همین سازمان باشد، وگرنه یک سازمان
+            // می‌تواند با حدسِ template_id، از ساختار/مراحلِ قالبِ خصوصیِ سازمان
+            // دیگر برای ساختن یک نمونهٔ اجراییِ خودش استفاده کند
+            $tmplCheck = $this->db->prepare("SELECT id FROM workflow_templates WHERE id = ? AND organization_id = ?");
+            $tmplCheck->execute([$template_id, $organization_id]);
+            if (!$tmplCheck->fetch()) {
+                throw new Exception('قالب یافت نشد یا متعلق به سازمان شما نیست');
+            }
+
             // دریافت مراحل الگو
             $stmt = $this->db->prepare("
-                SELECT * FROM workflow_steps 
-                WHERE template_id = ? 
+                SELECT * FROM workflow_steps
+                WHERE template_id = ?
                 ORDER BY step_order ASC
             ");
             $stmt->execute([$template_id]);
@@ -366,8 +376,9 @@ class WorkflowManager
                 // ✅ تشخیص مسئولِ واقعیِ این مرحله (کاربرِ مشخص، ایجادکننده، یا بازگشت به واحد)
                 $resolved_assignee_id = null;
                 if (($step['assignee_type'] ?? 'section') === 'user' && !empty($step['assignee_user_id'])) {
-                    $checkStmt = $this->db->prepare("SELECT id FROM users WHERE id = ? AND is_active = 1");
-                    $checkStmt->execute([$step['assignee_user_id']]);
+                    // 🔒 خط قرمز: مسئولِ ثابتِ مرحله هم باید از همین سازمان باشد
+                    $checkStmt = $this->db->prepare("SELECT id FROM users WHERE id = ? AND is_active = 1 AND organization_id = ?");
+                    $checkStmt->execute([$step['assignee_user_id'], $organization_id]);
                     if ($checkStmt->fetch()) {
                         $resolved_assignee_id = $step['assignee_user_id'];
                     }
@@ -1060,4 +1071,35 @@ class WorkflowManager
             return ['success' => false, 'message' => 'خطا در بررسی تأخیرها'];
         }
     }
+}
+
+/**
+ * 🔒 هم‌راستا با چک‌لیست: کسی که فقط عضوِ واحدِ یک/چند مرحله از این
+ * workflow است (نه سازنده، نه نقشِ سازمانی‌ِ کل‌بین)، فقط باید همان
+ * مرحله‌هایی را ببیند که واحدش مسئولِ آن‌هاست — نه کل مراحل را.
+ * $hasFullAccess=true یعنی بدون فیلتر، همه‌ی مراحل برگردانده شود.
+ */
+function filterWorkflowStepsForViewer(array $steps, bool $hasFullAccess, string $user_section): array
+{
+    if ($hasFullAccess) return $steps;
+
+    return array_values(array_filter($steps, function ($s) use ($user_section) {
+        return !empty($s['activity_section']) && $s['activity_section'] === $user_section;
+    }));
+}
+
+/**
+ * محاسبهٔ آمارِ پیشرفت روی یک آرایه از مراحل (کل یا فیلترشده).
+ */
+function computeWorkflowProgress(array $steps): array
+{
+    $total = count($steps);
+    $completed = count(array_filter($steps, function ($s) {
+        return $s['status'] == 'completed';
+    }));
+    return [
+        'total_steps'     => $total,
+        'completed_steps' => $completed,
+        'progress'        => $total > 0 ? round(($completed / $total) * 100, 2) : 0,
+    ];
 }

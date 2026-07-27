@@ -7,12 +7,19 @@
 header('Content-Type: application/json; charset=utf-8');
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once '../../includes/TaskManager.php';
 require_once '../../includes/Notification.php';
 
 try {
+    // 🔒 خط قرمز: این فایل قبلاً هیچ احراز هویت یا کنترل دسترسی‌ای نداشت —
+    // هر کاربرِ ناشناس با فقط دانستنِ request_id می‌توانست درخواست تمدید
+    // موعدِ هر کاری، در هر سازمانی را رد کند
+    $user_id = requireAuth();
+
     $data = json_decode(file_get_contents('php://input'), true);
-    
+
     if (!isset($data['request_id'])) {
         echo json_encode(['success' => false, 'message' => 'ID درخواست الزامی است']);
         exit;
@@ -21,13 +28,13 @@ try {
     // ✅ اصلاح: استفاده از روش صحیح
     $database = new Database();
     $db = $database->getConnection();
-    
+
     $rejection_reason = $data['rejection_reason'] ?? '';
     $request_id = (int)$data['request_id'];
-    
+
     // دریافت اطلاعات درخواست
     $stmt = $db->prepare("
-        SELECT dr.*, t.title, t.creator_id, t.assignee_id, t.deadline
+        SELECT dr.*, t.title, t.creator_id, t.assignee_id, t.deadline, t.organization_id
         FROM deadline_requests dr
         JOIN tasks t ON dr.task_id = t.id
         WHERE dr.id = ? AND dr.status = 'pending'
@@ -37,6 +44,20 @@ try {
 
     if (!$request) {
         echo json_encode(['success' => false, 'message' => 'درخواست یافت نشد یا قبلاً پاسخ داده شده']);
+        exit;
+    }
+
+    // 🔒 مجوز: تأییدکنندهٔ فعلی، یا مدیرِ همان سازمان (هم‌راستا با approve-deadline.php)
+    $roleStmt = $db->prepare("SELECT role, organization_id FROM users WHERE id = ?");
+    $roleStmt->execute([$user_id]);
+    $me = $roleStmt->fetch(PDO::FETCH_ASSOC);
+    $isManager = $me
+        && in_array($me['role'], ['management', 'supervisor', 'admin'])
+        && (int)$me['organization_id'] === (int)$request['organization_id'];
+
+    if ((int)($request['current_approver_id'] ?? 0) !== (int)$user_id && !$isManager) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'شما مجاز به رد این درخواست نیستید']);
         exit;
     }
 

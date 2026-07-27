@@ -3,6 +3,7 @@ header('Content-Type: application/json; charset=utf-8');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'متد غیرمجاز']);
@@ -11,8 +12,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     $admin_id = requireAuth();
-    
-    if ($admin_id != 1) {
+
+    // بررسی ادمین بودن — طبق لیست رسمی سوپرادمین‌ها (permissions.php)
+    if (!in_array((int) $admin_id, getSuperAdminIds(), true)) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'فقط ادمین دسترسی دارد']);
         exit;

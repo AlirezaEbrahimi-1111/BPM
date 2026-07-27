@@ -113,6 +113,17 @@ class TaskManager
                 }
             }
 
+            // 🔒 خط قرمز: مسئولِ کار باید از همان سازمانِ تعریف‌کننده باشد، وگرنه
+            // می‌شود کاری را مستقیماً به کاربرِ سازمانِ کاملاً دیگری واگذار کرد
+            if (!empty($data['assignee_id']) && (int)$data['assignee_id'] !== (int)$creator_id) {
+                $assigneeOrgStmt = $this->db->prepare("SELECT organization_id FROM users WHERE id = ?");
+                $assigneeOrgStmt->execute([$data['assignee_id']]);
+                $assigneeOrg = $assigneeOrgStmt->fetchColumn();
+                if ((int)$assigneeOrg !== (int)$organization_id) {
+                    return ['success' => false, 'message' => 'مسئول کار باید از همین سازمان باشد'];
+                }
+            }
+
             // ✅ INSERT با فیلدهای deadline و original_deadline
             $sql = "INSERT INTO tasks (
                     title, 
@@ -338,13 +349,39 @@ class TaskManager
                 }
 
                 // فقط اگر previousPerson دیگه‌ای باشه → pending_approval و نوتیفیکیشن
-                $sql = "UPDATE tasks SET status = 'pending_approval', is_pending_approval = TRUE, assignee_id = ?, updated_at = NOW() WHERE id = ?";
-                $stmt = $this->db->prepare($sql);
-                $stmt->execute([$previousPerson, $task_id]);
 
-                // ✅ ثبت completed قبل از pending_approval (برای ریست دور تأییدها)
-                // $this->addTaskHistory($task_id, $user_id, null, 'completed', $notes ?: 'کار تکمیل شد');
-                $this->addTaskHistory($task_id, $user_id, $previousPerson, 'pending_approval', $notes ?: 'کار تکمیل شد و منتظر تأیید است');;
+                // ✅ کار دوره‌ای (continuous): دورهٔ امروز باید همین الان — روزی که واقعاً
+                // انجام شده — در task_history با action='completed' بسته شود، نه در لحظهٔ
+                // تأیید. وگرنه اگر تأیید یک روز (یا بیشتر) بعد اتفاق بیفتد، موتور دوره
+                // (period-engine → pe_completionDates) رکورد completed را با تاریخ تأیید
+                // می‌بیند و اشتباهاً دورهٔ همان روزِ تأیید را «انجام‌شده» حساب می‌کند؛
+                // نتیجه: دورهٔ واقعیِ آن روز قفل می‌ماند و کاربر نمی‌تواند تکمیلش بزند.
+                if ($task['task_type'] === 'continuous') {
+                    $holidays = getHolidaySet($this->db);
+                    $state    = pe_state($this->db, $task, $holidays);
+
+                    if (!$state['can_complete']) {
+                        return [
+                            'success' => false,
+                            'message' => $state['is_today_done']
+                                ? 'دورهٔ امروز قبلاً تکمیل شده است'
+                                : 'این کار در وضعیت قابل تکمیل نیست'
+                        ];
+                    }
+
+                    $today = date('Y-m-d');
+                    $sql = "UPDATE tasks SET status = 'pending_approval', is_pending_approval = TRUE, assignee_id = ?, last_completed_date = ?, updated_at = NOW() WHERE id = ?";
+                    $stmt = $this->db->prepare($sql);
+                    $stmt->execute([$previousPerson, $today, $task_id]);
+
+                    $this->addTaskHistory($task_id, $user_id, $previousPerson, 'completed', $notes ?: ('دورهٔ ' . $state['current_period_date'] . ' تکمیل شد و منتظر تأیید است'));
+                } else {
+                    $sql = "UPDATE tasks SET status = 'pending_approval', is_pending_approval = TRUE, assignee_id = ?, updated_at = NOW() WHERE id = ?";
+                    $stmt = $this->db->prepare($sql);
+                    $stmt->execute([$previousPerson, $task_id]);
+                }
+
+                $this->addTaskHistory($task_id, $user_id, $previousPerson, 'pending_approval', $notes ?: 'کار تکمیل شد و منتظر تأیید است');
 
                 try {
                     require_once __DIR__ . '/Notification.php';
@@ -590,6 +627,15 @@ class TaskManager
                 return ['success' => false, 'message' => 'کاربر مقصد یافت نشد'];
             }
 
+            // 🔒 خط قرمز: کاربر مقصد باید از همان سازمانِ کار باشد، وگرنه یک
+            // کار می‌تواند به کاربرِ سازمانِ کاملاً دیگری ارجاع داده شود
+            $orgStmt = $this->db->prepare("SELECT organization_id FROM users WHERE id = ?");
+            $orgStmt->execute([$to_user_id]);
+            $toUserOrg = $orgStmt->fetchColumn();
+            if ((int) $toUserOrg !== (int) $task['organization_id']) {
+                return ['success' => false, 'message' => 'کاربر مقصد باید از همین سازمان باشد'];
+            }
+
             // دریافت توضیحات قبلی
             $new_notes = $task['delegation_notes'] ?
                 $task['delegation_notes'] . "\n---\n" . $notes : $notes;
@@ -643,7 +689,7 @@ class TaskManager
     {
         try {
             // بررسی مجوز (فقط سازنده کار می‌تواند حذف کند)
-            $stmt = $this->db->prepare("SELECT creator_id FROM tasks WHERE id = ? AND is_deleted = 0");
+            $stmt = $this->db->prepare("SELECT creator_id, organization_id FROM tasks WHERE id = ? AND is_deleted = 0");
             $stmt->execute([$task_id]);
             $task = $stmt->fetch();
 
@@ -652,12 +698,15 @@ class TaskManager
             }
 
             // گرفتن نقش کاربر
-            $stmt = $this->db->prepare("SELECT role FROM users WHERE id = ?");
+            $stmt = $this->db->prepare("SELECT role, organization_id FROM users WHERE id = ?");
             $stmt->execute([$user_id]);
             $user = $stmt->fetch();
 
             $isCreator = ($task['creator_id'] == $user_id);
-            $isManager = ($user && ($user['role'] == 'management' || $user['role'] == 'supervisor'));
+            // 🔒 خط قرمز: اختیار «مدیر» فقط داخل همان سازمانِ کار معتبر است
+            $isManager = ($user
+                && ($user['role'] == 'management' || $user['role'] == 'supervisor')
+                && (int)$user['organization_id'] === (int)$task['organization_id']);
 
             if (!$isCreator && !$isManager) {
                 return ['success' => false, 'message' => 'شما مجاز به حذف این کار نیستید'];
@@ -1114,11 +1163,12 @@ class TaskManager
                     $stmt = $this->db->prepare($sql);
                     $stmt->execute([$today, $performerId, $task_id]);
 
-                    // ✅ action باید 'completed' باشد نه 'approved' — همه‌ی محاسبات دوره‌های
-                    // معوقه/موعد بعدی (calcOverduePeriods، next_due_date، maybeStartNextPeriod)
-                    // فقط رکوردهای action='completed' را می‌شمارند؛ وگرنه completed_count برای
-                    // همیشه ۰ می‌ماند و کار همیشه معوقه نشان داده می‌شود.
-                    $this->addTaskHistory($task_id, $user_id, $performerId, 'completed', 'آخرین دوره تأیید شد: ' . $notes);
+                    // ⚠️ اینجا نباید دوباره action='completed' ثبت شود. رکورد completedِ
+                    // واقعی، در لحظهٔ ارسال برای تأیید (بالاتر در updateTaskStatus) و با
+                    // تاریخ واقعیِ انجام کار ثبت می‌شود. تأیید ممکن است روز(های) بعد اتفاق
+                    // بیفتد؛ اگر اینجا هم completed بزنیم، موتور دوره آن را با تاریخ تأیید
+                    // می‌بیند و اشتباهاً دورهٔ همان روز را هم «انجام‌شده» حساب می‌کند.
+                    $this->addTaskHistory($task_id, $user_id, $performerId, 'approved', 'آخرین دوره تأیید شد: ' . $notes);
                     $this->notifyCompletion($task, $performerId, 'completion_approved', $user_id);  // 🆕
                     return [
                         'success' => true,

@@ -21,26 +21,29 @@ try {
     
     // بررسی مجوز (فقط خود، مدیر تیم، یا مسئول)
     if ($target_user != $user_id) {
-        $stmt = $db->prepare("SELECT role, is_supervisor, manager_id FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT role, is_supervisor, manager_id, organization_id FROM users WHERE id = ?");
         $stmt->execute([$user_id]);
         $current_user = $stmt->fetch();
-        
-        $stmt = $db->prepare("SELECT manager_id FROM users WHERE id = ?");
+
+        $stmt = $db->prepare("SELECT manager_id, organization_id FROM users WHERE id = ?");
         $stmt->execute([$target_user]);
         $target = $stmt->fetch();
-        
+
         $has_permission = false;
-        
+
         // آیا مدیر مستقیم است؟
         if ($target && $target['manager_id'] == $user_id) {
             $has_permission = true;
         }
-        
-        // آیا مسئول است؟
-        if ($current_user['is_supervisor']) {
+
+        // 🔒 خط قرمز: آیا مسئولِ همان سازمان است؟ (نه سازمان دیگر)
+        if (
+            $target && $current_user['is_supervisor']
+            && (int)$target['organization_id'] === (int)$current_user['organization_id']
+        ) {
             $has_permission = true;
         }
-        
+
         if (!$has_permission) {
             http_response_code(403);
             echo json_encode(['success' => false, 'message' => 'شما مجاز به مشاهده این گزارش نیستید']);

@@ -114,12 +114,20 @@ try {
     if ($task['creator_id'] == $user_id || $task['assignee_id'] == $user_id) {
         $hasAccess = true;
     }
-    // سوپرادمین یا مدیرِ هم‌سازمانِ این کار
+    // سوپرادمین یا supervisor/adminِ هم‌سازمانِ این کار
     if (!$hasAccess) {
         $me = loadUserForPermissions($db, $user_id);
 
         if (hasPermission($me, 'view_all_org_tasks')
             && isSameOrganization($me, $task['organization_id'])) {
+            $hasAccess = true;
+        }
+    }
+    // managerِ فقط اگر سازنده/مسئولِ این کار زیرمجموعهٔ خودش باشد
+    if (!$hasAccess) {
+        $me = $me ?? loadUserForPermissions($db, $user_id);
+        if (canManageTargetUser($db, $me, (int) $task['creator_id'])
+            || canManageTargetUser($db, $me, (int) $task['assignee_id'])) {
             $hasAccess = true;
         }
     }

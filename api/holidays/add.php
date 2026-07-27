@@ -25,6 +25,7 @@ date_default_timezone_set('Asia/Tehran');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     try {
@@ -49,12 +50,13 @@ try {
         exit;
     }
 
-    // بررسی نقش کاربر (فقط مدیر)
-    $stmt = $db->prepare("SELECT role FROM users WHERE id = ?");
+    // بررسی نقش کاربر — تعطیلات یک تنظیمِ سراسریِ سازمان است، نه چیزی
+    // که به زیرمجموعهٔ یک مدیر محدود شود؛ پس فقط supervisor/admin
+    $stmt = $db->prepare("SELECT id, role FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$user || !in_array($user['role'], ['supervisor', 'manager'])) {
+    if (!isOrgWideRole($user)) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'شما مجوز این عملیات را ندارید']);
         exit;

@@ -152,6 +152,29 @@ function notifyChecklistItemDone($db, $item, $task, $doer_id)
     ]);
 }
 /**
+ * 🔒 خط قرمز: کسی که فقط مسئولِ یک/چند آیتمِ چک‌لیست است (نه سازنده، نه
+ * مسئولِ کل کار)، فقط باید همان آیتم‌های ارجاع‌شده به خودش (یا واحدش) را
+ * ببیند — نه کل چک‌لیست را. برای سازنده/مسئولِ کار، لیست بدون تغییر برمی‌گردد.
+ * $items هر عضو باید کلیدهای assignee_type و assignee_value داشته باشد.
+ */
+function filterChecklistItemsForViewer(array $items, bool $onlyChecklistAssignee, $user_id, array $userSections): array
+{
+    if (!$onlyChecklistAssignee) return $items;
+
+    return array_values(array_filter($items, function ($it) use ($user_id, $userSections) {
+        $type  = $it['assignee_type']  ?? null;
+        $value = $it['assignee_value'] ?? null;
+        if ($type === 'user') {
+            return (string) $value === (string) $user_id;
+        }
+        if ($type === 'section') {
+            return in_array($value, $userSections, true);
+        }
+        return false; // آیتمِ بدون ارجاع، به مسئولِ صرفِ یک آیتمِ دیگر ربطی ندارد
+    }));
+}
+
+/**
  * محاسبه پیشرفت چک‌لیست یک کار
  * خروجی: ['total'=>N, 'done'=>N, 'percent'=>N]
  */
@@ -165,6 +188,21 @@ function checklistProgress($db, $task_id)
     $done  = (int)($r['done'] ?? 0);
     $percent = $total > 0 ? round($done * 100 / $total) : 0;
     return ['total' => $total, 'done' => $done, 'percent' => $percent];
+}
+
+/**
+ * محاسبهٔ پیشرفت روی یک آرایهٔ از آیتم‌های از پیش واکشی‌شده (نه کل چک‌لیست).
+ * برای مسئولِ صرفِ یک/چند آیتم استفاده می‌شود تا درصد فقط روی آیتم‌های
+ * قابل‌دیدنِ او حساب شود، نه کل چک‌لیستِ کار.
+ */
+function checklistProgressFromItems(array $items): array
+{
+    $total = count($items);
+    $done  = 0;
+    foreach ($items as $it) {
+        if ((int) $it['is_done'] === 1) $done++;
+    }
+    return ['total' => $total, 'done' => $done, 'percent' => $total > 0 ? round($done * 100 / $total) : 0];
 }
 
 /**
@@ -200,35 +238,62 @@ function maybeAutoComplete($db, $task, $user_id)
 
 /**
  * ثبت یک دوره‌ی انجام‌شده برای تسک دوره‌ای.
+ *
+ * ⚠️ رفع باگ: قبلاً این تابع بدون توجه به اینکه سازنده و انجام‌دهنده
+ * یکی هستند یا نه، همیشه مستقیم status='period_done' می‌گذاشت — یعنی
+ * زنجیرهٔ تأیید را کامل دور می‌زد (برخلاف مسیر عادیِ تکمیل در
+ * TaskManager::updateTaskStatus که اگر creator ≠ assignee باشد، کار
+ * را برای تأیید نزد تعریف‌کننده می‌فرستد). حالا همان قاعده اینجا هم
+ * رعایت می‌شود.
  */
 function registerRecurringPeriod($db, $task, $user_id)
 {
-    error_log("registerRecurringPeriod CALLED for task " . $task['id']);  // خط تست موقت
-
     $task_id = $task['id'];
+    $creatorId  = (int) $task['creator_id'];
+    $assigneeId = (int) $task['assignee_id'];
+    $needsApproval = ($creatorId !== $assigneeId);
 
     try {
         $db->beginTransaction();
 
-        // ۱) ثبت دوره در تاریخچه
-        $hist = $db->prepare("INSERT INTO task_history (task_id, from_user_id, action, notes)
-                              VALUES (?, ?, 'completed', ?)");
-        $hist->execute([$task_id, $user_id, 'دوره‌ی جاری با اتمام چک‌لیست ثبت شد']);
+        // ۱) ثبت دوره در تاریخچه — با تاریخ واقعیِ همین لحظه
+        //    (روزی که چک‌لیست واقعاً کامل شد، نه روزِ تأییدِ احتمالیِ بعدی)
+        $hist = $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
+                              VALUES (?, ?, ?, 'completed', ?)");
+        $hist->execute([
+            $task_id,
+            $user_id,
+            $needsApproval ? $creatorId : null,
+            'دوره‌ی جاری با اتمام چک‌لیست ثبت شد'
+        ]);
 
-        // ۲) ریست چک‌لیست: پاک‌کردن همه‌ی تیک‌ها
+        // ۲) ریست چک‌لیست: پاک‌کردن همه‌ی تیک‌ها (برای دورهٔ بعدی)
         $reset = $db->prepare("UPDATE task_checklist_items
                                SET is_done = 0, done_at = NULL, done_by = NULL
                                WHERE task_id = ?");
         $reset->execute([$task_id]);
 
-        // ۳) تغییر وضعیت کار به period_done + ثبت تاریخ آخرین انجام
-        $upd = $db->prepare("UPDATE tasks
-                             SET status = 'period_done', is_pending_approval = FALSE,
-                                 pending_approval_count = 0,
-                                 last_approved_date = CURDATE(),
-                                 updated_at = NOW()
-                             WHERE id = ?");
-        $upd->execute([$task_id]);
+        if ($needsApproval) {
+            // ✅ سازنده ≠ انجام‌دهنده → نباید خودکار تمام شود؛ باید مثل مسیر
+            // عادیِ تکمیل، منتظر تأیید تعریف‌کننده بماند
+            $upd = $db->prepare("UPDATE tasks
+                                 SET status = 'pending_approval',
+                                     is_pending_approval = TRUE,
+                                     assignee_id = ?,
+                                     last_completed_date = CURDATE(),
+                                     updated_at = NOW()
+                                 WHERE id = ?");
+            $upd->execute([$creatorId, $task_id]);
+        } else {
+            // سازنده = انجام‌دهنده → همان رفتار قبلی (تکمیل خودکار، بدون نیاز به تأیید)
+            $upd = $db->prepare("UPDATE tasks
+                                 SET status = 'period_done', is_pending_approval = FALSE,
+                                     pending_approval_count = 0,
+                                     last_approved_date = CURDATE(),
+                                     updated_at = NOW()
+                                 WHERE id = ?");
+            $upd->execute([$task_id]);
+        }
 
         $db->commit();
         return true;

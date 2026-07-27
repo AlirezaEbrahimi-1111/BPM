@@ -23,7 +23,7 @@ try {
 
     // جستجو با شناسه یا کد یونیک
     if (!empty($_GET['id'])) {
-        $sql = "SELECT * FROM reports WHERE id = ?  ND user_id = ?";
+        $sql = "SELECT * FROM reports WHERE id = ? AND user_id = ?";
         $params = [$_GET['id'], $user_id];
     } else {
         $sql = "SELECT * FROM reports WHERE unique_code = ? AND user_id = ?";

@@ -49,7 +49,7 @@ try {
     $db = $database->getConnection();
 
     // ===== بررسی 1: آیا این کار مربوط به کاربر فعلی است (assignee)؟ =====
-    $stmt = $db->prepare("SELECT id, assignee_id, creator_id, deadline, is_workflow_task, workflow_instance_id, activity_section FROM tasks WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, assignee_id, creator_id, deadline, is_workflow_task, workflow_instance_id, activity_section, organization_id FROM tasks WHERE id = ?");
     $stmt->execute([$task_id]);
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -64,8 +64,11 @@ try {
 
     // آیا درخواست‌دهنده اجازهٔ تأیید تمدید موعد را دارد؟
     // (پیش از این «management» و «admin» چک می‌شدند که هیچ‌کدام نقش معتبر نیستند)
+    // 🔒 خط قرمز: این اختیار فقط داخل همان سازمانِ کار معتبر است، وگرنه مدیرِ
+    // یک سازمان می‌تواند برای کارِ روتینِ سازمان دیگر درخواست تمدید بدهد/تأیید خودکار بگیرد
     $me = loadUserForPermissions($db, $user_id);
-    $requester_is_manager = hasPermission($me, 'approve_deadline_request');
+    $requester_is_manager = hasPermission($me, 'approve_deadline_request')
+        && isSameOrganization($me, $task['organization_id'] ?? 0);
 
     if ($is_workflow) {
         // 🔒 مرحلهٔ این تسک باید «فعال» باشد — روی مرحله‌ای که هنوز

@@ -6,21 +6,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 $user_id = requireAuth();
 
 $database = new Database();
 $db = $database->getConnection();
 
-$stmtMe = $db->prepare('SELECT * FROM users WHERE id = ? AND is_active = 1');
-$stmtMe->execute([$user_id]);
-$user = $stmtMe->fetch(PDO::FETCH_ASSOC);
-
-if (!$user || !in_array($user['role'], ['admin', 'supervisor'])) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
-    exit;
-}
+$me = loadUserForPermissions($db, $user_id);
+requirePermission($me, 'manage_users');
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input || empty($input['user_id'])) {
@@ -40,15 +34,12 @@ if (!preg_match('/^09[0-9]{9}$/', $input['phone'] ?? '')) {
     exit;
 }
 
-// ─── Supervisor فقط می‌تواند کارمندان و مدیران عادی ویرایش کند
-if ($user['role'] === 'manager') {
-    $stmtCheck = $db->prepare('SELECT role FROM users WHERE id = ?');
-    $stmtCheck->execute([$uid]);
-    $targetRole = $stmtCheck->fetchColumn();
-    if (in_array($targetRole, ['supervisor', 'admin'])) {
-        echo json_encode(['success' => false, 'message' => 'دسترسی برای ویرایش این کاربر ندارید']);
-        exit;
-    }
+// 🔒 خط قرمز: supervisor/admin فقط در سازمانِ خودشان، manager فقط روی
+// زیرمجموعهٔ خودش (زنجیرهٔ manager_id) — وگرنه اطلاعات (از جمله رمز
+// عبور) کاربری خارج از دامنهٔ مجاز تغییر می‌کند
+if (!canManageTargetUser($db, $me, $uid)) {
+    echo json_encode(['success' => false, 'message' => 'کاربر یافت نشد']);
+    exit;
 }
 
 try {

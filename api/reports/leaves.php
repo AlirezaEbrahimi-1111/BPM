@@ -19,15 +19,19 @@ try {
     
     // بررسی مجوز
     if ($target_user != $user_id) {
-        $stmt = $db->prepare("SELECT is_supervisor, manager_id FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT is_supervisor, manager_id, organization_id FROM users WHERE id = ?");
         $stmt->execute([$user_id]);
         $current_user = $stmt->fetch();
-        
-        $stmt = $db->prepare("SELECT manager_id FROM users WHERE id = ?");
+
+        $stmt = $db->prepare("SELECT manager_id, organization_id FROM users WHERE id = ?");
         $stmt->execute([$target_user]);
         $target = $stmt->fetch();
-        
-        if ($target['manager_id'] != $user_id && !$current_user['is_supervisor']) {
+
+        // 🔒 خط قرمز: مسئول فقط روی کاربرانِ همان سازمانِ خودش این اختیار را دارد،
+        // وگرنه یک supervisor می‌تواند مرخصی/مأموریتِ کاربران سازمان دیگر را ببیند
+        $sameOrg = $target && (int)$target['organization_id'] === (int)$current_user['organization_id'];
+
+        if (!$target || ($target['manager_id'] != $user_id && !($current_user['is_supervisor'] && $sameOrg))) {
             http_response_code(403);
             echo json_encode(['success' => false, 'message' => 'شما مجاز به مشاهده این گزارش نیستید']);
             exit;

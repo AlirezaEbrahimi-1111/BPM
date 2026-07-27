@@ -29,14 +29,19 @@ try {
 }
 
 try {
-    // دریافت کاربران فعال (به جز کاربر جاری)
+    // 🔒 خط قرمز: فقط کاربرانِ همین سازمان می‌توانند جانشین انتخاب شوند
+    $orgStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
+    $orgStmt->execute([$current_user_id]);
+    $org_id = $orgStmt->fetchColumn();
+
+    // دریافت کاربران فعال همین سازمان (به جز کاربر جاری)
     $stmt = $db->prepare("
-        SELECT id, first_name, last_name 
-        FROM users 
-        WHERE id != ? AND status = 'active'
+        SELECT id, first_name, last_name
+        FROM users
+        WHERE id != ? AND is_active = 1 AND organization_id = ?
         ORDER BY first_name ASC
     ");
-    $stmt->execute([$current_user_id]);
+    $stmt->execute([$current_user_id, $org_id]);
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode([

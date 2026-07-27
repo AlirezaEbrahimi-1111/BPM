@@ -70,11 +70,12 @@ try {
     }
 
     // بررسی کاربر مقصد
-    $stmt = $db->prepare("SELECT id, CONCAT(first_name, ' ', last_name) AS full_name FROM users WHERE id = ? AND is_active = 1");
+    // 🔒 خط قرمز: کاربر مقصد باید از همان سازمانِ کار باشد
+    $stmt = $db->prepare("SELECT id, organization_id, CONCAT(first_name, ' ', last_name) AS full_name FROM users WHERE id = ? AND is_active = 1");
     $stmt->execute([$input['to_user_id']]);
     $toUser = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$toUser) {
+    if (!$toUser || (int)$toUser['organization_id'] !== (int)$task['organization_id']) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'کاربر مقصد یافت نشد']);
         exit;

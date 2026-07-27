@@ -4,6 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -18,10 +19,14 @@ try {
     $db = $database->getConnection();
 
     // نقش و سازمانِ کاربر جاری
+    // ⚠️ عمداً manager را شامل نمی‌شود: بازگردانیِ کاربرِ حذف‌شده یک
+    // عملیاتِ حساس‌تر از مدیریتِ روزمرهٔ زیرمجموعه است، و از طرفی
+    // getSubordinateIds() کاربرانِ حذف‌شده را در زنجیره نمی‌بیند —
+    // پس برای manager قابل‌استفاده هم نبود.
     $stmtMe = $db->prepare('SELECT role, organization_id FROM users WHERE id = ? AND is_active = 1');
     $stmtMe->execute([$user_id]);
     $me = $stmtMe->fetch(PDO::FETCH_ASSOC);
-    if (!$me || !in_array($me['role'], ['admin', 'supervisor'])) {
+    if (!isOrgWideRole($me)) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز'], JSON_UNESCAPED_UNICODE);
         exit;

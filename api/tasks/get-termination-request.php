@@ -22,18 +22,25 @@ try {
     $database = new Database();
     $db       = $database->getConnection();
 
+    // 🔒 خط قرمز: فقط کسی که با این درخواست ارتباط دارد (درخواست‌دهنده،
+    // بررسی‌کننده، سازنده یا مسئول کار) — نه هر کاربر لاگین‌کرده‌ای
     $stmt = $db->prepare("
-        SELECT 
+        SELECT
             tr.*,
             CONCAT(ru.first_name,' ',ru.last_name) AS requester_name,
             ru.phone AS requester_phone
         FROM task_termination_requests tr
         JOIN users ru ON tr.requester_id = ru.id
+        JOIN tasks t ON tr.task_id = t.id
         WHERE tr.task_id = ? AND tr.status = 'pending'
+          AND (
+              tr.requester_id = ? OR tr.reviewer_id = ?
+              OR t.creator_id = ? OR t.assignee_id = ?
+          )
         ORDER BY tr.created_at DESC
         LIMIT 1
     ");
-    $stmt->execute([$task_id]);
+    $stmt->execute([$task_id, $user_id, $user_id, $user_id, $user_id]);
     $request = $stmt->fetch(PDO::FETCH_ASSOC);
 
     echo json_encode([
