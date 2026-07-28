@@ -874,6 +874,137 @@ require_once '../includes/version.php';
             background: #dbeafe;
             color: #1d4ed8;
         }
+
+        /* ─── تم تاریک ─── */
+        :root[data-theme="dark"] .page-title {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .stat-tile {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .stat-value {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .stat-label {
+            color: var(--text-muted) !important;
+        }
+
+        :root[data-theme="dark"] .filter-pill,
+        :root[data-theme="dark"] .filter-dropdown-btn {
+            background: var(--surface);
+            border-color: var(--border-soft);
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .wf-card {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .wf-title {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .wf-id-badge {
+            color: var(--text-strong);
+            background: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .progress {
+            background: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .wf-meta {
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .mini-step:not(:last-child)::after {
+            background: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .mini-dot {
+            border-color: var(--surface);
+            box-shadow: 0 0 0 1px var(--border-soft);
+            background: var(--border-soft);
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .filter-dropdown-menu {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .filter-dropdown-search {
+            border-bottom-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .filter-dropdown-search input {
+            background: var(--bg-page);
+            border-color: var(--border-soft);
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .filter-dropdown-item {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .filter-dropdown-item:hover {
+            background: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .filter-dropdown-item.selected {
+            background: #232a3a;
+        }
+
+        :root[data-theme="dark"] .detail-progress-wrap {
+            background: var(--info-box-bg);
+        }
+
+        :root[data-theme="dark"] .detail-step {
+            border-color: var(--border-soft);
+            border-right-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .detail-step.completed {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        :root[data-theme="dark"] .detail-step.active {
+            background: rgba(99, 102, 241, 0.12);
+        }
+
+        :root[data-theme="dark"] .detail-step.delayed {
+            background: rgba(239, 68, 68, 0.12);
+        }
+
+        :root[data-theme="dark"] .detail-step-title {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .meta-row {
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .search-box-wrap input {
+            background: var(--surface);
+            border-color: var(--border-soft);
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .search-box-wrap .search-clear {
+            background: var(--border-soft);
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .search-box-wrap .search-clear:hover {
+            background: #3a4256;
+            color: var(--text-strong);
+        }
+
     </style>
 </head>
 
@@ -1031,10 +1162,10 @@ require_once '../includes/version.php';
                         <i class="bi bi-trash" style="font-size:1.5rem;color:var(--danger);"></i>
                     </div>
                     <h6 class="mb-2" style="font-weight:700;">حذف روتین</h6>
-                    <p class="mb-1" style="font-size:0.9rem;color:var(--gray-600);">
+                    <p class="mb-1" style="font-size:0.9rem;color:var(--text-muted);">
                         روتین «<span id="confirmDeleteTitle"></span>» حذف شود؟
                     </p>
-                    <p class="mb-4" style="font-size:0.8rem;color:var(--gray-400);">
+                    <p class="mb-4" style="font-size:0.8rem;color:var(--text-muted);">
                         تسک‌های در حال انجام آن متوقف و پنهان می‌شوند.
                     </p>
                     <div class="d-flex gap-2">
@@ -1719,7 +1850,7 @@ require_once '../includes/version.php';
             document.getElementById('modalBody').innerHTML = `
                 <div class="detail-progress-wrap">
                     <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-                        <div class="d-flex gap-3 flex-wrap" style="font-size:.85rem;color:var(--gray-600)">
+                        <div class="d-flex gap-3 flex-wrap" style="font-size:.85rem;color:var(--text-muted)">
                             <span><strong>وضعیت:</strong> ${getStatusLabel(wf.status)}</span>
                             <span><strong>مرحله فعلی:</strong> ${wf.current_stage_name || 'نامشخص'}</span>
                             <span><strong>شروع:</strong> ${formatDate(wf.started_at)}</span>

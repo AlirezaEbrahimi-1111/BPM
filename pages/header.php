@@ -2,6 +2,28 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 ?>
+<!-- 🌗 تم روشن/تاریک — اعمال فوری از localStorage، پیش از رندرِ هدر (جلوگیریِ فلاش) -->
+<script>
+    function bpmGetTheme() {
+        try { return localStorage.getItem('bpm_theme') || 'light'; }
+        catch (e) { return 'light'; }
+    }
+    function bpmApplyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        var icon  = document.getElementById('themeToggleIcon');
+        var btn   = document.getElementById('themeToggleBtn');
+        var label = document.getElementById('themeToggleLabel');
+        if (icon)  icon.className = theme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+        if (btn)   btn.title = theme === 'dark' ? 'تغییر به تم روشن' : 'تغییر به تم تاریک';
+        if (label) label.textContent = theme === 'dark' ? 'حالت روشن' : 'حالت تاریک';
+    }
+    function toggleTheme() {
+        var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        try { localStorage.setItem('bpm_theme', next); } catch (e) {}
+        bpmApplyTheme(next);
+    }
+    bpmApplyTheme(bpmGetTheme());
+</script>
 <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
 <link rel="stylesheet" href="<?= asset('/assets/css/custom.css') ?>">
 <link rel="stylesheet" href="<?= asset('/assets/css/responsive/dashboard-responsive.css') ?>">
@@ -35,6 +57,20 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     .notification-badge.hidden,
     .announcement-badge.hidden {
         display: none !important;
+    }
+
+    /* آیکنِ پروفایل مثل بقیه‌ی آیکن‌های هدر (زنگ/مگافون) بدون فلشِ dropdown دیده شود */
+    #profileDropdown.dropdown-toggle::after {
+        display: none;
+    }
+
+    /* پروفایل، آخرین آیکنِ سمت چپِ هدر است؛ کلاس‌های start/end بوت‌استرپ باعث می‌شدند
+       منو از لبهٔ چپِ صفحه بیرون بزند. اینجا صریحاً لبهٔ چپِ منو را به لبهٔ آیکن می‌چسبانیم
+       تا منو فقط به سمت راست (داخلِ صفحه) باز شود، نه به چپ (بیرونِ صفحه) */
+    #profileDropdownMenu {
+        left: 0 !important;
+        right: auto !important;
+        margin: 0 !important;
     }
 </style>
 <!-- بستن فوری drawer قبل از render — جلوگیری از flash -->
@@ -209,33 +245,22 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         </div>
         <!-- Overlay تاریک پشت منو -->
         <div class="drawer-overlay" id="drawerOverlay"></div>
-
-        <div class="navbar-divider"></div>
-
-        <!-- آیکون‌های تنظیمات و خروج -->
-        <div class="navbar-nav me-0" style="flex-direction: row;">
-            <!-- حضور و غیاب - Minimal -->
             <div class="attendance-container" id="attendanceContainer">
                 <div class="attendance-loading">
                     <div class="spinner-border spinner-border-sm" role="status"></div>
                 </div>
             </div>
+        <!-- آیکون‌های تنظیمات و خروج -->
+        <div class="navbar-nav me-0" style="flex-direction: row;">
+            <!-- حضور و غیاب - Minimal -->
+
             <div class="navbar-divider"></div>
             <div class="nav-item">
                 <a class="nav-link settings-btn" href="../../pages/tickets.php" title="تیکت‌ها">
-                    <i class="bi bi-headset" style="font-size:1.2rem;color:#744CA4;"></i>
+                    <i class="bi bi-headset" style="font-size:1.2rem;color:var(--icon-accent);"></i>
                 </a>
             </div>
-            <div class="navbar-divider"></div>
 
-            <div class="nav-item">
-                <a class="nav-link settings-btn" href="../../pages/settings.php" title="تنظیمات">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#744CA4" stroke-width="1.6">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                </a>
-            </div>
             <div class="dropdown" style="position: relative;">
                 <!-- آیکون مگافون با بج -->
                 <a href="#" class="nav-link position-relative settings-btn" id="announcementDropdown"
@@ -288,13 +313,35 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                     </div>
                 </div>
             </div>
-            <div class="nav-item" id="logoutIconItem">
-                <a class="nav-link settings-btn" href="#" onclick="logoutConfirm()" title="خروج">
-                    <i class="bi bi-box-arrow-right"></i>
+            <div class="navbar-divider"></div>
+            <div class="dropdown" style="position: relative;">
+                <a href="#" class="nav-link settings-btn dropdown-toggle" id="profileDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false" title="پروفایل"
+                    style="display: inline-flex; align-items: center;">
+                    <i class="bi bi-person" style="font-size:1.25rem;color:var(--icon-accent);"></i>
                 </a>
+                <ul class="dropdown-menu" id="profileDropdownMenu" aria-labelledby="profileDropdown">
+                    <li>
+                        <a class="dropdown-item" href="../../pages/settings.php">
+                            <i class="bi bi-gear ms-2"></i>تنظیمات
+                        </a>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+                            <i class="bi bi-moon-stars ms-2" id="themeToggleIcon" ></i><span style="padding-right: 5px;" id="themeToggleLabel">حالت تاریک</span>
+                        </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="logoutConfirm()">
+                            <i class="bi bi-box-arrow-right ms-2"></i>خروج
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
+    <script>bpmApplyTheme(bpmGetTheme());</script>
 </nav>
 <script src="<?= asset('/assets/js/table-utils.js') ?>"></script>
 <script src="<?= asset('/assets/js/date-utils.js') ?>"></script>
@@ -603,17 +650,17 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         overlay.setAttribute('dir', 'rtl');
         overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
         overlay.innerHTML =
-            '<div style="background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);font-family:inherit;">' +
-            '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:16px 18px;border-bottom:1px solid #EEF2F7;">' +
-            '<div style="font-weight:800;color:#1f2937;font-size:16px;">' + escapeHtml(ann.title || 'اطلاعیه') + '</div>' +
-            '<button type="button" id="annModalClose" style="border:none;background:#F3F4F6;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;color:#6B7280;">&times;</button>' +
+            '<div style="background:var(--surface);border-radius:16px;max-width:520px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);font-family:inherit;">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:16px 18px;border-bottom:1px solid var(--border-soft);">' +
+            '<div style="font-weight:800;color:var(--text-strong);font-size:16px;">' + escapeHtml(ann.title || 'اطلاعیه') + '</div>' +
+            '<button type="button" id="annModalClose" style="border:none;background:var(--border-soft);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;color:var(--text-strong);">&times;</button>' +
             '</div>' +
-            '<div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid #F3F4F6;">' +
+            '<div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border-soft);">' +
             '<span style="background:' + pr.color + ';color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;">' + pr.label + '</span>' +
             '<span style="color:#9CA3AF;font-size:12px;">' + timeText + '</span>' +
             '</div>' +
-            '<div style="padding:16px 18px;overflow:auto;line-height:2;color:#374151;font-size:14px;">' + (contentHtml || '<span style="color:#9CA3AF;">متنی برای این اطلاعیه ثبت نشده است.</span>') + '</div>' +
-            '<div style="padding:12px 18px;border-top:1px solid #EEF2F7;text-align:center;">' +
+            '<div style="padding:16px 18px;overflow:auto;line-height:2;color:var(--text-strong);font-size:14px;">' + (contentHtml || '<span style="color:#9CA3AF;">متنی برای این اطلاعیه ثبت نشده است.</span>') + '</div>' +
+            '<div style="padding:12px 18px;border-top:1px solid var(--border-soft);text-align:center;">' +
             '<a href="/pages/announcements.php" style="color:#744CA4;font-weight:700;text-decoration:none;font-size:13px;">مشاهده همه اطلاعیه‌ها ←</a>' +
             '</div>' +
             '</div>';
@@ -1133,7 +1180,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         const overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;';
         overlay.innerHTML = `
-            <div style="background:#fff;border-radius:12px;padding:20px;width:90%;max-width:400px;box-shadow:0 10px 40px rgba(0,0,0,.2);direction:rtl;text-align:right;">
+            <div style="background:var(--surface);color:var(--text-strong);border-radius:12px;padding:20px;width:90%;max-width:400px;box-shadow:0 10px 40px rgba(0,0,0,.2);direction:rtl;text-align:right;">
                 <p style="margin:0 0 16px;font-size:15px;line-height:1.8;">${message}</p>
                 <div style="display:flex;gap:8px;justify-content:flex-end;">
                     <button id="uiConfirmNo" class="btn btn-secondary">${opts.noText || 'خیر'}</button>
@@ -1157,9 +1204,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         const overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;';
         overlay.innerHTML = `
-            <div style="background:#fff;border-radius:12px;padding:20px;width:90%;max-width:420px;box-shadow:0 10px 40px rgba(0,0,0,.2);direction:rtl;text-align:right;">
+            <div style="background:var(--surface);color:var(--text-strong);border-radius:12px;padding:20px;width:90%;max-width:420px;box-shadow:0 10px 40px rgba(0,0,0,.2);direction:rtl;text-align:right;">
                 <p style="margin:0 0 12px;font-size:15px;line-height:1.8;">${message}</p>
-                <textarea id="uiPromptInput" rows="3" style="width:100%;border:1px solid #ddd;border-radius:8px;padding:10px;resize:vertical;font-family:inherit;" placeholder="${opts.placeholder || ''}">${opts.value || ''}</textarea>
+                <textarea id="uiPromptInput" rows="3" style="width:100%;border:1px solid var(--border-soft);border-radius:8px;padding:10px;resize:vertical;font-family:inherit;background:var(--surface);color:var(--text-strong);" placeholder="${opts.placeholder || ''}">${opts.value || ''}</textarea>
                 <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
                     <button id="uiPromptCancel" class="btn btn-secondary">انصراف</button>
                     <button id="uiPromptOk" class="btn btn-primary">${opts.okText || 'تأیید'}</button>

@@ -1,11 +1,10 @@
 <?php
 require_once '../includes/version.php';
 ?>
-<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
-<link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
-<link rel="stylesheet" href="<?= asset('../../assets/css/responsive/dashboard-responsive.css') ?>">
-<!-- وزیرمتن - بهینه برای موبایل -->
-<link rel="stylesheet" href="<?= asset('../../assets/fonts/Vazirmatn-font-face.css') ?>">
+<!-- توجه: custom.css/dashboard-responsive.css/فونت اینجا دوباره لینک نمی‌شوند —
+     همهٔ صفحاتی که footer.php را include می‌کنند، header.php را هم include کرده‌اند
+     که همین فایل‌ها را از قبل لود می‌کند. لود دوم اینجا (که آخر از همه اجرا می‌شد)
+     باعث می‌شد قواعد قدیمی/بدون تم‌تاریکِ custom.css روی override محلیِ هر صفحه غالب شود. -->
 
 <div class="footer-9">
     <span>تهیه شده با</span>

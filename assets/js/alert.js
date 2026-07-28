@@ -31,28 +31,28 @@ function showToast(message, type = 'success', options = {}) {
         success: {
             icon: 'check-circle-fill',
             color: '#10b981',
-            bgColor: '#f0fdf4',
+            bgColor: 'var(--toast-success-bg)',
             borderColor: '#10b981',
             label: 'موفق',
         },
         error: {
             icon: 'x-circle-fill',
             color: '#ef4444',
-            bgColor: '#fef2f2',
+            bgColor: 'var(--toast-error-bg)',
             borderColor: '#ef4444',
             label: 'خطا',
         },
         warning: {
             icon: 'exclamation-triangle-fill',
             color: '#f59e0b',
-            bgColor: '#fffbeb',
+            bgColor: 'var(--toast-warning-bg)',
             borderColor: '#f59e0b',
             label: 'اخطار',
         },
         info: {
             icon: 'info-circle-fill',
             color: '#3b82f6',
-            bgColor: '#fff5f5ff',
+            bgColor: 'var(--toast-info-bg)',
             borderColor: '#3b82f6',
             label: 'اطلاعات',
         },
@@ -97,10 +97,10 @@ function showToast(message, type = 'success', options = {}) {
 
     header.innerHTML = `
         <i class="bi bi-${icon}" style="color:${color}; font-size:1.3rem; "></i>
-        <span style="font-weight:600; color:#1e293b;  ">${message}</span>
+        <span style="font-weight:600; color:var(--text-strong);  ">${message}</span>
         <button class="toast-close-btn" style="
             background: none; border: none; cursor: pointer;
-            color: #94a3b8; font-size: 1.1rem; padding: 0; line-height:1;" title="بستن">
+            color: var(--text-muted); font-size: 1.1rem; padding: 0; line-height:1;" title="بستن">
             <i class="bi bi-x-lg"></i>
         </button>
     `;

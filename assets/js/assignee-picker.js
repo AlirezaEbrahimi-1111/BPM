@@ -112,6 +112,23 @@ const AssigneePicker = (() => {
 .ap-hint{font-size:12px;color:#6c757d;margin-top:5px;min-height:18px;display:block}
 .ap-hint.ap-info   {color:#0d6efd}
 .ap-hint.ap-warning{color:#fd7e14}
+
+/* تم تاریک — این استایل‌ها از متغیرهای bootstrap (--bs-body-bg و ...) استفاده می‌کنند
+   که با تاگل تمِ اپ (data-theme) هماهنگ نیستند و همیشه مقدار روشن دارند؛ اینجا override می‌شوند */
+:root[data-theme="dark"] .ap-input{
+  background:var(--surface);border-color:var(--border-soft);color:var(--text-strong)}
+:root[data-theme="dark"] .ap-clear:hover{background:#2b3242;color:var(--text-strong)}
+:root[data-theme="dark"] .ap-dropdown{
+  background:var(--surface);border-color:var(--border-soft);box-shadow:0 6px 24px rgba(0,0,0,.4)}
+:root[data-theme="dark"] .ap-group-header{
+  background:#161b27;color:var(--text-muted);
+  border-bottom-color:var(--border-soft);border-top-color:var(--border-soft)}
+:root[data-theme="dark"] .ap-item{border-bottom-color:var(--border-soft)}
+:root[data-theme="dark"] .ap-item:hover,
+:root[data-theme="dark"] .ap-item.ap-focused{background:#232a3a}
+:root[data-theme="dark"] .ap-item.ap-selected{background:rgba(205,184,255,.15)}
+:root[data-theme="dark"] .ap-item-name{color:var(--text-strong)}
+:root[data-theme="dark"] .ap-hint{color:var(--text-muted)}
         `;
         document.head.appendChild(s);
     }

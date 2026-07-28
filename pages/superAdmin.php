@@ -166,6 +166,16 @@ foreach ($orgs as $org) {
     .md input:focus { border-color: #744CA4; }
     .md-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; direction: ltr; }
 
+    :root[data-theme="dark"] .md { background: var(--surface); }
+    :root[data-theme="dark"] .md h3 { color: var(--text-strong); }
+    :root[data-theme="dark"] .md .sb,
+    :root[data-theme="dark"] .md label { color: var(--text-muted); }
+    :root[data-theme="dark"] .md input {
+      background: var(--surface);
+      color: var(--text-strong);
+      border-color: var(--border-soft);
+    }
+
     @media (max-width: 768px) {
       .admin-wrap { margin-top: 84px; }
       .admin-search input { width: 100%; }

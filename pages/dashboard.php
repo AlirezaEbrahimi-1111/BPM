@@ -99,6 +99,15 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             padding-bottom: 2.5rem;
         }
 
+        /* تم تاریک — فقط توکن‌های محلیِ #dashboardModern را به توکن‌های سراسریِ custom.css وصل می‌کند؛
+           بقیهٔ قواعدِ این بخش (stat-card، dash-card، filter-btn و ...) خودشان از این متغیرها استفاده می‌کنند */
+        :root[data-theme="dark"] #dashboardModern {
+            --dm-surface: var(--surface);
+            --dm-ink: var(--text-strong);
+            --dm-muted: var(--text-muted);
+            --dm-line: var(--border-soft);
+        }
+
         /* ---------- هیرو: خوش‌آمد + آمار ---------- */
         #dashboardModern .dash-hero {
             display: grid;
@@ -186,7 +195,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             display: grid;
             place-items: center;
             font-size: 1.4rem;
-            background: color-mix(in srgb, var(--c, var(--dm-brand)) 30%, #fff);
+            background: color-mix(in srgb, var(--c, var(--dm-brand)) 30%, var(--dm-surface));
             color: var(--c, var(--dm-brand));
         }
 
@@ -264,14 +273,14 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             font-weight: 600;
             text-decoration: none;
             color: var(--dm-brand);
-            background: color-mix(in srgb, var(--dm-brand) 10%, #fff);
+            background: color-mix(in srgb, var(--dm-brand) 10%, var(--dm-surface));
             padding: .35rem .7rem;
             border-radius: 999px;
             transition: background .15s ease;
         }
 
         #dashboardModern .dash-link:hover {
-            background: color-mix(in srgb, var(--dm-brand) 20%, #fff);
+            background: color-mix(in srgb, var(--dm-brand) 20%, var(--dm-surface));
         }
 
         #dashboardModern .dash-card .card-body {
@@ -288,7 +297,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
 
         #dashboardModern .filter-btn {
             border: 1px solid var(--dm-line);
-            background: #fff;
+            background: var(--dm-surface);
             color: var(--dm-muted);
             padding: .35rem .85rem;
             border-radius: 999px;
@@ -328,6 +337,14 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
 
         #dashboardModern .recent-activities-scroll::-webkit-scrollbar-thumb:hover {
             background: #bcc2d4;
+        }
+
+        :root[data-theme="dark"] #dashboardModern .recent-activities-scroll::-webkit-scrollbar-thumb {
+            background: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] #dashboardModern .recent-activities-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
         }
 
         #dashboardModern .loading {
@@ -586,6 +603,14 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
     font-weight: 600;
 }
 
+:root[data-theme="dark"] .task-assignee {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .task-assignee strong {
+    color: var(--text-strong);
+}
+
 .task-badges {
     display: flex;
     flex-wrap: wrap;
@@ -626,6 +651,18 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
 .empty-state-improved p {
     color: #5f6368;
     margin-top: 8px;
+}
+
+:root[data-theme="dark"] .empty-state-improved {
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .empty-state-improved h5 {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .empty-state-improved p {
+    color: var(--text-muted);
 }
 
 /* Progress Bar */
@@ -1268,6 +1305,9 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
         color: #aaa;
         direction: rtl;
     }
+    :root[data-theme="dark"] .dtask-search-row { border-bottom-color: var(--border-soft); }
+    :root[data-theme="dark"] .dtask-search-row:focus-within { border-bottom-color: var(--icon-accent); }
+    :root[data-theme="dark"] .dtask-search-row:focus-within i { color: var(--icon-accent); }
     .btn-remind-overview {
         opacity: 0;
         transition: opacity 0.2s ease, transform 0.2s ease;

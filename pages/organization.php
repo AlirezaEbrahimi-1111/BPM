@@ -89,6 +89,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     .co-md .hint { font-size: 12.5px; color: #718096; margin-top: 8px; }
     .co-md-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; direction: ltr; }
 
+    :root[data-theme="dark"] .co-md { background: var(--surface); }
+    :root[data-theme="dark"] .co-md h3 { color: var(--text-strong); }
+    :root[data-theme="dark"] .co-md .sb,
+    :root[data-theme="dark"] .co-md .hint { color: var(--text-muted); }
+    :root[data-theme="dark"] .co-md input {
+      background: var(--surface);
+      color: var(--text-strong);
+      border-color: var(--border-soft);
+    }
+
     @media (max-width: 768px) {
       .co-wrap { margin-top: 84px; }
       .co-form-grid { grid-template-columns: 1fr; }

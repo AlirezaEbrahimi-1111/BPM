@@ -146,6 +146,18 @@ require_once '../includes/version.php';
         .dash-card-body::-webkit-scrollbar-thumb:hover {
             background: var(--gray-400);
         }
+
+        :root[data-theme="dark"] .dash-card-body::-webkit-scrollbar-track {
+            background: var(--info-box-bg);
+        }
+
+        :root[data-theme="dark"] .dash-card-body::-webkit-scrollbar-thumb {
+            background: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .dash-card-body::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
 .status-badge{
     border-radius:5px;
         padding: 4px 9px 4px 9px;

@@ -79,6 +79,24 @@ require_once '../includes/version.php';
     .ann-btn-primary:hover { filter: brightness(1.06); }
 
     @media (max-width: 768px) { .overview-container { max-width: 100% !important; } .ann-head-card h1 { font-size: 1.15rem; } }
+
+    /* ─── تم تاریک ─── */
+    :root[data-theme="dark"] .ann-grid-card { background: var(--surface); border-color: var(--border-soft); }
+    :root[data-theme="dark"] .ann-grid-title { color: var(--text-strong); }
+    :root[data-theme="dark"] .ann-icon-btn { background: var(--surface); border-color: var(--border-soft); color: var(--text-muted); }
+    :root[data-theme="dark"] .ann-icon-btn:hover { background: #232a3a; }
+    :root[data-theme="dark"] .ann-detail { background: #232032; }
+    :root[data-theme="dark"] .ann-detail-text { color: var(--text-strong); }
+    :root[data-theme="dark"] #annModal .modal-header { border-bottom-color: var(--border-soft); }
+    :root[data-theme="dark"] #annModal .modal-title { color: var(--text-strong); }
+    :root[data-theme="dark"] #annModal .modal-footer { border-top-color: var(--border-soft); }
+    :root[data-theme="dark"] #annModal .form-label { color: var(--text-strong); }
+    :root[data-theme="dark"] #annModal .form-control,
+    :root[data-theme="dark"] #annModal .form-select,
+    :root[data-theme="dark"] #annModal .persian-datepicker-input { border-color: var(--border-soft); }
+    :root[data-theme="dark"] .ann-switch .form-check-label { color: var(--text-strong); }
+    :root[data-theme="dark"] .ann-scope-chip { border-color: var(--border-soft); color: var(--text-muted); }
+    :root[data-theme="dark"] .ann-scope-chip.active { background: #232032; }
     </style>
 
     <div class="overview-container">

@@ -281,41 +281,96 @@
     background-color: #e9ecef;
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    .persian-datepicker {
-        background: #2d2d2d;
-        border-color: #444;
-    }
-    
-    .datepicker-header {
-        border-bottom-color: #444;
-    }
-    
-    .datepicker-current {
-        color: #fff;
-    }
-    
-    .datepicker-weekday {
-        color: #aaa;
-    }
-    
-    .datepicker-day {
-        background: #2d2d2d;
-        color: #fff;
-    }
-    
-    .datepicker-day:hover {
-        background: #3a3a5a;
-    }
-    
-    .datepicker-day.other-month {
-        color: #555;
-    }
-    
-    .datepicker-nav:hover {
-        background: #3a3a5a;
-    }
+/* Dark Mode Support — هماهنگ با تاگلِ تمِ اپ (data-theme روی <html>)، نه ترجیحِ OS */
+:root[data-theme="dark"] .persian-datepicker-input {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .persian-datepicker-input:focus {
+    border-color: var(--icon-accent);
+    box-shadow: 0 0 0 3px rgba(205, 184, 255, 0.15);
+}
+
+:root[data-theme="dark"] .persian-datepicker-input:hover {
+    border-color: var(--icon-accent);
+}
+
+:root[data-theme="dark"] .persian-datepicker-wrapper .form-control.persian-datepicker-input:disabled {
+    background-color: #232a3a;
+}
+
+:root[data-theme="dark"] .persian-datepicker {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="dark"] .datepicker-header {
+    border-bottom-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .datepicker-current {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .datepicker-nav {
+    color: var(--icon-accent);
+}
+
+:root[data-theme="dark"] .datepicker-nav:hover {
+    background: rgba(205, 184, 255, 0.12);
+}
+
+:root[data-theme="dark"] .datepicker-weekday {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .datepicker-day {
+    background: var(--surface);
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .datepicker-day:hover {
+    background: rgba(205, 184, 255, 0.12);
+    border-color: var(--icon-accent);
+}
+
+:root[data-theme="dark"] .datepicker-day.other-month {
+    color: #4c5567;
+}
+
+:root[data-theme="dark"] .datepicker-day.other-month:hover {
+    background: var(--surface);
+    border-color: transparent;
+}
+
+:root[data-theme="dark"] .datepicker-day.disabled {
+    color: #454d5e;
+    background: #161b27;
+}
+
+:root[data-theme="dark"] .datepicker-day.today {
+    background: rgba(255, 152, 0, 0.15);
+    border-color: #ff9800;
+    color: #ffb74d;
+}
+
+:root[data-theme="dark"] .datepicker-day.today:hover {
+    background: rgba(255, 152, 0, 0.25);
+}
+
+:root[data-theme="dark"] .datepicker-day.selected {
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.45);
+}
+
+:root[data-theme="dark"] .datepicker-day.datepicker-friday.datepicker-holiday {
+    background: rgba(229, 62, 62, 0.15);
+}
+
+:root[data-theme="dark"] .persian-datepicker-wrapper.loading .persian-datepicker-input {
+    background-image: linear-gradient(90deg, #202737 25%, #2b3346 50%, #202737 75%);
 }
 
 /* Accessibility */

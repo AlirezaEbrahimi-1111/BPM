@@ -43,6 +43,10 @@ require_once '../includes/version.php';
             border-color: #e9ecef !important;
         }
 
+        :root[data-theme="dark"] #taskInfo .border-end {
+            border-color: var(--border-soft) !important;
+        }
+
         .checklist-detail-item {
             display: flex;
             align-items: center;
@@ -54,6 +58,10 @@ require_once '../includes/version.php';
         .checklist-detail-item:hover {
             background: #f8f9fa;
             border-radius: 6px;
+        }
+
+        :root[data-theme="dark"] .checklist-detail-item:hover {
+            background: #232a3a;
         }
 
         .checklist-detail-item.done .chk-title {
@@ -101,6 +109,10 @@ require_once '../includes/version.php';
             border-radius: 6px;
         }
 
+        :root[data-theme="dark"] .checklist-detail-item-wrap:hover {
+            background: #232a3a;
+        }
+
         /* ── کشوی یادداشت انجام (مدل درجا) ── */
         .chk-note-drawer {
             display: none;
@@ -110,6 +122,11 @@ require_once '../includes/version.php';
             border: 1px solid #e5e0ff;
             border-radius: 10px;
             animation: chkSlide .18s ease;
+        }
+
+        :root[data-theme="dark"] .chk-note-drawer {
+            background: #232032;
+            border-color: #3a2f5c;
         }
 
         .checklist-detail-item-wrap.noting .chk-note-drawer {
@@ -135,6 +152,10 @@ require_once '../includes/version.php';
             margin-bottom: 6px;
         }
 
+        :root[data-theme="dark"] .chk-note-drawer label {
+            color: var(--text-muted);
+        }
+
         .chk-note-drawer textarea {
             width: 100%;
             font-family: inherit;
@@ -143,6 +164,12 @@ require_once '../includes/version.php';
             border-radius: 8px;
             padding: 8px 10px;
             resize: vertical;
+        }
+
+        :root[data-theme="dark"] .chk-note-drawer textarea {
+            background: var(--surface);
+            border-color: var(--border-soft);
+            color: var(--text-strong);
         }
 
         .chk-note-drawer textarea:focus {
@@ -167,6 +194,11 @@ require_once '../includes/version.php';
             color: #4b5563;
         }
 
+        :root[data-theme="dark"] .chk-done-note {
+            background: #232a3a;
+            color: var(--text-muted);
+        }
+
         .chk-done-note b {
             color: #5b32d6;
             font-weight: 600;
@@ -186,6 +218,10 @@ require_once '../includes/version.php';
                 border-bottom: 1px solid #e9ecef;
                 padding-bottom: 8px;
                 margin-bottom: 8px;
+            }
+
+            :root[data-theme="dark"] #taskInfo .col-6 {
+                border-bottom-color: var(--border-soft);
             }
         }
     </style>
@@ -278,7 +314,7 @@ require_once '../includes/version.php';
                 <div id="checklistDetailItems"></div>
 
                 <!-- افزودن آیتم - فقط تعریف‌کننده -->
-                <div id="checklistLockNote" style="display:none; margin-top:8px; padding:8px 12px; background:#fef3c7; border:1px solid #fcd34d; border-radius:8px; font-size:0.8rem; color:#92400e;">
+                <div id="checklistLockNote" style="display:none; margin-top:8px; padding:8px 12px; background:var(--warning-box-bg); border:1px solid #fcd34d; border-radius:8px; font-size:0.8rem; color:var(--warning-box-text);">
                     <i class="bi bi-lock-fill me-1"></i>
                     این کار به پایان رسیده و چک‌لیست آن قفل شده است. امکان افزودن، ویرایش، حذف یا تغییر آیتم‌ها وجود ندارد.
                 </div>
@@ -613,17 +649,17 @@ require_once '../includes/version.php';
         <div id="requestDeadlineModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h5 style="margin: 0; color: #1a1a1a; font-weight: 600;">درخواست تمدید موعد انجام</h5>
+                    <h5 style="margin: 0; color: var(--text-strong); font-weight: 600;">درخواست تمدید موعد انجام</h5>
                     <button onclick="closeModal('requestDeadlineModal')"
-                        style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                        style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted); padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
                         ✕
                     </button>
                 </div>
 
                 <!-- موعد فعلی -->
                 <div
-                    style="margin-bottom: 15px; padding: 12px; background: #f0f0f0; border-radius: 5px; border-right: 4px solid #667eea;">
-                    <strong style="color: #1a1a1a;" id="currentDeadlineLabel">موعد فعلی: -</strong>
+                    style="margin-bottom: 15px; padding: 12px; background: var(--info-box-bg); border-radius: 5px; border-right: 4px solid #667eea;">
+                    <strong style="color: var(--text-strong);" id="currentDeadlineLabel">موعد فعلی: -</strong>
                 </div>
 
                 <!-- انتخاب موعد جدید -->
@@ -667,7 +703,7 @@ require_once '../includes/version.php';
                         ارسال درخواست
                     </button>
                     <button onclick="closeModal('requestDeadlineModal')"
-                        style="flex: 1; padding: 10px; border: 1px solid #ddd; background: white; border-radius: 5px; cursor: pointer; font-weight: 600; color: #666; transition: all 0.2s;">
+                        style="flex: 1; padding: 10px; border: 1px solid var(--border-soft); background: var(--surface); border-radius: 5px; cursor: pointer; font-weight: 600; color: var(--text-muted); transition: all 0.2s;">
                         انصراف
                     </button>
                 </div>
@@ -678,12 +714,12 @@ require_once '../includes/version.php';
         <div id="workflowDeadlineModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                    <h5 style="margin:0; color:#1a1a1a; font-weight:600;">تمدید موعد کار روتین</h5>
+                    <h5 style="margin:0; color:var(--text-strong); font-weight:600;">تمدید موعد کار روتین</h5>
                     <button onclick="closeModal('workflowDeadlineModal')"
-                        style="background:none; border:none; font-size:24px; cursor:pointer; color:#999;">✕</button>
+                        style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">✕</button>
                 </div>
-                <div style="margin-bottom:15px; padding:12px; background:#f0f0f0; border-radius:5px; border-right:4px solid #667eea;">
-                    <strong style="color:#1a1a1a;">موعد فعلی: </strong><span id="wfCurrentDeadline">-</span>
+                <div style="margin-bottom:15px; padding:12px; background:var(--info-box-bg); border-radius:5px; border-right:4px solid #667eea;">
+                    <strong style="color:var(--text-strong);">موعد فعلی: </strong><span id="wfCurrentDeadline">-</span>
                 </div>
                 <div style="margin-bottom:15px;">
                     <label class="form-label">چند ساعت به موعد اضافه شود؟</label>
@@ -691,8 +727,8 @@ require_once '../includes/version.php';
                         placeholder="مثلاً: ۲۴" oninput="updateWfDeadlinePreview()">
                     <small class="text-muted">محدودیتی برای تعداد ساعت وجود ندارد.</small>
                 </div>
-                <div style="margin-bottom:15px; padding:12px; background:#fff3cd; border-radius:5px; border-right:4px solid #ffc107;">
-                    <strong style="color:#856404;">موعد جدید: </strong><span id="wfNewDeadlinePreview">-</span>
+                <div style="margin-bottom:15px; padding:12px; background:var(--warning-box-bg); border-radius:5px; border-right:4px solid #ffc107;">
+                    <strong style="color:var(--warning-box-text);">موعد جدید: </strong><span id="wfNewDeadlinePreview">-</span>
                 </div>
                 <div style="margin-bottom:15px;">
                     <label class="form-label">دلیل تمدید:</label>
@@ -704,7 +740,7 @@ require_once '../includes/version.php';
                         ارسال درخواست
                     </button>
                     <button onclick="closeModal('workflowDeadlineModal')"
-                        style="flex:1; padding:10px; border:1px solid #ddd; background:white; border-radius:5px; cursor:pointer; font-weight:600; color:#666;">
+                        style="flex:1; padding:10px; border:1px solid var(--border-soft); background:var(--surface); border-radius:5px; cursor:pointer; font-weight:600; color:var(--text-muted);">
                         انصراف
                     </button>
                 </div>
@@ -715,9 +751,9 @@ require_once '../includes/version.php';
         <div id="reviewDeadlineModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h5 style="margin: 0; color: #1a1a1a; font-weight: 600;">بررسی درخواست تمدید موعد</h5>
+                    <h5 style="margin: 0; color: var(--text-strong); font-weight: 600;">بررسی درخواست تمدید موعد</h5>
                     <button onclick="closeModal('reviewDeadlineModal')"
-                        style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                        style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted); padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
                         ✕
                     </button>
                 </div>
@@ -725,26 +761,26 @@ require_once '../includes/version.php';
                 <!-- جزئیات -->
                 <div style="margin-bottom: 15px;">
                     <strong style="color: #667eea;">درخواست‌کننده:</strong>
-                    <span id="requesterName" style="margin-right: 8px; color: #1a1a1a;">-</span>
+                    <span id="requesterName" style="margin-right: 8px; color: var(--text-strong);">-</span>
                 </div>
 
                 <!-- موعد فعلی -->
                 <div
-                    style="margin-bottom: 15px; padding: 12px; background: #f0f0f0; border-radius: 5px; border-right: 4px solid #667eea;">
-                    <strong style="color: #1a1a1a;" id="currentDeadlineDisplay">موعد فعلی: -</strong>
+                    style="margin-bottom: 15px; padding: 12px; background: var(--info-box-bg); border-radius: 5px; border-right: 4px solid #667eea;">
+                    <strong style="color: var(--text-strong);" id="currentDeadlineDisplay">موعد فعلی: -</strong>
                 </div>
 
                 <!-- موعد درخواستی -->
                 <div
-                    style="margin-bottom: 15px; padding: 12px; background: #fff3cd; border-radius: 5px; border-right: 4px solid #ffc107;">
-                    <strong style="color: #856404;" id="requestedDeadlineDisplay">موعد درخواستی: -</strong>
+                    style="margin-bottom: 15px; padding: 12px; background: var(--warning-box-bg); border-radius: 5px; border-right: 4px solid #ffc107;">
+                    <strong style="color: var(--warning-box-text);" id="requestedDeadlineDisplay">موعد درخواستی: -</strong>
                 </div>
 
                 <!-- دلیل -->
                 <div style="margin-bottom: 15px;">
                     <strong style="color: #667eea;">دلیل درخواست:</strong>
                     <p id="extensionReasonDisplay"
-                        style="margin: 8px 0 0 0; color: #666; white-space: pre-wrap; line-height: 1.6;">-</p>
+                        style="margin: 8px 0 0 0; color: var(--text-muted); white-space: pre-wrap; line-height: 1.6;">-</p>
                 </div>
 
                 <!-- دکمه‌های عمل -->
@@ -760,7 +796,7 @@ require_once '../includes/version.php';
                 </div>
 
                 <button onclick="closeModal('reviewDeadlineModal')"
-                    style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ddd; background: white; border-radius: 5px; cursor: pointer; font-weight: 600; color: #666;">
+                    style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid var(--border-soft); background: var(--surface); border-radius: 5px; cursor: pointer; font-weight: 600; color: var(--text-muted);">
                     بستن
                 </button>
             </div>
@@ -769,15 +805,15 @@ require_once '../includes/version.php';
         <div id="renewalModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h5 style="margin: 0; color: #1a1a1a; font-weight: 600;" id="renewalModalTitle">تمدید دوره</h5>
+                    <h5 style="margin: 0; color: var(--text-strong); font-weight: 600;" id="renewalModalTitle">تمدید دوره</h5>
                     <button onclick="closeModal('renewalModal')"
-                        style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                        style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted); padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
                         ✕
                     </button>
                 </div>
 
-                <div style="margin-bottom: 15px; padding: 12px; background: #f0f0f0; border-radius: 5px; border-right: 4px solid #667eea;">
-                    <strong style="color: #1a1a1a;">دوره: <span id="renewalPeriodLabel">-</span></strong>
+                <div style="margin-bottom: 15px; padding: 12px; background: var(--info-box-bg); border-radius: 5px; border-right: 4px solid #667eea;">
+                    <strong style="color: var(--text-strong);">دوره: <span id="renewalPeriodLabel">-</span></strong>
                 </div>
 
                 <div style="margin-bottom: 15px;">
@@ -833,8 +869,8 @@ require_once '../includes/version.php';
                     <small class="text-muted">خالی بگذارید برای نامحدود (تا تمدیدِ بعدی)</small>
                 </div>
 
-                <div style="margin-bottom: 15px; padding: 10px; background: #e7f3ff; border-radius: 5px;">
-                    <strong style="color: #0c5460;">سررسیدِ دورهٔ بعدی: <span id="renewalNextPeriodPreview">-</span></strong>
+                <div style="margin-bottom: 15px; padding: 10px; background: var(--info-box-bg); border-radius: 5px;">
+                    <strong style="color: var(--text-strong);">سررسیدِ دورهٔ بعدی: <span id="renewalNextPeriodPreview">-</span></strong>
                 </div>
 
                 <div style="margin-bottom: 15px;">
@@ -848,7 +884,7 @@ require_once '../includes/version.php';
                         ارسالِ درخواست
                     </button>
                     <button onclick="closeModal('renewalModal')"
-                        style="flex: 1; padding: 10px; border: 1px solid #ddd; background: white; border-radius: 5px; cursor: pointer; font-weight: 600; color: #666;">
+                        style="flex: 1; padding: 10px; border: 1px solid var(--border-soft); background: var(--surface); border-radius: 5px; cursor: pointer; font-weight: 600; color: var(--text-muted);">
                         انصراف
                     </button>
                 </div>
@@ -859,26 +895,26 @@ require_once '../includes/version.php';
         <div id="reviewRenewalModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h5 style="margin: 0; color: #1a1a1a; font-weight: 600;">بررسی درخواست تمدید دوره</h5>
+                    <h5 style="margin: 0; color: var(--text-strong); font-weight: 600;">بررسی درخواست تمدید دوره</h5>
                     <button onclick="closeModal('reviewRenewalModal')"
-                        style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                        style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted); padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
                         ✕
                     </button>
                 </div>
 
                 <div style="margin-bottom: 15px;">
                     <strong style="color: #667eea;">درخواست‌کننده:</strong>
-                    <span id="renewalRequesterName" style="margin-right: 8px; color: #1a1a1a;">-</span>
+                    <span id="renewalRequesterName" style="margin-right: 8px; color: var(--text-strong);">-</span>
                 </div>
 
-                <div style="margin-bottom: 15px; padding: 12px; background: #fff3cd; border-radius: 5px; border-right: 4px solid #ffc107;">
-                    <strong style="color: #856404;">شروعِ پیشنهادی: <span id="renewalReqStartDisplay">-</span></strong><br>
-                    <strong style="color: #856404;">پایانِ پیشنهادی: <span id="renewalReqEndDisplay">-</span></strong>
+                <div style="margin-bottom: 15px; padding: 12px; background: var(--warning-box-bg); border-radius: 5px; border-right: 4px solid #ffc107;">
+                    <strong style="color: var(--warning-box-text);">شروعِ پیشنهادی: <span id="renewalReqStartDisplay">-</span></strong><br>
+                    <strong style="color: var(--warning-box-text);">پایانِ پیشنهادی: <span id="renewalReqEndDisplay">-</span></strong>
                 </div>
 
                 <div style="margin-bottom: 15px;">
                     <strong style="color: #667eea;">دلیل درخواست:</strong>
-                    <p id="renewalReasonDisplay" style="margin: 8px 0 0 0; color: #666; white-space: pre-wrap; line-height: 1.6;">-</p>
+                    <p id="renewalReasonDisplay" style="margin: 8px 0 0 0; color: var(--text-muted); white-space: pre-wrap; line-height: 1.6;">-</p>
                 </div>
 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -893,7 +929,7 @@ require_once '../includes/version.php';
                 </div>
 
                 <button onclick="closeModal('reviewRenewalModal')"
-                    style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ddd; background: white; border-radius: 5px; cursor: pointer; font-weight: 600; color: #666;">
+                    style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid var(--border-soft); background: var(--surface); border-radius: 5px; cursor: pointer; font-weight: 600; color: var(--text-muted);">
                     بستن
                 </button>
             </div>
@@ -902,9 +938,9 @@ require_once '../includes/version.php';
         <div id="rejectReasonModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h5 style="margin: 0; color: #1a1a1a; font-weight: 600;">دلیل رد درخواست</h5>
+                    <h5 style="margin: 0; color: var(--text-strong); font-weight: 600;">دلیل رد درخواست</h5>
                     <button onclick="closeModal('rejectReasonModal')"
-                        style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                        style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted); padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
                         ✕
                     </button>
                 </div>
@@ -921,7 +957,7 @@ require_once '../includes/version.php';
                         تأیید رد
                     </button>
                     <button onclick="closeModal('rejectReasonModal')"
-                        style="flex: 1; padding: 10px; border: 1px solid #ddd; background: white; border-radius: 5px; cursor: pointer; font-weight: 600; color: #666;">
+                        style="flex: 1; padding: 10px; border: 1px solid var(--border-soft); background: var(--surface); border-radius: 5px; cursor: pointer; font-weight: 600; color: var(--text-muted);">
                         انصراف
                     </button>
                 </div>
@@ -1656,7 +1692,7 @@ require_once '../includes/version.php';
 
                     const doneMetaHTML = (item.is_done == 1 && item.done_by_name) ? ('✓ ' + item.done_by_name.trim()) : '';
                     const mineHTML = mine ? '<span class="badge bg-warning text-dark ms-1">به شما ارجاع شده</span>' : '';
-                    const itemStyle = `${mine ? 'background:#fff8e1; border-right:3px solid #ffc107; padding-right:6px; border-radius:6px;' : ''}${item.can_toggle_this === false ? 'opacity:0.65;' : ''}`;
+                    const itemStyle = `${mine ? 'background:var(--warning-box-bg); border-right:3px solid #ffc107; padding-right:6px; border-radius:6px;' : ''}${item.can_toggle_this === false ? 'opacity:0.65;' : ''}`;
                     const checkboxTitle = item.is_done == 1 ?
                         'title="این آیتم تیک خورده و قابل برداشتن نیست"' :
                         (item.can_toggle_this === false ? 'title="این آیتم به شما ارجاع نشده"' : '');
@@ -3690,7 +3726,7 @@ require_once '../includes/version.php';
                         // ✅ نمایش توضیحات کار در تاریخچه ایجاد
                         if (taskData && taskData.description) {
                             const descTxt = taskData.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
-                            customNotesHTML += `<div class="ml-notes" style="color:#6c757d;">توضیحات: ${descTxt}</div>`;
+                            customNotesHTML += `<div class="ml-notes" style="color:var(--text-muted);">توضیحات: ${descTxt}</div>`;
                         }
                     }
 
@@ -5308,10 +5344,10 @@ require_once '../includes/version.php';
                 wrap.id = 'clearOverdueModalWrap';
                 wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
                 wrap.innerHTML = `
-                    <div style="background:#fff;border-radius:12px;max-width:420px;width:92%;padding:20px;direction:rtl;">
+                    <div style="background:var(--surface);border-radius:12px;max-width:420px;width:92%;padding:20px;direction:rtl;">
                         <h5 style="margin-bottom:12px;">درخواست رفع دوره‌های معوقه</h5>
-                        <p style="font-size:.9rem;color:#555;">پس از تأیید تعریف‌کنندهٔ کار، همهٔ دوره‌های معوقهٔ فعلی برداشته می‌شوند.</p>
-                        <textarea id="clearOverdueReason" rows="3" style="width:100%;border:1px solid #ddd;border-radius:8px;padding:8px;" placeholder="دلیل (اختیاری)"></textarea>
+                        <p style="font-size:.9rem;color:var(--text-muted);">پس از تأیید تعریف‌کنندهٔ کار، همهٔ دوره‌های معوقهٔ فعلی برداشته می‌شوند.</p>
+                        <textarea id="clearOverdueReason" rows="3" style="width:100%;border:1px solid var(--border-soft);border-radius:8px;padding:8px;" placeholder="دلیل (اختیاری)"></textarea>
                         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
                             <button class="btn btn-secondary" onclick="document.getElementById('clearOverdueModalWrap').remove()">انصراف</button>
                             <button class="btn btn-warning" id="clearOverdueConfirmBtn" onclick="submitClearOverdue()">ثبت درخواست</button>
@@ -5387,12 +5423,12 @@ require_once '../includes/version.php';
                 wrap.id = 'ocReviewWrap';
                 wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
                 wrap.innerHTML = `
-                    <div style="background:#fff;border-radius:12px;max-width:440px;width:92%;padding:20px;direction:rtl;">
+                    <div style="background:var(--surface);border-radius:12px;max-width:440px;width:92%;padding:20px;direction:rtl;">
                         <h5 style="margin-bottom:12px;">بررسی درخواست رفع دوره‌های معوقه</h5>
                         <p style="margin:6px 0;"><strong>درخواست‌دهنده:</strong> ${request.requester_name || '-'}</p>
                         <p style="margin:6px 0;"><strong>تعداد دورهٔ معوقه:</strong> ${request.periods_count || 0}</p>
                         ${request.reason ? `<p style="margin:6px 0;"><strong>دلیل:</strong> ${request.reason}</p>` : ''}
-                        <textarea id="ocRejectReason" rows="2" style="width:100%;border:1px solid #ddd;border-radius:8px;padding:8px;margin-top:8px;" placeholder="دلیل رد (در صورت رد)"></textarea>
+                        <textarea id="ocRejectReason" rows="2" style="width:100%;border:1px solid var(--border-soft);border-radius:8px;padding:8px;margin-top:8px;" placeholder="دلیل رد (در صورت رد)"></textarea>
                         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
                             <button class="btn btn-secondary" onclick="document.getElementById('ocReviewWrap').remove()">بستن</button>
                             <button class="btn btn-danger" onclick="rejectOverdueClear(${request.id})">رد</button>

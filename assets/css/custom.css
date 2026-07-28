@@ -46,6 +46,54 @@
     --radius-sm: 8px;
     --radius-xs: 6px;
     --radius-lg: 16px;
+
+    /* ═══════════════════════════════════════════════════
+       توکن‌های معنایی تم (زیرساختِ تم روشن/تاریک)
+       ───────────────────────────────────────────────────
+       هر صفحه که به تم تاریک مهاجرت می‌کند، باید رنگ‌های
+       هاردکدشده‌اش را با این توکن‌ها جایگزین کند، نه با
+       مقادیرِ مستقیم. مقادیرِ تاریک در پایینِ همین فایل،
+       زیرِ ‎:root[data-theme="dark"]‎ تعریف شده‌اند.
+       ═══════════════════════════════════════════════════ */
+    --surface: #ffffff;
+    --bg-page: var(--gray-50);
+    --text-strong: var(--gray-900);
+    --text-muted: var(--gray-500);
+    --border-soft: var(--gray-200);
+    --icon-accent: #744CA4;
+    --brand-gradient: linear-gradient(135deg, #744ca4 0%, #657ae7 100%);
+    --info-box-bg: #f0f0f0;
+    --warning-box-bg: #fff3cd;
+    --warning-box-text: #856404;
+    --toast-success-bg: #f0fdf4;
+    --toast-error-bg: #fef2f2;
+    --toast-warning-bg: #fffbeb;
+    --toast-info-bg: #fff5f5ff;
+}
+
+/* ═══════════════════════════════════════════════════
+   تم تاریک — فقط مقادیرِ توکن‌های بالا override می‌شوند.
+   با کلیکِ دکمهٔ تعویضِ تم در هدر، ‎data-theme="dark"‎ روی
+   <html> ست می‌شود (assets/js در pages/header.php).
+   ═══════════════════════════════════════════════════ */
+:root[data-theme="dark"] {
+    /* به مرورگر می‌گوید عناصر بومی (اسکرول‌بار، فرم‌کنترل‌های سیستمی و...) را با تمِ تاریک رندر کند؛
+       این یک خط، اسکرول‌بارهای پیش‌فرض/بدون استایل‌شخصیِ کل اپ را پوشش می‌دهد */
+    color-scheme: dark;
+    --surface: #1b2130;
+    --bg-page: #12151f;
+    --text-strong: #e8eaed;
+    --text-muted: #9aa4b5;
+    --border-soft: #2b3242;
+    --icon-accent: #cdb8ff;
+    --brand-gradient: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+    --info-box-bg: #232a3a;
+    --warning-box-bg: rgba(255, 193, 7, 0.15);
+    --warning-box-text: #ffb74d;
+    --toast-success-bg: rgba(16, 185, 129, 0.14);
+    --toast-error-bg: rgba(239, 68, 68, 0.14);
+    --toast-warning-bg: rgba(245, 158, 11, 0.14);
+    --toast-info-bg: rgba(59, 130, 246, 0.14);
 }
 
 /* ========================================
@@ -56,8 +104,8 @@
 }
 
 body {
-    background-color: var(--gray-50);
-    color: var(--gray-900);
+    background-color: var(--bg-page);
+    color: var(--text-strong);
     line-height: 1.6;
     font-size: 14px;
     margin-top: 3.5rem;
@@ -71,17 +119,47 @@ h5,
 h6 {
     font-weight: 600;
     line-height: 1.3;
-    color: var(--gray-900);
+    color: var(--text-strong);
 }
 
 /* ========================================
    3. ناوبری (Navbar)
 ======================================== */
 .navbar {
-    background: white !important;
+    background: var(--surface) !important;
     box-shadow: 0 4px 20px rgba(135, 92, 242, 0.08);
     border-bottom: 1px solid rgba(135, 92, 242, 0.1);
     padding: 0.4rem 0 !important;
+}
+
+:root[data-theme="dark"] .navbar {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, .35);
+    border-bottom: 1px solid var(--border-soft);
+}
+
+/* متن و آیکنِ لینک‌های هدر در تم تاریک — روشن‌تر از --text-muted عمومی،
+   چون آن توکن هنوز در صفحات مهاجرت‌نشده (مثل ticket.css) با پس‌زمینهٔ روشن استفاده می‌شود */
+:root[data-theme="dark"] .navbar .nav-link {
+    color: #c9d1de !important;
+}
+
+:root[data-theme="dark"] .navbar .nav-link:hover,
+:root[data-theme="dark"] .navbar .nav-link.active {
+    color: var(--icon-accent) !important;
+}
+
+/* دراورِ موبایل: dashboard-responsive.css یک رنگ ثابت (#334155) با !important
+   روی #mainNav .nav-link ست کرده که تم را نادیده می‌گیرد؛ اینجا با همان
+   وزنِ اهمیت ولی specificity بالاتر override می‌شود */
+:root[data-theme="dark"] #mainNav .nav-link {
+    color: #c9d1de !important;
+}
+
+.theme-toggle-btn {
+    background: none;
+    border: none;
+    font: inherit;
+    cursor: pointer;
 }
 
 #mainNav .dropdown-menu {
@@ -207,6 +285,10 @@ h6 {
     color: white;
 }
 
+:root[data-theme="dark"] .btn-outline-primary {
+    background: transparent;
+}
+
 .btn-sm {
     padding: 0.4rem 0.75rem;
     font-size: 0.8rem;
@@ -267,6 +349,15 @@ h6 {
 
 .form-section h4 i {
     color: #667eea;
+}
+
+:root[data-theme="dark"] .form-section {
+    background: var(--surface);
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .form-section h4 {
+    color: var(--text-strong);
 }
 
 @media (max-width: 768px) {
@@ -373,6 +464,13 @@ h6 {
     color: #374151;
 }
 
+/* بج‌های خنثیِ خاکستری/سفید — روی پس‌زمینهٔ تیره باید تیره بشن، نه سفید بمونن.
+   بج‌های رنگی (آبی/سبز/قرمز/بنفش/فیروزه‌ای) خودشون کنتراستِ کافی دارن و دست نمی‌خورن */
+:root[data-theme="dark"] .badge.public {
+    background: #2b3242;
+    color: #c7cfdd;
+}
+
 .status-period_done {
     background: #cffafe;
     color: #0e7490;
@@ -388,6 +486,11 @@ h6 {
     /* بود: #f3f4f6 */
     color: #495057;
     /* بود: #6b7280 — تیره‌تر */
+}
+
+:root[data-theme="dark"] .status-not_started {
+    background: #2b3242;
+    color: #c7cfdd;
 }
 
 .status-in_progress {
@@ -428,6 +531,11 @@ h6 {
 .status-stopped {
     background: #f1f3f5;
     color: #495057;
+}
+
+:root[data-theme="dark"] .status-stopped {
+    background: #2b3242;
+    color: #c7cfdd;
 }
 
 .status-rejected {
@@ -925,6 +1033,11 @@ s-normal {
     border: 1px solid #f0f0f0;
 }
 
+:root[data-theme="dark"] .filters-wrapper {
+    background: var(--surface);
+    border-color: var(--border-soft);
+}
+
 /* --- لایه‌بندی ۲ ستونی فیلتر (عنوان + کنترل‌ها) --- */
 .filters-wrapper.two-col {
     display: flex;
@@ -952,6 +1065,18 @@ s-normal {
     margin: 0.15rem 0 0 0;
 }
 
+:root[data-theme="dark"] .filters-title-col {
+    border-left-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .filters-title-col h1 {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .filters-title-col p {
+    color: var(--text-muted);
+}
+
 .filters-controls-col {
     flex: 1;
 }
@@ -977,6 +1102,18 @@ s-normal {
     border-color: var(--primary);
     background: white;
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+}
+
+:root[data-theme="dark"] .search-box input {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .search-box input:focus {
+    background: var(--surface);
+    border-color: var(--icon-accent);
+    box-shadow: 0 0 0 3px rgba(205, 184, 255, 0.15);
 }
 
 .search-box i {
@@ -1076,6 +1213,12 @@ s-normal {
     appearance: none;
 }
 
+:root[data-theme="dark"] .filter-item select {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    color: var(--text-strong);
+}
+
 .filter-item select:focus {
     outline: none;
     border-color: var(--primary);
@@ -1123,6 +1266,15 @@ s-normal {
     white-space: nowrap;
 }
 
+:root[data-theme="dark"] .checkbox-item {
+    background: var(--surface);
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .checkbox-item label {
+    color: var(--text-strong);
+}
+
 .filter-btn {
     border: 1px solid var(--gray-300);
     border-radius: 20px;
@@ -1133,6 +1285,12 @@ s-normal {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+:root[data-theme="dark"] .filter-btn {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    color: var(--text-strong);
 }
 
 .filter-btn:hover {
@@ -1226,6 +1384,15 @@ s-normal {
     height: stretch;
 }
 
+/* برخی صفحات (مثل attendance_system/pages/requests.php) هم custom.css را مستقیم لینک می‌کنند
+   و هم header.php را include می‌کنند که خودش دوباره custom.css را لود می‌کند؛ چون این include
+   بعد از <style> محلیِ آن صفحه می‌آید، لود دوم customcss (همین‌جا) با هم-تخصیصی روی override
+   محلیِ صفحه می‌برد. برای همین این override باید همین‌جا و با specificity بالاتر باشد */
+:root[data-theme="dark"] .stat-card {
+    background: var(--surface);
+    border-color: var(--border-soft);
+}
+
 .stat-card:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
@@ -1313,6 +1480,54 @@ s-normal {
 .stat-card i {
     color: white !important;
     opacity: 100% !important;
+}
+
+/* ========================================
+   AG Grid — تم تاریک (مشترک بین همهٔ صفحاتی که ag-Grid دارند:
+   tasks.php، payroll-report.php، superAdmin.php و ...).
+   چه از تم کلاسیکِ CSS (.ag-theme-alpine) استفاده شده باشد چه از
+   Theming API جدید (agGrid.themeQuartz.withParams در JS)، هر دو
+   همین متغیرهای CSS استاندارد را می‌خوانند و از این‌جا override می‌شوند. */
+:root[data-theme="dark"] .ag-theme-alpine,
+:root[data-theme="dark"] .ag-theme-quartz {
+    --ag-background-color: var(--surface);
+    --ag-foreground-color: var(--text-strong);
+    --ag-header-background-color: #232a3a;
+    --ag-header-foreground-color: var(--text-strong);
+    --ag-border-color: var(--border-soft);
+    --ag-row-border-color: var(--border-soft);
+    --ag-row-hover-color: rgba(205, 184, 255, 0.08);
+    --ag-odd-row-background-color: var(--surface);
+    --ag-secondary-foreground-color: var(--text-muted);
+    --ag-data-color: var(--text-strong);
+    --ag-input-background-color: var(--surface);
+    --ag-input-border-color: var(--border-soft);
+    --ag-disabled-foreground-color: var(--text-muted);
+    --ag-modal-overlay-background-color: rgba(0, 0, 0, .6);
+}
+
+/* اسکرول‌بارِ داخلیِ AG-Grid — این یک ویجتِ اختصاصیِ خودِ AG-Grid است (نه اسکرول‌بارِ
+   بومیِ مرورگر)، پس color-scheme:dark روش اثر نمی‌گذارد و باید مستقیم override شود */
+:root[data-theme="dark"] .ag-theme-alpine .ag-body-vertical-scroll-viewport::-webkit-scrollbar,
+:root[data-theme="dark"] .ag-theme-quartz .ag-body-vertical-scroll-viewport::-webkit-scrollbar,
+:root[data-theme="dark"] .ag-theme-alpine .ag-body-horizontal-scroll-viewport::-webkit-scrollbar,
+:root[data-theme="dark"] .ag-theme-quartz .ag-body-horizontal-scroll-viewport::-webkit-scrollbar {
+    background: var(--info-box-bg);
+}
+
+:root[data-theme="dark"] .ag-theme-alpine .ag-body-vertical-scroll-viewport::-webkit-scrollbar-thumb,
+:root[data-theme="dark"] .ag-theme-quartz .ag-body-vertical-scroll-viewport::-webkit-scrollbar-thumb,
+:root[data-theme="dark"] .ag-theme-alpine .ag-body-horizontal-scroll-viewport::-webkit-scrollbar-thumb,
+:root[data-theme="dark"] .ag-theme-quartz .ag-body-horizontal-scroll-viewport::-webkit-scrollbar-thumb {
+    background: var(--border-soft);
+    border-radius: 10px;
+}
+
+:root[data-theme="dark"] .ag-theme-alpine .ag-body-vertical-scroll-viewport::-webkit-scrollbar-thumb:hover,
+:root[data-theme="dark"] .ag-theme-quartz .ag-body-vertical-scroll-viewport::-webkit-scrollbar-thumb:hover,
+:root[data-theme="dark"] .ag-theme-alpine .ag-body-horizontal-scroll-viewport::-webkit-scrollbar-thumb:hover,
+:root[data-theme="dark"] .ag-theme-quartz .ag-body-horizontal-scroll-viewport::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }
 
 /* ========================================
@@ -1479,6 +1694,18 @@ td:nth-child(2) {
     overflow: hidden;
 }
 
+:root[data-theme="dark"] .task-detail-container {
+    background: var(--surface);
+}
+
+/* متنِ دلیلِ درخواستِ اتمام — از یوتیلیتیِ bg-light بوت‌استرپ استفاده می‌کند
+   که با تمِ اپ هماهنگ نیست؛ چون !important دارد، اینجا هم !important لازم است */
+:root[data-theme="dark"] #terminationReasonDisplay.bg-light {
+    background-color: #232a3a !important;
+    color: var(--text-strong) !important;
+    border-color: var(--border-soft) !important;
+}
+
 /* بهبود task-item برای جلوگیری از افزایش عرض و بهم ریختن */
 .task-item {
     background: white;
@@ -1506,6 +1733,15 @@ td:nth-child(2) {
     transform: none;
     /* حذف translateX برای جلوگیری از جابه‌جایی و بهم ریختن badge‌ها */
     /* اگر می‌خواید جابه‌جایی نگه دارید، به جای -3px از چیزی ملایم‌تر مثل -1px استفاده کنید */
+}
+
+:root[data-theme="dark"] .task-item {
+    background: var(--surface);
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .task-title {
+    color: var(--text-strong);
 }
 
 .info-section {
@@ -1589,6 +1825,10 @@ td:nth-child(2) {
 }
 
 
+
+:root[data-theme="dark"] .task-meta {
+    color: var(--text-muted);
+}
 
 .task-meta {
     font-size: 13px;
@@ -1885,6 +2125,40 @@ td:nth-child(2) {
     background: #e5e7eb;
 }
 
+:root[data-theme="dark"] .modal-header {
+    background: var(--surface);
+    border-bottom-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .modal-footer {
+    background: #161b27;
+    border-top-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .modal-overlay .modal-content,
+:root[data-theme="dark"] .modal-content {
+    background-color: var(--surface);
+}
+
+:root[data-theme="dark"] .modal-title {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .modal-close {
+    background: var(--border-soft);
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .modal-close:hover {
+    background: #3a4358;
+}
+
+/* دکمهٔ بستنِ استاندارد بوت‌استرپ (SVG با رنگِ ثابتِ مشکی) — با filter معکوس می‌شود
+   تا بدون دست‌زدن به مارک‌آپِ هر مودال، در تم تاریک هم دیده شود */
+:root[data-theme="dark"] .btn-close {
+    filter: invert(1) grayscale(1) brightness(1.8);
+}
+
 .modal .persian-datepicker-wrapper {
     position: relative;
     display: block;
@@ -2010,6 +2284,131 @@ td:nth-child(2) {
     border-color: #667eea;
     outline: none;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* تقویمِ داخلِ مودال — تم تاریک (هماهنگ با data-theme، همان توکن‌های .persian-datepicker پایه) */
+:root[data-theme="dark"] .modal .persian-datepicker-input {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .modal .persian-datepicker-input:focus {
+    border-color: var(--icon-accent);
+    box-shadow: 0 0 0 3px rgba(205, 184, 255, 0.15);
+}
+
+:root[data-theme="dark"] .modal .persian-datepicker {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="dark"] .modal .datepicker-header {
+    border-bottom-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .modal .datepicker-nav {
+    color: var(--icon-accent);
+}
+
+:root[data-theme="dark"] .modal .datepicker-nav:hover {
+    background: rgba(205, 184, 255, 0.12);
+}
+
+:root[data-theme="dark"] .modal .datepicker-weekday {
+    color: var(--icon-accent);
+}
+
+:root[data-theme="dark"] .modal .datepicker-day {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .modal .datepicker-day:hover:not(.other-month) {
+    background: rgba(205, 184, 255, 0.12);
+    border-color: var(--icon-accent);
+}
+
+:root[data-theme="dark"] .modal .datepicker-day.today {
+    background: #5a67d8;
+    color: #fff;
+    border-color: #5a67d8;
+}
+
+:root[data-theme="dark"] .modal .datepicker-day.selected {
+    background: rgba(102, 126, 234, 0.25);
+    border-color: #667eea;
+}
+
+:root[data-theme="dark"] .modal .datepicker-day.other-month {
+    color: #4c5567;
+}
+
+/* تقویمِ کتابخانهٔ CDN (persian-datepicker.min.css در dashboard.php/task-detail.php/reports.php)
+   — کلاس‌بندیِ کاملاً متفاوتِ کتابخانهٔ babakhani؛ فایلِ vendor دست‌نخورده می‌ماند،
+   این قواعد چون بعد از آن لود می‌شوند override می‌کنند */
+:root[data-theme="dark"] .datepicker-plot-area {
+    background-color: var(--surface) !important;
+    border-color: var(--border-soft) !important;
+}
+
+:root[data-theme="dark"] .datepicker-plot-area * {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-day-view .table-days td span,
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-year-view .year-item,
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-month-view .month-item {
+    background-color: var(--surface) !important;
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-day-view .table-days td.disabled span,
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-year-view .year-item-disable,
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-month-view .month-item-disable {
+    background-color: #161b27 !important;
+    color: #454d5e !important;
+}
+
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-day-view .table-days td span.other-month {
+    color: #4c5567 !important;
+}
+
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-day-view .table-days td.today span {
+    background-color: var(--icon-accent) !important;
+    color: #1b2130 !important;
+}
+
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-day-view .table-days td.selected span,
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-year-view .year-item.selected,
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-month-view .month-item.selected {
+    background-color: #5a67d8 !important;
+    color: #fff !important;
+}
+
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-day-view .table-days td span:hover,
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-year-view .year-item:hover,
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-month-view .month-item:hover {
+    background-color: rgba(205, 184, 255, 0.25) !important;
+    color: var(--text-strong) !important;
+}
+
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-time-view {
+    background: #161b27 !important;
+    border-top-color: var(--border-soft) !important;
+}
+
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-navigator .pwt-btn-next,
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-navigator .pwt-btn-switch,
+:root[data-theme="dark"] .datepicker-plot-area .datepicker-navigator .pwt-btn-prev,
+:root[data-theme="dark"] .datepicker-plot-area .toolbox .pwt-btn-submit,
+:root[data-theme="dark"] .datepicker-plot-area .toolbox .pwt-btn-calendar,
+:root[data-theme="dark"] .datepicker-plot-area .toolbox .pwt-btn-today {
+    color: var(--text-strong) !important;
+}
+
+:root[data-theme="dark"] .datepicker-plot-area .month-grid-box .header-row-cell {
+    color: var(--text-strong) !important;
 }
 
 .modal .form-label {
@@ -2288,6 +2687,18 @@ td:nth-child(2) {
     background: #a8a8a8;
 }
 
+:root[data-theme="dark"] .recent-activities-scroll::-webkit-scrollbar-track {
+    background: var(--info-box-bg);
+}
+
+:root[data-theme="dark"] .recent-activities-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-soft);
+}
+
+:root[data-theme="dark"] .recent-activities-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
 .empty-state {
     text-align: center;
     padding: 2.5rem 2rem;
@@ -2502,7 +2913,7 @@ td:nth-child(2) {
 .notification-bell {
     position: relative;
     font-size: 1.3rem;
-    color: #744ca4;
+    color: var(--icon-accent);
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-block;
@@ -2565,7 +2976,7 @@ td:nth-child(2) {
 .navbar-brand {
     font-weight: 700;
     font-size: 1.2rem;
-    background: linear-gradient(135deg, #744ca4 0%, #657ae7 100%);
+    background: var(--brand-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -2583,7 +2994,7 @@ td:nth-child(2) {
 }
 
 .nav-link {
-    color: #64748b !important;
+    color: var(--text-muted) !important;
     font-weight: 400;
     border-radius: 10px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2635,6 +3046,21 @@ td:nth-child(2) {
     text-align: right !important;
     border: none;
     box-shadow: 0 8px 32px rgba(116, 76, 164, 0.15);
+}
+
+/* dropdown استاندارد بوت‌استرپ از متغیرهای داخلیِ خودش (--bs-dropdown-bg و...) استفاده می‌کند
+   که با تاگل تمِ اپ (data-theme) هماهنگ نیستند؛ اینجا override می‌شوند — روی همهٔ dropdownهای
+   بوت‌استرپیِ اپ اثر می‌گذارد (مثلاً منوی پروفایل در هدر، admin-submenu و...) */
+:root[data-theme="dark"] .dropdown-menu {
+    --bs-dropdown-bg: var(--surface);
+    --bs-dropdown-color: var(--text-strong);
+    --bs-dropdown-link-color: var(--text-strong);
+    --bs-dropdown-link-hover-color: var(--text-strong);
+    --bs-dropdown-link-hover-bg: #232a3a;
+    --bs-dropdown-border-color: var(--border-soft);
+    --bs-dropdown-divider-bg: var(--border-soft);
+    --bs-dropdown-link-disabled-color: var(--text-muted);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 /* ======================================== 
@@ -2962,6 +3388,21 @@ td:nth-child(2) {
     }
 }
 
+:root[data-theme="dark"] .admin-submenu {
+    background: linear-gradient(135deg, var(--surface) 0%, #1f2536 100%);
+}
+
+:root[data-theme="dark"] .admin-submenu .dropdown-item {
+    color: var(--text-muted);
+}
+
+@media (max-width: 1399px) {
+    :root[data-theme="dark"] .admin-submenu {
+        background: linear-gradient(135deg, var(--surface) 0%, #1f2536 100%);
+        border-color: var(--border-soft);
+    }
+}
+
 @keyframes pulse-dot {
 
     0%,
@@ -3213,6 +3654,33 @@ td:nth-child(2) {
     }
 }
 
+:root[data-theme="dark"] .dropdown-menu.notification-dropdown {
+    background: linear-gradient(135deg, var(--surface) 0%, #1f2536 100%);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme="dark"] .notification-header {
+    background: linear-gradient(135deg, var(--surface) 0%, #1f2536 100%);
+    border-bottom-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .notification-item {
+    background: var(--info-box-bg);
+}
+
+:root[data-theme="dark"] .notification-item:hover {
+    background: linear-gradient(135deg, rgba(116, 76, 164, 0.15) 0%, rgba(101, 122, 231, 0.15) 100%);
+    border-color: rgba(116, 76, 164, 0.35);
+}
+
+:root[data-theme="dark"] .notification-title {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .notification-message {
+    color: var(--text-muted);
+}
+
 /* ======================================== 
            🍞 Toast Notification
         ======================================== */
@@ -3265,6 +3733,21 @@ td:nth-child(2) {
     line-height: 1.6;
 }
 
+:root[data-theme="dark"] .toast-notification {
+    background: linear-gradient(135deg, var(--surface) 0%, #1f2536 100%);
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .toast-header {
+    background: linear-gradient(135deg, var(--surface) 0%, #1f2536 100%);
+    border-bottom-color: var(--border-soft);
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .toast-body {
+    color: var(--text-muted);
+}
+
 /* ======================================== 
            📱 Navbar Container & Spacing
         ======================================== */
@@ -3314,7 +3797,7 @@ td:nth-child(2) {
 .navbar-divider {
     width: 1px;
     height: 25px;
-    background: #e0e0e0ff;
+    background: var(--border-soft);
     margin: 0 10px 0 10px;
     align-self: center;
 }
@@ -3423,6 +3906,10 @@ td:nth-child(2) {
     transition: all 0.3s ease;
 }
 
+:root[data-theme="dark"] .history-item {
+    background: var(--surface);
+}
+
 .history-item:hover {
     box-shadow: 0 4px 16px rgba(116, 76, 164, 0.12);
     transform: translateX(-4px);
@@ -3442,6 +3929,10 @@ td:nth-child(2) {
     box-shadow: 0 0 0 2px #744ca4;
 }
 
+:root[data-theme="dark"] .history-item::before {
+    border-color: var(--surface);
+}
+
 .history-action {
     font-weight: 700;
     color: #744ca4;
@@ -3457,6 +3948,10 @@ td:nth-child(2) {
     gap: 0.5rem;
     flex-wrap: wrap;
     font-weight: 500;
+}
+
+:root[data-theme="dark"] .history-time {
+    color: var(--text-muted);
 }
 
 .alert {
@@ -3501,6 +3996,45 @@ td:nth-child(2) {
     color: #495057;
     margin-bottom: 0.5rem;
     font-size: 0.85rem;
+}
+
+/* این بلوک، به‌خاطر ترتیبِ فایل، روی تعریفِ اولِ .form-control/.form-select/.form-label (بخش ۶) غالب است؛
+   قواعدِ دارک هم همینجا اضافه می‌شوند تا مستقل از این تکرار، درست کار کنند */
+:root[data-theme="dark"] .form-control,
+:root[data-theme="dark"] .form-select {
+    background-color: var(--surface);
+    border-color: var(--border-soft);
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .form-control:focus,
+:root[data-theme="dark"] .form-select:focus {
+    background-color: var(--surface);
+    border-color: var(--icon-accent);
+    box-shadow: 0 0 0 3px rgba(205, 184, 255, 0.15);
+}
+
+:root[data-theme="dark"] .form-control::placeholder {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .form-control:disabled,
+:root[data-theme="dark"] .form-select:disabled {
+    background-color: #161b27;
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .form-label {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .form-check-input {
+    background-color: #2b3242;
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .form-check-label {
+    color: var(--text-strong);
 }
 
 /* آیکن ساعت شنی با افکت pulse */
@@ -3571,6 +4105,19 @@ span.deadline-request-icon.disabled:hover {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+:root[data-theme="dark"] .upload-area {
+    background: var(--surface) !important;
+    border-color: var(--border-soft) !important;
+}
+
+:root[data-theme="dark"] .upload-area p {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .upload-area small {
+    color: var(--text-muted);
 }
 
 .upload-area {
@@ -3936,6 +4483,12 @@ span.deadline-request-icon.disabled:hover {
     flex-wrap: wrap;
 }
 
+:root[data-theme="dark"] .TDaction-buttons {
+    background: var(--surface);
+    border-top-color: var(--border-soft);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
+}
+
 /* فاصله پایین بدنه صفحه تا دکمه‌ها رویش نیفتد */
 .TDtask-detail-container {
     padding-bottom: 80px;
@@ -4199,6 +4752,21 @@ span.deadline-request-icon.disabled:hover {
     cursor: pointer;
 }
 
+/* دارکِ کشوی موبایل — چون قواعدِ بالا !important دارند، اینجا هم !important لازم است */
+:root[data-theme="dark"] .mobile-drawer {
+    background: var(--surface) !important;
+}
+
+:root[data-theme="dark"] .drawer-header {
+    background: var(--surface);
+    border-bottom-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .drawer-close-btn {
+    background: var(--border-soft);
+    color: var(--text-strong);
+}
+
 body.drawer-body-open {
     overflow: hidden !important;
 }
@@ -4247,6 +4815,12 @@ body.drawer-body-open {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
 }
 
+/* این override هم چون !important دارد، فیکسِ دارکِ .modal-content (بالاتر در فایل) را خنثی می‌کرد؛
+   نسخهٔ دارکِ همین قاعده هم باید !important داشته باشد */
+:root[data-theme="dark"] .modal-overlay .modal-content {
+    background: var(--surface) !important;
+}
+
 /* تنظیم مودال برای صفحات کوچک */
 @media (max-width: 768px) {
     .modal-overlay .modal-content {
@@ -4276,10 +4850,18 @@ body.drawer-body-open {
     border-bottom: none;
 }
 
+:root[data-theme="dark"] .ml-item {
+    border-bottom-color: var(--border-soft);
+}
+
 .ml-left {
     text-align: left;
     padding-left: 14px;
     border-left: 1px solid #eee;
+}
+
+:root[data-theme="dark"] .ml-left {
+    border-left-color: var(--border-soft);
 }
 
 .ml-time {
@@ -4342,6 +4924,10 @@ body.drawer-body-open {
     margin-bottom: 4px;
 }
 
+:root[data-theme="dark"] .ml-user {
+    color: var(--text-strong);
+}
+
 .ml-user i {
     color: #aaa;
     margin-left: 4px;
@@ -4356,6 +4942,10 @@ body.drawer-body-open {
     word-break: break-word;
 }
 
+:root[data-theme="dark"] .ml-notes {
+    color: var(--text-muted);
+}
+
 .ml-deadline-inline {
     display: flex;
     align-items: center;
@@ -4364,6 +4954,10 @@ body.drawer-body-open {
     font-size: 0.8rem;
     color: #666;
     margin-bottom: 3px;
+}
+
+:root[data-theme="dark"] .ml-deadline-inline {
+    color: var(--text-muted);
 }
 
 .ml-cross {
@@ -4908,6 +5502,11 @@ body.login-page::after {
     /* اطمینان از نمایش بالای سایر المان‌ها */
 }
 
+:root[data-theme="dark"] .footer-9 {
+    background: var(--surface);
+    box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3);
+}
+
 .footer-9 .company {
     color: var(--primary-dark);
     font-weight: 700;
@@ -5382,6 +5981,41 @@ body.login-page::after {
     margin-bottom: 0.5rem;
 }
 
+:root[data-theme="dark"] .act-filter-btn {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .act-item:hover {
+    background: #232a3a;
+}
+
+:root[data-theme="dark"] .act-item+.act-item {
+    border-top-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .act-text {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .act-text .act-user {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .act-text .act-task {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .act-load-more button {
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .act-load-more button:hover {
+    border-color: #6366f1;
+    background: rgba(99, 102, 241, 0.12);
+}
+
 .act-empty p {
     color: #94a3b8;
     font-size: 0.85rem;
@@ -5543,7 +6177,7 @@ body.login-page::after {
 
 .announcement-bell {
     font-size: 1.2rem;
-    color: #744CA4;
+    color: var(--icon-accent);
     transition: transform 0.2s ease;
 }
 
@@ -5757,6 +6391,11 @@ body.login-page::after {
     margin-bottom: 24px;
     box-shadow: 0 4px 20px rgba(116, 76, 164, 0.08);
     border: 1px solid rgba(116, 76, 164, 0.1);
+}
+
+:root[data-theme="dark"] .page-header {
+    background: var(--surface);
+    border-color: var(--border-soft);
 }
 
 .page-title {
@@ -6284,6 +6923,22 @@ body.login-page::after {
 .info-value {
     color: var(--gray-900, #0f172a);
     font-weight: 600;
+}
+
+:root[data-theme="dark"] .info-label {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .info-value {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .info-row {
+    border-bottom-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .edit-mode .form-control:not(:disabled) {
+    background-color: #232a3a;
 }
 
 /* Responsive adjustments */

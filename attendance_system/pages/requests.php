@@ -1095,7 +1095,7 @@ function formatDateJalali($gregorianDate)
 
 
         .stat-card {
-            background: white;
+            background: var(--surface);
             padding: .7rem 1.2rem .7rem !important;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -1109,7 +1109,7 @@ function formatDateJalali($gregorianDate)
 
         .stat-label {
             font-size: 11px;
-            color: #5b5b5b !important;
+            color: var(--text-muted) !important;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -1127,7 +1127,7 @@ function formatDateJalali($gregorianDate)
         .stat-value {
             font-size: 15px !important;
             font-weight: 700;
-            color: #2D3748;
+            color: var(--text-strong);
             padding-top: .5rem;
         }
 
@@ -1155,6 +1155,8 @@ function formatDateJalali($gregorianDate)
             border-radius: 10px;
             font-size: 14px;
             transition: all 0.3s ease;
+            background: var(--surface);
+            color: var(--text-strong);
         }
 
         .search-box input:focus {
@@ -1179,7 +1181,7 @@ function formatDateJalali($gregorianDate)
 
         .filter-btn {
             padding: 10px 16px;
-            background: white;
+            background: var(--surface);
             border: 1px solid rgba(116, 76, 164, 0.2);
             border-radius: 10px;
             font-size: 13px;
@@ -1208,7 +1210,7 @@ function formatDateJalali($gregorianDate)
             gap: 8px;
             cursor: pointer;
             padding: 8px 14px;
-            background: white;
+            background: var(--surface);
             border: 1px solid rgba(116, 76, 164, 0.2);
             border-radius: 10px;
             transition: all 0.3s ease;
@@ -1303,7 +1305,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .table-container {
-            background: white;
+            background: var(--surface);
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             overflow: hidden;
@@ -1320,7 +1322,7 @@ function formatDateJalali($gregorianDate)
         }
 
         thead {
-            background: #F8F9FA;
+            background: var(--info-box-bg);
             border-bottom: 1px solid rgba(116, 76, 164, 0.1);
         }
 
@@ -1328,7 +1330,7 @@ function formatDateJalali($gregorianDate)
             padding: 16px;
             text-align: right;
             font-weight: 600;
-            color: #64748B;
+            color: var(--text-muted);
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -1345,7 +1347,7 @@ function formatDateJalali($gregorianDate)
 
         td {
             padding: 6px 12px 6px 12px;
-            color: #2D3748;
+            color: var(--text-strong);
         }
 
         .status-badge {
@@ -1382,7 +1384,7 @@ function formatDateJalali($gregorianDate)
 
         .pagination-btn {
             padding: 6px 9px;
-            background: white;
+            background: var(--surface);
             border: 1px solid rgba(116, 76, 164, 0.2);
             border-radius: 8px;
             font-size: 11px;
@@ -1416,7 +1418,7 @@ function formatDateJalali($gregorianDate)
            💼 باکس اطلاعات کاربر
         ======================================== */
         .user-info-box {
-            background: white;
+            background: var(--surface);
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(116, 76, 164, 0.1);
             padding: 24px;
@@ -1446,7 +1448,7 @@ function formatDateJalali($gregorianDate)
         .user-info-header h3 {
             font-size: 18px;
             font-weight: 600;
-            color: #2D3748;
+            color: var(--text-strong);
             margin: 0;
         }
 
@@ -1463,13 +1465,13 @@ function formatDateJalali($gregorianDate)
 
         .info-label {
             font-size: 13px;
-            color: #64748B;
+            color: var(--text-muted);
             font-weight: 500;
         }
 
         .info-value {
             font-size: 13px;
-            color: #2D3748;
+            color: var(--text-strong);
             font-weight: 600;
             direction: ltr;
             text-align: left;
@@ -1489,7 +1491,7 @@ function formatDateJalali($gregorianDate)
            📅 جدول حضور و غیاب
         ======================================== */
         .attendance-table-wrapper {
-            background: white;
+            background: var(--surface);
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(116, 76, 164, 0.1);
             overflow: hidden;
@@ -1535,6 +1537,10 @@ function formatDateJalali($gregorianDate)
             border-radius: 10px;
         }
 
+        :root[data-theme="dark"] .attendance-table-container::-webkit-scrollbar-track {
+            background: var(--info-box-bg);
+        }
+
         .attendance-table {
             width: 100%;
             font-size: 12px;
@@ -1570,7 +1576,7 @@ function formatDateJalali($gregorianDate)
         .attendance-table tbody td {
             padding: 12px;
             font-size: 13px !important;
-            color: #2d3748;
+            color: var(--text-strong);
             text-align: center;
             border: none;
         }
@@ -1580,12 +1586,12 @@ function formatDateJalali($gregorianDate)
         }
 
         .day-name {
-            color: #64748b;
+            color: var(--text-muted);
             display: block;
         }
 
         .date-number {
-            color: #2d3748;
+            color: var(--text-strong);
             font-size: 13px;
             font-weight: 600;
         }
@@ -1596,7 +1602,7 @@ function formatDateJalali($gregorianDate)
 
         .shift-time {
             display: block;
-            color: #2d3748;
+            color: var(--text-strong);
             font-weight: 500;
             font-size: 13px !important;
             line-height: 2;
@@ -1604,7 +1610,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .shift-time.shift-2 {
-            color: #64748b;
+            color: var(--text-muted);
             font-size: 13px;
             margin-top: 0;
             line-height: 2;
@@ -1670,7 +1676,7 @@ function formatDateJalali($gregorianDate)
         .holiday-label {
             display: inline-block;
 
-            color: #64748b;
+            color: var(--text-muted);
             padding: 3px 10px;
             border-radius: 10px;
             font-size: 10px;
@@ -1706,7 +1712,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .modal-content {
-            background: white;
+            background: var(--surface);
             border-radius: 16px;
             width: 100%;
             max-width: 700px;
@@ -1740,7 +1746,7 @@ function formatDateJalali($gregorianDate)
         .modal-header h2 {
             font-size: 20px;
             font-weight: 700;
-            color: #2D3748;
+            color: var(--text-strong);
         }
 
         .modal-close {
@@ -1768,8 +1774,8 @@ function formatDateJalali($gregorianDate)
 
         .tabs-container {
             display: flex;
-            border-bottom: 2px solid #E5E7EB;
-            background: white;
+            border-bottom: 2px solid var(--border-soft);
+            background: var(--surface);
             flex-shrink: 0;
             width: 100%;
         }
@@ -1778,11 +1784,11 @@ function formatDateJalali($gregorianDate)
             flex: 1;
             min-width: 100px;
             padding: 16px;
-            background: white;
+            background: var(--surface);
             border: none;
             cursor: pointer;
             font-weight: 600;
-            color: #718096;
+            color: var(--text-muted);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
@@ -1841,7 +1847,7 @@ function formatDateJalali($gregorianDate)
         .form-group label {
             display: block;
             font-weight: 600;
-            color: #2D3748;
+            color: var(--text-strong);
             margin-bottom: 8px;
             font-size: 13px;
         }
@@ -1861,6 +1867,8 @@ function formatDateJalali($gregorianDate)
             font-size: 14px;
             font-family: 'Vazir', sans-serif;
             transition: all 0.3s ease;
+            background: var(--surface);
+            color: var(--text-strong);
         }
 
         .form-group input:focus,
@@ -1874,7 +1882,7 @@ function formatDateJalali($gregorianDate)
         .form-group input:disabled,
         .form-group select:disabled,
         .form-group textarea:disabled {
-            background-color: #f3f4f6;
+            background-color: var(--info-box-bg);
             cursor: not-allowed;
             opacity: 0.6;
         }
@@ -1894,7 +1902,7 @@ function formatDateJalali($gregorianDate)
             display: flex;
             gap: 12px;
             padding: 24px;
-            background: white;
+            background: var(--surface);
             border-top: 1px solid rgba(116, 76, 164, 0.1);
             flex-shrink: 0;
         }
@@ -1926,8 +1934,8 @@ function formatDateJalali($gregorianDate)
         .btn-cancel {
             flex: 1;
             padding: 12px;
-            background: #F3F4F6;
-            color: #2D3748;
+            background: var(--info-box-bg);
+            color: var(--text-strong);
             border: 1px solid rgba(116, 76, 164, 0.2);
             border-radius: 8px;
             font-weight: 600;
@@ -1937,7 +1945,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .btn-cancel:hover {
-            background: #E5E7EB;
+            background: var(--border-soft);
         }
 
         .request-badge {
@@ -2045,7 +2053,7 @@ function formatDateJalali($gregorianDate)
             display: flex;
             gap: 8px;
             margin-bottom: 20px;
-            background: #ebebebff;
+            background: var(--info-box-bg);
             padding: 6px;
             border-radius: 12px;
         }
@@ -2059,7 +2067,7 @@ function formatDateJalali($gregorianDate)
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
-            color: #6B7280;
+            color: var(--text-muted);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
@@ -2068,11 +2076,11 @@ function formatDateJalali($gregorianDate)
         }
 
         .section-tab:hover {
-            color: #374151;
+            color: var(--text-strong);
         }
 
         .section-tab.active {
-            background: white;
+            background: var(--surface);
             color: #744CA4;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
@@ -2144,7 +2152,7 @@ function formatDateJalali($gregorianDate)
         .loading-state {
             padding: 40px;
             text-align: center;
-            color: #6B7280;
+            color: var(--text-muted);
         }
 
         .loading-state .spinner-border {
@@ -2224,7 +2232,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .timeline-modal {
-            background: white;
+            background: var(--surface);
             border-radius: 16px;
             padding: 24px;
             max-width: 400px;
@@ -2245,13 +2253,13 @@ function formatDateJalali($gregorianDate)
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 12px;
-            border-bottom: 1px solid #E5E7EB;
+            border-bottom: 1px solid var(--border-soft);
         }
 
         .timeline-header h3 {
             margin: 0;
             font-size: 16px;
-            color: #1F2937;
+            color: var(--text-strong);
         }
 
         .timeline-close {
@@ -2259,7 +2267,7 @@ function formatDateJalali($gregorianDate)
             border: none;
             font-size: 20px;
             cursor: pointer;
-            color: #6B7280;
+            color: var(--text-muted);
             padding: 4px;
         }
 
@@ -2275,7 +2283,7 @@ function formatDateJalali($gregorianDate)
             top: 0;
             bottom: 0;
             width: 2px;
-            background: #E5E7EB;
+            background: var(--border-soft);
         }
 
         .timeline-item {
@@ -2296,7 +2304,7 @@ function formatDateJalali($gregorianDate)
             height: 16px;
             border-radius: 50%;
             border: 3px solid white;
-            box-shadow: 0 0 0 2px #E5E7EB;
+            box-shadow: 0 0 0 2px var(--border-soft);
         }
 
         .timeline-dot.pending {
@@ -2316,11 +2324,11 @@ function formatDateJalali($gregorianDate)
 
         .timeline-dot.waiting {
             background: #9CA3AF;
-            box-shadow: 0 0 0 2px #F3F4F6;
+            box-shadow: 0 0 0 2px var(--border-soft);
         }
 
         .timeline-content {
-            background: #F9FAFB;
+            background: var(--info-box-bg);
             border-radius: 10px;
             padding: 12px;
         }
@@ -2328,7 +2336,7 @@ function formatDateJalali($gregorianDate)
         .timeline-role {
             font-weight: 600;
             font-size: 13px;
-            color: #374151;
+            color: var(--text-strong);
             margin-bottom: 4px;
         }
 
@@ -2350,7 +2358,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .timeline-status.waiting {
-            color: #6B7280;
+            color: var(--text-muted);
         }
 
         .timeline-date {
@@ -2361,15 +2369,15 @@ function formatDateJalali($gregorianDate)
 
         .timeline-approver {
             font-size: 11px;
-            color: #6B7280;
+            color: var(--text-muted);
         }
 
         .timeline-notes {
             font-size: 11px;
-            color: #6B7280;
+            color: var(--text-muted);
             margin-top: 6px;
             padding-top: 6px;
-            border-top: 1px dashed #E5E7EB;
+            border-top: 1px dashed var(--border-soft);
             font-style: italic;
         }
 
@@ -2457,7 +2465,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .edit-modal-content {
-            background: white;
+            background: var(--surface);
             border-radius: 16px;
             width: 90%;
             max-width: 500px;
@@ -2468,7 +2476,7 @@ function formatDateJalali($gregorianDate)
 
         .edit-modal-header {
             padding: 20px 24px;
-            border-bottom: 1px solid #E5E7EB;
+            border-bottom: 1px solid var(--border-soft);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -2477,7 +2485,7 @@ function formatDateJalali($gregorianDate)
         .edit-modal-header h3 {
             margin: 0;
             font-size: 18px;
-            color: #1F2937;
+            color: var(--text-strong);
         }
 
         .edit-modal-body {
@@ -2486,7 +2494,7 @@ function formatDateJalali($gregorianDate)
 
         .edit-modal-footer {
             padding: 16px 24px;
-            border-top: 1px solid #E5E7EB;
+            border-top: 1px solid var(--border-soft);
             display: flex;
             gap: 12px;
             justify-content: flex-end;
@@ -2510,8 +2518,8 @@ function formatDateJalali($gregorianDate)
 
         .btn-close-modal {
             padding: 10px 20px;
-            background: #F3F4F6;
-            color: #374151;
+            background: var(--info-box-bg);
+            color: var(--text-strong);
             border: 1px solid #D1D5DB;
             border-radius: 8px;
             font-weight: 600;
@@ -2520,7 +2528,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .btn-close-modal:hover {
-            background: #E5E7EB;
+            background: var(--border-soft);
         }
 
         /* فرمت ۲۴ ساعته برای input time */
@@ -2568,11 +2576,11 @@ function formatDateJalali($gregorianDate)
         }
 
         #attendanceGrid .att-clickable:hover {
-            background: #f5f4fb !important;
+            background: rgba(205, 184, 255, 0.08) !important;
         }
 
         #attendanceGrid .att-holiday {
-            background: #f3f4f6 !important;
+            background: var(--info-box-bg) !important;
             color: #9ca3af !important;
         }
 
@@ -5141,10 +5149,10 @@ function formatDateJalali($gregorianDate)
             const overlay = document.createElement('div');
             overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;';
             overlay.innerHTML = `
-                <div style="background:#fff;border-radius:12px;padding:20px;width:90%;max-width:420px;box-shadow:0 10px 40px rgba(0,0,0,.2);direction:rtl;">
+                <div style="background:var(--surface);border-radius:12px;padding:20px;width:90%;max-width:420px;box-shadow:0 10px 40px rgba(0,0,0,.2);direction:rtl;">
                     <h6 style="margin:0 0 12px;font-weight:700;">دلیل رد درخواست</h6>
                     <textarea id="rejectReasonInput" rows="4"
-                        style="width:100%;border:1px solid #ddd;border-radius:8px;padding:10px;resize:vertical;font-family:inherit;"
+                        style="width:100%;border:1px solid var(--border-soft);border-radius:8px;padding:10px;resize:vertical;font-family:inherit;background:var(--surface);color:var(--text-strong);"
                         placeholder="لطفاً دلیل رد را بنویسید..."></textarea>
                     <div style="display:flex;gap:8px;margin-top:14px;">
                         <button id="rejectConfirmBtn" class="btn btn-danger">رد درخواست</button>

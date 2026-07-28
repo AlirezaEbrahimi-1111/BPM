@@ -489,7 +489,7 @@ require_once '../includes/version.php';
             toast.className = `custom-toast toast-${type}`;
             toast.style.cssText = `
                 position: fixed; top: 100px; right: 20px; min-width: 280px;
-                background: white; border-radius: 12px; padding: 16px 20px;
+                background: var(--surface); color: var(--text-strong); border-radius: 12px; padding: 16px 20px;
                 box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 10000;
                 border-left: 4px solid ${type === 'success' ? '#10b981' : '#3b82f6'};
                 transform: translateX(400px); transition: transform 0.4s ease;

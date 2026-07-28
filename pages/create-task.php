@@ -61,6 +61,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         .exec-summary b {
             color: #101828;
         }
+
+        :root[data-theme="dark"] .exec-summary {
+            background: var(--surface);
+            border-color: var(--border-soft);
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .exec-summary b {
+            color: var(--text-strong);
+        }
         /* چک‌لیست: هر آیتم = ردیف (شماره، عنوان، آیکون‌های توضیحات/حذف در انتها) +
            یک ناحیه‌ی اختیاریِ تمام‌عرض زیرش برای ویرایش توضیحات */
         .cl-item-wrap { margin-bottom: 8px; }
@@ -97,6 +107,25 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             padding: 8px 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
         }
         .cl-desc-edit textarea { font-size: 0.82rem; resize: vertical; }
+
+        :root[data-theme="dark"] .cl-item {
+            border-color: var(--border-soft);
+            background: var(--surface);
+        }
+        :root[data-theme="dark"] .cl-item:hover {
+            border-color: var(--icon-accent);
+            background: #232a3a;
+        }
+        :root[data-theme="dark"] .cl-title-input:focus {
+            background: #232a3a;
+        }
+        :root[data-theme="dark"] .cl-icon-btn:hover {
+            background: #2b3242;
+        }
+        :root[data-theme="dark"] .cl-desc-edit {
+            background: #161b27;
+            border-color: var(--border-soft);
+        }
         .cl-desc-edit-actions { display: flex; gap: 6px; justify-content: flex-end; }
     </style>
 </head>

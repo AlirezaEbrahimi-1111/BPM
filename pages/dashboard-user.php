@@ -147,6 +147,18 @@ require_once '../includes/version.php';
             background: var(--gray-400);
         }
 
+        :root[data-theme="dark"] .dash-card-body::-webkit-scrollbar-track {
+            background: var(--info-box-bg);
+        }
+
+        :root[data-theme="dark"] .dash-card-body::-webkit-scrollbar-thumb {
+            background: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .dash-card-body::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
         /* ═══ برنامه کاری ═══ */
         .plan-row {
             flex-shrink: 0;

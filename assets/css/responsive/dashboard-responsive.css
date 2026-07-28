@@ -236,7 +236,7 @@ textarea,
   display: block;
   width: 20px;
   height: 2px;
-  background: var(--primary);
+  background: var(--icon-accent, var(--primary));
   border-radius: 2px;
 }
 
