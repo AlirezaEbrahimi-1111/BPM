@@ -1487,7 +1487,65 @@ function formatDateJalali($gregorianDate)
             font-weight: 600;
         }
 
-        /* ======================================== 
+        /* ========================================
+           📅 انتخابگر ماه (تب ورود و خروج)
+        ======================================== */
+        .att-month-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .att-month-toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .att-month-toolbar label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .att-month-toolbar select {
+            padding: 8px 14px;
+            border: 1px solid rgba(116, 76, 164, 0.25);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--icon-accent);
+            background: var(--surface);
+            cursor: pointer;
+        }
+
+        :root[data-theme="dark"] .att-month-toolbar select {
+            border-color: var(--border-soft);
+        }
+
+        .att-month-toolbar-stats {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .att-inline-stat {
+            font-size: 13px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .att-inline-stat b {
+            font-weight: 700;
+            color: var(--text-strong);
+        }
+
+        /* ========================================
            📅 جدول حضور و غیاب
         ======================================== */
         .attendance-table-wrapper {
@@ -2656,6 +2714,20 @@ function formatDateJalali($gregorianDate)
                 <!-- بخش ورود و خروج -->
                 <div id="attendance-section">
                     <div class="attendance-sidebar">
+
+                        <!-- انتخابگر ماه + خلاصهٔ ریالی -->
+                        <div class="att-month-toolbar">
+                            <div class="att-month-toolbar-left">
+                                <label for="attMonthSelect">ماه:</label>
+                                <select id="attMonthSelect"></select>
+                            </div>
+                            <div class="att-month-toolbar-stats">
+                                <span class="att-inline-stat">حقوق پایه: <b id="attInlineBase">—</b></span>
+                                <span class="att-inline-stat">کسری ریالی: <b id="attInlineShortageMoney" style="color:#EF4444;">—</b></span>
+                                <span class="att-inline-stat">حقوق دریافتی: <b id="attInlineReceived" style="color:#8B5CF6;">—</b></span>
+                            </div>
+                        </div>
+
                         <div class="attendance-table-wrapper">
                             <div class="attendance-table-container" id="attendanceTableContainer">
                                 <div class="attendance-loading">
@@ -3892,7 +3964,7 @@ function formatDateJalali($gregorianDate)
         // ============================================
         // ✅ تابع اصلی بارگذاری گزارش ماهانه
         // ============================================
-        async function loadMonthlyAttendance() {
+        async function loadMonthlyAttendance(jy, jm) {
             const container = document.getElementById('attendanceTableContainer');
 
             try {
@@ -3907,7 +3979,10 @@ function formatDateJalali($gregorianDate)
                 // Set کردن Cookie برای PHP
                 document.cookie = 'auth_token=' + authToken + '; path=/; max-age=86400';
 
-                const response = await fetch('/api/attendance/monthly-report.php?t=' + Date.now(), {
+                let url = '/api/attendance/monthly-report.php?t=' + Date.now();
+                if (jy && jm) url += '&jy=' + jy + '&jm=' + jm;
+
+                const response = await fetch(url, {
                     headers: {
                         'Authorization': 'Bearer ' + authToken
                     }
@@ -4054,6 +4129,8 @@ function formatDateJalali($gregorianDate)
                         }, 60);
                     }
 
+                    fillAttInlineStats(data);
+
                 } else {
                     container.innerHTML = `
                 <div class="attendance-loading" style="color: #dc2626;">
@@ -4071,6 +4148,47 @@ function formatDateJalali($gregorianDate)
             </div>`;
             }
         }
+
+        // ============================================
+        // ✅ انتخابگر ماه تب «ورود و خروج»
+        // ============================================
+        function buildAttMonthSelector() {
+            const sel = document.getElementById('attMonthSelect');
+            if (!sel) return;
+            const t = new Date();
+            const jNow = gregorianToJalaliJS(t.getFullYear(), t.getMonth() + 1, t.getDate());
+            let y = jNow[0],
+                m = jNow[1];
+            sel.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const opt = document.createElement('option');
+                opt.value = y + '-' + m;
+                opt.textContent = convertToFarsiNumber(getMonthName(m) + ' ' + y);
+                sel.appendChild(opt);
+                m--;
+                if (m < 1) {
+                    m = 12;
+                    y--;
+                }
+            }
+            sel.value = jNow[0] + '-' + jNow[1];
+            sel.addEventListener('change', function() {
+                const [sy, sm] = this.value.split('-').map(Number);
+                loadMonthlyAttendance(sy, sm);
+            });
+        }
+
+        function fillAttInlineStats(data) {
+            const base = document.getElementById('attInlineBase');
+            const shortageMoney = document.getElementById('attInlineShortageMoney');
+            const received = document.getElementById('attInlineReceived');
+            const monthlySalary = data.monthly_salary || 0;
+            const shortage = data.total_shortage_money || 0;
+            if (base) base.textContent = convertToFarsiNumber(formatNumber(monthlySalary)) + ' ریال';
+            if (shortageMoney) shortageMoney.textContent = convertToFarsiNumber(formatNumber(shortage)) + ' ریال';
+            if (received) received.textContent = convertToFarsiNumber(formatNumber(monthlySalary - shortage)) + ' ریال';
+        }
+
         // تابع بررسی اینکه آیا برای بازه کسری درخواست تأیید شده وجود دارد
         function hasApprovedRequestForSlot(slotStart, slotEnd, dayRequests) {
             if (!dayRequests || dayRequests.length === 0) {
@@ -4841,6 +4959,7 @@ function formatDateJalali($gregorianDate)
             });
             setTimeout(function() {
 
+                buildAttMonthSelector();
                 loadMonthlyAttendance();
                 loadSubstituteUsers();
                 initPagination();

@@ -506,7 +506,7 @@ class WorkflowManager
     }
 
     // ✅ تکمیل یک مرحله و رفتن به مرحله بعد
-    public function completeStep($task_id, $user_id)
+    public function completeStep($task_id, $user_id, $notes = '')
     {
         try {
             $this->db->beginTransaction();
@@ -536,28 +536,30 @@ class WorkflowManager
                 throw new Exception('این مرحله قابل تکمیل نیست (وضعیت: ' . $current_step['status'] . ')');
             }
 
+            $notes = trim((string) $notes);
+
             // 1. بستن task فعلی
             $stmt = $this->db->prepare("
-                UPDATE tasks 
-                SET status = 'completed', updated_at = NOW() 
+                UPDATE tasks
+                SET status = 'completed', updated_at = NOW()
                 WHERE id = ?
             ");
             $stmt->execute([$task_id]);
 
-            // 2. علامت‌گذاری مرحله به عنوان تکمیل شده
+            // 2. علامت‌گذاری مرحله به عنوان تکمیل شده (+ توضیحاتِ انجام‌دهنده، اگر وارد کرده باشد)
             $stmt = $this->db->prepare("
-                UPDATE workflow_instance_steps 
-                SET status = 'completed', completed_at = NOW(), completed_by = ?
+                UPDATE workflow_instance_steps
+                SET status = 'completed', completed_at = NOW(), completed_by = ?, completion_notes = ?
                 WHERE id = ?
             ");
-            $stmt->execute([$user_id, $current_step['id']]);
+            $stmt->execute([$user_id, ($notes !== '' ? $notes : null), $current_step['id']]);
 
-            // ✅ ثبت در task_history
+            // ✅ ثبت در task_history — اگر توضیحی وارد شده باشد همان، وگرنه پیام پیش‌فرض
             $stmt = $this->db->prepare("
-                INSERT INTO task_history (task_id, from_user_id, action, notes) 
-                VALUES (?, ?, 'completed', 'مرحله تکمیل شد')
+                INSERT INTO task_history (task_id, from_user_id, action, notes)
+                VALUES (?, ?, 'completed', ?)
             ");
-            $stmt->execute([$task_id, $user_id]);
+            $stmt->execute([$task_id, $user_id, ($notes !== '' ? $notes : 'مرحله تکمیل شد')]);
 
             // 🆕 per-step: حالتِ اجرای «همین مرحله» را از workflow_steps بخوان
             $stmt = $this->db->prepare("SELECT execution_mode FROM workflow_steps WHERE id = ?");
@@ -606,6 +608,17 @@ class WorkflowManager
                     WHERE id = ?
                 ");
                 $stmt->execute([$nextDeadline, $next_step['task_id']]);
+
+                // ✅ اگر انجام‌دهندهٔ مرحلهٔ قبل توضیحی نوشته، همان را در تاریخچهٔ
+                //    تسکِ مرحلهٔ بعدی هم ثبت کن تا مسئولِ مرحلهٔ بعد ببیندش
+                //    (هر مرحله task_id جدا دارد؛ بدون این کار، تاریخچه منتقل نمی‌شود)
+                if ($notes !== '') {
+                    $stmt = $this->db->prepare("
+                        INSERT INTO task_history (task_id, from_user_id, action, notes)
+                        VALUES (?, ?, 'workflow_prev_note', ?)
+                    ");
+                    $stmt->execute([$next_step['task_id'], $user_id, $notes]);
+                }
 
                 // بروزرسانی مرحله فعلی در workflow_instances
                 $stmt = $this->db->prepare("

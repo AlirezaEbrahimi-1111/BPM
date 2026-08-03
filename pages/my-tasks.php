@@ -86,6 +86,11 @@ require_once  $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                     </div>
                 </div>
 
+                <div id="dashFilterBanner" style="display:none;align-items:center;justify-content:space-between;gap:10px;background:#f0e9fd;border:1px solid rgba(126,85,179,.25);border-radius:10px;padding:8px 14px;margin-bottom:10px;font-size:13px;color:#7e55b3;">
+                    <span id="dashFilterBannerText"></span>
+                    <a href="my-tasks.php" style="color:#7e55b3;font-weight:700;text-decoration:underline;">پاک کردن فیلتر</a>
+                </div>
+
                 <div class="search-box">
                     <i class="bi bi-search"></i>
                     <input type="text" id="searchInput" placeholder="جستجو در عنوان یا توضیحات...">
@@ -161,6 +166,42 @@ require_once  $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         let currentUser = null;
         let acticity_section = {};
         let filterAssigneeId = '';
+
+        // فیلترِ آمده از لینک داشبورد (مودال هفته/ماه/+N مورد دیگر) — ?filter=week یا ?filter=month&jy=..&jm=.. یا ?filter=day&date=YYYY-MM-DD
+        const urlParamsInit = new URLSearchParams(location.search);
+        const dashFilter = urlParamsInit.get('filter'); // 'week' | 'month' | 'day' | null
+        const dashFilterJY = parseInt(urlParamsInit.get('jy'), 10) || null;
+        const dashFilterJM = parseInt(urlParamsInit.get('jm'), 10) || null;
+        const dashFilterDate = urlParamsInit.get('date'); // برای filter=day
+
+        /* تبدیل میلادی به شمسی (همان الگوریتم داشبورد مدیریت) */
+        function toJalali(gy, gm, gd) {
+            const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+            let jy = (gy <= 1600) ? 0 : 979;
+            gy -= (gy <= 1600) ? 621 : 1600;
+            const gy2 = (gm > 2) ? gy + 1 : gy;
+            let days = 365 * gy + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) +
+                Math.floor((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
+            jy += 33 * Math.floor(days / 12053);
+            days %= 12053;
+            jy += 4 * Math.floor(days / 1461);
+            days %= 1461;
+            jy += Math.floor((days - 1) / 365);
+            if (days > 365) days = (days - 1) % 365;
+            const jm = (days < 186) ? 1 + Math.floor(days / 31) : 7 + Math.floor((days - 186) / 30);
+            const jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+            return [jy, jm, jd];
+        }
+
+        function jalaliOf(d) {
+            return toJalali(d.getFullYear(), d.getMonth() + 1, d.getDate());
+        }
+
+        /* تاریخ محلی به شکل YYYY-MM-DD (بدون تبدیل UTC، برخلاف toISOString) */
+        function localYMD(d) {
+            const p = n => String(n).padStart(2, '0');
+            return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+        }
 
 
         const columnDefs = [{
@@ -346,7 +387,7 @@ require_once  $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
 
 
-            loadTasks();
+            loadTasks().then(() => applyDashFilterFromUrl());
             loadSections().then(() => loadUsers());
 
             ['filterStatus', 'filterPriority', 'filterType'].forEach(id => {
@@ -431,6 +472,34 @@ require_once  $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 console.error(e);
                 showError('خطا در ارتباط');
             }
+        }
+
+        /* اعمال فیلتر آمده از لینک داشبورد (مودال هفته/ماه) — بعد از لود اولیهٔ کارها */
+        function applyDashFilterFromUrl() {
+            if (dashFilter !== 'week' && dashFilter !== 'month' && dashFilter !== 'day') return;
+            if (dashFilter === 'day' && !dashFilterDate) return;
+
+            statFilter = dashFilter;
+            document.getElementById('filterStatus').value = ''; // همهٔ وضعیت‌ها، نه فقط «باز»
+
+            const banner = document.getElementById('dashFilterBanner');
+            const bannerText = document.getElementById('dashFilterBannerText');
+            const months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+
+            if (dashFilter === 'week') {
+                bannerText.textContent = 'نمایش فقط کارهای این هفته';
+            } else if (dashFilter === 'month') {
+                const targetJY = dashFilterJY || jalaliOf(new Date())[0];
+                const targetJM = dashFilterJM || jalaliOf(new Date())[1];
+                bannerText.textContent = 'نمایش فقط کارهای ' + months[targetJM - 1] + ' ' + toPersian(targetJY);
+            } else {
+                const [gy, gm, gd] = dashFilterDate.split('-').map(Number);
+                const [jy, jm, jd] = toJalali(gy, gm, gd);
+                bannerText.textContent = 'نمایش فقط کارهای ' + toPersian(jd) + ' ' + months[jm - 1] + ' ' + toPersian(jy);
+            }
+
+            banner.style.display = 'flex';
+            applyFilters();
         }
 
         async function loadSections() {
@@ -579,6 +648,41 @@ require_once  $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 if (statFilter === 'completed' && t.status !== 'completed' && t.status !== 'approved') return false;
                 if (statFilter === 'not_started' && t.status !== 'not_started') return false;
                 if (statFilter === 'delegated' && !(t.creator_id === currentUser.id && t.assignee_id !== currentUser.id)) return false;
+
+                if (statFilter === 'week') {
+                    const due = TF.effectiveDue(t);
+                    if (!due) return false;
+                    const d = new Date(due);
+                    d.setHours(0, 0, 0, 0);
+                    if (isNaN(d)) return false;
+                    const now = new Date();
+                    now.setHours(0, 0, 0, 0);
+                    const start = new Date(now);
+                    start.setDate(now.getDate() - ((now.getDay() + 1) % 7));
+                    const end = new Date(start);
+                    end.setDate(start.getDate() + 6);
+                    if (!(d >= start && d <= end)) return false;
+                }
+
+                if (statFilter === 'month') {
+                    const due = TF.effectiveDue(t);
+                    if (!due) return false;
+                    const d = new Date(due);
+                    if (isNaN(d)) return false;
+                    const [jy, jm] = jalaliOf(d);
+                    const targetJY = dashFilterJY || jalaliOf(new Date())[0];
+                    const targetJM = dashFilterJM || jalaliOf(new Date())[1];
+                    if (jy !== targetJY || jm !== targetJM) return false;
+                }
+
+                if (statFilter === 'day' && dashFilterDate) {
+                    const due = TF.effectiveDue(t);
+                    if (!due) return false;
+                    const d = new Date(due);
+                    if (isNaN(d)) return false;
+                    if (localYMD(d) !== dashFilterDate) return false;
+                }
+
                 return true;
             });
             // ✅ محاسبه next_due_date و days_remaining برای هر تسک

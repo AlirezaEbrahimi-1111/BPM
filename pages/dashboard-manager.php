@@ -65,9 +65,8 @@ require_once '../includes/version.php';
         }
 
         .dash-card-head {
-            background: #eaedf3;
+            background: #e9e9e9;
             /* هدر خاکستری — کمی پررنگ‌تر */
-            border-bottom: 1px solid var(--gray-200);
             padding: 10px 14px;
             display: flex;
             align-items: center;
@@ -80,18 +79,18 @@ require_once '../includes/version.php';
             align-items: center;
             gap: 8px;
             font-weight: 700;
-            font-size: .95rem;
+            font-size: .855rem;
             color: #000;
         }
 
         .dash-card-title i {
-            font-size: 1rem;
-            color: var(--pm-purple, #9563FF);
+            font-size: .9rem;
+            color: var(--pm-purple, #7e55b3);
             background: none;
         }
 
         .dash-see-all {
-            font-size: .8rem;
+            font-size: .72rem;
             font-weight: 700;
             color: var(--primary);
             text-decoration: none;
@@ -109,7 +108,7 @@ require_once '../includes/version.php';
         /* فشرده‌تر کردن انتخابگر کاربر داخل مودال */
         #planModal .ap-hint {
             margin-bottom: 0;
-            font-size: .75rem;
+            font-size: .675rem;
         }
 
 
@@ -161,20 +160,33 @@ require_once '../includes/version.php';
 .status-badge{
     border-radius:5px;
         padding: 4px 9px 4px 9px;
-        font-size: 12px;
+        font-size: 11px;
         width: 130px;
         text-align: center;
 }
+
+        .td-status .status-badge {
+            font-weight: bold;
+        }
+
+        .td-status .status-completed {
+            color: #1b7b39;
+            background: #40b86c1a;
+        }
         /* ═══ برنامه کاری ═══ */
         .plan-row {
             flex-shrink: 0;
+        }
+
+        .plan-row .dash-card-head {
+            background: #fff;
         }
 
         .plan-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 100px;
-            padding: 14px;
+            padding: 0 14px 14px 14px;
             margin: auto !important;
         }
 
@@ -194,8 +206,8 @@ require_once '../includes/version.php';
         }
 
         .plan-item:hover {
-            border-color: #9563FF;
-            box-shadow: 0 3px 12px rgba(149, 99, 255, .1);
+            border-color: #7e55b3;
+            box-shadow: 0 3px 12px rgba(126, 85, 179, .1);
             transform: translateY(-1px);
         }
 
@@ -207,14 +219,14 @@ require_once '../includes/version.php';
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: .99rem;
             flex-shrink: 0;
             order: 2;
         }
 
         .plan-icon.month {
             background: #f0e9fd;
-            color: #9563FF;
+            color: #7e55b3;
         }
 
         .plan-icon.week {
@@ -235,7 +247,7 @@ require_once '../includes/version.php';
         }
 
         .plan-label {
-            font-size: .78rem;
+            font-size: .702rem;
             font-weight: 600;
             color: var(--gray-500);
             margin-bottom: 2px;
@@ -250,11 +262,11 @@ require_once '../includes/version.php';
         }
 
         .plan-label.month {
-            color: #9563FF;
+            color: #7e55b3;
         }
 
         .plan-value {
-            font-size: 1rem;
+            font-size: .9rem;
             font-weight: 700;
             color: var(--gray-900);
         }
@@ -295,7 +307,7 @@ require_once '../includes/version.php';
             border: none;
             border-bottom: 2px solid transparent;
             padding: 10px 14px 9px;
-            font-size: .87rem;
+            font-size: .783rem;
             color: var(--gray-900);
             font-weight: 700;
             cursor: pointer;
@@ -321,7 +333,7 @@ require_once '../includes/version.php';
         }
 
         .tab-pin {
-            font-size: .78rem;
+            font-size: .702rem;
             color: var(--gray-300);
             opacity: 0;
             transition: opacity .15s, color .15s;
@@ -356,7 +368,7 @@ require_once '../includes/version.php';
             background: #e9e9e9;
             border-radius: var(--radius-sm);
             padding: 5px 14px;
-            font-size: .8rem;
+            font-size: .72rem;
             color: var(--gray-900);
             font-weight: 700;
             cursor: pointer;
@@ -410,7 +422,7 @@ require_once '../includes/version.php';
             top: 0;
             z-index: 2;
             background: #fff;
-            font-size: .78rem;
+            font-size: .702rem;
             font-weight: 700;
             color: var(--gray-900);
             text-align: right;
@@ -441,7 +453,7 @@ require_once '../includes/version.php';
 
         .task-table td {
             padding: 0 8px 0 8px;
-            font-size: .85rem;
+            font-size: .765rem;
             color: #000;
             font-weight: 500;
             vertical-align: middle;
@@ -455,7 +467,7 @@ require_once '../includes/version.php';
 
         .td-title i.doc {
             color: #93c5fd;
-            font-size: .95rem;
+            font-size: .855rem;
             flex-shrink: 0;
         }
 
@@ -470,7 +482,7 @@ require_once '../includes/version.php';
             background: none;
             border: none;
             cursor: pointer;
-            font-size: .95rem;
+            font-size: .855rem;
             color: var(--gray-300);
             padding: 2px;
             flex-shrink: 0;
@@ -519,15 +531,15 @@ require_once '../includes/version.php';
             border: none;
             cursor: pointer;
             color: #000000;
-            font-size: 1.1rem;
+            font-size: .99rem;
             padding: 4px 8px;
             border-radius: 7px;
             transition: background .12s, color .12s;
         }
 
         .row-kebab:hover {
-            background: #9563FF;
-            color: #9563FF;
+            background: #7e55b3;
+            color: #fff;
         }
 
         .row-menu {
@@ -559,16 +571,16 @@ require_once '../includes/version.php';
             align-items: center;
             gap: 9px;
             border-radius: 7px;
-            font-size: .85rem;
+            font-size: .765rem;
             color: #000;
         }
 
         .row-menu button:hover {
-            background: #9563FF;
+            background: #7e55b3;
         }
 
         .row-menu button i {
-            font-size: .95rem;
+            font-size: .855rem;
             width: 17px;
         }
 
@@ -598,7 +610,7 @@ require_once '../includes/version.php';
 
         .row-menu .empty-hint {
             color: #9ca3af;
-            font-size: .78rem;
+            font-size: .702rem;
             padding: 8px 11px;
         }
 
@@ -606,7 +618,7 @@ require_once '../includes/version.php';
             display: inline-block;
             padding: 3px 10px;
             border-radius: 999px;
-            font-size: .74rem;
+            font-size: .666rem;
             font-weight: 600;
             white-space: nowrap;
         }
@@ -657,7 +669,7 @@ require_once '../includes/version.php';
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: .9rem;
             color: var(--gray-300);
             padding: 3px;
             transition: color .15s, transform .12s;
@@ -697,7 +709,7 @@ require_once '../includes/version.php';
 
         .routine-name {
             flex: 1;
-            font-size: .86rem;
+            font-size: .774rem;
             color: #000;
             font-weight: 600;
             overflow: hidden;
@@ -719,7 +731,7 @@ require_once '../includes/version.php';
         }
 
         .routine-count {
-            font-size: .85rem;
+            font-size: .765rem;
             font-weight: 700;
             color: #000;
             min-width: 26px;
@@ -746,7 +758,7 @@ require_once '../includes/version.php';
         }
 
         .dlg-title {
-            font-size: .85rem;
+            font-size: .765rem;
             color: #000;
             font-weight: 600;
             overflow: hidden;
@@ -755,7 +767,7 @@ require_once '../includes/version.php';
         }
 
         .dlg-sub {
-            font-size: .74rem;
+            font-size: .666rem;
             color: var(--gray-400);
             margin-top: 2px;
             overflow: hidden;
@@ -767,25 +779,61 @@ require_once '../includes/version.php';
             background: #fee2e2;
             color: #b91c1c;
             border-radius: 8px;
-            padding: 3px 10px;
-            font-size: .74rem;
+            padding: 3px 10px 0px 10px;
+            font-size: .666rem;
             font-weight: 600;
             white-space: nowrap;
             flex-shrink: 0;
+            height: 28px;
         }
 
         .dash-empty {
             text-align: center;
             color: var(--gray-400);
-            font-size: .85rem;
+            font-size: .765rem;
             padding: 30px 14px;
         }
 
         .dash-empty i {
             display: block;
-            font-size: 1.6rem;
+            font-size: 1.44rem;
             margin-bottom: 6px;
             opacity: .5;
+        }
+
+        /* حالت یکسانِ «در حال بارگذاری» برای همهٔ کارت‌های داشبورد */
+        .dash-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+            color: var(--gray-400);
+            font-size: .765rem;
+            padding: 30px 14px;
+        }
+
+        .dash-loading .spinner-border {
+            width: 1rem;
+            height: 1rem;
+            border-width: .15em;
+            color: var(--pm-purple);
+        }
+
+        /* .task-table td{color:#000} اسپسیفیسیتیِ بالاتری از .dash-loading دارد،
+           برای همین رنگ را اینجا دوباره خاکستری می‌کنیم. همچنین display:flex
+           روی <td colspan> باعث می‌شود مرورگر colspan را نادیده بگیرد و سلول
+           فقط به‌اندازهٔ ستون اول عرض بگیرد؛ پس مستقیماً table-cell + text-align
+           نگه داشته می‌شود تا واقعاً وسط کل جدول بیفتد */
+        .task-table td.dash-loading {
+            display: table-cell;
+            text-align: center;
+            color: var(--gray-400);
+        }
+
+        /* چون display اینجا table-cell است نه flex، gap کار نمی‌کند؛ فاصله با margin */
+        .task-table td.dash-loading .spinner-border {
+            margin-left: 6px;
         }
 
         .inst-row {
@@ -805,12 +853,12 @@ require_once '../includes/version.php';
 
         .inst-title {
             font-weight: 600;
-            font-size: .9rem;
+            font-size: .81rem;
             color: #000;
         }
 
         .inst-meta {
-            font-size: .78rem;
+            font-size: .702rem;
             color: var(--gray-500);
             margin-bottom: 6px;
         }
@@ -853,16 +901,16 @@ require_once '../includes/version.php';
 
         /* ═══════════ مودال برنامه کاری (بنفش) ═══════════ */
         :root {
-            --pm-purple: #9563FF;
-            --pm-purple-soft: #9563FF;
-            --pm-purple-dark: #9563FF;
+            --pm-purple: #7e55b3;
+            --pm-purple-soft: #7e55b3;
+            --pm-purple-dark: #7e55b3;
             --pm-green: #00BF8F;
             --pm-green-soft: #00BF8F;
             --pm-green-dark: #00BF8F;
-            --primary: #9563FF;
-            --primary-dark: #9563FF;
-            --primary-light: #9563FF;
-            --primary-gradient: linear-gradient(135deg, #9563FF 0%, #9563FF 100%);
+            --primary: #7e55b3;
+            --primary-dark: #7e55b3;
+            --primary-light: #7e55b3;
+            --primary-gradient: linear-gradient(135deg, #7e55b3 0%, #7e55b3 100%);
             --success: #00BF8F;
             --success-dark: #00BF8F;
         }
@@ -883,8 +931,9 @@ require_once '../includes/version.php';
         }
 
         #planModal .modal-title,
-        #weekModal .modal-title {
-            font-size: 1.15rem;
+        #weekModal .modal-title,
+        #monthModal .modal-title {
+            font-size: 1.035rem;
             font-weight: 700;
             color: #2d2d3a;
             display: flex;
@@ -903,7 +952,7 @@ require_once '../includes/version.php';
             align-items: center;
             justify-content: center;
             line-height: 1;
-            font-size: 1.2rem;
+            font-size: 1.08rem;
         }
 
         .pm-head-icon i {
@@ -911,7 +960,8 @@ require_once '../includes/version.php';
         }
 
         #planModal .btn-close,
-        #weekModal .btn-close {
+        #weekModal .btn-close,
+        #monthModal .btn-close {
             width: 26px;
             height: 26px;
             border-radius: 50%;
@@ -924,7 +974,8 @@ require_once '../includes/version.php';
         }
 
         #planModal .btn-close:hover,
-        #weekModal .btn-close:hover {
+        #weekModal .btn-close:hover,
+        #monthModal .btn-close:hover {
             background-color: var(--gray-100);
             border-color: var(--gray-400);
         }
@@ -948,8 +999,8 @@ require_once '../includes/version.php';
         }
 
         .pm-row:hover {
-            background: #9563FF;
-            border-color: #9563FF;
+            background: #7e55b3;
+            border-color: #7e55b3;
         }
 
         .pm-row.removing {
@@ -962,7 +1013,7 @@ require_once '../includes/version.php';
             flex: 1;
             min-width: 0;
             cursor: pointer;
-            font-size: .92rem;
+            font-size: .828rem;
             font-weight: 600;
             color: #374151;
             overflow: hidden;
@@ -987,7 +1038,7 @@ require_once '../includes/version.php';
             border: none;
             cursor: pointer;
             color: #9ca3af;
-            font-size: 1.15rem;
+            font-size: 1.035rem;
             padding: 5px 9px;
             border-radius: 8px;
             transition: background .12s, color .12s;
@@ -1029,18 +1080,18 @@ require_once '../includes/version.php';
             gap: 10px;
             padding: 10px 12px;
             border-radius: 8px;
-            font-size: .88rem;
+            font-size: .792rem;
             color: #000;
             text-align: right;
             transition: background .1s;
         }
 
         .pm-menu button:hover {
-            background: #9563FF;
+            background: #7e55b3;
         }
 
         .pm-menu button i {
-            font-size: 1rem;
+            font-size: .9rem;
             width: 18px;
             text-align: center;
         }
@@ -1082,7 +1133,7 @@ require_once '../includes/version.php';
         }
 
         .bn-stage {
-            font-size: .88rem;
+            font-size: .792rem;
             font-weight: 600;
             color: #000;
             overflow: hidden;
@@ -1091,13 +1142,13 @@ require_once '../includes/version.php';
         }
 
         .bn-count {
-            font-size: .76rem;
+            font-size: .684rem;
             color: #dc2626;
         }
 
         .bn-arrow {
             color: #d1d5db;
-            font-size: .9rem;
+            font-size: .81rem;
         }
 
         /* ── فرم عملیات ── */
@@ -1113,7 +1164,7 @@ require_once '../includes/version.php';
         }
 
         .pm-form-title {
-            font-size: .84rem;
+            font-size: .756rem;
             font-weight: 600;
             color: #4b5563;
             margin-bottom: 9px;
@@ -1126,7 +1177,7 @@ require_once '../includes/version.php';
         .pm-form select,
         .pm-form input[type="text"] {
             width: 100%;
-            font-size: .85rem;
+            font-size: .765rem;
             border: 1px solid #e5e7eb;
             border-radius: 9px;
             padding: 9px 11px;
@@ -1148,7 +1199,7 @@ require_once '../includes/version.php';
             border-radius: 9px;
             cursor: pointer;
             padding: 8px 18px;
-            font-size: .84rem;
+            font-size: .756rem;
             font-weight: 600;
             transition: opacity .12s;
         }
@@ -1177,11 +1228,11 @@ require_once '../includes/version.php';
             text-align: center;
             padding: 40px 20px;
             color: #9ca3af;
-            font-size: .9rem;
+            font-size: .81rem;
         }
 
         .pm-empty i {
-            font-size: 2.2rem;
+            font-size: 1.98rem;
             display: block;
             margin-bottom: 10px;
             color: #d1d5db;
@@ -1239,14 +1290,14 @@ require_once '../includes/version.php';
         .wk-nav button {
             border-radius: 8px;
             border: none; cursor: pointer;
-            color: white; font-size: .95rem;
+            color: white; font-size: .855rem;
             display: flex; align-items: center; justify-content: center;
             transition: background .12s;
             background-color: transparent;
         }
         .wk-nav button:hover { background: #fff; }
         .wk-nav .wk-label {
-            font-size: .88rem; font-weight: 700; color: white;
+            font-size: .792rem; font-weight: 700; color: white;
             min-width: 78px; text-align: center;
         }
 
@@ -1286,13 +1337,13 @@ require_once '../includes/version.php';
         }
 
         .wk-day {
-            font-size: .82rem;
+            font-size: .738rem;
             font-weight: 700;
             color: #000;
         }
 
         .wk-date {
-            font-size: .68rem;
+            font-size: .612rem;
             color: #9ca3af;
             margin-top: 2px;
         }
@@ -1316,7 +1367,7 @@ require_once '../includes/version.php';
         }
 
         .wk-card-title {
-            font-size: .74rem;
+            font-size: .666rem;
             color: #000;
             font-weight: 600;
             line-height: 1.4;
@@ -1329,7 +1380,7 @@ require_once '../includes/version.php';
         }
 
         .wk-card-time {
-            font-size: .66rem;
+            font-size: .594rem;
             color: #9ca3af;
             margin-top: 3px;
         }
@@ -1337,14 +1388,14 @@ require_once '../includes/version.php';
         .wk-card .pm-kebab {
             position: absolute;
             left: 3px;
-            font-size: .9rem;
+            font-size: .81rem;
             padding: 0px 5px;
         }
 
         .wk-col-empty {
             text-align: center;
             color: #d1d5db;
-            font-size: .7rem;
+            font-size: .63rem;
             padding: 14px 0;
         }
 
@@ -1357,17 +1408,113 @@ require_once '../includes/version.php';
         .wk-card .pm-form textarea,
         .wk-card .pm-form select,
         .wk-card .pm-form input[type="text"] {
-            font-size: .72rem;
+            font-size: .648rem;
             padding: 6px 8px;
         }
 
         .wk-card .pm-btn {
             padding: 5px 10px;
-            font-size: .72rem;
+            font-size: .648rem;
         }
 
         .wk-card .pm-form-title {
-            font-size: .72rem;
+            font-size: .648rem;
+        }
+
+        /* ═══ مودال ماهانه ═══ */
+        .mo-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            transition: grid-template-columns .6s cubic-bezier(.4, 0, .2, 1), grid-template-rows .6s cubic-bezier(.4, 0, .2, 1);
+            will-change: grid-template-columns, grid-template-rows;
+        }
+
+        .mo-weekday {
+            text-align: center;
+            font-size: .702rem;
+            font-weight: 700;
+            color: var(--gray-500);
+            padding-bottom: 6px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* اندازهٔ همهٔ سلول‌ها یکسان است (ارتفاع از grid-template-rows می‌آید، نه از محتوا) */
+        .mo-cell {
+            background: #fafafa;
+            border: 1px solid #f0f0f3;
+            border-radius: 10px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .mo-cell.mo-hover {
+            background: #fff;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
+            z-index: 5;
+        }
+
+        .mo-cell-empty {
+            background: transparent;
+            border: none;
+        }
+
+        .mo-cell-date {
+            font-size: .666rem;
+            font-weight: 700;
+            color: #000;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .mo-today .mo-cell-date {
+            color: var(--pm-purple);
+        }
+
+        .mo-cell-tasks {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .mo-task-title {
+            font-size: .576rem;
+            color: #000;
+            background: #fff;
+            border: 1px solid #f0f0f3;
+            border-radius: 4px;
+            padding: 1px 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .mo-cell.mo-hover .mo-task-title {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+        }
+
+        .mo-more {
+            font-size: .54rem;
+            color: var(--pm-purple);
+            font-weight: 700;
+            text-align: center;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .mo-more:hover {
+            text-decoration: underline;
         }
 
         /* ردیف کاربر تأخیردار */
@@ -1394,7 +1541,7 @@ require_once '../includes/version.php';
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.05rem;
+            font-size: .945rem;
             flex-shrink: 0;
         }
 
@@ -1404,7 +1551,7 @@ require_once '../includes/version.php';
         }
 
         .td-user-name {
-            font-size: .88rem;
+            font-size: .792rem;
             font-weight: 600;
             color: #000;
             overflow: hidden;
@@ -1413,7 +1560,7 @@ require_once '../includes/version.php';
         }
 
         .td-user-breakdown {
-            font-size: .72rem;
+            font-size: .648rem;
             color: #9ca3af;
 
             overflow: hidden;
@@ -1422,17 +1569,18 @@ require_once '../includes/version.php';
         }
 
         .td-user-count {
-            font-size: .8rem;
+            font-size: .72rem;
             font-weight: 700;
             color: #b91c1c;
             background: #fee2e2;
             border-radius: 8px;
             min-width: 34px;
-            height: 34px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            padding: 0 10px 0 10px !important;
         }
 
         /* پیام کوتاه */
@@ -1445,7 +1593,7 @@ require_once '../includes/version.php';
             color: #fff;
             padding: 11px 22px;
             border-radius: 10px;
-            font-size: .86rem;
+            font-size: .774rem;
             z-index: 3000;
             opacity: 0;
             transition: .25s;
@@ -1503,7 +1651,7 @@ require_once '../includes/version.php';
         }
 
         .pm-title {
-            font-size: .9rem;
+            font-size: .81rem;
             font-weight: 600;
             color: #374151;
             overflow: hidden;
@@ -1522,7 +1670,7 @@ require_once '../includes/version.php';
             border: none;
             cursor: pointer;
             color: #9ca3af;
-            font-size: 1.1rem;
+            font-size: .99rem;
             padding: 4px 8px;
             border-radius: 6px;
             transition: background .12s, color .12s;
@@ -1574,7 +1722,7 @@ require_once '../includes/version.php';
             gap: 9px;
             padding: 9px 11px;
             border-radius: 7px;
-            font-size: .85rem;
+            font-size: .765rem;
             color: #000;
             text-align: right;
             transition: background .1s;
@@ -1585,7 +1733,7 @@ require_once '../includes/version.php';
         }
 
         .pm-menu button i {
-            font-size: .95rem;
+            font-size: .855rem;
             width: 16px;
         }
 
@@ -1618,7 +1766,7 @@ require_once '../includes/version.php';
         }
 
         .pm-form-title {
-            font-size: .82rem;
+            font-size: .738rem;
             font-weight: 600;
             color: #4b5563;
             margin-bottom: 8px;
@@ -1631,7 +1779,7 @@ require_once '../includes/version.php';
         .pm-form select,
         .pm-form input[type="text"] {
             width: 100%;
-            font-size: .84rem;
+            font-size: .756rem;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             padding: 8px 10px;
@@ -1653,7 +1801,7 @@ require_once '../includes/version.php';
             border-radius: 8px;
             cursor: pointer;
             padding: 7px 16px;
-            font-size: .82rem;
+            font-size: .738rem;
             font-weight: 600;
             transition: opacity .12s;
         }
@@ -1688,7 +1836,7 @@ require_once '../includes/version.php';
             color: #fff;
             padding: 11px 22px;
             border-radius: 10px;
-            font-size: .86rem;
+            font-size: .774rem;
             z-index: 3000;
             opacity: 0;
             transition: opacity .25s, transform .25s;
@@ -1726,7 +1874,7 @@ require_once '../includes/version.php';
 
         .ra-input {
             width: 100%;
-            font-size: .86rem;
+            font-size: .774rem;
             border: 1px solid #e5e7eb;
             border-radius: 9px;
             padding: 9px 11px;
@@ -1735,7 +1883,7 @@ require_once '../includes/version.php';
 
         .ra-input:focus {
             outline: none;
-            border-color: #9563FF;
+            border-color: #7e55b3;
         }
 
         textarea.ra-input {
@@ -1762,7 +1910,7 @@ require_once '../includes/version.php';
             gap: 9px;
             padding: 9px 11px;
             cursor: pointer;
-            font-size: .85rem;
+            font-size: .765rem;
             border-bottom: 1px solid #f7f7f9;
             transition: background .1s;
         }
@@ -1772,28 +1920,28 @@ require_once '../includes/version.php';
         }
 
         .ra-user:hover {
-            background: #9563FF;
+            background: #7e55b3;
         }
 
         .ra-user.sel {
-            background: #9563FF;
-            color: #9563FF;
+            background: #7e55b3;
+            color: #7e55b3;
             font-weight: 600;
         }
 
         .ra-user i {
             color: #9ca3af;
-            font-size: 1rem;
+            font-size: .9rem;
         }
 
         .ra-user.sel i {
-            color: #9563FF;
+            color: #7e55b3;
         }
 
         .ra-user-empty {
             text-align: center;
             color: #9ca3af;
-            font-size: .82rem;
+            font-size: .738rem;
             padding: 14px;
         }
 
@@ -1853,7 +2001,7 @@ require_once '../includes/version.php';
         <div class="dash-card plan-row">
             <div class="dash-card-head">
                 <div class="dash-card-title">
-                    <i class="bi bi-calendar3" style="background:#dbeafe;color:#2563eb;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"></i><span>برنامه کاری</span>
+                    <i class="bi bi-calendar3" style="color:#2563eb;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size: .9rem;flex-shrink:0;"></i><span>برنامه کاری</span>
                 </div>
             </div>
             <div class="plan-grid">
@@ -1891,7 +2039,7 @@ require_once '../includes/version.php';
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-calendar3" style="background:#dbeafe;color:#2563eb;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"></i><span>کارها</span>
+                        <i class="bi bi-calendar3" style="color:#2563eb;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size: .9rem;flex-shrink:0;"></i><span>کارها</span>
                     </div>
                     <a href="#" class="dash-see-all" id="tasksSeeAll">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -1935,7 +2083,7 @@ require_once '../includes/version.php';
                         </thead>
                         <tbody id="taskTbody">
                             <tr>
-                                <td colspan="4" class="dash-empty">در حال بارگذاری…</td>
+                                <td colspan="4" class="dash-loading"><span class="spinner-border spinner-border-sm" role="status"></span>در حال بارگذاری…</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1945,7 +2093,7 @@ require_once '../includes/version.php';
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-arrow-repeat" style="background:#f0e9fd;color:#9563FF;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"></i><span>فرآیندهای جاری</span>
+                        <i class="bi bi-arrow-repeat" style="color:#7e55b3;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size: .9rem;flex-shrink:0;"></i><span>فرآیندهای جاری</span>
                     </div>
                     <a href="workflow-monitor.php" class="dash-see-all">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -1953,7 +2101,7 @@ require_once '../includes/version.php';
                 </div>
                 <div class="dash-card-body">
                     <div id="routineList">
-                        <div class="dash-empty">در حال بارگذاری…</div>
+                        <div class="dash-loading"><span class="spinner-border spinner-border-sm" role="status"></span>در حال بارگذاری…</div>
                     </div>
                 </div>
             </div>
@@ -1967,7 +2115,7 @@ require_once '../includes/version.php';
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-people" style="background:#DFF8F1;color:#00BF8F;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"></i><span>کاربران با بیشترین تأخیر کار</span>
+                        <i class="bi bi-people" style="color:#00BF8F;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size: .9rem;flex-shrink:0;"></i><span>کاربران با بیشترین تأخیر کار</span>
                     </div>
                     <a href="#" class="dash-see-all" id="topDelayedSeeAll">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -1975,7 +2123,7 @@ require_once '../includes/version.php';
                 </div>
                 <div class="dash-card-body">
                     <div id="topDelayedList">
-                        <div class="dash-empty">به‌زودی…</div>
+                        <div class="dash-loading"><span class="spinner-border spinner-border-sm" role="status"></span>در حال بارگذاری…</div>
                     </div>
                 </div>
             </div>
@@ -1984,7 +2132,7 @@ require_once '../includes/version.php';
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-clock" style="background:#fee2e2;color:#dc2626;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"></i>
+                        <i class="bi bi-clock" style="color:#dc2626;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size: .9rem;flex-shrink:0;"></i>
                         <span>کارهای واگذار شده (تاخیردار)</span>
                     </div>
                     <a href="#" class="dash-see-all" id="delayedSeeAll">
@@ -1993,7 +2141,7 @@ require_once '../includes/version.php';
                 </div>
                 <div class="dash-card-body">
                     <div id="delayedList">
-                        <div class="dash-empty">در حال بارگذاری…</div>
+                        <div class="dash-loading"><span class="spinner-border spinner-border-sm" role="status"></span>در حال بارگذاری…</div>
                     </div>
                 </div>
             </div>
@@ -2002,7 +2150,7 @@ require_once '../includes/version.php';
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-graph-up-arrow" style="background:#f0e9fd;color:#9563FF;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"></i><span>گزارش گلوگاه‌ها</span>
+                        <i class="bi bi-graph-up-arrow" style="color:#7e55b3;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size: .9rem;flex-shrink:0;"></i><span>گزارش گلوگاه‌ها</span>
                     </div>
                     <a href="bottleneck-report.php" class="dash-see-all" id="bottleneckSeeAll">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -2010,7 +2158,7 @@ require_once '../includes/version.php';
                 </div>
                 <div class="dash-card-body">
                     <div id="bottleneckList">
-                        <div class="dash-empty">در حال بارگذاری…</div>
+                        <div class="dash-loading"><span class="spinner-border spinner-border-sm" role="status"></span>در حال بارگذاری…</div>
                     </div>
                 </div>
             </div>
@@ -2072,7 +2220,35 @@ require_once '../includes/version.php';
                     <div class="wk-grid" id="wkGrid"></div>
                 </div>
                 <div class="modal-footer" style="padding:12px 20px;">
-                    <a href="my-tasks.php" class="btn btn-sm" style="background:var(--pm-purple);color:#fff;">مشاهده همه کارها</a>
+                    <a href="my-tasks.php?filter=week" class="btn btn-sm" style="background:var(--pm-purple);color:#fff;">مشاهده همه کارها</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ═══════════ مودال ماهانه ═══════════ -->
+    <div class="modal fade" id="monthModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="    max-width: 1300px;">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span>برنامه این ماه</span>
+                        <span class="pm-head-icon"><i class="bi bi-calendar-check"></i></span>
+                    </h5>
+
+                    <!-- ناوبری ماه — کنار دکمهٔ بستن -->
+                    <div class="wk-nav">
+                        <button onclick="moShift(-1)" title="ماه قبل"><i class="bi bi-chevron-right"></i></button>
+                        <span class="wk-label" id="moLabel">این ماه</span>
+                        <button onclick="moShift(1)" title="ماه بعد"><i class="bi bi-chevron-left"></i></button>
+                    </div>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="padding:12px 16px;max-height:68vh;overflow:auto;">
+                    <div class="mo-grid" id="moGrid" onmouseover="moGridOver(event)" onmouseleave="moGridLeave()"></div>
+                </div>
+                <div class="modal-footer" style="padding:12px 20px;">
+                    <a href="my-tasks.php?filter=month" id="moSeeAllBtn" class="btn btn-sm" style="background:var(--pm-purple);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>
@@ -2105,6 +2281,7 @@ require_once '../includes/version.php';
 
         let currentTab = 'mine';
         let currentFilter = 'all';
+        let tasksDataReady = false; // تا وقتی داده‌های واقعی نیامده، renderTasks نباید حالت خالی نشان بدهد
 
         const store = {
             mine: [],
@@ -2248,9 +2425,10 @@ require_once '../includes/version.php';
         }
 
         async function loadAll() {
-            // نام فارسی واحدها را اول بارگذاری کن (تا در همه‌ی رندرها موجود باشد)
+            // نام فارسی واحدها موازی با بقیه بارگذاری می‌شود (نه قبل از آن‌ها)؛
+            // sectionToFa() خودش fallback امن دارد (کلید خام) تا وقتی نقشه برسد
             if (typeof loadSectionMap === 'function') {
-                await loadSectionMap();
+                loadSectionMap().then(() => renderTopDelayed());
             }
 
             const [mine, delegated, recent, routines, topDelayed] = await Promise.all([
@@ -2265,6 +2443,7 @@ require_once '../includes/version.php';
             store.delegated = pickList(delegated);
             store.recent = pickList(recent);
             store.topDelayed = (topDelayed && topDelayed.users) ? topDelayed.users : [];
+            tasksDataReady = true;
 
             renderStats();
             renderTasks();
@@ -2357,6 +2536,8 @@ require_once '../includes/version.php';
         }
 
         function renderTasks() {
+            if (!tasksDataReady) return; // هنوز داده‌ای نیامده — پیام «در حال بارگذاری» دست‌نخورده بماند
+
             const tbody = document.getElementById('taskTbody');
             const list = applyFilter(getTabList());
             // ── هدر پویا: تب فعالیت‌های اخیر، ستون «تاریخ/ساعت» دارد ──
@@ -2489,8 +2670,8 @@ require_once '../includes/version.php';
             // ── بقیه: مودال کوچک ─────────────────────────
             const titles = {
                 reject: ['رد کار', 'bi-x-lg', '#dc2626'],
-                delegate: ['ارجاع کار', 'bi-arrow-left-right', '#9563FF'],
-                extend: ['تمدید موعد', 'bi-calendar-plus', '#9563FF'],
+                delegate: ['ارجاع کار', 'bi-arrow-left-right', '#7e55b3'],
+                extend: ['تمدید موعد', 'bi-calendar-plus', '#7e55b3'],
             };
             const [title, icon, color] = titles[action];
 
@@ -2712,6 +2893,8 @@ require_once '../includes/version.php';
         }
         /* ═══ کاربران با بیشترین تأخیر ═══ */
         function renderTopDelayed() {
+            if (!tasksDataReady) return; // هنوز داده‌ای نیامده — پیام «در حال بارگذاری» دست‌نخورده بماند
+
             const box = document.getElementById('topDelayedList');
             if (!box) return;
 
@@ -2792,7 +2975,7 @@ require_once '../includes/version.php';
 
             // مرتب‌سازی نزولی بر اساس تعداد
             const sorted = Object.values(groups).sort((a, b) => b.count - a.count);
-            const colors = ['#dc2626', '#ea580c', '#d97706', '#ca8a04', '#9563FF'];
+            const colors = ['#dc2626', '#ea580c', '#d97706', '#ca8a04', '#7e55b3'];
 
             box.innerHTML = sorted.map((g, i) => {
                 const pct = Math.round((g.count / totalActive) * 100);
@@ -2823,7 +3006,7 @@ require_once '../includes/version.php';
             }
 
             const max = Math.max(...list.map(r => r.active_count), 1);
-            const colors = ['#2563eb', '#0d9488', '#00BF8F', '#ea580c', '#9563FF'];
+            const colors = ['#2563eb', '#0d9488', '#00BF8F', '#ea580c', '#7e55b3'];
 
             box.innerHTML = list.map((r, i) => {
                 const pct = Math.round((r.active_count / max) * 100);
@@ -2841,7 +3024,7 @@ require_once '../includes/version.php';
         async function openInstances(templateId, templateName) {
             const modal = new bootstrap.Modal(document.getElementById('instancesModal'));
             document.getElementById('instModalTitle').textContent = `نمونه‌های فعال — ${templateName}`;
-            document.getElementById('instModalBody').innerHTML = `<div class="dash-empty">در حال بارگذاری…</div>`;
+            document.getElementById('instModalBody').innerHTML = `<div class="dash-loading"><span class="spinner-border spinner-border-sm" role="status"></span>در حال بارگذاری…</div>`;
             modal.show();
 
             const all = pickList(await apiGet('../api/workflows/list.php'));
@@ -2866,7 +3049,7 @@ require_once '../includes/version.php';
                 </div>
                 <div class="inst-meta">مرحله فعلی: ${w.current_stage_name || 'نامشخص'}</div>
                 <div class="inst-prog"><div style="width:${prog}%"></div></div>
-                <div style="text-align:left; font-size:.75rem; color:var(--gray-500); margin-top:4px;">
+                <div style="text-align:left; font-size: .675rem; color:var(--gray-500); margin-top:4px;">
                     ${toFa(prog)}٪
                 </div>
             </div>`;
@@ -3076,14 +3259,6 @@ require_once '../includes/version.php';
            ═══════════════════════════════════════════════════ */
 
         const PM_META = {
-            month: {
-                title: 'برنامه این ماه',
-                icon: 'bi-calendar-check'
-            },
-            week: {
-                title: 'برنامه این هفته',
-                icon: 'bi-calendar-week'
-            },
             tomorrow: {
                 title: 'برنامه فردا',
                 icon: 'bi-calendar-event'
@@ -3094,6 +3269,11 @@ require_once '../includes/version.php';
             // «این هفته» → مودال هفتگی جداگانه
             if (scope === 'week') {
                 openWeekModal();
+                return;
+            }
+            // «این ماه» → مودال ماهانه جداگانه
+            if (scope === 'month') {
+                openMonthModal();
                 return;
             }
 
@@ -3530,7 +3710,7 @@ require_once '../includes/version.php';
             <div id="pmPicker-${taskId}" style="margin-bottom:8px;"></div>
 
             <textarea id="pmNote-${taskId}" placeholder="یادداشت (اختیاری)"></textarea>
-            <label style="font-size:.8rem; color:#6b7280; display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+            <label style="font-size: .72rem; color:#6b7280; display:flex; align-items:center; gap:6px; margin-bottom:8px;">
                 <input type="checkbox" id="pmShare-${taskId}" checked>
                 اشتراک‌گذاری تاریخچهٔ کار
             </label>
@@ -3886,6 +4066,245 @@ require_once '../includes/version.php';
             const hm = raw.split(' ')[1] || '';
             if (!hm || hm.startsWith('00:00')) return '';
             return toFa(hm.slice(0, 5));
+        }
+
+        /* ═══════════════════════════════════════════════
+           مودال ماهانه
+           ═══════════════════════════════════════════════ */
+
+        let moOffset = 0; // 0 = این ماه، -1 = قبل، +1 = بعد
+        let moModal = null;
+
+        function openMonthModal() {
+            moOffset = 0;
+            if (!moModal) {
+                moModal = new bootstrap.Modal(document.getElementById('monthModal'));
+            }
+            moModal.show();
+            moRender();
+
+            if (pmUsers.length === 0) pmLoadUsers();
+        }
+
+        function moShift(dir) {
+            moOffset += dir;
+            moRender();
+        }
+
+        /* اولِ ماهِ شمسیِ جاری، به گرگوری */
+        function moTodayMonthStart() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const jd = jalaliOf(today)[2];
+            const d = new Date(today);
+            d.setDate(d.getDate() - (jd - 1));
+            return d;
+        }
+
+        /* تعداد روزهای ماهی که این تاریخ در آن است */
+        function moDaysInMonth(monthStart) {
+            const jm = jalaliOf(monthStart)[1];
+            let count = 0;
+            const d = new Date(monthStart);
+            while (jalaliOf(d)[1] === jm) {
+                count++;
+                d.setDate(d.getDate() + 1);
+            }
+            return count;
+        }
+
+        /* اولِ ماهِ هدف (بر اساس افست از ماه جاری)، به گرگوری */
+        function moMonthStartOf(offset) {
+            let d = moTodayMonthStart();
+            if (offset > 0) {
+                for (let i = 0; i < offset; i++) {
+                    d.setDate(d.getDate() + moDaysInMonth(d));
+                }
+            } else if (offset < 0) {
+                for (let i = 0; i < -offset; i++) {
+                    const prevDay = new Date(d);
+                    prevDay.setDate(prevDay.getDate() - 1); // آخرین روز ماه قبل
+                    const pjd = jalaliOf(prevDay)[2];
+                    prevDay.setDate(prevDay.getDate() - (pjd - 1)); // اول همان ماه قبل
+                    d = prevDay;
+                }
+            }
+            return d;
+        }
+
+        function moTruncate(title) {
+            const t = title || '—';
+            return t.length > 15 ? t.slice(0, 15) + '…' : t;
+        }
+
+        /* تاریخ محلی به شکل YYYY-MM-DD (بدون تبدیل UTC، برخلاف toISOString) */
+        function moYMD(d) {
+            const p = n => String(n).padStart(2, '0');
+            return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+        }
+
+        /* ─── هاور: بزرگ‌شدنِ کلِ ردیف + کلِ ستونِ سلولِ هاورشده (به‌جای زوم خودِ سلول) ─── */
+        const MO_ROW_PX = 100; // ارتفاع پایهٔ هر ردیف (px)
+        const MO_COL_GROW = 1.4; // ضریب بزرگ‌شدنِ عرض سلولِ هاورشده (۴۰٪ بیشتر)
+        const MO_ROW_GROW = 2.0; // ضریب بزرگ‌شدنِ ارتفاع سلولِ هاورشده (۱۰۰٪ بیشتر)
+        let moTotalRows = 0;
+
+        function moBaseGridTemplate(totalRows) {
+            return {
+                cols: 'repeat(7, 1fr)',
+                rows: 'auto repeat(' + totalRows + ', ' + MO_ROW_PX + 'px)'
+            };
+        }
+
+        function moHoverGridTemplate(hoverRow, hoverCol, totalRows) {
+            const colShrink = (7 - MO_COL_GROW) / 6;
+            const cols = [];
+            for (let c = 0; c < 7; c++) {
+                cols.push(((c === hoverCol) ? MO_COL_GROW : colShrink).toFixed(4) + 'fr');
+            }
+
+            let rowsStr;
+            if (totalRows <= 1) {
+                rowsStr = (MO_ROW_GROW * MO_ROW_PX) + 'px';
+            } else {
+                const rowShrinkPx = MO_ROW_PX * (totalRows - MO_ROW_GROW) / (totalRows - 1);
+                const rows = [];
+                for (let r = 0; r < totalRows; r++) {
+                    rows.push(((r === hoverRow ? MO_ROW_GROW * MO_ROW_PX : rowShrinkPx)).toFixed(2) + 'px');
+                }
+                rowsStr = rows.join(' ');
+            }
+
+            return {
+                cols: cols.join(' '),
+                rows: 'auto ' + rowsStr
+            };
+        }
+
+        /* ─── هاورِ گروهی روی کل گرید (نه تک‌تک سلول‌ها) ───
+           چون موس معمولاً از یک سلول مستقیم به سلول مجاور می‌رود، اگر enter/leave
+           جدا روی هر سلول باشد، بین دو رویداد لحظه‌ای به حالت پایه برمی‌گردد و
+           چشمک/تیک ایجاد می‌کند. اینجا فقط وقتی سلولِ هاورشده واقعاً عوض شود
+           (یا موس کلاً از گرید خارج شود) قالب گرید را تغییر می‌دهیم. */
+        let moHoveredCell = null;
+
+        function moApplyHover(cell) {
+            if (moHoveredCell === cell) return;
+
+            if (moHoveredCell) {
+                moHoveredCell.classList.remove('mo-hover');
+                moHoveredCell.querySelectorAll('.mo-task-title[data-full]').forEach(el => {
+                    el.textContent = moTruncate(el.dataset.full);
+                });
+            }
+
+            moHoveredCell = cell;
+            cell.classList.add('mo-hover');
+            cell.querySelectorAll('.mo-task-title[data-full]').forEach(el => {
+                el.textContent = el.dataset.full;
+            });
+
+            const row = parseInt(cell.dataset.row, 10);
+            const col = parseInt(cell.dataset.col, 10);
+            const grid = document.getElementById('moGrid');
+            const t = moHoverGridTemplate(row, col, moTotalRows);
+            grid.style.gridTemplateColumns = t.cols;
+            grid.style.gridTemplateRows = t.rows;
+        }
+
+        function moGridOver(ev) {
+            const cell = ev.target.closest('.mo-cell:not(.mo-cell-empty)');
+            if (!cell) return;
+            moApplyHover(cell);
+        }
+
+        function moGridLeave() {
+            if (moHoveredCell) {
+                moHoveredCell.classList.remove('mo-hover');
+                moHoveredCell.querySelectorAll('.mo-task-title[data-full]').forEach(el => {
+                    el.textContent = moTruncate(el.dataset.full);
+                });
+                moHoveredCell = null;
+            }
+            const grid = document.getElementById('moGrid');
+            const b = moBaseGridTemplate(moTotalRows);
+            grid.style.gridTemplateColumns = b.cols;
+            grid.style.gridTemplateRows = b.rows;
+        }
+
+        function moRender() {
+            moHoveredCell = null; // چون grid دوباره ساخته می‌شود، رفرنس قبلی معتبر نمی‌ماند
+
+            const monthStart = moMonthStartOf(moOffset);
+            const [jy, jm] = jalaliOf(monthStart);
+            const daysCount = moDaysInMonth(monthStart);
+            const months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+            document.getElementById('moLabel').textContent = moOffset === 0 ? 'این ماه' : (months[jm - 1] + ' ' + toFa(jy));
+            document.getElementById('moSeeAllBtn').href = 'my-tasks.php?filter=month&jy=' + jy + '&jm=' + jm;
+
+            const dayNames = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'];
+            let html = dayNames.map(n => `<div class="mo-weekday">${n}</div>`).join('');
+
+            // چیدمانِ تقویمی: خانه‌های خالیِ ابتدای ماه تا روز هفتهٔ درست
+            const firstWeekday = (monthStart.getDay() + 1) % 7; // شنبه=۰
+            let cellIdx = 0;
+            for (let i = 0; i < firstWeekday; i++) {
+                const r = Math.floor(cellIdx / 7),
+                    c = cellIdx % 7;
+                html += `<div class="mo-cell mo-cell-empty" data-row="${r}" data-col="${c}"></div>`;
+                cellIdx++;
+            }
+
+            const todayRef = new Date();
+            todayRef.setHours(0, 0, 0, 0);
+            const todayTime = todayRef.getTime();
+
+            for (let dayNum = 1; dayNum <= daysCount; dayNum++) {
+                const d = new Date(monthStart);
+                d.setDate(d.getDate() + (dayNum - 1));
+                d.setHours(0, 0, 0, 0);
+
+                // کارهای این روز (فقط کارهای کاربر جاری)
+                const dayTasks = store.mine.filter(t => {
+                    const due = TF.effectiveDue(t);
+                    if (!due) return false;
+                    if (TF.isDone(t)) return false;
+                    const dd = new Date(due);
+                    dd.setHours(0, 0, 0, 0);
+                    return dd.getTime() === d.getTime();
+                });
+
+                let tasksHtml = '';
+                if (dayTasks.length) {
+                    const shown = dayTasks.slice(0, 10);
+                    tasksHtml = shown.map(t => {
+                        const full = (t.title || '—').replace(/"/g, '&quot;');
+                        return `<div class="mo-task-title" data-full="${full}"
+                             onclick="location.href='task-detail.php?id=${t.id}'">${moTruncate(t.title || '—')}</div>`;
+                    }).join('');
+                    if (dayTasks.length > 10) {
+                        tasksHtml += `<div class="mo-more" onclick="location.href='my-tasks.php?filter=day&amp;date=${moYMD(d)}'">+${toFa(dayTasks.length - 10)} مورد دیگر</div>`;
+                    }
+                }
+
+                const isToday = d.getTime() === todayTime;
+                const r = Math.floor(cellIdx / 7),
+                    c = cellIdx % 7;
+                html += `
+                <div class="mo-cell ${isToday ? 'mo-today' : ''}" data-row="${r}" data-col="${c}">
+                    <div class="mo-cell-date">${toFa(dayNum)}</div>
+                    <div class="mo-cell-tasks">${tasksHtml}</div>
+                </div>`;
+                cellIdx++;
+            }
+
+            moTotalRows = Math.ceil(cellIdx / 7);
+
+            const grid = document.getElementById('moGrid');
+            grid.innerHTML = html;
+            const base = moBaseGridTemplate(moTotalRows);
+            grid.style.gridTemplateColumns = base.cols;
+            grid.style.gridTemplateRows = base.rows;
         }
     </script>
 

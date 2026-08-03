@@ -156,9 +156,18 @@ try {
         throw new Exception('کاربر یافت نشد');
 
     // بازه ماه شمسی
-    $today = date('Y-m-d');
+    $today = date('Y-m-d'); // همیشه امروزِ واقعی (برای تشخیصِ گذشته/آینده در ادامه)
     list($g_y, $g_m, $g_d) = explode('-', $today);
-    list($j_y, $j_m, $j_d) = gregorianToJalali($g_y, $g_m, $g_d);
+    list($cur_j_y, $cur_j_m, $cur_j_d) = gregorianToJalali($g_y, $g_m, $g_d);
+
+    // ✅ ماهِ هدف: از querystring (مرورِ ماه‌های قبل) یا پیش‌فرض ماهِ جاری
+    $j_y = isset($_GET['jy']) ? (int) $_GET['jy'] : (int) $cur_j_y;
+    $j_m = isset($_GET['jm']) ? (int) $_GET['jm'] : (int) $cur_j_m;
+    if ($j_m < 1 || $j_m > 12)
+        $j_m = (int) $cur_j_m;
+    if ($j_y < 1300 || $j_y > 1500)
+        $j_y = (int) $cur_j_y;
+
     list($g_start_y, $g_start_m, $g_start_d) = jalaliToGregorian($j_y, $j_m, 1);
     $start_of_month = sprintf('%04d-%02d-%02d', $g_start_y, $g_start_m, $g_start_d);
     // ✅ آخرین روزِ ماهِ شمسی (مستقل از تابع تبدیل) — بر اساس طول ماه‌های شمسی

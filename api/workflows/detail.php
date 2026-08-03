@@ -73,6 +73,7 @@ try {
                 wis.started_at,
                 wis.completed_at,
                 wis.deadline,
+                wis.completion_notes,
                 ws.activity_section,
                 ws.assignee_type,
                 ws.assignee_user_id,

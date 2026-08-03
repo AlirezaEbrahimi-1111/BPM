@@ -1843,6 +1843,7 @@ require_once '../includes/version.php';
                         ${step.time_limit_hours ? `<div><span class="lbl">زمان مجاز: </span>${formatDuration(step.time_limit_hours * 60)}${step.extended_minutes > 0 ? ' (+' + formatDuration(step.extended_minutes) + ')' : ''}</div>` : ''}
                         ${step.duration_minutes ? `<div><span class="lbl">زمان واقعی: </span><strong class="${activeOverdue ? 'text-danger' : (completedLate ? 'text-warning' : 'text-success')}">${formatDuration(step.duration_minutes)}</strong></div>` : ''}
                     </div>
+                    ${step.completion_notes ? `<div class="mt-2" style="font-size:.85rem;background:var(--info-box-bg);border-radius:8px;padding:8px 10px;color:var(--text-strong);"><span class="lbl">توضیحات انجام‌دهنده: </span>${escHtml(step.completion_notes).replace(/\n/g, '<br>')}</div>` : ''}
                     ${activeOverdue ? `<div class="delay-strip mt-2"><i class="bi bi-exclamation-triangle-fill"></i>گلوگاه شناسایی شده! این مرحله بیش از زمان مجاز طول کشیده است.</div>` : ''}
                 </div>`;
             });
@@ -1872,6 +1873,13 @@ require_once '../includes/version.php';
         function toFa(n) {
             if (n === null || n === undefined) return n;
             return String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
+        }
+
+        /* برای متنِ آزادِ کاربر (مثل توضیحاتِ تکمیلِ مرحله) قبل از innerHTML */
+        function escHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
         }
         /* ─── Helpers ─── */
         function formatDate(d) {

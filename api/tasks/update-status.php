@@ -51,7 +51,7 @@ try {
 
     if ($task_info && $task_info['is_workflow_task'] == 1 && in_array($input['status'], ['completed', 'approved'])) {
         // این کار بخشی از workflow است و در حال تکمیل شدن است
-        $result = $workflowManager->completeStep($input['task_id'], $user_id);
+        $result = $workflowManager->completeStep($input['task_id'], $user_id, $input['notes'] ?? '');
 
         if (!$result['success']) {
             // اگر completeStep خطا داد، از روش عادی استفاده می‌کنیم

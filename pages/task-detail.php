@@ -2365,8 +2365,8 @@ require_once '../includes/version.php';
             `;
                 document.getElementById('taskMeta').innerHTML = metaHTML;
 
-                // محاسبه دوره بعدی
-                const nextDueDate = getNextDueDate(task.start_date, task.period_type, task.last_approved_date);
+                // دوره بعدی — از سرور (period-engine) که موعد پایان و لنگرِ روزِ ماه را درست لحاظ می‌کند
+                const nextDueDate = task.next_due_date;
 
                 // ستون اول: اطلاعات عمومی
                 let col1HTML = `
@@ -3654,7 +3654,8 @@ require_once '../includes/version.php';
                     'deadline_extended': 'ab-deadline',
                     'checklist_sync': 'ab-updated',
                     'checklist_assigned': 'ab-delegated',
-                    'checklist_done': 'ab-completed'
+                    'checklist_done': 'ab-completed',
+                    'workflow_prev_note': 'ab-completed'
                 };
 
                 let html = '';
@@ -3857,7 +3858,6 @@ require_once '../includes/version.php';
 
                 if (taskData.is_workflow_task == 1) {
                     newStatus = 'approved';
-                    notes += ' (تأیید شده و به مرحله بعد منتقل شد)';
                 }
 
                 try {
@@ -4089,50 +4089,6 @@ require_once '../includes/version.php';
                 return labels[period] || period;
             }
 
-            function toLocalYMD(d) {
-                const y = d.getFullYear();
-                const m = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
-                return `${y}-${m}-${day}`;
-            }
-
-            function getNextDueDate(startDate, periodType, lastCompletedDate) {
-                if (!startDate || !periodType) return null;
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
-                // نکته: تاریخ‌ها را دستی (سال/ماه/روز) پارس می‌کنیم و با toLocalYMD برمی‌گردانیم —
-                // new Date("YYYY-MM-DD") به‌عنوان UTC نیمه‌شب پارس می‌شود، ولی getDate/setDate و
-                // toISOString با ساعتِ محلی/UTC کار می‌کنند؛ ترکیب این دو روی مرورگرهایی با تایم‌زون
-                // غیر از تهران می‌تواند نتیجه را یک روز جابه‌جا کند.
-                // هنوز هیچ دوره‌ای تأیید نشده → سررسید دورهٔ اول همان تاریخ شروع است
-                if (!lastCompletedDate) {
-                    const [sy, sm, sd] = startDate.split('-').map(Number);
-                    const start = new Date(sy, sm - 1, sd);
-                    start.setHours(0, 0, 0, 0);
-                    if (start < today) return toLocalYMD(today);
-                    return startDate;
-                }
-
-                const [ly, lm, ld] = lastCompletedDate.split('-').map(Number);
-                const next = new Date(ly, lm - 1, ld);
-                switch (periodType) {
-                    case 'daily':
-                        next.setDate(next.getDate() + 1);
-                        break;
-                    case 'weekly':
-                        next.setDate(next.getDate() + 7);
-                        break;
-                    case 'monthly':
-                        next.setMonth(next.getMonth() + 1);
-                        break;
-                    default:
-                        return null;
-                }
-                if (next < today) return toLocalYMD(today);
-                return toLocalYMD(next);
-            }
-
             function getActionLabel(action) {
                 const labels = {
                     'created': 'ایجاد',
@@ -4150,6 +4106,7 @@ require_once '../includes/version.php';
                     'checklist_assigned': 'ارجاع آیتم چک‌لیست',
                     'checklist_done': 'انجام آیتم چک‌لیست',
                     'period_done': 'دوره انجام شد',
+                    'workflow_prev_note': 'توضیحات مرحلهٔ قبل',
                 };
                 return labels[action] || action;
             }
