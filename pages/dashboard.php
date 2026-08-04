@@ -847,9 +847,11 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
         function searchMyTasks(query) {
             const searchTerm = normalizeDigits(query).toLowerCase().trim();
 
-            let filtered = myTasksData.filter(task =>
-                !['completed', 'approved'].includes(task.status)
-            );
+            // با جستجوی متنی، همه‌ی وضعیت‌ها (تکمیل‌شده/تأییدشده هم) دیده می‌شن؛
+            // فقط وقتی کادر خالیه، نمای پیش‌فرض همون کارهای بازه
+            let filtered = searchTerm ?
+                myTasksData.slice() :
+                myTasksData.filter(task => !['completed', 'approved'].includes(task.status));
 
             if (searchTerm) {
                 filtered = filtered.filter(task => {
@@ -875,7 +877,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             <div id="myTaskSearchBox" style="margin-bottom:1rem;">
                 <div class="dtask-search-row">
                     <i class="bi bi-search"></i>
-                    <input type="text" placeholder="جستجو در عنوان، توضیحات یا شناسه..."
+                    <input type="text" id="myTaskSearchInput" placeholder="جستجو در عنوان، توضیحات یا شناسه..."
                         oninput="searchMyTasks(this.value)">
                 </div>
             </div>
@@ -1120,9 +1122,11 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
         function searchDelegatedTasks(query) {
             const searchTerm = query.toLowerCase().trim();
 
-            let filtered = delegatedTasksData.filter(task =>
-                !['completed', 'approved', 'termination_requested'].includes(task.status)
-            );
+            // با جستجوی متنی، همه‌ی وضعیت‌ها (تکمیل‌شده/تأییدشده هم) دیده می‌شن؛
+            // فقط وقتی کادر خالیه، نمای پیش‌فرض همون کارهای بازه
+            let filtered = searchTerm ?
+                delegatedTasksData.slice() :
+                delegatedTasksData.filter(task => !['completed', 'approved', 'termination_requested'].includes(task.status));
 
             if (searchTerm) {
                 filtered = filtered.filter(task => {
@@ -1259,7 +1263,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
     <div id="delegatedTaskSearchBox" style="margin-bottom:1rem;">
         <div class="dtask-search-row">
             <i class="bi bi-search"></i>
-            <input type="text" placeholder="جستجو در عنوان، توضیحات یا شناسه..."
+            <input type="text" id="delegatedTaskSearchInput" placeholder="جستجو در عنوان، توضیحات یا شناسه..."
                 oninput="searchDelegatedTasks(this.value)">
         </div>
     </div>

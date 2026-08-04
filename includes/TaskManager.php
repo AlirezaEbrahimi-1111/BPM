@@ -318,6 +318,21 @@ class TaskManager
                 return ['success' => false, 'message' => 'کار یافت نشد'];
             }
 
+            // 🔒 قفلِ چک‌لیست: تا تیک‌نخوردنِ همهٔ آیتم‌ها، تکمیلِ کار مجاز نیست.
+            // برای تسکِ معمولی status==='completed' همین‌جا کامل می‌شود؛ برای مرحلهٔ
+            // روتین معمولاً از WorkflowManager::completeStep رد می‌شود (که خودش همین
+            // چک را دارد) اما اگر آن مسیر خطا بدهد، update-status.php به همین تابع با
+            // status==='approved' برمی‌گردد — پس همین‌جا هم باید چک شود، وگرنه قفل با
+            // این مسیرِ جایگزین دور زده می‌شود.
+            $isCompletionAttempt = ($status === 'completed') || ($task['is_workflow_task'] == 1 && $status === 'approved');
+            if ($isCompletionAttempt) {
+                $clStmt = $this->db->prepare("SELECT COUNT(*) FROM task_checklist_items WHERE task_id = ? AND is_done = 0");
+                $clStmt->execute([$task_id]);
+                if ((int) $clStmt->fetchColumn() > 0) {
+                    return ['success' => false, 'message' => 'ابتدا باید همهٔ آیتم‌های چک‌لیست را تیک بزنید'];
+                }
+            }
+
             // ✅ بررسی: اگر status به completed تغییر می‌کند، چک کن آیا ../assets/js/cdn/ ارجاع وجود دارد
             if ($status === 'completed') {
                 $chain = $this->getDelegationChain($task_id);
@@ -745,14 +760,25 @@ class TaskManager
                     assignee.last_name as assignee_last_name,
                     CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
                     CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,
-                    (SELECT COUNT(*) FROM task_history WHERE task_id = t.id AND action = 'completed') as completed_count
+                    (SELECT COUNT(*) FROM task_history WHERE task_id = t.id AND action = 'completed') as completed_count,
+                    (
+                        SELECT GROUP_CONCAT(
+                            CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
+                                CASE WHEN th2.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th2.notes, '$.reason')) ELSE th2.notes END)
+                            SEPARATOR ' '
+                        )
+                        FROM task_history th2
+                        LEFT JOIN users fu ON th2.from_user_id = fu.id
+                        LEFT JOIN users tu ON th2.to_user_id = tu.id
+                        WHERE th2.task_id = t.id
+                    ) AS history_text
                 FROM tasks t
                 LEFT JOIN users creator ON t.creator_id = creator.id
                 LEFT JOIN users assignee ON t.assignee_id = assignee.id
                 INNER JOIN task_history th ON t.id = th.task_id
                 WHERE (th.from_user_id = ? OR th.to_user_id = ?)
                 AND th.action = 'delegated'
-                AND t.status NOT IN ('completed', 'approved')
+                AND t.is_deleted = 0
                 ORDER BY th.created_at DESC";
 
             $stmt = $this->db->prepare($sql);
@@ -863,12 +889,15 @@ class TaskManager
                         CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
                         CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,
                         (
-                            SELECT GROUP_CONCAT(th.notes SEPARATOR ' ')
+                            SELECT GROUP_CONCAT(
+                                CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
+                                    CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
+                                SEPARATOR ' '
+                            )
                             FROM task_history th
+                            LEFT JOIN users fu ON th.from_user_id = fu.id
+                            LEFT JOIN users tu ON th.to_user_id = tu.id
                             WHERE th.task_id = t.id
-                            AND th.notes IS NOT NULL
-                            AND th.notes != ''
-                            AND th.notes NOT LIKE '{%'
                         ) AS history_text,
                         tg.name  as group_name,
                         tg.color as group_color,
@@ -918,12 +947,15 @@ class TaskManager
                     ELSE ''
                 END as assignee_name,
                 (
-                    SELECT GROUP_CONCAT(th.notes SEPARATOR ' ')
+                    SELECT GROUP_CONCAT(
+                        CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
+                            CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
+                        SEPARATOR ' '
+                    )
                     FROM task_history th
+                    LEFT JOIN users fu ON th.from_user_id = fu.id
+                    LEFT JOIN users tu ON th.to_user_id = tu.id
                     WHERE th.task_id = t.id
-                      AND th.notes IS NOT NULL
-                      AND th.notes != ''
-                      AND th.notes NOT LIKE '{%'
                 ) AS history_text,
                 (SELECT COUNT(*) FROM task_history WHERE task_id = t.id AND action = 'completed') as completed_count
             FROM tasks t 

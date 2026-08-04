@@ -638,8 +638,11 @@ require_once  $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 if (pr && t.priority !== pr) return false;
                 if (ty && t.task_type !== ty) return false;
                 if (st) {
-                    if (st === 'open' && (t.status === 'completed' || t.status === 'approved')) return false;
-                    else if (st !== 'open' && t.status !== st) return false;
+                    // فیلتر پیش‌فرضِ «باز» فقط وقتی جستجویی در جریان نیست اعمال می‌شود؛
+                    // با تایپ‌کردن در کادر جستجو، کارهای تکمیل‌شده/تأییدشده هم پیدا می‌شوند
+                    if (st === 'open') {
+                        if (!s && (t.status === 'completed' || t.status === 'approved')) return false;
+                    } else if (t.status !== st) return false;
                 }
 
                 if (statFilter === 'today' && !TF.isDueToday(t, currentUser, today)) return false;

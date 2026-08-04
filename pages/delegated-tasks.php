@@ -542,12 +542,15 @@ require_once '../includes/version.php';
                 if (pr && t.priority !== pr) return false;
                 if (ty && t.task_type !== ty) return false;
                 if (st) {
-                    if (st === 'open' && (t.status === 'completed' || t.status === 'approved')) return false;
-                    else if (st !== 'open' && t.status !== st) return false;
+                    // فیلتر پیش‌فرضِ «باز» فقط وقتی جستجویی در جریان نیست اعمال می‌شود؛
+                    // با تایپ‌کردن در کادر جستجو، کارهای تکمیل‌شده/تأییدشده هم پیدا می‌شوند
+                    if (st === 'open') {
+                        if (!s && (t.status === 'completed' || t.status === 'approved')) return false;
+                    } else if (t.status !== st) return false;
                 }
 
-                // 🆕 فیلتر اجباری تأخیردار (وقتی با ?filter=overdue آمده)
-                if (window._forceOverdueOnly) {
+                // 🆕 فیلتر اجباری تأخیردار (وقتی با ?filter=overdue آمده) — با جستجو نادیده گرفته می‌شود
+                if (window._forceOverdueOnly && !s) {
                     const due = [t.due_date, t.deadline, t.original_deadline].filter(Boolean).sort().pop();
                     const done = (t.status === 'completed' || t.status === 'approved');
                     if (done || !due || due >= today) return false;

@@ -45,12 +45,24 @@ try {
         $message     = trim($_POST['message'] ?? '');
         $priority_id = (int)($_POST['priority_id'] ?? 2);
         $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
+        $task_id     = !empty($_POST['task_id']) ? (int)$_POST['task_id'] : null;
     } else {
         $input       = json_decode(file_get_contents('php://input'), true);
         $subject     = trim($input['subject'] ?? '');
         $message     = trim($input['message'] ?? '');
         $priority_id = (int)($input['priority_id'] ?? 2);
         $category_id = !empty($input['category_id']) ? (int)$input['category_id'] : null;
+        $task_id     = !empty($input['task_id']) ? (int)$input['task_id'] : null;
+    }
+
+    // 🔒 اگر تسکی برای پیوست انتخاب شده، فقط وقتی معتبر است که واقعاً به همین کاربر
+    // مرتبط باشد (سازنده یا مسئولش)، وگرنه نادیده گرفته می‌شود (بدون خطا)
+    if ($task_id) {
+        $tChk = $db->prepare("SELECT id FROM tasks WHERE id = ? AND is_deleted = 0 AND (creator_id = ? OR assignee_id = ?)");
+        $tChk->execute([$task_id, $user_id, $user_id]);
+        if (!$tChk->fetch()) {
+            $task_id = null;
+        }
     }
 
     // اعتبارسنجی
@@ -73,11 +85,12 @@ try {
     $ticketNumber = 'TKT-' . $jalaliDate . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
 
     // ─── ایجاد تیکت ───
+    // source_type/source_id: ارجاعِ اختیاری به یک تسکِ مرتبط (ستون‌های موجودِ عمومیِ «bpm integration»)
     $stmt = $db->prepare("
-        INSERT INTO tickets (organization_id, ticket_number, subject, status_id, priority_id, category_id, created_by, assigned_to)
-        VALUES (?, ?, ?, 1, ?, ?, ?, 1)
+        INSERT INTO tickets (organization_id, ticket_number, subject, status_id, priority_id, category_id, created_by, assigned_to, source_type, source_id)
+        VALUES (?, ?, ?, 1, ?, ?, ?, 1, ?, ?)
     ");
-    $stmt->execute([$orgId, $ticketNumber, $subject, $priority_id, $category_id, $user_id]);
+    $stmt->execute([$orgId, $ticketNumber, $subject, $priority_id, $category_id, $user_id, $task_id ? 'task' : null, $task_id]);
     $ticketId = (int)$db->lastInsertId();
 
     // ─── ثبت پیام اول ───

@@ -571,6 +571,7 @@ require_once '../includes/version.php';
         /* ─── چیدمانِ یک‌خطیِ هر مرحله ─── */
         .step-item.step-row {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             gap: 8px;
             padding: 10px 12px;
@@ -623,6 +624,91 @@ require_once '../includes/version.php';
         .step-row .sr-assignee input {
             font-size: 0.8rem;
             padding: 7px 10px;
+        }
+
+        /* ── چک‌لیستِ مرحله ── */
+        .sr-checklist-toggle {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted, #6b7280);
+            border-radius: var(--radius-sm);
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .sr-checklist-toggle:hover,
+        .sr-checklist-toggle.has-items {
+            border-color: #7e55b3;
+            color: #7e55b3;
+        }
+
+        .step-checklist-body {
+            flex: 0 0 100%;
+            width: 100%;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+        }
+
+        /* آیتم‌های چک‌لیست — کپی از الگوی create-task.php برای یکدستیِ ظاهری */
+        .cl-item-wrap { margin-bottom: 8px; }
+        .cl-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+            transition: border-color .15s, background .15s;
+        }
+        .cl-item:hover { border-color: #c7d2fe; background: #fafaff; }
+        .cl-index { color: #9ca3af; font-size: 0.85rem; flex: 0 0 auto; }
+        .cl-title-input { flex: 1 1 auto; min-width: 0; border: none; background: transparent; box-shadow: none !important; }
+        .cl-title-input:focus { background: #f3f4f6; border-radius: 4px; }
+        .cl-actions { display: flex; align-items: center; gap: 2px; flex: 0 0 auto; margin-inline-start: auto; }
+        .cl-icon-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; border: none; background: transparent;
+            border-radius: 6px; color: #9ca3af; cursor: pointer; transition: background .15s, color .15s;
+            padding: 0; font-size: 0.9rem;
+        }
+        .cl-icon-btn:hover { background: #f3f4f6; }
+        .cl-desc-btn:hover { color: #6366f1; }
+        .cl-desc-btn.has-desc { color: #6366f1; }
+        .cl-delete-btn:hover { color: #dc2626; background: #fee2e2; }
+        .cl-desc-zone:empty { display: none; }
+        .cl-desc-zone.open { margin-top: 6px; }
+        .cl-desc-edit {
+            display: flex; flex-direction: column; gap: 6px;
+            padding: 8px 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
+        }
+        .cl-desc-edit textarea { font-size: 0.82rem; resize: vertical; }
+        .cl-desc-edit-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+        :root[data-theme="dark"] .cl-item {
+            border-color: var(--border-soft);
+            background: var(--surface);
+        }
+        :root[data-theme="dark"] .cl-item:hover {
+            border-color: var(--icon-accent);
+            background: #232a3a;
+        }
+        :root[data-theme="dark"] .cl-title-input:focus {
+            background: #232a3a;
+        }
+        :root[data-theme="dark"] .cl-icon-btn:hover {
+            background: #2b3242;
+        }
+        :root[data-theme="dark"] .cl-desc-edit {
+            background: #161b27;
+            border-color: var(--border-soft);
         }
 
         /* ── موبایل: برگشت به حالت عمودی ── */
@@ -1245,6 +1331,7 @@ require_once '../includes/version.php';
         // ─── افزودن مرحله ────────────────────────────────
         let stepPickers = {}; // stepId -> picker instance
         let stepOriginalData = {}; // stepId -> { type, value } (برای حالت ویرایش‌نشده)
+        let stepChecklists = {}; // stepId -> [{tempId, title, description}]
         /* 🆕 تیک «به ایجادکننده» → غیرفعال‌کردن AssigneePicker */
         function toggleCreatorMode(stepId, checkbox) {
             const wrap = document.getElementById('step_assignee_' + stepId);
@@ -1309,12 +1396,37 @@ require_once '../includes/version.php';
                         <button type="button" class="sm-btn sm-parallel ${stepMode==='parallel'?'active':''}" onclick="setStepMode(this,'parallel')" title="موازی">⚡</button>
                     </div>
 
+                    <button type="button" class="sr-checklist-toggle" id="scl-toggle-${stepId}" onclick="toggleStepChecklist('${stepId}')" title="چک‌لیستِ این مرحله">
+                        <i class="bi bi-check2-square"></i> <span id="scl-count-${stepId}">چک‌لیست</span>
+                    </button>
+
                     <button type="button" class="btn-remove-step sr-remove" onclick="removeStep(this)" title="حذف مرحله">
                         <i class="bi bi-x"></i>
                     </button>
+
+                    <div class="step-checklist-body" id="scl-body-${stepId}" style="display:none;">
+                        <div id="scl-items-${stepId}"></div>
+                        <div style="display:flex; gap:8px; margin-top:8px;">
+                            <input type="text" id="scl-new-${stepId}" class="form-control form-control-sm"
+                                placeholder="افزودن آیتم چک‌لیست..."
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();addStepChecklistItem('${stepId}');}">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addStepChecklistItem('${stepId}')">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>`;
 
             document.getElementById('stepsList').insertAdjacentHTML('beforeend', html);
+
+            // 🆕 چک‌لیستِ این مرحله (عنوان + توضیحات، هر دو اختیاری در ورودی اما عنوان الزامی برای ثبت)
+            stepChecklists[stepId] = (stepData && Array.isArray(stepData.checklist_items)) ?
+                stepData.checklist_items.map(it => ({
+                    tempId: Date.now() + Math.random(),
+                    title: it.title || '',
+                    description: it.description || ''
+                })) : [];
+            renderStepChecklist(stepId);
 
             stepPickers[stepId] = AssigneePicker.create({
                 container: '#step_assignee_' + stepId,
@@ -1341,8 +1453,122 @@ require_once '../includes/version.php';
             const stepId = stepEl.dataset.stepId;
             delete stepPickers[stepId];
             delete stepOriginalData[stepId];
+            delete stepChecklists[stepId];
             stepEl.remove();
             updateStepNumbers();
+        }
+
+        // ─── چک‌لیستِ مرحله ────────────────────────────────
+        function toggleStepChecklist(stepId) {
+            const body = document.getElementById('scl-body-' + stepId);
+            if (!body) return;
+            body.style.display = (body.style.display === 'none') ? 'block' : 'none';
+        }
+
+        function addStepChecklistItem(stepId) {
+            const input = document.getElementById('scl-new-' + stepId);
+            const title = input.value.trim();
+            if (!title) return;
+            stepChecklists[stepId] = stepChecklists[stepId] || [];
+            stepChecklists[stepId].push({
+                tempId: Date.now() + Math.random(),
+                title,
+                description: ''
+            });
+            input.value = '';
+            input.focus();
+            renderStepChecklist(stepId);
+        }
+
+        function removeStepChecklistItem(stepId, tempId) {
+            stepChecklists[stepId] = (stepChecklists[stepId] || []).filter(i => i.tempId !== tempId);
+            renderStepChecklist(stepId);
+        }
+
+        function updateStepChecklistTitle(stepId, tempId, val) {
+            const it = (stepChecklists[stepId] || []).find(i => i.tempId === tempId);
+            if (it) it.title = val.trim();
+        }
+
+        function startEditStepChecklistDesc(stepId, tempId) {
+            const zone = document.getElementById('scl-desc-zone-' + stepId + '-' + tempId);
+            if (!zone) return;
+            const it = (stepChecklists[stepId] || []).find(i => i.tempId === tempId);
+            const currentDesc = (it && it.description) ? it.description : '';
+
+            zone.classList.add('open');
+            zone.innerHTML = `
+                <div class="cl-desc-edit">
+                    <textarea id="scl-desc-input-${stepId}-${tempId}" class="form-control form-control-sm" rows="2"
+                        placeholder="توضیحات..."
+                        onkeydown="if(event.key==='Escape'){cancelEditStepChecklistDesc('${stepId}',${tempId});} else if(event.ctrlKey && event.key==='Enter'){saveEditStepChecklistDesc('${stepId}',${tempId});}"
+                    >${escHtml(currentDesc)}</textarea>
+                    <div class="cl-desc-edit-actions">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cancelEditStepChecklistDesc('${stepId}',${tempId})">
+                            <i class="bi bi-x-lg"></i> انصراف
+                        </button>
+                        <button type="button" class="btn btn-sm btn-success" onclick="saveEditStepChecklistDesc('${stepId}',${tempId})">
+                            <i class="bi bi-check-lg"></i> ثبت توضیحات
+                        </button>
+                    </div>
+                </div>`;
+
+            const ta = document.getElementById('scl-desc-input-' + stepId + '-' + tempId);
+            if (ta) {
+                ta.focus();
+                ta.setSelectionRange(ta.value.length, ta.value.length);
+            }
+        }
+
+        function saveEditStepChecklistDesc(stepId, tempId) {
+            const ta = document.getElementById('scl-desc-input-' + stepId + '-' + tempId);
+            if (!ta) return;
+            const it = (stepChecklists[stepId] || []).find(i => i.tempId === tempId);
+            if (it) it.description = ta.value.trim();
+            renderStepChecklist(stepId);
+        }
+
+        function cancelEditStepChecklistDesc(stepId, tempId) {
+            renderStepChecklist(stepId);
+        }
+
+        function renderStepChecklist(stepId) {
+            const c = document.getElementById('scl-items-' + stepId);
+            const toggle = document.getElementById('scl-toggle-' + stepId);
+            const countLabel = document.getElementById('scl-count-' + stepId);
+            const items = stepChecklists[stepId] || [];
+            if (!c) return;
+
+            c.innerHTML = items.map((item, idx) => {
+                const hasDesc = !!(item.description && item.description.trim());
+                const descTooltip = hasDesc ? escAttr(item.description) : 'افزودن توضیحات';
+                return `
+                <div class="cl-item-wrap">
+                    <div class="cl-item">
+                        <span class="cl-index">${idx + 1}.</span>
+                        <input type="text" class="form-control form-control-sm cl-title-input" value="${escAttr(item.title)}"
+                            placeholder="عنوان آیتم..."
+                            onchange="updateStepChecklistTitle('${stepId}', ${item.tempId}, this.value)">
+                        <div class="cl-actions">
+                            <button type="button" class="cl-icon-btn cl-desc-btn ${hasDesc ? 'has-desc' : ''}"
+                                title="${descTooltip}"
+                                onclick="startEditStepChecklistDesc('${stepId}', ${item.tempId})">
+                                <i class="bi ${hasDesc ? 'bi-chat-left-text-fill' : 'bi-chat-left-text'}"></i>
+                            </button>
+                            <button type="button" class="cl-icon-btn cl-delete-btn" title="حذف آیتم"
+                                onclick="removeStepChecklistItem('${stepId}', ${item.tempId})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="cl-desc-zone" id="scl-desc-zone-${stepId}-${item.tempId}"></div>
+                </div>`;
+            }).join('');
+
+            if (toggle && countLabel) {
+                countLabel.textContent = items.length ? `چک‌لیست (${items.length})` : 'چک‌لیست';
+                toggle.classList.toggle('has-items', items.length > 0);
+            }
         }
 
         function updateStepNumbers() {
@@ -1460,6 +1686,14 @@ require_once '../includes/version.php';
 
                 const sMode = item.querySelector('.step-mode-toggle')?.dataset.mode === 'parallel' ? 'parallel' : 'cascade';
 
+                // 🆕 چک‌لیستِ این مرحله — فقط آیتم‌هایی که عنوان دارند
+                const stepChecklistItems = (stepChecklists[stepId] || [])
+                    .filter(it => it.title && it.title.trim())
+                    .map(it => ({
+                        title: it.title.trim(),
+                        description: (it.description || '').trim()
+                    }));
+
                 // 🆕 حالت «به ایجادکننده»
                 if (item.dataset.creatorMode === '1') {
                     if (!sName || !sTime) {
@@ -1472,7 +1706,8 @@ require_once '../includes/version.php';
                         time_limit_hours: parseInt(sTime),
                         assignee_type: 'creator',
                         assignee_value: 'creator', // مقدار نمادین (بک‌اند نادیده می‌گیرد)
-                        execution_mode: sMode
+                        execution_mode: sMode,
+                        checklist_items: stepChecklistItems
                     });
                     return;
                 }
@@ -1497,7 +1732,8 @@ require_once '../includes/version.php';
                     time_limit_hours: parseInt(sTime),
                     assignee_type: assignee.type,
                     assignee_value: assignee.value,
-                    execution_mode: sMode
+                    execution_mode: sMode,
+                    checklist_items: stepChecklistItems
                 });
             });
 

@@ -625,15 +625,18 @@ require_once '../includes/version.php';
                 if (pr && t.priority !== pr) return false;
                 if (ty && t.task_type !== ty) return false;
                 if (st) {
-                    if (st === 'open' && (t.status === 'completed' || t.status === 'approved')) return false;
-                    else if (st !== 'open' && t.status !== st) return false;
+                    // فیلتر پیش‌فرضِ «باز» فقط وقتی جستجویی در جریان نیست اعمال می‌شود؛
+                    // با تایپ‌کردن در کادر جستجو، کارهای تکمیل‌شده/تأییدشده هم پیدا می‌شوند
+                    if (st === 'open') {
+                        if (!s && (t.status === 'completed' || t.status === 'approved')) return false;
+                    } else if (t.status !== st) return false;
                 }
 
                 // 🆕 فیلتر واحد (از داشبورد)
                 if (window._filterSection && t.activity_section !== window._filterSection) return false;
 
-                // 🆕 فیلتر تأخیردار (از داشبورد) — هر دو نوع کار
-                if (window._filterOverdue) {
+                // 🆕 فیلتر تأخیردار (از داشبورد) — با جستجو نادیده گرفته می‌شود
+                if (window._filterOverdue && !s) {
                     // کارهای بسته‌شده تأخیردار محسوب نمی‌شوند
                     const closed = ['completed', 'approved', 'rejected', 'stopped'].includes(t.status);
                     if (closed) return false;

@@ -74,8 +74,13 @@ WHERE ta.id = ? AND t.deleted_at IS NULL
     }
 
     // ارسال فایل
+    // ✅ حالتِ inline فقط برای تصاویر و فقط برای پیش‌نمایش (نه دانلود واقعی)،
+    // تا بشود مستقیماً به‌عنوان src=... تگ <img> استفاده شود
+    $isImage = strpos($file['mime_type'], 'image/') === 0;
+    $disposition = ($isImage && !empty($_GET['view'])) ? 'inline' : 'attachment';
+
     header('Content-Type: ' . $file['mime_type']);
-    header('Content-Disposition: attachment; filename="' . $file['original_name'] . '"');
+    header('Content-Disposition: ' . $disposition . '; filename="' . $file['original_name'] . '"');
     header('Content-Length: ' . $file['file_size']);
     header('Cache-Control: no-cache');
 

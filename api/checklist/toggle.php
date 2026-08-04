@@ -8,6 +8,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once __DIR__ . '/_helpers.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/TaskManager.php';
 try {
     $user_id = requireAuth();
     $input = json_decode(file_get_contents('php://input'), true);
@@ -138,17 +139,46 @@ try {
         } catch (Exception $notifyErr) {
         }
     }
+    // 🆕 شروعِ خودکارِ کار با اولین تیکِ چک‌لیست — هم برای تسک معمولی، هم مرحلهٔ روتین.
+    // چون تیک‌زدنِ یک آیتم یعنی کاربر عملاً شروع به کار کرده، دیگر منطقی نیست دکمهٔ
+    // «شروع کار» را همچنان نشان بدهیم. این مسیر همان چیزی است که خودِ دکمهٔ «شروع کار»
+    // هم صدا می‌زند (TaskManager::updateTaskStatus با status='in_progress')، پس برای
+    // مرحلهٔ روتین هم امن است — برخلاف تکمیل، شروع‌کردن نیازی به WorkflowManager ندارد.
+    // اگر syncTaskStatusWithChecklist (زیر) قرار است همین کار را انجام دهد (تسکِ معمولیِ
+    // دارای «تکمیل خودکار»)، از دوباره‌کاری/تاریخچهٔ تکراری خودداری می‌کنیم.
+    if ($is_done && in_array($task['status'], ['not_started', 'delegated', 'rejected'], true)) {
+        $handledByLegacySync = empty($task['is_workflow_task']) && !empty($task['checklist_auto_complete']);
+        if (!$handledByLegacySync) {
+            try {
+                $tm = new TaskManager($db);
+                $tm->updateTaskStatus($task['id'], 'in_progress', $user_id, 'کار با تیک‌زدنِ اولین آیتمِ چک‌لیست شروع شد');
+            } catch (Exception $startErr) {
+                error_log('checklist auto-start error: ' . $startErr->getMessage());
+            }
+        }
+    }
+
     // همگام‌سازی وضعیت کار با چک‌لیست (هر دو جهت)
+    // 🔒 خط قرمز: برای مرحلهٔ روتین (is_workflow_task=1) این همگام‌سازی نباید اجرا شود —
+    // این دو تابع مستقیماً ستون tasks.status را دستکاری می‌کنند بدون این‌که از
+    // WorkflowManager::completeStep رد شوند (که workflow_instance_steps را هم به‌روز
+    // می‌کند و مرحلهٔ بعدی را فعال می‌کند). بدون این قفل، تیک‌زدنِ آخرین آیتمِ چک‌لیستِ
+    // یک مرحلهٔ روتین باعث می‌شد tasks.status مستقیم 'completed' شود ولی
+    // workflow_instance_steps همچنان 'active' بماند و کل روتین گیر کند — دقیقاً همان
+    // باگی که تسک ۱۳۷۳ را قفل کرد. برای روتین، تکمیل فقط باید از طریق دکمهٔ
+    // «تکمیل کار» (که به‌درستی completeStep را صدا می‌زند) انجام شود.
     $auto = false;
-    if ($is_done) {
-        // اگر با این تیک همه کامل شدند → تکمیل خودکار، وگرنه همگام‌سازی
-        $auto = maybeAutoComplete($db, $task, $user_id);
-        if (!$auto) {
+    if (empty($task['is_workflow_task'])) {
+        if ($is_done) {
+            // اگر با این تیک همه کامل شدند → تکمیل خودکار، وگرنه همگام‌سازی
+            $auto = maybeAutoComplete($db, $task, $user_id);
+            if (!$auto) {
+                syncTaskStatusWithChecklist($db, $task, $user_id);
+            }
+        } else {
+            // تیک برداشته شد → ممکن است نیاز به بازگشت وضعیت باشد
             syncTaskStatusWithChecklist($db, $task, $user_id);
         }
-    } else {
-        // تیک برداشته شد → ممکن است نیاز به بازگشت وضعیت باشد
-        syncTaskStatusWithChecklist($db, $task, $user_id);
     }
 
     // 🔒 هم‌راستا با get.php: مسئولِ صرفِ یک/چند آیتم، فقط پیشرفتِ همان

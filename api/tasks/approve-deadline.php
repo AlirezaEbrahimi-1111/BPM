@@ -93,14 +93,15 @@ try {
         $reqUpd = $db->prepare("UPDATE deadline_requests SET status = 'approved', updated_at = NOW() WHERE id = ?");
         $reqUpd->execute([$request_id]);
 
+        // from_user_id = کسی که این اقدام (تأیید) را انجام داد؛ نمایش تاریخچه نامِ from_user را به‌عنوان «انجام‌دهنده» نشان می‌دهد
         $history_stmt = $db->prepare("
             INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
             VALUES (?, ?, ?, 'deadline_extended', ?)
         ");
         $history_stmt->execute([
             $task_id,
-            $request['requested_by'],
             $user_id,
+            $request['requested_by'],
             json_encode([
                 'old_deadline' => $request['deadline'],
                 'new_deadline' => $new_deadline,
@@ -255,14 +256,15 @@ try {
         ");
         $result = $request_stmt->execute([$request_id]);
         // ثبت تاریخچه تمدید موعد
+        // from_user_id = کسی که این اقدام (تأیید) را انجام داد؛ نمایش تاریخچه نامِ from_user را به‌عنوان «انجام‌دهنده» نشان می‌دهد
         $history_stmt = $db->prepare("
     INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
     VALUES (?, ?, ?, 'deadline_extended', ?)
 ");
         $history_stmt->execute([
             $task_id,
-            $request['requested_by'],
             $user_id,
+            $request['requested_by'],
             json_encode([
                 'old_deadline' => $request['deadline'],
                 'new_deadline' => $new_deadline,

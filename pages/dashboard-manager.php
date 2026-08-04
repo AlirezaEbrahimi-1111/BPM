@@ -55,8 +55,8 @@ require_once '../includes/version.php';
 
         /* ═══ کارت بخش‌ها ═══ */
         .dash-card {
-            background: #fff;
-            border: 1px solid var(--gray-200);
+            background: var(--surface);
+            border: 1px solid var(--border-soft);
             border-radius: var(--radius);
             display: flex;
             flex-direction: column;
@@ -65,7 +65,7 @@ require_once '../includes/version.php';
         }
 
         .dash-card-head {
-            background: #e9e9e9;
+            background: var(--dm-head-bg);
             /* هدر خاکستری — کمی پررنگ‌تر */
             padding: 10px 14px;
             display: flex;
@@ -80,7 +80,7 @@ require_once '../includes/version.php';
             gap: 8px;
             font-weight: 700;
             font-size: .855rem;
-            color: #000;
+            color: var(--dm-ink);
         }
 
         .dash-card-title i {
@@ -179,7 +179,7 @@ require_once '../includes/version.php';
         }
 
         .plan-row .dash-card-head {
-            background: #fff;
+            background: var(--surface);
         }
 
         .plan-grid {
@@ -195,8 +195,8 @@ require_once '../includes/version.php';
             display: flex;
             align-items: center;
             gap: 0px;
-            background: #fff;
-            border: 1px solid var(--gray-200);
+            background: var(--surface);
+            border: 1px solid var(--border-soft);
             border-radius: 12px;
             padding: 11px 13px;
             cursor: pointer;
@@ -249,7 +249,7 @@ require_once '../includes/version.php';
         .plan-label {
             font-size: .702rem;
             font-weight: 600;
-            color: var(--gray-500);
+            color: var(--text-muted);
             margin-bottom: 2px;
         }
 
@@ -268,7 +268,7 @@ require_once '../includes/version.php';
         .plan-value {
             font-size: .9rem;
             font-weight: 700;
-            color: var(--gray-900);
+            color: var(--text-strong);
         }
 
         /* ═══ بخش کارها ═══ */
@@ -288,10 +288,10 @@ require_once '../includes/version.php';
         .dash-tabs {
             display: flex;
             gap: 2px;
-            border-bottom: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--border-soft);
             padding: 0 12px;
             flex-shrink: 0;
-            background: #fff;
+            background: var(--surface);
             align-items: center;
         }
 
@@ -308,7 +308,7 @@ require_once '../includes/version.php';
             border-bottom: 2px solid transparent;
             padding: 10px 14px 9px;
             font-size: .783rem;
-            color: var(--gray-900);
+            color: var(--text-strong);
             font-weight: 700;
             cursor: pointer;
             display: flex;
@@ -364,19 +364,19 @@ require_once '../includes/version.php';
         }
 
         .filter-chip {
-            border: 1px solid var(--gray-200);
-            background: #e9e9e9;
+            border: 1px solid var(--border-soft);
+            background: var(--dm-head-bg);
             border-radius: var(--radius-sm);
             padding: 5px 14px;
             font-size: .72rem;
-            color: var(--gray-900);
+            color: var(--text-strong);
             font-weight: 700;
             cursor: pointer;
             transition: all .15s;
         }
 
         .filter-chip:hover {
-            background: #d8d8d8;
+            background: var(--dm-head-bg-hover);
         }
 
         .filter-chip.active {
@@ -421,10 +421,10 @@ require_once '../includes/version.php';
             position: sticky;
             top: 0;
             z-index: 2;
-            background: #fff;
+            background: var(--surface);
             font-size: .702rem;
             font-weight: 700;
-            color: var(--gray-900);
+            color: var(--text-strong);
             text-align: right;
             padding: 8px 14px;
             border-bottom: 1px solid var(--gray-100);
@@ -454,7 +454,7 @@ require_once '../includes/version.php';
         .task-table td {
             padding: 0 8px 0 8px;
             font-size: .765rem;
-            color: #000;
+            color: var(--dm-ink);
             font-weight: 500;
             vertical-align: middle;
         }
@@ -508,7 +508,7 @@ require_once '../includes/version.php';
 
         /* اگر منتخب است، همیشه دیده شود */
         .td-deadline {
-            color: var(--gray-500);
+            color: var(--text-muted);
             white-space: nowrap;
         }
 
@@ -530,7 +530,7 @@ require_once '../includes/version.php';
             background: none;
             border: none;
             cursor: pointer;
-            color: #000000;
+            color: var(--dm-ink);
             font-size: .99rem;
             padding: 4px 8px;
             border-radius: 7px;
@@ -550,7 +550,7 @@ require_once '../includes/version.php';
             z-index: 30;
             min-width: 150px;
             margin-top: 4px;
-            background: #fff;
+            background: var(--surface);
             border: 1px solid #eee;
             border-radius: 11px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
@@ -572,7 +572,7 @@ require_once '../includes/version.php';
             gap: 9px;
             border-radius: 7px;
             font-size: .765rem;
-            color: #000;
+            color: var(--dm-ink);
         }
 
         .row-menu button:hover {
@@ -625,7 +625,7 @@ require_once '../includes/version.php';
 
         .st-not_started {
             background: var(--gray-100);
-            color: var(--gray-500);
+            color: var(--text-muted);
         }
 
         .st-in_progress {
@@ -635,8 +635,8 @@ require_once '../includes/version.php';
 
         .st-completed,
         .st-approved {
-            background: #00BF8F;
-            color: #00BF8F;
+            background: #40b86c1a;
+            color: #1b7b39;
         }
 
         .st-pending_approval,
@@ -710,7 +710,7 @@ require_once '../includes/version.php';
         .routine-name {
             flex: 1;
             font-size: .774rem;
-            color: #000;
+            color: var(--dm-ink);
             font-weight: 600;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -733,7 +733,7 @@ require_once '../includes/version.php';
         .routine-count {
             font-size: .765rem;
             font-weight: 700;
-            color: #000;
+            color: var(--dm-ink);
             min-width: 26px;
             text-align: center;
         }
@@ -759,7 +759,7 @@ require_once '../includes/version.php';
 
         .dlg-title {
             font-size: .765rem;
-            color: #000;
+            color: var(--dm-ink);
             font-weight: 600;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -768,7 +768,7 @@ require_once '../includes/version.php';
 
         .dlg-sub {
             font-size: .666rem;
-            color: var(--gray-400);
+            color: var(--text-muted);
             margin-top: 2px;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -789,7 +789,7 @@ require_once '../includes/version.php';
 
         .dash-empty {
             text-align: center;
-            color: var(--gray-400);
+            color: var(--text-muted);
             font-size: .765rem;
             padding: 30px 14px;
         }
@@ -808,7 +808,7 @@ require_once '../includes/version.php';
             justify-content: center;
             gap: 8px;
             text-align: center;
-            color: var(--gray-400);
+            color: var(--text-muted);
             font-size: .765rem;
             padding: 30px 14px;
         }
@@ -828,7 +828,7 @@ require_once '../includes/version.php';
         .task-table td.dash-loading {
             display: table-cell;
             text-align: center;
-            color: var(--gray-400);
+            color: var(--text-muted);
         }
 
         /* چون display اینجا table-cell است نه flex، gap کار نمی‌کند؛ فاصله با margin */
@@ -854,12 +854,12 @@ require_once '../includes/version.php';
         .inst-title {
             font-weight: 600;
             font-size: .81rem;
-            color: #000;
+            color: var(--dm-ink);
         }
 
         .inst-meta {
             font-size: .702rem;
-            color: var(--gray-500);
+            color: var(--text-muted);
             margin-bottom: 6px;
         }
 
@@ -913,6 +913,21 @@ require_once '../includes/version.php';
             --primary-gradient: linear-gradient(135deg, #7e55b3 0%, #7e55b3 100%);
             --success: #00BF8F;
             --success-dark: #00BF8F;
+
+            /* توکن‌های محلیِ تم برای این صفحه — چون مودال‌ها (planModal/weekModal/...)
+               بیرون از .dash-wrap در DOM هستند، این متغیرها روی :root تعریف می‌شوند
+               تا هم در .dash-wrap و هم داخل مودال‌ها در دسترس باشند. مقدارِ پیش‌فرض
+               همان رنگ‌های هاردکدشدهٔ روشنِ فعلی است؛ فقط زیرِ data-theme="dark" پایین
+               همین بلوک بازتعریف می‌شوند */
+            --dm-ink: #000;
+            --dm-head-bg: #e9e9e9;
+            --dm-head-bg-hover: #d8d8d8;
+        }
+
+        :root[data-theme="dark"] {
+            --dm-ink: var(--text-strong);
+            --dm-head-bg: var(--info-box-bg);
+            --dm-head-bg-hover: var(--border-soft);
         }
 
         #planModal .modal-content,
@@ -924,7 +939,7 @@ require_once '../includes/version.php';
 
         #planModal .modal-header,
         #weekModal .modal-header {
-            background: #fff;
+            background: var(--surface);
             border-bottom: 1px solid #f1f1f4;
             padding: 18px 22px;
             align-items: center;
@@ -965,7 +980,7 @@ require_once '../includes/version.php';
             width: 26px;
             height: 26px;
             border-radius: 50%;
-            background-color: #fff;
+            background-color: var(--surface);
             border: 1px solid var(--gray-300);
             background-size: 10px;
             opacity: 1;
@@ -1081,7 +1096,7 @@ require_once '../includes/version.php';
             padding: 10px 12px;
             border-radius: 8px;
             font-size: .792rem;
-            color: #000;
+            color: var(--dm-ink);
             text-align: right;
             transition: background .1s;
         }
@@ -1135,7 +1150,7 @@ require_once '../includes/version.php';
         .bn-stage {
             font-size: .792rem;
             font-weight: 600;
-            color: #000;
+            color: var(--dm-ink);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -1295,7 +1310,7 @@ require_once '../includes/version.php';
             transition: background .12s;
             background-color: transparent;
         }
-        .wk-nav button:hover { background: #fff; }
+        .wk-nav button:hover { background: rgba(255,255,255,.22); }
         .wk-nav .wk-label {
             font-size: .792rem; font-weight: 700; color: white;
             min-width: 78px; text-align: center;
@@ -1339,7 +1354,7 @@ require_once '../includes/version.php';
         .wk-day {
             font-size: .738rem;
             font-weight: 700;
-            color: #000;
+            color: var(--dm-ink);
         }
 
         .wk-date {
@@ -1359,7 +1374,7 @@ require_once '../includes/version.php';
         }
 
         .wk-card {
-            background: #fff;
+            background: var(--surface);
             border: 1px solid #f0f0f3;
             border-radius: 9px;
             padding: 8px 9px;
@@ -1368,7 +1383,7 @@ require_once '../includes/version.php';
 
         .wk-card-title {
             font-size: .666rem;
-            color: #000;
+            color: var(--dm-ink);
             font-weight: 600;
             line-height: 1.4;
             cursor: pointer;
@@ -1434,7 +1449,7 @@ require_once '../includes/version.php';
             text-align: center;
             font-size: .702rem;
             font-weight: 700;
-            color: var(--gray-500);
+            color: var(--text-muted);
             padding-bottom: 6px;
             border-bottom: 1px solid #eee;
         }
@@ -1454,7 +1469,7 @@ require_once '../includes/version.php';
         }
 
         .mo-cell.mo-hover {
-            background: #fff;
+            background: var(--surface);
             box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
             z-index: 5;
         }
@@ -1467,7 +1482,7 @@ require_once '../includes/version.php';
         .mo-cell-date {
             font-size: .666rem;
             font-weight: 700;
-            color: #000;
+            color: var(--dm-ink);
             text-align: center;
             flex-shrink: 0;
         }
@@ -1486,8 +1501,8 @@ require_once '../includes/version.php';
 
         .mo-task-title {
             font-size: .576rem;
-            color: #000;
-            background: #fff;
+            color: var(--dm-ink);
+            background: var(--surface);
             border: 1px solid #f0f0f3;
             border-radius: 4px;
             padding: 1px 4px;
@@ -1553,7 +1568,7 @@ require_once '../includes/version.php';
         .td-user-name {
             font-size: .792rem;
             font-weight: 600;
-            color: #000;
+            color: var(--dm-ink);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -1699,7 +1714,7 @@ require_once '../includes/version.php';
             z-index: 3000;
             /* ← بالاتر از مودال */
             min-width: 165px;
-            background: #fff;
+            background: var(--surface);
             border: 1px solid #e5e7eb;
             border-radius: 10px;
             box-shadow: 0 6px 20px rgba(0, 0, 0, .1);
@@ -1723,7 +1738,7 @@ require_once '../includes/version.php';
             padding: 9px 11px;
             border-radius: 7px;
             font-size: .765rem;
-            color: #000;
+            color: var(--dm-ink);
             text-align: right;
             transition: background .1s;
         }
@@ -1925,7 +1940,7 @@ require_once '../includes/version.php';
 
         .ra-user.sel {
             background: #7e55b3;
-            color: #7e55b3;
+            color: #fff;
             font-weight: 600;
         }
 
@@ -1948,6 +1963,119 @@ require_once '../includes/version.php';
         /* انتخابگر تاریخ داخل این مودال بالای بقیه */
         #rowActModal .persian-datepicker {
             z-index: 2200;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           تم تاریک — قواعدِ افزوده (نه جایگزین) برای رنگ‌های
+           خاکستریِ خنثی/بوردرها/پس‌زمینه‌هایی که معادلِ سراسریِ
+           مستقیم ندارند (gray-50/100/300/400/600/700 یا هگزهای
+           ثابتِ مشابه). چون این قواعد زیرِ data-theme="dark"
+           هستند و specificity بالاتری دارند، قوانینِ پایهٔ بالا
+           (تمِ روشن) دست‌نخورده می‌مانند.
+           ═══════════════════════════════════════════════════ */
+
+        /* بوردرهای دورتادورِ خیلی روشن */
+        :root[data-theme="dark"] .row-menu,
+        :root[data-theme="dark"] .pm-row,
+        :root[data-theme="dark"] .pm-menu,
+        :root[data-theme="dark"] .wk-col,
+        :root[data-theme="dark"] .wk-card,
+        :root[data-theme="dark"] .mo-cell,
+        :root[data-theme="dark"] .ra-userlist,
+        :root[data-theme="dark"] .ra-input,
+        :root[data-theme="dark"] .inst-row,
+        :root[data-theme="dark"] .pm-form textarea,
+        :root[data-theme="dark"] .pm-form select,
+        :root[data-theme="dark"] .pm-form input[type="text"],
+        :root[data-theme="dark"] #planModal .btn-close,
+        :root[data-theme="dark"] #weekModal .btn-close,
+        :root[data-theme="dark"] #monthModal .btn-close {
+            border-color: var(--border-soft);
+        }
+
+        /* بوردرِ فقط-پایین یا فقط-بالا */
+        :root[data-theme="dark"] #planModal .modal-header,
+        :root[data-theme="dark"] #weekModal .modal-header,
+        :root[data-theme="dark"] .task-table thead th,
+        :root[data-theme="dark"] .task-table tbody tr,
+        :root[data-theme="dark"] .routine-row,
+        :root[data-theme="dark"] .dlg-row,
+        :root[data-theme="dark"] .wk-col-head,
+        :root[data-theme="dark"] .mo-weekday,
+        :root[data-theme="dark"] .ra-user {
+            border-bottom-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .pm-form {
+            border-top-color: var(--border-soft);
+        }
+
+        /* پس‌زمینه‌های خیلی روشن (کارت/ردیف/تراکِ نوار پیشرفت/هاور) */
+        :root[data-theme="dark"] .wk-col,
+        :root[data-theme="dark"] .mo-cell,
+        :root[data-theme="dark"] .st-not_started,
+        :root[data-theme="dark"] .routine-bar-wrap,
+        :root[data-theme="dark"] .inst-prog,
+        :root[data-theme="dark"] .pm-btn-ghost,
+        :root[data-theme="dark"] .pm-kebab:hover,
+        :root[data-theme="dark"] .bottleneck-row:hover,
+        :root[data-theme="dark"] .td-user-row:hover,
+        :root[data-theme="dark"] .tab-pin:hover,
+        :root[data-theme="dark"] .task-table tbody tr:hover,
+        :root[data-theme="dark"] .routine-row:hover,
+        :root[data-theme="dark"] .dlg-row:hover,
+        :root[data-theme="dark"] #planModal .btn-close:hover,
+        :root[data-theme="dark"] #weekModal .btn-close:hover,
+        :root[data-theme="dark"] #monthModal .btn-close:hover {
+            background: var(--info-box-bg);
+        }
+
+        /* متن‌های ثانویه/راهنما (gray-300..400 یا هگزهای مشابه مثل #9ca3af/#d1d5db) */
+        :root[data-theme="dark"] .dash-tab:hover,
+        :root[data-theme="dark"] .tab-pin,
+        :root[data-theme="dark"] .td-star,
+        :root[data-theme="dark"] .star-btn,
+        :root[data-theme="dark"] .row-menu .empty-hint,
+        :root[data-theme="dark"] #topDelayedList .dash-empty,
+        :root[data-theme="dark"] .pm-kebab,
+        :root[data-theme="dark"] .pm-empty,
+        :root[data-theme="dark"] .pm-empty i,
+        :root[data-theme="dark"] .pm-btn-ghost,
+        :root[data-theme="dark"] .bn-arrow,
+        :root[data-theme="dark"] .wk-date,
+        :root[data-theme="dark"] .wk-card-time,
+        :root[data-theme="dark"] .wk-col-empty,
+        :root[data-theme="dark"] .td-user-breakdown,
+        :root[data-theme="dark"] .ra-user i,
+        :root[data-theme="dark"] .ra-user-empty {
+            color: var(--text-muted);
+        }
+
+        /* متن‌های تیره‌ترِ خاکستری (gray-600/700 یا هگزهایی مثل #374151/#4b5563/#2d2d3a) که باید در تم تاریک روشن شوند */
+        :root[data-theme="dark"] .tab-pin:hover,
+        :root[data-theme="dark"] .pm-kebab:hover,
+        :root[data-theme="dark"] .pm-title,
+        :root[data-theme="dark"] .pm-form-title,
+        :root[data-theme="dark"] #planModal .modal-title,
+        :root[data-theme="dark"] #weekModal .modal-title,
+        :root[data-theme="dark"] #monthModal .modal-title {
+            color: var(--text-strong);
+        }
+
+        /* آیکون‌های شاخصِ رنگی (بج‌های ماه/هفته/فردا و آیکونِ سرِ مودال) —
+           به‌جای پس‌زمینهٔ پاستلیِ تخت (که روی سطحِ تیره کدر/نامفهوم می‌شود)،
+           از رنگِ خودِ آیکون با شفافیتِ کم استفاده می‌شود تا هویتِ رنگی حفظ شود */
+        :root[data-theme="dark"] .plan-icon.month,
+        :root[data-theme="dark"] .pm-head-icon {
+            background: color-mix(in srgb, #7e55b3 25%, transparent);
+        }
+
+        :root[data-theme="dark"] .plan-icon.week {
+            background: color-mix(in srgb, #ea580c 25%, transparent);
+        }
+
+        :root[data-theme="dark"] .plan-icon.tomor {
+            background: color-mix(in srgb, #2563eb 25%, transparent);
         }
 
         /* ═══ استثنا: فقط در این صفحه، هدر بالا بنفش با متن/آیکون سفید ═══ */

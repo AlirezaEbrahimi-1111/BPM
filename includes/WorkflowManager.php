@@ -104,7 +104,7 @@ class WorkflowManager
 
         $execution_mode = (($step_data['execution_mode'] ?? 'cascade') === 'parallel') ? 'parallel' : 'cascade';
         $stmt = $this->db->prepare("INSERT INTO workflow_steps (template_id, step_order, step_name, activity_section, time_limit_hours, assignee_type, assignee_user_id, execution_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        return $stmt->execute([
+        $ok = $stmt->execute([
             $template_id,
             $step_data['step_order'],
             $step_data['step_name'],
@@ -114,6 +114,30 @@ class WorkflowManager
             $assignee_user_id,
             $execution_mode
         ]);
+
+        if ($ok && !empty($step_data['checklist_items'])) {
+            $step_id = $this->db->lastInsertId();
+            $this->saveStepChecklistItems($step_id, $step_data['checklist_items']);
+        }
+
+        return $ok;
+    }
+
+    // ذخیرهٔ آیتم‌های چک‌لیستِ الگو برای یک مرحله (فقط عنوان + توضیحات)
+    private function saveStepChecklistItems($step_id, array $items)
+    {
+        $stmt = $this->db->prepare("
+            INSERT INTO workflow_step_checklist_items (step_id, title, description, sort_order)
+            VALUES (?, ?, ?, ?)
+        ");
+        $order = 0;
+        foreach ($items as $item) {
+            $title = trim($item['title'] ?? '');
+            if ($title === '') continue;
+            $description = trim($item['description'] ?? '');
+            $stmt->execute([$step_id, $title, ($description !== '' ? $description : null), $order]);
+            $order++;
+        }
     }
 
     // دریافت لیست الگوهای فعال
@@ -218,6 +242,19 @@ class WorkflowManager
     ");
             $stmt->execute([$template_id]);
             $template['steps'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // ✅ چک‌لیستِ الگوی هر مرحله (برای نمایش/بازتعریف در ادیتور)
+            $clStmt = $this->db->prepare("
+                SELECT id, title, description
+                FROM workflow_step_checklist_items
+                WHERE step_id = ?
+                ORDER BY sort_order ASC, id ASC
+            ");
+            foreach ($template['steps'] as &$step) {
+                $clStmt->execute([$step['id']]);
+                $step['checklist_items'] = $clStmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+            unset($step);
         }
 
         return $template;
@@ -428,6 +465,25 @@ class WorkflowManager
                     $first_task_id = $task_id;
                 }
 
+                // ✅ کپیِ چک‌لیستِ الگوی همین مرحله به task_checklist_items (سطح نمونهٔ اجرا)
+                $clStmt = $this->db->prepare("
+                    SELECT title, description, sort_order
+                    FROM workflow_step_checklist_items
+                    WHERE step_id = ?
+                    ORDER BY sort_order ASC, id ASC
+                ");
+                $clStmt->execute([$step['id']]);
+                $stepChecklistItems = $clStmt->fetchAll(PDO::FETCH_ASSOC);
+                if ($stepChecklistItems) {
+                    $insCl = $this->db->prepare("
+                        INSERT INTO task_checklist_items (task_id, title, description, sort_order, created_by)
+                        VALUES (?, ?, ?, ?, ?)
+                    ");
+                    foreach ($stepChecklistItems as $ci) {
+                        $insCl->execute([$task_id, $ci['title'], $ci['description'], $ci['sort_order'], $creator_id]);
+                    }
+                }
+
                 // ✅ ایجاد رکورد در workflow_instance_steps
                 $stmt = $this->db->prepare("
                     INSERT INTO workflow_instance_steps (
@@ -534,6 +590,15 @@ class WorkflowManager
             // ✅ اجازه تکمیل حتی اگر status 'pending' باشد
             if (!in_array($current_step['status'], ['active', 'pending'])) {
                 throw new Exception('این مرحله قابل تکمیل نیست (وضعیت: ' . $current_step['status'] . ')');
+            }
+
+            // 🔒 قفلِ چک‌لیست: تا تیک‌نخوردنِ همهٔ آیتم‌ها، این مرحله تکمیل نمی‌شود
+            // (همان چکِ بک‌اندی که برای تسکِ معمولی هم در TaskManager::updateTaskStatus هست —
+            //  اینجا لازم است چون فرانت را می‌شود دور زد)
+            $clCheck = $this->db->prepare("SELECT COUNT(*) FROM task_checklist_items WHERE task_id = ? AND is_done = 0");
+            $clCheck->execute([$task_id]);
+            if ((int) $clCheck->fetchColumn() > 0) {
+                throw new Exception('ابتدا باید همهٔ آیتم‌های چک‌لیستِ این مرحله را تیک بزنید');
             }
 
             $notes = trim((string) $notes);

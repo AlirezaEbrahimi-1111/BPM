@@ -47,14 +47,21 @@ require_once '../includes/version.php';
             margin: 0;
         }
 
-        /* ───── هدر صفحه (عنوان + دکمه) ───── */
+        /* ───── هدر صفحه (عنوان + دکمه) — قاب‌دار مثل کارت‌های آماری ───── */
+        .tickets-pagehead-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 18px 22px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.04);
+            border: 1px solid #f0f0f0;
+            margin-bottom: 16px;
+        }
         .tickets-pagehead {
             display: flex;
             align-items: flex-end;
             justify-content: space-between;
             gap: 12px;
             flex-wrap: wrap;
-            margin: 6px 4px 18px;
         }
         .tickets-pagehead h1 {
             font-size: 1.5rem;
@@ -194,6 +201,43 @@ require_once '../includes/version.php';
             .stats-row { grid-template-columns: repeat(2, 1fr); }
             .overview-container { margin-top: 70px; }
         }
+
+        .tkt-grid-title { color: #1a1a1a; }
+
+        /* ═══ تم تاریک ═══ */
+        :root[data-theme="dark"] .tickets-pagehead-card {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+        :root[data-theme="dark"] .tkt-grid-title {
+            color: var(--text-strong);
+        }
+        :root[data-theme="dark"] .filters-title-col h1,
+        :root[data-theme="dark"] .tickets-pagehead h1 {
+            color: var(--text-strong);
+        }
+        :root[data-theme="dark"] .filters-title-col p,
+        :root[data-theme="dark"] .tickets-pagehead p {
+            color: var(--text-muted);
+        }
+        :root[data-theme="dark"] .filters-row .search-box input,
+        :root[data-theme="dark"] .filter-item select {
+            background: var(--surface);
+            border-color: var(--border-soft);
+            color: var(--text-strong);
+        }
+        :root[data-theme="dark"] .filters-row .search-box i {
+            color: var(--text-muted);
+        }
+        :root[data-theme="dark"] #emptyState i {
+            color: var(--border-soft) !important;
+        }
+        :root[data-theme="dark"] #emptyState h6 {
+            color: var(--text-muted) !important;
+        }
+        :root[data-theme="dark"] #emptyState p {
+            color: var(--text-muted) !important;
+        }
     </style>
 </head>
 
@@ -202,14 +246,16 @@ require_once '../includes/version.php';
 
     <div class="overview-container">
 
-        <div class="tickets-pagehead">
-            <div class="tickets-pagehead-text">
-                <h1><i class="bi bi-ticket-detailed"></i> تیکت‌های پشتیبانی</h1>
-                <p>مشاهده و مدیریت تیکت‌ها</p>
+        <div class="tickets-pagehead-card">
+            <div class="tickets-pagehead">
+                <div class="tickets-pagehead-text">
+                    <h1><i class="bi bi-ticket-detailed"></i> تیکت‌های پشتیبانی</h1>
+                    <p>مشاهده و مدیریت تیکت‌ها</p>
+                </div>
+                <a href="create-ticket.php" class="btn-new-ticket">
+                    <i class="bi bi-plus-circle"></i>تیکت جدید
+                </a>
             </div>
-            <a href="create-ticket.php" class="btn-new-ticket">
-                <i class="bi bi-plus-circle"></i>تیکت جدید
-            </a>
         </div>
 
         <div class="filters-wrapper">
@@ -313,7 +359,7 @@ require_once '../includes/version.php';
             {
                 field: 'subject', headerName: 'عنوان', flex: 2, sortable: true, resizable: true,
                 cellRenderer: p => {
-                    let html = '<span style="font-weight:600;color:#1a1a1a;">' + esc(p.value) + '</span>';
+                    let html = '<span class="tkt-grid-title" style="font-weight:600;">' + esc(p.value) + '</span>';
                     const t = p.data;
                     if (t.message_count > 1 || t.attachment_count > 0) {
                         html += '<span style="display:inline-flex;gap:8px;margin-right:8px;">';
@@ -360,8 +406,19 @@ require_once '../includes/version.php';
             });
         }
 
+        // 🆕 هماهنگ با تمِ فعلی — چون Theming API جدید AG Grid، متغیرهای CSS تمِ سراسری را نمی‌خواند
+        const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
         const gridOptions = {
-            theme: agGrid.themeQuartz.withParams({
+            theme: agGrid.themeQuartz.withParams(isDarkTheme ? {
+                fontFamily: 'Tahoma, Vazirmatn, sans-serif',
+                fontSize: 13,
+                backgroundColor: '#1b2130',
+                foregroundColor: '#e8eaed',
+                rowHoverColor: '#232a3a',
+                headerBackgroundColor: '#232a3a',
+                borderColor: '#2b3242',
+                oddRowBackgroundColor: '#1b2130',
+            } : {
                 fontFamily: 'Tahoma, Vazirmatn, sans-serif',
                 fontSize: 13,
                 rowHoverColor: '#faf5ff',

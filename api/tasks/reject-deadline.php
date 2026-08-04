@@ -85,6 +85,19 @@ try {
     ");
     $request_stmt->execute([$rejection_reason, $request_id]);
 
+    // ✅ ثبت در تاریخچهٔ کار — قبلاً فقط تأیید ثبت می‌شد، نه رد
+    // from_user_id = کسی که این اقدام (رد) را انجام داد؛ نمایش تاریخچه نامِ from_user را به‌عنوان «انجام‌دهنده» نشان می‌دهد
+    $history_stmt = $db->prepare("
+        INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
+        VALUES (?, ?, ?, 'deadline_rejected', ?)
+    ");
+    $history_stmt->execute([
+        $task_id,
+        $user_id,
+        $request['requested_by'],
+        $rejection_reason !== '' ? $rejection_reason : null
+    ]);
+
     // ارسال نوتیفیکیشن به مسئول انجام
     try {
         $notification = new Notification($db);

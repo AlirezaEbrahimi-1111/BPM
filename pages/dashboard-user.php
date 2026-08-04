@@ -41,6 +41,25 @@ require_once '../includes/version.php';
             overflow: hidden;
         }
 
+        /* ═══ توکن‌های محلی تم (روشن/تاریک) — این صفحه شامل مودال‌هایی است که
+           بیرون از .dash-wrap رندر می‌شوند، پس این متغیرها روی :root تعریف
+           می‌شوند نه روی .dash-wrap؛ مقدار پیش‌فرض دقیقاً همان رنگ‌های
+           هاردکدشدهٔ قبلی است تا ظاهر حالت روشن هیچ تغییری نکند */
+        :root {
+            --du-surface: #fff;
+            /* پس‌زمینهٔ کارت/پنل/مودال (قبلاً #fff) */
+            --du-ink: #000;
+            /* متن پررنگ (قبلاً #000) */
+            --du-head-bg: #e9e9e9;
+            /* پس‌زمینهٔ خاکستریِ هدر کارت */
+        }
+
+        :root[data-theme="dark"] {
+            --du-surface: var(--surface);
+            --du-ink: var(--text-strong);
+            --du-head-bg: var(--info-box-bg);
+        }
+
         /* body در custom.css مقدار margin-top: 3.5rem دارد (نوار ثابت) */
         .dash-wrap {
             max-width: 1440px;
@@ -55,8 +74,8 @@ require_once '../includes/version.php';
 
         /* ═══ کارت بخش‌ها ═══ */
         .dash-card {
-            background: #fff;
-            border: 1px solid var(--gray-200);
+            background: var(--du-surface);
+            border: 1px solid var(--border-soft);
             border-radius: var(--radius);
             display: flex;
             flex-direction: column;
@@ -65,7 +84,7 @@ require_once '../includes/version.php';
         }
 
         .dash-card-head {
-            background: #e9e9e9;
+            background: var(--du-head-bg);
             /* هدر خاکستری — کمی پررنگ‌تر */
             padding: 10px 14px;
             display: flex;
@@ -80,7 +99,7 @@ require_once '../includes/version.php';
             gap: 8px;
             font-weight: 700;
             font-size: .855rem;
-            color: #000;
+            color: var(--du-ink);
         }
 
         .dash-card-title i {
@@ -164,7 +183,7 @@ require_once '../includes/version.php';
         }
 
         .plan-row .dash-card-head {
-            background: #fff;
+            background: var(--du-surface);
         }
 
         .plan-grid {
@@ -181,8 +200,8 @@ require_once '../includes/version.php';
             display: flex;
             align-items: center;
             gap: 0px;
-            background: #fff;
-            border: 1px solid var(--gray-200);
+            background: var(--du-surface);
+            border: 1px solid var(--border-soft);
             border-radius: 12px;
             padding: 11px 13px;
             cursor: pointer;
@@ -225,6 +244,21 @@ require_once '../includes/version.php';
             color: #2563eb;
         }
 
+        :root[data-theme="dark"] .plan-icon.month {
+            background: color-mix(in srgb, #7e55b3 28%, var(--du-surface));
+            color: #c9a9f7;
+        }
+
+        :root[data-theme="dark"] .plan-icon.week {
+            background: color-mix(in srgb, #ea580c 28%, var(--du-surface));
+            color: #ffb677;
+        }
+
+        :root[data-theme="dark"] .plan-icon.tomor {
+            background: color-mix(in srgb, #2563eb 28%, var(--du-surface));
+            color: #8fb4fb;
+        }
+
         /* متن سمت راست */
         .plan-text {
             order: 1;
@@ -235,7 +269,7 @@ require_once '../includes/version.php';
         .plan-label {
             font-size: .702rem;
             font-weight: 600;
-            color: var(--gray-500);
+            color: var(--text-muted);
             margin-bottom: 2px;
         }
 
@@ -254,7 +288,7 @@ require_once '../includes/version.php';
         .plan-value {
             font-size: .9rem;
             font-weight: 700;
-            color: var(--gray-900);
+            color: var(--text-strong);
         }
 
         /* ═══ بخش کارها ═══ */
@@ -271,10 +305,10 @@ require_once '../includes/version.php';
         .dash-tabs {
             display: flex;
             gap: 2px;
-            border-bottom: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--border-soft);
             padding: 0 12px;
             flex-shrink: 0;
-            background: #fff;
+            background: var(--du-surface);
             align-items: center;
         }
 
@@ -291,7 +325,7 @@ require_once '../includes/version.php';
             border-bottom: 2px solid transparent;
             padding: 10px 14px 9px;
             font-size: .783rem;
-            color: var(--gray-900);
+            color: var(--text-strong);
             font-weight: 700;
             cursor: pointer;
             display: flex;
@@ -362,12 +396,12 @@ require_once '../includes/version.php';
         }
 
         .filter-chip {
-            border: 1px solid var(--gray-200);
-            background: #e9e9e9;
+            border: 1px solid var(--border-soft);
+            background: var(--du-head-bg);
             border-radius: var(--radius-sm);
             padding: 5px 14px;
             font-size: .72rem;
-            color: var(--gray-900);
+            color: var(--text-strong);
             font-weight: 700;
             cursor: pointer;
             transition: all .15s;
@@ -375,6 +409,10 @@ require_once '../includes/version.php';
 
         .filter-chip:hover {
             background: #d8d8d8;
+        }
+
+        :root[data-theme="dark"] .filter-chip:hover {
+            background: var(--border-soft);
         }
 
         .filter-chip.active {
@@ -419,14 +457,18 @@ require_once '../includes/version.php';
             position: sticky;
             top: 0;
             z-index: 2;
-            background: #fff;
+            background: var(--du-surface);
             font-size: .702rem;
             font-weight: 700;
-            color: var(--gray-900);
+            color: var(--text-strong);
             text-align: right;
             padding: 8px 14px;
             border-bottom: 1px solid var(--gray-100);
             white-space: nowrap;
+        }
+
+        :root[data-theme="dark"] .task-table thead th {
+            border-bottom-color: var(--border-soft);
         }
 
         .task-table thead th.col-status {
@@ -445,14 +487,22 @@ require_once '../includes/version.php';
             transition: background .12s;
         }
 
+        :root[data-theme="dark"] .task-table tbody tr {
+            border-bottom-color: var(--border-soft);
+        }
+
         .task-table tbody tr:hover {
             background: var(--gray-50);
+        }
+
+        :root[data-theme="dark"] .task-table tbody tr:hover {
+            background: var(--info-box-bg);
         }
 
         .task-table td {
             padding: 0 8px 0 8px;
             font-size: .765rem;
-            color: #000;
+            color: var(--du-ink);
             font-weight: 500;
             vertical-align: middle;
         }
@@ -506,7 +556,7 @@ require_once '../includes/version.php';
 
         /* اگر منتخب است، همیشه دیده شود */
         .td-deadline {
-            color: var(--gray-500);
+            color: var(--text-muted);
             white-space: nowrap;
         }
 
@@ -528,7 +578,7 @@ require_once '../includes/version.php';
             background: none;
             border: none;
             cursor: pointer;
-            color: #000000;
+            color: var(--du-ink);
             font-size: .99rem;
             padding: 4px 8px;
             border-radius: 7px;
@@ -548,12 +598,16 @@ require_once '../includes/version.php';
             z-index: 30;
             min-width: 150px;
             margin-top: 4px;
-            background: #fff;
+            background: var(--du-surface);
             border: 1px solid #eee;
             border-radius: 11px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
             padding: 5px;
             text-align: right;
+        }
+
+        :root[data-theme="dark"] .row-menu {
+            border-color: var(--border-soft);
         }
 
         .row-menu.open {
@@ -570,7 +624,7 @@ require_once '../includes/version.php';
             gap: 9px;
             border-radius: 7px;
             font-size: .765rem;
-            color: #000;
+            color: var(--du-ink);
         }
 
         .row-menu button:hover {
@@ -612,6 +666,10 @@ require_once '../includes/version.php';
             padding: 8px 11px;
         }
 
+        :root[data-theme="dark"] .row-menu .empty-hint {
+            color: var(--text-muted);
+        }
+
         .st-badge {
             display: inline-block;
             padding: 3px 10px;
@@ -626,6 +684,11 @@ require_once '../includes/version.php';
             color: var(--gray-500);
         }
 
+        :root[data-theme="dark"] .st-not_started {
+            background: var(--border-soft);
+            color: var(--text-muted);
+        }
+
         .st-in_progress {
             background: #dbeafe;
             color: #1d4ed8;
@@ -633,8 +696,8 @@ require_once '../includes/version.php';
 
         .st-completed,
         .st-approved {
-            background: #00BF8F;
-            color: #00BF8F;
+            background: #40b86c1a;
+            color: #1b7b39;
         }
 
         .st-pending_approval,
@@ -701,14 +764,22 @@ require_once '../includes/version.php';
             transition: background .12s;
         }
 
+        :root[data-theme="dark"] .routine-row {
+            border-bottom-color: var(--border-soft);
+        }
+
         .routine-row:hover {
             background: var(--gray-50);
+        }
+
+        :root[data-theme="dark"] .routine-row:hover {
+            background: var(--info-box-bg);
         }
 
         .routine-name {
             flex: 1;
             font-size: .774rem;
-            color: #000;
+            color: var(--du-ink);
             font-weight: 600;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -723,6 +794,10 @@ require_once '../includes/version.php';
             overflow: hidden;
         }
 
+        :root[data-theme="dark"] .routine-bar-wrap {
+            background: var(--border-soft);
+        }
+
         .routine-bar {
             height: 100%;
             /*border-radius: 999px;*/
@@ -731,7 +806,7 @@ require_once '../includes/version.php';
         .routine-count {
             font-size: .765rem;
             font-weight: 700;
-            color: #000;
+            color: var(--du-ink);
             min-width: 26px;
             text-align: center;
         }
@@ -746,8 +821,16 @@ require_once '../includes/version.php';
             transition: background .12s;
         }
 
+        :root[data-theme="dark"] .dlg-row {
+            border-bottom-color: var(--border-soft);
+        }
+
         .dlg-row:hover {
             background: var(--gray-50);
+        }
+
+        :root[data-theme="dark"] .dlg-row:hover {
+            background: var(--info-box-bg);
         }
 
         .dlg-main {
@@ -757,7 +840,7 @@ require_once '../includes/version.php';
 
         .dlg-title {
             font-size: .765rem;
-            color: #000;
+            color: var(--du-ink);
             font-weight: 600;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -841,6 +924,10 @@ require_once '../includes/version.php';
             margin-bottom: 8px;
         }
 
+        :root[data-theme="dark"] .inst-row {
+            border-color: var(--border-soft);
+        }
+
         .inst-head {
             display: flex;
             align-items: center;
@@ -852,12 +939,12 @@ require_once '../includes/version.php';
         .inst-title {
             font-weight: 600;
             font-size: .81rem;
-            color: #000;
+            color: var(--du-ink);
         }
 
         .inst-meta {
             font-size: .702rem;
-            color: var(--gray-500);
+            color: var(--text-muted);
             margin-bottom: 6px;
         }
 
@@ -866,6 +953,10 @@ require_once '../includes/version.php';
             background: var(--gray-100);
             border-radius: 999px;
             overflow: hidden;
+        }
+
+        :root[data-theme="dark"] .inst-prog {
+            background: var(--border-soft);
         }
 
         .inst-prog>div {
@@ -924,10 +1015,15 @@ require_once '../includes/version.php';
 
         #planModal .modal-header,
         #weekModal .modal-header {
-            background: #fff;
+            background: var(--du-surface);
             border-bottom: 1px solid #f1f1f4;
             padding: 18px 22px;
             align-items: center;
+        }
+
+        :root[data-theme="dark"] #planModal .modal-header,
+        :root[data-theme="dark"] #weekModal .modal-header {
+            border-bottom-color: var(--border-soft);
         }
 
         #planModal .modal-title,
@@ -940,6 +1036,12 @@ require_once '../includes/version.php';
             align-items: center;
             gap: 11px;
             flex-direction: row-reverse;
+        }
+
+        :root[data-theme="dark"] #planModal .modal-title,
+        :root[data-theme="dark"] #weekModal .modal-title,
+        :root[data-theme="dark"] #monthModal .modal-title {
+            color: var(--text-strong);
         }
 
         .pm-head-icon {
@@ -955,6 +1057,11 @@ require_once '../includes/version.php';
             font-size: 1.08rem;
         }
 
+        :root[data-theme="dark"] .pm-head-icon {
+            background: color-mix(in srgb, var(--pm-purple) 28%, var(--du-surface));
+            color: #c9a9f7;
+        }
+
         .pm-head-icon i {
             line-height: 1;
         }
@@ -965,7 +1072,7 @@ require_once '../includes/version.php';
             width: 26px;
             height: 26px;
             border-radius: 50%;
-            background-color: #fff;
+            background-color: var(--du-surface);
             border: 1px solid var(--gray-300);
             background-size: 10px;
             opacity: 1;
@@ -978,6 +1085,13 @@ require_once '../includes/version.php';
         #monthModal .btn-close:hover {
             background-color: var(--gray-100);
             border-color: var(--gray-400);
+        }
+
+        :root[data-theme="dark"] #planModal .btn-close:hover,
+        :root[data-theme="dark"] #weekModal .btn-close:hover,
+        :root[data-theme="dark"] #monthModal .btn-close:hover {
+            background-color: var(--border-soft);
+            border-color: var(--text-muted);
         }
 
         #planModal .modal-body {
@@ -998,8 +1112,22 @@ require_once '../includes/version.php';
             transition: background .12s, border-color .12s;
         }
 
+        /* هر دو تعریف .pm-row در فایل (این کارت ساده و ردیف مودال هفتگی/اکشن)
+           را با یک override پوشش می‌دهد؛ چون این قاعده کلاس-محور است، اسپسیفیسیتیِ
+           بالاترش (root+attr+class) روی هر دو مقدار پایه غلبه می‌کند */
+        :root[data-theme="dark"] .pm-row {
+            border-color: var(--border-soft);
+        }
+
         .pm-row:hover {
             background: #7e55b3;
+            border-color: #7e55b3;
+        }
+
+        /* اسپسیفیسیتیِ override بالای تیره (root+attr+class) از .pm-row:hover
+           (class+pseudo) بیشتر است؛ برای اینکه رنگ بنفشِ هاور در تم تاریک هم
+           باقی بماند، اینجا دوباره تصریح می‌شود */
+        :root[data-theme="dark"] .pm-row:hover {
             border-color: #7e55b3;
         }
 
@@ -1021,6 +1149,10 @@ require_once '../includes/version.php';
             white-space: nowrap;
         }
 
+        :root[data-theme="dark"] .pm-title {
+            color: var(--text-strong);
+        }
+
         /* ── منوی سه‌نقطه ── */
         .pm-menu-wrap {
             position: relative;
@@ -1036,6 +1168,10 @@ require_once '../includes/version.php';
             padding: 5px 9px;
             border-radius: 8px;
             transition: background .12s, color .12s;
+        }
+
+        :root[data-theme="dark"] .pm-kebab {
+            color: var(--text-muted);
         }
 
         .pm-kebab:hover {
@@ -1075,7 +1211,7 @@ require_once '../includes/version.php';
             padding: 10px 12px;
             border-radius: 8px;
             font-size: .792rem;
-            color: #000;
+            color: var(--du-ink);
             text-align: right;
             transition: background .1s;
         }
@@ -1128,6 +1264,10 @@ require_once '../includes/version.php';
             gap: 6px;
         }
 
+        :root[data-theme="dark"] .pm-form-title {
+            color: var(--text-muted);
+        }
+
         .pm-form textarea,
         .pm-form select,
         .pm-form input[type="text"] {
@@ -1137,6 +1277,14 @@ require_once '../includes/version.php';
             border-radius: 9px;
             padding: 9px 11px;
             margin-bottom: 9px;
+        }
+
+        :root[data-theme="dark"] .pm-form textarea,
+        :root[data-theme="dark"] .pm-form select,
+        :root[data-theme="dark"] .pm-form input[type="text"] {
+            background: var(--du-surface);
+            color: var(--du-ink);
+            border-color: var(--border-soft);
         }
 
         .pm-form textarea {
@@ -1179,6 +1327,11 @@ require_once '../includes/version.php';
             color: #6b7280;
         }
 
+        :root[data-theme="dark"] .pm-btn-ghost {
+            background: var(--info-box-bg);
+            color: var(--text-muted);
+        }
+
         .pm-empty {
             text-align: center;
             padding: 40px 20px;
@@ -1191,6 +1344,11 @@ require_once '../includes/version.php';
             display: block;
             margin-bottom: 10px;
             color: #d1d5db;
+        }
+
+        :root[data-theme="dark"] .pm-empty,
+        :root[data-theme="dark"] .pm-empty i {
+            color: var(--text-muted);
         }
 
         /* مودال عملیات: اجازه بده تقویم بیرون بزند */
@@ -1221,6 +1379,16 @@ require_once '../includes/version.php';
             overflow: visible;
         }
 
+        /* رنگ‌های اینلاینِ هدر/دکمهٔ بستنِ این مودال (در HTML، پایین صفحه) در تم تاریک
+           باید override شوند؛ چون style اینلاین اولویت دارد، از !important استفاده می‌شود */
+        :root[data-theme="dark"] #rowActModal .modal-header {
+            border-bottom-color: var(--border-soft) !important;
+        }
+
+        :root[data-theme="dark"] #rowActModal .btn-close {
+            background-color: var(--info-box-bg) !important;
+        }
+
         /* ═══════════ مودال هفتگی ═══════════ */
         #weekModal .modal-dialog {
             max-width: 96vw;
@@ -1249,7 +1417,7 @@ require_once '../includes/version.php';
             transition: background .12s;
             background-color: transparent;
         }
-        .wk-nav button:hover { background: #fff; }
+        .wk-nav button:hover { background: rgba(255,255,255,.22); }
         .wk-nav .wk-label {
             font-size: .792rem; font-weight: 700; color: white;
             min-width: 78px; text-align: center;
@@ -1273,6 +1441,11 @@ require_once '../includes/version.php';
             transition: flex-grow .25s ease;
         }
 
+        :root[data-theme="dark"] .wk-col {
+            background: var(--info-box-bg);
+            border-color: var(--border-soft);
+        }
+
         .wk-grid:hover .wk-col {
             opacity: .6;
             transition: opacity .25s, flex-grow .25s;
@@ -1290,16 +1463,24 @@ require_once '../includes/version.php';
             border-bottom: 1px solid #eee;
         }
 
+        :root[data-theme="dark"] .wk-col-head {
+            border-bottom-color: var(--border-soft);
+        }
+
         .wk-day {
             font-size: .738rem;
             font-weight: 700;
-            color: #000;
+            color: var(--du-ink);
         }
 
         .wk-date {
             font-size: .612rem;
             color: #9ca3af;
             margin-top: 2px;
+        }
+
+        :root[data-theme="dark"] .wk-date {
+            color: var(--text-muted);
         }
 
         .wk-cards {
@@ -1313,16 +1494,20 @@ require_once '../includes/version.php';
         }
 
         .wk-card {
-            background: #fff;
+            background: var(--du-surface);
             border: 1px solid #f0f0f3;
             border-radius: 9px;
             padding: 8px 9px;
             position: relative;
         }
 
+        :root[data-theme="dark"] .wk-card {
+            border-color: var(--border-soft);
+        }
+
         .wk-card-title {
             font-size: .666rem;
-            color: #000;
+            color: var(--du-ink);
             font-weight: 600;
             line-height: 1.4;
             cursor: pointer;
@@ -1339,6 +1524,10 @@ require_once '../includes/version.php';
             margin-top: 3px;
         }
 
+        :root[data-theme="dark"] .wk-card-time {
+            color: var(--text-muted);
+        }
+
         .wk-card .pm-kebab {
             position: absolute;
             left: 3px;
@@ -1351,6 +1540,10 @@ require_once '../includes/version.php';
             color: #d1d5db;
             font-size: .63rem;
             padding: 14px 0;
+        }
+
+        :root[data-theme="dark"] .wk-col-empty {
+            color: var(--text-muted);
         }
 
         /* فرم عملیات داخل کارت هفتگی */
@@ -1388,9 +1581,13 @@ require_once '../includes/version.php';
             text-align: center;
             font-size: .702rem;
             font-weight: 700;
-            color: var(--gray-500);
+            color: var(--text-muted);
             padding-bottom: 6px;
             border-bottom: 1px solid #eee;
+        }
+
+        :root[data-theme="dark"] .mo-weekday {
+            border-bottom-color: var(--border-soft);
         }
 
         /* اندازهٔ همهٔ سلول‌ها یکسان است (ارتفاع از grid-template-rows می‌آید، نه از محتوا) */
@@ -1407,10 +1604,20 @@ require_once '../includes/version.php';
             overflow: hidden;
         }
 
+        :root[data-theme="dark"] .mo-cell {
+            background: var(--info-box-bg);
+            border-color: var(--border-soft);
+        }
+
         .mo-cell.mo-hover {
             background: #fff;
             box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
             z-index: 5;
+        }
+
+        :root[data-theme="dark"] .mo-cell.mo-hover {
+            background: var(--du-surface);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, .45);
         }
 
         .mo-cell-empty {
@@ -1421,7 +1628,7 @@ require_once '../includes/version.php';
         .mo-cell-date {
             font-size: .666rem;
             font-weight: 700;
-            color: #000;
+            color: var(--du-ink);
             text-align: center;
             flex-shrink: 0;
         }
@@ -1440,8 +1647,8 @@ require_once '../includes/version.php';
 
         .mo-task-title {
             font-size: .576rem;
-            color: #000;
-            background: #fff;
+            color: var(--du-ink);
+            background: var(--du-surface);
             border: 1px solid #f0f0f3;
             border-radius: 4px;
             padding: 1px 4px;
@@ -1450,6 +1657,10 @@ require_once '../includes/version.php';
             text-overflow: ellipsis;
             cursor: pointer;
             flex-shrink: 0;
+        }
+
+        :root[data-theme="dark"] .mo-task-title {
+            border-color: var(--border-soft);
         }
 
         .mo-cell.mo-hover .mo-task-title {
@@ -1569,6 +1780,11 @@ require_once '../includes/version.php';
             color: #374151;
         }
 
+        :root[data-theme="dark"] .pm-kebab:hover {
+            background: var(--info-box-bg);
+            color: var(--text-strong);
+        }
+
         /* وقتی فرم عملیات باز است، دکمهٔ سه‌نقطه مخفی شود.
            هم ظاهر تمیزتر می‌شود، هم کاربر گیج نمی‌شود. */
         .pm-row.form-open .pm-menu-wrap {
@@ -1587,7 +1803,7 @@ require_once '../includes/version.php';
             z-index: 3000;
             /* ← بالاتر از مودال */
             min-width: 165px;
-            background: #fff;
+            background: var(--du-surface);
             border: 1px solid #e5e7eb;
             border-radius: 10px;
             box-shadow: 0 6px 20px rgba(0, 0, 0, .1);
@@ -1611,13 +1827,17 @@ require_once '../includes/version.php';
             padding: 9px 11px;
             border-radius: 7px;
             font-size: .765rem;
-            color: #000;
+            color: var(--du-ink);
             text-align: right;
             transition: background .1s;
         }
 
         .pm-menu button:hover {
             background: #f3f4f6;
+        }
+
+        :root[data-theme="dark"] .pm-menu button:hover {
+            background: var(--info-box-bg);
         }
 
         .pm-menu button i {
@@ -1769,8 +1989,18 @@ require_once '../includes/version.php';
             margin-bottom: 10px;
         }
 
+        :root[data-theme="dark"] .ra-input {
+            background: var(--du-surface);
+            color: var(--du-ink);
+            border-color: var(--border-soft);
+        }
+
         .ra-input:focus {
             outline: none;
+            border-color: #7e55b3;
+        }
+
+        :root[data-theme="dark"] .ra-input:focus {
             border-color: #7e55b3;
         }
 
@@ -1792,6 +2022,10 @@ require_once '../includes/version.php';
             margin-bottom: 10px;
         }
 
+        :root[data-theme="dark"] .ra-userlist {
+            border-color: var(--border-soft);
+        }
+
         .ra-user {
             display: flex;
             align-items: center;
@@ -1801,6 +2035,10 @@ require_once '../includes/version.php';
             font-size: .765rem;
             border-bottom: 1px solid #f7f7f9;
             transition: background .1s;
+        }
+
+        :root[data-theme="dark"] .ra-user {
+            border-bottom-color: var(--border-soft);
         }
 
         .ra-user:last-child {
@@ -1813,7 +2051,7 @@ require_once '../includes/version.php';
 
         .ra-user.sel {
             background: #7e55b3;
-            color: #7e55b3;
+            color: #fff;
             font-weight: 600;
         }
 
@@ -1831,6 +2069,17 @@ require_once '../includes/version.php';
             color: #9ca3af;
             font-size: .738rem;
             padding: 14px;
+        }
+
+        :root[data-theme="dark"] .ra-user i,
+        :root[data-theme="dark"] .ra-user-empty {
+            color: var(--text-muted);
+        }
+
+        /* اسپسیفیسیتیِ override بالا (root+attr+class+type) از .ra-user.sel i
+           (class+class+type) بیشتر است؛ رنگ بنفشِ آیتمِ انتخاب‌شده را برمی‌گردانیم */
+        :root[data-theme="dark"] .ra-user.sel i {
+            color: #7e55b3;
         }
 
         /* انتخابگر تاریخ داخل این مودال بالای بقیه */

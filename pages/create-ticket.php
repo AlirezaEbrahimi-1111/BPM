@@ -26,24 +26,33 @@ require_once '../includes/version.php';
             padding: 0 16px;
         }
 
-        /* ───── هدر دو ستونه ───── */
-        .filters-wrapper.two-col {
+        /* ───── هدرِ صفحه — قابِ مجزا و بالای صفحه (هم‌سبک با تیکت‌ها/مدیریت کارها) ───── */
+        .ctkt-head-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 18px 22px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.04);
+            border: 1px solid #f0f0f0;
+            margin-bottom: 16px;
+            margin-top: 10px;
+        }
+        .ctkt-head {
             display: flex;
-            gap: 24px;
-            align-items: flex-start;
-            margin-bottom: 20px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
         }
-        .filters-title-col {
-            min-width: 200px;
-        }
-        .filters-title-col h1 {
+        .ctkt-head-text h1 {
             font-size: 1.3rem;
             font-weight: 700;
             color: #1a1a1a;
             margin: 0 0 4px;
+            display: flex;
+            align-items: center;
         }
-        .filters-title-col h1 i { color: #744ca4; margin-left: 8px; }
-        .filters-title-col p {
+        .ctkt-head-text h1 i { color: #744ca4; margin-left: 8px; }
+        .ctkt-head-text p {
             font-size: .84rem;
             color: #888;
             margin: 0;
@@ -118,6 +127,39 @@ require_once '../includes/version.php';
         }
         .file-chip .remove-file:hover { color: #dc2626; }
 
+        /* پیش‌نمایشِ مربعیِ تصاویر — کنارِ هم */
+        .file-thumb {
+            position: relative;
+            width: 74px;
+            height: 74px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            flex-shrink: 0;
+        }
+        .file-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .file-thumb .thumb-remove {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 19px;
+            height: 19px;
+            border-radius: 50%;
+            background: rgba(0,0,0,.55);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .68rem;
+            cursor: pointer;
+        }
+        .file-thumb .thumb-remove:hover { background: rgba(220,38,38,.85); }
+
         /* ───── دکمه‌ها ───── */
         .btn-submit-ticket {
             background: linear-gradient(135deg, #744ca4, #9b6dd7);
@@ -162,13 +204,132 @@ require_once '../includes/version.php';
         .fields-row > div { flex: 1; }
 
         @media (max-width: 992px) {
-            .filters-wrapper.two-col { flex-direction: column; gap: 12px; }
+            .ctkt-head { flex-direction: column; align-items: flex-start; gap: 10px; }
         }
         @media (max-width: 576px) {
             .overview-container { margin-top: 70px; }
             .form-card { padding: 20px 18px 24px; }
             .fields-row { flex-direction: column; gap: 0; }
         }
+
+        /* ───── جستجوی تسک برای پیوست ───── */
+        .task-search-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .task-search-row #linkedTaskWrap:empty { display: none; }
+        .task-search-box { position: relative; flex: 1; min-width: 0; }
+        .task-search-results {
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            left: 0;
+            z-index: 20;
+            max-height: 260px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.1);
+            display: none;
+        }
+        .task-search-results.show { display: block; }
+        .task-search-item {
+            padding: 9px 14px;
+            font-size: .84rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .task-search-item:last-child { border-bottom: none; }
+        .task-search-item:hover { background: #f8f5ff; }
+        .task-search-item i { color: #744ca4; }
+        .task-search-empty {
+            padding: 12px 14px;
+            font-size: .82rem;
+            color: #999;
+            text-align: center;
+        }
+        .linked-task-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0e6ff;
+            border: 1px solid #e0d0f5;
+            border-radius: 10px;
+            padding: 7px 12px;
+            font-size: .84rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .linked-task-chip a {
+            color: #744ca4;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .linked-task-chip a:hover { text-decoration: underline; }
+        .linked-task-chip .remove-linked-task {
+            cursor: pointer;
+            color: #ef4444;
+            font-weight: 700;
+            margin-right: auto;
+        }
+
+        /* ───── تم تاریک ───── */
+        :root[data-theme="dark"] .ctkt-head-card {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+        :root[data-theme="dark"] .ctkt-head-text h1 { color: var(--text-strong); }
+        :root[data-theme="dark"] .ctkt-head-text p { color: var(--text-muted); }
+        :root[data-theme="dark"] .form-card {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+        :root[data-theme="dark"] .form-card .form-label { color: var(--text-strong); }
+        :root[data-theme="dark"] .form-card .form-control,
+        :root[data-theme="dark"] .form-card .form-select,
+        :root[data-theme="dark"] .task-search-results {
+            background: var(--info-box-bg);
+            border-color: var(--border-soft);
+            color: var(--text-strong);
+        }
+        :root[data-theme="dark"] .upload-zone {
+            background: var(--info-box-bg);
+            border-color: var(--border-soft);
+        }
+        :root[data-theme="dark"] .upload-zone:hover,
+        :root[data-theme="dark"] .upload-zone.dragover {
+            background: rgba(116,76,164,.12);
+            border-color: var(--icon-accent);
+        }
+        :root[data-theme="dark"] .upload-zone p { color: var(--text-muted); }
+        :root[data-theme="dark"] .file-chip {
+            background: #232a3a;
+            color: var(--text-strong);
+        }
+        :root[data-theme="dark"] .file-thumb {
+            border-color: var(--border-soft);
+        }
+        :root[data-theme="dark"] .btn-back-ticket {
+            background: var(--info-box-bg);
+            color: var(--text-strong);
+            border-color: var(--border-soft);
+        }
+        :root[data-theme="dark"] .btn-back-ticket:hover { background: #2b3242; }
+        :root[data-theme="dark"] .task-search-item {
+            border-bottom-color: var(--border-soft);
+        }
+        :root[data-theme="dark"] .task-search-item:hover { background: #232a3a; }
+        :root[data-theme="dark"] .task-search-empty { color: var(--text-muted); }
+        :root[data-theme="dark"] .linked-task-chip {
+            background: rgba(116,76,164,.18);
+            border-color: rgba(116,76,164,.4);
+        }
+        :root[data-theme="dark"] .linked-task-chip a { color: var(--icon-accent); }
     </style>
 </head>
 
@@ -177,17 +338,19 @@ require_once '../includes/version.php';
 
     <div class="overview-container">
 
-        <div class="filters-wrapper two-col">
-            <div class="filters-title-col">
-                <h1><i class="bi bi-plus-circle"></i> ثبت تیکت جدید</h1>
-                <p>مشکل یا درخواست خود را ثبت کنید</p>
-                <a href="tickets.php" class="btn-back-ticket" style="margin-top:14px;">
+        <div class="ctkt-head-card">
+            <div class="ctkt-head">
+                <div class="ctkt-head-text">
+                    <h1><i class="bi bi-plus-circle"></i> ثبت تیکت جدید</h1>
+                    <p>مشکل یا درخواست خود را ثبت کنید</p>
+                </div>
+                <a href="tickets.php" class="btn-back-ticket">
                     <i class="bi bi-arrow-right"></i>بازگشت به لیست
                 </a>
             </div>
+        </div>
 
-            <div style="flex: 1;">
-                <div class="form-card">
+        <div class="form-card">
 
                     <!-- عنوان -->
                     <div class="mb-3">
@@ -222,9 +385,22 @@ require_once '../includes/version.php';
                         </div>
                     </div>
 
+                    <!-- تسکِ مرتبط (اختیاری) -->
+                    <div class="mb-3">
+                        <label class="form-label">تسکِ مرتبط <small class="text-muted">(اختیاری — برای نمایش به پشتیبانی)</small></label>
+                        <div class="task-search-row">
+                            <div class="task-search-box">
+                                <input type="text" class="form-control" id="taskSearchInput"
+                                       placeholder="جستجو بر اساس عنوان یا شناسه تسک..." autocomplete="off">
+                                <div class="task-search-results" id="taskSearchResults"></div>
+                            </div>
+                            <div id="linkedTaskWrap"></div>
+                        </div>
+                    </div>
+
                     <!-- آپلود فایل -->
                     <div class="mb-4">
-                        <label class="form-label">فایل پیوست <small class="text-muted">(اختیاری)</small></label>
+                        <label class="form-label">فایل پیوست <small class="text-muted">(اختیاری — Ctrl+V هم برای چسباندنِ عکس کار می‌کند)</small></label>
                         <div class="upload-zone" id="uploadZone">
                             <input type="file" id="fileInput" multiple style="display:none"
                                    accept=".jpg,.jpeg,.png,.pdf,.docx,.doc,.xls,.xlsx,.mp3,.m4a,.ogg">
@@ -244,8 +420,6 @@ require_once '../includes/version.php';
                     </div>
 
                 </div>
-            </div>
-        </div>
 
     </div>
 
@@ -263,6 +437,8 @@ require_once '../includes/version.php';
 
             loadCategories();
             initUpload();
+            initTaskSearch();
+            initPasteUpload();
         });
 
         // ─── بارگذاری دسته‌بندی‌ها ───
@@ -340,18 +516,35 @@ require_once '../includes/version.php';
             renderFilePreview();
         }
 
+        var filePreviewUrls = []; // object URLهای ساخته‌شده برای پیش‌نمایش — برای جلوگیری از نشتِ حافظه آزاد می‌شوند
+
         function renderFilePreview() {
             var el = document.getElementById('filePreview');
+
+            // آزادسازیِ URLهای پیش‌نمایشِ قبلی قبل از بازسازی
+            filePreviewUrls.forEach(function(u) { URL.revokeObjectURL(u); });
+            filePreviewUrls = [];
+
             if (selectedFiles.length === 0) { el.innerHTML = ''; return; }
 
             var html = '';
             selectedFiles.forEach(function(f, idx) {
-                var kb = (f.size / 1024).toFixed(0);
-                html += '<div class="file-chip">';
-                html += '<i class="bi bi-paperclip"></i>';
-                html += '<span>' + escHtml(f.name) + ' (' + kb + ' KB)</span>';
-                html += '<span class="remove-file" onclick="removeFile(' + idx + ')">✕</span>';
-                html += '</div>';
+                var isImage = f.type && f.type.indexOf('image/') === 0;
+                if (isImage) {
+                    var url = URL.createObjectURL(f);
+                    filePreviewUrls.push(url);
+                    html += '<div class="file-thumb" title="' + escHtml(f.name) + '">';
+                    html += '<img src="' + url + '" alt="' + escHtml(f.name) + '">';
+                    html += '<span class="thumb-remove" onclick="removeFile(' + idx + ')">✕</span>';
+                    html += '</div>';
+                } else {
+                    var kb = (f.size / 1024).toFixed(0);
+                    html += '<div class="file-chip">';
+                    html += '<i class="bi bi-paperclip"></i>';
+                    html += '<span>' + escHtml(f.name) + ' (' + kb + ' KB)</span>';
+                    html += '<span class="remove-file" onclick="removeFile(' + idx + ')">✕</span>';
+                    html += '</div>';
+                }
             });
             el.innerHTML = html;
         }
@@ -359,6 +552,102 @@ require_once '../includes/version.php';
         function removeFile(idx) {
             selectedFiles.splice(idx, 1);
             renderFilePreview();
+        }
+
+        // ─── چسباندنِ تصویر از کلیپ‌بورد با Ctrl+V ───
+        function initPasteUpload() {
+            document.addEventListener('paste', function(e) {
+                var items = (e.clipboardData || window.clipboardData).items;
+                if (!items) return;
+                var pastedFiles = [];
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image/') === 0) {
+                        var file = items[i].getAsFile();
+                        if (file) {
+                            // فایل‌های کلیپ‌بورد معمولاً نام ندارند
+                            var ext = (file.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+                            var namedFile = new File([file], 'clipboard-' + Date.now() + '.' + ext, { type: file.type });
+                            pastedFiles.push(namedFile);
+                        }
+                    }
+                }
+                if (pastedFiles.length > 0) {
+                    e.preventDefault();
+                    addFiles(pastedFiles);
+                    showToast('تصویر از کلیپ‌بورد اضافه شد', 'success');
+                }
+            });
+        }
+
+        // ─── جستجوی تسک برای پیوست ───
+        var linkedTaskId = null;
+        var taskSearchTimer = null;
+
+        function initTaskSearch() {
+            var input = document.getElementById('taskSearchInput');
+            var results = document.getElementById('taskSearchResults');
+
+            input.addEventListener('input', function() {
+                clearTimeout(taskSearchTimer);
+                var q = input.value.trim();
+                if (!q) { results.classList.remove('show'); results.innerHTML = ''; return; }
+                taskSearchTimer = setTimeout(function() { runTaskSearch(q); }, 350);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.task-search-box')) {
+                    results.classList.remove('show');
+                }
+            });
+        }
+
+        async function runTaskSearch(q) {
+            var results = document.getElementById('taskSearchResults');
+            try {
+                var res = await fetch('../api/tasks/quick-search.php?q=' + encodeURIComponent(q), {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                var data = await res.json();
+                var tasks = (data.success && data.tasks) ? data.tasks : [];
+
+                if (tasks.length === 0) {
+                    results.innerHTML = '<div class="task-search-empty">تسکی یافت نشد</div>';
+                } else {
+                    results.innerHTML = tasks.map(function(t) {
+                        return '<div class="task-search-item" onclick="selectLinkedTask(' + t.id + ', \'' +
+                            escHtml(t.title).replace(/'/g, '&#39;') + '\')">' +
+                            '<i class="bi bi-card-checklist"></i><span>' + escHtml(t.title) + '</span>' +
+                            '<small class="text-muted" style="margin-right:auto;">#' + t.id + '</small>' +
+                            '</div>';
+                    }).join('');
+                }
+                results.classList.add('show');
+            } catch (e) {
+                console.error('runTaskSearch:', e);
+            }
+        }
+
+        function selectLinkedTask(id, title) {
+            linkedTaskId = id;
+            document.getElementById('taskSearchResults').classList.remove('show');
+            document.getElementById('taskSearchInput').value = '';
+            renderLinkedTask(title);
+        }
+
+        function renderLinkedTask(title) {
+            var wrap = document.getElementById('linkedTaskWrap');
+            if (!linkedTaskId) { wrap.innerHTML = ''; return; }
+            wrap.innerHTML =
+                '<div class="linked-task-chip">' +
+                    '<i class="bi bi-link-45deg"></i>' +
+                    '<span>' + escHtml(title) + '</span>' +
+                    '<span class="remove-linked-task" onclick="removeLinkedTask()">✕</span>' +
+                '</div>';
+        }
+
+        function removeLinkedTask() {
+            linkedTaskId = null;
+            document.getElementById('linkedTaskWrap').innerHTML = '';
         }
 
         // ─── ارسال تیکت ───
@@ -389,6 +678,7 @@ require_once '../includes/version.php';
                 fd.append('message', message);
                 fd.append('priority_id', priority);
                 if (category) fd.append('category_id', category);
+                if (linkedTaskId) fd.append('task_id', linkedTaskId);
                 selectedFiles.forEach(function(f) { fd.append('attachments[]', f); });
 
                 var res = await fetch('../api/tickets/create.php', {

@@ -591,8 +591,11 @@ require_once '../includes/version.php';
                 if (gr === '__none__' && t.group_id) return false;
                 else if (gr && gr !== '__none__' && t.group_id != gr) return false;
                 if (st) {
-                    if (st === 'open' && (t.status === 'completed' || t.status === 'approved')) return false;
-                    else if (st !== 'open' && t.status !== st) return false;
+                    // فیلتر پیش‌فرضِ «باز» فقط وقتی جستجویی در جریان نیست اعمال می‌شود؛
+                    // با تایپ‌کردن در کادر جستجو، کارهای تکمیل‌شده/تأییدشده هم پیدا می‌شوند
+                    if (st === 'open') {
+                        if (!s && (t.status === 'completed' || t.status === 'approved')) return false;
+                    } else if (t.status !== st) return false;
                 }
 
                 if (statFilter === 'today') {

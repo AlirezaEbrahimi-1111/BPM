@@ -194,12 +194,15 @@ try {
                 CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
                 CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,
                 (
-                    SELECT GROUP_CONCAT(th.notes SEPARATOR ' ')
+                    SELECT GROUP_CONCAT(
+                        CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
+                            CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
+                        SEPARATOR ' '
+                    )
                     FROM task_history th
+                    LEFT JOIN users fu ON th.from_user_id = fu.id
+                    LEFT JOIN users tu ON th.to_user_id = tu.id
                     WHERE th.task_id = t.id
-                      AND th.notes IS NOT NULL
-                      AND th.notes != ''
-                      AND th.notes NOT LIKE '{%'
                 ) AS history_text
             FROM tasks t
             LEFT JOIN users creator ON t.creator_id = creator.id
@@ -305,12 +308,15 @@ try {
             CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
             CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,
             (
-                    SELECT GROUP_CONCAT(th.notes SEPARATOR ' ')
+                    SELECT GROUP_CONCAT(
+                        CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
+                            CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
+                        SEPARATOR ' '
+                    )
                     FROM task_history th
+                    LEFT JOIN users fu ON th.from_user_id = fu.id
+                    LEFT JOIN users tu ON th.to_user_id = tu.id
                     WHERE th.task_id = t.id
-                      AND th.notes IS NOT NULL
-                      AND th.notes != ''
-                      AND th.notes NOT LIKE '{%'
                 ) AS history_text
         FROM tasks t
         LEFT JOIN users creator ON t.creator_id = creator.id

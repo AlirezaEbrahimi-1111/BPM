@@ -1514,12 +1514,21 @@ require_once '../includes/version.php';
             let checklistCanEdit = false;
             let checklistUsers = []; // لیست کاربران برای منوی ارجاع چک‌لیست
             let currentChecklistItems = []; // آخرین آیتم‌های لودشده (برای مودال ویرایش)
+            // 🔒 قفلِ چک‌لیست: تا زمانی که همهٔ آیتم‌ها تیک نخورده باشند، دکمهٔ «تکمیل کار»
+            // (چه برای کار معمولی، چه برای مرحلهٔ روتین که از همین دکمه استفاده می‌کند) مخفی می‌ماند
+            let checklistGateState = { total: 0, done: 0 };
+            // آیا منطقِ کسب‌وکارِ setupActionButtons (بدون درنظرگرفتنِ چک‌لیست) تصمیم گرفته
+            // completeBtn نشان داده شود؟ applyChecklistGate روی همین پرچم (نه روی style.display
+            // فعلیِ دکمه) تصمیم نهایی را می‌گیرد تا به ترتیبِ اجرای توابعِ async وابسته نباشد
+            let completeBtnEligible = false;
             let myUserId = null;
             let delegateTargetId = '';
             async function loadChecklist() {
-                // فقط برای کار عادی (نه workflow)
-                if (!taskData || taskData.is_workflow_task == 1) {
+                // 🆕 قبلاً چک‌لیست فقط برای کار عادی نمایش داده می‌شد؛ حالا مراحل روتین هم
+                // می‌توانند چک‌لیستِ الگو داشته باشند (کپی‌شده هنگام شروع روتین) و باید همینجا دیده شوند
+                if (!taskData) {
                     document.getElementById('checklistDetailSection').style.display = 'none';
+                    checklistGateState = { total: 0, done: 0 };
                     return;
                 }
                 try {
@@ -1529,14 +1538,21 @@ require_once '../includes/version.php';
                         }
                     });
                     const data = await res.json();
-                    if (!data.success) return;
+                    if (!data.success) {
+                        // شکستِ API را باز (بدون قفل) در نظر می‌گیریم؛ قفلِ واقعی سمتِ سرور است
+                        checklistGateState = { total: 0, done: 0 };
+                        applyChecklistGate();
+                        return;
+                    }
 
                     checklistCanEdit = data.can_edit;
+                    checklistGateState = { total: data.total, done: data.done };
                     const section = document.getElementById('checklistDetailSection');
 
                     // اگر آیتمی نیست و کاربر تعریف‌کننده هم نیست، بخش را نشان نده
                     if (data.total === 0 && !checklistCanEdit) {
                         section.style.display = 'none';
+                        applyChecklistGate();
                         return;
                     }
                     section.style.display = 'block';
@@ -1555,9 +1571,24 @@ require_once '../includes/version.php';
                         if (lockNote) lockNote.style.display = 'none';
                     }
 
+                    applyChecklistGate();
                 } catch (e) {
                     console.error('loadChecklist error:', e);
                 }
+            }
+
+            // 🔒 اجرای واقعیِ قفل: نمایشِ نهاییِ completeBtn را همیشه از رویِ دو منبع
+            // مستقل دوباره محاسبه می‌کند — completeBtnEligible (تصمیمِ setupActionButtons،
+            // بدون درنظرگرفتنِ چک‌لیست) و checklistGateState (وضعیتِ چک‌لیست). چون نتیجه
+            // هربار از صفر ساخته می‌شود (نه بر مبنایِ display فعلیِ دکمه)، به ترتیبِ اجرای
+            // توابعِ async وابسته نیست: هم از setupActionButtons و هم از loadChecklist (بعد
+            // از هر تیک) صدا زده می‌شود؛ هرکدام دیرتر اجرا شود، تصمیمِ نهایی را می‌گیرد.
+            function applyChecklistGate() {
+                const completeBtn = document.getElementById('completeBtn');
+                if (!completeBtn) return;
+
+                const incomplete = checklistGateState.total > 0 && checklistGateState.done < checklistGateState.total;
+                completeBtn.style.display = (completeBtnEligible && !incomplete) ? 'inline-block' : 'none';
             }
             // تازه‌سازی فقط بخش تاریخچه (بدون رفرش کل صفحه)
             async function refreshHistory() {
@@ -1908,6 +1939,13 @@ require_once '../includes/version.php';
                         showToast('همه آیتم‌ها تکمیل شدند. کار طبق روال ادامه یافت.', 'success');
                         setTimeout(() => location.reload(), 1200);
                     } else {
+                        // 🆕 اولین تیک، کار را (سمتِ سرور) به in_progress می‌برد — همین‌جا هم
+                        // taskData را هماهنگ کن و دکمه‌ها را دوباره بساز تا «شروع کار» فوراً
+                        // مخفی شود، بدون نیاز به رفرشِ صفحه
+                        if (isDone && taskData && ['not_started', 'delegated', 'rejected'].includes(taskData.status)) {
+                            taskData.status = 'in_progress';
+                            setupActionButtons(taskData);
+                        }
                         loadChecklist(); // تازه‌سازی درصد و آیتم‌ها
                         refreshHistory(); // 🆕 تازه‌سازی تاریخچه تا تغییر وضعیت دیده شود
                     }
@@ -2429,6 +2467,11 @@ require_once '../includes/version.php';
                         </span>
                     </div>
                 </div>
+                ${task.working_days_delayed > 0 ? `
+                <div class="info-item">
+                    <div class="info-label">تأخیر:</div>
+                    <div class="info-value"><span class="badge bg-danger"><i class="bi bi-clock-history me-1"></i>${enTofaNumber(task.working_days_delayed)} روز کاری تأخیر</span></div>
+                </div>` : ''}
                 `;
                 }
 
@@ -2449,7 +2492,12 @@ require_once '../includes/version.php';
 <div class="info-item">
     <div class="info-label">دوره بعدی:</div>
     <div class="info-value">${nextDueDate ? '<span class="badge bg-info text-dark" style="color: white !important;">' + formatPersianDate(nextDueDate) + '</span>' : '<span class="text-muted">-</span>'}</div>
-</div>`;
+</div>
+${task.overdue_periods > 0 ? `
+<div class="info-item">
+    <div class="info-label">دوره‌های معوقه:</div>
+    <div class="info-value"><span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i>${enTofaNumber(task.overdue_periods)} دوره معوقه</span></div>
+</div>` : ''}`;
                 }
 
                 // ترکیب دو ستون - جایگزین کن
@@ -3305,6 +3353,7 @@ require_once '../includes/version.php';
                 [startBtn, completeBtn, addDiscBtn, delegateBtn, editBtn, deleteBtn].forEach(btn => btn.style.display = 'none');
                 approveBtn.style.display = 'none';
                 rejectBtn.style.display = 'none';
+                completeBtnEligible = false;
 
                 if (isPendingApproval) {
                     // هر کسی که باید تأیید کند، دکمه‌های تأیید/رد را می‌بیند
@@ -3372,6 +3421,7 @@ require_once '../includes/version.php';
                             } else {
                                 // کاربر assignee است
                                 completeBtn.style.display = 'inline-block';
+                                completeBtnEligible = true;
                                 addDiscBtn.style.display = 'inline-block';
                             }
                         }
@@ -3391,6 +3441,7 @@ require_once '../includes/version.php';
                     // حذف فقط توسط مدیریت و از صفحهٔ مانیتورینگ انجام می‌شود
                     deleteBtn.style.display = 'none';
 
+                    applyChecklistGate();
                     return;
                 }
 
@@ -3413,6 +3464,7 @@ require_once '../includes/version.php';
                         addDiscBtn.style.display = 'none';
                     } else if (isAssignee) {
                         completeBtn.style.display = 'inline-block';
+                        completeBtnEligible = true;
                         addDiscBtn.style.display = 'inline-block';
                     }
                 } else if (task.task_type === 'continuous') {
@@ -3426,6 +3478,7 @@ require_once '../includes/version.php';
                             addDiscBtn.style.display = 'none';
                         } else if (isAssignee && task.status != 'rejected') {
                             completeBtn.style.display = 'inline-block';
+                            completeBtnEligible = true;
                             addDiscBtn.style.display = 'inline-block';
                         }
                     }
@@ -3434,6 +3487,7 @@ require_once '../includes/version.php';
                 if (task.status === 'not_started' && isAssignee && task.task_type !== 'continuous') {
                     startBtn.style.display = 'inline-block';
                     completeBtn.style.display = 'none';
+                    completeBtnEligible = false;
                     addDiscBtn.style.display = 'none';
                 }
 
@@ -3492,6 +3546,7 @@ require_once '../includes/version.php';
                 }
                 editBtn.style.display = 'none';
                 setupRenewalButton(task);
+                applyChecklistGate();
             }
 
             // ✅ منطق نمایشِ دکمه/بجِ تمدید دوره
@@ -3652,6 +3707,7 @@ require_once '../includes/version.php';
                     'delegated': 'ab-delegated',
                     'updated': 'ab-updated',
                     'deadline_extended': 'ab-deadline',
+                    'deadline_rejected': 'ab-rejected',
                     'checklist_sync': 'ab-updated',
                     'checklist_assigned': 'ab-delegated',
                     'checklist_done': 'ab-completed',
@@ -3743,6 +3799,16 @@ require_once '../includes/version.php';
                         const toName = `${item.to_user_first_name || ''} ${item.to_user_last_name || ''}`.trim();
                         if (toName) {
                             customNotesHTML = (notesHTML || '') + `<div class="ml-notes">در انتظار تأیید: ${toName}</div>`;
+                        }
+                    }
+                    // ✅ برای رد درخواست تمدید موعد: نمایش نام درخواست‌دهنده (to_user = کسی که درخواست داده بود)
+                    if (item.action === 'deadline_rejected' && item.to_user_id && item.to_user_first_name) {
+                        const toName = `${item.to_user_first_name || ''} ${item.to_user_last_name || ''}`.trim();
+                        const reasonHTML = item.notes ?
+                            `<div class="ml-reason-mini">توضیح: ${item.notes.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>')}</div>` :
+                            '';
+                        if (toName) {
+                            customNotesHTML = `<div class="ml-notes">درخواست تمدید موعد از ${toName} رد شد</div>` + reasonHTML;
                         }
                     }
 
@@ -4101,6 +4167,7 @@ require_once '../includes/version.php';
                     'delegated': 'ارجاع',
                     'updated': 'یادآوری',
                     'deadline_extended': 'تمدید موعد',
+                    'deadline_rejected': 'رد درخواست تمدید موعد',
                     'termination_requested': 'درخواست اتمام',
                     'checklist_sync': 'به‌روزرسانی چک‌لیست',
                     'checklist_assigned': 'ارجاع آیتم چک‌لیست',

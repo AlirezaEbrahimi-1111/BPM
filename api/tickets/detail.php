@@ -51,13 +51,16 @@ try {
             tp.color  AS priority_color,
             tc.name   AS category_name,
             CONCAT(uc.first_name, ' ', uc.last_name) AS creator_name,
-            CONCAT(ua.first_name, ' ', ua.last_name) AS assigned_name
+            CONCAT(ua.first_name, ' ', ua.last_name) AS assigned_name,
+            lt.title AS linked_task_title,
+            lt.status AS linked_task_status
         FROM tickets t
         JOIN ticket_statuses ts ON t.status_id = ts.id
         JOIN ticket_priorities tp ON t.priority_id = tp.id
         LEFT JOIN ticket_categories tc ON t.category_id = tc.id
         LEFT JOIN users uc ON t.created_by = uc.id
         LEFT JOIN users ua ON t.assigned_to = ua.id
+        LEFT JOIN tasks lt ON (t.source_type = 'task' AND t.source_id = lt.id)
         WHERE t.id = ? AND t.deleted_at IS NULL
         AND (t.organization_id = ? OR ? = 1)
     ";
@@ -100,9 +103,10 @@ try {
 
     // ─── پیوست‌ها ───
     $attSql = "
-        SELECT 
+        SELECT
             ta.id,
             ta.message_id,
+            ta.user_id,
             ta.original_name,
             ta.stored_name,
             ta.mime_type,
