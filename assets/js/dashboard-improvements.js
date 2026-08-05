@@ -354,3 +354,39 @@ async function startTask(taskId) {
         showAlert('خطا در ارتباط با سرور', 'danger');
     }
 }
+
+/**
+ * تکمیل کار
+ */
+async function completeTask(taskId) {
+    if (!confirm('آیا می‌خواهید این کار را تکمیل کنید؟')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/tasks/update-status.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + authToken
+            },
+            body: JSON.stringify({
+                task_id: taskId,
+                status: 'completed',
+                notes: 'کار تکمیل شد'
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showAlert('کار با موفقیت تکمیل شد', 'success');
+            loadDashboardData();
+        } else {
+            showAlert(data.message || 'خطا در تکمیل کار', 'danger');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('خطا در ارتباط با سرور', 'danger');
+    }
+}

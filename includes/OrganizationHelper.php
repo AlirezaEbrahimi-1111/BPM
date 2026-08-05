@@ -65,32 +65,7 @@ class OrganizationHelper {
         }
     }
 
-    
-    /**
-     * بررسی محدودیت تعداد کاربران
-     */
-    public function canAddUser(int $org_id): bool {
-        $stmt = $this->db->prepare("
-            SELECT
-              s.max_users,
-              COUNT(u.id) AS current_users
-            FROM subscriptions s
-            LEFT JOIN users u
-              ON u.organization_id = s.organization_id
-              AND u.is_active = 1
-            WHERE s.organization_id = ?
-              AND s.is_active = 1
-            GROUP BY s.max_users
-            ORDER BY s.end_date DESC
-            LIMIT 1
-        ");
-        $stmt->execute([$org_id]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if (!$result) return false;
-        return $result['current_users'] < $result['max_users'];
-    }
-    
+
     /**
      * اطلاعات کامل سازمان + اشتراک
      */
