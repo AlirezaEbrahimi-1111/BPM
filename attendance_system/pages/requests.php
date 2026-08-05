@@ -870,6 +870,11 @@ if (!empty($__uids)) {
     }
 }
 
+// جدیدترین درخواست‌ها ابتدا نمایش داده شوند
+usort($all_requests, function ($a, $b) {
+    return strtotime($b['created_at']) - strtotime($a['created_at']);
+});
+
 $requests_for_grid = [];
 $__type_labels = ['mission' => 'مأموریت', 'leave' => 'مرخصی', 'pass' => 'پاس', 'forget' => 'فراموشی', 'technical' => 'مشکل فنی'];
 foreach ($all_requests as $req) {
@@ -962,9 +967,6 @@ foreach ($all_requests as $req) {
         '_debug'         => "type={$type} status={$status} sub=" . ($req['substitute_approval'] ?? 'NULL') . " mgr=" . ($req['manager_approval'] ?? 'NULL') . " sup=" . ($req['supervisor_approval'] ?? 'NULL') . " can_del=" . ($can_delete ? '1' : '0'),
     ];
 }
-usort($all_requests, function ($a, $b) {
-    return strtotime($a['created_at']) - strtotime($b['created_at']);
-});
 
 // ادامه کدهای قبلی (status_info, type_labels, formatDateJalali)
 $status_info = [
@@ -1058,7 +1060,7 @@ function formatDateJalali($gregorianDate)
            📐 Layout دو ستونی
         ======================================== */
         .main-layout {
-            padding: 32px;
+            padding: 20px 32px;
             margin: 0 auto;
             display: block;
         }
@@ -1066,7 +1068,7 @@ function formatDateJalali($gregorianDate)
         .requests-section {
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 14px;
         }
 
         .attendance-sidebar {
@@ -1129,6 +1131,28 @@ function formatDateJalali($gregorianDate)
             font-weight: 700;
             color: var(--text-strong);
             padding-top: .5rem;
+        }
+
+        /* کارت‌های یک‌خطی: لیبل و مقدار در یک ردیف
+           ⚠️ specificity بالاتر از .stat-card لازم است، چون custom.css دوباره
+           (از طریق header.php) بعد از این <style> لود می‌شود و .stat-card{display:grid} دارد */
+        .stat-card.stat-card-inline {
+            display: flex !important;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .stat-card.stat-card-inline .stat-label {
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-card.stat-card-inline .stat-value {
+            padding-top: 0;
         }
 
         /* ======================================== 
@@ -1553,7 +1577,7 @@ function formatDateJalali($gregorianDate)
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(116, 76, 164, 0.1);
             overflow: hidden;
-            height: 700px;
+            height: 560px;
         }
 
         .attendance-table-header {
@@ -2224,14 +2248,14 @@ function formatDateJalali($gregorianDate)
         ======================================== */
         .status-with-timeline {
             cursor: pointer;
-            display: inline-block;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
         }
 
         .timeline-icon {
-            font-size: 12px;
-            opacity: 0.6;
+            font-size: 13px;
+            opacity: 0.8;
         }
 
         /* Tooltip Container - با JS کنترل میشه */
@@ -2614,6 +2638,10 @@ function formatDateJalali($gregorianDate)
             font-size: 13px;
         }
 
+        #requestsGrid .ag-cell {
+            font-size: 12.5px;
+        }
+
         #requestsGrid .req-actions-cell {
             display: flex !important;
             align-items: center;
@@ -2650,6 +2678,15 @@ function formatDateJalali($gregorianDate)
         #attendanceGrid .att-disabled {
             opacity: .55;
             cursor: default;
+        }
+
+        #attendanceGrid .att-today {
+            background: rgba(59, 130, 246, 0.10) !important;
+            box-shadow: inset 3px 0 0 #3B82F6;
+        }
+
+        #attendanceGrid .att-today.att-clickable:hover {
+            background: rgba(59, 130, 246, 0.16) !important;
         }
 
         #attendanceGrid .att-date-num {
@@ -2711,6 +2748,36 @@ function formatDateJalali($gregorianDate)
                     </button>
                 </div>
 
+                <!-- کارت‌های آماریِ شخصیِ کاربر جاری — ثابت در هر سه زبانه -->
+                <div class="page-header">
+                    <div class="stat-card stat-card-inline">
+                        <span class="stat-label">
+                        <i class="bi bi-info-circle" id="shortageInfoIcon" style="font-size:12px;color:#9CA3AF;cursor:help;" title=""></i>    
+                        کسری تا دیروز:
+                        </span>
+                        <span class="stat-value" style="color: #EF4444;" id="cardShortageHM">—</span>
+                    </div>
+                    <div class="stat-card stat-card-inline">
+                        <span class="stat-label">جریمهٔ کسری تا دیروز:</span>
+                        <span class="stat-value" style="color: #EF4444;" id="cardPenaltyToman">—</span>
+                    </div>
+                    <div class="stat-card stat-card-inline">
+                        <span class="stat-label">حقوق تا دیروز:</span>
+                        <span class="stat-value" style="color: #8B5CF6;" id="cardSalaryToman">—</span>
+                    </div>
+                    <div class="stat-card stat-card-inline">
+                        <span class="stat-label">
+                        <i class="bi bi-info-circle" id="monthCountInfoIcon" style="font-size:11px;cursor:help;color:#6B7280 !important;"></i>    
+                        درخواست‌های این ماه:
+                        </span>
+                        <span class="stat-value" id="cardCounts" style="color:#744CA4;">—</span>
+                    </div>
+                </div>
+                <script>
+                    const MY_USER_ID = <?php echo (int) $user_id; ?>;
+                    const MY_MONTHLY_SALARY = <?php echo (float) ($user['monthly_salary'] ?? 0); ?>;
+                </script>
+
                 <!-- بخش ورود و خروج -->
                 <div id="attendance-section">
                     <div class="attendance-sidebar">
@@ -2741,102 +2808,6 @@ function formatDateJalali($gregorianDate)
 
                 <!-- بخش درخواست‌های من -->
                 <div id="my-requests-section" style="display: none;">
-                    <!-- Header: عنوان + 4 کارت آماری (5×20%) -->
-                    <?php if (!($is_admin_role ?? false)): ?>
-                        <div class="page-header">
-                            <div class="stat-card">
-                                <div class="stat-label">ساعت کار تا دیروز</div>
-                                <div class="stat-value" style="color: #3B82F6;">
-                                    <?php echo $stats['work_hours']; ?>
-                                </div>
-                            </div>
-
-                            <div class="stat-card">
-                                <div class="stat-label">درخواست‌ تأیید شده</div>
-                                <div class="stat-value" style="color: #10B981;">
-                                    <?php echo englishToFarsiNumber($stats['approved_requests']); ?>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">در انتظار تأیید</div>
-                                <div class="stat-value" style="color: #F59E0B;">
-                                    <?php echo englishToFarsiNumber($stats['pending_count']); ?>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">رد شده ماه جاری</div>
-                                <div class="stat-value" style="color: #EF4444;">
-                                    <?php echo englishToFarsiNumber($stats['rejected_count']); ?>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">
-                                    کسری تا دیروز
-                                    <i class="bi bi-info-circle" id="shortageInfoIcon" style="font-size:12px;color:#9CA3AF;cursor:help;margin-right:4px;" title=""></i>
-                                </div>
-                                <div class="stat-value" style="color: #EF4444;" id="cardShortageHM">—</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">جریمهٔ کسری تا دیروز</div>
-                                <div class="stat-value" style="color: #EF4444; font-size: 15px;" id="cardPenaltyToman">—</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">حقوق تا دیروز</div>
-                                <div class="stat-value" style="color: #8B5CF6; font-size: 15px;" id="cardSalaryToman">—</div>
-                            </div>
-
-                            <div class="stat-card">
-                                <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px;">
-                                    <span class="stat-label" style="margin-bottom:0;">درخواست‌های این ماه</span>
-                                    <i class="bi bi-info-circle" id="monthCountInfoIcon" style="font-size:11px;cursor:help;color:#6B7280 !important;"></i>
-                                </div>
-                                <div class="stat-value" id="cardCounts" style="color:#744CA4;">—</div>
-                            </div>
-                            <script>
-                                const MY_USER_ID = <?php echo (int) $user_id; ?>;
-                                const MY_MONTHLY_SALARY = <?php echo (float) ($user['monthly_salary'] ?? 0); ?>;
-                            </script>
-
-                        </div>
-                    <?php else: ?>
-                        <!-- نمایش عنوان برای مدیران -->
-                        <div style="margin-bottom: 20px; padding: 14px 20px; background: linear-gradient(135deg, rgba(116,76,164,0.08) 0%, rgba(101,122,231,0.08) 100%); border-radius: 12px; border-right: 4px solid #744CA4;">
-                            <h5 style="margin: 0; color: #744CA4; font-weight: 700;">
-                                <i class="bi bi-people-fill me-2"></i>
-                                درخواست‌های همه کارمندان سازمان
-                            </h5>
-                        </div>
-                        <!-- کارت‌های آماریِ شخصیِ مدیر -->
-                        <div class="page-header">
-                            <div class="stat-card">
-                                <div class="stat-label">
-                                    کسری تا دیروز
-                                    <i class="bi bi-info-circle" id="shortageInfoIcon" style="font-size:12px;color:#6B7280;cursor:help;margin-right:4px;opacity:0.7;" title=""></i>
-                                </div>
-                                <div class="stat-value" style="color: #EF4444;" id="cardShortageHM">—</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">جریمهٔ کسری تا دیروز</div>
-                                <div class="stat-value" style="color: #EF4444; font-size: 15px;" id="cardPenaltyToman">—</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">حقوق تا دیروز</div>
-                                <div class="stat-value" style="color: #8B5CF6; font-size: 15px;" id="cardSalaryToman">—</div>
-                            </div>
-                            <div class="stat-card">
-                                <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px;">
-                                    <span class="stat-label" style="margin-bottom:0;">درخواست‌های این ماه</span>
-                                    <i class="bi bi-info-circle" id="monthCountInfoIcon" style="font-size:11px;cursor:help;color:#6B7280 !important;"></i>
-                                </div>
-                                <div class="stat-value" id="cardCounts" style="color:#744CA4;">—</div>
-                            </div>
-                        </div>
-                        <script>
-                            const MY_USER_ID = <?php echo (int) $user_id; ?>;
-                            const MY_MONTHLY_SALARY = <?php echo (float) ($user['monthly_salary'] ?? 0); ?>;
-                        </script>
-                    <?php endif; ?>
-
                     <!-- Controls -->
                     <div class="controls">
                         <div class="search-box">
@@ -2924,7 +2895,7 @@ function formatDateJalali($gregorianDate)
                     <!-- Table -->
                     <div class="table-container">
                         <div class="table-scroll">
-                            <div id="requestsGrid" class="ag-theme-alpine" style="width:100%;height:600px;"></div>
+                            <div id="requestsGrid" class="ag-theme-alpine" style="width:100%;height:560px;"></div>
                         </div>
 
                         <!-- Pagination -->
@@ -2938,7 +2909,7 @@ function formatDateJalali($gregorianDate)
                 <div id="pending-approvals-section" style="display: none;">
 
                     <div class="table-container">
-                        <div id="pendingApprovalsGrid" class="ag-theme-alpine" style="width:100%;height:520px;"></div>
+                        <div id="pendingApprovalsGrid" class="ag-theme-alpine" style="width:100%;height:560px;"></div>
                     </div>
                 </div><!-- پایان pending-approvals-section -->
 
@@ -3247,7 +3218,7 @@ function formatDateJalali($gregorianDate)
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>توضیحات مشکل</label>
+                            <label class="required">توضیحات مشکل</label>
                             <textarea id="forgetPasswordDesc" placeholder="توضیح مشکل خود را درج کنید..."
                                 required></textarea>
                         </div>
@@ -3322,10 +3293,10 @@ function formatDateJalali($gregorianDate)
             function statusBadge(d) {
                 const tl = `onclick="showTimeline(${d.id}, '${d.type}', event)"`;
                 if (d.status === 'pending')
-                    return `<span class="status-badge status-with-timeline" style="color:#F59E0B;" ${tl}>${esc(d.status_label)}<i class="bi bi-clock-history timeline-icon"></i></span>`;
+                    return `<span class="status-badge status-with-timeline" style="color:#F59E0B;" ${tl}><i class="bi bi-hourglass-split timeline-icon"></i>${esc(d.status_label)}</span>`;
                 if (d.status === 'rejected') {
                     const rr = d.reject_reason ? `<i class="bi bi-chat-dots reject-reason-icon" data-tooltip="${esc(d.reject_reason)}"></i>` : '';
-                    return `<span class="status-badge status-with-timeline" style="color:#EF4444;" ${tl}>رد شده ${rr}</span>`;
+                    return `<span class="status-badge status-with-timeline" style="color:#EF4444;" ${tl}>${rr} رد شده</span>`;
                 }
                 if (d.status === 'approved')
                     return `<span class="status-badge status-with-timeline" style="color:#10B981;" ${tl}>تأیید شده</span>`;
@@ -3673,67 +3644,6 @@ function formatDateJalali($gregorianDate)
 
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-
-        // ============================================
-        // Pagination
-        // ============================================
-        let currentPage = 1;
-        const itemsPerPage = 13;
-        let filteredRows = [];
-
-        function initPagination() {
-            filteredRows = Array.from(document.querySelectorAll('.request-row')).filter(row => row.style.display !== 'none');
-            const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
-            currentPage = 1;
-            renderPagination(totalPages);
-            showPage(currentPage);
-        }
-
-        function renderPagination(totalPages) {
-            const container = document.getElementById('paginationContainer');
-            if (totalPages <= 1) {
-                container.style.display = 'none';
-                return;
-            }
-            container.style.display = 'flex';
-
-            let html = '';
-
-            // دکمه قبلی
-            html += `<button class="pagination-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>قبلی</button>`;
-
-            // شماره صفحات
-            for (let i = 1; i <= totalPages; i++) {
-                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
-                    html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${convertToFarsiNumber(i)}</button>`;
-                } else if (i === currentPage - 3 || i === currentPage + 3) {
-                    html += `<span style="padding: 0 8px; color: #94A3B8;">...</span>`;
-                }
-            }
-
-            // دکمه بعدی
-            html += `<button class="pagination-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>بعدی</button>`;
-
-            container.innerHTML = html;
-        }
-
-        function changePage(page) {
-            const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
-            if (page < 1 || page > totalPages) return;
-
-            currentPage = page;
-            showPage(page);
-            renderPagination(totalPages);
-        }
-
-        function showPage(page) {
-            const start = (page - 1) * itemsPerPage;
-            const end = start + itemsPerPage;
-
-            filteredRows.forEach((row, index) => {
-                row.style.display = (index >= start && index < end) ? '' : 'none';
-            });
         }
 
 
@@ -4102,7 +4012,11 @@ function formatDateJalali($gregorianDate)
                         suppressRowHoverHighlight: true,
                         columnDefs: columnDefs,
                         rowData: data.days,
-                        getRowClass: p => p.data.is_holiday ? 'att-holiday' : (p.data._canClick ? 'att-clickable' : 'att-disabled'),
+                        getRowClass: p => {
+                            let cls = p.data.is_holiday ? 'att-holiday' : (p.data._canClick ? 'att-clickable' : 'att-disabled');
+                            if (p.data.date === todayStr2) cls += ' att-today';
+                            return cls;
+                        },
                         onRowClicked: e => {
                             if (!e.data.is_holiday && e.data._canClick) {
                                 openModalWithDate(e.data.date, e.data.jalali_date);
@@ -4500,6 +4414,13 @@ function formatDateJalali($gregorianDate)
                 e.preventDefault();
             }
             const submitBtn = document.getElementById('submitBtn');
+            const form = document.getElementById('requestForm');
+            const editId = form.getAttribute('data-edit-id');
+            // ✅ در صورت رد شدنِ اعتبارسنجی، دکمه باید به همین حالت برگردد
+            const resetSubmitBtn = () => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = editId ? 'ذخیره تغییرات' : 'ارسال درخواست';
+            };
             // ✅ قفل کردن دکمه در همان لحظه اول
             submitBtn.disabled = true;
             submitBtn.textContent = 'در حال ارسال...';
@@ -4530,11 +4451,13 @@ function formatDateJalali($gregorianDate)
 
                 if (!startDate || !startTime || !endTime || !desc) {
                     alert('❌ لطفاً تمام فیلدها را پر کنید');
+                    resetSubmitBtn();
                     return;
                 }
 
                 if (!validateTimeRange(startTime, endTime)) {
                     alert('❌ ساعت پایان باید بعد از ساعت شروع باشد');
+                    resetSubmitBtn();
                     return;
                 }
                 // ✅ اعتبارسنجی سقف ساعت مأموریت در ماه
@@ -4548,6 +4471,7 @@ function formatDateJalali($gregorianDate)
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
                             alert('❌ ' + checkData.message);
+                            resetSubmitBtn();
                             return;
                         }
                     } catch (e) {
@@ -4569,6 +4493,7 @@ function formatDateJalali($gregorianDate)
                 const substituteId = document.getElementById('leaveSubstitute').value;
                 if (!substituteId) {
                     alert('❌ لطفاً جانشین را انتخاب کنید');
+                    resetSubmitBtn();
                     return;
                 }
                 // ✅ اگر تاریخ پایان خالی یا null بود، از تاریخ شروع استفاده کن
@@ -4585,11 +4510,13 @@ function formatDateJalali($gregorianDate)
 
                 if (!startDate || !startTime || !endTime || !reason) {
                     alert('❌ لطفاً تمام فیلدها را پر کنید');
+                    resetSubmitBtn();
                     return;
                 }
                 // اگر تاریخ شروع و پایان یکی باشد، ساعت را چک کن
                 if (startDate === endDate && !validateTimeRange(startTime, endTime)) {
                     alert('❌ ساعت پایان باید بعد از ساعت شروع باشد');
+                    resetSubmitBtn();
                     return;
                 }
 
@@ -4622,10 +4549,12 @@ function formatDateJalali($gregorianDate)
 
                 if (!passDate || !startTime || !endTime || !reason) {
                     alert('❌ لطفاً تمام فیلدها را پر کنید');
+                    resetSubmitBtn();
                     return;
                 }
                 if (!validateTimeRange(startTime, endTime)) {
                     alert('❌ ساعت پایان باید بعد از ساعت شروع باشد');
+                    resetSubmitBtn();
                     return;
                 }
                 // ✅ اعتبارسنجی سقف تعداد پاس در ماه
@@ -4639,17 +4568,20 @@ function formatDateJalali($gregorianDate)
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
                             alert('❌ ' + checkData.message);
+                            resetSubmitBtn();
                             return; // متوقف کردن ارسال
                         }
                         // اگر سرور پاسخی جز success داد
                         if (!checkData.success) {
                             alert('❌ خطایی در بررسی سقف رخ داد. لطفاً دوباره تلاش کنید.');
+                            resetSubmitBtn();
                             return;
                         }
                     } catch (e) {
                         console.error('خطا در بررسی سقف:', e);
                         // ✅ این بسیار مهم است: اگر اینترنت قطع شد یا سرور ارور داد، اجازه ثبت نده!
                         alert('❌ خطا در ارتباط با سرور برای بررسی محدودیت‌ها. درخواست ثبت نشد.');
+                        resetSubmitBtn();
                         return;
                     }
                 }
@@ -4661,6 +4593,7 @@ function formatDateJalali($gregorianDate)
                     const durationHours = (endMinutes - startMinutes) / 60;
                     if (durationHours > APP_SETTINGS.pass_max_hours_daily) {
                         alert('❌ مدت زمان پاس بیشتر از حداکثر مجاز (' + APP_SETTINGS.pass_max_hours_daily + ' ساعت) است');
+                        resetSubmitBtn();
                         return;
                     }
                 }
@@ -4679,10 +4612,12 @@ function formatDateJalali($gregorianDate)
 
                 if (!date || !startTime || !endTime || !desc) {
                     alert('❌ لطفاً تمام فیلدها را پر کنید');
+                    resetSubmitBtn();
                     return;
                 }
                 if (!validateTimeRange(startTime, endTime)) {
                     alert('❌ ساعت پایان باید بعد از ساعت شروع باشد');
+                    resetSubmitBtn();
                     return;
                 }
                 // ✅ اعتبارسنجی سقف فراموشی در ماه
@@ -4696,6 +4631,7 @@ function formatDateJalali($gregorianDate)
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
                             alert('❌ ' + checkData.message);
+                            resetSubmitBtn();
                             return;
                         }
                     } catch (e) {
@@ -4716,10 +4652,12 @@ function formatDateJalali($gregorianDate)
 
                 if (!date || !startTime || !endTime || !desc) {
                     alert('❌ لطفاً تمام فیلدها را پر کنید');
+                    resetSubmitBtn();
                     return;
                 }
                 if (!validateTimeRange(startTime, endTime)) {
                     alert('❌ ساعت پایان باید بعد از ساعت شروع باشد');
+                    resetSubmitBtn();
                     return;
                 }
                 // ✅ اعتبارسنجی سقف مشکل فنی در ماه
@@ -4733,6 +4671,7 @@ function formatDateJalali($gregorianDate)
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
                             alert('❌ ' + checkData.message);
+                            resetSubmitBtn();
                             return;
                         }
                     } catch (e) {
@@ -4807,78 +4746,6 @@ function formatDateJalali($gregorianDate)
             }
         }
 
-        // ============================================
-        // تابع مرکزی فیلتر - همه فیلترها از اینجا اعمال میشن
-        // ============================================
-        function applyAllFilters() {
-            // 1. وضعیت فعال
-            const activeFilterBtn = document.querySelector('.filter-btn.active');
-            const statusFilter = activeFilterBtn ?
-                (activeFilterBtn.textContent.includes('همه') ? 'all' :
-                    activeFilterBtn.textContent.includes('انتظار') ? 'pending' :
-                    activeFilterBtn.textContent.includes('تایید') ? 'approved' : 'rejected') :
-                'all';
-
-            // 2. فیلتر کارمند یا واحد
-            const employeeSelect = document.getElementById('employeeFilter');
-            const empVal = employeeSelect ? employeeSelect.value : '';
-            let selectedUserId = '',
-                selectedSection = '';
-            if (empVal.indexOf('section:') === 0) {
-                selectedSection = empVal.slice(8);
-            } else {
-                selectedUserId = empVal;
-            }
-            const secMap = window.USER_SECTION_MAP || {};
-
-            // 3. فیلتر ماه جاری
-            const monthFilterChecked = document.getElementById('currentMonthFilter')?.checked || false;
-            let startOfMonth = null;
-            if (monthFilterChecked) {
-                const today = new Date();
-                const [jy, jm] = gregorianToJalaliJS(today.getFullYear(), today.getMonth() + 1, today.getDate());
-                const [sGy, sGm, sGd] = jalaliToGregorianJS(jy, jm, 1);
-                startOfMonth = new Date(sGy, sGm - 1, sGd);
-            }
-
-            // اعمال همه فیلترها به هر ردیف از صفر
-            document.querySelectorAll('.request-row').forEach(row => {
-                let visible = true;
-
-                // فیلتر وضعیت
-                if (statusFilter !== 'all') {
-                    const rowStatus = row.getAttribute('data-status');
-                    if (rowStatus !== statusFilter) visible = false;
-                }
-
-                // فیلتر کارمند
-                if (visible && selectedUserId) {
-                    const rowUserId = row.getAttribute('data-userid');
-                    if (rowUserId !== selectedUserId) visible = false;
-                }
-                // فیلتر واحد
-                if (visible && selectedSection) {
-                    const rowUserId = row.getAttribute('data-userid');
-                    if (String(secMap[rowUserId]) !== selectedSection) visible = false;
-                }
-
-                // فیلتر ماه جاری
-                if (visible && startOfMonth) {
-                    const dateStr = row.getAttribute('data-date');
-                    if (dateStr) {
-                        const rowDate = new Date(dateStr);
-                        if (rowDate < startOfMonth) visible = false;
-                    }
-                }
-
-                row.style.display = visible ? '' : 'none';
-            });
-
-            initPagination();
-        }
-        // پیش‌فرض هنگام لود: فقط ماه جاری
-        document.addEventListener('DOMContentLoaded', applyAllFilters);
-
         function filterByStatus(status) {
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
@@ -4946,17 +4813,7 @@ function formatDateJalali($gregorianDate)
             return [gy, gm, gd];
         }
 
-        // جستجو
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('searchInput').addEventListener('input', (e) => {
-                const query = e.target.value.toLowerCase();
-                document.querySelectorAll('.request-row').forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(query) ? '' : 'none';
-                });
-
-                initPagination();
-            });
             setTimeout(function() {
 
                 buildAttMonthSelector();
@@ -5154,7 +5011,7 @@ function formatDateJalali($gregorianDate)
                         opacity: '0.6'
                     } : null,
                     onPaginationChanged: () => persianizePaging(),
-                    overlayNoRowsTemplate: '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;"><div style="font-size:48px;margin-bottom:12px;">✅</div><div style="font-size:16px;font-weight:600;color:#10B981;">هیچ درخواستی منتظر تأیید شما نیست</div></div>'
+                    overlayNoRowsTemplate: '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;"><div style="width:64px;height:64px;border-radius:50%;background:#ECFDF5;display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><i class="bi bi-check-circle" style="font-size:30px;color:#10B981;"></i></div><div style="font-size:15px;font-weight:600;color:#10B981;">هیچ درخواستی منتظر تأیید شما نیست</div></div>'
                 });
                 window.__pendingGridApi = pendingGridApi;
             } else {

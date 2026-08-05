@@ -30,7 +30,7 @@ try {
     $db = $database->getConnection();
 
     // اطلاعات کاربر
-    $stmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
+    $stmt = $db->prepare("SELECT organization_id, role FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$currentUser) throw new Exception("User not found");
@@ -53,6 +53,12 @@ try {
         $priority_id = (int)($input['priority_id'] ?? 2);
         $category_id = !empty($input['category_id']) ? (int)$input['category_id'] : null;
         $task_id     = !empty($input['task_id']) ? (int)$input['task_id'] : null;
+    }
+
+    // 🔒 اولویت «بحرانی» (4) فقط برای مدیران/سوپروایزرها مجاز است؛ کارمند عادی
+    // حتی با ارسال دستی priority_id=4 نمی‌تواند آن را ثبت کند
+    if ($priority_id === 4 && ($currentUser['role'] ?? 'employee') === 'employee') {
+        $priority_id = 3;
     }
 
     // 🔒 اگر تسکی برای پیوست انتخاب شده، فقط وقتی معتبر است که واقعاً به همین کاربر
@@ -154,19 +160,22 @@ try {
     ");
     $stmt->execute([$ticketId, $user_id, $ticketNumber]);
 
-    // ─── ارسال نوتیفیکیشن به assigned_to (user_id=1) ───
+    // ─── ارسال نوتیفیکیشن + پیامک به assigned_to (user_id=1) ───
     $stmt = $db->prepare("SELECT CONCAT(first_name, ' ', last_name) as name FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $creatorName = $stmt->fetch(PDO::FETCH_ASSOC)['name'] ?? 'کاربر';
 
-    $stmt = $db->prepare("
-        INSERT INTO notifications (user_id, title, message, type, link, is_read, created_at)
-        VALUES (1, ?, ?, 'info', ?, 0, NOW())
-    ");
-    $stmt->execute([
-        'تیکت جدید: ' . $ticketNumber,
-        $creatorName . ' یک تیکت جدید ثبت کرد: ' . $subject,
-        '/pages/ticket-detail.php?id=' . $ticketId
+    $notification = new Notification($db);
+    $notification->create([
+        'to_user_id'   => 1,
+        'title'        => 'تیکت جدید: ' . $ticketNumber,
+        'message'      => $creatorName . ' یک تیکت جدید ثبت کرد: ' . $subject,
+        'type'         => 'info',
+        'link'         => '/pages/ticket-detail.php?id=' . $ticketId,
+        'related_type' => 'ticket',
+        'related_id'   => $ticketId,
+        'sms_pattern'  => 'ticket_created',
+        'sms_args'     => [$ticketNumber, $creatorName],
     ]);
 
     $db->commit();

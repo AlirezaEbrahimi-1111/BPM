@@ -1,5 +1,17 @@
 <?php require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
 require_once '../includes/version.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
+
+// 🔒 اولویت «بحرانی» فقط برای مدیران/سوپروایزرها قابل انتخاب است، نه کارمند عادی
+$currentUserRole = 'employee';
+if (!empty($_SESSION['user_id'])) {
+    $database = new Database();
+    $db = $database->getConnection();
+    $stmt = $db->prepare("SELECT role FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $currentUserRole = $stmt->fetchColumn() ?: 'employee';
+}
+$canSetCriticalPriority = ($currentUserRole !== 'employee');
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -374,7 +386,9 @@ require_once '../includes/version.php';
                                 <option value="1">کم</option>
                                 <option value="2" selected>متوسط</option>
                                 <option value="3">بالا</option>
+                                <?php if ($canSetCriticalPriority): ?>
                                 <option value="4">بحرانی</option>
+                                <?php endif; ?>
                             </select>
                         </div>
                         <div>
