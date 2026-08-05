@@ -64,8 +64,9 @@ class Auth
                 $subscription = $subStmt->fetch(PDO::FETCH_ASSOC);
             
                 if (!$subscription || strtotime($subscription['end_date']) < time()) {
+                    error_log("Login blocked - subscription expired | user_id={$user['id']} | organization_id={$user['organization_id']} | expired_date=" . ($subscription['end_date'] ?? 'none'));
                     return [
-                        'success' => false, 
+                        'success' => false,
                         'message' => 'اشتراک سازمان شما منقضی شده است',
                         'expired_date' => $subscription['end_date'] ?? null
                     ];
@@ -284,6 +285,7 @@ class Auth
             $expectedSignature = hash_hmac('sha256', $parts[0] . "." . $parts[1], $this->secret_key, true);
 
             if (!hash_equals($signature, $expectedSignature)) {
+                error_log("JWT signature mismatch (possible tampering) | ip=" . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
                 return false;
             }
 

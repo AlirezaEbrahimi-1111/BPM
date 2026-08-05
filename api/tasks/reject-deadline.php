@@ -56,6 +56,7 @@ try {
         && (int)$me['organization_id'] === (int)$request['organization_id'];
 
     if ((int)($request['current_approver_id'] ?? 0) !== (int)$user_id && !$isManager) {
+        error_log("reject-deadline denied (not approver/manager) | user_id={$user_id} | request_id={$request_id} | task_id={$request['task_id']} | current_approver_id=" . ($request['current_approver_id'] ?? 'null') . " | isManager=" . ($isManager ? '1' : '0'));
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'شما مجاز به رد این درخواست نیستید']);
         exit;

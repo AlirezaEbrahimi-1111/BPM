@@ -115,6 +115,7 @@ try {
     }
 
     if (!$can_delete) {
+        error_log("Attendance request delete denied ({$error_message}) | user_id={$user_id} | request_id={$request_id} | request_type={$request_type}");
         echo json_encode(['success' => false, 'message' => $error_message]);
         exit;
     }

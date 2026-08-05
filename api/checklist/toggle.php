@@ -123,6 +123,7 @@ try {
                 $user_id, null, $histNote
             );
         } catch (Exception $hErr) {
+            error_log("checklist history write error: " . $hErr->getMessage() . " | item_id={$item_id} | task_id={$row['task_id']}");
         }
     }
 
@@ -137,6 +138,7 @@ try {
                 notifyChecklistItemDone($db, $itemRow, $task, $user_id);
             }
         } catch (Exception $notifyErr) {
+            error_log("notifyChecklistItemDone error: " . $notifyErr->getMessage() . " | item_id={$item_id} | task_id={$row['task_id']}");
         }
     }
     // 🆕 شروعِ خودکارِ کار با اولین تیکِ چک‌لیست — هم برای تسک معمولی، هم مرحلهٔ روتین.
@@ -204,6 +206,7 @@ try {
         'total' => $p['total']
     ], JSON_UNESCAPED_UNICODE);
 } catch (Exception $e) {
+    error_log("checklist toggle error: " . $e->getMessage() . " | user_id=" . ($user_id ?? 'n/a') . " | item_id=" . ($item_id ?? 'n/a'));
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور']);
 }

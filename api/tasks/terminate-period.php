@@ -46,6 +46,7 @@ try {
 
     // فقط تعریف‌کننده مجاز است
     if ($task['creator_id'] != $user_id) {
+        error_log("terminate-period.php denied | user_id={$user_id} | task_id={$task_id}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'فقط تعریف‌کننده کار مجاز به اتمام آن است']);
         exit;
@@ -76,6 +77,7 @@ try {
     $result = $stmt->execute([$task_id]);
 
     if (!$result) {
+        error_log("terminate-period.php UPDATE failed | user_id={$user_id} | task_id={$task_id}");
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'خطا در اتمام کار']);
         exit;

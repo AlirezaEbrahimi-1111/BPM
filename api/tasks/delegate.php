@@ -34,6 +34,7 @@ try {
 
     $task = $taskManager->getTask($input['task_id']);
     if (!$task || ($task['assignee_id'] != $user_id && $task['creator_id'] != $user_id)) {
+        error_log("delegate.php denied | user_id={$user_id} | task_id={$input['task_id']}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
         exit;
@@ -80,6 +81,7 @@ try {
 
         http_response_code(200);
     } else {
+        error_log("delegate.php delegateTask failed | user_id={$user_id} | task_id={$input['task_id']} | to_user_id={$input['to_user_id']} | message=" . ($result['message'] ?? ''));
         http_response_code(400);
     }
 

@@ -19,6 +19,7 @@ function requireAuth() {
     $user_id = $auth->getUserFromToken();
     
     if (!$user_id) {
+        error_log('Auth failed - invalid or missing token | uri=' . ($_SERVER['REQUEST_URI'] ?? 'unknown') . ' | ip=' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
         http_response_code(401);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([

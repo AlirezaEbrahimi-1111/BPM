@@ -34,6 +34,7 @@ $stmt->execute([$payment_id, $authority]);
 $payment = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$payment) {
+    error_log('Payment callback: no matching payment record | pid=' . $payment_id . ' | authority=' . $authority . ' | ip=' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
     header('Location: ' . $panel . '?payment=notfound');
     exit;
 }
@@ -55,6 +56,7 @@ if ($status !== 'OK') {
 $verify = zarinpal_verify((int)$payment['amount'], $authority);
 
 if (!$verify['ok']) {
+    error_log('Payment verify failed | pid=' . $payment_id . ' | authority=' . $authority . ' | organization_id=' . ($payment['organization_id'] ?? 'unknown') . ' | error=' . json_encode($verify['error'] ?? null, JSON_UNESCAPED_UNICODE));
     $db->prepare("UPDATE payments SET status='failed' WHERE id=?")->execute([$payment_id]);
     header('Location: ' . $panel . '?payment=failed');
     exit;
@@ -101,6 +103,7 @@ try {
 
 } catch (Exception $e) {
     $db->rollBack();
+    error_log('CRITICAL: payment verified by Zarinpal but DB commit failed | pid=' . $payment_id . ' | ref_id=' . ($verify['ref_id'] ?? 'unknown') . ' | organization_id=' . ($payment['organization_id'] ?? 'unknown') . ' | error=' . $e->getMessage());
     header('Location: ' . $panel . '?payment=error');
     exit;
 }

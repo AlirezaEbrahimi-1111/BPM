@@ -37,6 +37,7 @@ try {
         exit;
     }
     if ((int)$task['creator_id'] !== (int)$user_id) {
+        error_log("update-group.php denied | user_id={$user_id} | task_id={$task_id}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'فقط تعریف‌کننده کار می‌تواند گروه را تغییر دهد']);
         exit;

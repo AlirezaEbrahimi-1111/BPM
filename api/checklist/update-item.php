@@ -137,10 +137,12 @@ try {
                 addChecklistEvent($db, $row['task_id'], 'checklist_assigned', $user_id, $toId, $note, $sectionKey);
             }
         } catch (Exception $notifyErr) {
+            error_log("notifyChecklistAssignee error: " . $notifyErr->getMessage() . " | item_id={$item_id} | task_id={$row['task_id']}");
         }
     }
     echo json_encode(['success' => true, 'message' => 'آیتم به‌روزرسانی شد'], JSON_UNESCAPED_UNICODE);
 } catch (Exception $e) {
+    error_log("checklist update-item error: " . $e->getMessage() . " | user_id=" . ($user_id ?? 'n/a') . " | item_id=" . ($item_id ?? 'n/a'));
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور']);
 }

@@ -81,6 +81,7 @@ try {
     
 } catch (Exception $e) {
     http_response_code(500);
+    error_log("reports/list.php failed | " . $e->getMessage());
     echo json_encode([
         'success' => false,
         'message' => 'خطای سرور',

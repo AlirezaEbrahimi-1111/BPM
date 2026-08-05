@@ -153,5 +153,6 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
+    error_log("organization/my-org-data.php failed | " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'خطای سرور'], JSON_UNESCAPED_UNICODE);
 }

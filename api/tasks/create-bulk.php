@@ -128,6 +128,7 @@ try {
     $distinctSections = (int)$stmt->fetchColumn();
 
     if (($creator['role'] ?? '') !== 'supervisor' && $distinctSections > 1) {
+        error_log("create-bulk.php denied (multi-section) | user_id={$user_id} | role={$creator['role']} | distinctSections={$distinctSections}");
         ob_end_clean();
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'فقط سرپرست می‌تواند برای همهٔ واحدها/کاربران کار ایجاد کند']);

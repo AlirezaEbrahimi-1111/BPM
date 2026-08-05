@@ -74,6 +74,7 @@ try {
 
     if (!$isCreator && !$isSuperAdmin) {
         http_response_code(403);
+        error_log("Ticket reply denied | user_id={$user_id} | ticket_id={$ticketId}");
         echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
         exit;
     }

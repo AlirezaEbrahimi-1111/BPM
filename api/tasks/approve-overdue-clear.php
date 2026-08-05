@@ -62,6 +62,7 @@ try {
         && in_array($me['role'], ['management', 'supervisor', 'admin'], true)
         && (int)$me['organization_id'] === (int)$req['organization_id'];
     if ((int)$req['current_approver_id'] !== $user_id && !$isManager) {
+        error_log("approve-overdue-clear denied (cross-org/not-approver, isManager check failed) | user_id={$user_id} | request_id={$request_id} | task_id={$req['task_id']} | current_approver_id={$req['current_approver_id']} | isManager=" . ($isManager ? '1' : '0'));
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'شما مجاز به تأیید این درخواست نیستید'], JSON_UNESCAPED_UNICODE);
         exit;

@@ -19,6 +19,7 @@ function checkLoginAttempts($ip) {
     }
 
     if ($data['count'] >= 5) {
+        error_log("Login rate limit exceeded | ip={$ip}");
         return false;
     }
 

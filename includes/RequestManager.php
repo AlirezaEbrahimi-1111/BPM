@@ -226,6 +226,7 @@ class RequestManager {
             // بررسی مجوز تأیید
             $canApprove = $this->canUserApprove($request, $user_id);
             if (!$canApprove['can_approve']) {
+                error_log("RequestManager::approveRequest denied | user_id={$user_id} | request_id={$request_id} | reason=" . $canApprove['message']);
                 return ['success' => false, 'message' => $canApprove['message']];
             }
             
@@ -249,8 +250,9 @@ class RequestManager {
                 ];
             }
             
+            error_log("RequestManager::approveRequest INSERT failed | user_id={$user_id} | request_id={$request_id}");
             return ['success' => false, 'message' => 'خطا در ثبت تأیید'];
-            
+
         } catch (Exception $e) {
             error_log("ApproveRequest error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطای سرور'];

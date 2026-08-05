@@ -64,6 +64,7 @@ try {
 
     // ── 2. بررسی دسترسی: فقط تعریف‌کننده ───────────────
     if ($request['reviewer_id'] != $user_id) {
+        error_log("review-termination denied (not reviewer) | user_id={$user_id} | request_id={$request_id} | task_id={$request['task_id']} | reviewer_id={$request['reviewer_id']}");
         echo json_encode(['success' => false, 'message' => 'فقط تعریف‌کننده کار می‌تواند بررسی کند']);
         exit;
     }

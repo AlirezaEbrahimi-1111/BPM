@@ -68,6 +68,7 @@ try {
 
     // چک دسترسی - فقط کسی که آپلود کرده
     if ($attachment['uploaded_by'] != $user_id) {
+        error_log("rename-attachment.php denied | user_id={$user_id} | attachment_id={$attachment_id}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'فقط کسی که فایل را آپلود کرده می‌تواند نام آن را ویرایش کند']);
         exit;

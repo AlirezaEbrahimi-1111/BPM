@@ -54,6 +54,7 @@ try {
 
     // فقط وقتی کار در انتظار تأیید است
     if ($task['status'] !== 'pending_approval' || !$task['is_pending_approval']) {
+        error_log("approve-and-keep denied (wrong task status) | user_id={$user_id} | task_id={$input['task_id']} | status={$task['status']} | is_pending_approval=" . ($task['is_pending_approval'] ? '1' : '0'));
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'این کار در وضعیت انتظار تأیید نیست']);
         exit;
@@ -61,6 +62,7 @@ try {
 
     // فقط تعریف‌کننده کار مجاز است
     if ($task['creator_id'] != $user_id) {
+        error_log("approve-and-keep denied (not creator) | user_id={$user_id} | task_id={$input['task_id']} | creator_id={$task['creator_id']}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'فقط تعریف‌کننده کار می‌تواند این عمل را انجام دهد']);
         exit;

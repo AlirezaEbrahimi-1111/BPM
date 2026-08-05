@@ -122,6 +122,7 @@ try {
         'id' => intval($db->lastInsertId())
     ], JSON_UNESCAPED_UNICODE);
 } catch (Exception $e) {
+    error_log("Announcement create error: " . $e->getMessage() . " | user_id={$user_id} | scope={$scope} | org_id=" . ($orgId ?? 'n/a'));
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
 }

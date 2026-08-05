@@ -47,6 +47,7 @@ try {
     $isCreator = ($task['creator_id'] == $user_id);
     $isManager = ($u && in_array($u['role'], ['management', 'supervisor']));
     if (!$isCreator && !$isManager) {
+        error_log("tasks_restore.php denied | user_id={$user_id} | task_id={$task_id}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'اجازه بازگردانی این تسک را ندارید'], JSON_UNESCAPED_UNICODE);
         exit;

@@ -34,9 +34,10 @@ try {
     if ($result['success']) {
         http_response_code(200);
     } else {
+        error_log("update.php updateTask failed | user_id={$user_id} | task_id={$input['task_id']} | message=" . ($result['message'] ?? ''));
         http_response_code(400);
     }
-    
+
     echo json_encode($result);
     
 } catch (Exception $e) {

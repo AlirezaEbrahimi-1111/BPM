@@ -89,6 +89,8 @@ function zarinpal_verify(int $amount, string $authority): array {
         ];
     }
 
+    error_log('Zarinpal verify failed | authority=' . $authority . ' | amount=' . $amount . ' | code=' . $code . ' | errors=' . json_encode($res['errors'] ?? null, JSON_UNESCAPED_UNICODE));
+
     return ['ok' => false, 'error' => $res['errors'] ?? 'verify_failed'];
 }
 

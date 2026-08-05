@@ -47,6 +47,7 @@ try {
     // ✅ چک دسترسی حذف:
     // 1. فقط آپلودکننده فایل
     if ($attachment['uploaded_by'] != $user_id) {
+        error_log("delete-attachment.php denied (not uploader) | user_id={$user_id} | attachment_id={$attachment_id} | task_id={$attachment['task_id']}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'فقط آپلودکننده فایل می‌تواند آن را حذف کند']);
         exit;
@@ -54,6 +55,7 @@ try {
 
     // 2. فقط assignee فعلی کار
     if ($attachment['assignee_id'] != $user_id) {
+        error_log("delete-attachment.php denied (not assignee) | user_id={$user_id} | attachment_id={$attachment_id} | task_id={$attachment['task_id']}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'فقط مسئول فعلی کار می‌تواند فایل حذف کند']);
         exit;
@@ -69,6 +71,7 @@ try {
     ");
     $stmt->execute([$attachment['task_id'], $attachment['created_at']]);
     if ($stmt->fetch()['cnt'] > 0) {
+        error_log("delete-attachment.php denied (post-delegation) | user_id={$user_id} | attachment_id={$attachment_id} | task_id={$attachment['task_id']}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'پس از ارجاع کار، امکان حذف فایل وجود ندارد']);
         exit;

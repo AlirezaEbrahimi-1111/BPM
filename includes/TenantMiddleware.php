@@ -17,10 +17,10 @@ class TenantMiddleware {
         if (!$user) {
             $this->sendError(401, 'توکن معتبر نیست');
         }
-        
+
         $org_id = (int)$user['organization_id'];
         if (!$org_id) {
-            $this->sendError(403, 'کاربر به سازمانی متصل نیست');
+            $this->sendError(403, 'کاربر به سازمانی متصل نیست', $user['id'] ?? null);
         }
         
         // بررسی وضعیت سازمان
@@ -38,17 +38,18 @@ class TenantMiddleware {
         $org = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$org || !$org['is_active']) {
-            $this->sendError(403, 'سازمان غیرفعال است');
+            $this->sendError(403, 'سازمان غیرفعال است', $user['id'] ?? null, $org_id);
         }
-        
+
         if (!$org['sub_active'] || strtotime($org['end_date']) < time()) {
-            $this->sendError(402, 'اشتراک شما منقضی شده است');
+            $this->sendError(402, 'اشتراک شما منقضی شده است', $user['id'] ?? null, $org_id);
         }
-        
+
         return $org_id;
     }
-    
-    private function sendError(int $code, string $message): void {
+
+    private function sendError(int $code, string $message, $user_id = null, $org_id = null): void {
+        error_log('TenantMiddleware denied | code=' . $code . ' | reason=' . $message . ' | user_id=' . ($user_id ?? 'unknown') . ' | organization_id=' . ($org_id ?? 'unknown') . ' | uri=' . ($_SERVER['REQUEST_URI'] ?? 'unknown') . ' | ip=' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
         http_response_code($code);
         echo json_encode([
             'success' => false,

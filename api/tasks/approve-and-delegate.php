@@ -58,12 +58,14 @@ try {
     }
 
     if ($task['status'] !== 'pending_approval' || !$task['is_pending_approval']) {
+        error_log("approve-and-delegate denied (wrong task status) | user_id={$user_id} | task_id={$input['task_id']} | status={$task['status']} | is_pending_approval=" . ($task['is_pending_approval'] ? '1' : '0'));
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'این کار در وضعیت انتظار تأیید نیست']);
         exit;
     }
 
     if ($task['assignee_id'] != $user_id) {
+        error_log("approve-and-delegate denied (not assignee) | user_id={$user_id} | task_id={$input['task_id']} | assignee_id={$task['assignee_id']}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'شما مجاز به تأیید این کار نیستید']);
         exit;
@@ -76,6 +78,7 @@ try {
     $toUser = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$toUser || (int)$toUser['organization_id'] !== (int)$task['organization_id']) {
+        error_log("approve-and-delegate denied (cross-org target user) | user_id={$user_id} | task_id={$input['task_id']} | to_user_id={$input['to_user_id']} | to_user_org=" . ($toUser['organization_id'] ?? 'null') . " | task_org={$task['organization_id']}");
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'کاربر مقصد یافت نشد']);
         exit;

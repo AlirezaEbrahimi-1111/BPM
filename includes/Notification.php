@@ -463,6 +463,7 @@ private function resolveSMSTemplate($data): array
             $stmt = $this->db->prepare("UPDATE notifications SET is_read = 1, read_at = NOW() WHERE id = ? AND user_id = ?");
             return $stmt->execute([$notification_id, $user_id]);
         } catch (Exception $e) {
+            error_log("Notification::markAsRead error: " . $e->getMessage());
             return false;
         }
     }
@@ -476,6 +477,7 @@ private function resolveSMSTemplate($data): array
             $stmt = $this->db->prepare("UPDATE notifications SET is_read = 1, read_at = NOW() WHERE user_id = ? AND is_read = 0");
             return $stmt->execute([$user_id]);
         } catch (Exception $e) {
+            error_log("Notification::markAllAsRead error: " . $e->getMessage());
             return false;
         }
     }
@@ -489,6 +491,7 @@ private function resolveSMSTemplate($data): array
             $stmt = $this->db->prepare("DELETE FROM notifications WHERE id = ? AND user_id = ?");
             return $stmt->execute([$notification_id, $user_id]);
         } catch (Exception $e) {
+            error_log("Notification::delete error: " . $e->getMessage());
             return false;
         }
     }

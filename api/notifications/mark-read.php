@@ -47,6 +47,7 @@ $database = new Database();
     
 } catch (Exception $e) {
     http_response_code(500);
+    error_log("notifications/mark-read.php failed | user_id=" . ($user_id ?? 'null') . " | id=" . ($input['id'] ?? 'null') . " | task_id=" . ($input['task_id'] ?? 'null') . " | " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>

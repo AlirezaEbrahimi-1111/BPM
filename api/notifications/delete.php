@@ -32,6 +32,7 @@ try {
     
 } catch (Exception $e) {
     http_response_code(500);
+    error_log("notifications/delete.php failed | user_id=" . ($user_id ?? 'null') . " | id=" . ($input['id'] ?? 'null') . " | " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>

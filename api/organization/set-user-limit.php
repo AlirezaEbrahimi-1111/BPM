@@ -44,5 +44,6 @@ try {
     echo json_encode(['success' => true, 'message' => "سقف کاربران به {$max} نفر تغییر کرد"], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
+    error_log("organization/set-user-limit.php failed | org_id={$org_id} | max_users={$max} | " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
 }

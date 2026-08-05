@@ -63,6 +63,7 @@ WHERE t.id = ? AND t.deleted_at IS NULL
 
     if (!$isSuperAdmin) {
         http_response_code(403);
+        error_log("Ticket status change denied | user_id={$user_id} | ticket_id={$ticketId}");
         echo json_encode(['success' => false, 'message' => 'فقط مدیر اصلی سیستم می‌تواند وضعیت را تغییر دهد']);
         exit;
     }

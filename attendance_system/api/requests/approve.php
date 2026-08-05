@@ -88,6 +88,7 @@ if ($check_table) {
         $working_days = countWorkingDaysBetween($created_date, date('Y-m-d'), $db);
 
         if ($working_days > 30) {
+            error_log("Attendance request approve denied (30-working-day deadline passed) | user_id={$user_id} | request_id={$request_id} | request_type={$request_type} | working_days={$working_days}");
             echo json_encode([
                 'success' => false,
                 'message' => 'مهلت تأیید/رد این درخواست (۳ روز کاری) گذشته است.'
@@ -272,6 +273,7 @@ try {
     }
 
     if (!$can_approve) {
+        error_log("Attendance request approve denied (unauthorized approver) | user_id={$user_id} | request_id={$request_id} | request_type={$request_type}");
         echo json_encode(['success' => false, 'message' => 'شما مجاز به تأیید این درخواست نیستید']);
         exit;
     }

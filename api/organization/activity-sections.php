@@ -100,6 +100,7 @@ if ($method === 'DELETE') {
     } catch (Exception $e) {
         $db->rollBack();
         http_response_code(500);
+        error_log("activity-sections.php DELETE failed | org_id={$org_id} | section_key={$key} | transfer_to={$transfer_to} | " . $e->getMessage());
         echo json_encode(['success' => false, 'message' => 'خطا در حذف واحد']);
     }
     exit;

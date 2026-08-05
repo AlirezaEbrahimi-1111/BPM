@@ -83,6 +83,7 @@ try {
     
 } catch (Exception $e) {
     http_response_code(500);
+    error_log("organization/register.php signup failed | phone=" . ($data['phone'] ?? 'null') . " | org_name=" . ($data['org_name'] ?? 'null') . " | " . $e->getMessage());
     echo json_encode([
         'success' => false,
         'message' => 'خطا در ثبت سازمان: ' . $e->getMessage()

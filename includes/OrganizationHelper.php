@@ -60,6 +60,7 @@ class OrganizationHelper {
             
         } catch (Exception $e) {
             $this->db->rollBack();
+            error_log("registerOrganization failed (rolled back) | phone=" . ($data['phone'] ?? 'null') . " | " . $e->getMessage());
             throw $e;
         }
     }

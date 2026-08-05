@@ -49,5 +49,6 @@ try {
     echo json_encode(['success' => true, 'message' => 'تیکت بازگردانده شد'], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
+    error_log("Ticket restore error: " . $e->getMessage() . " | user_id=" . ($user_id ?? 'n/a') . " | ticket_id=" . ($ticketId ?? 'n/a'));
     echo json_encode(['success' => false, 'message' => 'خطا در بازگردانی تیکت'], JSON_UNESCAPED_UNICODE);
 }

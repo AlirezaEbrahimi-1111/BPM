@@ -1122,25 +1122,31 @@ class WorkflowManager
             $delayed_workflows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // ارسال نوتیفیکیشن برای workflow های تأخیر داشته
+            // 🔒 هر آیتم جدا try/catch می‌شود تا خطای نوتیفیکیشنِ یک workflow،
+            // ارسال نوتیف بقیه‌ی workflowهای این اجرای کرون را متوقف نکند
             foreach ($delayed_workflows as $workflow) {
-                // نوتیف به ایجادکننده
-                $this->createNotification(
-                    $workflow['created_by'],
-                    'workflow_delayed',
-                    'کار روتین تأخیر دارد',
-                    "کار روتین '{$workflow['title']}' از زمان مقرر عقب افتاده است",
-                    "workflow-detail.php?id={$workflow['id']}",
-                    $workflow['id']
-                );
+                try {
+                    // نوتیف به ایجادکننده
+                    $this->createNotification(
+                        $workflow['created_by'],
+                        'workflow_delayed',
+                        'کار روتین تأخیر دارد',
+                        "کار روتین '{$workflow['title']}' از زمان مقرر عقب افتاده است",
+                        "workflow-detail.php?id={$workflow['id']}",
+                        $workflow['id']
+                    );
 
-                // نوتیف به مدیران
-                $this->notifyManagers(
-                    'workflow_delayed',
-                    'تأخیر در کار روتین',
-                    "کار روتین '{$workflow['title']}' تأخیر دارد",
-                    "workflow-detail.php?id={$workflow['id']}",
-                    $workflow['id']
-                );
+                    // نوتیف به مدیران
+                    $this->notifyManagers(
+                        'workflow_delayed',
+                        'تأخیر در کار روتین',
+                        "کار روتین '{$workflow['title']}' تأخیر دارد",
+                        "workflow-detail.php?id={$workflow['id']}",
+                        $workflow['id']
+                    );
+                } catch (Exception $e) {
+                    error_log("CheckDelays: notify failed for workflow_id={$workflow['id']} | " . $e->getMessage());
+                }
             }
 
             return ['success' => true, 'delayed_count' => count($delayed_workflows)];

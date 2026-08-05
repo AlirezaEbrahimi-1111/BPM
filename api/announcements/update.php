@@ -79,6 +79,7 @@ try {
 
     // ───── از این‌جا به بعد فقط مدیر/سوپروایزر یا سوپرادمین ─────
     if (!$canManage) {
+        error_log("Announcement update denied | user_id={$user_id} | action={$action}");
         ann_out(['success' => false, 'message' => 'دسترسی غیر مجاز'], 403);
     }
 
@@ -94,6 +95,7 @@ try {
 
         $sameOrg = ($row['organization_id'] !== null && (int)$row['organization_id'] === (int)$org);
         if (!$isSuper && !$sameOrg) {
+            error_log("Announcement delete denied | user_id={$user_id} | announcement_id={$id}");
             ann_out(['success' => false, 'message' => 'اجازهٔ حذف این اطلاعیه را ندارید'], 403);
         }
 
@@ -113,6 +115,7 @@ try {
 
     $sameOrg = ($row['organization_id'] !== null && (int)$row['organization_id'] === (int)$org);
     if (!$isSuper && !$sameOrg) {
+        error_log("Announcement edit denied | user_id={$user_id} | announcement_id={$id}");
         ann_out(['success' => false, 'message' => 'اجازهٔ ویرایش این اطلاعیه را ندارید'], 403);
     }
 
@@ -138,7 +141,7 @@ try {
     if (array_key_exists('scope', $input)) {
         $scope = $input['scope'];
         if ($scope === 'all_orgs') {
-            if (!$isSuper) ann_out(['success' => false, 'message' => 'فقط مدیر کل سیستم می‌تواند سراسری کند'], 403);
+            if (!$isSuper) { error_log("Announcement scope=all_orgs denied | user_id={$user_id} | announcement_id={$id}"); ann_out(['success' => false, 'message' => 'فقط مدیر کل سیستم می‌تواند سراسری کند'], 403); }
             $fields[] = "organization_id = :org_id"; $params[':org_id'] = null;
             $fields[] = "target_section = :tsec";    $params[':tsec'] = null;
         } elseif ($scope === 'section') {
@@ -166,6 +169,7 @@ try {
     ann_out(['success' => true, 'message' => 'اطلاعیه ویرایش شد']);
 
 } catch (Throwable $e) {
+    error_log("Announcement update error: " . $e->getMessage() . " | user_id=" . ($user_id ?? 'n/a'));
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
 }

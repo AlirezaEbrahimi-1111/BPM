@@ -55,6 +55,7 @@ try {
 
         if (!$result['success']) {
             // اگر completeStep خطا داد، از روش عادی استفاده می‌کنیم
+            error_log("update-status.php completeStep failed, falling back | user_id={$user_id} | task_id={$input['task_id']} | status={$input['status']} | message=" . ($result['message'] ?? ''));
             $result = $taskManager->updateTaskStatus(
                 $input['task_id'],
                 $input['status'],
@@ -75,6 +76,7 @@ try {
     if ($result['success']) {
         http_response_code(200);
     } else {
+        error_log("update-status.php failed | user_id={$user_id} | task_id={$input['task_id']} | status={$input['status']} | message=" . ($result['message'] ?? ''));
         http_response_code(400);
     }
 

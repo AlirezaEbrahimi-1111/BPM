@@ -30,6 +30,7 @@ try {
 
     // گروه سازمانی: فقط management + supervisor
     if ($scope === 'org' && !canManageOrgGroup($db, $user_id)) {
+        error_log("task-groups/create denied (non-manager creating org-scope group) | user_id={$user_id} | organization_id={$org_id} | scope={$scope}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'فقط مدیر سازمان می‌تواند گروه سازمانی بسازد']);
         exit;

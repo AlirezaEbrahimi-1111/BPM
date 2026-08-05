@@ -220,6 +220,7 @@ class LeaveManager
                 return ['success' => true, 'message' => 'عملیات با موفقیت انجام شد'];
             }
 
+            error_log("LeaveManager::approveRequest updateApproval failed | approver_id={$approver_id} | request_type={$request_type} | request_id={$request_id}");
             return ['success' => false, 'message' => 'خطا در انجام عملیات'];
 
         } catch (Exception $e) {

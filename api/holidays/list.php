@@ -38,5 +38,6 @@ try {
 } catch (Exception $e) {
     ob_end_clean();
     http_response_code(500);
+    error_log("holidays/list.php failed | user_id=" . ($user_id ?? 'null') . " | " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }

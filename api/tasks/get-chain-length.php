@@ -34,6 +34,7 @@ try {
         'chain_length' => count($chain)
     ]);
 } catch (Exception $e) {
+    error_log("get-chain-length error: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'خطا']);
 }
 ?>

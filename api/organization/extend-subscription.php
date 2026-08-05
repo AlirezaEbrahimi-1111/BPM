@@ -58,6 +58,7 @@ try {
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
+    error_log("organization/extend-subscription.php failed | org_id={$org_id} | months={$months} | admin_id={$current_user_id} | " . $e->getMessage());
     echo json_encode([
         'success' => false,
         'message' => 'خطا: ' . $e->getMessage(),

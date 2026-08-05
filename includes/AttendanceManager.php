@@ -596,6 +596,7 @@ class AttendanceManager
 
             return false;
         } catch (Exception $e) {
+            error_log("AttendanceManager::isIPAllowed DB error | ip={$ip} | error=" . $e->getMessage());
             return false;
         }
     }
@@ -616,6 +617,7 @@ class AttendanceManager
             $stmt->execute([$date]);
             return $stmt->fetch() !== false;
         } catch (Exception $e) {
+            error_log("AttendanceManager::isHoliday DB error | date={$date} | error=" . $e->getMessage());
             return false;
         }
     }

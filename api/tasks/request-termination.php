@@ -51,16 +51,19 @@ try {
 
     // ── 2. بررسی دسترسی ─────────────────────────────────
     if ($task['assignee_id'] != $user_id) {
+        error_log("request-termination denied (not assignee) | user_id={$user_id} | task_id={$task_id} | assignee_id={$task['assignee_id']}");
         echo json_encode(['success' => false, 'message' => 'فقط مسئول انجام می‌تواند درخواست دهد']);
         exit;
     }
 
     if ($task['task_type'] !== 'continuous') {
+        error_log("request-termination denied (wrong task_type) | user_id={$user_id} | task_id={$task_id} | task_type={$task['task_type']}");
         echo json_encode(['success' => false, 'message' => 'این قابلیت فقط برای کارهای دوره‌ای است']);
         exit;
     }
 
     if (!in_array($task['status'], ['not_started', 'in_progress'])) {
+        error_log("request-termination denied (wrong task status) | user_id={$user_id} | task_id={$task_id} | status={$task['status']}");
         echo json_encode(['success' => false, 'message' => 'وضعیت کار اجازه ارسال درخواست را نمی‌دهد']);
         exit;
     }
@@ -75,6 +78,7 @@ try {
     ");
     $stmt->execute([$task_id, $user_id]);
     if ($stmt->fetch(PDO::FETCH_ASSOC)['cnt'] > 0) {
+        error_log("request-termination denied (received via delegation) | user_id={$user_id} | task_id={$task_id}");
         echo json_encode([
             'success' => false,
             'message' => 'شما این کار را از طریق ارجاع دریافت کرده‌اید و امکان درخواست اتمام ندارید'
@@ -89,6 +93,7 @@ try {
     ");
     $stmt->execute([$task_id, $user_id]);
     if ($stmt->fetch()) {
+        error_log("request-termination denied (duplicate pending request) | user_id={$user_id} | task_id={$task_id}");
         echo json_encode(['success' => false, 'message' => 'یک درخواست در انتظار بررسی وجود دارد']);
         exit;
     }

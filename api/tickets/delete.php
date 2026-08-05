@@ -33,6 +33,7 @@ if (!$user_id) {
 // فقط کاربر با id = 1
 if ($user_id != 1) {
     http_response_code(403);
+    error_log("Ticket delete denied | user_id={$user_id}");
     echo json_encode(['success' => false, 'message' => 'شما مجوز حذف تیکت را ندارید'], JSON_UNESCAPED_UNICODE);
     exit;
 }

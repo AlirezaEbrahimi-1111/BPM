@@ -145,6 +145,7 @@ try {
     }
 
     if (!$hasAccess) {
+        error_log("upload-attachment.php denied | user_id={$user_id} | task_id={$task_id}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'شما به این کار دسترسی ندارید']);
         exit;

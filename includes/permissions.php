@@ -237,6 +237,8 @@ function requirePermission(?array $user, string $permission): void
         return;
     }
 
+    error_log('Permission denied | user_id=' . ($user['id'] ?? 'guest') . ' | role=' . ($user['role'] ?? 'unknown') . ' | permission=' . $permission . ' | uri=' . ($_SERVER['REQUEST_URI'] ?? 'unknown') . ' | ip=' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+
     http_response_code(403);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode([

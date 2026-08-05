@@ -147,6 +147,7 @@ try {
         }
     }
     if (!$isAssignee && !$isCreator && !$isSection) {
+        error_log("request-overdue-clear denied (not assignee/creator/section/manager) | user_id={$user_id} | task_id={$task_id} | assignee_id={$task['assignee_id']} | creator_id={$task['creator_id']} | organization_id={$task['organization_id']}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'شما مجاز به این عملیات نیستید'], JSON_UNESCAPED_UNICODE);
         exit;

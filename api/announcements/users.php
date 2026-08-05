@@ -54,5 +54,6 @@ try {
 
 } catch (Throwable $e) {
     http_response_code(500);
+    error_log("announcements/users.php failed | user_id={$user_id} | org=" . ($org ?? 'null') . " | " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
 }

@@ -45,6 +45,7 @@ try {
     }
 
     if (!$allowed) {
+        error_log("task-groups/delete denied (unauthorized group delete) | user_id={$user_id} | group_id={$id} | scope={$group['scope']} | created_by={$group['created_by']} | organization_id={$org_id}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'اجازه حذف این گروه را ندارید']);
         exit;

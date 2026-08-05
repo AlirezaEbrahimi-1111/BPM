@@ -41,6 +41,7 @@ try {
 
     // بررسی دسترسی
     if (!canEditGroup($db, $user_id, $group)) {
+        error_log("task-groups/update denied (unauthorized group edit) | user_id={$user_id} | group_id={$id} | scope={$group['scope']} | created_by={$group['created_by']} | organization_id={$org_id}");
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'اجازه ویرایش این گروه را ندارید']);
         exit;

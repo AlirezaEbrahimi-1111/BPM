@@ -75,6 +75,7 @@ try {
     // ✅ بررسی مجوز: approver فعلی یا مدیر
     if ($request['current_approver_id'] != $user_id && !$isManager) {
         error_log("❌ Access denied: current_approver=" . $request['current_approver_id'] . ", user_id=$user_id");
+        error_log("approve-deadline denied (not approver/manager) | user_id={$user_id} | request_id={$request_id} | task_id={$task_id} | current_approver_id={$request['current_approver_id']} | isManager=" . ($isManager ? '1' : '0'));
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'شما مجاز به تأیید این درخواست نیستید']);
         exit;
@@ -146,6 +147,7 @@ try {
 
     if ($current_index === false) {
         error_log("❌ User not in approval chain!");
+        error_log("approve-deadline denied (not in approval chain) | user_id={$user_id} | request_id={$request_id} | task_id={$task_id} | approval_chain=" . $request['approval_chain']);
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'شما در زنجیره تأیید نیستید']);
         exit;
@@ -315,6 +317,7 @@ try {
     }
 
 } catch (Exception $e) {
+    error_log("approve-deadline.php error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,

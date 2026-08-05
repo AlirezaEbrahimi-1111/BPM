@@ -186,6 +186,7 @@ class TaskManager
                 ];
             }
 
+            error_log("createTask execute failed | creator_id={$creator_id} | organization_id={$organization_id}");
             return ['success' => false, 'message' => 'خطا در ایجاد کار'];
         } catch (Exception $e) {
             error_log("CreateTask error: " . $e->getMessage());
@@ -231,6 +232,7 @@ class TaskManager
                 }
             }
 
+            error_log("updateTask no-op / execute failed | user_id={$user_id} | task_id={$task_id}");
             return ['success' => false, 'message' => 'هیچ تغییری اعمال نشد'];
         } catch (Exception $e) {
             error_log("UpdateTask error: " . $e->getMessage());
@@ -257,6 +259,7 @@ class TaskManager
 
             // 🔒 محافظ: دورهٔ امروز نباید دو بار بسته شود
             if (!$state['can_complete']) {
+                error_log("finalizeSelfCompletion blocked | user_id={$user_id} | task_id={$task_id} | is_today_done=" . ($state['is_today_done'] ? '1' : '0'));
                 return [
                     'success' => false,
                     'message' => $state['is_today_done']
@@ -376,6 +379,7 @@ class TaskManager
                     $state    = pe_state($this->db, $task, $holidays);
 
                     if (!$state['can_complete']) {
+                        error_log("updateTaskStatus completion blocked (continuous) | user_id={$user_id} | task_id={$task_id} | is_today_done=" . ($state['is_today_done'] ? '1' : '0'));
                         return [
                             'success' => false,
                             'message' => $state['is_today_done']
@@ -505,6 +509,7 @@ class TaskManager
             }
 
             if (!$hasAccess) {
+                error_log("updateTaskStatus denied | user_id={$user_id} | task_id={$task_id} | requested_status={$status}");
                 return ['success' => false, 'message' => 'شما مجاز به تغییر وضعیت این کار نیستید'];
             }
 
@@ -525,6 +530,7 @@ class TaskManager
             $result = $stmt->execute($params);
 
             if (!$result) {
+                error_log("updateTaskStatus UPDATE failed | user_id={$user_id} | task_id={$task_id} | requested_status={$status}");
                 return ['success' => false, 'message' => 'خطا در بروزرسانی وضعیت'];
             }
 
@@ -634,6 +640,7 @@ class TaskManager
 
             // بررسی مجوز
             if ($task['assignee_id'] != $from_user_id && $task['creator_id'] != $from_user_id) {
+                error_log("delegateTask denied | from_user_id={$from_user_id} | task_id={$task_id}");
                 return ['success' => false, 'message' => 'شما مجاز به ارجاع این کار نیستید'];
             }
 
@@ -664,6 +671,7 @@ class TaskManager
                 return ['success' => true, 'message' => 'کار با موفقیت ارجاع داده شد'];
             }
 
+            error_log("delegateTask execute failed | from_user_id={$from_user_id} | task_id={$task_id} | to_user_id={$to_user_id}");
             return ['success' => false, 'message' => 'خطا در ارجاع کار'];
         } catch (Exception $e) {
             error_log("DelegateTask error: " . $e->getMessage());
@@ -684,6 +692,7 @@ class TaskManager
 
         // فقط سازنده می‌تواند ویرایش کند
         if ($task['creator_id'] != $user_id) {
+            error_log("canEditTask denied | user_id={$user_id} | task_id={$task_id}");
             return ['can_edit' => false, 'message' => 'فقط ایجادکننده کار می‌تواند آن را ویرایش کند'];
         }
 
@@ -724,6 +733,7 @@ class TaskManager
                 && (int)$user['organization_id'] === (int)$task['organization_id']);
 
             if (!$isCreator && !$isManager) {
+                error_log("deleteTask denied | user_id={$user_id} | task_id={$task_id}");
                 return ['success' => false, 'message' => 'شما مجاز به حذف این کار نیستید'];
             }
 
@@ -1175,10 +1185,12 @@ class TaskManager
             $task = $this->getTask($task_id);
 
             if (!$task || $task['assignee_id'] != $user_id) {
+                error_log("approveOrRejectTask denied (not assignee) | user_id={$user_id} | task_id={$task_id}");
                 return ['success' => false, 'message' => 'شما مجاز به تأیید این کار نیستید'];
             }
 
             if (!$task['is_pending_approval']) {
+                error_log("approveOrRejectTask denied (not pending approval) | user_id={$user_id} | task_id={$task_id}");
                 return ['success' => false, 'message' => 'این کار در انتظار تأیید نیست'];
             }
 

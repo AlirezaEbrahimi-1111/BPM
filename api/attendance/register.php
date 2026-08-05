@@ -83,7 +83,9 @@ if (!$organization_id) {
                     (organization_id, user_id, action, reason, ip_address, fingerprint_hash, user_agent, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
             ")->execute([$organization_id, $user_id, $action0, $reason, $client_ip, $fp0_hash, $user_agent]);
-        } catch (Exception $e) { /* سکوت */ }
+        } catch (Exception $e) {
+            error_log("Attendance denied-log insert failed | user_id={$user_id} | organization_id={$organization_id} | reason={$reason} | error=" . $e->getMessage());
+        }
     };
 
     $ipStmt = $db->prepare("

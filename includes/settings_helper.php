@@ -65,6 +65,7 @@ function getSetting($db, $key, $default = null)
         }
         return $default;
     } catch (Exception $e) {
+        error_log("getSetting fallback to default (DB error) | key={$key} | " . $e->getMessage());
         return $default;
     }
 }
