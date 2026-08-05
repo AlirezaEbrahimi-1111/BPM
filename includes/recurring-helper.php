@@ -16,7 +16,7 @@ require_once __DIR__ . '/JalaliHelper.php';
  * ✅ اصلاح: حالا از موتور مشترک استفاده می‌کند. پیش از این، بخشش‌ها
  *    (overdue_forgiven_credit) را نادیده می‌گرفت و کار را بی‌پایان باز می‌کرد.
  */
-function maybeStartNextPeriod($db, &$task, $user_id, $holidays = null)
+function maybeStartNextPeriod($db, &$task, $user_id, $holidays = null, ?array $preloadedCompletionMap = null)
 {
     if (($task['task_type'] ?? '') !== 'continuous')  return false;
     if (($task['status'] ?? '')    !== 'period_done') return false;
@@ -27,7 +27,7 @@ function maybeStartNextPeriod($db, &$task, $user_id, $holidays = null)
     }
 
     try {
-        $state = pe_state($db, $task, $holidays);
+        $state = pe_state($db, $task, $holidays, null, $preloadedCompletionMap);
 
         // دورهٔ امروز هنوز بسته نشده → کار را باز کن
         if (!$state['is_today_done'] && !$state['finished'] && $state['started']) {

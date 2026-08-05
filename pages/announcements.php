@@ -318,9 +318,11 @@ require_once '../includes/version.php';
                     if (p.column && (p.column.getColId() === '_act')) return; // دکمه‌های عملیات
                     toggleExpand(p.data.id);
                 },
-                overlayNoRowsTemplate: '<div style="padding:2rem;color:#9097a6;"><i class="bi bi-megaphone" style="font-size:2rem;display:block;margin-bottom:.5rem;color:#cfd4e4;"></i>اطلاعیه‌ای وجود ندارد</div>'
+                overlayNoRowsTemplate: '<div style="padding:2rem;color:#9097a6;"><i class="bi bi-megaphone" style="font-size:2rem;display:block;margin-bottom:.5rem;color:#cfd4e4;"></i>اطلاعیه‌ای وجود ندارد</div>',
+                overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>'
             };
             gridApi = agGrid.createGrid(document.getElementById('annGrid'), gridOptions);
+            gridApi.showLoadingOverlay();
         }
 
         // ───── بارگذاری ─────

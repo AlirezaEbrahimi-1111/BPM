@@ -310,6 +310,7 @@ require_once  $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 noRowsToShow: 'داده‌ای یافت نشد',
                 loadingOoo: 'در حال بارگذاری...',
             },
+            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
             animateRows: true,
             pagination: true,
             paginationPageSize: 15,
@@ -362,6 +363,7 @@ require_once  $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         };
 
         const gridApi = agGrid.createGrid(document.getElementById('myGrid'), gridOptions);
+        gridApi.showLoadingOverlay();
         // 🆕 با تغییر اندازه پنجره، ستون‌ها دوباره تنظیم شوند
         let resizeTimer;
         window.addEventListener('resize', () => {

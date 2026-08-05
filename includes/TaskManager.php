@@ -762,15 +762,24 @@ class TaskManager
                     CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,
                     (SELECT COUNT(*) FROM task_history WHERE task_id = t.id AND action = 'completed') as completed_count,
                     (
-                        SELECT GROUP_CONCAT(
-                            CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
-                                CASE WHEN th2.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th2.notes, '$.reason')) ELSE th2.notes END)
-                            SEPARATOR ' '
+                        SELECT CONCAT_WS(' ',
+                            (
+                                SELECT GROUP_CONCAT(
+                                    CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
+                                        CASE WHEN th2.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th2.notes, '$.reason')) ELSE th2.notes END)
+                                    SEPARATOR ' '
+                                )
+                                FROM task_history th2
+                                LEFT JOIN users fu ON th2.from_user_id = fu.id
+                                LEFT JOIN users tu ON th2.to_user_id = tu.id
+                                WHERE th2.task_id = t.id
+                            ),
+                            (
+                                SELECT GROUP_CONCAT(ta.file_original_name SEPARATOR ' ')
+                                FROM task_attachments ta
+                                WHERE ta.task_id = t.id
+                            )
                         )
-                        FROM task_history th2
-                        LEFT JOIN users fu ON th2.from_user_id = fu.id
-                        LEFT JOIN users tu ON th2.to_user_id = tu.id
-                        WHERE th2.task_id = t.id
                     ) AS history_text
                 FROM tasks t
                 LEFT JOIN users creator ON t.creator_id = creator.id
@@ -889,15 +898,24 @@ class TaskManager
                         CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
                         CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,
                         (
-                            SELECT GROUP_CONCAT(
-                                CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
-                                    CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
-                                SEPARATOR ' '
+                            SELECT CONCAT_WS(' ',
+                                (
+                                    SELECT GROUP_CONCAT(
+                                        CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
+                                            CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
+                                        SEPARATOR ' '
+                                    )
+                                    FROM task_history th
+                                    LEFT JOIN users fu ON th.from_user_id = fu.id
+                                    LEFT JOIN users tu ON th.to_user_id = tu.id
+                                    WHERE th.task_id = t.id
+                                ),
+                                (
+                                    SELECT GROUP_CONCAT(ta.file_original_name SEPARATOR ' ')
+                                    FROM task_attachments ta
+                                    WHERE ta.task_id = t.id
+                                )
                             )
-                            FROM task_history th
-                            LEFT JOIN users fu ON th.from_user_id = fu.id
-                            LEFT JOIN users tu ON th.to_user_id = tu.id
-                            WHERE th.task_id = t.id
                         ) AS history_text,
                         tg.name  as group_name,
                         tg.color as group_color,
@@ -947,18 +965,27 @@ class TaskManager
                     ELSE ''
                 END as assignee_name,
                 (
-                    SELECT GROUP_CONCAT(
-                        CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
-                            CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
-                        SEPARATOR ' '
+                    SELECT CONCAT_WS(' ',
+                        (
+                            SELECT GROUP_CONCAT(
+                                CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
+                                    CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
+                                SEPARATOR ' '
+                            )
+                            FROM task_history th
+                            LEFT JOIN users fu ON th.from_user_id = fu.id
+                            LEFT JOIN users tu ON th.to_user_id = tu.id
+                            WHERE th.task_id = t.id
+                        ),
+                        (
+                            SELECT GROUP_CONCAT(ta.file_original_name SEPARATOR ' ')
+                            FROM task_attachments ta
+                            WHERE ta.task_id = t.id
+                        )
                     )
-                    FROM task_history th
-                    LEFT JOIN users fu ON th.from_user_id = fu.id
-                    LEFT JOIN users tu ON th.to_user_id = tu.id
-                    WHERE th.task_id = t.id
                 ) AS history_text,
                 (SELECT COUNT(*) FROM task_history WHERE task_id = t.id AND action = 'completed') as completed_count
-            FROM tasks t 
+            FROM tasks t
             LEFT JOIN users assignee ON t.assignee_id = assignee.id
             LEFT JOIN users creator_user ON t.creator_id = creator_user.id
             LEFT JOIN organization_activity_sections oas 

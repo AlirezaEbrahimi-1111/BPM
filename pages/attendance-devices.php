@@ -635,8 +635,10 @@ require_once '../includes/version.php';
                     <div style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:3rem;color:var(--gray-400)">
                         <i class="bi bi-display" style="font-size:2.5rem;opacity:.35"></i>
                         <p style="margin:0;font-size:.875rem">دستگاهی ثبت نشده است</p>
-                    </div>`
+                    </div>`,
+                overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>'
             });
+            devGridApi.showLoadingOverlay();
         }
 
         async function loadDevices() {
@@ -853,8 +855,10 @@ require_once '../includes/version.php';
                     <div style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:3rem;color:var(--gray-400)">
                         <i class="bi bi-check-circle" style="font-size:2.5rem;opacity:.35;color:var(--success)"></i>
                         <p style="margin:0;font-size:.875rem">تلاش ناموفقی ثبت نشده است</p>
-                    </div>`
+                    </div>`,
+                overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>'
             });
+            logGridApi.showLoadingOverlay();
         }
 
         async function loadLog() {

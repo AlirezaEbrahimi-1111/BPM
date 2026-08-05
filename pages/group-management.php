@@ -199,6 +199,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             paginationPageSize: 15,
             paginationPageSizeSelector: [15, 30, 50],
             defaultColDef: { sortable: true, resizable: true },
+            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
             // کلیک روی دکمه‌های عملیات
             onCellClicked: params => {
                 const btn = params.event.target.closest('[data-action]');
@@ -239,6 +240,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('gmContent').style.display = 'block';
             buildColorIconPickers();
             gridApi = agGrid.createGrid(document.getElementById('groupsGrid'), gridOptions);
+            gridApi.showLoadingOverlay();
             loadAll();
         });
 

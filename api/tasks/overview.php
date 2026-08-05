@@ -21,66 +21,101 @@ try {
     {
         $holidays = getHolidaySet($db);
         $today = date('Y-m-d');
+
+        // 🆕 به‌جای یک کوئری به task_history به‌ازای هر تسکِ دوره‌ای (مشکل N+1 که
+        // باعث کندیِ این صفحه می‌شد)، تاریخ‌های تکمیلِ همهٔ تسک‌های دوره‌ای را
+        // یک‌جا واکشی می‌کنیم و به enrichTaskDates/maybeStartNextPeriod می‌دهیم.
+        $continuousIds = [];
+        foreach ($tasks as $t) {
+            if ($t['task_type'] === 'continuous' && !empty($t['start_date'])) {
+                $continuousIds[] = $t['id'];
+            }
+        }
+        $completionMap = pe_preloadCompletionDates($db, $continuousIds);
+
         foreach ($tasks as &$task) {
             if ($task['task_type'] === 'continuous' && !empty($task['start_date'])) {
                 // برگشت از period_done به دوره‌ی بعدی (اگر موعدش رسیده)
-                maybeStartNextPeriod($db, $task, $user_id, $holidays);
+                maybeStartNextPeriod($db, $task, $user_id, $holidays, $completionMap);
             }
-            $task = enrichTaskDates($task, $db, $holidays, $today);
+            $task = enrichTaskDates($task, $db, $holidays, $today, $completionMap);
         }
         unset($task);
     }
 
     // ========================================
-    // تابع کمکی: آیا کاربر اجازه ارسال یادآوری دارد؟
+    // تابع کمکی (نسخهٔ دسته‌ای): آیا کاربر اجازهٔ ارسال یادآوری دارد؟
     // شرط 1: کاربر creator تسک باشد
     // شرط 2: یا در زنجیره ارجاعات، آخرین نفری باشد که کار را واگذار کرده
+    //
+    // 🆕 قبلاً این بررسی به‌ازای هر تسک، جداگانه صدا زده می‌شد (تا ۲ کوئری
+    // برای هر تسک) — یعنی برای سرپرستی که ۹۰۰ تسک می‌بیند، تا ~۱۸۰۰ کوئریِ
+    // جدا فقط برای همین یک ویژگی. حالا با یک کوئریِ دسته‌ای (IN) و پردازشِ
+    // درون‌حافظه‌ای، همان نتیجه برای همهٔ تسک‌ها یک‌جا محاسبه می‌شود.
+    //
+    // @return array<int,bool>  task_id => آیا یادآوری مجاز است
     // ========================================
-    function canUserRemind($db, $user_id, $task)
+    function batchCanUserRemind($db, $user_id, array $tasks): array
     {
-        // شرط اولیه: کاربر جاری نباید مسئول انجام کار باشد
-        if ($task['assignee_id'] == $user_id) {
-            return false;
+        $result = [];
+        $needsHistoryCheck = [];
+
+        foreach ($tasks as $task) {
+            if ($task['assignee_id'] == $user_id) {
+                $result[$task['id']] = false;
+            } elseif ($task['creator_id'] == $user_id) {
+                $result[$task['id']] = true;
+            } else {
+                $needsHistoryCheck[] = $task['id'];
+            }
         }
 
-        // شرط 1: کاربر جاری تعریف‌کننده (creator) تسک باشد
-        if ($task['creator_id'] == $user_id) {
-            return true;
+        if (empty($needsHistoryCheck)) {
+            return $result;
         }
 
-        // شرط 2: آخرین واگذارکننده در زنجیره ارجاعات باشد
-        // آخرین رکورد assigned/delegated در task_history که from_user_id = کاربر جاری
+        $placeholders = implode(',', array_fill(0, count($needsHistoryCheck), '?'));
         $stmt = $db->prepare("
-            SELECT id FROM task_history 
-            WHERE task_id = ? 
-            AND action IN ('assigned', 'delegated') 
-            AND from_user_id = ?
-            ORDER BY created_at DESC 
-            LIMIT 1
+            SELECT task_id, from_user_id
+            FROM task_history
+            WHERE task_id IN ($placeholders)
+              AND action IN ('assigned', 'delegated')
+            ORDER BY task_id ASC, created_at ASC, id ASC
         ");
-        $stmt->execute([$task['id'], $user_id]);
-        $lastDelegation = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->execute($needsHistoryCheck);
 
-        if (!$lastDelegation) {
-            return false;
+        // گروه‌بندیِ رکوردهای ارجاع بر اساس task_id (به ترتیبِ زمانی صعودی)
+        $byTask = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $byTask[$row['task_id']][] = $row['from_user_id'];
         }
 
-        // بررسی: آیا بعد از واگذاری این کاربر، شخص دیگری هم واگذار کرده؟
-        // اگر بله، یعنی این کاربر دیگر آخرین واگذارکننده نیست
-        $stmt = $db->prepare("
-            SELECT id FROM task_history 
-            WHERE task_id = ? 
-            AND action IN ('assigned', 'delegated') 
-            AND from_user_id != ?
-            AND id > ?
-            ORDER BY created_at DESC 
-            LIMIT 1
-        ");
-        $stmt->execute([$task['id'], $user_id, $lastDelegation['id']]);
-        $laterDelegation = $stmt->fetch(PDO::FETCH_ASSOC);
+        foreach ($needsHistoryCheck as $taskId) {
+            $fromUserIds = $byTask[$taskId] ?? [];
 
-        // اگر کسی بعد از این کاربر واگذار نکرده، پس این کاربر آخرین واگذارکننده است
-        return !$laterDelegation;
+            // آخرین رکوردی که از_user_id = کاربر جاری بوده
+            $lastIdx = null;
+            foreach ($fromUserIds as $idx => $fromUserId) {
+                if ($fromUserId == $user_id) $lastIdx = $idx;
+            }
+
+            if ($lastIdx === null) {
+                $result[$taskId] = false;
+                continue;
+            }
+
+            // آیا بعد از آن، شخص دیگری هم واگذار کرده؟
+            $hasLater = false;
+            for ($i = $lastIdx + 1; $i < count($fromUserIds); $i++) {
+                if ($fromUserIds[$i] != $user_id) {
+                    $hasLater = true;
+                    break;
+                }
+            }
+            $result[$taskId] = !$hasLater;
+        }
+
+        return $result;
     }
 
     // ========================================
@@ -194,15 +229,24 @@ try {
                 CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
                 CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,
                 (
-                    SELECT GROUP_CONCAT(
-                        CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
-                            CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
-                        SEPARATOR ' '
+                    SELECT CONCAT_WS(' ',
+                        (
+                            SELECT GROUP_CONCAT(
+                                CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
+                                    CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
+                                SEPARATOR ' '
+                            )
+                            FROM task_history th
+                            LEFT JOIN users fu ON th.from_user_id = fu.id
+                            LEFT JOIN users tu ON th.to_user_id = tu.id
+                            WHERE th.task_id = t.id
+                        ),
+                        (
+                            SELECT GROUP_CONCAT(ta.file_original_name SEPARATOR ' ')
+                            FROM task_attachments ta
+                            WHERE ta.task_id = t.id
+                        )
                     )
-                    FROM task_history th
-                    LEFT JOIN users fu ON th.from_user_id = fu.id
-                    LEFT JOIN users tu ON th.to_user_id = tu.id
-                    WHERE th.task_id = t.id
                 ) AS history_text
             FROM tasks t
             LEFT JOIN users creator ON t.creator_id = creator.id
@@ -219,11 +263,12 @@ try {
         $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // ========================================
-        // بررسی دسترسی یادآوری برای هر تسک
+        // بررسی دسترسی یادآوری برای هر تسک — دسته‌ای (یک کوئری برای همه)
         // شرط: کاربر جاری creator باشد یا آخرین واگذارکننده در زنجیره ارجاعات
         // ========================================
+        $remindMap = batchCanUserRemind($db, $user_id, $tasks);
         foreach ($tasks as &$task) {
-            $task['can_remind'] = canUserRemind($db, $user_id, $task);
+            $task['can_remind'] = $remindMap[$task['id']] ?? false;
         }
         unset($task);
         attachContinuousFields($db, $tasks, $user_id);
@@ -308,15 +353,24 @@ try {
             CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
             CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,
             (
-                    SELECT GROUP_CONCAT(
-                        CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
-                            CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
-                        SEPARATOR ' '
+                    SELECT CONCAT_WS(' ',
+                        (
+                            SELECT GROUP_CONCAT(
+                                CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
+                                    CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
+                                SEPARATOR ' '
+                            )
+                            FROM task_history th
+                            LEFT JOIN users fu ON th.from_user_id = fu.id
+                            LEFT JOIN users tu ON th.to_user_id = tu.id
+                            WHERE th.task_id = t.id
+                        ),
+                        (
+                            SELECT GROUP_CONCAT(ta.file_original_name SEPARATOR ' ')
+                            FROM task_attachments ta
+                            WHERE ta.task_id = t.id
+                        )
                     )
-                    FROM task_history th
-                    LEFT JOIN users fu ON th.from_user_id = fu.id
-                    LEFT JOIN users tu ON th.to_user_id = tu.id
-                    WHERE th.task_id = t.id
                 ) AS history_text
         FROM tasks t
         LEFT JOIN users creator ON t.creator_id = creator.id
@@ -336,10 +390,11 @@ try {
     $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // ========================================
-    // بررسی دسترسی یادآوری برای هر تسک
+    // بررسی دسترسی یادآوری برای هر تسک — دسته‌ای (یک کوئری برای همه)
     // ========================================
+    $remindMap = batchCanUserRemind($db, $user_id, $tasks);
     foreach ($tasks as &$task) {
-        $task['can_remind'] = canUserRemind($db, $user_id, $task);
+        $task['can_remind'] = $remindMap[$task['id']] ?? false;
     }
     unset($task);
     attachContinuousFields($db, $tasks, $user_id);

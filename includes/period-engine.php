@@ -218,8 +218,16 @@ function pe_periodOf(array $periodDates, string $date): ?string
  *
  * @return string[]  آرایهٔ تاریخ 'Y-m-d'، صعودی
  */
-function pe_completionDates(PDO $db, int $taskId): array
+function pe_completionDates(PDO $db, int $taskId, ?array $preloadedMap = null): array
 {
+    // 🆕 اگر نقشهٔ از‌پیش‌واکشی‌شده داده شده (برای صفحات لیستی که چند تسک را
+    // یک‌جا پردازش می‌کنند)، به‌جای یک کوئری جداگانه به‌ازای هر تسک، مستقیم
+    // از همان نقشه بخوان — رفع مشکلِ N+1 در overview.php/my-tasks.php.
+    // فراخوانی‌های تک‌تسکی (بدون این پارامتر) دقیقاً مثل قبل کار می‌کنند.
+    if ($preloadedMap !== null) {
+        return $preloadedMap[$taskId] ?? [];
+    }
+
     $stmt = $db->prepare("
         SELECT DISTINCT DATE(created_at) AS d
         FROM task_history
@@ -230,6 +238,36 @@ function pe_completionDates(PDO $db, int $taskId): array
     $stmt->execute([$taskId]);
 
     return $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+}
+
+/**
+ * 🆕 نسخهٔ دسته‌ای pe_completionDates — تاریخ‌های تکمیلِ همهٔ تسک‌های داده‌شده
+ * را با یک کوئری واحد برمی‌گرداند (به‌جای یک کوئری به‌ازای هر تسک).
+ * خروجی مستقیماً به pe_completionDates/pe_state/enrichTaskDates به‌عنوان
+ * $preloadedMap داده می‌شود.
+ *
+ * @return array<int,string[]>  task_id => آرایهٔ تاریخ 'Y-m-d' (صعودی، یکتا)
+ */
+function pe_preloadCompletionDates(PDO $db, array $taskIds): array
+{
+    $taskIds = array_values(array_unique(array_filter(array_map('intval', $taskIds))));
+    if (empty($taskIds)) return [];
+
+    $placeholders = implode(',', array_fill(0, count($taskIds), '?'));
+    $stmt = $db->prepare("
+        SELECT DISTINCT task_id, DATE(created_at) AS d
+        FROM task_history
+        WHERE task_id IN ($placeholders)
+          AND action = 'completed'
+        ORDER BY task_id ASC, d ASC
+    ");
+    $stmt->execute($taskIds);
+
+    $map = [];
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $map[(int) $row['task_id']][] = $row['d'];
+    }
+    return $map;
 }
 
 
@@ -255,7 +293,7 @@ function pe_completionDates(PDO $db, int $taskId): array
  *     can_complete         bool    آیا کاربر الان می‌تواند «تکمیل» بزند؟
  * }
  */
-function pe_state(PDO $db, array $task, array $holidays, ?string $today = null): array
+function pe_state(PDO $db, array $task, array $holidays, ?string $today = null, ?array $preloadedCompletionMap = null): array
 {
     $today = $today ?: date('Y-m-d');
 
@@ -316,7 +354,7 @@ function pe_state(PDO $db, array $task, array $holidays, ?string $today = null):
         $out['current_period_date'] = $currentPeriod;
 
         // ── نگاشت تکمیل‌ها به دوره‌ها ───────────────────
-        $completionDates  = pe_completionDates($db, (int) $task['id']);
+        $completionDates  = pe_completionDates($db, (int) $task['id'], $preloadedCompletionMap);
         $completedPeriods = [];
 
         foreach ($completionDates as $cd) {

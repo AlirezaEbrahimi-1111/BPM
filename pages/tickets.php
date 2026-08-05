@@ -432,6 +432,7 @@ require_once '../includes/version.php';
             paginationPageSize: 20,
             paginationPageSizeSelector: [15, 20, 30, 50],
             defaultColDef: { sortable: true, resizable: true },
+            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
             onRowClicked: params => { location.href = 'ticket-detail.php?id=' + params.data.id; },
             onPaginationChanged: () => {
                 setTimeout(() => {
@@ -460,6 +461,7 @@ require_once '../includes/version.php';
         };
 
         gridApi = agGrid.createGrid(document.getElementById('myGrid'), gridOptions);
+        gridApi.showLoadingOverlay();
 
         document.addEventListener('DOMContentLoaded', function(){
             if (!authToken) { window.location.href = '../index.php'; return; }

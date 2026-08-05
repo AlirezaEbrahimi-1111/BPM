@@ -148,15 +148,24 @@ SELECT DISTINCT
     assignee.last_name as assignee_last_name,
     CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,
     (
-        SELECT GROUP_CONCAT(
-            CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
-                CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
-            SEPARATOR ' '
+        SELECT CONCAT_WS(' ',
+            (
+                SELECT GROUP_CONCAT(
+                    CONCAT_WS(' ', fu.first_name, fu.last_name, tu.first_name, tu.last_name,
+                        CASE WHEN th.notes LIKE '{%' THEN JSON_UNQUOTE(JSON_EXTRACT(th.notes, '$.reason')) ELSE th.notes END)
+                    SEPARATOR ' '
+                )
+                FROM task_history th
+                LEFT JOIN users fu ON th.from_user_id = fu.id
+                LEFT JOIN users tu ON th.to_user_id = tu.id
+                WHERE th.task_id = t.id
+            ),
+            (
+                SELECT GROUP_CONCAT(ta.file_original_name SEPARATOR ' ')
+                FROM task_attachments ta
+                WHERE ta.task_id = t.id
+            )
         )
-        FROM task_history th
-        LEFT JOIN users fu ON th.from_user_id = fu.id
-        LEFT JOIN users tu ON th.to_user_id = tu.id
-        WHERE th.task_id = t.id
     ) AS history_text,
         t.group_id,
     tg.name as group_name,
@@ -275,8 +284,16 @@ ORDER BY
     // محاسبه overdue_periods
     $processed_tasks = [];
 
+    // 🆕 پیش‌واکشیِ دسته‌ایِ تاریخ‌های تکمیل برای همهٔ تسک‌های دوره‌ای —
+    // به‌جای یک کوئری جداگانه به task_history به‌ازای هر تسک (مشکل N+1)
+    $continuousIds = [];
+    foreach ($all_tasks as $t) {
+        if ($t['task_type'] === 'continuous') $continuousIds[] = $t['id'];
+    }
+    $completionMap = pe_preloadCompletionDates($db, $continuousIds);
+
     foreach ($all_tasks as $task) {
-        $task = enrichTaskDates($task, $db, $holidays, $today);
+        $task = enrichTaskDates($task, $db, $holidays, $today, $completionMap);
         // کار دوره‌ای که بازه‌اش تمام شده → نمایش نده
         if (
             $task['task_type'] === 'continuous' && !empty($task['end_date'])

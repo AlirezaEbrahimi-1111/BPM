@@ -28,9 +28,12 @@ require_once __DIR__ . '/working-days-helper.php';
  * @param PDO    $db       اتصال دیتابیس
  * @param array  $holidays آرایهٔ تعطیلات (از getHolidaySet)
  * @param string $today    تاریخ امروز 'Y-m-d'
+ * @param array|null $preloadedCompletionMap  🆕 خروجیِ pe_preloadCompletionDates —
+ *        وقتی صفحه‌ای چند تسک را یک‌جا پردازش می‌کند (my-tasks.php، overview.php و...)
+ *        به‌جای یک کوئری به‌ازای هر تسکِ دوره‌ای، همه را از این نقشه می‌خواند.
  * @return array           همان کار، به‌همراه فیلدهای محاسبه‌شده
  */
-function enrichTaskDates(array $task, PDO $db, array $holidays, string $today): array
+function enrichTaskDates(array $task, PDO $db, array $holidays, string $today, ?array $preloadedCompletionMap = null): array
 {
     // مقادیر پیش‌فرض
     $task['overdue_periods']      = 0;
@@ -47,7 +50,7 @@ function enrichTaskDates(array $task, PDO $db, array $holidays, string $today): 
     if (($task['task_type'] ?? '') === 'continuous') {
 
         // ✅ موتور مشترک — تنها مرجع محاسبهٔ دوره
-        $s = pe_state($db, $task, $holidays, $today);
+        $s = pe_state($db, $task, $holidays, $today, $preloadedCompletionMap);
 
         $task['overdue_periods']      = $s['overdue_periods'];
         $task['next_due_date']        = $s['next_due_date'];
