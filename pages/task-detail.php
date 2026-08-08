@@ -5852,7 +5852,6 @@ ${task.overdue_periods > 0 ? `
                 </div>
             </div>
         </div>
-        <?php include 'footer.php'; ?>
 </body>
 
 </html>
