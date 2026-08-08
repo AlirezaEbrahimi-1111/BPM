@@ -49,9 +49,10 @@ try {
         exit;
     }
 
-    // بررسی نقش کاربر — تعطیلات یک تنظیمِ سراسریِ سازمان است، نه چیزی
-    // که به زیرمجموعهٔ یک مدیر محدود شود؛ پس فقط supervisor/admin
-    $stmt = $db->prepare("SELECT id, role FROM users WHERE id = ?");
+    // بررسی نقش کاربر — دو مدلِ تعطیلی داریم، پس مجوزِ حذف بستگی به مالکِ
+    // همون ردیف داره (سراسری فقط id=1، مخصوصِ سازمان فقط supervisor/admin
+    // همون سازمان)، نه یک قاعدهٔ ثابتِ کلی
+    $stmt = $db->prepare("SELECT id, role, organization_id FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -73,13 +74,46 @@ try {
         exit;
     }
 
-    // حذف
-    if ($holiday_date) {
-        $stmt = $db->prepare("DELETE FROM holidays WHERE holiday_date = ?");
-        $stmt->execute([$holiday_date]);
+    // پیدا کردنِ ردیف(های) هدف تا مالکیتش قبل از حذف بررسی بشه
+    if ($holiday_id) {
+        $stmt = $db->prepare("SELECT id, organization_id FROM holidays WHERE id = ?");
+        $stmt->execute([$holiday_id]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } else {
+        $stmt = $db->prepare("SELECT id, organization_id FROM holidays WHERE type = 'date' AND holiday_date = ?");
+        $stmt->execute([$holiday_date]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    if (empty($rows)) {
+        echo json_encode(['success' => false, 'message' => 'تعطیلی یافت نشد'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    // مجوزِ هر ردیف رو جدا چک می‌کنیم: سراسری فقط id=1، مخصوصِ سازمان فقط
+    // همون سازمان (نه سازمانِ دیگه، حتی اگه supervisor باشه)
+    $userOrgId = (int) ($user['organization_id'] ?? 0);
+    foreach ($rows as $row) {
+        $isGlobal = ($row['organization_id'] === null);
+        if ($isGlobal && (int) $user_id !== 1) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'فقط مدیرِ کلِ سامانه می‌تواند تعطیلیِ سراسری را حذف کند']);
+            exit;
+        }
+        if (!$isGlobal && (int) $row['organization_id'] !== $userOrgId) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'این تعطیلی مربوط به سازمانِ شما نیست']);
+            exit;
+        }
+    }
+
+    // حذف
+    if ($holiday_id) {
         $stmt = $db->prepare("DELETE FROM holidays WHERE id = ?");
         $stmt->execute([$holiday_id]);
+    } else {
+        $stmt = $db->prepare("DELETE FROM holidays WHERE type = 'date' AND holiday_date = ? AND (organization_id IS NULL OR organization_id = ?)");
+        $stmt->execute([$holiday_date, $userOrgId]);
     }
 
     if ($stmt->rowCount() > 0) {

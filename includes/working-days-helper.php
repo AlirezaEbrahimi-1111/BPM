@@ -9,16 +9,31 @@
  */
 
 /**
- * دریافت تمام تاریخ‌های تعطیل از دیتابیس و cache در حافظه
- * تا در یک request یک‌بار به دیتابیس بزنیم
+ * دریافتِ تاریخ‌هایِ تعطیلِ «یک‌روزه» (type=date) از دیتابیس و cache در حافظه
+ * (کلیدِ کش بر اساسِ organization_id — تا در یک request که چندین سازمان رو
+ * پردازش می‌کنه، کشِ سازمانِ اول اشتباهی برایِ سازمانِ دوم استفاده نشه)
+ *
+ * دو مدلِ تعطیلی وجود داره:
+ *   ۱) سراسری (organization_id = NULL در دیتابیس) — همیشه برگردونده می‌شه
+ *   ۲) مخصوصِ سازمان — فقط اگر $organizationId داده بشه و مطابقت داشته باشه
+ *
+ * @param PDO      $db
+ * @param int|null $organizationId اگر null باشه، فقط تعطیلاتِ سراسری برمی‌گرده
+ *                                 (سازگار با فراخوانی‌هایِ قدیمی‌تر بدونِ این پارامتر)
  */
-function getHolidaySet(PDO $db): array {
-    static $holidaySet = null;
+function getHolidaySet(PDO $db, ?int $organizationId = null): array {
+    static $cache = [];
+    $cacheKey = $organizationId ?? 'global';
 
-    if ($holidaySet === null) {
+    if (!isset($cache[$cacheKey])) {
         $holidaySet = [];
         try {
-            $stmt = $db->query("SELECT holiday_date FROM holidays");
+            $stmt = $db->prepare("
+                SELECT holiday_date FROM holidays
+                WHERE type = 'date' AND holiday_date IS NOT NULL
+                  AND (organization_id IS NULL OR organization_id = :org_id)
+            ");
+            $stmt->execute(['org_id' => $organizationId]);
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $holidaySet[$row['holiday_date']] = true;
             }
@@ -26,21 +41,62 @@ function getHolidaySet(PDO $db): array {
             // اگر جدول holidays وجود نداشت، فقط جمعه‌ها حذف می‌شن
             error_log("holidays table error: " . $e->getMessage());
         }
+        $cache[$cacheKey] = $holidaySet;
     }
 
-    return $holidaySet;
+    return $cache[$cacheKey];
+}
+
+/**
+ * دریافتِ روزهایِ هفتهٔ تعطیلِ «تکرارشونده» (type=weekly، مثلاً هر پنج‌شنبه)
+ * برایِ یک سازمانِ خاص + تعطیلاتِ هفتگیِ سراسری. مقادیر بر اساسِ PHP
+ * date('w') هستن: ۰=یکشنبه، ۱=دوشنبه، ... ۵=جمعه، ۶=شنبه
+ *
+ * @return int[] لیستِ اعدادِ روزِ هفته (بدونِ تکرار)
+ */
+function getRecurringHolidayWeekdays(PDO $db, ?int $organizationId = null): array {
+    static $cache = [];
+    $cacheKey = $organizationId ?? 'global';
+
+    if (!isset($cache[$cacheKey])) {
+        $days = [];
+        try {
+            $stmt = $db->prepare("
+                SELECT DISTINCT day_of_week FROM holidays
+                WHERE type = 'weekly' AND day_of_week IS NOT NULL
+                  AND (organization_id IS NULL OR organization_id = :org_id)
+            ");
+            $stmt->execute(['org_id' => $organizationId]);
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $days[] = (int) $row['day_of_week'];
+            }
+        } catch (Exception $e) {
+            error_log("holidays table error (weekly): " . $e->getMessage());
+        }
+        $cache[$cacheKey] = $days;
+    }
+
+    return $cache[$cacheKey];
 }
 
 /**
  * بررسی اینکه یک تاریخ روز کاری هست یا نه
- * 
- * @param DateTime $date تاریخ مورد بررسی
- * @param array    $holidays آرایه تعطیلات (کلید = 'Y-m-d')
+ *
+ * @param DateTime $date             تاریخ مورد بررسی
+ * @param array    $holidays         آرایه تعطیلاتِ یک‌روزه (کلید = 'Y-m-d')
+ * @param int[]    $recurringWeekdays روزهایِ هفتهٔ تعطیلِ تکرارشونده (خروجیِ getRecurringHolidayWeekdays)
  * @return bool
  */
-function isWorkingDay(DateTime $date, array $holidays): bool {
+function isWorkingDay(DateTime $date, array $holidays, array $recurringWeekdays = []): bool {
+    $dayOfWeek = (int) $date->format('w');
+
     // جمعه = 5 در PHP (0=یکشنبه، 5=جمعه، 6=شنبه)
-    if ((int)$date->format('w') === 5) {
+    if ($dayOfWeek === 5) {
+        return false;
+    }
+
+    // تعطیلیِ هفتگیِ تکرارشونده (مثلاً هر پنج‌شنبه)
+    if (in_array($dayOfWeek, $recurringWeekdays, true)) {
         return false;
     }
 
@@ -63,14 +119,15 @@ function isWorkingDay(DateTime $date, array $holidays): bool {
  * @param DateTime $start   لحظه‌ی شروع
  * @param int      $hours   تعداد ساعتِ کاری که باید اضافه شود
  * @param array    $holidays آرایه‌ی تعطیلات (کلید = 'Y-m-d')
+ * @param int[]    $recurringWeekdays روزهایِ هفتهٔ تعطیلِ تکرارشونده (اختیاری)
  * @return DateTime لحظه‌ی نتیجه (یک شیِ DateTimeِ جدید — ورودی تغییر نمی‌کند)
  */
-function addWorkingHours(DateTime $start, int $hours, array $holidays): DateTime {
+function addWorkingHours(DateTime $start, int $hours, array $holidays, array $recurringWeekdays = []): DateTime {
     $cursor = clone $start;
     $remainingSeconds = $hours * 3600;
 
     while ($remainingSeconds > 0) {
-        if (isWorkingDay($cursor, $holidays)) {
+        if (isWorkingDay($cursor, $holidays, $recurringWeekdays)) {
             $midnight = (clone $cursor)->modify('tomorrow midnight');
             $secondsLeftToday = $midnight->getTimestamp() - $cursor->getTimestamp();
 
@@ -99,9 +156,10 @@ function addWorkingHours(DateTime $start, int $hours, array $holidays): DateTime
  * @param DateTime $start تاریخ شروع
  * @param DateTime $end   تاریخ پایان
  * @param array    $holidays آرایه تعطیلات
+ * @param int[]    $recurringWeekdays روزهایِ هفتهٔ تعطیلِ تکرارشونده (اختیاری)
  * @return int تعداد روزهای کاری (عدد مثبت یعنی end > start)
  */
-function countWorkingDaysBetween(DateTime $start, DateTime $end, array $holidays): int {
+function countWorkingDaysBetween(DateTime $start, DateTime $end, array $holidays, array $recurringWeekdays = []): int {
     $count  = 0;
     $cursor = clone $start;
     $cursor->setTime(0, 0, 0);
@@ -114,7 +172,7 @@ function countWorkingDaysBetween(DateTime $start, DateTime $end, array $holidays
 
     if ($forward) {
         while ($cursor < $endClean) {
-            if (isWorkingDay($cursor, $holidays)) {
+            if (isWorkingDay($cursor, $holidays, $recurringWeekdays)) {
                 $count++;
             }
             $cursor->modify('+1 day');
@@ -122,7 +180,7 @@ function countWorkingDaysBetween(DateTime $start, DateTime $end, array $holidays
     } else {
         // end < start یعنی گذشته از موعد → عدد منفی برمی‌گردونه
         while ($cursor > $endClean) {
-            if (isWorkingDay($cursor, $holidays)) {
+            if (isWorkingDay($cursor, $holidays, $recurringWeekdays)) {
                 $count++;
             }
             $cursor->modify('-1 day');

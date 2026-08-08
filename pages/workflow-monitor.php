@@ -16,9 +16,14 @@ if (!$user_id) {
     exit;
 }
 
+// این صفحه دسترسیِ مشروط داره، نه صرفاً سوپروایزری: طبقِ منطقِ همین حالا
+// در api/workflows/list.php، مدیر/سوپروایزر همهٔ روتین‌ها رو می‌بینه، ولی
+// کارمندِ عادی هم دسترسی داره و فقط چیزی که خودش ایجاد کرده یا مرحلهٔ فعالش
+// مالِ واحدِ خودشه رو می‌بینه (فیلتر در همون API انجام می‌شه، نه اینجا) —
+// پس گیتِ این صفحه فقط باید «کاربرِ فعال» باشه، نه یک اجازهٔ خاص
 $__me = loadUserForPermissions($db, (int) $user_id);
-if (!$__me || !hasPermission($__me, 'monitor_all_workflows')) {
-    header('Location: dashboard.php');
+if (!$__me) {
+    header('Location: ../index.php');
     exit;
 }
 ?>

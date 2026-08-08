@@ -68,8 +68,10 @@ if ($check_table) {
 
     if ($check_row) {
         $created_date = substr($check_row['created_at'], 0, 10);
-        $holidays = getHolidaySet($db);
-        $working_days = countWorkingDaysBetween(new DateTime($created_date), new DateTime(date('Y-m-d')), $holidays);
+        $__org_id = (int) ($current_user['organization_id'] ?? 0);
+        $holidays = getHolidaySet($db, $__org_id);
+        $recurringWeekdays = getRecurringHolidayWeekdays($db, $__org_id);
+        $working_days = countWorkingDaysBetween(new DateTime($created_date), new DateTime(date('Y-m-d')), $holidays, $recurringWeekdays);
 
         if ($working_days > $approval_deadline_days) {
             error_log("Attendance request approve denied (approval_deadline_days passed) | user_id={$user_id} | request_id={$request_id} | request_type={$request_type} | working_days={$working_days} | limit={$approval_deadline_days}");

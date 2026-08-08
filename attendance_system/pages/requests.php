@@ -845,7 +845,9 @@ usort($all_requests, function ($a, $b) {
 
 $requests_for_grid = [];
 $__type_labels = ['mission' => 'مأموریت', 'leave' => 'مرخصی', 'pass' => 'پاس', 'forget' => 'فراموشی', 'technical' => 'مشکل فنی'];
-$__holidays = getHolidaySet($db);
+$__my_org_id = (int) ($user['organization_id'] ?? 0);
+$__holidays = getHolidaySet($db, $__my_org_id);
+$__recurringWeekdays = getRecurringHolidayWeekdays($db, $__my_org_id);
 foreach ($all_requests as $req) {
     $type   = $req['type'];
     $status = $req['status'] ?? 'pending';
@@ -860,7 +862,7 @@ foreach ($all_requests as $req) {
             // کاملاً نادیده گرفته می‌شوند (هم‌راستا با edit.php/delete.php)
             $ca = new DateTime($req['created_at']);
             $nw = new DateTime();
-            $deadline = addWorkingHours($ca, (int) ($app_settings['pass_edit_hours'] ?? 24), $__holidays);
+            $deadline = addWorkingHours($ca, (int) ($app_settings['pass_edit_hours'] ?? 24), $__holidays, $__recurringWeekdays);
             $can_edit = $can_delete = ($nw <= $deadline);
         } else {
             $has_action = in_array($status, ['approved', 'rejected', 'cancelled']);

@@ -133,8 +133,12 @@ if ($request_target_date) {
     $today_str = date('Y-m-d');
     if ($request_target_date < $today_str) {
         $clickable_days_limit = (int) getSetting($db, 'clickable_days_limit', 5);
-        $holidays = getHolidaySet($db);
-        $working_days_passed = countWorkingDaysBetween(new DateTime($request_target_date), new DateTime($today_str), $holidays);
+        $__orgStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
+        $__orgStmt->execute([$user_id]);
+        $__org_id = (int) $__orgStmt->fetchColumn();
+        $holidays = getHolidaySet($db, $__org_id);
+        $recurringWeekdays = getRecurringHolidayWeekdays($db, $__org_id);
+        $working_days_passed = countWorkingDaysBetween(new DateTime($request_target_date), new DateTime($today_str), $holidays, $recurringWeekdays);
 
         if ($working_days_passed > $clickable_days_limit) {
             error_log("Attendance request create denied (clickable_days_limit passed) | user_id={$user_id} | type={$type} | target_date={$request_target_date} | working_days={$working_days_passed} | limit={$clickable_days_limit}");

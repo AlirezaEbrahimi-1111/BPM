@@ -6209,29 +6209,8 @@ body.login-page::after {
     }
 }
 
-/* ─── بج (همسان با notification-badge) ─── */
-.announcement-badge {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    font-size: 9px;
-    font-weight: 700;
-    min-width: 16px;
-    height: 16px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4px;
-    border: 2px solid white;
-    line-height: 1;
-}
-
-.announcement-badge.hidden {
-    display: none;
-}
+/* .announcement-badge حذف شد — اطلاعیه از حالا کلاسِ مشترکِ .notification-badge
+   رو استفاده می‌کنه (هم‌راستا با بجِ چت/زنگ) تا هر سه یک‌شکل باشن */
 
 /* ─── آیتم اطلاعیه (همسان با notification-item) ─── */
 .announcement-item {

@@ -128,10 +128,45 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
                 <div class="modal-body">
                     <form id="addHolidayForm">
                         <input type="hidden" id="holidayDate" name="holiday_date">
-                        <div class="mb-3">
+
+                        <!-- موقتاً غیرفعال: انتخابِ نوعِ تعطیلی (روزِ مشخص/هفتگی) — فقط روزِ
+                             مشخص فعاله؛ برایِ برگردوندنش، این input رو به همون <select> قبلی
+                             (با id="holidayType" و onchange="onHolidayTypeChange()") برگردونید -->
+                        <input type="hidden" id="holidayType" value="date">
+
+                        <div class="mb-3" id="holidayDateField">
                             <label class="form-label">تاریخ انتخاب شده</label>
                             <input type="text" class="form-control" id="holidayDateDisplay" readonly>
                         </div>
+
+                        <div class="mb-3" id="holidayWeekdayField" style="display:none;">
+                            <label class="form-label">روزِ هفته</label>
+                            <select class="form-select" id="holidayWeekday">
+                                <option value="6">شنبه</option>
+                                <option value="0">یکشنبه</option>
+                                <option value="1">دوشنبه</option>
+                                <option value="2">سه‌شنبه</option>
+                                <option value="3">چهارشنبه</option>
+                                <option value="4">پنج‌شنبه</option>
+                            </select>
+                        </div>
+
+                        <?php if ((int) $user_id === 1): ?>
+                        <div class="mb-3">
+                            <label class="form-label">دامنه</label>
+                            <select class="form-select" id="holidayScope">
+                                <option value="org">فقط سازمانِ من</option>
+                                <option value="global">سراسری (همهٔ سازمان‌ها)</option>
+                            </select>
+                        </div>
+                        <?php else: ?>
+                        <input type="hidden" id="holidayScope" value="org">
+                        <div class="mb-3 text-muted" style="font-size:.85rem;">
+                            <i class="bi bi-info-circle"></i>
+                            این تعطیلی فقط برایِ سازمانِ شما اعمال می‌شود.
+                        </div>
+                        <?php endif; ?>
+
                         <div class="mb-3">
                             <label class="form-label">عنوان تعطیلی</label>
                             <input type="text" class="form-control" id="holidayTitle" name="title"
@@ -167,8 +202,20 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         // متغیرهای سراسری - استفاده از authToken تعریف شده در header
         // ============================================
         let currentYear, currentMonth; // شمسی
-        let holidays = {};
+        let holidays = {}; // dateStr -> {id, title, type, is_global, can_delete, day_of_week}
         const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+        const persianWeekdayNames = { 0: 'یکشنبه', 1: 'دوشنبه', 2: 'سه‌شنبه', 3: 'چهارشنبه', 4: 'پنج‌شنبه', 5: 'جمعه', 6: 'شنبه' };
+
+        function toFa(n) {
+            if (n === null || n === undefined || n === '') return '';
+            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+        }
+
+        function onHolidayTypeChange() {
+            const isWeekly = document.getElementById('holidayType').value === 'weekly';
+            document.getElementById('holidayDateField').style.display = isWeekly ? 'none' : '';
+            document.getElementById('holidayWeekdayField').style.display = isWeekly ? '' : 'none';
+        }
 
         // ============================================
         // توابع تبدیل تاریخ
@@ -246,7 +293,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             const grid = document.getElementById('calendarGrid');
             const title = document.getElementById('calendarTitle');
 
-            title.textContent = `${persianMonths[currentMonth - 1]} ${currentYear}`;
+            title.textContent = `${persianMonths[currentMonth - 1]} ${toFa(currentYear)}`;
 
             // پاک کردن روزها (نگه داشتن هدرها)
             const dayNames = grid.querySelectorAll('.calendar-day-name');
@@ -287,8 +334,8 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
                 if (isToday) dayEl.classList.add('today');
 
                 dayEl.innerHTML = `
-                    <span class="day-number">${day}</span>
-                    ${isHoliday ? `<span class="day-label">${isHoliday}</span>` : ''}
+                    <span class="day-number">${toFa(day)}</span>
+                    ${isHoliday ? `<span class="day-label">${isHoliday.title}${isHoliday.type === 'weekly' ? ' 🔁' : ''}</span>` : ''}
                     ${isHoliday ? '<div class="holiday-indicator"></div>' : ''}
                 `;
 
@@ -310,14 +357,14 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
 
             // فیلتر تعطیلات این ماه
             const monthHolidays = [];
-            for (const [date, title] of Object.entries(holidays)) {
+            for (const [date, h] of Object.entries(holidays)) {
                 const [gy, gm, gd] = date.split('-').map(Number);
                 const [jy, jm, jd] = gregorianToJalali(gy, gm, gd);
                 if (jy === currentYear && jm === currentMonth) {
                     monthHolidays.push({
+                        ...h,
                         date: date,
-                        jalali: `${jy}/${String(jm).padStart(2, '0')}/${String(jd).padStart(2, '0')}`,
-                        title: title,
+                        jalali: `${toFa(jy)}/${toFa(String(jm).padStart(2, '0'))}/${toFa(String(jd).padStart(2, '0'))}`,
                         day: jd
                     });
                 }
@@ -339,12 +386,18 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             list.innerHTML = monthHolidays.map(h => `
                 <div class="holiday-item">
                     <div class="holiday-info">
-                        <span class="holiday-date">${h.jalali}</span>
-                        <span class="holiday-title">${h.title}</span>
+                        <span class="holiday-date">${h.jalali}${h.type === 'weekly' ? ' (هر ' + persianWeekdayNames[h.day_of_week] + ')' : ''}</span>
+                        <span class="holiday-title">
+                            ${h.title}
+                            <span class="badge ${h.is_global ? 'bg-primary' : 'bg-secondary'}" style="font-size:.65rem;">
+                                ${h.is_global ? 'سراسری' : 'سازمانِ من'}
+                            </span>
+                        </span>
                     </div>
-                    <button class="holiday-delete-btn" onclick="deleteHoliday('${h.date}')" title="حذف">
+                    ${h.can_delete ? `
+                    <button class="holiday-delete-btn" onclick="deleteHoliday(${h.id}, ${h.type === 'weekly'})" title="حذف">
                         <i class="bi bi-trash"></i>
-                    </button>
+                    </button>` : ''}
                 </div>
             `).join('');
         }
@@ -369,12 +422,18 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         // ============================================
         function handleDayClick(dateStr, jalaliStr, isFriday, existingHoliday) {
             if (existingHoliday) {
+                if (!existingHoliday.can_delete) {
+                    showToast('شما اجازهٔ حذفِ این تعطیلی را ندارید', 'info');
+                    return;
+                }
                 // حذف تعطیل (تأیید داخل خود deleteHoliday انجام می‌شود)
-                deleteHoliday(dateStr);
+                deleteHoliday(existingHoliday.id, existingHoliday.type === 'weekly');
             } else if (!isFriday) {
                 // افزودن تعطیل جدید
+                document.getElementById('holidayType').value = 'date';
+                onHolidayTypeChange();
                 document.getElementById('holidayDate').value = dateStr;
-                document.getElementById('holidayDateDisplay').value = jalaliStr;
+                document.getElementById('holidayDateDisplay').value = toFa(jalaliStr);
                 document.getElementById('holidayTitle').value = '';
                 document.getElementById('holidayDescription').value = '';
                 new bootstrap.Modal(document.getElementById('addHolidayModal')).show();
@@ -406,7 +465,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
                 if (data.success) {
                     holidays = {};
                     data.holidays.forEach(h => {
-                        holidays[h.holiday_date] = h.title;
+                        holidays[h.holiday_date] = h;
                     });
                 }
             } catch (error) {
@@ -422,13 +481,32 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         // ذخیره تعطیل جدید
         // ============================================
         async function saveHoliday() {
+            const type = document.getElementById('holidayType').value;
             const date = document.getElementById('holidayDate').value;
+            const dayOfWeek = document.getElementById('holidayWeekday').value;
+            const scope = document.getElementById('holidayScope').value;
             const title = document.getElementById('holidayTitle').value.trim();
             const description = document.getElementById('holidayDescription').value.trim();
 
             if (!title) {
                 alert('لطفاً عنوان تعطیلی را وارد کنید');
                 return;
+            }
+            if (type === 'date' && !date) {
+                alert('لطفاً یک تاریخ از روی تقویم انتخاب کنید');
+                return;
+            }
+
+            const payload = {
+                type: type,
+                scope: scope,
+                title: title,
+                description: description
+            };
+            if (type === 'weekly') {
+                payload.day_of_week = parseInt(dayOfWeek, 10);
+            } else {
+                payload.holiday_date = date;
             }
 
             showLoading(true);
@@ -439,11 +517,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + authToken
                     },
-                    body: JSON.stringify({
-                        holiday_date: date,
-                        title: title,
-                        description: description
-                    })
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await response.json();
@@ -466,8 +540,11 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         // ============================================
         // حذف تعطیل
         // ============================================
-        function deleteHoliday(dateStr) {
-            uiConfirm('آیا از حذف این روز تعطیل اطمینان دارید؟', async function () {
+        function deleteHoliday(id, isWeekly) {
+            const confirmMsg = isWeekly
+                ? 'این یک تعطیلیِ هفتگیِ تکرارشونده است — با حذف، همهٔ روزهای آینده هم دیگر تعطیل حساب نمی‌شوند. آیا مطمئنید؟'
+                : 'آیا از حذف این روز تعطیل اطمینان دارید؟';
+            uiConfirm(confirmMsg, async function () {
                 showLoading(true);
                 try {
                     const response = await fetch('/api/holidays/delete.php', {
@@ -476,7 +553,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
                             'Content-Type': 'application/json',
                             'Authorization': 'Bearer ' + authToken
                         },
-                        body: JSON.stringify({ holiday_date: dateStr })
+                        body: JSON.stringify({ id: id })
                     });
 
                     const data = await response.json();

@@ -298,10 +298,12 @@ try {
     // محاسبه is_expired برای هر درخواست
     // ============================================
     $today_str = date('Y-m-d');
-    $holidays = getHolidaySet($db);
+    $__org_id = (int) ($current_user['organization_id'] ?? 0);
+    $holidays = getHolidaySet($db, $__org_id);
+    $recurringWeekdays = getRecurringHolidayWeekdays($db, $__org_id);
     foreach ($pending_requests as &$req) {
         $created_date = substr($req['created_at'], 0, 10);
-        $working_days = countWorkingDaysBetween(new DateTime($created_date), new DateTime($today_str), $holidays);
+        $working_days = countWorkingDaysBetween(new DateTime($created_date), new DateTime($today_str), $holidays, $recurringWeekdays);
         $req['is_expired'] = ($working_days > $app_settings['approval_deadline_days']);
     }
     unset($req);

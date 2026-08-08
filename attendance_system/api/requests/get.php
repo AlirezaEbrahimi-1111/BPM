@@ -295,8 +295,12 @@ try {
         $pass_edit_hours = (int) getSetting($db, 'pass_edit_hours', 24);
         $created_at = new DateTime($request['created_at']);
         $now = new DateTime();
-        $holidays = getHolidaySet($db);
-        $deadline = addWorkingHours($created_at, $pass_edit_hours, $holidays);
+        $__orgStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
+        $__orgStmt->execute([$user_id]);
+        $__org_id = (int) $__orgStmt->fetchColumn();
+        $holidays = getHolidaySet($db, $__org_id);
+        $recurringWeekdays = getRecurringHolidayWeekdays($db, $__org_id);
+        $deadline = addWorkingHours($created_at, $pass_edit_hours, $holidays, $recurringWeekdays);
         $can_edit = $can_delete = ($now <= $deadline);
     } else {
         $has_approval = false;

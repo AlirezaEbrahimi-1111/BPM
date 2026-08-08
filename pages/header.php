@@ -31,31 +31,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 <link rel="stylesheet" href="<?= asset('/assets/fonts/Vazirmatn-font-face.css') ?>">
 
 <style>
-    /* یکدست‌سازی بج زنگ اعلان و مگافون اطلاعیه */
-    .notification-badge,
-    .announcement-badge {
-        position: absolute;
-        top: -4px;
-        min-width: 18px;
-        height: 18px;
-        padding: 0 5px;
-        background: #ef4444 !important;
-        /* قرمز یکسان */
-        color: #fff !important;
-        border: 2px solid #fff;
-        border-radius: 999px;
-        font-size: .68rem;
-        font-weight: 700;
-        line-height: 14px;
-        text-align: center;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
-    }
-
-    .notification-badge.hidden,
-    .announcement-badge.hidden {
+    /* یکدست‌سازیِ بجِ زنگِ اعلان/مگافونِ اطلاعیه/چت: هر سه از حالا کلاسِ
+       .notification-badge رو مشترک استفاده می‌کنن (تعریفِ اصلی در custom.css،
+       سمتِ راست، سایزِ ۲۰px) — این بلاک قبلاً یک نسخهٔ دوم و ناقص از همون
+       استایل بود که با !important روی بعضی از خاصیت‌ها (نه همه) با نسخهٔ
+       custom.css قاطی می‌شد و باعثِ ناهماهنگیِ بجِ اطلاعیه (که کلاسِ جداگانهٔ
+       announcement-badge داشت) می‌شد */
+    .notification-badge.hidden {
         display: none !important;
     }
 
@@ -170,6 +152,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                                 <i class="bi-diagram-3 ms-2"></i>نظارت بر روتین‌های فعال
                             </a>
                         </li>
+                        <li><a class="dropdown-item" href="../../attendance_system/pages/payroll-report.php"><i class="bi bi-cash-stack ms-2"></i>گزارش حقوق پرسنل</a></li>
                     </ul>
                 </li>
                 <!-- منوی مدیریت با زیرمنو (فقط برای مدیران) -->
@@ -222,7 +205,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                                 <i class="bi bi-shield-lock ms-2"></i>دستگاه‌های حضور و غیاب
                             </a>
                         </li>
-                        <li><a class="dropdown-item" href="../../attendance_system/pages/payroll-report.php"><i class="bi bi-cash-stack ms-2"></i>گزارش حقوق پرسنل</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -273,7 +255,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 <a href="#" class="nav-link position-relative settings-btn" id="announcementDropdown"
                     aria-expanded="false" style="display: inline-flex; align-items: center;">
                     <i class="bi bi-megaphone announcement-bell"></i>
-                    <span class="announcement-badge hidden" id="announcementBadge">0</span>
+                    <span class="notification-badge hidden" id="announcementBadge">0</span>
                 </a>
             </div>
 
@@ -365,6 +347,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     let annUnreadCount = 0;
     let annCache = {}; // ذخیرهٔ کاملِ اطلاعیه‌ها برای نمایش در مودال
 
+    // اعدادِ بج‌ها (زنگ/مگافون/چت) باید فارسی نمایش داده بشن
+    function toFa(n) {
+        if (n === null || n === undefined || n === '') return '';
+        return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+    }
+
     // ============================================
     // تابع کمکی URL
     // ============================================
@@ -399,7 +387,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         unreadCount = count;
 
         if (count > 0) {
-            badge.textContent = count > 99 ? '99+' : count;
+            badge.textContent = count > 99 ? '۹۹+' : toFa(count);
             badge.classList.remove('hidden');
 
             const bell = document.querySelector('.notification-bell');
@@ -502,7 +490,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         annUnreadCount = count;
 
         if (count > 0) {
-            badge.textContent = count > 99 ? '99+' : count;
+            badge.textContent = count > 99 ? '۹۹+' : toFa(count);
             badge.classList.remove('hidden');
             const icon = document.querySelector('.announcement-bell');
             if (icon) icon.classList.add('has-announcement');
@@ -935,7 +923,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             // گفتگوهای بی‌صداشده در شمارشِ زنگوله‌ی کلیِ هدر حساب نمی‌شوند
             const total = (data.conversations || []).reduce((sum, c) => sum + (c.is_muted ? 0 : (c.unread_count || 0)), 0);
             if (total > 0) {
-                badge.textContent = total > 99 ? '99+' : total;
+                badge.textContent = total > 99 ? '۹۹+' : toFa(total);
                 badge.classList.remove('hidden');
             } else {
                 badge.classList.add('hidden');
@@ -1410,10 +1398,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         const user = JSON.parse(userInfo);
         const isManager = (user.role === 'management' || user.role === 'supervisor');
         const isFullAdmin = (user.role === 'supervisor');
-        // روزهای تعطیل فقط برای مدیر کل سیستم (id=1)
+        // روزهای تعطیل: هر سوپروایزر می‌تونه تعطیلیِ سازمانِ خودش رو مدیریت کنه
+        // (تعطیلیِ سراسری همچنان فقط با id=1 قابلِ‌ساختنه، ولی خودِ صفحه باید
+        // برایِ همهٔ سوپروایزرها باز بشه)
         const holidaysItem = document.getElementById('holidaysMenuItem');
         if (holidaysItem) {
-            holidaysItem.style.display = (parseInt(user.id) === 1) ? 'block' : 'none';
+            holidaysItem.style.display = isFullAdmin ? 'block' : 'none';
         }
         const overviewMenu = document.getElementById('navOverview');
         if (overviewMenu) {
