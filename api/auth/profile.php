@@ -34,20 +34,21 @@ try {
 
     // دریافت اطلاعات کاربر
     $stmt = $db->prepare("
-        SELECT 
-            id, 
-            username, 
-            phone, 
-            first_name, 
-            last_name, 
+        SELECT
+            id,
+            username,
+            phone,
+            first_name,
+            last_name,
             email,
             activity_section,
             can_create_routine,
             is_active,
             created_at,
             updated_at,
-            role
-        FROM users 
+            role,
+            avatar_path
+        FROM users
         WHERE id = ? AND is_active = 1
     ");
     $stmt->execute([$user_id]);

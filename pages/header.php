@@ -256,6 +256,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
             <div class="navbar-divider"></div>
             <div class="nav-item">
+                <a class="nav-link settings-btn position-relative" href="../../pages/chat.php" title="گفتگوها">
+                    <i class="bi bi-chat-dots" style="font-size:1.2rem;color:var(--icon-accent);"></i>
+                    <span class="notification-badge hidden" id="chatUnreadBadge">0</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
                 <a class="nav-link settings-btn" href="../../pages/tickets.php" title="تیکت‌ها">
                     <i class="bi bi-headset" style="font-size:1.2rem;color:var(--icon-accent);"></i>
                 </a>
@@ -383,7 +390,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     // بروزرسانی badge
     // ============================================
     function updateBadge(count) {
-        const badge = document.querySelector('.notification-badge');
+        // ⚠️ عمداً با شناسه (نه با کلاسِ عمومیِ notification-badge): چون بجِ چت هم
+        // همین کلاس رو داره و querySelector فقط اولین match رو برمی‌گردونه، قبلاً
+        // این تابع به‌جای زنگوله، گاهی بجِ چت رو (که زودتر توی DOM میاد) آپدیت می‌کرد
+        const badge = document.getElementById('notificationBadge');
         if (!badge) return;
 
         unreadCount = count;
@@ -908,6 +918,34 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         }
     }
     // ============================================
+    // ✅ نشانگرِ پیام‌های خوانده‌نشدهٔ چت (هدر)
+    // ============================================
+    async function updateChatUnreadBadge() {
+        if (!authToken) return;
+        const badge = document.getElementById('chatUnreadBadge');
+        if (!badge) return;
+        try {
+            const response = await fetch('/api/chat/conversations.php', {
+                headers: { 'Authorization': 'Bearer ' + authToken },
+                cache: 'no-store'
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            if (!data.success) return;
+            // گفتگوهای بی‌صداشده در شمارشِ زنگوله‌ی کلیِ هدر حساب نمی‌شوند
+            const total = (data.conversations || []).reduce((sum, c) => sum + (c.is_muted ? 0 : (c.unread_count || 0)), 0);
+            if (total > 0) {
+                badge.textContent = total > 99 ? '99+' : total;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error('❌ خطا در بررسی پیام‌های خوانده‌نشده:', error);
+        }
+    }
+
+    // ============================================
     // ✅ بارگذاری وضعیت حضور و غیاب - نسخه مینیمال
     // ============================================
     async function loadAttendanceStatus() {
@@ -926,7 +964,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 headers: {
                     'Authorization': 'Bearer ' + authToken,
                     'Content-Type': 'application/json'
-                }
+                },
+                cache: 'no-store',
+                // 🔒 اگه درخواست به هر دلیلی (تداخل با درخواست‌های دیگه، شبکه، ...) خیلی طول
+                // بکشه، به‌جای گیرکردنِ ابدیِ اسپینر، بعد از ۸ ثانیه لغو و مخفی می‌شه
+                signal: AbortSignal.timeout(8000)
             });
 
             const contentType = response.headers.get('content-type');
@@ -1517,10 +1559,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             if (authToken) {
                 loadNotifications();
                 loadAttendanceStatus();
+                updateChatUnreadBadge();
 
                 // بررسی هر 30 ثانیه
                 setInterval(checkNewNotifications, 30000);
                 setInterval(loadAttendanceStatus, 60000);
+                setInterval(updateChatUnreadBadge, 15000);
             }
             highlightActiveMenu();
         }
@@ -1530,6 +1574,18 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         } else {
             initializeHeader();
         }
+
+        // 🔒 وقتی صفحه از bfcache مرورگر (دکمه‌ی back/forward) برمی‌گرده، اسکریپت از
+        // نو اجرا نمی‌شه — DOM دقیقاً با همون وضعیتِ قبلی (مثلاً بجِ خوانده‌نشده‌ی
+        // قدیمی) فریز می‌مونه تا تایمرهای قبلی به‌طور طبیعی برسن و اصلاحش کنن. برای
+        // اینکه بجِ چت/اعلان‌ها و آیکنِ حضور بلافاصله به‌روز باشن، همین‌جا دوباره صدا زده می‌شن.
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted && authToken) {
+                updateChatUnreadBadge();
+                loadAttendanceStatus();
+                loadNotifications();
+            }
+        });
     })();
 </script>
 <!-- تعریف مسیر صحیح check-subscription -->

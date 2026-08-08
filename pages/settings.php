@@ -86,6 +86,10 @@ require_once '../includes/version.php';
             display: flex; align-items: center; justify-content: center;
             color: #fff; font-size: 1.6rem; font-weight: 700;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+        .avatar-ring img {
+            width: 100%; height: 100%; object-fit: cover;
         }
         .user-meta { font-size: .82rem; color: #6b7280; }
         .user-role {
@@ -163,7 +167,8 @@ require_once '../includes/version.php';
         <div class="right-col">
             <div class="s-card">
                 <div class="d-flex flex-column align-items-center text-center gap-2">
-                    <div class="avatar-ring" id="avatarInitials">؟</div>
+                    <div class="avatar-ring" id="avatarInitials" onclick="document.getElementById('avatarFileInput').click()" style="cursor:pointer; position:relative;" title="تغییرِ عکسِ پروفایل">؟</div>
+                    <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(this.files[0])">
                     <div class="fw-semibold" id="headerFullName" style="font-size:.95rem">در حال بارگذاری...</div>
                     <div class="user-meta" id="headerPhone">—</div>
                     <div>
@@ -305,6 +310,27 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('passwordForm').addEventListener('submit', changePassword);
 });
 
+async function uploadAvatar(file) {
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('avatar', file);
+    try {
+        const r = await fetch('../api/profile/upload-avatar.php', { method: 'POST', headers: ah(), body: fd });
+        const d = await r.json();
+        document.getElementById('avatarFileInput').value = '';
+        if (d.success) {
+            currentUser.avatar_path = d.avatar_path;
+            fillForm();
+            var info = JSON.parse(localStorage.getItem('user_info') || '{}');
+            info.avatar_path = d.avatar_path;
+            localStorage.setItem('user_info', JSON.stringify(info));
+            showToast('عکسِ پروفایل بروزرسانی شد', 'success');
+        } else {
+            showToast(d.message || 'خطا در آپلودِ عکس', 'danger');
+        }
+    } catch { showToast('خطا در ارتباط با سرور', 'danger'); }
+}
+
 async function loadProfile() {
     try {
         const r = await fetch('../api/auth/profile.php', { headers: ah() });
@@ -320,7 +346,8 @@ function fillForm() {
     const fullName = [u.first_name, u.last_name].filter(Boolean).join(' ') || '—';
     const initials = fullName.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
-    document.getElementById('avatarInitials').textContent = initials || '؟';
+    var avatarEl = document.getElementById('avatarInitials');
+    avatarEl.innerHTML = u.avatar_path ? '<img src="../' + u.avatar_path + '" alt="">' : (initials || '؟');
     document.getElementById('headerFullName').textContent = fullName;
     document.getElementById('headerPhone').textContent    = u.phone || '—';
     document.getElementById('headerRole').textContent     = ROLE_NAMES[u.role] || u.role || '—';
