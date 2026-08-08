@@ -8,6 +8,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 
 try {
     $database = new Database();
@@ -45,29 +47,10 @@ $action = $data['action'] ?? 'approve';
 $notes = $data['notes'] ?? null;
 
 // ============================================
-// بررسی مهلت ۳ روز کاری
+// بررسی مهلتِ تأیید — طبقِ تنظیماتِ واقعی (approval_deadline_days)، نه هاردکد،
+// و با همان تابعِ مشترکِ روزِ کاری (includes/working-days-helper.php)
 // ============================================
-function countWorkingDaysBetween($from_date, $to_date, $db)
-{
-    $start = new DateTime($from_date);
-    $end = new DateTime($to_date);
-    $stmt = $db->prepare("SELECT holiday_date FROM holidays WHERE holiday_date >= ? AND holiday_date <= ?");
-    $stmt->execute([$start->format('Y-m-d'), $end->format('Y-m-d')]);
-    $holidays = [];
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $h) {
-        $holidays[$h['holiday_date']] = true;
-    }
-    $count = 0;
-    $current = clone $start;
-    while ($current < $end) {
-        $d = $current->format('Y-m-d');
-        if ($current->format('l') !== 'Friday' && !isset($holidays[$d])) {
-            $count++;
-        }
-        $current->modify('+1 day');
-    }
-    return $count;
-}
+$approval_deadline_days = (int) getSetting($db, 'approval_deadline_days', 3);
 
 // تعیین نام جدول بر اساس نوع
 $table_map = [
@@ -85,13 +68,14 @@ if ($check_table) {
 
     if ($check_row) {
         $created_date = substr($check_row['created_at'], 0, 10);
-        $working_days = countWorkingDaysBetween($created_date, date('Y-m-d'), $db);
+        $holidays = getHolidaySet($db);
+        $working_days = countWorkingDaysBetween(new DateTime($created_date), new DateTime(date('Y-m-d')), $holidays);
 
-        if ($working_days > 30) {
-            error_log("Attendance request approve denied (30-working-day deadline passed) | user_id={$user_id} | request_id={$request_id} | request_type={$request_type} | working_days={$working_days}");
+        if ($working_days > $approval_deadline_days) {
+            error_log("Attendance request approve denied (approval_deadline_days passed) | user_id={$user_id} | request_id={$request_id} | request_type={$request_type} | working_days={$working_days} | limit={$approval_deadline_days}");
             echo json_encode([
                 'success' => false,
-                'message' => 'مهلت تأیید/رد این درخواست (۳ روز کاری) گذشته است.'
+                'message' => "مهلت تأیید/رد این درخواست ({$approval_deadline_days} روز کاری) گذشته است."
             ], JSON_UNESCAPED_UNICODE);
             exit;
         }

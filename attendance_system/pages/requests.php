@@ -45,36 +45,6 @@ $forget_requests = [];
 $technical_issue = [];
 $pending_approvals = []; // درخواست‌های منتظر تأیید من
 
-/**
- * محاسبه تعداد روزهای کاری بین دو تاریخ
- */
-function countWorkingDays($from_date, $to_date, $db)
-{
-    $start = new DateTime($from_date);
-    $end = new DateTime($to_date);
-    $count = 0;
-
-    // دریافت تعطیلات
-    $stmt = $db->prepare("SELECT holiday_date FROM holidays WHERE holiday_date >= ? AND holiday_date <= ?");
-    $stmt->execute([$start->format('Y-m-d'), $end->format('Y-m-d')]);
-    $holidays = [];
-
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $h) {
-        $holidays[$h['holiday_date']] = true;
-    }
-
-    $current = clone $start;
-
-    while ($current < $end) {
-        $d = $current->format('Y-m-d');
-        $is_friday = ($current->format('l') === 'Friday');
-        if (!$is_friday && !isset($holidays[$d])) {
-            $count++;
-        }
-        $current->modify('+1 day');
-    }
-    return $count;
-}
 // ============================================
 // توابع کمکی برای محاسبات
 // ============================================

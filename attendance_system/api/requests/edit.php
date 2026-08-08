@@ -12,6 +12,7 @@ date_default_timezone_set('Asia/Tehran');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
 
 try {
     $database = new Database();
@@ -78,16 +79,17 @@ try {
     $error_message = '';
 
     if ($request_type === 'pass') {
-        // پاس: تا 24 ساعت بعد از ارسال
+        // پاس: تا pass_edit_hours ساعت بعد از ارسال (طبقِ تنظیماتِ واقعی، نه هاردکد)
+        $pass_edit_hours = (int) getSetting($db, 'pass_edit_hours', 24);
         $created_at = new DateTime($request['created_at']);
         $now = new DateTime();
         $diff = $now->getTimestamp() - $created_at->getTimestamp();
         $hours_passed = $diff / 3600;
 
-        if ($hours_passed <= 24) {
+        if ($hours_passed <= $pass_edit_hours) {
             $can_edit = true;
         } else {
-            $error_message = 'مهلت ویرایش درخواست پاس (۲۴ ساعت) به پایان رسیده است';
+            $error_message = "مهلت ویرایش درخواست پاس ({$pass_edit_hours} ساعت) به پایان رسیده است";
         }
     } else {
         // بقیه: تا قبل از اولین تأیید

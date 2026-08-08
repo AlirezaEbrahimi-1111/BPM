@@ -114,6 +114,39 @@ if (!$type) {
     exit;
 }
 
+// 🔒 محدودیتِ روزهایِ کاری برایِ ثبتِ درخواست — طبقِ تنظیمِ clickable_days_limit،
+// این‌بار سمتِ سرور. قبلاً این محدودیت فقط در جاوااسکریپتِ گریدِ تقویم اعمال
+// می‌شد (کدامِ روزها قابلِ‌کلیک‌اند) و با فراخوانیِ مستقیمِ همین API (بدونِ
+// رفتن از فرم) کاملاً قابلِ‌دورزدن بود.
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+
+$request_target_date = null;
+if (in_array($type, ['mission', 'leave'], true) && !empty($data['start_datetime'])) {
+    $request_target_date = substr($data['start_datetime'], 0, 10);
+} elseif ($type === 'pass' && !empty($data['pass_date'])) {
+    $request_target_date = substr($data['pass_date'], 0, 10);
+} elseif (in_array($type, ['forget', 'technical'], true) && !empty($data['datetime'])) {
+    $request_target_date = substr($data['datetime'], 0, 10);
+}
+
+if ($request_target_date) {
+    $today_str = date('Y-m-d');
+    if ($request_target_date < $today_str) {
+        $clickable_days_limit = (int) getSetting($db, 'clickable_days_limit', 5);
+        $holidays = getHolidaySet($db);
+        $working_days_passed = countWorkingDaysBetween(new DateTime($request_target_date), new DateTime($today_str), $holidays);
+
+        if ($working_days_passed > $clickable_days_limit) {
+            error_log("Attendance request create denied (clickable_days_limit passed) | user_id={$user_id} | type={$type} | target_date={$request_target_date} | working_days={$working_days_passed} | limit={$clickable_days_limit}");
+            echo json_encode([
+                'success' => false,
+                'message' => "مهلتِ ثبتِ درخواست برایِ این تاریخ ({$clickable_days_limit} روزِ کاری) گذشته است."
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+    }
+}
+
 $start_time = $_POST['start_time'] ?? '';
 $end_time = $_POST['end_time'] ?? '';
 

@@ -14,6 +14,7 @@ date_default_timezone_set('Asia/Tehran');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 // $db حالا آماده‌ست
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 $auth = new Auth($db);
@@ -37,34 +38,6 @@ $stmt->execute([$user_id]);
 $current_user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $pending_requests = [];
-// ============================================
-// تابع محاسبه روزهای کاری بین دو تاریخ
-// ============================================
-function countWorkingDaysBetween($from_date, $to_date, $db)
-{
-    $start = new DateTime($from_date);
-    $end = new DateTime($to_date);
-
-    // دریافت تعطیلات
-    $stmt = $db->prepare("SELECT holiday_date FROM holidays WHERE holiday_date >= ? AND holiday_date <= ?");
-    $stmt->execute([$start->format('Y-m-d'), $end->format('Y-m-d')]);
-    $holidays = [];
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $h) {
-        $holidays[$h['holiday_date']] = true;
-    }
-
-    $count = 0;
-    $current = clone $start;
-    while ($current < $end) {
-        $d = $current->format('Y-m-d');
-        $is_friday = ($current->format('l') === 'Friday');
-        if (!$is_friday && !isset($holidays[$d])) {
-            $count++;
-        }
-        $current->modify('+1 day');
-    }
-    return $count;
-}
 try {
     // ============================================
     // 1. درخواست‌های مرخصی منتظر تأیید جانشین
@@ -325,9 +298,10 @@ try {
     // محاسبه is_expired برای هر درخواست
     // ============================================
     $today_str = date('Y-m-d');
+    $holidays = getHolidaySet($db);
     foreach ($pending_requests as &$req) {
         $created_date = substr($req['created_at'], 0, 10);
-        $working_days = countWorkingDaysBetween($created_date, $today_str, $db);
+        $working_days = countWorkingDaysBetween(new DateTime($created_date), new DateTime($today_str), $holidays);
         $req['is_expired'] = ($working_days > $app_settings['approval_deadline_days']);
     }
     unset($req);
