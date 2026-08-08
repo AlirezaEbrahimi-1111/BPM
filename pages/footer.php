@@ -37,8 +37,7 @@ require_once '../includes/version.php';
     <span class="company">یکتا همراهان ملک</span>
         <span> | </span>
         <span class="footer-version" style="border-bottom:1px currentColor;"
-              data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top"
-              title="سیستمِ گفتگویِ داخلیِ سازمان اضافه شد (چتِ مستقیم و گروهی، پاسخ، ویرایش، حذف، فوروارد، ری‌اکشنِ ایموجی، عکسِ پروفایل)<br>دستیارِ هوشِ مصنوعی برایِ پاسخ به سؤالاتِ کارها (نسخه‌ی آزمایشی)<br>مهلتِ ثبت/ویرایش/تأییدِ درخواست‌هایِ حضور‌و‌غیاب طبقِ روزهایِ کاریِ واقعی محاسبه می‌شود<br>رفعِ اشکالِ کوچکِ دکمه‌یِ ورود">
+              data-bs-toggle="tooltip" data-bs-html="true" data-bs-placement="top">
             نسخه: ۴.۳
         </span>
 </div>
