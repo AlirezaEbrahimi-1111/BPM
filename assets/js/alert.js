@@ -206,3 +206,54 @@ function showToast(message, type = 'success', options = {}) {
 
     return { close: closeToast };  // ◄ قابلیت بستن دستی از بیرون
 }
+
+/**
+ * showInlineError — نمایشِ خطای پایدار داخلِ یک بخش از صفحه
+ *
+ * برخلافِ showToast (که گذراست و برایِ نتیجهٔ یک عملیات مناسبه)، این تابع
+ * برایِ وقتیه که بارگذاریِ یک لیست/جدول/بخش شکست می‌خوره: محتوایِ همون
+ * بخش با یک پیغامِ خطا جایگزین می‌شه و تا تلاشِ بعدی همون‌جا می‌مونه —
+ * چون اگه فقط toast نشون بدیم، خودِ بخش خالی/نصفه می‌مونه بدونِ توضیح.
+ *
+ * @param {string}          containerId    - id المانی که innerHTML‌ش جایگزین می‌شه
+ * @param {string}          message        - متنِ خطا (خودکار escape می‌شه، برایِ جلوگیری از XSS)
+ * @param {Object}          [opts]
+ * @param {Function|string} [opts.onRetry]   - تابع یا نامِ تابعِ سراسری برایِ دکمهٔ «تلاش مجدد»؛ اگر ندید، دکمه نمایش داده نمی‌شه
+ * @param {boolean}         [opts.asTableRow=false] - اگر true، به‌جایِ div یک <tr><td> می‌سازه (برایِ tbody)
+ * @param {number}          [opts.colspan=1] - فقط وقتی asTableRow=true
+ *
+ * @example
+ * showInlineError('activitiesContainer', 'خطا در بارگذاری', { onRetry: loadTodayActivities });
+ * showInlineError('tasksTableBody', 'خطا در بارگذاری', { asTableRow: true, colspan: 11 });
+ */
+function showInlineError(containerId, message, opts = {}) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+
+    const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const safeMsg = esc(message);
+
+    const retryId = 'inlineErrorRetry_' + containerId;
+    const retryBtn = opts.onRetry
+        ? `<button class="btn btn-primary btn-sm mt-2" id="${retryId}"><i class="bi bi-arrow-clockwise me-2"></i>تلاش مجدد</button>`
+        : '';
+
+    const body = `
+        <div class="empty-state">
+            <i class="bi bi-exclamation-triangle text-danger"></i>
+            <h5 class="text-danger">خطا</h5>
+            <p>${safeMsg}</p>
+            ${retryBtn}
+        </div>
+    `;
+
+    el.innerHTML = opts.asTableRow
+        ? `<tr><td colspan="${opts.colspan || 1}">${body}</td></tr>`
+        : body;
+
+    if (opts.onRetry) {
+        const btn = document.getElementById(retryId);
+        const handler = typeof opts.onRetry === 'function' ? opts.onRetry : window[opts.onRetry];
+        if (btn && typeof handler === 'function') btn.addEventListener('click', handler);
+    }
+}

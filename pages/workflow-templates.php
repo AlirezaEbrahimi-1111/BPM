@@ -1087,10 +1087,10 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 });
                 const data = await response.json();
                 if (data.success) renderTemplates(data.templates);
-                else showToast(data.message, 'danger');
+                else showToast(data.message, 'error');
             } catch (e) {
                 console.error(e);
-                showToast('خطا در بارگذاری لیست', 'danger');
+                showToast('خطا در بارگذاری لیست', 'error');
             }
         }
 
@@ -1167,11 +1167,11 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                         showToast(data.message, 'success');
                         loadTemplates();
                     } else {
-                        showToast(data.message || 'تغییر وضعیت انجام نشد', 'danger');
+                        showToast(data.message || 'تغییر وضعیت انجام نشد', 'error');
                     }
                 } catch (e) {
                     console.error(e);
-                    showToast('خطا در ارتباط با سرور', 'danger');
+                    showToast('خطا در ارتباط با سرور', 'error');
                 }
             });
         }
@@ -1205,7 +1205,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 });
                 const data = await response.json();
                 if (!data.success) {
-                    showToast(data.message, 'danger');
+                    showToast(data.message, 'error');
                     return;
                 }
 
@@ -1236,7 +1236,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 new bootstrap.Modal(document.getElementById('templateModal')).show();
             } catch (e) {
                 console.error(e);
-                showToast('خطا در بارگذاری اطلاعات', 'danger');
+                showToast('خطا در بارگذاری اطلاعات', 'error');
             }
         }
 
@@ -1276,7 +1276,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 const data = await response.json();
 
                 if (!data.success) {
-                    showToast(data.message, 'danger');
+                    showToast(data.message, 'error');
                     return;
                 }
 
@@ -1301,7 +1301,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 new bootstrap.Modal(document.getElementById('templateModal')).show();
             } catch (e) {
                 console.error(e);
-                showToast('خطا در بارگذاری اطلاعات', 'danger');
+                showToast('خطا در بارگذاری اطلاعات', 'error');
             }
         }
         // ─── بازتعریف (ساخت نسخهٔ جدید از روی قالب) ──────────
@@ -1316,7 +1316,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 });
                 const data = await response.json();
                 if (!data.success) {
-                    showToast(data.message, 'danger');
+                    showToast(data.message, 'error');
                     return;
                 }
 
@@ -1348,7 +1348,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 new bootstrap.Modal(document.getElementById('templateModal')).show();
             } catch (e) {
                 console.error(e);
-                showToast('خطا در بارگذاری اطلاعات', 'danger');
+                showToast('خطا در بارگذاری اطلاعات', 'error');
             }
         }
         // ─── افزودن مرحله ────────────────────────────────
@@ -1819,10 +1819,10 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                     bootstrap.Modal.getInstance(document.getElementById('templateModal')).hide();
                     loadTemplates();
                 } else {
-                    showToast(data.message, 'danger');
+                    showToast(data.message, 'error');
                 }
             } catch (e) {
-                showToast('خطا در ارتباط با سرور', 'danger');
+                showToast('خطا در ارتباط با سرور', 'error');
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = '<i class="bi bi-check2"></i> ذخیره';
@@ -1847,9 +1847,9 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                     if (data.success) {
                         showToast(data.message, 'success');
                         loadTemplates();
-                    } else showToast(data.message, 'danger');
+                    } else showToast(data.message, 'error');
                 } catch (e) {
-                    showToast('خطا در حذف', 'danger');
+                    showToast('خطا در حذف', 'error');
                 }
             }, {
                 danger: true,
@@ -1859,39 +1859,8 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
         }
 
         // ─── Toast ────────────────────────────────────────
-        function showToast(msg, type = 'info') {
-            const colors = {
-                success: '#10b981',
-                danger: '#ef4444',
-                warning: '#f59e0b',
-                info: '#6366f1'
-            };
-            const icons = {
-                success: 'check-circle-fill',
-                danger: 'x-circle-fill',
-                warning: 'exclamation-triangle-fill',
-                info: 'info-circle-fill'
-            };
-
-            const el = document.createElement('div');
-            el.style.cssText = `
-                position:fixed; bottom:24px; left:24px; z-index:9999;
-                background:${colors[type]}; color:white;
-                padding:12px 18px; border-radius:10px;
-                font-size:0.875rem; font-weight:500;
-                display:flex; align-items:center; gap:9px;
-                box-shadow:0 8px 24px rgba(0,0,0,0.15);
-                animation: fadeInUp 0.25s ease;
-            `;
-            el.innerHTML = `<i class="bi bi-${icons[type]}"></i>${msg}`;
-
-            const style = document.createElement('style');
-            style.textContent = `@keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }`;
-            document.head.appendChild(style);
-
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 4000);
-        }
+        // showToast از assets/js/alert.js (لودشده در header.php) استفاده می‌شود —
+        // قبلاً اینجا یک نسخهٔ محلیِ جداگانه بازتعریف می‌شد که آن را می‌پوشاند
 
         // ─── Utils ────────────────────────────────────────
         function escHtml(str) {

@@ -348,9 +348,9 @@ async function uploadAvatar(file) {
             localStorage.setItem('user_info', JSON.stringify(info));
             showToast('عکسِ پروفایل بروزرسانی شد', 'success');
         } else {
-            showToast(d.message || 'خطا در آپلودِ عکس', 'danger');
+            showToast(d.message || 'خطا در آپلودِ عکس', 'error');
         }
-    } catch { showToast('خطا در ارتباط با سرور', 'danger'); }
+    } catch { showToast('خطا در ارتباط با سرور', 'error'); }
 }
 
 async function loadProfile() {
@@ -359,8 +359,8 @@ async function loadProfile() {
         if (r.status === 401) { localStorage.removeItem('auth_token'); location.href = '../index.php'; return; }
         const d = await r.json();
         if (d.success) { currentUser = d.user; fillForm(); }
-        else showToast(d.message || 'خطا در بارگذاری', 'danger');
-    } catch { showToast('خطا در ارتباط با سرور', 'danger'); }
+        else showToast(d.message || 'خطا در بارگذاری', 'error');
+    } catch { showToast('خطا در ارتباط با سرور', 'error'); }
 }
 
 function fillForm() {
@@ -528,21 +528,8 @@ function showFormAlert(containerId, msg, type) {
 function clearFormAlert(id) { document.getElementById(id).innerHTML = ''; }
 
 // تابع showToast در صورت نیاز (در کد اصلی شما باید وجود داشته باشد، ولی در اینجا تعریف می‌کنیم)
-function showToast(msg, type) {
-    // یک toast ساده با alert موقت (می‌توانید با bootstrap toast جایگزین کنید)
-    const toast = document.createElement('div');
-    toast.className = `alert alert-${type} fixed-bottom m-3 p-2 small`;
-    toast.style.position = 'fixed';
-    toast.style.bottom = '20px';
-    toast.style.left = '20px';
-    toast.style.zIndex = '9999';
-    toast.style.backgroundColor = type === 'success' ? '#10b981' : '#ef4444';
-    toast.style.color = 'white';
-    toast.style.borderRadius = '8px';
-    toast.innerText = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-}
+// showToast از assets/js/alert.js (لودشده در header.php) استفاده می‌شود —
+// قبلاً اینجا یک نسخهٔ محلیِ جداگانه بازتعریف می‌شد که آن را می‌پوشاند
 </script>
 </body>
 </html>

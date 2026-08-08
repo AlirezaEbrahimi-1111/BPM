@@ -3143,30 +3143,31 @@ if (!$__me) {
 
         function confirmLeaveGroup() {
             if (!activeConversationId) return;
-            if (!confirm('آیا مطمئنید می‌خواهید از این گروه خارج شوید؟')) return;
-            fetch('../api/chat/leave-group.php', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + authToken,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ conversation_id: activeConversationId })
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        var modalInst = bootstrap.Modal.getInstance(document.getElementById('groupInfoModal'));
-                        if (modalInst) modalInst.hide();
-                        closeConversation();
-                        document.getElementById('chatPlaceholder').style.display = 'flex';
-                        document.getElementById('chatActiveView').style.display = 'none';
-                        activeConversationId = null;
-                        loadConversations();
-                        showToast('از گروه خارج شدید', 'success');
-                    } else {
-                        showToast(data.message || 'خطا در خروج از گروه', 'error');
-                    }
-                });
+            uiConfirm('آیا مطمئنید می‌خواهید از این گروه خارج شوید؟', function () {
+                fetch('../api/chat/leave-group.php', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ conversation_id: activeConversationId })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            var modalInst = bootstrap.Modal.getInstance(document.getElementById('groupInfoModal'));
+                            if (modalInst) modalInst.hide();
+                            closeConversation();
+                            document.getElementById('chatPlaceholder').style.display = 'flex';
+                            document.getElementById('chatActiveView').style.display = 'none';
+                            activeConversationId = null;
+                            loadConversations();
+                            showToast('از گروه خارج شدید', 'success');
+                        } else {
+                            showToast(data.message || 'خطا در خروج از گروه', 'error');
+                        }
+                    });
+            }, { danger: true, yesText: 'بله، خروج', noText: 'انصراف' });
         }
 
         // «آخرین بازدید از صفحه‌ی چت» به‌صورتِ نسبی (مثلِ تلگرام)

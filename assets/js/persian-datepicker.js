@@ -111,12 +111,13 @@ class PersianDatePicker {
             const label = isHoliday
                 ? (this.holidayTitles[gregStr] || 'تعطیل رسمی')
                 : 'جمعه';
-            const confirmed = window.confirm(
-                `روز انتخابی (${this.formatDate(year, month, day)}) «${label}» است.\nآیا مطمئن هستید؟`
+            uiConfirm(
+                `روز انتخابی (${this.formatDate(year, month, day)}) «${label}» است.\nآیا مطمئن هستید؟`,
+                () => this.selectDate(year, month, day, true)
             );
-            if (!confirmed) return;
+            return;
         }
-    
+
         this.selectedDate = { year, month, day };
         const formatted = this.formatDate(year, month, day);
         const gregorian = this.jalaliToGregorian(year, month, day);

@@ -357,9 +357,9 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             showToast(message, map[type] || type);
         }
 
+        // showError از showInlineError مشترک (assets/js/alert.js) استفاده می‌کنه
         function showError(message) {
-            document.getElementById('templatesContainer').innerHTML = 
-                `<div class="text-center text-danger p-5">${message}</div>`;
+            showInlineError('templatesContainer', message, { onRetry: loadTemplates });
         }
     </script>
     <?php include 'footer.php'; ?>

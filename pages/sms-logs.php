@@ -197,9 +197,9 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             container.innerHTML = html;
         }
 
+        // showError از showInlineError مشترک (assets/js/alert.js) استفاده می‌کنه
         function showError(message) {
-            document.getElementById('logsContainer').innerHTML = 
-                `<div class="text-center text-danger p-5">${message}</div>`;
+            showInlineError('logsContainer', message, { onRetry: loadLogs });
         }
     </script>
     <?php include 'footer.php'; ?>

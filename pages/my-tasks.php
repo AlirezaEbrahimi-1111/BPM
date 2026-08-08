@@ -834,9 +834,11 @@ if (!$__me) {
         // ========================================
 
 
+        // قبلاً فقط console.error می‌زد و هیچ پیغامی به کاربر نشون داده نمی‌شد
         function showError(msg) {
             console.error('خطا:', msg);
             if (gridApi) gridApi.setGridOption('rowData', []);
+            showToast(msg || 'خطا در بارگذاریِ کارها', 'error');
         }
     </script>
 </body>

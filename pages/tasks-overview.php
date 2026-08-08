@@ -486,7 +486,7 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                 });
                 const data = await res.json();
                 if (!data.success || !['manager', 'supervisor'].includes(data.user.role)) {
-                    alert('⛔ دسترسی ندارید');
+                    showToast('⛔ دسترسی ندارید', 'error');
                     setTimeout(() => {
                         window.location.href = 'dashboard.php';
                     }, 1200);
@@ -797,12 +797,13 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
             window.location.href = `task-detail.php?id=${id}`;
         }
 
+        // showError از showInlineError مشترک (assets/js/alert.js) استفاده می‌کنه
         function showError(msg) {
-            document.getElementById('tasksTableBody').innerHTML = `<tr><td colspan="11"><div class="empty-state"><i class="bi bi-exclamation-triangle text-danger"></i><p>${msg}</p></div></td></tr>`;
+            showInlineError('tasksTableBody', msg, { asTableRow: true, colspan: 11 });
         }
 
         function exportToExcel() {
-            alert('این قابلیت به زودی اضافه می‌شود');
+            showToast('این قابلیت به زودی اضافه می‌شود', 'info');
         }
 
         // ========================================
@@ -830,11 +831,11 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                     if (data.success) {
                         showAlert('یادآوری با موفقیت ارسال شد', 'success');
                     } else {
-                        showAlert(data.message || 'خطا در ارسال یادآوری', 'danger');
+                        showAlert(data.message || 'خطا در ارسال یادآوری', 'error');
                     }
                 } catch (error) {
                     console.error('Error sending reminder:', error);
-                    showAlert('خطا در ارتباط با سرور', 'danger');
+                    showAlert('خطا در ارتباط با سرور', 'error');
                 }
             }, {
                 placeholder: 'پیام یادآوری...',
@@ -844,20 +845,10 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
         }
 
         // نمایش پیام (alert)
+        // showAlert قبلاً یک پیاده‌سازیِ جداگانه (باکسِ alert بوت‌استرپ) داشت؛
+        // الان فقط یک نام‌مستعارِ نازک برایِ showToastِ مشترکه (از assets/js/alert.js)
         function showAlert(message, type = 'info') {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show custom-alert`;
-            alertDiv.innerHTML = `
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                `;
-            document.body.appendChild(alertDiv);
-
-            setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.parentNode.removeChild(alertDiv);
-                }
-            }, 5000);
+            showToast(message, type);
         }
 
         function buildActionButtons(t) {
@@ -906,11 +897,11 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                     if (data.success) {
                         loadTasks(); // بارگذاری مجدد لیست
                     } else {
-                        alert('❌ خطا: ' + (data.message || 'عملیات ناموفق بود'));
+                        showToast('❌ خطا: ' + (data.message || 'عملیات ناموفق بود'), 'error');
                     }
                 } catch (e) {
                     console.error(e);
-                    alert('❌ خطا در ارتباط با سرور');
+                    showToast('❌ خطا در ارتباط با سرور', 'error');
                 }
             }, {
                 danger: true,

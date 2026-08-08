@@ -227,7 +227,7 @@ if (!$__me) {
         const EXPANDED = new Set();         // idهای بازشده
 
         function faNum(x) { const fa = '۰۱۲۳۴۵۶۷۸۹'; return String(x ?? '').replace(/[0-9]/g, d => fa[d]); }
-        function toast(msg, type) { if (typeof showToast === 'function') { const t = showToast(msg, type || 'info'); if (t && t.close) setTimeout(() => t.close(), 2500); } else { alert(msg); } }
+        function toast(msg, type) { const t = showToast(msg, type || 'info'); if (t && t.close) setTimeout(() => t.close(), 2500); }
         function esc(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
         function pad(n) { return n < 10 ? '0' + n : '' + n; }
         function faTime(iso) {
@@ -383,12 +383,12 @@ if (!$__me) {
             try {
                 const allParam = CAN_EDIT ? '&all=1' : '';
                 const data = await api('../api/announcements/list.php?limit=100&offset=0' + allParam);
-                if (!data.success) { toast('خطا در بارگذاری', 'danger'); return; }
+                if (!data.success) { toast('خطا در بارگذاری', 'error'); return; }
                 BASE_ROWS = data.announcements || [];
                 Object.keys(ROW_MAP).forEach(k => delete ROW_MAP[k]);
                 BASE_ROWS.forEach(a => { ROW_MAP[a.id] = a; });
                 refreshGrid();
-            } catch (e) { toast('خطا: ' + e.message, 'danger'); }
+            } catch (e) { toast('خطا: ' + e.message, 'error'); }
         }
 
         // ───── مودال (ساخت/ویرایش) ─────
@@ -485,18 +485,19 @@ if (!$__me) {
                 if (id) { body.id = parseInt(id); opt.body = JSON.stringify(body); data = await api('../api/announcements/update.php', opt); }
                 else { opt.body = JSON.stringify(body); data = await api('../api/announcements/create.php', opt); }
                 if (data.success) { toast(id ? 'اطلاعیه ویرایش شد' : 'اطلاعیه ایجاد شد', 'success'); bootstrap.Modal.getInstance(document.getElementById('annModal')).hide(); loadList(); }
-                else { toast(data.message || 'خطا در ذخیره', 'danger'); }
-            } catch (e) { toast('خطا: ' + e.message, 'danger'); }
+                else { toast(data.message || 'خطا در ذخیره', 'error'); }
+            } catch (e) { toast('خطا: ' + e.message, 'error'); }
             finally { btn.disabled = false; }
         }
 
-        async function deleteAnnouncement(id) {
-            if (!confirm('این اطلاعیه حذف شود؟')) return;
-            try {
-                const data = await api('../api/announcements/update.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', id }) });
-                if (data.success) { EXPANDED.delete(id); toast('حذف شد', 'success'); loadList(); }
-                else { toast(data.message || 'خطا در حذف', 'danger'); }
-            } catch (e) { toast('خطا: ' + e.message, 'danger'); }
+        function deleteAnnouncement(id) {
+            uiConfirm('این اطلاعیه حذف شود؟', async function () {
+                try {
+                    const data = await api('../api/announcements/update.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', id }) });
+                    if (data.success) { EXPANDED.delete(id); toast('حذف شد', 'success'); loadList(); }
+                    else { toast(data.message || 'خطا در حذف', 'error'); }
+                } catch (e) { toast('خطا: ' + e.message, 'error'); }
+            }, { danger: true, yesText: 'بله، حذف', noText: 'انصراف' });
         }
         async function markRead(id) {
             try { await api('../api/announcements/update.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'mark_read', id }) }); } catch (e) { }
@@ -505,7 +506,7 @@ if (!$__me) {
             try {
                 const data = await api('../api/announcements/update.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'mark_all_read' }) });
                 if (data.success) { toast('همه خوانده‌شده شد', 'success'); loadList(); }
-            } catch (e) { toast('خطا: ' + e.message, 'danger'); }
+            } catch (e) { toast('خطا: ' + e.message, 'error'); }
         }
 
         document.addEventListener('DOMContentLoaded', init);

@@ -758,11 +758,11 @@ if (!$__me) {
                     if (data.success) {
                         loadTasks();
                     } else {
-                        alert('❌ خطا: ' + (data.message || 'عملیات ناموفق بود'));
+                        showToast('❌ خطا: ' + (data.message || 'عملیات ناموفق بود'), 'error');
                     }
                 } catch (e) {
                     console.error(e);
-                    alert('❌ خطا در ارتباط با سرور');
+                    showToast('❌ خطا در ارتباط با سرور', 'error');
                 }
             }, {
                 danger: true,
@@ -775,9 +775,11 @@ if (!$__me) {
             window.location.href = `task-detail.php?id=${id}`;
         }
 
+        // قبلاً فقط console.error می‌زد و هیچ پیغامی به کاربر نشون داده نمی‌شد
         function showError(msg) {
             console.error(msg);
             if (gridApi) gridApi.setGridOption('rowData', []);
+            showToast(msg || 'خطا در بارگذاریِ کارها', 'error');
         }
     </script>
 </body>

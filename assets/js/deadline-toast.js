@@ -223,7 +223,7 @@
                 newBtn.onclick = function () {
                     var reason = document.getElementById('rejectionReasonInput').value.trim();
                     if (!reason) {
-                        alert('لطفاً دلیل رد را وارد کنید');
+                        showToast('لطفاً دلیل رد را وارد کنید', 'warning');
                         return;
                     }
                     modal.style.display = 'none';

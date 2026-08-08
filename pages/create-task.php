@@ -1048,11 +1048,11 @@ if (!$__me) {
                     //     window.location.href = 'my-tasks.php';
                     // }, 1500);
                 } else {
-                    const t = showToast('خطا در ایجاد کار روتین', 'danger');
+                    const t = showToast('خطا در ایجاد کار روتین', 'error');
                     t.close();
                 }
             } catch (error) {
-                const t = showToast('خطا در ارتباط با سرور', 'danger');
+                const t = showToast('خطا در ارتباط با سرور', 'error');
                 t.close();
             } finally {
                 btn.innerHTML = originalText;
@@ -1172,17 +1172,17 @@ if (!$__me) {
             }
 
             if (!taskData.title) {
-                showToast('عنوان کار الزامی است', 'danger');
+                showToast('عنوان کار الزامی است', 'error');
 
                 return;
             }
             if (taskData.task_type === 'periodic' && !taskData.due_date) {
-                showToast('تاریخ انجام برای کارهای مقطعی الزامی است', 'danger');
+                showToast('تاریخ انجام برای کارهای مقطعی الزامی است', 'error');
 
                 return;
             }
             if (taskData.task_type === 'continuous' && !taskData.start_date) {
-                showToast('تاریخ شروع برای کارهای دوره‌ای الزامی است', 'danger');
+                showToast('تاریخ شروع برای کارهای دوره‌ای الزامی است', 'error');
 
                 return;
             }
@@ -1198,7 +1198,7 @@ if (!$__me) {
                 const endMs = new Date(taskData.end_date).getTime();
                 const diffDays = (endMs - startMs) / 864e5;
                 if (diffDays < minDays) {
-                    showToast(`تاریخ پایان باید حداقل ${minDays} روز بعد از تاریخ شروع باشد`, 'danger');
+                    showToast(`تاریخ پایان باید حداقل ${minDays} روز بعد از تاریخ شروع باشد`, 'error');
 
                     return;
                 }
@@ -1238,13 +1238,13 @@ if (!$__me) {
 
                     return taskId;
                 } else {
-                    showToast('خطا در ایجاد کار', 'danger');
+                    showToast('خطا در ایجاد کار', 'error');
                     return null; // برای حالت خطا
                 }
 
 
             } catch (error) {
-                showToast('خطا در ارتباط با سرور: ' + error.message, 'danger');
+                showToast('خطا در ارتباط با سرور: ' + error.message, 'error');
 
             }
         }
@@ -1287,7 +1287,7 @@ if (!$__me) {
             };
 
             if (!baseTask.title) {
-                showToast('عنوان کار الزامی است', 'danger');
+                showToast('عنوان کار الزامی است', 'error');
                 return null;
             }
 
@@ -1296,7 +1296,7 @@ if (!$__me) {
                 baseTask.start_date = null;
                 baseTask.period_type = null;
                 if (!baseTask.due_date) {
-                    showToast('تاریخ انجام برای کارهای مقطعی الزامی است', 'danger');
+                    showToast('تاریخ انجام برای کارهای مقطعی الزامی است', 'error');
                     return null;
                 }
             } else {
@@ -1305,7 +1305,7 @@ if (!$__me) {
                 baseTask.due_date = null;
                 baseTask.end_date = document.getElementById('manualEndDate').getAttribute('data-date') || null;
                 if (!baseTask.start_date) {
-                    showToast('تاریخ شروع برای کارهای دوره‌ای الزامی است', 'danger');
+                    showToast('تاریخ شروع برای کارهای دوره‌ای الزامی است', 'error');
                     return null;
                 }
             }
@@ -1352,11 +1352,11 @@ if (!$__me) {
                     showToast(`${data.created_count} تسک برای ${label} با موفقیت ایجاد شد`, 'success');
                     return data.first_task_id || 1; // مقدار truthy برای saveTask
                 } else {
-                    showToast(data.message || 'خطا در ایجاد تسک‌ها', 'danger');
+                    showToast(data.message || 'خطا در ایجاد تسک‌ها', 'error');
                     return null;
                 }
             } catch (err) {
-                showToast('خطا در ارتباط با سرور: ' + err.message, 'danger');
+                showToast('خطا در ارتباط با سرور: ' + err.message, 'error');
                 return null;
             }
         }
@@ -1428,7 +1428,7 @@ if (!$__me) {
             }
 
             if (!title) {
-                const t = showToast('عنوان/موضوع کار الزامی است', 'danger');
+                const t = showToast('عنوان/موضوع کار الزامی است', 'error');
                 t.close();
                 return;
             }
@@ -1481,11 +1481,11 @@ if (!$__me) {
                         loadDashboardData();
                     }, 500);
                 } else {
-                    const t = showToast('خطا در ایجاد کار روتین', 'danger');
+                    const t = showToast('خطا در ایجاد کار روتین', 'error');
                     t.close();
                 }
             } catch (error) {
-                const t = showToast('خطا در ارتباط با سرور', 'danger');
+                const t = showToast('خطا در ارتباط با سرور', 'error');
                 t.close();
             } finally {
                 btnText.textContent = originalText;
@@ -1549,7 +1549,7 @@ if (!$__me) {
             const maxSize = 20 * 1024 * 1024;
             for (let file of files) {
                 if (file.size > maxSize) {
-                    alert(`فایل "${file.name}" بیش از 20MB است و اضافه نشد.`);
+                    showToast(`فایل "${file.name}" بیش از 20MB است و اضافه نشد.`, 'warning');
                     continue;
                 }
                 pendingFiles.push(file);
@@ -1650,7 +1650,7 @@ if (!$__me) {
             const maxSize = 20 * 1024 * 1024;
             for (let file of files) {
                 if (file.size > maxSize) {
-                    alert(`فایل "${file.name}" بیش از 20MB است.`);
+                    showToast(`فایل "${file.name}" بیش از 20MB است.`, 'warning');
                     continue;
                 }
                 workflowPendingFiles.push({

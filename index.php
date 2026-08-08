@@ -613,63 +613,6 @@
             flex-shrink: 0;
         }
 
-        /* آلرت */
-        #alertContainer {
-            margin-bottom: 16px;
-            direction: rtl;
-        }
-
-        .alert {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-size: 13px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .alert-success {
-            background: #ecfdf5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-        }
-
-        .alert-danger {
-            background: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
-
-        .alert-warning {
-            background: #fffbeb;
-            color: #92400e;
-            border: 1px solid #fcd34d;
-        }
-
-        .alert-close {
-            margin-right: auto;
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            line-height: 1;
-            color: inherit;
-            opacity: 0.6;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-6px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
         /* ریسپانسیو */
         @media (max-width: 768px) {
             .top-logo {
@@ -786,8 +729,6 @@
         <!-- ===== راست: فرم لاگین ===== -->
         <div class="login-side">
             <div class="login-panel">
-
-                <div id="alertContainer"></div>
 
                 <!-- سوییچ روش ورود -->
                 <form id="loginForm" novalidate>
@@ -927,6 +868,7 @@
         </div>
 
     </div>
+    <script src="assets/js/alert.js?v=1.0"></script>
     <script src="assets/js/network-canvas.js?v=2.0"></script>
     <script>
         // ========== سوییچ روش ورود + ورود با کد یکبارمصرف (OTP) ==========
@@ -1163,11 +1105,10 @@
                 }
             });
 
-            // تابع نمایش پیام (همان alert قبلی)
+            // showAlert قبلاً یک پیاده‌سازیِ جداگانه داشت؛ الان فقط یک
+            // نام‌مستعارِ نازک برایِ showToastِ مشترکه (از assets/js/alert.js)
             function showAlert(msg, type) {
-                const container = document.getElementById('alertContainer');
-                container.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
-                setTimeout(() => container.innerHTML = '', 8000);
+                showToast(msg, type === 'danger' ? 'error' : type);
             }
         });
     </script>

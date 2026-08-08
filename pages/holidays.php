@@ -489,11 +489,11 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             const description = document.getElementById('holidayDescription').value.trim();
 
             if (!title) {
-                alert('لطفاً عنوان تعطیلی را وارد کنید');
+                showToast('لطفاً عنوان تعطیلی را وارد کنید', 'warning');
                 return;
             }
             if (type === 'date' && !date) {
-                alert('لطفاً یک تاریخ از روی تقویم انتخاب کنید');
+                showToast('لطفاً یک تاریخ از روی تقویم انتخاب کنید', 'warning');
                 return;
             }
 
@@ -527,11 +527,11 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
                     showToast('✅ روز تعطیل با موفقیت اضافه شد', 'success');
                     loadHolidays();
                 } else {
-                    alert('خطا: ' + (data.message || 'نامشخص'));
+                    showToast('خطا: ' + (data.message || 'نامشخص'), 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('خطا در ارتباط با سرور');
+                showToast('خطا در ارتباط با سرور', 'error');
             } finally {
                 showLoading(false);
             }
@@ -562,11 +562,11 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
                         showToast('✅ روز تعطیل حذف شد', 'success');
                         loadHolidays();
                     } else {
-                        alert('خطا: ' + (data.message || 'نامشخص'));
+                        showToast('خطا: ' + (data.message || 'نامشخص'), 'error');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('خطا در ارتباط با سرور');
+                    showToast('خطا در ارتباط با سرور', 'error');
                 } finally {
                     showLoading(false);
                 }
@@ -580,31 +580,8 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
         }
 
-        function showToast(message, type = 'success') {
-            const existing = document.querySelector('.custom-toast');
-            if (existing) existing.remove();
-
-            const toast = document.createElement('div');
-            toast.className = `custom-toast toast-${type}`;
-            toast.style.cssText = `
-                position: fixed; top: 100px; right: 20px; min-width: 280px;
-                background: var(--surface); color: var(--text-strong); border-radius: 12px; padding: 16px 20px;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 10000;
-                border-left: 4px solid ${type === 'success' ? '#10b981' : '#3b82f6'};
-                transform: translateX(400px); transition: transform 0.4s ease;
-            `;
-            toast.innerHTML = `<div style="display:flex;align-items:center;gap:10px;font-weight:600;">
-                <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'info-circle-fill'}" 
-                   style="color:${type === 'success' ? '#10b981' : '#3b82f6'};font-size:1.2rem;"></i>
-                <span>${message}</span>
-            </div>`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.style.transform = 'translateX(0)', 50);
-            setTimeout(() => {
-                toast.style.transform = 'translateX(400px)';
-                setTimeout(() => toast.remove(), 400);
-            }, 3000);
-        }
+        // showToast از assets/js/alert.js (لودشده در header.php) استفاده می‌شود —
+        // قبلاً اینجا یک نسخهٔ محلیِ جداگانه بازتعریف می‌شد که آن را می‌پوشاند
 
         // ============================================
         // شروع

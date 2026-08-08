@@ -703,9 +703,11 @@ if (!$__me) {
             });
         }
 
+        // قبلاً فقط console.error می‌زد و هیچ پیغامی به کاربر نشون داده نمی‌شد
         function showError(msg) {
             console.error(msg);
             if (gridApi) gridApi.setGridOption('rowData', []);
+            showToast(msg || 'خطا در بارگذاریِ کارها', 'error');
         }
 
         function showAlert(message, type = 'info') {

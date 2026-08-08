@@ -533,8 +533,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         }
 
         function notify(msg, type) {
-            if (typeof showToast === 'function') showToast(msg, type || 'info');
-            else alert(msg);
+            showToast(msg, type || 'info');
         }
 
         async function api(url, opts) {

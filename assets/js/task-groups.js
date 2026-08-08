@@ -215,7 +215,7 @@
 
     async function saveGroup() {
         const name = document.getElementById('gmName').value.trim();
-        if (!name) { alert('نام گروه را وارد کنید'); return; }
+        if (!name) { showToast('نام گروه را وارد کنید', 'warning'); return; }
 
         const scope = (_isOrgAdmin && document.getElementById('gmScopeOrg').checked) ? 'org' : 'personal';
         const isEdit = !!_editingId;
@@ -237,28 +237,29 @@
                 resetForm();
                 if (_onChange) _onChange(_groups);
             } else {
-                alert(data.message || 'خطا در ذخیره گروه');
+                showToast(data.message || 'خطا در ذخیره گروه', 'error');
             }
-        } catch (e) { alert('خطا در ارتباط با سرور'); }
+        } catch (e) { showToast('خطا در ارتباط با سرور', 'error'); }
     }
 
-    async function deleteGroup(id) {
-        if (!confirm('این گروه حذف شود؟ کارهای داخل آن بدون گروه می‌شوند.')) return;
-        try {
-            const res = await fetch(api('delete.php'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                body: JSON.stringify({ id })
-            });
-            const data = await res.json();
-            if (data.success) {
-                await loadGroups();
-                renderList();
-                if (_onChange) _onChange(_groups);
-            } else {
-                alert(data.message || 'خطا در حذف');
-            }
-        } catch (e) { alert('خطا در ارتباط با سرور'); }
+    function deleteGroup(id) {
+        uiConfirm('این گروه حذف شود؟ کارهای داخل آن بدون گروه می‌شوند.', async function () {
+            try {
+                const res = await fetch(api('delete.php'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                    body: JSON.stringify({ id })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    await loadGroups();
+                    renderList();
+                    if (_onChange) _onChange(_groups);
+                } else {
+                    showToast(data.message || 'خطا در حذف', 'error');
+                }
+            } catch (e) { showToast('خطا در ارتباط با سرور', 'error'); }
+        }, { danger: true, yesText: 'بله، حذف', noText: 'انصراف' });
     }
 
     // ---- API عمومی این واحد ----

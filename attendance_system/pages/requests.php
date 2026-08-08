@@ -2674,13 +2674,6 @@ function formatDateJalali($gregorianDate)
 
     <!-- تنظیمات سیستم برای JavaScript -->
     <script>
-        // ── مبدل سراسری: همهٔ alertها به toast تبدیل می‌شوند ──
-        window.alert = function(msg) {
-            const text = String(msg).replace(/^\s*[✅❌⚠️ℹ️]\s*/, '');
-            const type = /موفق|ثبت شد|ذخیره شد|انجام شد|تکمیل/.test(text) ? 'success' : 'warning';
-            showToast(text, type);
-        };
-
         const APP_SETTINGS = {
             clickable_days_limit: <?php echo intval($app_settings['clickable_days_limit'] ?? 5); ?>,
             shortage_multiplier: <?php echo intval($app_settings['shortage_multiplier'] ?? 2); ?>,
@@ -3540,7 +3533,7 @@ function formatDateJalali($gregorianDate)
                         this.value = '';
                         this.style.borderColor = '#EF4444';
                         setTimeout(() => this.style.borderColor = '', 2000);
-                        alert('ساعت نامعتبر است. فرمت صحیح: ۰۰:۰۰ تا ۲۳:۵۹');
+                        showToast('ساعت نامعتبر است. فرمت صحیح: ۰۰:۰۰ تا ۲۳:۵۹', 'warning');
                         return;
                     }
 
@@ -4423,13 +4416,13 @@ function formatDateJalali($gregorianDate)
                 }); // برای دیباگ                if (!startDate || !startTime || !endTime || !desc) {
 
                 if (!startDate || !startTime || !endTime || !desc) {
-                    alert('❌ لطفاً تمام فیلدها را پر کنید');
+                    showToast('❌ لطفاً تمام فیلدها را پر کنید', 'error');
                     resetSubmitBtn();
                     return;
                 }
 
                 if (!validateTimeRange(startTime, endTime)) {
-                    alert('❌ ساعت پایان باید بعد از ساعت شروع باشد');
+                    showToast('❌ ساعت پایان باید بعد از ساعت شروع باشد', 'error');
                     resetSubmitBtn();
                     return;
                 }
@@ -4443,7 +4436,7 @@ function formatDateJalali($gregorianDate)
                         });
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
-                            alert('❌ ' + checkData.message);
+                            showToast('❌ ' + checkData.message, 'error');
                             resetSubmitBtn();
                             return;
                         }
@@ -4465,7 +4458,7 @@ function formatDateJalali($gregorianDate)
                 const reason = document.getElementById('leaveReason').value;
                 const substituteId = document.getElementById('leaveSubstitute').value;
                 if (!substituteId) {
-                    alert('❌ لطفاً جانشین را انتخاب کنید');
+                    showToast('❌ لطفاً جانشین را انتخاب کنید', 'error');
                     resetSubmitBtn();
                     return;
                 }
@@ -4482,13 +4475,13 @@ function formatDateJalali($gregorianDate)
                 }); // برای دیباگ
 
                 if (!startDate || !startTime || !endTime || !reason) {
-                    alert('❌ لطفاً تمام فیلدها را پر کنید');
+                    showToast('❌ لطفاً تمام فیلدها را پر کنید', 'error');
                     resetSubmitBtn();
                     return;
                 }
                 // اگر تاریخ شروع و پایان یکی باشد، ساعت را چک کن
                 if (startDate === endDate && !validateTimeRange(startTime, endTime)) {
-                    alert('❌ ساعت پایان باید بعد از ساعت شروع باشد');
+                    showToast('❌ ساعت پایان باید بعد از ساعت شروع باشد', 'error');
                     resetSubmitBtn();
                     return;
                 }
@@ -4501,7 +4494,7 @@ function formatDateJalali($gregorianDate)
 
                 //         const checkData = await checkRes.json();
                 //         if (checkData.success && checkData.limit_reached) {
-                //             alert('❌ ' + checkData.message);
+                //             showToast('❌ ' + checkData.message, 'error');
                 //             return;
                 //         }
                 //     } catch (e) { console.error('خطا در بررسی سقف:', e); }
@@ -4521,12 +4514,12 @@ function formatDateJalali($gregorianDate)
                 const reason = document.getElementById('passReason').value;
 
                 if (!passDate || !startTime || !endTime || !reason) {
-                    alert('❌ لطفاً تمام فیلدها را پر کنید');
+                    showToast('❌ لطفاً تمام فیلدها را پر کنید', 'error');
                     resetSubmitBtn();
                     return;
                 }
                 if (!validateTimeRange(startTime, endTime)) {
-                    alert('❌ ساعت پایان باید بعد از ساعت شروع باشد');
+                    showToast('❌ ساعت پایان باید بعد از ساعت شروع باشد', 'error');
                     resetSubmitBtn();
                     return;
                 }
@@ -4540,20 +4533,20 @@ function formatDateJalali($gregorianDate)
                         });
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
-                            alert('❌ ' + checkData.message);
+                            showToast('❌ ' + checkData.message, 'error');
                             resetSubmitBtn();
                             return; // متوقف کردن ارسال
                         }
                         // اگر سرور پاسخی جز success داد
                         if (!checkData.success) {
-                            alert('❌ خطایی در بررسی سقف رخ داد. لطفاً دوباره تلاش کنید.');
+                            showToast('❌ خطایی در بررسی سقف رخ داد. لطفاً دوباره تلاش کنید.', 'error');
                             resetSubmitBtn();
                             return;
                         }
                     } catch (e) {
                         console.error('خطا در بررسی سقف:', e);
                         // ✅ این بسیار مهم است: اگر اینترنت قطع شد یا سرور ارور داد، اجازه ثبت نده!
-                        alert('❌ خطا در ارتباط با سرور برای بررسی محدودیت‌ها. درخواست ثبت نشد.');
+                        showToast('❌ خطا در ارتباط با سرور برای بررسی محدودیت‌ها. درخواست ثبت نشد.', 'error');
                         resetSubmitBtn();
                         return;
                     }
@@ -4565,7 +4558,7 @@ function formatDateJalali($gregorianDate)
                     const endMinutes = parseInt(endTime.split(':')[0]) * 60 + parseInt(endTime.split(':')[1]);
                     const durationHours = (endMinutes - startMinutes) / 60;
                     if (durationHours > APP_SETTINGS.pass_max_hours_daily) {
-                        alert('❌ مدت زمان پاس بیشتر از حداکثر مجاز (' + APP_SETTINGS.pass_max_hours_daily + ' ساعت) است');
+                        showToast('❌ مدت زمان پاس بیشتر از حداکثر مجاز (' + APP_SETTINGS.pass_max_hours_daily + ' ساعت) است', 'error');
                         resetSubmitBtn();
                         return;
                     }
@@ -4584,12 +4577,12 @@ function formatDateJalali($gregorianDate)
                 const desc = document.getElementById('forgetPasswordDesc').value;
 
                 if (!date || !startTime || !endTime || !desc) {
-                    alert('❌ لطفاً تمام فیلدها را پر کنید');
+                    showToast('❌ لطفاً تمام فیلدها را پر کنید', 'error');
                     resetSubmitBtn();
                     return;
                 }
                 if (!validateTimeRange(startTime, endTime)) {
-                    alert('❌ ساعت پایان باید بعد از ساعت شروع باشد');
+                    showToast('❌ ساعت پایان باید بعد از ساعت شروع باشد', 'error');
                     resetSubmitBtn();
                     return;
                 }
@@ -4603,7 +4596,7 @@ function formatDateJalali($gregorianDate)
                         });
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
-                            alert('❌ ' + checkData.message);
+                            showToast('❌ ' + checkData.message, 'error');
                             resetSubmitBtn();
                             return;
                         }
@@ -4624,12 +4617,12 @@ function formatDateJalali($gregorianDate)
                 const desc = document.getElementById('technicalIssueDesc').value;
 
                 if (!date || !startTime || !endTime || !desc) {
-                    alert('❌ لطفاً تمام فیلدها را پر کنید');
+                    showToast('❌ لطفاً تمام فیلدها را پر کنید', 'error');
                     resetSubmitBtn();
                     return;
                 }
                 if (!validateTimeRange(startTime, endTime)) {
-                    alert('❌ ساعت پایان باید بعد از ساعت شروع باشد');
+                    showToast('❌ ساعت پایان باید بعد از ساعت شروع باشد', 'error');
                     resetSubmitBtn();
                     return;
                 }
@@ -4643,7 +4636,7 @@ function formatDateJalali($gregorianDate)
                         });
                         const checkData = await checkRes.json();
                         if (checkData.success && checkData.limit_reached) {
-                            alert('❌ ' + checkData.message);
+                            showToast('❌ ' + checkData.message, 'error');
                             resetSubmitBtn();
                             return;
                         }
@@ -4691,27 +4684,27 @@ function formatDateJalali($gregorianDate)
                     result = JSON.parse(responseText);
                 } catch (parseError) {
                     console.error('❌ خطا در parse JSON:', parseError);
-                    alert('❌ خطا در سرور');
+                    showToast('❌ خطا در سرور', 'error');
                     submitBtn.disabled = false;
                     submitBtn.textContent = editId ? 'ذخیره تغییرات' : 'ارسال درخواست';
                     return;
                 }
 
                 if (result.success) {
-                    alert(editId ? '✅ تغییرات ذخیره شد' : '✅ درخواست ثبت شد');
+                    showToast(editId ? '✅ تغییرات ذخیره شد' : '✅ درخواست ثبت شد', 'success');
                     // پاک کردن حالت ویرایش
                     form.removeAttribute('data-edit-id');
                     form.removeAttribute('data-edit-type');
                     closeModal();
                     setTimeout(() => location.reload(), 1200);
                 } else {
-                    alert('❌ خطا: ' + (result.message || 'نامشخص'));
+                    showToast('❌ خطا: ' + (result.message || 'نامشخص'), 'error');
                     submitBtn.disabled = false;
                     submitBtn.textContent = editId ? 'ذخیره تغییرات' : 'ارسال درخواست';
                 }
             } catch (error) {
                 console.error('❌ خطا:', error);
-                alert('❌ خطا در ارتباط با سرور');
+                showToast('❌ خطا در ارتباط با سرور', 'error');
                 const form = document.getElementById('requestForm');
                 const editId = form.getAttribute('data-edit-id');
                 document.getElementById('submitBtn').disabled = false;
@@ -5142,17 +5135,17 @@ function formatDateJalali($gregorianDate)
                     const result = await response.json();
 
                     if (result.success) {
-                        alert('✅ ' + result.message);
+                        showToast('✅ ' + result.message, 'success');
                         // رفرش صفحه با پارامتر برای ماندن در تب منتظر تأیید
                         setTimeout(() => {
                             window.location.href = window.location.pathname + '?tab=pending-approvals';
                         }, 1200);
                     } else {
-                        alert('❌ ' + result.message);
+                        showToast('❌ ' + result.message, 'error');
                     }
                 } catch (error) {
                     console.error('خطا:', error);
-                    alert('❌ خطا در ارتباط با سرور');
+                    showToast('❌ خطا در ارتباط با سرور', 'error');
                 }
             };
         }
@@ -5204,14 +5197,14 @@ function formatDateJalali($gregorianDate)
                                 const result = await response.json();
 
                                 if (result.success) {
-                                    alert('✅ ' + result.message);
+                                    showToast('✅ ' + result.message, 'success');
                                     setTimeout(() => location.reload(), 1200);
                                 } else {
-                                    alert('❌ ' + result.message);
+                                    showToast('❌ ' + result.message, 'error');
                                 }
                             } catch (error) {
                                 console.error('خطا:', error);
-                                alert('❌ خطا در ارتباط با سرور');
+                                showToast('❌ خطا در ارتباط با سرور', 'error');
                             }
                         }
                     },
@@ -5233,7 +5226,7 @@ function formatDateJalali($gregorianDate)
                 const result = await response.json();
 
                 if (!result.success) {
-                    alert('❌ ' + result.message);
+                    showToast('❌ ' + result.message, 'error');
                     return;
                 }
 
@@ -5325,7 +5318,7 @@ function formatDateJalali($gregorianDate)
 
             } catch (error) {
                 console.error('خطا:', error);
-                alert('❌ خطا در دریافت اطلاعات');
+                showToast('❌ خطا در دریافت اطلاعات', 'error');
             }
         }
 
@@ -5494,7 +5487,7 @@ function formatDateJalali($gregorianDate)
                     const endMinutes = eh * 60 + em;
 
                     if (endMinutes <= startMinutes) {
-                        alert(errorMsg || 'ساعت پایان نمی‌تواند قبل یا برابر ساعت شروع باشد.');
+                        showToast(errorMsg || 'ساعت پایان نمی‌تواند قبل یا برابر ساعت شروع باشد.', 'warning');
                         endInput.value = '';
                         endInput.focus();
                     }

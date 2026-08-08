@@ -322,71 +322,67 @@ function calculateProgressPercentage() {
 /**
  * شروع کار
  */
-async function startTask(taskId) {
-    if (!confirm('آیا می‌خواهید این کار را شروع کنید؟')) {
-        return;
-    }
+function startTask(taskId) {
+    uiConfirm('آیا می‌خواهید این کار را شروع کنید؟', async function () {
+        try {
+            const response = await fetch('/api/tasks/update-status.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + authToken
+                },
+                body: JSON.stringify({
+                    task_id: taskId,
+                    status: 'in_progress',
+                    notes: 'کار شروع شد'
+                })
+            });
 
-    try {
-        const response = await fetch('/api/tasks/update-status.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + authToken
-            },
-            body: JSON.stringify({
-                task_id: taskId,
-                status: 'in_progress',
-                notes: 'کار شروع شد'
-            })
-        });
+            const data = await response.json();
 
-        const data = await response.json();
-
-        if (data.success) {
-            showAlert('کار با موفقیت شروع شد', 'success');
-            loadDashboardData();
-        } else {
-            showAlert(data.message || 'خطا در شروع کار', 'danger');
+            if (data.success) {
+                showAlert('کار با موفقیت شروع شد', 'success');
+                loadDashboardData();
+            } else {
+                showAlert(data.message || 'خطا در شروع کار', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('خطا در ارتباط با سرور', 'error');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        showAlert('خطا در ارتباط با سرور', 'danger');
-    }
+    });
 }
 
 /**
  * تکمیل کار
  */
-async function completeTask(taskId) {
-    if (!confirm('آیا می‌خواهید این کار را تکمیل کنید؟')) {
-        return;
-    }
+function completeTask(taskId) {
+    uiConfirm('آیا می‌خواهید این کار را تکمیل کنید؟', async function () {
+        try {
+            const response = await fetch('/api/tasks/update-status.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + authToken
+                },
+                body: JSON.stringify({
+                    task_id: taskId,
+                    status: 'completed',
+                    notes: 'کار تکمیل شد'
+                })
+            });
 
-    try {
-        const response = await fetch('/api/tasks/update-status.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + authToken
-            },
-            body: JSON.stringify({
-                task_id: taskId,
-                status: 'completed',
-                notes: 'کار تکمیل شد'
-            })
-        });
+            const data = await response.json();
 
-        const data = await response.json();
-
-        if (data.success) {
-            showAlert('کار با موفقیت تکمیل شد', 'success');
-            loadDashboardData();
-        } else {
-            showAlert(data.message || 'خطا در تکمیل کار', 'danger');
+            if (data.success) {
+                showAlert('کار با موفقیت تکمیل شد', 'success');
+                loadDashboardData();
+            } else {
+                showAlert(data.message || 'خطا در تکمیل کار', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('خطا در ارتباط با سرور', 'error');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        showAlert('خطا در ارتباط با سرور', 'danger');
-    }
+    });
 }

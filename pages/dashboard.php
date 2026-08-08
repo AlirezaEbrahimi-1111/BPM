@@ -781,11 +781,11 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
                     if (data.success) {
                         showAlert('یادآوری با موفقیت ارسال شد', 'success');
                     } else {
-                        showAlert(data.message || 'خطا در ارسال یادآوری', 'danger');
+                        showAlert(data.message || 'خطا در ارسال یادآوری', 'error');
                     }
                 } catch (error) {
                     console.error('Error sending reminder:', error);
-                    showAlert('خطا در ارتباط با سرور', 'danger');
+                    showAlert('خطا در ارتباط با سرور', 'error');
                 }
             }, {
                 placeholder: 'پیام یادآوری...',
@@ -2045,26 +2045,11 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             window.location.href = `../pages/task-detail.php?id=${taskId}`;
         }
 
+        // showAlert قبلاً یک پیاده‌سازیِ جداگانه (باکسِ alert بوت‌استرپ) داشت؛
+        // الان فقط یک نام‌مستعارِ نازک برایِ showToastِ مشترکه (از assets/js/alert.js).
+        // assets/js/dashboard-improvements.js هم از همین تابعِ سراسری استفاده می‌کنه
         function showAlert(message, type = 'info') {
-            // ایجاد و نمایش alert
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-            alertDiv.style.top = '90px';
-            alertDiv.style.left = '20px';
-            alertDiv.style.zIndex = '9999';
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-
-            document.body.appendChild(alertDiv);
-
-            // حذف خودکار بعد از 5 ثانیه
-            setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.parentNode.removeChild(alertDiv);
-                }
-            }, 5000);
+            showToast(message, type);
         }
 
         function showDailyReportModal() {
@@ -2169,11 +2154,11 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
                     // بروزرسانی داده‌ها
                     loadDashboardData();
                 } else {
-                    showAlert(data.message || 'خطا در ایجاد کار روتین', 'danger');
+                    showAlert(data.message || 'خطا در ایجاد کار روتین', 'error');
                 }
             } catch (error) {
                 console.error('Error creating workflow task:', error);
-                showAlert('خطا در ارتباط با سرور', 'danger');
+                showAlert('خطا در ارتباط با سرور', 'error');
             }
         }
         // تابع کمکی برای تغییر نوع کار دستی
@@ -2201,7 +2186,7 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
             const periodType = document.getElementById('taskPeriod').value || null;
 
             if (!title) {
-                showAlert('عنوان کار الزامی است', 'danger');
+                showAlert('عنوان کار الزامی است', 'error');
                 return;
             }
 
@@ -2242,11 +2227,11 @@ $base_url = $protocol . "://" . $host . dirname($_SERVER['SCRIPT_NAME']);
                     document.getElementById('newTaskForm').reset();
                     loadDashboardData();
                 } else {
-                    showAlert(data.message || 'خطا در ایجاد کار', 'danger');
+                    showAlert(data.message || 'خطا در ایجاد کار', 'error');
                 }
             } catch (error) {
                 console.error('Error saving task:', error);
-                showAlert('خطا در ارتباط با سرور', 'danger');
+                showAlert('خطا در ارتباط با سرور', 'error');
             } finally {
                 btnText.textContent = originalText;
                 saveBtn.disabled = false;

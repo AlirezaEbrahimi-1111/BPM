@@ -445,9 +445,8 @@ if (!$__me) {
                 return;
             }
 
-            if (!confirm('آیا از ارسال گزارش اطمینان دارید؟')) return;
-
-            const btn = event.target;
+            const btn = event.target; // فوراً همین‌جا گرفته می‌شه، چون uiConfirm ناهمگام (async) هست
+            uiConfirm('آیا از ارسال گزارش اطمینان دارید؟', async function () {
             const originalText = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>در حال ارسال...';
@@ -481,16 +480,17 @@ if (!$__me) {
                     document.getElementById('generatedCode').textContent = `کد گزارش: ${finalReportCode}`;
                     showAlert('گزارش با موفقیت ارسال شد!', 'success');
                 } else {
-                    showAlert(data.message || 'خطا در ارسال', 'danger');
+                    showAlert(data.message || 'خطا در ارسال', 'error');
                     btn.disabled = false;
                     btn.innerHTML = originalText;
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showAlert('خطا در ارتباط با سرور', 'danger');
+                showAlert('خطا در ارتباط با سرور', 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
+            });
         }
 
         // توابع کمکی
@@ -574,26 +574,15 @@ if (!$__me) {
             return String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
         }
 
+        // showAlert قبلاً یک پیاده‌سازیِ جداگانه (باکسِ alert بوت‌استرپ) داشت؛
+        // الان فقط یک نام‌مستعارِ نازک برایِ showToastِ مشترکه (از assets/js/alert.js)
         function showAlert(msg, type = 'info') {
-            const div = document.createElement('div');
-            div.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-            div.style.cssText = 'top:90px;left:20px;z-index:9999;min-width:300px;';
-            div.innerHTML = `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 5000);
+            showToast(msg, type);
         }
 
+        // showError از showInlineError مشترک (assets/js/alert.js) استفاده می‌کنه
         function showError(msg) {
-            document.getElementById('activitiesContainer').innerHTML = `
-                <div class="empty-state">
-                    <i class="bi bi-exclamation-triangle text-danger"></i>
-                    <h5 class="text-danger">خطا</h5>
-                    <p>${msg}</p>
-                    <button class="btn btn-primary" onclick="loadTodayActivities()">
-                        <i class="bi bi-arrow-clockwise me-2"></i>تلاش مجدد
-                    </button>
-                </div>
-            `;
+            showInlineError('activitiesContainer', msg, { onRetry: loadTodayActivities });
         }
     </script>
 </body>

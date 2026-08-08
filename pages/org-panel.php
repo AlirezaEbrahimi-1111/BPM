@@ -121,11 +121,6 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     .modal-hint{font-size:12px;color:var(--text-sub);margin-top:8px}
     .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
 
-    /* Toast */
-    .toast{position:fixed;bottom:24px;left:24px;background:var(--text-main);color:#fff;padding:12px 20px;border-radius:var(--radius-sm);font-size:13px;box-shadow:var(--shadow-md);transform:translateY(16px);opacity:0;transition:all .3s;z-index:9999}
-    .toast.show{transform:translateY(0);opacity:1}
-    .toast.success{background:var(--success)}
-    .toast.error{background:var(--danger)}
 
     @media(max-width:768px){.main{padding:16px}.stats-grid{grid-template-columns:1fr}.days-bar{width:120px}}
   </style>
@@ -218,8 +213,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
+<script src="<?= asset('/assets/js/alert.js') ?>"></script>
 <script>
   // قیمت هر ماه (فقط برای نمایش؛ قیمت واقعی را سرور تعیین می‌کند)
   const PRICE_PER_MONTH = 200000;
@@ -249,11 +243,12 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     }
   }
 
+  // showError از showInlineError مشترک (assets/js/alert.js) استفاده می‌کنه —
+  // قبلاً msg بدونِ escape مستقیم در innerHTML می‌رفت؛ الان امنه
   function showError(msg) {
     document.getElementById('loading').style.display = 'none';
-    const box = document.getElementById('errorBox');
-    box.style.display = 'block';
-    box.innerHTML = '<i class="bi bi-exclamation-circle" style="font-size:28px;color:var(--danger)"></i><div style="margin-top:10px">' + msg + '</div>';
+    document.getElementById('errorBox').style.display = 'block';
+    showInlineError('errorBox', msg);
   }
 
   function render(d) {
@@ -351,12 +346,8 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
   }
 
   // ── Toast ──
-  function showToast(msg, type = '') {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast show ' + type;
-    setTimeout(() => t.className = 'toast', 3000);
-  }
+  // showToast از assets/js/alert.js استفاده می‌شود — قبلاً اینجا یک نسخهٔ
+  // محلیِ جداگانه (وابسته به یک div ثابت) بازتعریف می‌شد
 
   // ── نمایش نتیجه‌ی پرداخت بعد از بازگشت از درگاه ──
   (function () {

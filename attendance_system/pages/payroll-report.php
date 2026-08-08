@@ -299,7 +299,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
                 const res = await fetch(url);
                 const data = await res.json();
                 if (!data || !data.success) {
-                    alert((data && data.message) ? data.message : 'خطا در دریافت داده');
+                    showToast((data && data.message) ? data.message : 'خطا در دریافت داده', 'error');
                     return;
                 }
                 lastRows = data.rows || [];
@@ -313,12 +313,12 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
                 fillCards(lastTotals);
             } catch (e) {
                 console.error(e);
-                alert('خطا در ارتباط با سرور');
+                showToast('خطا در ارتباط با سرور', 'error');
             }
         }
 
         function exportExcel() {
-            if (!lastRows.length) { alert('داده‌ای برای خروجی نیست'); return; }
+            if (!lastRows.length) { showToast('داده‌ای برای خروجی نیست', 'warning'); return; }
             const aoa = [['نام', 'واحد', 'جمع مرخصی/پاس (ساعت:دقیقه)', 'سهمیهٔ باقی‌مانده/تجاوز (ساعت:دقیقه)', 'حقوق پایه (تومان)', 'کسری ×۲ (ساعت:دقیقه)', 'جریمهٔ کسری (تومان)', 'حقوق دریافتی تا دیروز (تومان)']];
             lastRows.forEach(r => {
                 aoa.push([

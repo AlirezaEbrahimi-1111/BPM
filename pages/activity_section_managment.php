@@ -265,40 +265,6 @@ if (!$__me || !hasPermission($__me, 'manage_activity_sections')) {
             100% { background-position: -200% 0; }
         }
 
-        /* toast */
-        .toast-wrap {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            pointer-events: none;
-        }
-        .toast-item {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 12px 20px;
-            font-size: .88rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 8px 30px rgba(0,0,0,.4);
-            animation: toastIn .3s ease;
-            pointer-events: all;
-        }
-        .toast-item.success { border-color: var(--success); }
-        .toast-item.error   { border-color: var(--danger);  }
-        .toast-item.success i { color: var(--success); }
-        .toast-item.error   i { color: var(--danger);  }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateY(12px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
         /* delete overlay */
         .overlay {
             position: fixed; inset: 0;
@@ -413,8 +379,6 @@ if (!$__me || !hasPermission($__me, 'manage_activity_sections')) {
 
 </div>
 <?php include 'footer.php'; ?>
-<!-- Toast -->
-<div class="toast-wrap" id="toastWrap"></div>
 
 <!-- Delete confirm -->
 <div class="overlay" id="deleteOverlay" style="display:none;">
@@ -571,7 +535,7 @@ async function addSection() {
     if (data.success) {
         document.getElementById('newKey').value   = '';
         document.getElementById('newLabel').value = '';
-        toast('واحد با موفقیت اضافه شد', 'success');
+        showToast('واحد با موفقیت اضافه شد', 'success');
         await loadSections();
     } else {
         showAddErr(data.message || 'خطا در افزودن');
@@ -604,16 +568,16 @@ function cancelEdit(key) {
 
 async function saveEdit(key) {
     const newLabel = document.getElementById(`input-${key}`).value.trim();
-    if (!newLabel) { toast('نام نمی‌تواند خالی باشد', 'error'); return; }
+    if (!newLabel) { showToast('نام نمی‌تواند خالی باشد', 'error'); return; }
 
     const s    = sections.find(x => x.section_key === key);
     const data = await apiPost({ section_key: key, section_label: newLabel, sort_order: s?.sort_order ?? 0 });
 
     if (data.success) {
-        toast('نام واحد بروزرسانی شد', 'success');
+        showToast('نام واحد بروزرسانی شد', 'success');
         await loadSections();
     } else {
-        toast(data.message || 'خطا', 'error');
+        showToast(data.message || 'خطا', 'error');
     }
 }
 
@@ -652,23 +616,15 @@ async function confirmDelete() {
     const data = await apiDelete(deleteKey, transferTo);
 
     if (data.success) {
-        toast(data.message || 'واحد حذف شد', 'success');
+        showToast(data.message || 'واحد حذف شد', 'success');
         closeDeleteOverlay();
         await loadSections();
     } else {
-        toast(data.message || 'خطا در حذف', 'error');
+        showToast(data.message || 'خطا در حذف', 'error');
     }
 }
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
-function toast(msg, type = 'success') {
-    const wrap = document.getElementById('toastWrap');
-    const el   = document.createElement('div');
-    el.className = `toast-item ${type}`;
-    el.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>${msg}`;
-    wrap.appendChild(el);
-    setTimeout(() => el.remove(), 3200);
-}
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {

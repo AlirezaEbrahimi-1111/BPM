@@ -1198,12 +1198,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     //     }, 2500);
     // }
 
-    // ── بازنویسی سراسری alert → toast ──
-    window.alert = function(msg) {
-        const text = String(msg).replace(/^\s*[✅❌⚠️ℹ️]\s*/, '');
-        const type = /موفق|ثبت|ذخیره|انجام شد|تکمیل|اضافه شد|حذف شد|ویرایش شد/.test(text) ? 'success' : 'warning';
-        showToast(text, type);
-    };
+    // بازنویسیِ سراسریِ alert→toast قبلاً اینجا بود (به‌عنوانِ یک لایهٔ ایمنیِ
+    // پنهان با یک قاعدهٔ حدسی برایِ تشخیصِ موفق/خطا که پیغام‌هایِ خطا رو هم
+    // با رنگِ warning نشون می‌داد، نه error). حالا که همهٔ فراخوانی‌هایِ
+    // alert()/confirm() توی کدِ پروژه مستقیماً به showToast()/uiConfirm()
+    // تبدیل شدن، این بازنویسیِ سراسری دیگه لازم نیست
 
     // ── مودال تأیید (جایگزین confirm) ──
     function uiConfirm(message, onYes, opts = {}) {

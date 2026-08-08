@@ -993,11 +993,11 @@ ${highlightedContent}${contentPreview.length > 4096 ? '...' : ''}
                 if (successful) {
                     showAlert('گزارش کپی شد', 'success');
                 } else {
-                    showAlert('خطا در کپی کردن', 'danger');
+                    showAlert('خطا در کپی کردن', 'error');
                 }
             } catch (err) {
                 console.error('خطا در کپی جایگزین:', err);
-                showAlert('خطا در کپی کردن', 'danger');
+                showAlert('خطا در کپی کردن', 'error');
             }
         }
         // ارسال به سروش
@@ -1195,36 +1195,15 @@ ${highlightedContent}${contentPreview.length > 4096 ? '...' : ''}
             `;
         }
 
+        // showError از showInlineError مشترک (assets/js/alert.js) استفاده می‌کنه
         function showError(message) {
-            document.getElementById('reportsContainer').innerHTML = `
-                <div class="empty-state">
-                    <i class="bi bi-exclamation-triangle text-danger"></i>
-                    <h5 class="text-danger">خطا</h5>
-                    <p>${message}</p>
-                    <button class="btn btn-primary" onclick="loadReports()">تلاش مجدد</button>
-                </div>
-            `;
+            showInlineError('reportsContainer', message, { onRetry: loadReports });
         }
 
+        // showAlert قبلاً یک پیاده‌سازیِ جداگانه (باکسِ alert بوت‌استرپ) داشت؛
+        // الان فقط یک نام‌مستعارِ نازک برایِ showToastِ مشترکه (از assets/js/alert.js)
         function showAlert(message, type = 'info') {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-            alertDiv.style.top = '90px';
-            alertDiv.style.left = '20px';
-            alertDiv.style.zIndex = '9999';
-            alertDiv.style.minWidth = '300px';
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-
-            document.body.appendChild(alertDiv);
-
-            setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.parentNode.removeChild(alertDiv);
-                }
-            }, 5000);
+            showToast(message, type);
         }
 
         function debounce(func, wait) {
@@ -1240,7 +1219,7 @@ ${highlightedContent}${contentPreview.length > 4096 ? '...' : ''}
         }
 
         function logout() {
-            if (confirm('آیا مطمئن هستید که می‌خواهید خارج شوید؟')) {
+            uiConfirm('آیا مطمئن هستید که می‌خواهید خارج شوید؟', function () {
                 fetch('../api/auth/logout.php', {
                     method: 'POST',
                     headers: {
@@ -1252,7 +1231,7 @@ ${highlightedContent}${contentPreview.length > 4096 ? '...' : ''}
                         localStorage.removeItem('user_info');
                         window.location.href = '../index.php';
                     });
-            }
+            }, { danger: true, yesText: 'بله، خروج', noText: 'انصراف' });
         }
     </script>
 </body>

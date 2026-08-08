@@ -935,10 +935,10 @@ function toPersianNumber($num) {
         }
 
         function logout() {
-            if (confirm('آیا می‌خواهید خروج کنید؟')) {
+            uiConfirm('آیا می‌خواهید خروج کنید؟', function () {
                 localStorage.removeItem('auth_token');
                 window.location.href = '../index.php';
-            }
+            }, { danger: true, yesText: 'بله، خروج', noText: 'انصراف' });
         }
 
         // Auto-hide success message after 4 seconds

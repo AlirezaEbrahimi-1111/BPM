@@ -336,11 +336,12 @@ async function loadAll() {
   }
 }
 
+// showError از showInlineError مشترک (assets/js/alert.js) استفاده می‌کنه —
+// خودِ آن تابع پیغام رو escape می‌کنه، پس نیازی به esc() دستی اینجا نیست
 function showError(msg) {
   document.getElementById('coLoading').style.display = 'none';
-  const box = document.getElementById('coError');
-  box.style.display = 'block';
-  box.innerHTML = '<i class="bi bi-exclamation-circle" style="font-size:28px;color:#F04438"></i><div style="margin-top:10px">' + esc(msg) + '</div>';
+  document.getElementById('coError').style.display = 'block';
+  showInlineError('coError', msg);
 }
 
 /* ── هدر + آمار + پرسنل (از my-org-data) ── */

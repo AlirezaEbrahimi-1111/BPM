@@ -1765,11 +1765,11 @@ if (!$__me) {
                     loadAllData();
                     showUndoToast(id, title);
                 } else {
-                    alert(data.message || 'حذف انجام نشد');
+                    showToast(data.message || 'حذف انجام نشد', 'error');
                 }
             } catch (e) {
                 console.error('performDelete:', e);
-                alert('خطا در ارتباط با سرور');
+                showToast('خطا در ارتباط با سرور', 'error');
             }
         }
 
@@ -1811,11 +1811,11 @@ if (!$__me) {
                 if (data.success) {
                     loadAllData();
                 } else {
-                    alert(data.message || 'بازگرداندن انجام نشد');
+                    showToast(data.message || 'بازگرداندن انجام نشد', 'error');
                 }
             } catch (e) {
                 console.error('restoreWorkflow:', e);
-                alert('خطا در ارتباط با سرور');
+                showToast('خطا در ارتباط با سرور', 'error');
             }
         }
 
@@ -1989,8 +1989,9 @@ if (!$__me) {
             });
         }
 
+        // showError از showInlineError مشترک (assets/js/alert.js) استفاده می‌کنه
         function showError(msg) {
-            document.getElementById('workflowsList').innerHTML = `<div class="state-box" style="color:var(--danger)"><i class="bi bi-exclamation-circle"></i><p>${msg}</p></div>`;
+            showInlineError('workflowsList', msg, { onRetry: loadAllData });
         }
 
         /* ─── Init ─── */
