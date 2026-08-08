@@ -145,7 +145,17 @@ try {
         // آیا ورود شیفت ۲ مجاز است؟ (بعد از ۳۰ دقیقه قبلِ شیفت ۲)
         $shift2_in_open = ($shift2_allowed_obj === null) ? true : ($now_obj >= $shift2_allowed_obj);
 
-        if (!$shift1_check_in) {
+        // 🔒 اول بررسی می‌کنیم آیا شیفتِ ۲ همین الان «باز» است (ورود ثبت شده، خروج نه) —
+        // مستقل از اینکه شیفتِ ۱ اصلاً زده شده یا نه. قبلاً این حالت چک نمی‌شد: وقتی
+        // کاربر پنجره‌ی شیفتِ ۱ را کامل از دست می‌داد و مستقیم وارد شیفتِ ۲ می‌شد،
+        // شرطِ زیر (elseif زنجیره‌ای بر پایه‌ی shift1_check_in) هیچ‌وقت به بخشِ
+        // «خروجِ شیفتِ ۲» نمی‌رسید و همان دکمه‌ی سبزِ «ورود شیفت ۲» دوباره نمایش
+        // داده می‌شد — یعنی بعد از ثبتِ ورودِ شیفتِ ۲، دکمه هرگز قرمز/خروج نمی‌شد.
+        if ($shift2_check_in && !$shift2_check_out) {
+            $buttons[] = ['type' => 'check_out', 'shift' => 2, 'label' => 'خروج شیفت 2', 'enabled' => true];
+        } elseif ($shift2_check_in && $shift2_check_out) {
+            // هر دو شیفت کامل شده (چه شیفتِ ۱ زده شده باشه چه رد شده باشه) — بدونِ دکمه
+        } elseif (!$shift1_check_in) {
             // هنوز ورود شیفت ۱ نخورده
             if ($shift1_in_open) {
                 $buttons[] = ['type' => 'check_in', 'shift' => 1, 'label' => 'ورود شیفت 1', 'enabled' => true];
@@ -159,15 +169,13 @@ try {
         } elseif (!$shift1_check_out) {
             // شیفت ۱ باز است ⟵ همیشه می‌تواند خروجِ شیفت ۱ بزند
             $buttons[] = ['type' => 'check_out', 'shift' => 1, 'label' => 'خروج شیفت 1', 'enabled' => true];
-        } elseif (!$shift2_check_in) {
-            // شیفت ۱ تمام شده ⟵ ورود شیفت ۲ فقط در پنجره‌ی مجاز
+        } else {
+            // شیفت ۱ تمام شده، شیفتِ ۲ هنوز شروع نشده ⟵ ورود شیفت ۲ فقط در پنجره‌ی مجاز
             if ($shift2_in_open) {
                 $buttons[] = ['type' => 'check_in', 'shift' => 2, 'label' => 'ورود شیفت 2', 'enabled' => true];
             } else {
                 $window_message = 'الان زمانِ ثبتِ ورود نیست';
             }
-        } elseif (!$shift2_check_out) {
-            $buttons[] = ['type' => 'check_out', 'shift' => 2, 'label' => 'خروج شیفت 2', 'enabled' => true];
         }
     }
     

@@ -11,7 +11,7 @@ require_once '../includes/version.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>داشبورد مدیریت - سیستم مدیریت کار</title>
 
-    
+
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <link href="<?= asset('../assets/js/cdn/fonts/bootstrap-icons.woff2?30af91bf14e37666a085fb8a161ff36d') ?>" rel="stylesheet">
@@ -190,7 +190,7 @@ require_once '../includes/version.php';
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 100px;
-                        padding: 0 14px 14px 14px;
+            padding: 0 14px 14px 14px;
 
             margin: auto !important;
         }
@@ -343,13 +343,13 @@ require_once '../includes/version.php';
             font-weight: 600;
         }
 
-.status-badge{
-    border-radius:5px;
-        padding: 4px 9px 4px 9px;
-        font-size: 11px;
-        width: 130px;
-        text-align: center;
-}
+        .status-badge {
+            border-radius: 5px;
+            padding: 4px 9px 4px 9px;
+            font-size: 11px;
+            width: 130px;
+            text-align: center;
+        }
 
         .td-status .status-badge {
             font-weight: bold;
@@ -359,6 +359,7 @@ require_once '../includes/version.php';
             color: #1b7b39;
             background: #40b86c1a;
         }
+
         /* راهنمای خالی، فضای بیهوده می‌گیرد */
         #planModal .ap-hint:empty {
             display: none !important;
@@ -1066,6 +1067,42 @@ require_once '../includes/version.php';
             line-height: 1;
         }
 
+        /* ریشه‌یِ اصلیِ اسکرولِ همیشگی: یک ruleِ عمومیِ ".modal-content" توی
+           custom.css (متعلق به یک سیستمِ modal قدیمی‌تر/دیگه) با
+           position:fixed + max-height:90vh + overflow-y:auto روی *همه*ی
+           modal-content ها از جمله همین مودالِ بوت‌استرپی اعمال می‌شه — یعنی
+           صرف‌نظر از هر محاسبه‌ای که تویِ JS برایِ modal-body انجام بدیم،
+           خودِ modal-content مستقل بهش سقف/اسکرول تحمیل می‌کرد. اینجا فقط
+           برایِ همین مودال خنثی‌ش می‌کنیم تا رفتارِ نرمالِ بوت‌استرپ برگرده */
+        #monthModal .modal-content {
+            position: relative;
+            top: auto;
+            left: auto;
+            transform: none;
+            max-height: none;
+            overflow: visible;
+        }
+
+        /* قبلاً چون modal-content با position:fixed از جریانِ عادی خارج بود،
+           محدودیتِ عرضِ پیش‌فرضِ بوت‌استرپ روی modal-dialog (بدونِ کلاسِ
+           modal-lg/modal-xl، فقط ۵۰۰px) اصلاً اثر نداشت — با رفعِ position:fixed
+           بالا، این محدودیت آشکار شد و باید صریحاً بازش کنیم */
+        #monthModal .modal-dialog {
+            max-width: 1300px;
+            margin: 25px auto !important;
+        }
+
+        /* طوری‌که همه‌ی روزهایِ ماه بدونِ اسکرول در یک نگاه دیده بشن — فضایِ
+           عمودیِ هدر/فوتر رو تا حدِ ممکن پس می‌گیریم (ارتفاعِ واقعیِ ردیف‌ها
+           هم به‌صورتِ پویا در JS، بر اساسِ همین فضایِ آزادشده، محاسبه می‌شه) */
+        #monthModal .modal-header {
+            padding-top: 0;
+        }
+
+        #monthModal .modal-footer {
+            padding-bottom: 0;
+        }
+
         #planModal .btn-close,
         #weekModal .btn-close,
         #monthModal .btn-close {
@@ -1401,26 +1438,41 @@ require_once '../includes/version.php';
         }
 
         .wk-nav {
-            display: flex; align-items: center; gap: 6px;
-            margin-right: auto;              /* هل به سمت چپ (RTL) */
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: auto;
+            /* هل به سمت چپ (RTL) */
             margin-left: 12px;
             background: var(--pm-purple);
             border-radius: 10px;
             padding: 4px 6px;
-            gap:0px;
+            gap: 0px;
         }
+
         .wk-nav button {
             border-radius: 8px;
-            border: none; cursor: pointer;
-            color: white; font-size: .855rem;
-            display: flex; align-items: center; justify-content: center;
+            border: none;
+            cursor: pointer;
+            color: white;
+            font-size: .855rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: background .12s;
             background-color: transparent;
         }
-        .wk-nav button:hover { background: rgba(255,255,255,.22); }
+
+        .wk-nav button:hover {
+            background: rgba(255, 255, 255, .22);
+        }
+
         .wk-nav .wk-label {
-            font-size: .792rem; font-weight: 700; color: white;
-            min-width: 78px; text-align: center;
+            font-size: .792rem;
+            font-weight: 700;
+            color: white;
+            min-width: 78px;
+            text-align: center;
         }
 
         .wk-grid {
@@ -1515,7 +1567,7 @@ require_once '../includes/version.php';
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            padding-left:30px;
+            padding-left: 30px;
         }
 
         .wk-card-time {
@@ -1592,8 +1644,8 @@ require_once '../includes/version.php';
 
         /* اندازهٔ همهٔ سلول‌ها یکسان است (ارتفاع از grid-template-rows می‌آید، نه از محتوا) */
         .mo-cell {
-            background: #fafafa;
-            border: 1px solid #f0f0f3;
+            background: #f2f2f6;
+            border: 1px solid #e2e2ea;
             border-radius: 10px;
             padding: 6px;
             display: flex;
@@ -1809,7 +1861,7 @@ require_once '../includes/version.php';
             box-shadow: 0 6px 20px rgba(0, 0, 0, .1);
             padding: 5px;
             overflow: hidden;
-            margin:5px 120px;
+            margin: 5px 120px;
         }
 
         .pm-menu.open {
@@ -2317,7 +2369,7 @@ require_once '../includes/version.php';
                 <div class="modal-body">
                     <div class="wk-grid" id="wkGrid"></div>
                 </div>
-                <div class="modal-footer" style="padding:12px 20px;">
+                <div class="modal-footer" style="padding:12px 12px 0 12px;">
                     <a href="my-tasks.php?filter=week" class="btn btn-sm" style="background:var(--pm-purple);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
@@ -2342,10 +2394,10 @@ require_once '../includes/version.php';
 
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" style="padding:12px 16px;max-height:68vh;overflow:auto;">
+                <div class="modal-body" style="padding:12px 16px;max-height:76vh;overflow:auto;">
                     <div class="mo-grid" id="moGrid" onmouseover="moGridOver(event)" onmouseleave="moGridLeave()"></div>
                 </div>
-                <div class="modal-footer" style="padding:12px 20px;">
+                <div class="modal-footer" style="padding:12px 12px 0 12px;">
                     <a href="my-tasks.php?filter=month" id="moSeeAllBtn" class="btn btn-sm" style="background:var(--pm-purple);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
@@ -4061,6 +4113,9 @@ require_once '../includes/version.php';
             moOffset = 0;
             if (!moModal) {
                 moModal = new bootstrap.Modal(document.getElementById('monthModal'));
+                // موقعِ show()، مودال هنوز کاملاً چیده نشده و clientHeight درست نیست؛
+                // بعدِ اتمامِ ترنزیشنِ نمایش، یک‌بار دیگه با ارتفاعِ واقعی بازمحاسبه می‌کنیم
+                document.getElementById('monthModal').addEventListener('shown.bs.modal', moReapplyRowPx);
             }
             moModal.show();
             moRender();
@@ -4126,10 +4181,59 @@ require_once '../includes/version.php';
         }
 
         /* ─── هاور: بزرگ‌شدنِ کلِ ردیف + کلِ ستونِ سلولِ هاورشده (به‌جای زوم خودِ سلول) ─── */
-        const MO_ROW_PX = 100; // ارتفاع پایهٔ هر ردیف (px)
+        let MO_ROW_PX = 100; // ارتفاعِ پایهٔ هر ردیف (px) — قبلِ هر render، پویا بازمحاسبه می‌شود
+        const MO_ROW_PX_MIN = 56; // زیرِ این مقدار سلول‌ها غیرِقابلِ‌استفاده می‌شوند؛ در این حالتِ نادر، اسکرولِ modal-body به‌عنوانِ راهِ‌فرار باقی می‌ماند
+        const MO_ROW_PX_MAX = 100; // سقفِ ایمنی — حتی اگر تخمینِ فضایِ آزاد کمی خوش‌بینانه باشه، ردیف‌ها هیچ‌وقت بزرگ‌تر از این نمی‌شن
+        const MO_HEADER_ROW_PX = 26; // ارتفاعِ تقریبیِ ردیفِ نام‌روزها (auto) — از رویِ CSSِ ثابتِ .mo-weekday
+        const MO_GRID_GAP_PX = 6; // باید با gap در CSSِ .mo-grid یکی باشد
         const MO_COL_GROW = 1.4; // ضریب بزرگ‌شدنِ عرض سلولِ هاورشده (۴۰٪ بیشتر)
         const MO_ROW_GROW = 2.0; // ضریب بزرگ‌شدنِ ارتفاع سلولِ هاورشده (۱۰۰٪ بیشتر)
         let moTotalRows = 0;
+
+        /* گامِ اول: تخمینِ تحلیلی، تا modal-body به‌اندازه‌ی فضایِ واقعاً موجود رشد
+           کنه (بدونِ این گام، اگر رندرِ اول به‌خاطرِ کلمپِ حداقلی کوچیک شروع بشه،
+           دیگه هیچ‌وقت به فضایِ واقعی رشد نمی‌کنه چون overflowِ گامِ دوم صفر
+           می‌مونه و دلیلی برایِ بزرگ‌شدن پیدا نمی‌شه).
+           گامِ دوم: اگر بازم (به‌خاطرِ خطایِ تخمینِ هدر/فوتر/حاشیه‌ها) چیزی از
+           پایینِ viewport بیرون زده، دقیقاً به همون‌اندازه که واقعاً اندازه‌گیری
+           شده کم می‌کنیم — این گام بر اساسِ رندرِ واقعیِ مرورگره، نه حدس */
+        function moFitModalBody() {
+            const dialog = document.querySelector('#monthModal .modal-dialog');
+            const header = document.querySelector('#monthModal .modal-header');
+            const footer = document.querySelector('#monthModal .modal-footer');
+            const body = document.getElementById('moGrid')?.parentElement;
+            if (!dialog || !header || !footer || !body) return;
+
+            const dm = getComputedStyle(dialog);
+            const margins = parseFloat(dm.marginTop) + parseFloat(dm.marginBottom);
+            const estimated = window.innerHeight - margins - header.offsetHeight - footer.offsetHeight - 8;
+            body.style.height = Math.max(200, estimated) + 'px';
+
+            const overflow = dialog.getBoundingClientRect().bottom - window.innerHeight;
+            if (overflow > 0) {
+                body.style.height = Math.max(200, body.clientHeight - overflow - 8) + 'px';
+            }
+        }
+
+        function moComputeRowPx(totalRows) {
+            const body = document.getElementById('moGrid')?.parentElement;
+            if (!body || totalRows <= 0) return 100;
+            const available = body.clientHeight - MO_HEADER_ROW_PX - MO_GRID_GAP_PX * totalRows;
+            const rowPx = Math.floor(available / totalRows);
+            return Math.min(MO_ROW_PX_MAX, Math.max(MO_ROW_PX_MIN, rowPx));
+        }
+
+        /* بازمحاسبه‌ی ارتفاعِ ردیف‌ها بعدِ اتمامِ ترنزیشنِ نمایشِ مودال (وقتی
+           اندازه‌گیری‌هایِ واقعی در دسترسه) — بدونِ رندرِ دوباره‌ی HTML، فقط
+           ارتفاعِ modal-body و grid-template-rows به‌روزرسانی می‌شه */
+        function moReapplyRowPx() {
+            if (moTotalRows <= 0) return;
+            moFitModalBody();
+            MO_ROW_PX = moComputeRowPx(moTotalRows);
+            const grid = document.getElementById('moGrid');
+            if (!grid) return;
+            grid.style.gridTemplateRows = moBaseGridTemplate(moTotalRows).rows;
+        }
 
         function moBaseGridTemplate(totalRows) {
             return {
@@ -4216,6 +4320,7 @@ require_once '../includes/version.php';
 
         function moRender() {
             moHoveredCell = null; // چون grid دوباره ساخته می‌شود، رفرنس قبلی معتبر نمی‌ماند
+            moFitModalBody();
 
             const monthStart = moMonthStartOf(moOffset);
             const [jy, jm] = jalaliOf(monthStart);
@@ -4281,6 +4386,7 @@ require_once '../includes/version.php';
             }
 
             moTotalRows = Math.ceil(cellIdx / 7);
+            MO_ROW_PX = moComputeRowPx(moTotalRows);
 
             const grid = document.getElementById('moGrid');
             grid.innerHTML = html;

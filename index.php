@@ -177,7 +177,7 @@
             padding: 0 48px 0 48px;
             font-size: 14px;
             color: #1f2937;
-            background: #fafafa;
+            background: #e9e9e9;
             direction: rtl;
             transition: border-color 0.2s, box-shadow 0.2s;
             outline: none;

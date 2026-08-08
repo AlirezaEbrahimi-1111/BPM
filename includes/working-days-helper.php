@@ -53,6 +53,44 @@ function isWorkingDay(DateTime $date, array $holidays): bool {
 }
 
 /**
+ * افزودنِ N «ساعتِ کاری» به یک لحظه — روزهایِ غیرکاری (جمعه/تعطیلات) کاملاً
+ * نادیده گرفته می‌شوند (نه فقط کم‌شمرده)، یعنی اگر بازه‌ای از ساعت‌شمار با یک
+ * روزِ تعطیل تلاقی کند، آن روز به‌طورِ کامل به مهلت اضافه می‌شود.
+ *
+ * مثال: پنج‌شنبه ساعتِ ۲۰:۰۰ + ۲۴ ساعتِ کاری = شنبه ساعتِ ۲۰:۰۰
+ * (نه جمعه ساعتِ ۲۰:۰۰، چون کلِ جمعه صفر ساعت محسوب می‌شود)
+ *
+ * @param DateTime $start   لحظه‌ی شروع
+ * @param int      $hours   تعداد ساعتِ کاری که باید اضافه شود
+ * @param array    $holidays آرایه‌ی تعطیلات (کلید = 'Y-m-d')
+ * @return DateTime لحظه‌ی نتیجه (یک شیِ DateTimeِ جدید — ورودی تغییر نمی‌کند)
+ */
+function addWorkingHours(DateTime $start, int $hours, array $holidays): DateTime {
+    $cursor = clone $start;
+    $remainingSeconds = $hours * 3600;
+
+    while ($remainingSeconds > 0) {
+        if (isWorkingDay($cursor, $holidays)) {
+            $midnight = (clone $cursor)->modify('tomorrow midnight');
+            $secondsLeftToday = $midnight->getTimestamp() - $cursor->getTimestamp();
+
+            if ($remainingSeconds <= $secondsLeftToday) {
+                $cursor->modify('+' . $remainingSeconds . ' seconds');
+                $remainingSeconds = 0;
+            } else {
+                $remainingSeconds -= $secondsLeftToday;
+                $cursor = $midnight;
+            }
+        } else {
+            // روزِ غیرکاری — کاملاً رد می‌شود، هیچ ساعتی از آن کم نمی‌شود
+            $cursor->modify('tomorrow midnight');
+        }
+    }
+
+    return $cursor;
+}
+
+/**
  * شمارش تعداد روزهای کاری بین دو تاریخ (شامل start، نه شامل end)
  * 
  * مثال: از 2026-05-01 تا 2026-05-10 

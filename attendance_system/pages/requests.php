@@ -9,6 +9,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/attendance_system/includes/date_helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 
 // بساز $db رو// 2. مأموریت‌های منتظر تأیید مسئول
@@ -847,6 +848,7 @@ usort($all_requests, function ($a, $b) {
 
 $requests_for_grid = [];
 $__type_labels = ['mission' => 'مأموریت', 'leave' => 'مرخصی', 'pass' => 'پاس', 'forget' => 'فراموشی', 'technical' => 'مشکل فنی'];
+$__holidays = getHolidaySet($db);
 foreach ($all_requests as $req) {
     $type   = $req['type'];
     $status = $req['status'] ?? 'pending';
@@ -857,10 +859,12 @@ foreach ($all_requests as $req) {
     $is_own = (($req['user_id'] ?? null) == $user_id);
     if (!($is_admin_role ?? false) || $is_own) {
         if ($type === 'pass') {
+            // پاس: تا pass_edit_hours «ساعتِ کاری» بعد از ارسال — جمعه/تعطیلات
+            // کاملاً نادیده گرفته می‌شوند (هم‌راستا با edit.php/delete.php)
             $ca = new DateTime($req['created_at']);
             $nw = new DateTime();
-            $hp = ($nw->getTimestamp() - $ca->getTimestamp()) / 3600;
-            $can_edit = $can_delete = ($hp <= ($app_settings['pass_edit_hours'] ?? 24));
+            $deadline = addWorkingHours($ca, (int) ($app_settings['pass_edit_hours'] ?? 24), $__holidays);
+            $can_edit = $can_delete = ($nw <= $deadline);
         } else {
             $has_action = in_array($status, ['approved', 'rejected', 'cancelled']);
             if (!$has_action) {

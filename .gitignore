@@ -9,3 +9,5 @@ tests/config.php
 __pycache__/
 *.pyc
 ai-service/.env
+find.php
+uploads/

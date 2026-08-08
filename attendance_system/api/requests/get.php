@@ -12,6 +12,8 @@ date_default_timezone_set('Asia/Tehran');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 
 try {
     $database = new Database();
@@ -288,11 +290,14 @@ try {
     $can_delete = false;
 
     if ($request_type === 'pass') {
+        // پاس: تا pass_edit_hours «ساعتِ کاری» بعد از ارسال — جمعه/تعطیلات
+        // کاملاً نادیده گرفته می‌شوند (هم‌راستا با edit.php/delete.php)
+        $pass_edit_hours = (int) getSetting($db, 'pass_edit_hours', 24);
         $created_at = new DateTime($request['created_at']);
         $now = new DateTime();
-        $diff = $now->getTimestamp() - $created_at->getTimestamp();
-        $hours_passed = $diff / 3600;
-        $can_edit = $can_delete = ($hours_passed <= 24);
+        $holidays = getHolidaySet($db);
+        $deadline = addWorkingHours($created_at, $pass_edit_hours, $holidays);
+        $can_edit = $can_delete = ($now <= $deadline);
     } else {
         $has_approval = false;
         if ($request_type === 'leave') {

@@ -147,7 +147,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
         .chat-search-box i.bi-search {
             position: absolute;
-            top: 50%;
+            top: 40%;
             inset-inline-start: 32px;
             transform: translateY(-50%);
             color: var(--text-muted);

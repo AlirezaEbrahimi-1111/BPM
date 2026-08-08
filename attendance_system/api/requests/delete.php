@@ -13,6 +13,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 
 try {
     $database = new Database();
@@ -79,17 +80,19 @@ try {
     $error_message = '';
 
     if ($request_type === 'pass') {
-        // پاس: تا pass_edit_hours ساعت بعد از ارسال (طبقِ تنظیماتِ واقعی، نه هاردکد)
+        // پاس: تا pass_edit_hours «ساعتِ کاری» بعد از ارسال — جمعه/تعطیلات کاملاً
+        // نادیده گرفته می‌شوند
         $pass_edit_hours = (int) getSetting($db, 'pass_edit_hours', 24);
         $created_at = new DateTime($request['created_at']);
         $now = new DateTime();
-        $diff = $now->getTimestamp() - $created_at->getTimestamp();
-        $hours_passed = $diff / 3600;
+        $holidays = getHolidaySet($db);
+        $deadline = addWorkingHours($created_at, $pass_edit_hours, $holidays);
 
-        if ($hours_passed <= $pass_edit_hours) {
+        if ($now <= $deadline) {
             $can_delete = true;
         } else {
-            $error_message = "مهلت حذف درخواست پاس ({$pass_edit_hours} ساعت) به پایان رسیده است";
+            $error_message = "مهلتِ حذفِ درخواستِ پاس ({$pass_edit_hours} ساعتِ کاری) در تاریخِ " .
+                $deadline->format('Y-m-d H:i') . ' به پایان رسیده است';
         }
     } else {
         // بقیه: تا قبل از اولین تأیید
