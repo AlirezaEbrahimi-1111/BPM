@@ -30,6 +30,8 @@
             width: 70%;
             min-height: 100vh;
             direction: ltr;
+            position: relative;
+            z-index: 1;
         }
 
         /* ===== LEFT SIDE — برند / تصویر ===== */
@@ -40,20 +42,20 @@
             align-items: center;
             justify-content: center;
             padding: 60px 48px;
-            background: #ffffff;
-            position: relative;
-            background: #ffffff;
+            background: transparent;
             position: relative;
         }
 
-        .brand-side canvas {
-            position: absolute;
+        /* پخش‌شده در کل صفحه (نه فقط سمت چپ) — position:fixed نسبت به body */
+        #networkCanvas {
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             pointer-events: none;
             opacity: 0.5;
+            z-index: 0;
         }
 
         .brand-headline {
@@ -138,7 +140,7 @@
             align-items: center;
             justify-content: center;
             padding: 60px 64px;
-            background: #ffffff;
+            background: transparent;
             border-right: none;
 
         }
@@ -352,26 +354,52 @@
 
         /*.btn-login:active { transform: translateY(0); }*/
 
-        .btn-login.loading .btn-text {
-            opacity: 0;
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-login:disabled:hover {
+            transform: none;
+            box-shadow: 0 4px 20px rgba(108, 63, 244, 0.35);
+        }
+
+        /* ⚠️ custom.css یک کلاسِ عمومیِ .loading (بدون ربط به این دکمه) با padding:3rem
+           داره که چون این دکمه هم موقعِ لودینگ کلاسِ loading می‌گیره، بهش اعمال می‌شد
+           و باعثِ بزرگ‌شدنِ دکمه می‌شد. برای اینکه custom.css دست‌نخورده بمونه، همین‌جا
+           با سلکتورِ ترکیبیِ .btn-login.loading (specificity بالاتر) override می‌شود */
+        .btn-login.loading {
+            padding: 0;
+        }
+
+        .btn-login.loading .btn-text,
+        .btn-login.loading svg {
+            display: none;
         }
 
         .btn-login.loading::after {
             content: '';
             position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: 22px;
             height: 22px;
             border: 2px solid rgba(255, 255, 255, 0.4);
             border-top-color: #fff;
             border-radius: 50%;
-            animation: spin 0.7s linear infinite;
+            animation: btn-spinner-spin 0.7s linear infinite;
         }
 
-        @keyframes spin {
+        @keyframes btn-spinner-spin {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
             to {
-                transform: rotate(360deg);
+                transform: translate(-50%, -50%) rotate(360deg);
             }
         }
+
 
         /* ===== سوییچِ روشِ ورود (رمز عبور / کد یکبارمصرف) ===== */
         .method-switch {
@@ -691,6 +719,7 @@
 </head>
 
 <body>
+    <canvas id="networkCanvas"></canvas>
     <div class="top-logo" style="position:fixed; top:0; left:0; padding:16px 20px; z-index:100;">
         <img src="https://computeryekta.com/wp-content/uploads/2026/06/modified_logo.png" alt="لوگو" style="height:40px;">
     </div>
@@ -698,13 +727,12 @@
 
         <!-- ===== چپ: برند و تصویر ===== -->
         <div class="brand-side">
-            <canvas id="networkCanvas"></canvas>
             <h2 class="brand-company-name">یکتا همراهان ملک</h2>
             <h1 class="brand-headline">
-                مدیریت <span>یکپارچه فرایندها</span> در یک نگاه
+                مدیریت <span>یکپارچه فرآیندها</span> در یک نگاه
             </h1>
             <p class="brand-sub">
-                اتوماسیون هوشمند، تصمیم‌گیری دقیق و کنترل کامل<br>فرایندهای کسب‌وکار شما
+                اتوماسیون هوشمند، تصمیم‌گیری دقیق و کنترل کامل<br>فرآیندهای کسب‌وکار شما
             </p>
 
             <div class="feature-icons">
@@ -928,25 +956,38 @@
                 step2.style.display = (n === 2) ? 'block' : 'none';
                 step3.style.display = (n === 3) ? 'block' : 'none';
             }
-            // فعال‌سازی دکمهٔ «ادامه» فقط با موبایل معتبر
-            usernameInput.addEventListener('input', function() {
-                const ok = /^09[0-9]{9}$/.test(this.value.trim());
-                continueBtn.disabled = !ok;
-            });
+            // 🔒 اعداد فارسی/عربی (۰۹۱۲...) که ممکنه از autofill یا کیبورد فارسی بیان
+            // رو به اعداد انگلیسی تبدیل می‌کنه تا الگوی /^09.../ درست تشخیصشون بده
+            function toEnglishDigits(str) {
+                return String(str).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+                                   .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+            }
 
-            // مرحله ۱ → ۲
-            continueBtn.addEventListener('click', function() {
-                const phone = usernameInput.value.trim();
-                if (!/^09[0-9]{9}$/.test(phone)) return;
+            // ✅ به‌جای پیش‌بینیِ اینکه فیلد کِی/چطور پر می‌شه (تایپ دستی، autofill مرورگر،
+            // افزونهٔ پسورد منیجر، ...) — که تشخیصِ همه‌ی حالت‌هاش قابل‌اعتماد نیست —
+            // دکمه همیشه قابل‌کلیک می‌مونه و اعتبارسنجی فقط لحظهٔ کلیک انجام می‌شه.
+            // این‌طوری مهم نیست مقدار از کجا اومده، چون .value همیشه لحظهٔ کلیک خونده می‌شه.
+            continueBtn.removeAttribute('disabled');
+
+            function tryGoStep2() {
+                const phone = toEnglishDigits(usernameInput.value.trim());
+                if (!/^09[0-9]{9}$/.test(phone)) {
+                    showAlert('لطفاً شماره موبایل معتبر (۱۱ رقمی، شروع با ۰۹) وارد کنید', 'danger');
+                    usernameInput.focus();
+                    return;
+                }
                 goStep(2);
                 document.getElementById('password').focus();
-            });
+            }
+
+            // مرحله ۱ → ۲
+            continueBtn.addEventListener('click', tryGoStep2);
 
             // Enter در فیلد موبایل = ادامه
             usernameInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !continueBtn.disabled) {
+                if (e.key === 'Enter') {
                     e.preventDefault();
-                    continueBtn.click();
+                    tryGoStep2();
                 }
             });
 
