@@ -6,6 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 if (!isset($db)) {
     $database = new Database();
@@ -20,19 +21,17 @@ if (!$user_id && isset($_COOKIE['auth_token']))
     $user_id = $auth->validateToken($_COOKIE['auth_token']);
 
 if (!$user_id) {
-    header('Location: ../../pages/login.php');
+    header('Location: ../../pages/index.php');
     exit;
 }
 
-// اطلاعات کاربر + گیتِ دسترسیِ مدیر (هماهنگ با API)
-$stmt = $db->prepare("SELECT id, role, activity_section, organization_id FROM users WHERE id = ?");
-$stmt->execute([$user_id]);
-$me = $stmt->fetch(PDO::FETCH_ASSOC);
+// اطلاعاتِ کاربر + گیتِ دسترسی — قبلاً اینجا activity_section هم چک می‌شد
+// («واحدِ مدیریت») که طبقِ اصلِ permissions.php هرگز نباید برایِ دسترسی
+// چک بشه؛ الان فقط بر اساسِ role (از طریقِ اجازهٔ view_payroll که فقط
+// supervisor داره) + سوپرادمین تصمیم گرفته می‌شه
+$me = loadUserForPermissions($db, (int) $user_id);
 
-$is_superadmin = ($me && (int) $me['id'] === 1);
-$is_manager = ($me && $me['activity_section'] === 'management' && in_array($me['role'], ['supervisor', 'admin'], true));
-
-if (!$is_superadmin && !$is_manager) {
+if (!$me || !hasPermission($me, 'view_payroll')) {
     header('Location: ../../pages/dashboard.php');
     exit;
 }

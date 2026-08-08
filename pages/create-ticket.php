@@ -1,16 +1,31 @@
 <?php require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
 require_once '../includes/version.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
-// 🔒 اولویت «بحرانی» فقط برای مدیران/سوپروایزرها قابل انتخاب است، نه کارمند عادی
-$currentUserRole = 'employee';
-if (!empty($_SESSION['user_id'])) {
+if (!isset($db)) {
     $database = new Database();
     $db = $database->getConnection();
-    $stmt = $db->prepare("SELECT role FROM users WHERE id = ?");
-    $stmt->execute([$_SESSION['user_id']]);
-    $currentUserRole = $stmt->fetchColumn() ?: 'employee';
 }
+$auth = new Auth($db);
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) $user_id = $auth->getUserFromToken();
+if (!$user_id && isset($_COOKIE['auth_token'])) $user_id = $auth->validateToken($_COOKIE['auth_token']);
+
+if (!$user_id) {
+    header('Location: ../index.php');
+    exit;
+}
+
+$__me = loadUserForPermissions($db, (int) $user_id);
+if (!$__me) {
+    header('Location: ../index.php');
+    exit;
+}
+
+// 🔒 اولویت «بحرانی» فقط برای مدیران/سوپروایزرها قابل انتخاب است، نه کارمند عادی
+$currentUserRole = $__me['role'] ?? 'employee';
 $canSetCriticalPriority = ($currentUserRole !== 'employee');
 ?>
 <!DOCTYPE html>
@@ -727,5 +742,6 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             return d.innerHTML;
         }
     </script>
+    <?php include 'footer.php'; ?>
 </body>
 </html>

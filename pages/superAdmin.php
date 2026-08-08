@@ -406,5 +406,6 @@ function toggleOrg(id) {
 }
 </script>
 <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
+<?php include 'footer.php'; ?>
 </body>
 </html>

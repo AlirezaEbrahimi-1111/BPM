@@ -1,6 +1,11 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
+
+if (empty($_SESSION['user_id'])) {
+    header('Location: /index.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">

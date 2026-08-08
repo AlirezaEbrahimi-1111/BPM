@@ -1,5 +1,28 @@
 <?php require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
 require_once '../includes/version.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+
+$database = new Database();
+$db = $database->getConnection();
+$auth = new Auth($db);
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) $user_id = $auth->getUserFromToken();
+if (!$user_id && isset($_COOKIE['auth_token'])) $user_id = $auth->validateToken($_COOKIE['auth_token']);
+
+if (!$user_id) {
+    header('Location: ../index.php');
+    exit;
+}
+
+// این صفحه هم روتین‌ها و هم روتینِ گردشِ‌کار رو پوشش می‌ده — با هرکدوم از دو
+// اجازه (که ممکنه جدا/فردی هم اعطا شده باشن) قابلِ‌دسترسیه
+$__me = loadUserForPermissions($db, (int) $user_id);
+if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, 'create_workflow'))) {
+    header('Location: dashboard.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -297,7 +320,7 @@ require_once '../includes/version.php';
             border: none;
             border-radius: 16px;
             box-shadow: var(--shadow-lg);
-            max-width: 935px !important;
+            max-width: 1200px !important;
         }
 
         .modal-header {
@@ -1359,7 +1382,7 @@ require_once '../includes/version.php';
                     (stepData.assignee_type === 'user' ? stepData.assignee_user_id : stepData.activity_section) : ''
             };
 
-            let assigneePlaceholder = 'جستجوی کاربر یا انتخاب واحد...';
+            let assigneePlaceholder = 'جستجوی کاربر/واحد...';
             if (stepData) {
                 if (stepData.assignee_type === 'user') {
                     assigneePlaceholder = 'مسئول فعلی: ' + (stepData.assignee_user_name || 'کاربر') + ' — برای تغییر جستجو کنید...';
@@ -1924,6 +1947,7 @@ require_once '../includes/version.php';
             await loadUsersAndSectionsForPicker();
         });
     </script>
+    <?php include 'footer.php'; ?>
 </body>
 
 </html>

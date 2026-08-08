@@ -4,6 +4,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $database = new Database();
@@ -52,7 +53,8 @@ try {
         die('❌ کاربر یافت نشد');
     }
 
-    if ($user['role'] !== 'supervisor') {
+    $__me = loadUserForPermissions($db, (int) $user_id);
+    if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         http_response_code(403);
         die('❌ دسترسی رد شده - فقط ادمین‌ها می‌توانند تنظیمات را مدیریت کنند');
     }

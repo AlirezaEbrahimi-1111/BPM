@@ -1,4 +1,21 @@
 <?php
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+
+// این ابزار کدِ کامل و حتی فایل‌هایِ .env رو قابلِ‌جستجو می‌کنه — قبلاً بدونِ
+// هیچ احرازِ هویتی برایِ عموم در دسترس بود؛ الان محدود به سوپرادمین شد
+$database = new Database();
+$db = $database->getConnection();
+$auth = new Auth($db);
+$__user_id = $_SESSION['user_id'] ?? $auth->getUserFromToken();
+$__me = $__user_id ? loadUserForPermissions($db, (int) $__user_id) : null;
+if (!isSuperAdmin($__me)) {
+    http_response_code(403);
+    die('<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>خطای دسترسی</title><style>body{text-align:center;padding:50px;background:#f1f1f1;color:#333;font-family:sans-serif}</style></head><body><h1>دسترسی غیرمجاز</h1></body></html>');
+}
+
 // --- CONFIGURATION ---
 // مسیر جستجو (به صورت خودکار ریشه وبسایت + پوشه bpm را تشخیص می‌دهد)
 $searchDirectory = $_SERVER['DOCUMENT_ROOT'] . '/bpm';

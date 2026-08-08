@@ -11,6 +11,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/attendance_system/includes/date_helpe
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 // بساز $db رو// 2. مأموریت‌های منتظر تأیید مسئول
 if (!isset($db)) {
@@ -452,15 +453,11 @@ if ($user_id) {
     $stmt->execute([$user_id]);
     $pending_approvals = array_merge($pending_approvals, $stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
 
-    // امنیت:  شخیصِ مسئول/مدیر (نقش‌محور، نه id ثابت) + سازمانِ جاری
-    $stmt = $db->prepare("SELECT role, activity_section, organization_id FROM users WHERE id = ?");
-    $stmt->execute([$user_id]);
-    $me_row = $stmt->fetch(PDO::FETCH_ASSOC);
+    // امنیت: تشخیصِ مسئول/مدیر — فقط بر اساسِ role (نه activity_section که
+    // یک دپارتمانه، نه سطحِ اختیار) + سوپرادمینِ واقعی (نه فقط id=1 هاردکد)
+    $me_row = loadUserForPermissions($db, (int) $user_id);
     $my_org_id = (int) ($me_row['organization_id'] ?? 0);
-    $is_supervisor = ($me_row && (
-        (int) $user_id === 1 ||
-        ($me_row['activity_section'] === 'management' && in_array($me_row['role'], ['supervisor', 'admin'], true))
-    ));
+    $is_supervisor = ($me_row && (isSuperAdmin($me_row) || ($me_row['role'] ?? '') === 'supervisor'));
 
     // 2. مأموریت‌های منتظر تأیید مسئول (من مسئول هستم)
     if ($is_supervisor) {
