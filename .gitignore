@@ -6,3 +6,6 @@ includes/sms.php
 tests/config.php
 .htaccess
 .user.ini
+__pycache__/
+*.pyc
+ai-service/.env
