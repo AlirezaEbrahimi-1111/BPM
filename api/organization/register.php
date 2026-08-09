@@ -9,6 +9,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/OrganizationHelper.php';
 $database = new Database();
 $db = $database->getConnection();
 $helper = new OrganizationHelper($db);
+$auth = new Auth($db);
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -40,8 +41,8 @@ if (empty($data['last_name'])) {
     $errors[] = 'نام خانوادگی الزامی است';
 }
 
-if (empty($data['password']) || strlen($data['password']) < 6) {
-    $errors[] = 'رمز عبور باید حداقل 6 کاراکتر باشد';
+if (empty($data['password']) || !$auth->validatePassword($data['password'])) {
+    $errors[] = 'رمز عبور باید حداقل ۸ کاراکتر و شامل حداقل یک حرف و یک عدد باشد';
 }
 
 if (!empty($errors)) {

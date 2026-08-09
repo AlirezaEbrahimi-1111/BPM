@@ -475,38 +475,33 @@ if (!function_exists('sc_computeUserSalaryReport')) {
 if (!function_exists('sc_computeLeavePassQuota')) {
     function sc_computeLeavePassQuota($db, $userRow, $start_of_month, $end_of_month)
     {
+        // «سهمیهٔ مانده» باید همون عددی باشه که در همه‌جایِ دیگرِ برنامه (باکسِ
+        // موجودی در requests.php، دکمهٔ اعطا در users.php) نمایش داده می‌شه —
+        // یعنی موجودیِ واقعیِ leave_balance_transactions (که تعلقِ ماهانه،
+        // سهمیهٔ تشویقی، و مانده‌یِ ماه‌هایِ قبل رو هم لحاظ می‌کنه)، نه یک
+        // سقفِ ثابتِ «۲ روزِ کاری منهایِ مصرفِ همین ماه» که قبلاً اینجا
+        // به‌صورتِ جدا و ناهماهنگ با بقیهٔ سیستم محاسبه می‌شد.
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php';
         $userId = (int) $userRow['id'];
-        $daily_work_hours = (float) ($userRow['daily_work_hours'] ?? 0);
-        $full_day_minutes = $daily_work_hours * 60;
 
-        $total_minutes = 0;
+        ensureMonthlyLeaveAccrual($db, $userId);
+        $remaining_minutes = getLeaveBalance($db, $userId);
 
-        $stmt = $db->prepare("SELECT start_time, end_time FROM leave_requests WHERE user_id = ? AND start_date >= ? AND start_date <= ? AND status = 'approved'");
+        // «جمع مرخصی/پاس» یعنی چقدر از همین ماه مصرف شده — از رویِ
+        // کسورات ثبت‌شده در همون بازه (نه بازپرسیِ مستقیمِ جدولِ درخواست‌ها)
+        $stmt = $db->prepare("
+            SELECT COALESCE(SUM(-amount), 0) FROM leave_balance_transactions
+            WHERE user_id = ? AND type IN ('leave_deduction', 'pass_deduction')
+              AND created_at >= ? AND created_at < DATE_ADD(?, INTERVAL 1 DAY)
+        ");
         $stmt->execute([$userId, $start_of_month, $end_of_month]);
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
-            if (empty($r['start_time']) || empty($r['end_time'])) {
-                $total_minutes += $full_day_minutes;
-            } else {
-                $total_minutes += max(0, sc_timeToMinutes(substr($r['end_time'], 0, 5)) - sc_timeToMinutes(substr($r['start_time'], 0, 5)));
-            }
-        }
-
-        $stmt = $db->prepare("SELECT start_time, end_time FROM pass_requests WHERE user_id = ? AND pass_date >= ? AND pass_date <= ? AND status != 'cancelled'");
-        $stmt->execute([$userId, $start_of_month, $end_of_month]);
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
-            if (!empty($r['start_time']) && !empty($r['end_time'])) {
-                $total_minutes += max(0, sc_timeToMinutes(substr($r['end_time'], 0, 5)) - sc_timeToMinutes(substr($r['start_time'], 0, 5)));
-            }
-        }
-
-        $quota_minutes = 2 * $full_day_minutes;
-        $remaining_minutes = $quota_minutes - $total_minutes;
+        $used_minutes = (int) $stmt->fetchColumn();
 
         return [
-            'used_minutes' => (int) round($total_minutes),
-            'used_hms' => sc_minutesToHM((int) round($total_minutes)),
-            'quota_minutes' => (int) round($quota_minutes),
-            'remaining_minutes' => (int) round($remaining_minutes),
+            'used_minutes' => $used_minutes,
+            'used_hms' => sc_minutesToHM($used_minutes),
+            'quota_minutes' => $remaining_minutes,
+            'remaining_minutes' => $remaining_minutes,
             'remaining_hms' => sc_minutesToSignedHM($remaining_minutes),
         ];
     }

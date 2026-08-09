@@ -76,7 +76,7 @@ try {
     // اعتبارسنجی رمز عبور
     if (!$auth->validatePassword($input['password'])) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'رمز عبور باید حداقل 4 کاراکتر باشد']);
+        echo json_encode(['success' => false, 'message' => 'رمز عبور باید حداقل ۸ کاراکتر و شامل حداقل یک حرف و یک عدد باشد']);
         exit;
     }
 

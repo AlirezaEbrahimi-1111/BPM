@@ -19,8 +19,9 @@ if (!$currentPw || !$newPw) {
     exit;
 }
 
-if (mb_strlen($newPw) < 4) {
-    echo json_encode(['success' => false, 'message' => 'رمز عبور جدید حداقل ۴ کاراکتر باشد']);
+$__auth = new Auth();
+if (!$__auth->validatePassword($newPw)) {
+    echo json_encode(['success' => false, 'message' => 'رمز عبور جدید باید حداقل ۸ کاراکتر و شامل حداقل یک حرف و یک عدد باشد']);
     exit;
 }
 

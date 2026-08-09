@@ -35,7 +35,7 @@ if (!$__me) {
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <style>
         * { font-family: 'Vazirmatn', 'Vazir', sans-serif !important; }
-        body { background: #f4f6f9; padding-top: 20px; padding-bottom: 2rem; }
+        body { background: var(--bg-page); color: var(--text-strong); padding-top: 20px; padding-bottom: 2rem; }
 
         /* افزایش عرض کلی */
         .page-wrap {
@@ -79,8 +79,8 @@ if (!$__me) {
 
         /* کارت‌ها */
         .s-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
+            background: var(--surface);
+            border: 1px solid var(--border-soft);
             border-radius: 14px;
             padding: 1.6rem 1.8rem;
             margin-bottom: 1.1rem;
@@ -92,7 +92,7 @@ if (!$__me) {
         .s-card-title {
             font-size: .82rem;
             font-weight: 600;
-            color: #6b7280;
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: .05em;
             margin-bottom: 1.1rem;
@@ -113,33 +113,40 @@ if (!$__me) {
         .avatar-ring img {
             width: 100%; height: 100%; object-fit: cover;
         }
-        .user-meta { font-size: .82rem; color: #6b7280; }
+        .user-meta { font-size: .82rem; color: var(--text-muted); }
         .user-role {
             display: inline-block;
             background: #ede9fe; color: #5b21b6;
             font-size: .7rem; font-weight: 600;
             border-radius: 20px; padding: .15em .6em;
         }
+        :root[data-theme="dark"] .user-role {
+            background: rgba(139, 92, 246, .18); color: #cdb8ff;
+        }
 
         /* فرم */
         .form-label {
-            font-size: .8rem; font-weight: 600; color: #374151; margin-bottom: .4rem;
+            font-size: .8rem; font-weight: 600; color: var(--text-strong); margin-bottom: .4rem;
         }
         .form-control {
+            background: var(--surface);
+            color: var(--text-strong);
             border-radius: 9px;
-            border: 1.5px solid #e5e7eb;
+            border: 1.5px solid var(--border-soft);
             padding: .6rem .85rem;
             font-size: .875rem;
             transition: border-color .15s, box-shadow .15s;
         }
         .form-control:focus {
+            background: var(--surface);
+            color: var(--text-strong);
             border-color: #6366f1;
             box-shadow: 0 0 0 3px rgba(99,102,241,.12);
         }
         .form-control[readonly] {
-            background: #f9fafb; color: #9ca3af; cursor: default;
+            background: var(--bg-page); color: var(--text-muted); cursor: default;
         }
-        .form-hint { font-size: .75rem; color: #9ca3af; margin-top: .3rem; }
+        .form-hint { font-size: .75rem; color: var(--text-muted); margin-top: .3rem; }
 
         /* دکمه ذخیره */
         .btn-save {
@@ -153,7 +160,7 @@ if (!$__me) {
 
         /* strength bar */
         .strength-bar {
-            height: 4px; border-radius: 2px; background: #e5e7eb;
+            height: 4px; border-radius: 2px; background: var(--border-soft);
             margin-top: .45rem; overflow: hidden;
         }
         .strength-fill {
@@ -168,12 +175,12 @@ if (!$__me) {
         .pw-wrap .form-control { padding-left: 2.5rem; }
         .pw-eye {
             position: absolute; left: .7rem; top: 50%; transform: translateY(-50%);
-            background: none; border: none; color: #9ca3af; cursor: pointer; padding: 0;
+            background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0;
             font-size: 1rem;
         }
         .pw-eye:hover { color: #6366f1; }
 
-        .s-divider { border: none; border-top: 1px solid #f3f4f6; margin: 1.2rem 0; }
+        .s-divider { border: none; border-top: 1px solid var(--border-soft); margin: 1.2rem 0; }
 
         @media (max-width: 576px) {
             .s-card { padding: 1.2rem 1.1rem; }
@@ -237,12 +244,13 @@ if (!$__me) {
                     <div class="s-card-title" style="margin-bottom:.75rem"><i class="bi bi-building"></i>اطلاعات سازمانی</div>
                     <div class="row g-3">
                         <div class="col-sm-6">
-                            <label class="form-label">کد رسمی</label>
-                            <input type="text" class="form-control" id="officialCode" readonly>
-                        </div>
-                        <div class="col-sm-6">
                             <label class="form-label">بخش فعالیت</label>
                             <input type="text" class="form-control" id="activitySection" readonly>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">ساعتِ کاریِ روزانه</label>
+                            <input type="text" class="form-control" id="dailyWorkHours" readonly>
+                            <div class="form-hint">مبنایِ محاسبهٔ سهمیهٔ مرخصی/پاس — توسط ادمین قابل تغییر است</div>
                         </div>
                     </div>
 
@@ -275,7 +283,7 @@ if (!$__me) {
                         <label class="form-label">رمز عبور جدید</label>
                         <div class="pw-wrap">
                             <input type="password" class="form-control" id="newPassword"
-                                   autocomplete="new-password" placeholder="حداقل ۴ کاراکتر"
+                                   autocomplete="new-password" placeholder="حداقل ۸ کاراکتر، شامل حرف و عدد"
                                    oninput="checkStrength(this.value)">
                             <button type="button" class="pw-eye" onclick="togglePw('newPassword',this)">
                                 <i class="bi bi-eye"></i>
@@ -309,6 +317,7 @@ if (!$__me) {
 
 <?php include 'footer.php'; ?>
 <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= asset('../assets/js/sections-helper.js') ?>"></script>
 <script>
 'use strict';
 
@@ -318,13 +327,11 @@ function tok() { return authToken || localStorage.getItem('auth_token'); }
 function ah()  { return { 'Authorization': 'Bearer ' + tok() }; }
 function ahj() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok() }; }
 
-const ROLE_NAMES    = { employee:'کارمند', manager:'مدیر', supervisor:'سوپروایزر', admin:'ادمین' };
-const SECTION_NAMES = { sales:'فروش', purchase:'خرید', warehouse:'انبار', technical:'فنی',
-    accounting:'حسابداری', colleague:'همکار', offices:'ادارات', virtual:'فضای مجازی',
-    public:'بازرگانی', management:'مدیریت', Supervision:'نظارتی' };
+const ROLE_NAMES = { employee:'کارمند', manager:'مدیر', supervisor:'سوپروایزر', admin:'ادمین' };
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     if (!tok()) { location.href = '../index.php'; return; }
+    await loadSectionMap();
     loadProfile();
     setupRealtime();
 
@@ -373,7 +380,7 @@ function fillForm() {
     document.getElementById('headerFullName').textContent = fullName;
     document.getElementById('headerPhone').textContent    = u.phone || '—';
     document.getElementById('headerRole').textContent     = ROLE_NAMES[u.role] || u.role || '—';
-    document.getElementById('headerSection').textContent  = SECTION_NAMES[u.activity_section] || u.activity_section || '';
+    document.getElementById('headerSection').textContent  = getSectionLabel(u.activity_section);
 
     if (u.last_login) {
         const ll = document.getElementById('headerLastLogin');
@@ -389,8 +396,12 @@ function fillForm() {
     document.getElementById('lastName').value       = u.last_name  || '';
     document.getElementById('phone').value          = u.phone      || '';
     document.getElementById('email').value          = u.email      || '';
-    document.getElementById('officialCode').value   = u.official_code || '—';
-    document.getElementById('activitySection').value = SECTION_NAMES[u.activity_section] || u.activity_section || '—';
+    document.getElementById('activitySection').value = getSectionLabel(u.activity_section);
+    document.getElementById('dailyWorkHours').value = u.daily_work_hours ? (toFaDigits(u.daily_work_hours) + ' ساعت') : '—';
+}
+
+function toFaDigits(n) {
+    return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
 }
 
 async function saveProfile(e) {
@@ -434,7 +445,9 @@ async function changePassword(e) {
     clearFormAlert('passwordAlert');
 
     if (!cur)        { showFormAlert('passwordAlert', 'رمز عبور فعلی را وارد کنید', 'danger'); return; }
-    if (nw.length < 4) { showFormAlert('passwordAlert', 'رمز عبور جدید حداقل ۴ کاراکتر باشد', 'danger'); return; }
+    if (nw.length < 8) { showFormAlert('passwordAlert', 'رمز عبور جدید باید حداقل ۸ کاراکتر باشد', 'danger'); return; }
+    if (!/[A-Za-z]/.test(nw)) { showFormAlert('passwordAlert', 'رمز عبور جدید باید حداقل یک حرفِ انگلیسی داشته باشد', 'danger'); return; }
+    if (!/[0-9]/.test(nw))    { showFormAlert('passwordAlert', 'رمز عبور جدید باید حداقل یک عدد داشته باشد', 'danger'); return; }
     if (nw !== conf)   { showFormAlert('passwordAlert', 'رمز عبور جدید و تکرار آن یکسان نیستند', 'danger'); return; }
 
     const btn = document.getElementById('passwordSaveBtn');

@@ -564,7 +564,8 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">رمز عبور <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" id="c_password" required minlength="4">
+                                <input type="password" class="form-control" id="c_password" required minlength="8">
+                                <div class="form-text">حداقل ۸ کاراکتر، شامل حداقل یک حرف و یک عدد</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">تکرار رمز <span class="text-danger">*</span></label>
@@ -660,9 +661,9 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                                 </div>
                             </div>
                             <div class="col-12">
-                                <hr class="my-1"><small class="text-muted">تغییر رمز — خالی بگذارید تا تغییر نکند</small>
+                                <hr class="my-1"><small class="text-muted">تغییر رمز — خالی بگذارید تا تغییر نکند (حداقل ۸ کاراکتر، شامل حرف و عدد)</small>
                             </div>
-                            <div class="col-md-6"><label class="form-label">رمز جدید</label><input type="password" class="form-control" id="e_password" minlength="4" placeholder="خالی = بدون تغییر"></div>
+                            <div class="col-md-6"><label class="form-label">رمز جدید</label><input type="password" class="form-control" id="e_password" minlength="8" placeholder="خالی = بدون تغییر"></div>
                             <div class="col-md-6"><label class="form-label">تکرار رمز</label><input type="password" class="form-control" id="e_password_confirm" placeholder="خالی = بدون تغییر"></div>
                         </div>
                     </div>
@@ -1596,8 +1597,16 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                 showModalAlert('رمزها یکسان نیستند');
                 return;
             }
-            if (pw && pw.length < 4) {
-                showModalAlert('رمز حداقل ۴ کاراکتر');
+            if (pw && pw.length < 8) {
+                showModalAlert('رمز عبور حداقل ۸ کاراکتر');
+                return;
+            }
+            if (pw && !/[A-Za-z]/.test(pw)) {
+                showModalAlert('رمز عبور باید حداقل یک حرف انگلیسی داشته باشد');
+                return;
+            }
+            if (pw && !/[0-9]/.test(pw)) {
+                showModalAlert('رمز عبور باید حداقل یک عدد داشته باشد');
                 return;
             }
 

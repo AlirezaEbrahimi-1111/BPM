@@ -81,9 +81,10 @@ try {
 
     // رمز عبور (اختیاری)
     if (!empty($input['password'])) {
-        if (strlen($input['password']) < 4) {
+        $auth = new Auth($db);
+        if (!$auth->validatePassword($input['password'])) {
             $db->rollBack();
-            echo json_encode(['success' => false, 'message' => 'رمز عبور حداقل ۴ کاراکتر باشد']);
+            echo json_encode(['success' => false, 'message' => 'رمز عبور باید حداقل ۸ کاراکتر و شامل حداقل یک حرف و یک عدد باشد']);
             exit;
         }
         $fields['password'] = password_hash($input['password'], PASSWORD_BCRYPT);
