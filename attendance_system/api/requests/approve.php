@@ -286,6 +286,25 @@ try {
         if ($approval_status === 'rejected') {
             $stmt = $db->prepare("UPDATE {$table} SET status = 'rejected', can_edit = 0, can_delete = 0 WHERE id = ?");
             $stmt->execute([$request_id]);
+
+            // ✅ مرخصیِ ردشده: سهمیه‌ای که موقعِ ثبت کسر شده بود برمی‌گرده
+            // (پاس هرگز از این مسیر رد نمی‌شه — بالاتر مستقیم بلاک شده)
+            if ($request_type === 'leave') {
+                require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php';
+                $ded_amount = findLeaveDeduction($db, 'leave', (int) $request_id);
+                if ($ded_amount !== null) {
+                    $stmt = $db->prepare("SELECT user_id FROM leave_requests WHERE id = ?");
+                    $stmt->execute([$request_id]);
+                    $leave_owner_id = (int) $stmt->fetchColumn();
+                    if ($leave_owner_id) {
+                        $stmt = $db->prepare("
+                            INSERT INTO leave_balance_transactions (user_id, type, amount, related_request_id, related_request_type, note)
+                            VALUES (?, 'manual_adjustment', ?, ?, 'leave', 'بازگشتِ سهمیه به‌دلیلِ ردِ درخواست')
+                        ");
+                        $stmt->execute([$leave_owner_id, -$ded_amount, $request_id]);
+                    }
+                }
+            }
         } elseif ($is_final_approval && $approval_status === 'approved') {
             if ($approver_role === 'manager' && ($manager_is_supervisor || $current_user['is_supervisor'] == 1)) {
                 $stmt = $db->prepare("UPDATE {$table} SET status = 'approved', supervisor_approval = 'approved', supervisor_id = ?, supervisor_date = NOW(), can_edit = 0, can_delete = 0 WHERE id = ?");

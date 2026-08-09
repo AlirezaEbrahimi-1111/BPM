@@ -104,6 +104,58 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             color: #6b7280;
         }
 
+        /* ── فهرستِ درخواست‌هایِ سهمیهٔ تشویقی ── */
+        .bonus-req-box {
+            background: #fff8e6;
+            border: 1px solid #f6d98b;
+            border-radius: .5rem;
+            padding: .8rem 1rem;
+        }
+
+        :root[data-theme="dark"] .bonus-req-box {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+
+        .bonus-req-box .bonus-req-title {
+            font-weight: 700;
+            font-size: .85rem;
+            margin-bottom: .6rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .bonus-req-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .6rem;
+            flex-wrap: wrap;
+            padding: .5rem 0;
+            border-top: 1px dashed #e5c979;
+            font-size: .82rem;
+        }
+
+        :root[data-theme="dark"] .bonus-req-row {
+            border-top-color: var(--border-soft);
+        }
+
+        .bonus-req-row:first-of-type {
+            border-top: none;
+        }
+
+        .bonus-req-row .bonus-req-info {
+            display: flex;
+            flex-direction: column;
+            gap: .15rem;
+        }
+
+        .bonus-req-row .bonus-req-note {
+            color: #6b7280;
+            font-size: .76rem;
+        }
+
         /* ── badge‌های جدول ── */
         .role-badge {
             display: inline-block;
@@ -439,6 +491,9 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
     <div class="overview-container" style="margin-top:70px">
 
         <div id="alertContainer" class="mb-3"></div>
+
+        <!-- درخواست‌هایِ در‌انتظارِ سهمیهٔ تشویقی (فقط سرپرست) -->
+        <div id="leaveBonusRequestsPanel" style="display:none;" class="mb-3"></div>
 
         <!-- هدر صفحه -->
         <div class="page-header-bar">
@@ -895,6 +950,8 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                 initGrid();
                 loadUsers();
 
+                if (d.user.role === 'supervisor') loadLeaveBonusRequests();
+
             } catch (err) {
                 console.error('init error:', err);
             }
@@ -1042,7 +1099,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                 },
                 {
                     headerName: 'عملیات',
-                    width: 150,
+                    width: 190,
                     sortable: false,
                     cellRenderer: p => `
     <button class="ag-action-btn edit" title="ویرایش" onclick="openEditModal(${p.data.id})">
@@ -1052,6 +1109,9 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             title="${p.data.is_active==1?'غیرفعال کردن':'فعال کردن'}"
             onclick="toggleStatus(${p.data.id},${p.data.is_active})">
         <i class="bi bi-${p.data.is_active==1?'pause':'play'}-circle"></i>
+    </button>
+    <button class="ag-action-btn" title="سهمیهٔ تشویقیِ مرخصی" onclick="grantLeaveBonus(${p.data.id}, '${(p.data.first_name||'')+' '+(p.data.last_name||'')}')">
+        <i class="bi bi-wallet2"></i>
     </button>
     <button class="ag-action-btn" style="color:#dc2626" title="حذف کاربر"
             onclick="deleteUser(${p.data.id})">
@@ -1148,6 +1208,109 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                 yesText: 'بله، حذف',
                 noText: 'انصراف'
             });
+        }
+
+        function grantLeaveBonus(userId, name) {
+            fetch('/api/attendance/leave-balance.php?user_id=' + userId, { headers: ah() })
+                .then(r => r.json())
+                .then(d => {
+                    const current = d.success ? d.balance_formatted : '؟';
+                    uiPrompt(
+                        `موجودیِ فعلیِ «${name.trim()}» (مرخصی+پاس): ${current} ساعت<br>چند دقیقه سهمیهٔ تشویقی اضافه شود؟ (برایِ کسر، عددِ منفی وارد کنید — مثلاً برایِ ۲ ساعت بنویسید 120)`,
+                        function(value) {
+                            const amount = parseInt(value, 10);
+                            if (!amount) { showToast('عددِ نامعتبر', 'error'); return; }
+                            fetch('/api/attendance/leave-balance-grant.php', {
+                                    method: 'POST',
+                                    headers: ahj(),
+                                    body: JSON.stringify({ user_id: userId, amount: amount })
+                                })
+                                .then(r => r.json())
+                                .then(res => {
+                                    if (res.success) showToast('سهمیه ثبت شد — موجودیِ جدید: ' + res.balance_formatted + ' ساعت', 'success');
+                                    else showToast(res.message || 'خطا', 'error');
+                                })
+                                .catch(() => showToast('خطا در ارتباط با سرور', 'error'));
+                        },
+                        { placeholder: 'مثلاً 120 یا 120-', okText: 'ثبت' }
+                    );
+                })
+                .catch(() => showToast('خطا در دریافتِ موجودی', 'error'));
+        }
+
+        function toFaDigits(n) {
+            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+        }
+
+        let __bonusRequestsCache = [];
+
+        function loadLeaveBonusRequests() {
+            fetch('/api/attendance/leave-bonus-requests.php', { headers: ah() })
+                .then(r => r.json())
+                .then(d => {
+                    const box = document.getElementById('leaveBonusRequestsPanel');
+                    if (!d.success || !d.requests.length) { box.style.display = 'none'; box.innerHTML = ''; __bonusRequestsCache = []; return; }
+                    __bonusRequestsCache = d.requests;
+
+                    const rows = d.requests.map(req => `
+                        <div class="bonus-req-row" data-req-id="${req.id}">
+                            <div class="bonus-req-info">
+                                <span><strong>${req.name}</strong> — درخواستِ ${req.requested_formatted} ساعت — موجودیِ فعلی: ${req.balance_formatted} ساعت</span>
+                                ${req.note ? `<span class="bonus-req-note">${req.note}</span>` : ''}
+                            </div>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-success btn-sm" onclick="resolveLeaveBonusRequest(${req.id}, 'grant', '${req.name.replace(/'/g, "\\'")}')">
+                                    <i class="bi bi-check-lg"></i> تأیید
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="resolveLeaveBonusRequest(${req.id}, 'decline', '${req.name.replace(/'/g, "\\'")}')">
+                                    <i class="bi bi-x-lg"></i> رد
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    box.innerHTML = `
+                        <div class="bonus-req-box">
+                            <div class="bonus-req-title"><i class="bi bi-hourglass-split"></i> درخواست‌هایِ در‌انتظارِ سهمیهٔ تشویقی (${toFaDigits(d.requests.length)})</div>
+                            ${rows}
+                        </div>
+                    `;
+                    box.style.display = '';
+                })
+                .catch(() => {});
+        }
+
+        function resolveLeaveBonusRequest(requestId, action, name) {
+            if (action === 'grant') {
+                const req = __bonusRequestsCache.find(r => r.id === requestId);
+                uiConfirm(
+                    `${req ? req.requested_formatted : '؟'} ساعت سهمیهٔ تشویقی به «${name}» اعطا شود؟`,
+                    function () {
+                        submitBonusResolve(requestId, 'grant');
+                    },
+                    { yesText: 'بله، اعطا شود', noText: 'انصراف' }
+                );
+            } else {
+                uiConfirm(`درخواستِ «${name}» رد شود؟`, function () {
+                    submitBonusResolve(requestId, 'decline');
+                }, { danger: true, yesText: 'بله، رد شود', noText: 'انصراف' });
+            }
+        }
+
+        function submitBonusResolve(requestId, action) {
+            fetch('/api/attendance/leave-bonus-requests-resolve.php', {
+                    method: 'POST',
+                    headers: ahj(),
+                    body: JSON.stringify({ request_id: requestId, action: action })
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        showToast(action === 'grant' ? 'سهمیه اعطا شد' : 'درخواست رد شد', 'success');
+                        loadLeaveBonusRequests();
+                    } else showToast(res.message || 'خطا', 'error');
+                })
+                .catch(() => showToast('خطا در ارتباط با سرور', 'error'));
         }
 
         async function restoreUser(userId) {

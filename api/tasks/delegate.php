@@ -45,7 +45,8 @@ try {
         $input['task_id'],
         $input['to_user_id'],
         $user_id,
-        $input['notes'] ?? ''
+        $input['notes'] ?? '',
+        $input['due_date'] ?? null
     );
 
     if ($result['success']) {

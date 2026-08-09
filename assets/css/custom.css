@@ -5479,56 +5479,9 @@ body.login-page::after {
     color: var(--gray-400);
 }
 
-.footer-9 {
-    position: fixed;
-    /* ثابت کردن موقعیت */
-    bottom: 1rem;
-    /* فاصله از پایین صفحه */
-    left: 0;
-    right: 0;
-    width: 25%;
-    margin: auto;
-    /* برای مرکز قرار گرفتن */
-    height: 35px;
-    background: #eaeaea;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    font-size: 12px;
-    box-shadow: 0 -2px 20px rgba(167, 139, 250, 0.1);
-    z-index: 9999;
-    /* اطمینان از نمایش بالای سایر المان‌ها */
-}
-
-:root[data-theme="dark"] .footer-9 {
-    background: var(--surface);
-    box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3);
-}
-
-.footer-9 .company {
-    color: var(--primary-dark);
-    font-weight: 700;
-}
-
-.footer-9 .heart {
-    padding-top: 4px;
-    font-size: 14px;
-    animation: heartbeat 2s ease-in-out infinite;
-}
-
-@keyframes heartbeat {
-
-    0%,
-    100% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.2);
-    }
-}
+/* .footer-9 و متعلقاتش به pages/footer.php منتقل شد (سه مدلِ جایگذاریِ
+   قابلِ‌تعویض: گوشه/درون‌خطی/نوارِ نازک) — تعریفِ اینجا حذف شد که با
+   کلاس‌هایِ جدیدِ footer-style-N تداخل نداشته باشه */
 
 /* --- ریسپانسیو ورود --- */
 @media (max-width: 480px) {

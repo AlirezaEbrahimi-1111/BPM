@@ -129,6 +129,19 @@ try {
         exit;
     }
 
+    // ✅ مرخصی/پاسِ حذف‌شده: سهمیه‌ای که موقعِ ثبت کسر شده بود برمی‌گرده
+    if ($request_type === 'leave' || $request_type === 'pass') {
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php';
+        $ded_amount = findLeaveDeduction($db, $request_type, (int) $request_id);
+        if ($ded_amount !== null) {
+            $stmt = $db->prepare("
+                INSERT INTO leave_balance_transactions (user_id, type, amount, related_request_id, related_request_type, note)
+                VALUES (?, 'manual_adjustment', ?, ?, ?, 'بازگشتِ سهمیه به‌دلیلِ حذفِ درخواست')
+            ");
+            $stmt->execute([$user_id, -$ded_amount, $request_id, $request_type]);
+        }
+    }
+
     // حذف درخواست
     $stmt = $db->prepare("DELETE FROM {$table} WHERE id = ? AND user_id = ?");
     $stmt->execute([$request_id, $user_id]);

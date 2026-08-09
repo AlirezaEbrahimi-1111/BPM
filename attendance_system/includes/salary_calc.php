@@ -433,7 +433,18 @@ if (!function_exists('sc_computeUserSalaryReport')) {
             $cur->modify('+1 day');
         }
 
+        // گردکردنِ مبالغِ ریالی (طبقِ تنظیماتِ salary_round_to) — هم‌راستا با
+        // تبِ «درخواست‌های من» در همین صفحه، تا عددِ گزارشِ رسمیِ حقوق با
+        // چیزی که خودِ کارمند می‌بیند یکی باشد
+        $round_to = isset($app_settings['salary_round_to']) ? (int) $app_settings['salary_round_to'] : 100000;
+        if ($round_to > 0) {
+            $total_money = floor($total_money / $round_to) * $round_to;
+        }
+
         $salary_received = $monthly_salary - $total_money;
+        if ($round_to > 0) {
+            $salary_received = floor($salary_received / $round_to) * $round_to;
+        }
 
         return [
             'user_id' => $userId,

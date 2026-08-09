@@ -39,6 +39,7 @@ if (!$__me) {
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <link href="<?= asset('../assets/js/cdn/fonts/bootstrap-icons.woff2?30af91bf14e37666a085fb8a161ff36d') ?>" rel="stylesheet">
     <script src="<?= asset('../assets/js/config.js') ?>"></script>
+    <script src="<?= asset('../assets/js/jalali.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/jquery.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/custom.css') ?>">
@@ -1000,6 +1001,116 @@ if (!$__me) {
             background: rgba(0, 0, 0, .05);
         }
 
+        /* ─── ارجاع به کار/تیکت (#task:ID / #ticket:ID) ─── */
+        .chat-linkref {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, .18);
+            border-radius: 20px;
+            padding: 2px 9px;
+            font-size: .75rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: inherit;
+            vertical-align: middle;
+        }
+
+        .chat-bubble-row.other .chat-linkref {
+            background: var(--ink-050);
+            color: var(--ink-900);
+        }
+
+        .chat-linkref:hover {
+            opacity: .85;
+        }
+
+        .chat-linkref-cards {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .chat-linkref-card {
+            background: rgba(255, 255, 255, .15);
+            border-radius: 10px;
+            padding: 8px 10px;
+            cursor: pointer;
+            font-size: .78rem;
+        }
+
+        .chat-bubble-row.other .chat-linkref-card {
+            background: var(--ink-050);
+        }
+
+        .chat-linkref-card.loading,
+        .chat-linkref-card.error {
+            opacity: .7;
+            cursor: default;
+        }
+
+        .chat-linkref-card-head {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chat-linkref-card-title {
+            font-weight: 700;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chat-linkref-card-status {
+            font-size: .68rem;
+            opacity: .85;
+            background: rgba(0, 0, 0, .12);
+            border-radius: 20px;
+            padding: 1px 8px;
+            flex-shrink: 0;
+        }
+
+        .chat-linkref-card-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 4px;
+            font-size: .72rem;
+            opacity: .85;
+            flex-wrap: wrap;
+        }
+
+        .chat-linkref-card-meta i {
+            margin-left: 4px;
+        }
+
+        .chat-linkref-card-attachments {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        .chat-linkref-card-attachments img,
+        .chat-linkref-file {
+            width: 42px;
+            height: 42px;
+            border-radius: 6px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .chat-linkref-file {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, .1);
+            font-size: 1.1rem;
+        }
+
         .chat-composer {
             position: relative;
             border-top: 1px solid var(--border-soft, #eee);
@@ -1502,6 +1613,7 @@ if (!$__me) {
 
                     <div class="chat-composer">
                         <div class="chat-mention-autocomplete" id="mentionAutocomplete" style="display:none;"></div>
+                        <div class="chat-mention-autocomplete" id="linkRefAutocomplete" style="display:none;"></div>
                         <button class="chat-attach-btn" id="chatAttachBtn" onclick="document.getElementById('chatFileInput').click()" title="پیوست فایل">
                             <i class="bi bi-paperclip"></i>
                         </button>
@@ -1688,10 +1800,12 @@ if (!$__me) {
                 autoGrowComposer(this);
                 notifyTyping();
                 checkMentionTrigger();
+                checkLinkRefTrigger();
             });
             composer.addEventListener('blur', function() {
                 // تأخیرِ کوتاه تا رویدادِ کلیک روی گزینه‌یِ اتوکامپلیت زودتر ثبت شود
                 setTimeout(closeMentionAutocomplete, 150);
+                setTimeout(closeLinkRefAutocomplete, 150);
             });
             composer.addEventListener('paste', function(e) {
                 var items = (e.clipboardData || window.clipboardData).items;
@@ -1736,6 +1850,31 @@ if (!$__me) {
                     if (e.key === 'Escape') {
                         e.preventDefault();
                         closeMentionAutocomplete();
+                        return;
+                    }
+                }
+                var linkRefOpen = document.getElementById('linkRefAutocomplete').style.display === 'block';
+                if (linkRefOpen && linkRefCandidates.length) {
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        linkRefActiveIndex = Math.min(linkRefActiveIndex + 1, linkRefCandidates.length - 1);
+                        renderLinkRefAutocomplete();
+                        return;
+                    }
+                    if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        linkRefActiveIndex = Math.max(linkRefActiveIndex - 1, 0);
+                        renderLinkRefAutocomplete();
+                        return;
+                    }
+                    if (e.key === 'Enter' || e.key === 'Tab') {
+                        e.preventDefault();
+                        applyLinkRef(linkRefActiveIndex >= 0 ? linkRefActiveIndex : 0);
+                        return;
+                    }
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                        closeLinkRefAutocomplete();
                         return;
                     }
                 }
@@ -2234,6 +2373,200 @@ if (!$__me) {
             autoGrowComposer(input);
         }
 
+        // ─────────────── ارجاع به کار/تیکت (#) در پیام ───────────────
+        // مشابهِ اتوکامپلیتِ منشن، ولی به‌جایِ لیستِ ثابتِ اعضایِ گروه، هر بار
+        // با فاصله (debounce) از دو APIِ جستجویِ سبک (کار/تیکت) نتیجه می‌گیره
+        var linkRefCandidates = [];
+        var linkRefActiveIndex = -1;
+        var linkRefRangeStart = -1;
+        var linkRefSearchTimer = null;
+        var linkPreviewCache = {}; // کلید: 'task:123' یا 'ticket:45'
+
+        function extractLinkRefs(rawText) {
+            var refs = [], seen = {}, re = /#(task|ticket):(\d+)/g, m;
+            while ((m = re.exec(rawText)) !== null) {
+                var key = m[1] + ':' + m[2];
+                if (seen[key]) continue;
+                seen[key] = true;
+                refs.push({ type: m[1], id: parseInt(m[2], 10) });
+            }
+            return refs;
+        }
+
+        // ورودی از قبل با esc() امن شده — الگو روی کاراکترهایِ ساده (#, حروفِ
+        // لاتین، اعداد) کار می‌کنه که esc() دست‌نخورده می‌ذارتشون
+        function highlightLinkRefs(escapedText) {
+            return escapedText.replace(/#(task|ticket):(\d+)/g, function(full, type, id) {
+                var label = type === 'task' ? 'کار' : 'تیکت';
+                var icon = type === 'task' ? 'bi-card-checklist' : 'bi-headset';
+                var url = (type === 'task' ? '../pages/task-detail.php?id=' : '../pages/ticket-detail.php?id=') + id;
+                return '<a class="chat-linkref" href="' + url + '" target="_blank"><i class="bi ' + icon + '"></i>' + label + ' #' + id + '</a>';
+            });
+        }
+
+        function loadLinkRefPreviews(row, refs) {
+            refs.forEach(function(ref) {
+                var key = ref.type + ':' + ref.id;
+                var card = row.querySelector('.chat-linkref-card[data-type="' + ref.type + '"][data-id="' + ref.id + '"]');
+                if (!card) return;
+
+                if (linkPreviewCache[key]) {
+                    renderLinkRefCard(card, linkPreviewCache[key]);
+                    return;
+                }
+
+                fetch('../api/chat/link-preview.php?type=' + ref.type + '&id=' + ref.id, {
+                        headers: { 'Authorization': 'Bearer ' + authToken }
+                    })
+                    .then(r => r.json())
+                    .then(function(data) {
+                        linkPreviewCache[key] = data;
+                        renderLinkRefCard(card, data);
+                    })
+                    .catch(function() {
+                        renderLinkRefCard(card, { success: false });
+                    });
+            });
+        }
+
+        function toFaDigits(s) {
+            return String(s).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+        }
+
+        // 'YYYY-MM-DD' میلادی → 'YYYY/MM/DD' شمسی با اعدادِ فارسی
+        function toJalaliDateStr(gregorianDate) {
+            if (!gregorianDate || !window.jalaali) return '';
+            var parts = gregorianDate.split('-').map(Number);
+            var j = jalaali.toJalaali(parts[0], parts[1], parts[2]);
+            return toFaDigits(j.jy + '/' + String(j.jm).padStart(2, '0') + '/' + String(j.jd).padStart(2, '0'));
+        }
+
+        function renderLinkRefCard(card, data) {
+            card.classList.remove('loading');
+            if (!data || !data.success) {
+                card.innerHTML = '<i class="bi bi-exclamation-triangle"></i> در دسترس نیست یا حذف شده';
+                card.classList.add('error');
+                return;
+            }
+            var icon = data.type === 'task' ? 'bi-card-checklist' : 'bi-headset';
+
+            var metaHtml = '';
+            if (data.type === 'task') {
+                var metaParts = [];
+                if (data.assignee_name) metaParts.push('<i class="bi bi-person"></i>' + esc(data.assignee_name));
+                if (data.next_due_date) metaParts.push('<i class="bi bi-calendar-event"></i>' + toJalaliDateStr(data.next_due_date));
+                if (metaParts.length) metaHtml = '<div class="chat-linkref-card-meta">' + metaParts.join('') + '</div>';
+            } else if (data.last_message) {
+                metaHtml = '<div class="chat-linkref-card-meta"><i class="bi bi-chat-left-text"></i>' + esc(data.last_message) + '</div>';
+            }
+            // پیش‌نمایشِ پیوست‌ها فقط برایِ تیکت — کارتِ تسک به عنوان/مسئول/موعد
+            // بسنده می‌کنه (بدونِ تصویر، تا وابسته به سالم‌بودنِ فایلِ روی دیسک نباشه)
+            var thumbs = data.type === 'ticket' ? (data.attachments || []).map(function(a) {
+                if (a.is_image) {
+                    // اگه فایل روی دیسک وجود نداشت (رکوردِ یتیم در دیتابیس)، به‌جایِ
+                    // آیکنِ شکسته + نامِ فایل (که مرورگر به‌عنوانِ alt نشون می‌ده)،
+                    // با یک آیکنِ فایلِ ساده جایگزینش می‌کنیم
+                    return '<img src="' + a.url + '" alt="" onclick="event.stopPropagation();window.open(\'' + a.url + '\',\'_blank\')" ' +
+                        'onerror="this.outerHTML=\'<div class=&quot;chat-linkref-file&quot; title=&quot;' + esc(a.name) + '&quot;><i class=&quot;bi bi-file-earmark&quot;></i></div>\'">';
+                }
+                return '<div class="chat-linkref-file" onclick="event.stopPropagation();window.open(\'' + a.url + '\',\'_blank\')" title="' + esc(a.name) + '"><i class="bi bi-file-earmark"></i></div>';
+            }).join('') : '';
+
+            card.innerHTML =
+                '<div class="chat-linkref-card-head"><i class="bi ' + icon + '"></i>' +
+                '<span class="chat-linkref-card-title">' + esc(data.title) + '</span>' +
+                '<span class="chat-linkref-card-status">' + esc(data.status_label) + '</span></div>' +
+                metaHtml +
+                (thumbs ? '<div class="chat-linkref-card-attachments">' + thumbs + '</div>' : '');
+            card.onclick = function() { window.open(data.detail_url, '_blank'); };
+        }
+
+        function checkLinkRefTrigger() {
+            var box = document.getElementById('linkRefAutocomplete');
+            var input = document.getElementById('chatComposerInput');
+            var pos = input.selectionStart;
+            var textBefore = input.value.slice(0, pos);
+            var hashIndex = textBefore.lastIndexOf('#');
+            if (hashIndex === -1 || /\s/.test(textBefore.slice(hashIndex + 1))) {
+                box.style.display = 'none';
+                clearTimeout(linkRefSearchTimer);
+                return;
+            }
+            if (hashIndex > 0 && !/\s/.test(textBefore[hashIndex - 1])) {
+                box.style.display = 'none';
+                return;
+            }
+            var partial = textBefore.slice(hashIndex + 1);
+            linkRefRangeStart = hashIndex;
+
+            clearTimeout(linkRefSearchTimer);
+            if (partial.length < 1) {
+                box.style.display = 'none';
+                return;
+            }
+            linkRefSearchTimer = setTimeout(function() {
+                searchLinkRefCandidates(partial, hashIndex);
+            }, 300);
+        }
+
+        function searchLinkRefCandidates(q, hashIndexAtSearchTime) {
+            Promise.all([
+                fetch('../api/tasks/quick-search.php?q=' + encodeURIComponent(q), { headers: { 'Authorization': 'Bearer ' + authToken } }).then(r => r.json()).catch(() => ({ success: false })),
+                fetch('../api/tickets/quick-search.php?q=' + encodeURIComponent(q), { headers: { 'Authorization': 'Bearer ' + authToken } }).then(r => r.json()).catch(() => ({ success: false }))
+            ]).then(function(results) {
+                // اگه کاربر تا این لحظه تایپش عوض شده، نتیجه‌ی قدیمی رو نادیده بگیر
+                var input = document.getElementById('chatComposerInput');
+                var textBefore = input.value.slice(0, input.selectionStart);
+                if (textBefore.lastIndexOf('#') !== hashIndexAtSearchTime) return;
+
+                var tasks = (results[0].success ? results[0].tasks : []).map(t => ({ type: 'task', id: t.id, label: t.title }));
+                var tickets = (results[1].success ? results[1].tickets : []).map(t => ({ type: 'ticket', id: t.id, label: t.subject }));
+                linkRefCandidates = tasks.concat(tickets).slice(0, 10);
+
+                var box = document.getElementById('linkRefAutocomplete');
+                if (!linkRefCandidates.length) {
+                    box.style.display = 'none';
+                    return;
+                }
+                linkRefActiveIndex = 0;
+                renderLinkRefAutocomplete();
+            });
+        }
+
+        function renderLinkRefAutocomplete() {
+            var box = document.getElementById('linkRefAutocomplete');
+            box.innerHTML = linkRefCandidates.map((c, i) => {
+                var icon = c.type === 'task' ? 'bi-card-checklist' : 'bi-headset';
+                var typeLabel = c.type === 'task' ? 'کار' : 'تیکت';
+                return '<div class="chat-mention-item' + (i === linkRefActiveIndex ? ' active' : '') + '" onclick="applyLinkRef(' + i + ')">' +
+                    '<i class="bi ' + icon + '"></i> ' + typeLabel + ' #' + c.id + ' — ' + esc(c.label) + '</div>';
+            }).join('');
+            box.style.display = 'block';
+        }
+
+        function closeLinkRefAutocomplete() {
+            document.getElementById('linkRefAutocomplete').style.display = 'none';
+            linkRefCandidates = [];
+            linkRefRangeStart = -1;
+            clearTimeout(linkRefSearchTimer);
+        }
+
+        function applyLinkRef(index) {
+            var cand = linkRefCandidates[index];
+            if (!cand || linkRefRangeStart === -1) return;
+            var input = document.getElementById('chatComposerInput');
+            var pos = input.selectionStart;
+            var before = input.value.slice(0, linkRefRangeStart);
+            var after = input.value.slice(pos);
+            var insertText = '#' + cand.type + ':' + cand.id + ' ';
+            input.value = before + insertText + after;
+            var newPos = before.length + insertText.length;
+            input.setSelectionRange(newPos, newPos);
+            input.focus();
+            closeLinkRefAutocomplete();
+            autoGrowComposer(input);
+        }
+
         // ─────────────── ری‌اکشنِ ایموجی ───────────────
         function reactionsHtml(messageId, reactions) {
             if (!reactions || !reactions.length) return '';
@@ -2328,6 +2661,17 @@ if (!$__me) {
                     }
                 });
 
+                // ارجاع به کار/تیکت (#task:ID یا #ticket:ID داخلِ متنِ پیام) —
+                // متن جایگزینِ یک تگِ کوچکِ قابل‌کلیک می‌شه، و زیرِ پیام یک
+                // کارتِ پیش‌نمایش (عنوان/وضعیت/پیوست‌ها) به‌صورتِ async لود می‌شه
+                var linkRefs = extractLinkRefs(m.message || '');
+                var linkRefsHtml = '';
+                if (linkRefs.length) {
+                    linkRefsHtml = '<div class="chat-linkref-cards">' +
+                        linkRefs.map(r => '<div class="chat-linkref-card loading" data-type="' + r.type + '" data-id="' + r.id + '"><i class="bi bi-hourglass-split"></i> در حال بارگذاری...</div>').join('') +
+                        '</div>';
+                }
+
                 var editedTag = m.is_edited ? '<span class="chat-bubble-edited-tag">(ویرایش‌شده)</span>' : '';
 
                 var quoteHtml = '';
@@ -2361,9 +2705,10 @@ if (!$__me) {
                     senderLabel +
                     forwardLabel +
                     quoteHtml +
-                    (m.message ? '<div>' + highlightMentions(esc(m.message), activeGroupMembers).replace(/\n/g, '<br>') + '</div>' : '') +
+                    (m.message ? '<div>' + highlightLinkRefs(highlightMentions(esc(m.message), activeGroupMembers)).replace(/\n/g, '<br>') + '</div>' : '') +
                     (imagesHtml ? '<div class="chat-bubble-images">' + imagesHtml + '</div>' : '') +
                     filesHtml +
+                    linkRefsHtml +
                     '<div class="chat-bubble-time">' + esc(m.time_jalali) + editedTag + ticksHtml + '</div>' +
                     reactionsHtml(m.id, m.reactions) +
                     '</div>';
@@ -2380,6 +2725,7 @@ if (!$__me) {
                 });
 
                 el.appendChild(row);
+                if (linkRefs.length) loadLinkRefPreviews(row, linkRefs);
             });
             if (scrollBottom) el.scrollTop = el.scrollHeight;
         }

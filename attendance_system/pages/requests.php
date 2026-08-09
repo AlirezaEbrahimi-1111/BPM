@@ -259,8 +259,6 @@ if ($user_id) {
 
     $stats['rejected_count'] = $rejected_count_month;
     // 3. میزان کسری ریالی (از monthly-report API)
-    // نرخ ساعتی
-    $working_days = intval($app_settings['working_days_per_month'] ?? 30);
     // تعداد روزهای غیرجمعهٔ این ماه (فقط جمعه‌ها کم می‌شوند) — مبنای تقسیم حقوق
     $salary_divisor_days = 0;
     $__sd = new DateTime($start_of_month);
@@ -1873,7 +1871,7 @@ function formatDateJalali($gregorianDate)
 
         .tab-content {
             display: none;
-            padding: 24px;
+            padding: 18px 24px;
             overflow-y: auto;
             flex: 1;
         }
@@ -1896,14 +1894,14 @@ function formatDateJalali($gregorianDate)
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .form-group label {
             display: block;
             font-weight: 600;
             color: var(--text-strong);
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-size: 13px;
         }
 
@@ -1951,6 +1949,57 @@ function formatDateJalali($gregorianDate)
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
+        }
+
+        /* ─── جعبهٔ موجودیِ سهمیهٔ مرخصی/پاس ─── */
+        .leave-balance-box {
+            border-radius: 8px;
+            padding: 8px 14px;
+            margin-bottom: 10px;
+            font-size: .85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: var(--info-box-bg, #eef2ff);
+            border: 1px solid transparent;
+            transition: background .2s, border-color .2s;
+        }
+
+        .leave-balance-box.balance-green {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #065f46;
+        }
+
+        .leave-balance-box.balance-yellow {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #92400e;
+        }
+
+        .leave-balance-box.balance-red {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+
+        .leave-balance-request-btn {
+            margin-right: auto;
+            background: transparent;
+            border: 1px solid currentColor;
+            color: inherit;
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: .76rem;
+            font-weight: 600;
+            cursor: pointer;
+            opacity: .85;
+            transition: opacity .15s;
+        }
+
+        .leave-balance-request-btn:hover {
+            opacity: 1;
         }
 
         .form-actions {
@@ -2685,7 +2734,6 @@ function formatDateJalali($gregorianDate)
             technical_max_monthly: <?php echo intval($app_settings['technical_max_monthly'] ?? 0); ?>,
             forget_max_monthly: <?php echo intval($app_settings['forget_max_monthly'] ?? 0); ?>,
             leave_max_consecutive: <?php echo intval($app_settings['leave_max_consecutive'] ?? 20); ?>,
-            working_days_per_month: <?php echo intval($app_settings['working_days_per_month'] ?? 30); ?>,
             salary_round_to: <?php echo intval($app_settings['salary_round_to'] ?? 100000); ?>,
         };
         const REQUESTS_DATA = <?php echo json_encode($requests_for_grid, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
@@ -3019,6 +3067,13 @@ function formatDateJalali($gregorianDate)
 
                     <!-- تب مرخصی -->
                     <div class="tab-content">
+                        <div id="leaveBalanceBox" class="leave-balance-box">
+                            <i class="bi bi-wallet2"></i>
+                            <span>موجودی سهمیه مرخصی و پاس: <strong id="leaveBalanceValue">در حال بارگذاری...</strong> ساعت</span>
+                            <button type="button" class="leave-balance-request-btn" onclick="requestLeaveBonus()">
+                                <i class="bi bi-hand-thumbs-up"></i> درخواستِ سهمیهٔ تشویقی
+                            </button>
+                        </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="required">تاریخ شروع</label>
@@ -3099,6 +3154,13 @@ function formatDateJalali($gregorianDate)
 
                     <!-- تب پاس -->
                     <div class="tab-content">
+                        <div id="passBalanceBox" class="leave-balance-box">
+                            <i class="bi bi-wallet2"></i>
+                            <span>موجودی سهمیه مرخصی و پاس: <strong id="passBalanceValue">در حال بارگذاری...</strong> ساعت</span>
+                            <button type="button" class="leave-balance-request-btn" onclick="requestLeaveBonus()">
+                                <i class="bi bi-hand-thumbs-up"></i> درخواستِ سهمیهٔ تشویقی
+                            </button>
+                        </div>
                         <div class="form-group">
                             <label class="required">تاریخ پاس</label>
                             <div class="persian-datepicker-wrapper"
@@ -4155,8 +4217,8 @@ function formatDateJalali($gregorianDate)
 
             const finalShortageHours = finalMinutesWithMultiplier / 60;
 
-            // محاسبه مبلغ ریالی
-            const hourlySalary = monthlySalary / APP_SETTINGS.working_days_per_month / dailyWorkHours;
+            // محاسبه مبلغ ریالی (۳۰ روز — تخمینِ نمایشی؛ مبلغِ نهایی از سرور با شمارشِ دقیقِ روزهای غیرجمعهٔ همان ماه محاسبه می‌شود)
+            const hourlySalary = monthlySalary / 30 / dailyWorkHours;
             const minuteSalary = hourlySalary / 60;
             const shortageMoney = Math.round(minuteSalary * finalMinutesWithMultiplier);
 
@@ -4252,6 +4314,89 @@ function formatDateJalali($gregorianDate)
             tabContents.forEach((content, index) => {
                 content.classList.toggle('active', index === tabIndex);
             });
+
+            if (tabIndex === 1) loadLeaveBalance('leaveBalanceBox', 'leaveBalanceValue'); // تبِ مرخصی
+            if (tabIndex === 2) loadLeaveBalance('passBalanceBox', 'passBalanceValue');  // تبِ پاس — همون استخرِ مشترک
+        }
+
+        function loadLeaveBalance(boxId, elementId) {
+            const box = document.getElementById(boxId);
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            el.textContent = 'در حال بارگذاری...';
+            fetch('../../api/attendance/leave-balance.php', {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    el.textContent = data.success ? data.balance_formatted : '؟';
+                    if (box) {
+                        box.classList.remove('balance-green', 'balance-yellow', 'balance-red');
+                        if (data.success && data.balance_color) box.classList.add('balance-' + data.balance_color);
+                    }
+                })
+                .catch(() => { el.textContent = '؟'; });
+        }
+
+        function requestLeaveBonus() {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;';
+            overlay.innerHTML = `
+                <div style="background:var(--surface);color:var(--text-strong);border-radius:12px;padding:20px;width:90%;max-width:420px;box-shadow:0 10px 40px rgba(0,0,0,.2);direction:rtl;text-align:right;">
+                    <p style="margin:0 0 8px;font-size:15px;line-height:1.8;">چند دقیقه سهمیهٔ تشویقی نیاز دارید؟</p>
+                    <input type="number" id="bonusReqAmount" style="width:100%;border:1px solid var(--border-soft);border-radius:8px;padding:10px;font-family:inherit;background:var(--surface);color:var(--text-strong);margin-bottom:14px;" placeholder="مثلاً 120">
+                    <p style="margin:0 0 8px;font-size:15px;line-height:1.8;">توضیحات (اختیاری):</p>
+                    <textarea id="bonusReqNote" rows="3" style="width:100%;border:1px solid var(--border-soft);border-radius:8px;padding:10px;resize:vertical;font-family:inherit;background:var(--surface);color:var(--text-strong);"></textarea>
+                    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
+                        <button id="bonusReqCancel" class="btn btn-secondary">انصراف</button>
+                        <button id="bonusReqSubmit" class="btn btn-primary">ارسالِ درخواست</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(overlay);
+
+            const close = () => overlay.remove();
+            const amountInput = overlay.querySelector('#bonusReqAmount');
+            const noteInput = overlay.querySelector('#bonusReqNote');
+
+            const submit = () => {
+                const amount = parseInt(amountInput.value, 10);
+                if (!amount || amount <= 0) { showToast('عددِ نامعتبر', 'error'); amountInput.focus(); return; }
+                const note = noteInput.value.trim();
+                close();
+                fetch('../../api/attendance/leave-balance-request.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({ requested_minutes: amount, note: note })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast(data.message || 'درخواست ارسال شد', 'success');
+                            closeModal();
+                        } else showToast(data.message || 'خطا', 'error');
+                    })
+                    .catch(() => showToast('خطا در ارتباط با سرور', 'error'));
+            };
+
+            amountInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); noteInput.focus(); }
+            });
+            noteInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); }
+            });
+
+            overlay.querySelector('#bonusReqCancel').onclick = close;
+            overlay.querySelector('#bonusReqSubmit').onclick = submit;
+            overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+            amountInput.focus();
+        }
+
+        function toFaDigits(n) {
+            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
         }
 
         function openNewRequestModal() {

@@ -93,15 +93,19 @@ try {
         $historyNote
     ]);
 
-    // ── بروزرسانی کار: status → in_progress، assignee → creator ─────────────
-    $stmt = $db->prepare("
+    // ── بروزرسانی کار: status → in_progress، assignee → creator، موعد پاک می‌شود ──
+    // (فقط برایِ کارِ مقطعیِ غیرروتین معنی داره — دقیقاً همون شرطی که دکمه رو نشون می‌ده)
+    $clearDueDate = ($task['task_type'] === 'periodic' && empty($task['is_workflow_task']));
+    $sql = "
         UPDATE tasks
         SET status             = 'in_progress',
             assignee_id        = ?,
-            is_pending_approval = FALSE,
-            updated_at         = NOW()
+            is_pending_approval = FALSE"
+        . ($clearDueDate ? ", due_date = NULL, deadline = NULL, original_deadline = NULL" : "") . "
+            , updated_at         = NOW()
         WHERE id = ?
-    ");
+    ";
+    $stmt = $db->prepare($sql);
     $result = $stmt->execute([$user_id, $input['task_id']]);
 
     if (!$result) {

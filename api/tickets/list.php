@@ -35,17 +35,21 @@ $search   = trim($_GET['search']   ?? '');
 $offset   = ($page - 1) * $limit;
 
 try {
-    $where  = [];
-    $params = [];
-
-    // soft delete — فقط تیکت‌های حذف‌نشده
-    $where[] = 't.deleted_at IS NULL';
-
-    // کاربر 1 همه سازمان‌ها را می‌بیند
+    // فیلترِ پایه (سازمان + حذف‌نشده) — برایِ کارت‌هایِ آماری استفاده می‌شه، چون
+    // اون کارت‌ها باید همیشه شکستِ کلیِ وضعیت‌ها رو نشون بدن، نه فقط بینِ
+    // نتایجِ فیلترِ فعلی (وگرنه با زدنِ یک کارت، بقیه‌ی کارت‌ها صفر می‌شدن)
+    $baseWhere  = [];
+    $baseParams = [];
+    $baseWhere[] = 't.deleted_at IS NULL';
     if ($user['id'] != 1) {
-        $where[]  = 't.organization_id = ?';
-        $params[] = $user['organization_id'];
+        $baseWhere[]  = 't.organization_id = ?';
+        $baseParams[] = $user['organization_id'];
     }
+    $baseWhereSQL = 'WHERE ' . implode(' AND ', $baseWhere);
+
+    // فیلترِ کامل (پایه + جستجو/وضعیت/اولویت/دسته) — برایِ خودِ لیستِ تیکت‌ها
+    $where  = $baseWhere;
+    $params = $baseParams;
 
     if ($status !== '') {
         $where[]  = 'ts.name = ?';
@@ -67,7 +71,7 @@ try {
 
     $whereSQL = 'WHERE ' . implode(' AND ', $where);
 
-    // ── آمار ──
+    // ── آمار (بر اساسِ فیلترِ پایه، نه فیلترِ فعلی) ──
     $statsSQL = "
         SELECT
             COUNT(*) as total,
@@ -79,10 +83,10 @@ try {
         FROM tickets t
         LEFT JOIN ticket_statuses ts ON t.status_id = ts.id
         LEFT JOIN ticket_priorities tp ON t.priority_id = tp.id
-        {$whereSQL}
+        {$baseWhereSQL}
     ";
     $stmtStats = $db->prepare($statsSQL);
-    $stmtStats->execute($params);
+    $stmtStats->execute($baseParams);
     $stats = $stmtStats->fetch(PDO::FETCH_ASSOC);
 
     // ── شمارش کل ──

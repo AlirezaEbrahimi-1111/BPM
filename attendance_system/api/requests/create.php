@@ -4,6 +4,7 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php'; // ✅ این خط را اضافه کنید
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
@@ -365,6 +366,31 @@ if ($type === 'leave') {
     list($start_date, $start_time) = explode(' ', $start_datetime);
     list($end_date, $end_time) = explode(' ', $end_datetime);
 
+    // ✅ سقفِ روزهایِ متوالیِ مرخصی (طبقِ تنظیماتِ واقعی، نه هاردکد)
+    $leave_max_consecutive = (int) getSetting($db, 'leave_max_consecutive', 20);
+    $consecutive_days = (int) ((strtotime($end_date) - strtotime($start_date)) / 86400) + 1;
+    if ($consecutive_days > $leave_max_consecutive) {
+        echo json_encode([
+            'success' => false,
+            'message' => "حداکثر {$leave_max_consecutive} روزِ متوالی مرخصی مجاز است (این درخواست {$consecutive_days} روز است)"
+        ]);
+        exit;
+    }
+
+    // ✅ سهمیهٔ مشترکِ مرخصی+پاس (بر‌حسبِ دقیقه، متناسب با ساعتِ کاریِ خودِ فرد)
+    // تعلقِ ماهانه رو تا همین لحظه به‌روز می‌کنیم، بعد چک می‌کنیم موجودی کافیه یا نه
+    ensureMonthlyLeaveAccrual($db, $user_id);
+    $daily_work_minutes = getUserDailyWorkMinutes($db, $user_id);
+    $requested_minutes = computeLeaveRequestMinutes($start_date, $start_time, $end_date, $end_time, $daily_work_minutes);
+    $leave_balance = getLeaveBalance($db, $user_id);
+    if ($requested_minutes > $leave_balance) {
+        echo json_encode([
+            'success' => false,
+            'message' => "سهمیهٔ مرخصی/پاسِ شما کافی نیست (موجودی: " . formatMinutesHM($leave_balance) . "، این درخواست: " . formatMinutesHM($requested_minutes) . ")"
+        ]);
+        exit;
+    }
+
     $stmt = $db->prepare("
         INSERT INTO leave_requests (user_id, request_code, start_date, end_date, start_time, end_time, reason, substitute_id, status, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
@@ -372,6 +398,10 @@ if ($type === 'leave') {
     $stmt->execute([$user_id, $request_code, $start_date, $end_date, $start_time, $end_time, $reason, $substitute_id]);
 
     $leave_id = $db->lastInsertId();
+
+    // ✅ کسرِ سهمیه همین حالا (نه فقط بعدِ تأیید) — اگه بعداً رد یا حذف بشه،
+    // در approve.php/delete.php برگردونده می‌شه
+    deductLeaveBalance($db, $user_id, $requested_minutes, 'leave', (int) $leave_id, "کسر بابتِ درخواستِ مرخصیِ {$request_code}");
 
     // ✅ ثبت/آپدیت جانشین در جدول substitutes
     // اول چک کن آیا قبلاً وجود دارد
@@ -470,6 +500,19 @@ if ($type === 'pass') {
         }
     }
 
+    // ✅ سهمیهٔ مشترکِ مرخصی+پاس (بر‌حسبِ دقیقه) — پاس هم از همون استخر کم می‌شه
+    ensureMonthlyLeaveAccrual($db, $user_id);
+    $daily_work_minutes = getUserDailyWorkMinutes($db, $user_id);
+    $requested_minutes = computeLeaveRequestMinutes($pass_date, $start_time, $pass_date, $end_time, $daily_work_minutes);
+    $leave_balance = getLeaveBalance($db, $user_id);
+    if ($requested_minutes > $leave_balance) {
+        echo json_encode([
+            'success' => false,
+            'message' => "سهمیهٔ مرخصی/پاسِ شما کافی نیست (موجودی: " . formatMinutesHM($leave_balance) . "، این درخواست: " . formatMinutesHM($requested_minutes) . ")"
+        ]);
+        exit;
+    }
+
     // ✅ JavaScript الان میلادی می‌فرسته: "2025-12-30"
     $pass_date_miladi = $pass_date;
 
@@ -480,6 +523,9 @@ if ($type === 'pass') {
         VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())
     ");
     $stmt->execute([$user_id, $request_code, $pass_date_miladi, $start_time, $end_time, $reason]);
+
+    $pass_id = $db->lastInsertId();
+    deductLeaveBalance($db, $user_id, $requested_minutes, 'pass', (int) $pass_id, "کسر بابتِ درخواستِ پاسِ {$request_code}");
 
     echo json_encode(['success' => true, 'message' => 'درخواست پاس ثبت شد', 'code' => $request_code]);
     exit;

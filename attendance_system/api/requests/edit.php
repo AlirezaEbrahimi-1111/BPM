@@ -14,6 +14,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php';
 
 try {
     $database = new Database();
@@ -153,6 +154,45 @@ try {
         list($start_date, $start_time) = explode(' ', $start_datetime);
         list($end_date, $end_time) = explode(' ', $end_datetime);
 
+        // ✅ چون تاریخ ممکنه عوض بشه، سقفِ روزهایِ متوالی رو دوباره چک می‌کنیم
+        $new_days = (int) ((strtotime($end_date) - strtotime($start_date)) / 86400) + 1;
+
+        $leave_max_consecutive = (int) getSetting($db, 'leave_max_consecutive', 20);
+        if ($new_days > $leave_max_consecutive) {
+            echo json_encode([
+                'success' => false,
+                'message' => "حداکثر {$leave_max_consecutive} روزِ متوالی مرخصی مجاز است (این درخواست {$new_days} روز است)"
+            ]);
+            exit;
+        }
+
+        // ✅ سهمیهٔ مشترکِ مرخصی+پاس (بر‌حسبِ دقیقه) — مقدارِ کسرشدهٔ قبلی رو
+        // پیدا می‌کنیم تا موجودیِ «واقعیِ قابلِ‌استفاده» درست حساب بشه
+        $daily_work_minutes = getUserDailyWorkMinutes($db, $user_id);
+        $new_minutes = computeLeaveRequestMinutes($start_date, $start_time, $end_date, $end_time, $daily_work_minutes);
+        $old_deduction = findLeaveDeduction($db, 'leave', (int) $request_id); // منفیه یا null
+
+        ensureMonthlyLeaveAccrual($db, $user_id);
+        $available_balance = getLeaveBalance($db, $user_id) + abs($old_deduction ?? 0); // کسرِ قبلی هنوز ثبته، برمی‌گردونیمش به حساب
+        if ($new_minutes > $available_balance) {
+            echo json_encode([
+                'success' => false,
+                'message' => "سهمیهٔ مرخصی/پاسِ شما کافی نیست (موجودی: " . formatMinutesHM($available_balance) . "، این درخواست: " . formatMinutesHM($new_minutes) . ")"
+            ]);
+            exit;
+        }
+
+        if ($old_deduction !== null) {
+            $adjustment = abs($old_deduction) - $new_minutes; // مثبت=بازگشتِ مازاد، منفی=کسرِ اضافه
+            $stmt = $db->prepare("
+                INSERT INTO leave_balance_transactions (user_id, type, amount, related_request_id, related_request_type, note)
+                VALUES (?, 'manual_adjustment', ?, ?, 'leave', 'اصلاحِ سهمیه به‌دلیلِ ویرایشِ تاریخِ درخواست')
+            ");
+            $stmt->execute([$user_id, $adjustment, $request_id]);
+        } else {
+            deductLeaveBalance($db, $user_id, $new_minutes, 'leave', (int) $request_id, 'کسر بابتِ ویرایشِ درخواستِ مرخصی');
+        }
+
         $stmt = $db->prepare("UPDATE leave_requests SET start_date = ?, end_date = ?, start_time = ?, end_time = ?, reason = ?, updated_at = NOW() WHERE id = ?");
         $stmt->execute([$start_date, $end_date, $start_time, $end_time, $reason, $request_id]);
     }
@@ -165,6 +205,32 @@ try {
         if (!$pass_date || !$start_time || !$end_time || !$reason) {
             echo json_encode(['success' => false, 'message' => 'فیلدهای الزامی خالی است']);
             exit;
+        }
+
+        // ✅ سهمیهٔ مشترکِ مرخصی+پاس — همون منطقِ اصلاحِ بخشِ مرخصی
+        $daily_work_minutes = getUserDailyWorkMinutes($db, $user_id);
+        $new_minutes = computeLeaveRequestMinutes($pass_date, $start_time, $pass_date, $end_time, $daily_work_minutes);
+        $old_deduction = findLeaveDeduction($db, 'pass', (int) $request_id);
+
+        ensureMonthlyLeaveAccrual($db, $user_id);
+        $available_balance = getLeaveBalance($db, $user_id) + abs($old_deduction ?? 0);
+        if ($new_minutes > $available_balance) {
+            echo json_encode([
+                'success' => false,
+                'message' => "سهمیهٔ مرخصی/پاسِ شما کافی نیست (موجودی: " . formatMinutesHM($available_balance) . "، این درخواست: " . formatMinutesHM($new_minutes) . ")"
+            ]);
+            exit;
+        }
+
+        if ($old_deduction !== null) {
+            $adjustment = abs($old_deduction) - $new_minutes;
+            $stmt = $db->prepare("
+                INSERT INTO leave_balance_transactions (user_id, type, amount, related_request_id, related_request_type, note)
+                VALUES (?, 'manual_adjustment', ?, ?, 'pass', 'اصلاحِ سهمیه به‌دلیلِ ویرایشِ درخواستِ پاس')
+            ");
+            $stmt->execute([$user_id, $adjustment, $request_id]);
+        } else {
+            deductLeaveBalance($db, $user_id, $new_minutes, 'pass', (int) $request_id, 'کسر بابتِ ویرایشِ درخواستِ پاس');
         }
 
         $stmt = $db->prepare("UPDATE pass_requests SET pass_date = ?, start_time = ?, end_time = ?, reason = ?, updated_at = NOW() WHERE id = ?");

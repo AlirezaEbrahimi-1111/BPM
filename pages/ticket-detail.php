@@ -728,6 +728,22 @@ if (!$__me) {
     <script src="<?= asset('../assets/js/alert.js') ?>"></script>
     <script src="<?= asset('/assets/js/undo-toast.js') ?>"></script>
     <script>
+        async function markTicketNotificationsRead(ticketId) {
+            try {
+                await fetch('../api/notifications/mark-read.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken
+                    },
+                    body: JSON.stringify({ ticket_id: parseInt(ticketId) })
+                });
+            } catch (e) {
+                // خطا مهم نیست، فقط لاگ کن
+                console.error('خطا در mark-read نوتیفیکیشن:', e);
+            }
+        }
+
         var ticketId = null;
         var ticketData = null;
         var currentUserId = null;
@@ -748,6 +764,7 @@ if (!$__me) {
                 return;
             }
             loadDetail();
+            markTicketNotificationsRead(ticketId);
 
             // ── پیوستِ فایل — یک مسیرِ واحد برای هر دو راه: کلیکِ آیکن، و Ctrl+V ──
             document.getElementById('replyFileInput').addEventListener('change', function() {
@@ -775,10 +792,20 @@ if (!$__me) {
                 }
             });
 
-            // ── کادرِ پیام: رشدِ خودکارِ ارتفاع + ارسال با Enter (Shift+Enter = خط جدید) ──
+            // ── کادرِ پیام: رشدِ خودکارِ ارتفاع + ارسال با Enter (Shift+Enter یا Alt+Enter = خط جدید) ──
             var replyMsgEl = document.getElementById('replyMsg');
             replyMsgEl.addEventListener('input', function() { autoGrowComposer(this); });
             replyMsgEl.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.altKey) {
+                    // Alt+Enter برخلافِ Shift+Enter، به‌صورتِ پیش‌فرض توسطِ مرورگر
+                    // به‌عنوانِ خطِ‌جدید در textarea شناخته نمی‌شه — دستی درج می‌کنیم
+                    e.preventDefault();
+                    var start = this.selectionStart, end = this.selectionEnd;
+                    this.value = this.value.slice(0, start) + '\n' + this.value.slice(end);
+                    this.selectionStart = this.selectionEnd = start + 1;
+                    autoGrowComposer(this);
+                    return;
+                }
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     sendReply();

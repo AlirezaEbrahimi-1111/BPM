@@ -45,10 +45,13 @@ try {
         exit;
     }
 
-    if ($input['task_type'] === 'periodic' && empty($input['due_date'])) {
+    // موعد فقط وقتی الزامیه که کار به کسِ دیگه‌ای ارجاع داده بشه؛ اگه خودِ
+    // تعریف‌کننده مسئولِ انجامش هم باشه، می‌تونه بدونِ موعد ثبت کنه
+    $__is_self_task = (($input['assignee_id'] ?? $user_id) == $user_id);
+    if ($input['task_type'] === 'periodic' && empty($input['due_date']) && !$__is_self_task) {
         ob_end_clean();
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'تاریخ انجام برای کارهای مقطعی الزامی است']);
+        echo json_encode(['success' => false, 'message' => 'تاریخ انجام برای کارهای مقطعیِ ارجاع‌داده‌شده الزامی است']);
         exit;
     }
 

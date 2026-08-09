@@ -28,11 +28,20 @@ $database = new Database();
     // حالت ۲: mark read همه نوتیفیکیشن‌های یک تسک
     elseif (!empty($input['task_id'])) {
         $stmt = $db->prepare("
-            UPDATE notifications 
-            SET is_read = 1, read_at = NOW() 
+            UPDATE notifications
+            SET is_read = 1, read_at = NOW()
             WHERE user_id = ? AND related_id = ? AND related_type = 'task' AND is_read = 0
         ");
         $result = $stmt->execute([$user_id, (int)$input['task_id']]);
+    }
+    // حالت ۳: mark read همه نوتیفیکیشن‌های یک تیکت
+    elseif (!empty($input['ticket_id'])) {
+        $stmt = $db->prepare("
+            UPDATE notifications
+            SET is_read = 1, read_at = NOW()
+            WHERE user_id = ? AND related_id = ? AND related_type = 'ticket' AND is_read = 0
+        ");
+        $result = $stmt->execute([$user_id, (int)$input['ticket_id']]);
     }
     else {
         http_response_code(400);

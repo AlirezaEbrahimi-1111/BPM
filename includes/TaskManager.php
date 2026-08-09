@@ -624,7 +624,7 @@ class TaskManager
     }
 
     // ارجاع کار - قانون 2
-    public function delegateTask($task_id, $to_user_id, $from_user_id, $notes = '')
+    public function delegateTask($task_id, $to_user_id, $from_user_id, $notes = '', $due_date = null)
     {
         try {
             // دریافت اطلاعات کار
@@ -636,6 +636,12 @@ class TaskManager
             // قانون 1: نمی‌توان کار completed را ارجاع داد
             if ($task['status'] === 'completed' && $task['task_type'] === 'periodic') {
                 return ['success' => false, 'message' => 'کار تکمیل شده قابل ارجاع نیست'];
+            }
+
+            // 🆕 کارِ مقطعیِ بدونِ موعد (خودی) وقتی به کسِ دیگه‌ای ارجاع داده
+            // می‌شه، باید همین حالا یک موعد براش تعیین بشه
+            if ($task['task_type'] === 'periodic' && empty($task['due_date']) && empty($due_date)) {
+                return ['success' => false, 'message' => 'این کار موعد ندارد — برایِ ارجاع، ابتدا یک موعد تعیین کنید'];
             }
 
             // بررسی مجوز
@@ -663,10 +669,16 @@ class TaskManager
                 $task['delegation_notes'] . "\n---\n" . $notes : $notes;
 
             // بروزرسانی کار
-            $sql = "UPDATE tasks SET assignee_id = ?, status = 'delegated', delegation_notes = ?, updated_at = NOW() WHERE id = ?";
+            if (!empty($due_date)) {
+                $sql = "UPDATE tasks SET assignee_id = ?, status = 'delegated', delegation_notes = ?, due_date = ?, updated_at = NOW() WHERE id = ?";
+                $params = [$to_user_id, $new_notes, $due_date, $task_id];
+            } else {
+                $sql = "UPDATE tasks SET assignee_id = ?, status = 'delegated', delegation_notes = ?, updated_at = NOW() WHERE id = ?";
+                $params = [$to_user_id, $new_notes, $task_id];
+            }
             $stmt = $this->db->prepare($sql);
 
-            if ($stmt->execute([$to_user_id, $new_notes, $task_id])) {
+            if ($stmt->execute($params)) {
                 $this->addTaskHistory($task_id, $from_user_id, $to_user_id, 'delegated', $notes);
                 return ['success' => true, 'message' => 'کار با موفقیت ارجاع داده شد'];
             }

@@ -448,6 +448,33 @@ if (!$__me) {
                             <label class="form-label">ارجاع به کاربر</label>
                             <div id="delegatePicker"></div>
                         </div>
+                        <!-- ✅ این کار موعد نداره (خودی بوده) — برایِ ارجاع باید موعد تعیین بشه -->
+                        <div class="mb-3" id="delegateDueDateContainer" style="display:none;">
+                            <label class="form-label required">موعد انجام</label>
+                            <div class="persian-datepicker-wrapper" data-restrict-past="0">
+                                <input type="text" id="delegateDueDate" class="persian-datepicker-input form-control"
+                                    placeholder="انتخاب تاریخ..." readonly>
+                                <div class="persian-datepicker">
+                                    <div class="datepicker-header">
+                                        <button type="button" class="datepicker-nav" data-action="prev">►</button>
+                                        <span class="datepicker-current">-</span>
+                                        <button type="button" class="datepicker-nav" data-action="next">◄</button>
+                                    </div>
+                                    <div class="datepicker-weekdays">
+                                        <div class="datepicker-weekday">ش</div>
+                                        <div class="datepicker-weekday">ی</div>
+                                        <div class="datepicker-weekday">د</div>
+                                        <div class="datepicker-weekday">س</div>
+                                        <div class="datepicker-weekday">چ</div>
+                                        <div class="datepicker-weekday">پ</div>
+                                        <div class="datepicker-weekday">ج</div>
+                                    </div>
+                                    <div class="datepicker-days"></div>
+                                    <button type="button" class="datepicker-today-btn">امروز</button>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted d-block">این کار تا الان موعد نداشته — چون به کسِ دیگه‌ای ارجاع می‌شه، تعیینِ موعد الزامیه.</small>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">توضیحات ارجاع</label>
                             <textarea class="form-control" id="delegateNotes" rows="3"
@@ -4014,6 +4041,17 @@ ${task.overdue_periods > 0 ? `
                 const isCreator = (currentUser && t && currentUser.id == t.creator_id);
                 if (wrap) wrap.style.display = isCreator ? 'block' : 'none';
                 if (chk && t) chk.checked = (parseInt(t.share_history) !== 0);
+
+                // ✅ اگه کارِ مقطعیِ خودی (بدونِ موعد) داره ارجاع می‌شه، تعیینِ موعد الزامیه
+                const dueContainer = document.getElementById('delegateDueDateContainer');
+                const needsDueDate = !!(t && t.task_type === 'periodic' && !t.due_date);
+                if (dueContainer) dueContainer.style.display = needsDueDate ? 'block' : 'none';
+                if (needsDueDate) {
+                    document.getElementById('delegateDueDate').removeAttribute('data-date');
+                    document.getElementById('delegateDueDate').value = '';
+                    initPersianDatepickerForModal('delegateDueDate', null);
+                }
+
                 new bootstrap.Modal(document.getElementById('delegateModal')).show();
             }
 
@@ -4026,6 +4064,17 @@ ${task.overdue_periods > 0 ? `
                     const t = showToast('لطفا کاربر مقصد را انتخاب کنید', 'info');
 
                     return;
+                }
+
+                // ✅ اگه این کار موعد نداشت، انتخابِ موعد الزامیه
+                const dueContainer = document.getElementById('delegateDueDateContainer');
+                let delegateDueDate = null;
+                if (dueContainer && dueContainer.style.display !== 'none') {
+                    delegateDueDate = document.getElementById('delegateDueDate').getAttribute('data-date');
+                    if (!delegateDueDate) {
+                        showToast('لطفاً موعدِ انجام را انتخاب کنید', 'warning');
+                        return;
+                    }
                 }
 
                 if (window._approveNotesForDelegate !== undefined) {
@@ -4045,7 +4094,8 @@ ${task.overdue_periods > 0 ? `
                             task_id: taskId,
                             to_user_id: toUserId,
                             notes: notes,
-                            share_history: shareHistory
+                            share_history: shareHistory,
+                            due_date: delegateDueDate
                         })
                     });
 
@@ -5852,6 +5902,7 @@ ${task.overdue_periods > 0 ? `
                 </div>
             </div>
         </div>
+        <?php include 'footer.php'; ?>
 </body>
 
 </html>
