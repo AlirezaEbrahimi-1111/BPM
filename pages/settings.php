@@ -250,7 +250,7 @@ if (!$__me) {
                         <div class="col-sm-6">
                             <label class="form-label">ساعتِ کاریِ روزانه</label>
                             <input type="text" class="form-control" id="dailyWorkHours" readonly>
-                            <div class="form-hint">مبنایِ محاسبهٔ سهمیهٔ مرخصی/پاس — توسط ادمین قابل تغییر است</div>
+                            <div class="form-hint">مبنایِ محاسبهٔ سهمیهٔ مرخصی/پاس</div>
                         </div>
                     </div>
 

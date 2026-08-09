@@ -92,17 +92,14 @@ class TaskManager
             $deadline = null;
             $original_deadline = null;
 
-            if ($data['task_type'] === 'periodic') {
-                if (!empty($data['due_date'])) {
-                    // اگر due_date داده شده باشد
-                    if ($data['due_date'] < $today) {
-                        return ['success' => false, 'message' => 'نمی‌توانید کار با تاریخ گذشته ایجاد کنید'];
-                    }
-                    $deadline = $data['due_date'];
-                } else {
-                    // اگر due_date داده نشده باشد، deadline = امروز + 30 روز
-                    $deadline = date('Y-m-d', strtotime('+30 days'));
+            if ($data['task_type'] === 'periodic' && !empty($data['due_date'])) {
+                if ($data['due_date'] < $today) {
+                    return ['success' => false, 'message' => 'نمی‌توانید کار با تاریخ گذشته ایجاد کنید'];
                 }
+                // موعد فقط وقتی داده شده که کار به کسی ارجاع شده (بررسی‌شده در
+                // لایهٔ API)؛ کارِ شخصیِ بدونِ موعد باید deadline/original_deadline
+                // هم null بمونه — نه یک مقدارِ پیش‌فرضِ ۳۰ روزهٔ ساختگی
+                $deadline = $data['due_date'];
                 // original_deadline همیشه برابر deadline است
                 $original_deadline = $deadline;
             }

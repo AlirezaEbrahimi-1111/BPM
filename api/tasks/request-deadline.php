@@ -49,13 +49,19 @@ try {
     $db = $database->getConnection();
 
     // ===== بررسی 1: آیا این کار مربوط به کاربر فعلی است (assignee)؟ =====
-    $stmt = $db->prepare("SELECT id, assignee_id, creator_id, deadline, is_workflow_task, workflow_instance_id, activity_section, organization_id FROM tasks WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, assignee_id, creator_id, deadline, is_workflow_task, workflow_instance_id, activity_section, organization_id, status, is_deleted FROM tasks WHERE id = ?");
     $stmt->execute([$task_id]);
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$task) {
         http_response_code(404);
         throw new Exception('کار یافت نشد');
+    }
+
+    // کارِ حذف‌شده/کنسل‌شده/متوقف‌شده/تکمیل‌شده دیگه قابلِ تمدیدِ موعد نیست
+    if ((int) $task['is_deleted'] === 1 || in_array($task['status'], ['completed', 'approved', 'stopped', 'rejected'], true)) {
+        http_response_code(400);
+        throw new Exception('این کار در وضعیتِ پایانی است و موعدش قابلِ تمدید نیست');
     }
 
     error_log("Task info: creator=" . $task['creator_id'] . ", assignee=" . $task['assignee_id']);

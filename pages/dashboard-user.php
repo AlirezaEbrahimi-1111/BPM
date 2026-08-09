@@ -3297,6 +3297,12 @@ if (!$__me) {
         function pmActions(t) {
             const myId = Number(currentUser.id);
 
+            // حذف‌شده/کنسل‌شده(rejected)/متوقف‌شده/تکمیل‌شده → دیگه هیچ اکشنی
+            // (ازجمله تمدیدِ موعد) روی این کار معنا نداره
+            const isTerminal = t.is_deleted == 1 ||
+                ['completed', 'approved', 'stopped', 'rejected'].includes(t.status);
+            if (isTerminal) return [];
+
             // ⚠️ نکتهٔ مهم: هنگام pending_approval، سامانه assignee_id را روی
             //    تأییدکننده می‌گذارد. پس اگر assignee من باشم و وضعیت
             //    pending_approval، یعنی منتظر تأیید من است.

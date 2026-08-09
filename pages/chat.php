@@ -82,10 +82,17 @@ if (!$__me) {
 
         .chat-wrap {
             max-width: 1200px;
-            height: calc(100vh - 70px - 32px);
+            /* این صفحه ثابت (overflow:hidden) و بدونِ اسکرولِ خودِ body است،
+               پس ارتفاعِ فوترِ چسبان (site-footer) هم باید صریحاً از بودجهٔ
+               ارتفاع کم بشه، وگرنه فوتر رویِ کادرِ تایپِ چت می‌افته */
+            height: calc(100vh - 70px - 32px - 34px);
             margin: 16px auto;
             padding: 0 16px;
             display: flex;
+        }
+
+        .site-footer {
+            margin-top: 0 !important;
         }
 
         .chat-shell {
@@ -1476,7 +1483,7 @@ if (!$__me) {
         @media (max-width: 768px) {
             .chat-wrap {
                 padding: 0;
-                height: calc(100vh - 70px);
+                height: calc(100vh - 70px - 34px);
                 margin: 0;
             }
 

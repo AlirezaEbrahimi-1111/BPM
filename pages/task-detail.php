@@ -2354,6 +2354,9 @@ if (!$__me) {
                 if (!cell) return;
 
                 const isOwner = (currentUser && currentUser.id == task.creator_id);
+                // حذف‌شده/کنسل‌شده/متوقف‌شده/تکمیل‌شده → دیگه قابلِ تغییر نیست
+                const isTerminal = task.is_deleted == 1 ||
+                    ['completed', 'approved', 'stopped', 'rejected'].includes(task.status);
 
                 // نمایش badge فعلی (یا «بدون گروه»)
                 function badgeHtml() {
@@ -2365,8 +2368,8 @@ if (!$__me) {
                     return '<span class="text-muted">بدون گروه</span>';
                 }
 
-                // اگر تعریف‌کننده نیست، فقط نمایش
-                if (!isOwner) {
+                // اگر تعریف‌کننده نیست یا کار در وضعیتِ پایانی/غیرفعاله، فقط نمایش
+                if (!isOwner || isTerminal) {
                     cell.innerHTML = badgeHtml();
                     return;
                 }
@@ -3497,8 +3500,10 @@ ${task.overdue_periods > 0 ? `
                 }
 
                 const completedCount = task.completed_count || 0;
-                // ✅ نمایش دکمه بازتعریف فقط برای creator
-                if (isCreator) {
+                // ✅ نمایش دکمه بازتعریف فقط برای creator، و فقط وقتی کار در
+                // وضعیتِ پایانی (تکمیل/کنسل/متوقف) نیست
+                const isTaskTerminal = ['completed', 'approved', 'stopped', 'rejected'].includes(task.status);
+                if (isCreator && !isTaskTerminal) {
                     redefineBtn.style.display = 'inline-block';
                 } else {
                     redefineBtn.style.display = 'none';

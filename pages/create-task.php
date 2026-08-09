@@ -1176,8 +1176,10 @@ if (!$__me) {
 
                 return;
             }
-            if (taskData.task_type === 'periodic' && !taskData.due_date) {
-                showToast('تاریخ انجام برای کارهای مقطعی الزامی است', 'error');
+            const __me = JSON.parse(localStorage.getItem('user_info') || 'null');
+            const __isSelfTask = !taskData.assignee_id || (__me && String(taskData.assignee_id) === String(__me.id));
+            if (taskData.task_type === 'periodic' && !taskData.due_date && !__isSelfTask) {
+                showToast('تاریخ انجام برای کارهای مقطعیِ ارجاع‌داده‌شده الزامی است', 'error');
 
                 return;
             }

@@ -487,15 +487,32 @@ if (!function_exists('sc_computeLeavePassQuota')) {
         ensureMonthlyLeaveAccrual($db, $userId);
         $remaining_minutes = getLeaveBalance($db, $userId);
 
-        // «جمع مرخصی/پاس» یعنی چقدر از همین ماه مصرف شده — از رویِ
-        // کسورات ثبت‌شده در همون بازه (نه بازپرسیِ مستقیمِ جدولِ درخواست‌ها)
-        $stmt = $db->prepare("
-            SELECT COALESCE(SUM(-amount), 0) FROM leave_balance_transactions
-            WHERE user_id = ? AND type IN ('leave_deduction', 'pass_deduction')
-              AND created_at >= ? AND created_at < DATE_ADD(?, INTERVAL 1 DAY)
-        ");
+        // «جمع مرخصی/پاس» یعنی چقدر واقعاً از همین ماه مصرف شده — این باید
+        // مستقیماً از خودِ درخواست‌ها بیاد، نه از کسوراتِ لجر: لجر فقط از
+        // زمانِ ساختِ سیستمِ سهمیه به بعد پر می‌شه، پس درخواست‌هایِ قدیمی‌تر
+        // (که واقعاً رخ دادن ولی تراکنشِ کسر ندارن) با کوئریِ لجر صفر
+        // نشون داده می‌شدن — درحالی‌که «سهمیهٔ مانده» (بالا) درست همون
+        // موجودیِ لجره، چون اون باید با بقیهٔ برنامه هماهنگ باشه.
+        $daily_work_minutes = getUserDailyWorkMinutes($db, $userId);
+        $used_minutes = 0;
+
+        $stmt = $db->prepare("SELECT start_time, end_time FROM leave_requests WHERE user_id = ? AND start_date >= ? AND start_date <= ? AND status = 'approved'");
         $stmt->execute([$userId, $start_of_month, $end_of_month]);
-        $used_minutes = (int) $stmt->fetchColumn();
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            if (empty($r['start_time']) || empty($r['end_time'])) {
+                $used_minutes += $daily_work_minutes;
+            } else {
+                $used_minutes += max(0, sc_timeToMinutes(substr($r['end_time'], 0, 5)) - sc_timeToMinutes(substr($r['start_time'], 0, 5)));
+            }
+        }
+
+        $stmt = $db->prepare("SELECT start_time, end_time FROM pass_requests WHERE user_id = ? AND pass_date >= ? AND pass_date <= ? AND status != 'cancelled'");
+        $stmt->execute([$userId, $start_of_month, $end_of_month]);
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            if (!empty($r['start_time']) && !empty($r['end_time'])) {
+                $used_minutes += max(0, sc_timeToMinutes(substr($r['end_time'], 0, 5)) - sc_timeToMinutes(substr($r['start_time'], 0, 5)));
+            }
+        }
 
         return [
             'used_minutes' => $used_minutes,
