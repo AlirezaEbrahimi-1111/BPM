@@ -96,6 +96,7 @@ if (!$__me) {
         }
 
         .chat-shell {
+            position: relative;
             display: flex;
             width: 100%;
             background: var(--surface);
@@ -392,6 +393,14 @@ if (!$__me) {
             font-weight: 600;
         }
 
+        .chat-conv-preview.draft {
+            color: #c0392b;
+        }
+
+        .chat-conv-draft-label {
+            font-weight: 600;
+        }
+
         .chat-unread-badge {
             background: var(--ink-900);
             color: #fff;
@@ -491,6 +500,14 @@ if (!$__me) {
         .chat-search-toggle-btn:hover {
             background: var(--ink-050);
             color: var(--ink-900);
+        }
+
+        .chat-search-toggle-btn.chat-notif-on {
+            color: var(--icon-accent, #744CA4);
+        }
+
+        .chat-search-toggle-btn.chat-notif-blocked {
+            color: #c0392b;
         }
 
         .chat-msg-search-bar {
@@ -1008,6 +1025,246 @@ if (!$__me) {
             background: rgba(0, 0, 0, .05);
         }
 
+        /* ─── گالریِ فایل/عکسِ مشترکِ گفتگو ─── */
+        .chat-media-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        /* پیامِ متنیِ «هنوز عکسی نیست» وقتی داخلِ گریدِ ۴ستونی می‌شینه، نباید
+           فقط تویِ یک ستونِ باریک (۱/۴ عرض) فشرده بشه — باید کلِ عرض رو بگیره */
+        .chat-media-grid .chat-empty-list {
+            grid-column: 1 / -1;
+        }
+
+        .chat-media-grid-item {
+            aspect-ratio: 1 / 1;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid var(--border-soft, #e5e0ee);
+        }
+
+        .chat-media-grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .chat-media-file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .chat-media-file-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-soft, #e5e0ee);
+            cursor: pointer;
+            color: var(--text-strong);
+        }
+
+        .chat-media-file-row:hover {
+            background: var(--ink-050);
+        }
+
+        .chat-media-file-row i {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+        }
+
+        .chat-media-file-name {
+            font-size: .85rem;
+            font-weight: 600;
+        }
+
+        .chat-media-file-meta {
+            font-size: .74rem;
+            color: var(--text-muted);
+        }
+
+        /* ─── دراورِ پروفایلِ طرفِ مقابل ─── */
+        .chat-profile-drawer-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity .2s ease, visibility 0s linear .2s;
+        }
+
+        .chat-profile-drawer-overlay.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition: opacity .2s ease, visibility 0s linear 0s;
+        }
+
+        .chat-profile-drawer {
+            position: absolute;
+            top: 0;
+            inset-inline-end: 0;
+            bottom: 0;
+            width: 340px;
+            max-width: 90vw;
+            background: var(--surface);
+            box-shadow: -4px 0 24px rgba(0, 0, 0, .15);
+            z-index: 1041;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateX(100%);
+            transition: transform .25s ease, opacity .25s ease, visibility 0s linear .25s;
+        }
+
+        .chat-profile-drawer.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateX(0);
+            transition: transform .25s ease, opacity .25s ease, visibility 0s linear 0s;
+        }
+
+        .chat-profile-drawer-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border-soft, #e5e0ee);
+            font-weight: 700;
+            color: var(--ink-900);
+        }
+
+        .chat-profile-drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 18px;
+        }
+
+        .chat-profile-drawer-avatar-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .chat-profile-drawer-avatar {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .chat-profile-drawer-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .chat-profile-drawer-name {
+            text-align: center;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--ink-900);
+            margin-bottom: 18px;
+        }
+
+        .chat-profile-drawer-field {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 4px;
+            border-bottom: 1px solid var(--border-soft, #eee);
+        }
+
+        .chat-profile-drawer-field i {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            width: 20px;
+            text-align: center;
+        }
+
+        .chat-profile-drawer-value {
+            font-size: .88rem;
+            color: var(--ink-900);
+            font-weight: 600;
+        }
+
+        .chat-profile-drawer-label {
+            font-size: .72rem;
+            color: var(--text-muted);
+        }
+
+        .chat-profile-drawer-media-heading {
+            font-size: .78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin: 18px 0 10px;
+        }
+
+        /* سوییچِ اعلان‌ها */
+        .chat-toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .chat-toggle-switch input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            margin: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .chat-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: var(--border-soft, #ccc);
+            border-radius: 22px;
+            transition: .2s;
+        }
+
+        .chat-toggle-slider::before {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+            transition: .2s;
+        }
+
+        .chat-toggle-switch input:checked + .chat-toggle-slider {
+            background: var(--icon-accent, #744CA4);
+        }
+
+        .chat-toggle-switch input:checked + .chat-toggle-slider::before {
+            transform: translateX(18px);
+        }
+
         /* ─── ارجاع به کار/تیکت (#task:ID / #ticket:ID) ─── */
         .chat-linkref {
             display: inline-flex;
@@ -1295,6 +1552,82 @@ if (!$__me) {
             color: #b3382c;
         }
 
+        /* ── مودالِ ارسالِ فایل/عکس همراه با توضیح ── */
+        .chat-fc-modal-content {
+            overflow: hidden;
+        }
+
+        .chat-fc-header {
+            padding: 12px 16px;
+        }
+
+        .chat-fc-preview-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 62vh;
+            overflow-y: auto;
+            background: var(--bg-page, #f4f2f9);
+            padding: 10px;
+        }
+
+        .chat-fc-preview-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--ink-050);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-fc-preview-item img {
+            width: 100%;
+            max-height: 62vh;
+            object-fit: contain;
+            display: block;
+        }
+
+        .chat-fc-preview-item.file {
+            flex-direction: column;
+            padding: 24px 10px;
+            gap: 8px;
+            font-size: .8rem;
+            text-align: center;
+        }
+
+        .chat-fc-preview-item i.bi-file-earmark {
+            font-size: 2.4rem;
+            color: var(--text-muted);
+        }
+
+        .chat-fc-preview-item .chat-fc-file-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+
+        .chat-fc-preview-item .chat-fc-remove {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, .55);
+            color: #fff;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: .85rem;
+        }
+
+        .chat-fc-composer {
+            border-top: 1px solid var(--border-soft, #eee);
+        }
+
         /* ── مودالِ گفتگوی جدید ── */
         #newChatModal .modal-dialog {
             max-width: 350px;
@@ -1533,7 +1866,11 @@ if (!$__me) {
             <div class="chat-sidebar" id="chatSidebar">
                 <div class="chat-sidebar-head">
                     <h5>گفتگوها</h5>
-                    <span class="chat-sidebar-count" id="chatSidebarCount"></span>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="chat-search-toggle-btn" id="chatDesktopNotifBtn" onclick="handleDesktopNotifClick()" title="اعلانِ دسکتاپ">
+                            <i class="bi bi-bell" id="chatDesktopNotifIcon"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="chat-search-box">
                     <i class="bi bi-search"></i>
@@ -1563,7 +1900,7 @@ if (!$__me) {
                 <div id="chatActiveView" style="display:none; flex:1; flex-direction:column; min-height:0;">
                     <div class="chat-main-head">
                         <button class="chat-back-btn" onclick="closeConversation()"><i class="bi bi-arrow-right"></i></button>
-                        <div class="chat-avatar" id="chatHeadAvatar">?<span class="chat-avatar-online-dot"></span></div>
+                        <div class="chat-avatar" id="chatHeadAvatar" onclick="openGroupInfoIfApplicable()" style="cursor:pointer;">?<span class="chat-avatar-online-dot"></span></div>
                         <div class="chat-main-head-info" id="chatHeadInfoWrap" onclick="openGroupInfoIfApplicable()">
                             <div class="chat-main-head-name" id="chatHeadName">—</div>
                             <div class="chat-main-head-lastseen" id="chatHeadLastSeen"></div>
@@ -1575,6 +1912,10 @@ if (!$__me) {
                             <button class="chat-msg-search-nav-btn" id="chatMsgSearchNextBtn" onclick="navMsgSearch(1)" title="نتیجهٔ بعدی"><i class="bi bi-chevron-down"></i></button>
                             <input type="text" id="chatMsgSearchInput" placeholder="جستجو در این گفتگو..." oninput="runMsgSearch()">
                         </div>
+
+                        <button class="chat-search-toggle-btn" id="chatMediaGalleryBtn" onclick="openMediaGallery()" title="فایل‌ها و عکس‌هایِ این گفتگو">
+                            <i class="bi bi-images"></i>
+                        </button>
 
                         <button class="chat-search-toggle-btn" id="chatMuteToggleBtn" onclick="toggleMuteActiveConversation()" title="بی‌صداکردنِ این گفتگو">
                             <i class="bi bi-bell"></i>
@@ -1633,6 +1974,90 @@ if (!$__me) {
                 </div>
             </div>
 
+            <!-- دراورِ پروفایلِ طرفِ مقابل — عمداً داخلِ chat-shell، تا فقط رویِ
+                 خودِ صفحه‌یِ چت باز بشه، نه رویِ کلِ مانیتور/صفحه -->
+            <div class="chat-profile-drawer-overlay" id="chatProfileDrawerOverlay" onclick="closeChatProfileDrawer()"></div>
+            <div class="chat-profile-drawer" id="chatProfileDrawer">
+                <div class="chat-profile-drawer-head">
+                    <span>اطلاعاتِ پروفایل</span>
+                    <button type="button" class="btn-close" onclick="closeChatProfileDrawer()"></button>
+                </div>
+                <div class="chat-profile-drawer-body">
+                    <div class="chat-profile-drawer-avatar-wrap">
+                        <div class="chat-profile-drawer-avatar" id="chatProfileDrawerAvatar"></div>
+                    </div>
+                    <div class="chat-profile-drawer-name" id="chatProfileDrawerName">—</div>
+
+                    <div class="chat-profile-drawer-field">
+                        <i class="bi bi-telephone"></i>
+                        <div>
+                            <div class="chat-profile-drawer-value" id="chatProfileDrawerPhone">—</div>
+                            <div class="chat-profile-drawer-label">شماره تلفن</div>
+                        </div>
+                    </div>
+                    <div class="chat-profile-drawer-field">
+                        <i class="bi bi-diagram-3"></i>
+                        <div>
+                            <div class="chat-profile-drawer-value" id="chatProfileDrawerSection">—</div>
+                            <div class="chat-profile-drawer-label">واحد فعالیت</div>
+                        </div>
+                    </div>
+                    <div class="chat-profile-drawer-field">
+                        <i class="bi bi-bell"></i>
+                        <div class="chat-profile-drawer-label" style="flex:1;">اعلان‌ها</div>
+                        <label class="chat-toggle-switch">
+                            <input type="checkbox" id="chatProfileDrawerMuteToggle" onchange="toggleMuteActiveConversation()">
+                            <span class="chat-toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="chat-profile-drawer-media-heading">تصاویرِ ردوبدل‌شده</div>
+                    <div class="chat-media-grid" id="chatProfileDrawerMediaGrid">
+                        <div class="chat-empty-list">در حال بارگذاری...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- دراورِ اطلاعاتِ گروه — دراورِ جدا از دراورِ پروفایلِ مستقیم،
+                 چون محتوایِ خیلی متفاوتی داره (اعضا/آپلودِ عکس/افزودنِ عضو) -->
+            <div class="chat-profile-drawer-overlay" id="groupInfoDrawerOverlay" onclick="closeGroupInfoDrawer()"></div>
+            <div class="chat-profile-drawer" id="groupInfoDrawer">
+                <div class="chat-profile-drawer-head">
+                    <span id="groupInfoTitle">اطلاعاتِ گروه</span>
+                    <button type="button" class="btn-close" onclick="closeGroupInfoDrawer()"></button>
+                </div>
+                <div class="chat-profile-drawer-body">
+                    <div class="chat-profile-drawer-avatar-wrap">
+                        <div class="chat-group-avatar-wrap" id="groupInfoAvatarWrap" onclick="triggerGroupAvatarUpload()"></div>
+                    </div>
+                    <input type="file" id="groupAvatarFileInput" accept="image/*" style="display:none;" onchange="uploadGroupAvatar(this.files[0])">
+
+                    <div class="chat-profile-drawer-field">
+                        <i class="bi bi-bell"></i>
+                        <div class="chat-profile-drawer-label" style="flex:1;">اعلان‌ها</div>
+                        <label class="chat-toggle-switch">
+                            <input type="checkbox" id="groupInfoMuteToggle" onchange="toggleMuteActiveConversation()">
+                            <span class="chat-toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="chat-profile-drawer-media-heading">اعضا</div>
+                    <div id="groupInfoMemberList"></div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary w-100 mt-2" id="groupInfoAddBtn" style="display:none;" onclick="openAddMembersMode()">
+                        <i class="bi bi-person-plus"></i> افزودنِ عضو
+                    </button>
+
+                    <div class="chat-profile-drawer-media-heading">تصاویرِ ردوبدل‌شده</div>
+                    <div class="chat-media-grid" id="groupInfoMediaGrid">
+                        <div class="chat-empty-list">در حال بارگذاری...</div>
+                    </div>
+
+                    <button type="button" class="btn btn-outline-danger btn-sm w-100 mt-3" onclick="confirmLeaveGroup()">
+                        <i class="bi bi-box-arrow-right"></i> خروج از گروه
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -1663,30 +2088,24 @@ if (!$__me) {
     </div>
 
     <!-- مودالِ اطلاعاتِ گروه -->
-    <div class="modal fade" id="groupInfoModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+    <!-- مودالِ فایل‌ها و عکس‌هایِ مشترکِ گفتگو -->
+    <div class="modal fade" id="mediaGalleryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title" id="groupInfoTitle">اطلاعاتِ گروه</h6>
+                    <h6 class="modal-title">فایل‌ها و عکس‌هایِ این گفتگو</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="chat-group-avatar-wrap" id="groupInfoAvatarWrap" onclick="triggerGroupAvatarUpload()"></div>
-                    <input type="file" id="groupAvatarFileInput" accept="image/*" style="display:none;" onchange="uploadGroupAvatar(this.files[0])">
-                    <div id="groupInfoMemberList"></div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary w-100 mt-2" id="groupInfoAddBtn" style="display:none;" onclick="openAddMembersMode()">
-                        <i class="bi bi-person-plus"></i> افزودنِ عضو
-                    </button>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmLeaveGroup()">
-                        <i class="bi bi-box-arrow-right"></i> خروج از گروه
-                    </button>
+                    <div id="mediaGalleryBody">
+                        <div class="chat-empty-list">در حال بارگذاری...</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- دراورِ پروفایلِ طرفِ مقابل (فقط گفتگویِ مستقیم) -->
     <!-- مودالِ فورواردِ پیام -->
     <div class="modal fade" id="forwardModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -1720,6 +2139,25 @@ if (!$__me) {
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">انصراف</button>
                     <button type="button" class="btn btn-danger btn-sm" onclick="confirmDeleteMessage()">حذف پیام</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودالِ ارسالِ فایل/عکس همراه با توضیح -->
+    <div class="modal fade" id="fileCaptionModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content chat-fc-modal-content">
+                <div class="modal-header chat-fc-header">
+                    <h6 class="modal-title">ارسالِ فایل</h6>
+                    <button type="button" class="btn-close" onclick="cancelFileCaptionModal()"></button>
+                </div>
+                <div class="chat-fc-preview-list" id="fileCaptionPreviewList"></div>
+                <div class="chat-composer chat-fc-composer">
+                    <textarea class="chat-composer-input" id="fileCaptionInput" rows="1" placeholder="پیامی بنویسید..."></textarea>
+                    <button class="chat-send-btn" id="fileCaptionSendBtn" onclick="sendFilesWithCaption()">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1803,11 +2241,26 @@ if (!$__me) {
             });
 
             var composer = document.getElementById('chatComposerInput');
+            var __draftSaveTimer = null;
             composer.addEventListener('input', function() {
                 autoGrowComposer(this);
                 notifyTyping();
                 checkMentionTrigger();
                 checkLinkRefTrigger();
+                clearTimeout(__draftSaveTimer);
+                __draftSaveTimer = setTimeout(saveComposerDraft, 300);
+            });
+            window.addEventListener('beforeunload', saveComposerDraft);
+
+            var fileCaptionInputEl = document.getElementById('fileCaptionInput');
+            fileCaptionInputEl.addEventListener('input', function() {
+                autoGrowComposer(this);
+            });
+            fileCaptionInputEl.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendFilesWithCaption();
+                }
             });
             composer.addEventListener('blur', function() {
                 // تأخیرِ کوتاه تا رویدادِ کلیک روی گزینه‌یِ اتوکامپلیت زودتر ثبت شود
@@ -1890,6 +2343,8 @@ if (!$__me) {
                     sendChatMessage();
                 }
             });
+
+            updateDesktopNotifIcon();
 
             pollTimer = setInterval(pollForUpdates, 4000);
 
@@ -2097,10 +2552,9 @@ if (!$__me) {
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
+                        checkNewMessagesForDesktopNotif(data.conversations);
                         conversations = data.conversations;
                         renderConversationList();
-                        var countEl = document.getElementById('chatSidebarCount');
-                        if (countEl) countEl.textContent = conversations.length ? conversations.length : '';
                         if (activeConversationId) {
                             var activeConv = conversations.find(c => c.conversation_id === activeConversationId);
                             document.getElementById('chatHeadAvatar').classList.toggle('online', !!(activeConv && activeConv.other_user_is_online));
@@ -2140,6 +2594,12 @@ if (!$__me) {
                     ? 'شما: '
                     : (c.type !== 'direct' && c.last_message_sender_name ? c.last_message_sender_name.split(' ')[0] + ': ' : '');
                 var preview = c.last_message ? sender + esc(c.last_message) : (c.last_message === '' ? sender + '📎 پیوست' : 'هنوز پیامی نیست');
+                var draftText = (localStorage.getItem(draftKey(c.conversation_id)) || '').trim();
+                var isDraft = draftText !== '';
+                if (isDraft) {
+                    var draftWords = draftText.split(/\s+/).slice(0, 8).join(' ');
+                    preview = esc(draftWords) + (draftText.split(/\s+/).length > 8 ? ' …' : '');
+                }
                 var active = c.conversation_id === activeConversationId ? ' active' : '';
                 var badge = c.unread_count > 0
                     ? '<span class="chat-unread-badge' + (c.is_muted ? ' muted' : '') + '">' + (c.unread_count > 99 ? '99+' : c.unread_count) + '</span>'
@@ -2151,7 +2611,9 @@ if (!$__me) {
                 }) : '';
                 var previewHtml = c.other_user_is_typing
                     ? '<div class="chat-conv-preview typing">در حال نوشتن...</div>'
-                    : '<div class="chat-conv-preview">' + preview + '</div>';
+                    : (isDraft
+                        ? '<div class="chat-conv-preview draft"><span class="chat-conv-draft-label">پیش‌نویس:</span> ' + preview + '</div>'
+                        : '<div class="chat-conv-preview">' + preview + '</div>');
                 return '<div class="chat-conv-item' + active + '" onclick="openConversation(' + c.conversation_id + ')">' +
                     avatarHtml(c.title, c.other_user_is_online, null, c.avatar_url) +
                     '<div class="chat-conv-info">' +
@@ -2219,6 +2681,8 @@ if (!$__me) {
 
         // ─────────────── بازکردنِ یک گفتگو ───────────────
         function openConversation(id, jumpToMessageId) {
+            saveComposerDraft(); // پیش‌نویسِ گفتگویِ قبلی (اگر بود) قبل از جابه‌جایی ذخیره بشه
+
             activeConversationId = id;
             var conv = conversations.find(c => c.conversation_id === id);
             activeConversationTitle = conv ? conv.title : '—';
@@ -2231,13 +2695,19 @@ if (!$__me) {
             document.getElementById('chatPlaceholder').style.display = 'none';
             document.getElementById('chatActiveView').style.display = 'flex';
             document.getElementById('chatHeadName').textContent = activeConversationTitle;
-            document.getElementById('chatHeadInfoWrap').classList.toggle('clickable', !!(conv && conv.type !== 'direct'));
+            document.getElementById('chatHeadInfoWrap').classList.add('clickable');
+            // چه مستقیم چه گروه، کنترلِ رسانه/اعلان الان از داخلِ دراورِ
+            // پروفایل/اطلاعاتِ گروه انجام می‌شه — آیکن‌هایِ جداگانهٔ هدر دیگه لازم نیستن
+            document.getElementById('chatMediaGalleryBtn').style.display = 'none';
+            document.getElementById('chatMuteToggleBtn').style.display = 'none';
             var headAvatar = document.getElementById('chatHeadAvatar');
             headAvatar.classList.toggle('online', !!(conv && conv.other_user_is_online));
             setAvatarContent(headAvatar, activeConversationTitle, conv && conv.avatar_url);
             updateMuteButton(conv);
             updateChatHeadLastSeen(conv);
             document.getElementById('chatMessages').innerHTML = '';
+            restoreComposerDraft(id);
+            document.getElementById('chatComposerInput').focus();
             lastMessageId = 0;
             readReceipts = {};
             pinnedMessage = null;
@@ -2948,48 +3418,65 @@ if (!$__me) {
                 });
         }
 
-        // ─────────────── ارسالِ پیام ───────────────
+        // ─────────────── پیوستِ فایل/عکس (مودالِ ارسال با توضیح) ───────────────
+        var fileCaptionModalInst = null;
+
         function addPendingFiles(files) {
             for (var i = 0; i < files.length; i++) pendingFiles.push(files[i]);
-            renderPendingFiles();
+            openFileCaptionModal();
         }
 
-        function removePendingFile(idx) {
+        function openFileCaptionModal() {
+            if (!pendingFiles.length) return;
+            if (!fileCaptionModalInst) {
+                fileCaptionModalInst = new bootstrap.Modal(document.getElementById('fileCaptionModal'));
+            }
+            renderFileCaptionPreviews();
+            var captionEl = document.getElementById('fileCaptionInput');
+            captionEl.value = '';
+            captionEl.style.height = 'auto';
+            fileCaptionModalInst.show();
+            setTimeout(function() {
+                var el = document.getElementById('fileCaptionInput');
+                if (el) el.focus();
+            }, 300);
+        }
+
+        function renderFileCaptionPreviews() {
+            var el = document.getElementById('fileCaptionPreviewList');
+            el.innerHTML = pendingFiles.map(function(f, i) {
+                var isImage = f.type && f.type.indexOf('image/') === 0;
+                var inner = isImage
+                    ? '<img src="' + URL.createObjectURL(f) + '" alt="">'
+                    : '<i class="bi bi-file-earmark"></i><div class="chat-fc-file-name">' + esc(f.name) + '</div>';
+                return '<div class="chat-fc-preview-item' + (isImage ? '' : ' file') + '">' + inner +
+                    '<div class="chat-fc-remove" onclick="removeFileCaptionItem(' + i + ')"><i class="bi bi-x-lg"></i></div></div>';
+            }).join('');
+        }
+
+        function removeFileCaptionItem(idx) {
             pendingFiles.splice(idx, 1);
-            renderPendingFiles();
-        }
-
-        function renderPendingFiles() {
-            var el = document.getElementById('pendingFiles');
             if (!pendingFiles.length) {
-                el.style.display = 'none';
-                el.innerHTML = '';
+                cancelFileCaptionModal();
                 return;
             }
-            el.style.display = 'flex';
-            el.innerHTML = pendingFiles.map((f, i) =>
-                '<div class="chat-pending-chip"><i class="bi bi-paperclip"></i><span>' + esc(f.name) + '</span><i class="bi bi-x-circle remove" onclick="removePendingFile(' + i + ')"></i></div>'
-            ).join('');
+            renderFileCaptionPreviews();
         }
 
-        function sendChatMessage() {
-            if (!activeConversationId) return;
-            var input = document.getElementById('chatComposerInput');
-            var text = input.value.trim();
+        function cancelFileCaptionModal() {
+            pendingFiles = [];
+            if (fileCaptionModalInst) fileCaptionModalInst.hide();
+        }
 
-            if (editingMessageId) {
-                submitEditMessage(text);
-                return;
-            }
-
-            if (!text && !pendingFiles.length) return;
-
-            var btn = document.getElementById('chatSendBtn');
+        function sendFilesWithCaption() {
+            if (!activeConversationId || !pendingFiles.length) return;
+            var caption = document.getElementById('fileCaptionInput').value.trim();
+            var btn = document.getElementById('fileCaptionSendBtn');
             btn.disabled = true;
 
             var fd = new FormData();
             fd.append('conversation_id', activeConversationId);
-            fd.append('message', text);
+            fd.append('message', caption);
             if (replyingToMessageId) fd.append('reply_to_message_id', replyingToMessageId);
             pendingFiles.forEach(f => fd.append('attachments[]', f));
 
@@ -3004,10 +3491,55 @@ if (!$__me) {
                 .then(data => {
                     btn.disabled = false;
                     if (data.success) {
+                        pendingFiles = [];
+                        cancelReplyMessage();
+                        if (fileCaptionModalInst) fileCaptionModalInst.hide();
+                        pollForUpdates();
+                    } else {
+                        showToast(data.message || 'خطا در ارسال فایل', 'error');
+                    }
+                })
+                .catch(() => {
+                    btn.disabled = false;
+                    showToast('خطا در ارتباط با سرور', 'error');
+                });
+        }
+
+        // ─────────────── ارسالِ پیام (فقط متن — پیوست از مسیرِ مودالِ بالا می‌ره) ───────────────
+        function sendChatMessage() {
+            if (!activeConversationId) return;
+            var input = document.getElementById('chatComposerInput');
+            var text = input.value.trim();
+
+            if (editingMessageId) {
+                submitEditMessage(text);
+                return;
+            }
+
+            if (!text) return;
+
+            var btn = document.getElementById('chatSendBtn');
+            btn.disabled = true;
+
+            var fd = new FormData();
+            fd.append('conversation_id', activeConversationId);
+            fd.append('message', text);
+            if (replyingToMessageId) fd.append('reply_to_message_id', replyingToMessageId);
+
+            fetch('../api/chat/send.php', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    },
+                    body: fd
+                })
+                .then(r => r.json())
+                .then(data => {
+                    btn.disabled = false;
+                    if (data.success) {
                         input.value = '';
                         input.style.height = 'auto';
-                        pendingFiles = [];
-                        renderPendingFiles();
+                        clearComposerDraft(activeConversationId);
                         cancelReplyMessage();
                         pollForUpdates();
                     } else {
@@ -3064,6 +3596,256 @@ if (!$__me) {
         }
 
         // ─────────────── Polling ───────────────
+        // ─────────────── پیش‌نویسِ پیام (به‌ازایِ هر گفتگو، در localStorage) ───────────────
+        function draftKey(convId) {
+            return 'chat_draft_' + convId;
+        }
+
+        function saveComposerDraft() {
+            if (!activeConversationId) return;
+            var input = document.getElementById('chatComposerInput');
+            if (!input) return;
+            var val = input.value;
+            if (val && val.trim() !== '') {
+                localStorage.setItem(draftKey(activeConversationId), val);
+            } else {
+                localStorage.removeItem(draftKey(activeConversationId));
+            }
+        }
+
+        function restoreComposerDraft(convId) {
+            var input = document.getElementById('chatComposerInput');
+            if (!input) return;
+            input.value = localStorage.getItem(draftKey(convId)) || '';
+            autoGrowComposer(input);
+        }
+
+        function clearComposerDraft(convId) {
+            localStorage.removeItem(draftKey(convId));
+        }
+
+        // ─────────────── میانبرهایِ صفحه‌کلید (فقط دسکتاپ) ───────────────
+        function navigateConversationList(direction) {
+            var term = (document.getElementById('convSearchInput').value || '').trim().toLowerCase();
+            var list = conversations.filter(c => !term || c.title.toLowerCase().includes(term));
+            if (!list.length) return;
+            var idx = list.findIndex(c => c.conversation_id === activeConversationId);
+            var nextIdx = idx === -1 ? 0 : (idx + direction + list.length) % list.length;
+            openConversation(list[nextIdx].conversation_id);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            // ⚠️ Ctrl/Cmd+K مالِ آدرس‌بارِ خودِ مرورگرهاست (کروم/اج/فایرفاکس) و
+            // صفحه‌یِ وب هیچ‌وقت نمی‌تونه با preventDefault جلوشو بگیره — برایِ
+            // همین از یه ترکیبِ آزادِ دیگه (Ctrl+/) استفاده می‌کنیم
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key === '/') {
+                e.preventDefault();
+                var searchInput = document.getElementById('convSearchInput');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+                return;
+            }
+
+            // Alt+↑/↓ → حرکت بینِ گفتگوها بدونِ دست‌زدن به موس
+            if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                e.preventDefault();
+                navigateConversationList(e.key === 'ArrowDown' ? 1 : -1);
+                return;
+            }
+
+            if (e.key === 'Escape') {
+                var msgSearchBar = document.getElementById('chatMsgSearchBar');
+                if (msgSearchBar && msgSearchBar.classList.contains('show')) {
+                    closeMsgSearch();
+                    return;
+                }
+                if (typeof replyingToMessageId !== 'undefined' && replyingToMessageId) {
+                    cancelReplyMessage();
+                    return;
+                }
+                if (activeConversationId) {
+                    exitActiveConversation();
+                    return;
+                }
+            }
+        });
+
+        function exitActiveConversation() {
+            if (!activeConversationId) return;
+            saveComposerDraft();
+            activeConversationId = null;
+            document.getElementById('chatActiveView').style.display = 'none';
+            document.getElementById('chatPlaceholder').style.display = 'flex';
+            document.getElementById('chatSidebar').classList.remove('hide-mobile');
+            document.getElementById('chatMain').classList.add('hide-mobile');
+            renderConversationList();
+        }
+
+        // ─────────────── گالریِ فایل/عکسِ مشترکِ گفتگو ───────────────
+        var mediaGalleryModalInst = null;
+
+        function fmtFileSize(bytes) {
+            bytes = Number(bytes) || 0;
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function openMediaGallery() {
+            if (!activeConversationId) return;
+            if (!mediaGalleryModalInst) {
+                mediaGalleryModalInst = new bootstrap.Modal(document.getElementById('mediaGalleryModal'));
+            }
+            document.getElementById('mediaGalleryBody').innerHTML = '<div class="chat-empty-list">در حال بارگذاری...</div>';
+            mediaGalleryModalInst.show();
+
+            fetch('../api/chat/media.php?conversation_id=' + activeConversationId, {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                })
+                .then(r => r.json())
+                .then(data => renderMediaGallery(data))
+                .catch(() => {
+                    document.getElementById('mediaGalleryBody').innerHTML =
+                        '<div class="chat-empty-list">خطا در ارتباط با سرور</div>';
+                });
+        }
+
+        function renderMediaGallery(data) {
+            var body = document.getElementById('mediaGalleryBody');
+            if (!data.success) {
+                body.innerHTML = '<div class="chat-empty-list">' + esc(data.message || 'خطا در بارگذاری') + '</div>';
+                return;
+            }
+            if (!data.files.length) {
+                body.innerHTML = '<div class="chat-empty-list">هنوز فایل/عکسی در این گفتگو ردوبدل نشده</div>';
+                return;
+            }
+
+            var images = data.files.filter(f => f.is_image);
+            var files = data.files.filter(f => !f.is_image);
+
+            var html = '';
+            if (images.length) {
+                html += '<div class="chat-media-grid">';
+                images.forEach(f => {
+                    var url = '../api/chat/download.php?id=' + f.id + '&token=' + authToken + '&view=1';
+                    html += '<div class="chat-media-grid-item" onclick="window.open(\'' + url + '\',\'_blank\')" title="' + esc(f.original_name) + '">' +
+                        '<img src="' + url + '" alt="' + esc(f.original_name) + '"></div>';
+                });
+                html += '</div>';
+            }
+            if (files.length) {
+                html += '<div class="chat-media-file-list">';
+                files.forEach(f => {
+                    var dlUrl = '../api/chat/download.php?id=' + f.id + '&token=' + authToken;
+                    html += '<div class="chat-media-file-row" onclick="window.open(\'' + dlUrl + '\',\'_blank\')">' +
+                        '<i class="bi bi-file-earmark"></i>' +
+                        '<div class="chat-media-file-info">' +
+                        '<div class="chat-media-file-name">' + esc(f.original_name) + '</div>' +
+                        '<div class="chat-media-file-meta">' + esc(f.uploader_name) + ' — ' + fmtFileSize(f.file_size) + '</div>' +
+                        '</div></div>';
+                });
+                html += '</div>';
+            }
+            body.innerHTML = html;
+        }
+
+        // ─────────────── اعلانِ دسکتاپ (Browser Notification API) ───────────────
+        var __convSnapshot = {}; // conversation_id -> { unread_count, last_message }
+        var __convSnapshotReady = false; // اولین بار نباید همه‌چیز «جدید» حساب بشه
+
+        function updateDesktopNotifIcon() {
+            var btn = document.getElementById('chatDesktopNotifBtn');
+            var icon = document.getElementById('chatDesktopNotifIcon');
+            if (!btn || !icon) return;
+            if (!('Notification' in window)) {
+                btn.style.display = 'none';
+                return;
+            }
+            btn.classList.remove('chat-notif-on', 'chat-notif-blocked');
+            if (Notification.permission === 'granted') {
+                icon.className = 'bi bi-bell-fill';
+                btn.classList.add('chat-notif-on');
+                btn.title = 'اعلانِ دسکتاپ فعاله';
+            } else if (Notification.permission === 'denied') {
+                icon.className = 'bi bi-bell-slash';
+                btn.classList.add('chat-notif-blocked');
+                btn.title = 'اعلانِ دسکتاپ مسدود شده — برایِ راهنماییِ فعال‌سازی کلیک کنید';
+            } else {
+                icon.className = 'bi bi-bell';
+                btn.title = 'فعال‌سازیِ اعلانِ دسکتاپ';
+            }
+        }
+
+        function handleDesktopNotifClick() {
+            if (!('Notification' in window)) {
+                showToast('مرورگرِ شما از اعلانِ دسکتاپ پشتیبانی نمی‌کند', 'warning');
+                return;
+            }
+            if (Notification.permission === 'granted') {
+                showToast('اعلانِ دسکتاپ از قبل فعاله', 'info');
+                return;
+            }
+            if (Notification.permission === 'denied') {
+                // ⚠️ مرورگرها به‌عمد اجازه نمی‌دن بعدِ ردکردنِ کاربر، دوباره از راهِ کد
+                // این پرسش تکرار بشه — تنها راه، تنظیماتِ خودِ مرورگره؛ همینو
+                // به‌طورِ واضح توضیح می‌دیم تا کاربر گیج نشه چرا اتفاقی نمی‌افته
+                showToast(
+                    'اعلان قبلاً مسدود شده و مرورگر اجازه نمی‌ده دوباره از داخلِ سایت بپرسیم. برایِ فعال‌سازیِ دستی: رویِ آیکنِ قفل/اطلاعات کنارِ آدرسِ سایت (بالایِ مرورگر) بزنید ← «اعلان‌ها»/Notifications را Allow کنید ← صفحه را رفرش کنید.',
+                    'warning',
+                    { duration: 15000 }
+                );
+                return;
+            }
+            Notification.requestPermission().then(function(result) {
+                updateDesktopNotifIcon();
+                if (result === 'granted') {
+                    showToast('اعلانِ دسکتاپ فعال شد', 'success');
+                    new Notification('یکتا همراهانِ ملک', { body: 'اعلانِ دسکتاپ با موفقیت فعال شد ✅', silent: true });
+                } else if (result === 'denied') {
+                    showToast('اجازهٔ اعلان داده نشد', 'warning');
+                }
+            });
+        }
+
+        function checkNewMessagesForDesktopNotif(convs) {
+            if (!('Notification' in window) || Notification.permission !== 'granted') {
+                __convSnapshotReady = true;
+                __convSnapshot = {};
+                convs.forEach(function(c) { __convSnapshot[c.conversation_id] = { unread_count: c.unread_count, last_message: c.last_message }; });
+                return;
+            }
+            // فقط وقتی تب/پنجره در پس‌زمینه‌ست اعلانِ دسکتاپ بده — وگرنه کاربر
+            // همین الان داره خودِ صفحه رو می‌بینه و نیازی به دوبل نیست
+            var tabHidden = document.hidden || !document.hasFocus();
+
+            var nextSnapshot = {};
+            convs.forEach(function(c) {
+                nextSnapshot[c.conversation_id] = { unread_count: c.unread_count, last_message: c.last_message };
+                if (!__convSnapshotReady) return;
+                var prev = __convSnapshot[c.conversation_id];
+                var prevUnread = prev ? prev.unread_count : 0;
+                var isNew = c.unread_count > prevUnread;
+                if (isNew && tabHidden) {
+                    try {
+                        var n = new Notification(c.title || 'پیامِ جدید', {
+                            body: (c.last_message || '').slice(0, 120),
+                            tag: 'chat-conv-' + c.conversation_id, // اعلان‌هایِ پشتِ‌سرِهمِ همون گفتگو، جایگزینِ هم بشن نه تلنبار
+                        });
+                        n.onclick = function() {
+                            window.focus();
+                            openConversation(c.conversation_id);
+                            n.close();
+                        };
+                    } catch (e) {}
+                }
+            });
+            __convSnapshot = nextSnapshot;
+            __convSnapshotReady = true;
+        }
+
         function pollForUpdates() {
             loadConversations();
             if (activeConversationId) {
@@ -3261,8 +4043,7 @@ if (!$__me) {
         // از مودالِ «اطلاعاتِ گروه» صدا زده می‌شود — همان مودالِ گفتگویِ جدید را
         // در حالتِ «افزودنِ عضو به گروهِ موجود» دوباره‌استفاده می‌کند
         function openAddMembersMode() {
-            var groupModalInst = bootstrap.Modal.getInstance(document.getElementById('groupInfoModal'));
-            if (groupModalInst) groupModalInst.hide();
+            closeGroupInfoDrawer();
 
             addMembersTargetConvId = activeConversationId;
             newChatMode = 'add-members';
@@ -3397,19 +4178,41 @@ if (!$__me) {
                 });
         }
 
-        // ─────────────── مودالِ اطلاعاتِ گروه ───────────────
-        var groupInfoModalInstance = null;
+        // ─────────────── دراورِ اطلاعاتِ گروه ───────────────
         var groupInfoIsOwner = false;
 
-        function openGroupInfoModal() {
+        function openGroupInfoDrawer() {
             if (!activeConversationId) return;
+            var convId = activeConversationId;
+            var conv = conversations.find(c => c.conversation_id === convId);
+
             document.getElementById('groupInfoMemberList').innerHTML = '<div class="chat-empty-list">در حال بارگذاری...</div>';
             document.getElementById('groupInfoAddBtn').style.display = 'none';
+            document.getElementById('groupInfoMuteToggle').checked = !(conv && conv.is_muted);
+            document.getElementById('groupInfoMediaGrid').innerHTML = '<div class="chat-empty-list">در حال بارگذاری...</div>';
 
-            if (!groupInfoModalInstance) {
-                groupInfoModalInstance = new bootstrap.Modal(document.getElementById('groupInfoModal'));
-            }
-            groupInfoModalInstance.show();
+            document.getElementById('groupInfoDrawerOverlay').classList.add('show');
+            document.getElementById('groupInfoDrawer').classList.add('show');
+
+            fetch('../api/chat/media.php?conversation_id=' + convId, {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (convId !== activeConversationId) return;
+                    var grid = document.getElementById('groupInfoMediaGrid');
+                    var images = (data.success ? data.files : []).filter(f => f.is_image);
+                    if (!images.length) {
+                        grid.innerHTML = '<div class="chat-empty-list">هنوز عکسی ردوبدل نشده</div>';
+                        return;
+                    }
+                    grid.innerHTML = images.map(function(f) {
+                        var url = '../api/chat/download.php?id=' + f.id + '&token=' + authToken + '&view=1';
+                        return '<div class="chat-media-grid-item" onclick="window.open(\'' + url + '\',\'_blank\')" title="' + esc(f.original_name) + '">' +
+                            '<img src="' + url + '" alt="' + esc(f.original_name) + '"></div>';
+                    }).join('');
+                })
+                .catch(function(err) { console.error('group media fetch error:', err); });
 
             fetch('../api/chat/group-members.php?conversation_id=' + activeConversationId, {
                     headers: { 'Authorization': 'Bearer ' + authToken }
@@ -3427,22 +4230,29 @@ if (!$__me) {
                     document.getElementById('groupInfoAvatarWrap').innerHTML =
                         avatarHtml(data.group_title || activeConversationTitle, false, 'chat-group-avatar-big', data.group_avatar_url) +
                         (data.is_owner ? '<div class="chat-group-avatar-edit-badge"><i class="bi bi-camera-fill"></i></div>' : '');
-                    document.getElementById('groupInfoMemberList').innerHTML = data.members.map(m =>
-                        '<div class="chat-group-member-row">' +
-                        avatarHtml(m.full_name, false, null, m.avatar_url) +
-                        '<span class="chat-group-member-name">' + esc(m.full_name) +
+                    document.getElementById('groupInfoMemberList').innerHTML = data.members.map(m => {
+                        var isMe = myUserId && Number(m.id) === Number(myUserId);
+                        var nameAttrs = isMe ? '' : ' onclick="openMemberDirectChat(' + m.id + ')" style="cursor:pointer;"';
+                        return '<div class="chat-group-member-row">' +
+                        '<div' + nameAttrs + '>' + avatarHtml(m.full_name, false, null, m.avatar_url) + '</div>' +
+                        '<span class="chat-group-member-name"' + nameAttrs + '>' + esc(m.full_name) + ' ' +
                         (m.is_owner ? '<span class="chat-group-owner-tag">مدیرِ گروه</span>' : '') +
                         '</span>' +
                         (data.is_owner && !m.is_owner
                             ? '<button class="chat-group-member-remove" title="حذفِ عضو" onclick="removeGroupMember(' + m.id + ')"><i class="bi bi-x-lg"></i></button>'
                             : '') +
-                        '</div>'
-                    ).join('');
+                        '</div>';
+                    }).join('');
                 })
                 .catch(function() {
                     document.getElementById('groupInfoMemberList').innerHTML =
                         '<div class="chat-empty-list">خطا در ارتباط با سرور</div>';
                 });
+        }
+
+        function closeGroupInfoDrawer() {
+            document.getElementById('groupInfoDrawerOverlay').classList.remove('show');
+            document.getElementById('groupInfoDrawer').classList.remove('show');
         }
 
         function triggerGroupAvatarUpload() {
@@ -3465,7 +4275,7 @@ if (!$__me) {
                     document.getElementById('groupAvatarFileInput').value = '';
                     if (data.success) {
                         showToast('عکسِ گروه بروزرسانی شد', 'success');
-                        openGroupInfoModal();
+                        openGroupInfoDrawer();
                         loadConversations();
                     } else {
                         showToast(data.message || 'خطا در آپلودِ عکس', 'error');
@@ -3486,7 +4296,7 @@ if (!$__me) {
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        openGroupInfoModal();
+                        openGroupInfoDrawer();
                         loadConversations();
                     } else {
                         showToast(data.message || 'خطا در حذفِ عضو', 'error');
@@ -3508,8 +4318,7 @@ if (!$__me) {
                     .then(r => r.json())
                     .then(data => {
                         if (data.success) {
-                            var modalInst = bootstrap.Modal.getInstance(document.getElementById('groupInfoModal'));
-                            if (modalInst) modalInst.hide();
+                            closeGroupInfoDrawer();
                             closeConversation();
                             document.getElementById('chatPlaceholder').style.display = 'flex';
                             document.getElementById('chatActiveView').style.display = 'none';
@@ -3561,7 +4370,68 @@ if (!$__me) {
 
         function openGroupInfoIfApplicable() {
             var conv = conversations.find(c => c.conversation_id === activeConversationId);
-            if (conv && conv.type !== 'direct') openGroupInfoModal();
+            if (!conv) return;
+            if (conv.type !== 'direct') {
+                openGroupInfoDrawer();
+            } else {
+                openChatProfileDrawer();
+            }
+        }
+
+        // ─────────────── دراورِ پروفایلِ طرفِ مقابل (گفتگویِ مستقیم) ───────────────
+        function openChatProfileDrawer() {
+            if (!activeConversationId) return;
+            var convId = activeConversationId;
+            var conv = conversations.find(c => c.conversation_id === convId);
+
+            document.getElementById('chatProfileDrawerOverlay').classList.add('show');
+            document.getElementById('chatProfileDrawer').classList.add('show');
+            document.getElementById('chatProfileDrawerName').textContent = conv ? conv.title : '—';
+            setAvatarContent(document.getElementById('chatProfileDrawerAvatar'), conv ? conv.title : '', conv && conv.avatar_url);
+            document.getElementById('chatProfileDrawerPhone').textContent = '—';
+            document.getElementById('chatProfileDrawerSection').textContent = '—';
+            document.getElementById('chatProfileDrawerMuteToggle').checked = !(conv && conv.is_muted);
+            document.getElementById('chatProfileDrawerMediaGrid').innerHTML = '<div class="chat-empty-list">در حال بارگذاری...</div>';
+
+            fetch('../api/chat/user-profile.php?conversation_id=' + convId, {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (convId !== activeConversationId || !data.success) return;
+                    document.getElementById('chatProfileDrawerPhone').textContent = data.user.phone || '—';
+                    document.getElementById('chatProfileDrawerSection').textContent = data.user.section_label || '—';
+                })
+                .catch(function(err) { console.error('chat user-profile fetch error:', err); });
+
+            fetch('../api/chat/media.php?conversation_id=' + convId, {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (convId !== activeConversationId) return;
+                    var grid = document.getElementById('chatProfileDrawerMediaGrid');
+                    if (!data.success || !data.files.length) {
+                        grid.innerHTML = '<div class="chat-empty-list">هنوز عکسی ردوبدل نشده</div>';
+                        return;
+                    }
+                    var images = data.files.filter(f => f.is_image);
+                    if (!images.length) {
+                        grid.innerHTML = '<div class="chat-empty-list">هنوز عکسی ردوبدل نشده</div>';
+                        return;
+                    }
+                    grid.innerHTML = images.map(function(f) {
+                        var url = '../api/chat/download.php?id=' + f.id + '&token=' + authToken + '&view=1';
+                        return '<div class="chat-media-grid-item" onclick="window.open(\'' + url + '\',\'_blank\')" title="' + esc(f.original_name) + '">' +
+                            '<img src="' + url + '" alt="' + esc(f.original_name) + '"></div>';
+                    }).join('');
+                })
+                .catch(function(err) { console.error('chat media fetch error:', err); });
+        }
+
+        function closeChatProfileDrawer() {
+            document.getElementById('chatProfileDrawerOverlay').classList.remove('show');
+            document.getElementById('chatProfileDrawer').classList.remove('show');
         }
 
         // ─────────────── بی‌صداکردنِ گفتگو ───────────────
@@ -3570,6 +4440,12 @@ if (!$__me) {
             var muted = !!(conv && conv.is_muted);
             btn.querySelector('i').className = muted ? 'bi bi-bell-slash-fill' : 'bi bi-bell';
             btn.title = muted ? 'باصداکردنِ این گفتگو' : 'بی‌صداکردنِ این گفتگو';
+
+            var drawerToggle = document.getElementById('chatProfileDrawerMuteToggle');
+            if (drawerToggle) drawerToggle.checked = !muted;
+
+            var groupDrawerToggle = document.getElementById('groupInfoMuteToggle');
+            if (groupDrawerToggle) groupDrawerToggle.checked = !muted;
         }
 
         function toggleMuteActiveConversation() {
@@ -3711,6 +4587,13 @@ if (!$__me) {
             });
         });
 
+        // از دراورِ اطلاعاتِ گروه صدا زده می‌شه — کلیک روی نامِ یک عضو،
+        // گفتگویِ مستقیم با همون فرد رو باز می‌کنه
+        function openMemberDirectChat(userId) {
+            closeGroupInfoDrawer();
+            startChatWith(userId);
+        }
+
         function startChatWith(userId) {
             fetch('../api/chat/start.php', {
                     method: 'POST',
@@ -3725,7 +4608,8 @@ if (!$__me) {
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        bootstrap.Modal.getInstance(document.getElementById('newChatModal')).hide();
+                        var newChatInst = bootstrap.Modal.getInstance(document.getElementById('newChatModal'));
+                        if (newChatInst) newChatInst.hide();
                         loadConversations(function() {
                             openConversation(data.conversation_id);
                         });

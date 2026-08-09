@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
 try {
     $database = new Database();
@@ -125,6 +126,56 @@ try {
     // ⚠️ عمداً بدونِ نوتیفیکیشن/پیامک: پیام‌های چت زنگوله‌ی اعلانِ خودشون رو دارن
     // (چک کردن هدر: chatUnreadBadge)، پس نیازی به ثبت در جدولِ notifications یا
     // ارسالِ پیامک ندارن — بر خلافِ تیکت که کم‌تعداد و رسمی‌تره.
+    //
+    // 🆕 استثنا: منشن‌شدنِ مستقیم (@نام). این کار پرصدا نیست (فقط وقتی
+    // واقعاً کسی رو صدا بزنن) و نیاز به توجهِ فوری داره، پس برخلافِ پیامِ
+    // معمولیِ چت، نوتیفیکیشن/پیامکِ مجزا می‌گیره. «@all» یا مشابهش عمداً
+    // پشتیبانی نمی‌شه — فقط تطبیقِ نامِ واقعیِ یکی از شرکت‌کننده‌ها.
+    if ($message !== '' && strpos($message, '@') !== false) {
+        try {
+            $stmt = $db->prepare("
+                SELECT u.id, TRIM(CONCAT(u.first_name, ' ', u.last_name)) AS full_name
+                FROM chat_participants cp
+                JOIN users u ON u.id = cp.user_id
+                WHERE cp.conversation_id = ? AND cp.user_id != ?
+            ");
+            $stmt->execute([$conversationId, $user_id]);
+            $participants = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // نام‌هایِ بلندتر اول چک بشن تا یک نامِ کوتاه‌تر که زیرمجموعهٔ
+            // یک نامِ دیگه‌ست (مثلاً «علی» داخلِ «علی‌رضا») اشتباهی مچ نشه
+            usort($participants, fn($a, $b) => mb_strlen($b['full_name']) - mb_strlen($a['full_name']));
+
+            $senderStmt = $db->prepare("SELECT TRIM(CONCAT(first_name, ' ', last_name)) AS full_name FROM users WHERE id = ?");
+            $senderStmt->execute([$user_id]);
+            $senderName = $senderStmt->fetchColumn() ?: 'یکی از همکاران';
+
+            $notification = new Notification($db);
+            $consumedText = $message;
+            foreach ($participants as $p) {
+                if ($p['full_name'] === '') continue;
+                $needle = '@' . $p['full_name'];
+                if (mb_strpos($consumedText, $needle) === false) continue;
+
+                $notification->create([
+                    'to_user_id'   => $p['id'],
+                    'title'        => 'منشن شدید در چت',
+                    'message'      => $senderName . ' شما را در یک پیام صدا زد',
+                    'type'         => 'info',
+                    'link'         => '/pages/chat.php?conversation_id=' . $conversationId,
+                    'related_type' => 'chat_mention',
+                    'related_id'   => $messageId,
+                    'sms_pattern'  => 'general',
+                ]);
+
+                // حذفِ نامِ مچ‌شده از متنِ باقی‌مونده تا یک زیررشتهٔ کوتاه‌تر
+                // از یک نامِ بلندترِ قبلاً-مچ‌شده دوباره حساب نشه
+                $consumedText = str_replace($needle, '', $consumedText);
+            }
+        } catch (Exception $e) {
+            error_log('Chat mention notify error: ' . $e->getMessage());
+        }
+    }
 
     echo json_encode([
         'success'    => true,
