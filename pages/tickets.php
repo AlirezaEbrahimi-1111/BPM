@@ -47,8 +47,9 @@ if (!$__me) {
     <style>
         .overview-container {
             max-width: 1200px;
-            margin: 78px auto 40px;
-            padding: 0 16px;
+            margin: 78px auto 0 48px;
+            padding: 16px 16px 0 16px !important;
+            margin-bottom: 0 !important;
         }
 
         /* ───── هدر دو ستونه مثل tasks.php ───── */
@@ -339,7 +340,7 @@ if (!$__me) {
         </div>
 
         <!-- جدول AG Grid مثل tasks.php -->
-        <div id="myGrid" class="ag-theme-alpine" style="height: 580px; width: 100%; padding-top: 1rem;"></div>
+        <div id="myGrid" class="ag-theme-alpine" style="height: 480px; width: 100%; padding-top: 1rem; padding-bottom: 0 !important;"></div>
 
         <!-- حالت خالی -->
         <div id="emptyState" class="empty-state" style="display:none;">

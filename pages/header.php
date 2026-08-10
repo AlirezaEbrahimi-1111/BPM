@@ -73,7 +73,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 <nav class="navbar navbar-expand-lg navbar-light fixed-top">
     <div class="container-fluid">
         <!-- نام سایت در سمت راست -->
-        <a class="navbar-brand ms-auto" href="../../pages/dashboard.php">
+        <a class="navbar-brand ms-auto" href="../../pages/dashboard-manager.php">
             <span id="userName" class="me-2"><?php echo isset($_SESSION['organization_name']) ? htmlspecialchars($_SESSION['organization_name']) : 'کاربر جاری'; ?></span>
         </a>
 
@@ -94,7 +94,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             </div>
             <ul class="navbar-nav" id="mainNav">
                 <li class="nav-item">
-                    <a class="nav-link" href="../../pages/dashboard.php">
+                    <a class="nav-link" href="../../pages/dashboard-manager.php">
                         <i class="bi bi-house-door me-2"></i>داشبورد
                     </a>
                 </li>
@@ -512,7 +512,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         </div>`;
 
         try {
-            const response = await fetch('/api/announcements/list.php?limit=8&offset=0', {
+            const response = await fetch('/api/announcements/list.php?limit=8&offset=0&unread_only=1', {
                 headers: {
                     'Authorization': 'Bearer ' + authToken
                 }

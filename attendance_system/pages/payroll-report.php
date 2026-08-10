@@ -32,7 +32,7 @@ if (!$user_id) {
 $me = loadUserForPermissions($db, (int) $user_id);
 
 if (!$me || !hasPermission($me, 'view_payroll')) {
-    header('Location: ../../pages/dashboard.php');
+    header('Location: ../../pages/dashboard-manager.php');
     exit;
 }
 ?>

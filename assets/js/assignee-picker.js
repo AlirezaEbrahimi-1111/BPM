@@ -36,8 +36,17 @@
  *     }
  *   });
  *
+ * حالتِ چندانتخابی  (create-task.php — «چند نفرِ خاص»، opt-in، بدونِ اثر روی بقیهٔ صفحات):
+ *   const picker = AssigneePicker.create({
+ *     container:   '#multiAssigneePicker',
+ *     users,
+ *     multiSelect: true,
+ *     onSelect: (type, ids, labels) => { }   // type همیشه 'multi'، ids آرایهٔ عدد
+ *   });
+ *
  * ─── API هر instance ───────────────────────────────────────────────────────
  *   picker.getValue()                            → { type, value, label } | null
+ *                                                   (در حالتِ چندانتخابی: value=آرایهٔ id، label=آرایهٔ نام)
  *   picker.reset()                               → پاک کردن انتخاب
  *   picker.updateData(users?, sections?, map?)   → به‌روزرسانی داده بدون reinit
  *
@@ -98,6 +107,20 @@ const AssigneePicker = (() => {
 .ap-item:last-child{border-bottom:none}
 .ap-item:hover,.ap-item.ap-focused{background:var(--bs-secondary-bg,#f0f4ff)}
 .ap-item.ap-selected{background:#e7f0ff}
+.ap-check{
+  flex-shrink:0;margin:0;cursor:pointer}
+/* یک قاعدهٔ سراسری در custom.css (.form-check-input) همهٔ چک‌باکس‌هایِ سایت
+   رو با width:3rem!important به‌شکلِ سوئیچِ بزرگ درمیاره. این‌جا selectorِ
+   دوسطحی (تعیّنِ بالاتر) استفاده شده تا بدونِ وابسته‌بودن به ترتیبِ لود
+   استایل‌ها، مطمئناً برنده باشه و اندازهٔ معمولیِ چک‌باکس برگرده */
+.ap-dropdown .ap-check{
+  width:1rem !important;height:1rem !important;
+  border:1px solid var(--bs-border-color,#adb5bd) !important;
+  background-color:#fff !important;
+  margin:0 !important}
+.ap-dropdown .ap-check:checked{
+  background-color:#0d6efd !important;
+  border-color:#0d6efd !important}
 .ap-avatar{
   width:28px;height:28px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
@@ -112,6 +135,16 @@ const AssigneePicker = (() => {
 .ap-hint{font-size:12px;color:#6c757d;margin-top:5px;min-height:18px;display:block}
 .ap-hint.ap-info   {color:#0d6efd}
 .ap-hint.ap-warning{color:#fd7e14}
+.ap-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ap-chip{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bs-secondary-bg,#eef1f5);color:var(--bs-body-color,#212529);
+  border-radius:20px;padding:4px 8px 4px 6px;font-size:12px}
+.ap-chip-remove{
+  display:flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.12);
+  cursor:pointer;font-size:9px;flex-shrink:0}
+.ap-chip-remove:hover{background:rgba(0,0,0,.25)}
 
 /* تم تاریک — این استایل‌ها از متغیرهای bootstrap (--bs-body-bg و ...) استفاده می‌کنند
    که با تاگل تمِ اپ (data-theme) هماهنگ نیستند و همیشه مقدار روشن دارند؛ اینجا override می‌شوند */
@@ -129,12 +162,22 @@ const AssigneePicker = (() => {
 :root[data-theme="dark"] .ap-item.ap-selected{background:rgba(205,184,255,.15)}
 :root[data-theme="dark"] .ap-item-name{color:var(--text-strong)}
 :root[data-theme="dark"] .ap-hint{color:var(--text-muted)}
+:root[data-theme="dark"] .ap-chip{background:#232a3a;color:var(--text-strong)}
+:root[data-theme="dark"] .ap-chip-remove{background:rgba(255,255,255,.12)}
+:root[data-theme="dark"] .ap-chip-remove:hover{background:rgba(255,255,255,.25)}
+:root[data-theme="dark"] .ap-dropdown .ap-check{border-color:var(--border-soft) !important;background-color:var(--surface) !important}
+:root[data-theme="dark"] .ap-dropdown .ap-check:checked{background-color:#0d6efd !important;border-color:#0d6efd !important}
         `;
         document.head.appendChild(s);
     }
 
     /* ── ثبت همه instance‌ها برای resetAll ─────────────────────────── */
     const _instances = [];
+
+    /* ── تبدیلِ اعدادِ لاتین به فارسی، برایِ هر عددی که تویِ متنِ نمایشی میاد ── */
+    function _fa(n) {
+        return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+    }
 
     /* ══════════════════════════════════════════════════════════════════
        Instance
@@ -145,7 +188,12 @@ const AssigneePicker = (() => {
         let _selected   = null;
         let _open       = false;
         let _filterText = '';
-        let _root, _input, _dropdown, _hint;
+        let _root, _input, _dropdown, _hint, _chips;
+
+        /* حالتِ چندانتخابی — یک نمونهٔ opt-in (multiSelect:true)، بقیهٔ
+           صفحات که این پرچم رو نمی‌دن، دقیقاً مثلِ قبل تک‌انتخابی می‌مونن */
+        const _isMulti = !!cfg.multiSelect;
+        let _selectedMulti = {}; // id -> label
 
         /* آیتم‌های ثابت */
         const SELF_ITEM    = { id: '',              label: 'خودم',        type: 'user',    avatarCls: 'user' };
@@ -168,6 +216,10 @@ const AssigneePicker = (() => {
                 ? _cfg.placeholder
                 : `جستجو در ${_cfg.showSections ? 'کاربران و واحدها' : 'کاربران'}...`;
 
+            // ⚠️ .ap-chips عمداً خارجِ .ap-wrap قرار می‌گیره: اگه داخلش بود، چون
+            // در جریانِ عادیه، به ارتفاعِ .ap-wrap اضافه می‌شد و باعث می‌شد
+            // dropdown (که top:100% نسبت به .ap-wrap حساب می‌کنه) پایین‌ترِ
+            // موردِنظر و زیرِ چیپ‌ها باز بشه، نه دقیقاً زیرِ خودِ فیلد
             _root.innerHTML = `
 <div class="ap-wrap">
   <div class="ap-input-row">
@@ -177,11 +229,13 @@ const AssigneePicker = (() => {
   </div>
   <div class="ap-dropdown"></div>
 </div>
+${_isMulti ? '<div class="ap-chips"></div>' : ''}
 ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
 
             _input    = _root.querySelector('.ap-input');
             _dropdown = _root.querySelector('.ap-dropdown');
             _hint     = _root.querySelector('.ap-hint') || null;
+            _chips    = _root.querySelector('.ap-chips') || null;
 
             _bindEvents();
             _setInitialValue();
@@ -267,17 +321,17 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
 
             let html = '';
 
-            /* واحدها — فقط حالت واگذاری با showSections:true */
-            if (_cfg.showSections) {
+            /* واحدها — فقط حالت واگذاری با showSections:true (نه در حالتِ چندانتخابی) */
+            if (_cfg.showSections && !_isMulti) {
                 const secItems = [];
                 if (_cfg.allowAll && match(ALL_SECTIONS.label))
                     secItems.push(_itemHTML(ALL_SECTIONS.id, ALL_SECTIONS.label,
-                        `${users.length} نفر — یک تسک برای هر نفر`, 'section', 'all'));
+                        `${_fa(users.length)} نفر — یک تسک برای هر نفر`, 'section', 'all'));
                 secList.forEach(s => {
                     if (!match(s.label)) return;
                     const count = users.filter(u => u.activity_section === s.key).length;
                     secItems.push(_itemHTML(s.key, s.label,
-                        count > 0 ? `${count} نفر — ${count} تسک ایجاد می‌شود` : 'بدون عضو',
+                        count > 0 ? `${_fa(count)} نفر — ${_fa(count)} تسک ایجاد می‌شود` : 'بدون عضو',
                         'section', 'section'));
                 });
                 if (secItems.length)
@@ -287,13 +341,13 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
             /* کاربران */
             const userItems = [];
 
-            /* «خودم» و «همه کاربران» فقط در حالت واگذاری نشان داده می‌شوند */
-            if (!_isFilterMode) {
+            /* «خودم» و «همه کاربران» نه در حالت فیلتر، نه در حالتِ چندانتخابی */
+            if (!_isFilterMode && !_isMulti) {
                 if (match(SELF_ITEM.label))
                     userItems.push(_itemHTML(SELF_ITEM.id, SELF_ITEM.label, '', 'user', 'user'));
                 if (_cfg.allowAll && match(ALL_USERS.label))
                     userItems.push(_itemHTML(ALL_USERS.id, ALL_USERS.label,
-                        `${users.length} نفر — یک تسک برای هر نفر`, 'user', 'all'));
+                        `${_fa(users.length)} نفر — یک تسک برای هر نفر`, 'user', 'all'));
             }
 
             users.forEach(u => {
@@ -303,7 +357,7 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
                 if (!match(name)) return;
                 const secLabel = u.activity_section
                     ? (_sectionLabel(u.activity_section) || u.activity_section) : '';
-                userItems.push(_itemHTML(u.id, name, secLabel, 'user', 'user'));
+                userItems.push(_itemHTML(u.id, name, secLabel, 'user', 'user', !!_selectedMulti[u.id]));
             });
 
             if (userItems.length)
@@ -312,7 +366,12 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
             _dropdown.innerHTML = html || `<div class="ap-empty">نتیجه‌ای یافت نشد</div>`;
 
             /* علامت‌گذاری انتخاب فعلی */
-            if (_selected) {
+            if (_isMulti) {
+                Object.keys(_selectedMulti).forEach(id => {
+                    const active = _dropdown.querySelector(`.ap-item[data-value="${CSS.escape(id)}"]`);
+                    if (active) active.classList.add('ap-selected');
+                });
+            } else if (_selected) {
                 const active = _dropdown.querySelector(
                     `.ap-item[data-type="${_selected.type}"][data-value="${CSS.escape(_selected.value)}"]`);
                 if (active) active.classList.add('ap-selected');
@@ -326,9 +385,13 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
             });
         }
 
-        function _itemHTML(value, label, meta, type, avatarCls) {
+        function _itemHTML(value, label, meta, type, avatarCls, checked) {
             const esc = str => String(str).replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            const checkboxHTML = _isMulti
+                ? `<input type="checkbox" class="form-check-input ap-check" tabindex="-1" style="pointer-events:none" ${checked ? 'checked' : ''}>`
+                : '';
             return `<div class="ap-item" data-type="${type}" data-value="${esc(value)}" data-label="${esc(label)}">
+  ${checkboxHTML}
   <div class="ap-avatar ${avatarCls}">${label.charAt(0)}</div>
   <div class="ap-item-body">
     <div class="ap-item-name">${label}</div>
@@ -339,6 +402,19 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
 
         /* ── انتخاب آیتم ───────────────────────────────────────────── */
         function _pick(type, value, label) {
+            if (_isMulti) {
+                if (_selectedMulti[value]) delete _selectedMulti[value];
+                else _selectedMulti[value] = label;
+
+                // عمداً متنِ داخلِ اینپوت رو دست نمی‌زنیم — کاربر ممکنه در حالِ
+                // تایپِ جست‌وجو باشه؛ خلاصهٔ «N نفر» فقط موقعِ بستنِ dropdown ست می‌شه
+                _root.querySelector('.ap-clear').classList.toggle('visible', Object.keys(_selectedMulti).length > 0);
+                _renderDropdown(_filterText); // آپدیتِ علامتِ تیک‌ها، بدونِ بستنِ dropdown
+                _renderChips();
+                if (typeof _cfg.onSelect === 'function') _cfg.onSelect('multi', _multiValues(), _multiLabels());
+                return;
+            }
+
             _selected = { type, value, label };
             _input.value = label;
             _input.setAttribute('readonly', true);
@@ -346,6 +422,28 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
             _closeDropdown();
             _updateHint();
             if (typeof _cfg.onSelect === 'function') _cfg.onSelect(type, value, label);
+        }
+
+        function _multiValues() { return Object.keys(_selectedMulti).map(Number); }
+        function _multiLabels() { return Object.values(_selectedMulti); }
+
+        /* ── نمایشِ افرادِ انتخابی زیرِ لیست (فقط حالتِ چندانتخابی) ─────── */
+        function _renderChips() {
+            if (!_chips) return;
+            const esc = str => String(str).replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            _chips.innerHTML = Object.entries(_selectedMulti).map(([id, label]) =>
+                `<span class="ap-chip">${esc(label)}<span class="ap-chip-remove bi bi-x-lg" data-id="${id}"></span></span>`
+            ).join('');
+            _chips.querySelectorAll('.ap-chip-remove').forEach(el => {
+                el.addEventListener('click', () => {
+                    const id = el.dataset.id;
+                    delete _selectedMulti[id];
+                    _root.querySelector('.ap-clear').classList.toggle('visible', Object.keys(_selectedMulti).length > 0);
+                    if (_open) _renderDropdown(_filterText);
+                    _renderChips();
+                    if (typeof _cfg.onSelect === 'function') _cfg.onSelect('multi', _multiValues(), _multiLabels());
+                });
+            });
         }
 
         /* ── hint زیر فیلد (فقط حالت واگذاری) ─────────────────────── */
@@ -363,13 +461,13 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
                     const count = (_cfg.users || []).filter(u => u.activity_section === value).length;
                     const lbl   = _sectionLabel(value) || value;
                     _hint.textContent = count > 0
-                        ? `${count} نفر در واحد "${lbl}" — ${count} تسک ایجاد می‌شود`
+                        ? `${_fa(count)} نفر در واحد "${lbl}" — ${_fa(count)} تسک ایجاد می‌شود`
                         : 'هیچ کاربری در این واحد یافت نشد';
                     _hint.className = count > 0 ? 'ap-hint ap-info' : 'ap-hint ap-warning';
                 }
             } else if (value === '__all_users__') {
                 const n = (_cfg.users || []).length;
-                _hint.textContent = `${n} نفر — ${n} تسک ایجاد می‌شود`;
+                _hint.textContent = `${_fa(n)} نفر — ${_fa(n)} تسک ایجاد می‌شود`;
                 _hint.className   = 'ap-hint ap-warning';
             } else {
                 _hint.textContent = '';
@@ -382,26 +480,37 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
         function _closeDropdown() {
             _dropdown.classList.remove('open');
             _open = false;
-            _input.value = _selected ? _selected.label : '';
+            if (_isMulti) {
+                const n = Object.keys(_selectedMulti).length;
+                _input.value = n ? `${_fa(n)} نفر انتخاب شده` : '';
+            } else {
+                _input.value = _selected ? _selected.label : '';
+            }
             _input.setAttribute('readonly', true);
         }
 
         /* ── ریست ──────────────────────────────────────────────────── */
         function _resetSelection() {
-            _selected   = null;
+            _selected      = null;
+            _selectedMulti = {};
             _filterText = '';
             _input.value = '';
             _input.setAttribute('readonly', true);
             _root.querySelector('.ap-clear').classList.remove('visible');
             if (_hint) { _hint.textContent = ''; _hint.className = 'ap-hint'; }
             _closeDropdown();
-            if (typeof _cfg.onSelect === 'function') _cfg.onSelect(null, null, null);
+            if (_isMulti) {
+                _renderChips();
+                if (typeof _cfg.onSelect === 'function') _cfg.onSelect('multi', [], []);
+            } else if (typeof _cfg.onSelect === 'function') {
+                _cfg.onSelect(null, null, null);
+            }
         }
 
         /* ── مقدار اولیه ────────────────────────────────────────────── */
         function _setInitialValue() {
-            if (_isFilterMode) {
-                /* حالت فیلتر — بدون انتخاب؛ placeholder نشان می‌دهد */
+            if (_isFilterMode || _isMulti) {
+                /* حالتِ فیلتر یا چندانتخابی — بدونِ انتخابِ پیش‌فرض */
                 _selected = null;
                 return;
             }
@@ -411,7 +520,13 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
         }
 
         /* ── API عمومی instance ─────────────────────────────────────── */
-        function getValue() { return _selected; }
+        function getValue() {
+            if (_isMulti) {
+                const ids = _multiValues();
+                return ids.length ? { type: 'multi', value: ids, label: _multiLabels() } : null;
+            }
+            return _selected;
+        }
 
         function reset() { if (_input) _resetSelection(); }
 

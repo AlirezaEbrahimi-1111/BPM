@@ -95,6 +95,11 @@ if (!$__me) {
         :root[data-theme="dark"] .exec-summary b {
             color: var(--text-strong);
         }
+        .form-check-input{
+            width: 2rem;
+                margin-left: 0.5rem;
+
+        }
         /* چک‌لیست: هر آیتم = ردیف (شماره، عنوان، آیکون‌های توضیحات/حذف در انتها) +
            یک ناحیه‌ی اختیاریِ تمام‌عرض زیرش برای ویرایش توضیحات */
         .cl-item-wrap { margin-bottom: 8px; }
@@ -282,8 +287,17 @@ if (!$__me) {
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label class="form-label">واگذاری به</label>
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <label class="form-label mb-0">واگذاری به</label>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="multiAssigneeToggle" onchange="toggleMultiAssigneeMode()">
+                                        <label class="form-check-label small" for="multiAssigneeToggle">ارجاع به چند نفر</label>
+                                    </div>
+                                </div>
                                 <div id="assigneePicker"></div>
+                                <div id="multiAssigneeBox" style="display:none;">
+                                    <div id="multiAssigneePicker"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -487,6 +501,8 @@ if (!$__me) {
         let currentTaskType = 'manual';
         let users = [];
         let sections = []; // لیست واحدها
+        let mainAssigneePickerInst = null;
+        let multiAssigneePickerInst = null;
         let workflowTemplates = [];
         let selectedTemplate = null;
         let userRoutines = [];
@@ -921,7 +937,7 @@ if (!$__me) {
                 const data = await response.json();
                 if (data.success) {
                     users = data.users;
-                    AssigneePicker.init({
+                    mainAssigneePickerInst = AssigneePicker.init({
                         container: '#assigneePicker',
                         users,
                         sections, // آرایه [{ section_key, section_label }]
@@ -931,6 +947,14 @@ if (!$__me) {
                         onSelect: (type, value, label) => {
                             /* getValue() کافی است */
                         }
+                    });
+                    multiAssigneePickerInst = AssigneePicker.create({
+                        container: '#multiAssigneePicker',
+                        users,
+                        sections,
+                        sectionMap: acticity_section,
+                        multiSelect: true,
+                        onSelect: () => { /* getValue() کافی است */ }
                     });
                 }
             } catch (error) {
@@ -1110,7 +1134,7 @@ if (!$__me) {
 
         function goBack() {
             uiConfirm('آیا مطمئن هستید که می‌خواهید بدون ذخیره خارج شوید؟', function() {
-                window.location.href = 'dashboard.php';
+                window.location.href = 'dashboard-manager.php';
             }, {
                 danger: true,
                 yesText: 'بله، خروج',
@@ -1124,8 +1148,13 @@ if (!$__me) {
             const taskType = document.getElementById('manualTaskType').value;
             const dueDateInput = document.getElementById('manualDueDate');
             const startDateInput = document.getElementById('manualStartDate');
+
+            if (document.getElementById('multiAssigneeToggle').checked) {
+                return await saveTaskForMultipleUsers();
+            }
+
             // خواندن مقدار از کامپوننت
-            const sel = AssigneePicker.getValue();
+            const sel = mainAssigneePickerInst ? mainAssigneePickerInst.getValue() : null;
 
             if (sel && sel.type === 'section') {
                 if (!sel.value) {
@@ -1272,6 +1301,91 @@ if (!$__me) {
                 console.error('saveChecklistItems error:', e);
             }
         }
+
+        // ─────────────── واگذاری به «چند نفرِ خاص» — از همون AssigneePicker،
+        // فقط با یک نمونهٔ دومِ multiSelect:true (زیبایی/رفتارِ یکسان با بالا) ───────────────
+        function toggleMultiAssigneeMode() {
+            const on = document.getElementById('multiAssigneeToggle').checked;
+            document.getElementById('assigneePicker').style.display = on ? 'none' : '';
+            document.getElementById('multiAssigneeBox').style.display = on ? '' : 'none';
+        }
+
+        async function saveTaskForMultipleUsers() {
+            const taskType = document.getElementById('manualTaskType').value;
+            const dueDateInput = document.getElementById('manualDueDate');
+            const startDateInput = document.getElementById('manualStartDate');
+
+            const multiVal = multiAssigneePickerInst ? multiAssigneePickerInst.getValue() : null;
+            const assigneeIds = multiVal ? multiVal.value : [];
+            if (!assigneeIds.length) {
+                showToast('لطفاً حداقل یک نفر را انتخاب کنید', 'warning');
+                return null;
+            }
+
+            const baseTask = {
+                title: document.getElementById('manualTitle').value.trim(),
+                description: document.getElementById('manualDescription').value.trim(),
+                task_type: taskType,
+                priority: document.getElementById('manualPriority').value,
+                group_id: document.getElementById('taskGroupSelect')?.value || null,
+                share_history: document.getElementById('shareHistoryToggle')?.checked ? 1 : 0
+            };
+
+            if (!baseTask.title) {
+                showToast('عنوان کار الزامی است', 'error');
+                return null;
+            }
+
+            if (taskType === 'periodic') {
+                baseTask.due_date = dueDateInput.getAttribute('data-date') || null;
+                baseTask.start_date = null;
+                baseTask.period_type = null;
+                if (!baseTask.due_date) {
+                    showToast('تاریخ انجام برای کارهای مقطعیِ ارجاع‌داده‌شده الزامی است', 'error');
+                    return null;
+                }
+            } else {
+                baseTask.start_date = startDateInput.getAttribute('data-date') || null;
+                baseTask.period_type = document.getElementById('manualPeriod').value || null;
+                baseTask.due_date = null;
+                baseTask.end_date = document.getElementById('manualEndDate').getAttribute('data-date') || null;
+                if (!baseTask.start_date) {
+                    showToast('تاریخ شروع برای کارهای دوره‌ای الزامی است', 'error');
+                    return null;
+                }
+            }
+
+            try {
+                const response = await fetch('../api/tasks/create-bulk.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken
+                    },
+                    body: JSON.stringify({ base_task: baseTask, assignee_ids: assigneeIds })
+                });
+
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch {
+                    throw new Error('پاسخ سرور JSON معتبر نیست');
+                }
+
+                if (data.success) {
+                    showToast(`${data.created_count} تسک با موفقیت ایجاد شد`, 'success');
+                    return data.first_task_id || 1;
+                } else {
+                    showToast(data.message || 'خطا در ایجاد تسک‌ها', 'error');
+                    return null;
+                }
+            } catch (err) {
+                showToast('خطا در ارتباط با سرور: ' + err.message, 'error');
+                return null;
+            }
+        }
+
         // ذخیره تسک برای یک واحد یا همه واحدها
         async function saveTaskForSection(sectionKey) {
             const taskType = document.getElementById('manualTaskType').value;

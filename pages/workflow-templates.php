@@ -20,7 +20,7 @@ if (!$user_id) {
 // اجازه (که ممکنه جدا/فردی هم اعطا شده باشن) قابلِ‌دسترسیه
 $__me = loadUserForPermissions($db, (int) $user_id);
 if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, 'create_workflow'))) {
-    header('Location: dashboard.php');
+    header('Location: dashboard-manager.php');
     exit;
 }
 ?>

@@ -128,6 +128,16 @@ $task = $stmt->fetch(PDO::FETCH_ASSOC);
         }
     }
 
+    // 🆕 بیننده‌هایِ صریحاً اضافه‌شده — فقط اگه can_view_attachments روشن باشه
+    if (!$hasAccess) {
+        $stmt = $db->prepare("SELECT can_view_attachments FROM task_viewers WHERE task_id = ? AND user_id = ?");
+        $stmt->execute([$task_id, $user_id]);
+        $viewerRow = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($viewerRow && (int) $viewerRow['can_view_attachments'] === 1) {
+            $hasAccess = true;
+        }
+    }
+
     if (!$hasAccess) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);

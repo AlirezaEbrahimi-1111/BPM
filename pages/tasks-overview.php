@@ -20,7 +20,7 @@ if (!$user_id) {
 
 $__me = loadUserForPermissions($db, (int) $user_id);
 if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_section_tasks'))) {
-    header('Location: dashboard.php');
+    header('Location: dashboard-manager.php');
     exit;
 }
 ?>
@@ -488,7 +488,7 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                 if (!data.success || !['manager', 'supervisor'].includes(data.user.role)) {
                     showToast('⛔ دسترسی ندارید', 'error');
                     setTimeout(() => {
-                        window.location.href = 'dashboard.php';
+                        window.location.href = 'dashboard-user.php';
                     }, 1200);
                     return;
                 }

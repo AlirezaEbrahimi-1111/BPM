@@ -121,6 +121,10 @@ if (!$__me) {
     :root[data-theme="dark"] .ann-switch .form-check-label { color: var(--text-strong); }
     :root[data-theme="dark"] .ann-scope-chip { border-color: var(--border-soft); color: var(--text-muted); }
     :root[data-theme="dark"] .ann-scope-chip.active { background: #232032; }
+    :root[data-theme="dark"] .ann-chev { color: var(--text-muted); }
+    :root[data-theme="dark"] .ann-readstat { color: var(--text-muted); }
+    :root[data-theme="dark"] .ann-detail-meta { color: var(--text-muted); }
+    :root[data-theme="dark"] .ann-scope-badge { background: rgba(99,102,241,.18); color: #a5b4fc; }
     </style>
 
     <div class="overview-container">

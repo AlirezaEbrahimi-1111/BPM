@@ -60,7 +60,7 @@
                 localStorage.setItem('auth_token', data.token);
                 localStorage.setItem('user_info', JSON.stringify(data.user));
                 showAlert('ورود موفقیت‌آمیز! در حال انتقال...', 'success');
-                setTimeout(() => { window.location.href = 'pages/dashboard.php'; }, 1000); 
+                setTimeout(() => { window.location.href = 'pages/dashboard-manager.php'; }, 1000);
             } else {
                 showAlert(data.message || 'نام کاربری یا رمز عبور اشتباه است', 'danger');
                 document.getElementById('password').value = '';
@@ -97,7 +97,7 @@
                 .then(data => {
                     if (data && data.success === true) {
                         sessionStorage.setItem('auth_bounce', '1');
-                        window.location.href = 'pages/dashboard.php';
+                        window.location.href = 'pages/dashboard-manager.php';
                     } else {
                         localStorage.removeItem('auth_token');
                         localStorage.removeItem('user_info');

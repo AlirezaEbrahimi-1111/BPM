@@ -897,11 +897,10 @@ s-normal {
     user-select: none;
     cursor: pointer;
     font-size: 14px;
+    margin: 5px auto auto 5px;
 }
 
-.form-check-label i {
-    color: #667eea;
-}
+
 
 /* ========================================
    8. Alert ها
@@ -2638,6 +2637,10 @@ td:nth-child(2) {
 .loading-overlay.show {
     opacity: 1;
     visibility: visible;
+}
+
+:root[data-theme="dark"] .loading-overlay {
+    background: rgba(15, 18, 28, 0.85);
 }
 
 .spinner,
@@ -4394,6 +4397,64 @@ span.deadline-request-icon.disabled:hover {
 
 .attachment-name.editable:hover::after {
     opacity: 0.6;
+}
+
+/* ─── دارک‌مودِ بخشِ پیوست‌ها ─── */
+:root[data-theme="dark"] .attachments-section {
+    background: linear-gradient(135deg, rgba(116, 76, 164, 0.08) 0%, rgba(101, 122, 231, 0.08) 100%);
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .attachment-item {
+    background: var(--surface);
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .attachment-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    border-color: rgba(116, 76, 164, 0.35);
+}
+
+:root[data-theme="dark"] .attachment-preview {
+    background: linear-gradient(135deg, rgba(116, 76, 164, 0.18) 0%, rgba(101, 122, 231, 0.18) 100%);
+}
+
+:root[data-theme="dark"] .attachment-name {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .attachment-meta {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .no-attachments {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .no-attachments i {
+    color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .upload-progress {
+    background: var(--border-soft);
+}
+
+:root[data-theme="dark"] .upload-area-modal {
+    background: var(--surface);
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .upload-area-modal p {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .selected-file-item {
+    background: var(--surface);
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .selected-file-name {
+    color: var(--text-strong);
 }
 
 @keyframes pulse-icon {
@@ -6314,6 +6375,88 @@ body.login-page::after {
     font-size: 13px;
 }
 
+/* ─── تمِ تاریک — این بخش تا حالا رنگ‌هایِ هاردکدِ روشن داشت و اصلاً
+   با تاگلِ تمِ سراسری هماهنگ نبود (منویِ زنگولهٔ اطلاعیه در هدر) ─── */
+:root[data-theme="dark"] .announcement-item {
+    border-bottom-color: var(--border-soft);
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .announcement-item:hover {
+    background: #232a3a;
+}
+
+:root[data-theme="dark"] .announcement-item.unread {
+    background: rgba(102, 126, 234, .1);
+}
+
+:root[data-theme="dark"] .ann-priority-icon.urgent {
+    background: rgba(220, 38, 38, .18);
+    color: #f87171;
+}
+
+:root[data-theme="dark"] .ann-priority-icon.high {
+    background: rgba(217, 119, 6, .18);
+    color: #fbbf24;
+}
+
+:root[data-theme="dark"] .ann-priority-icon.normal {
+    background: rgba(59, 130, 246, .18);
+    color: #60a5fa;
+}
+
+:root[data-theme="dark"] .ann-priority-icon.low {
+    background: var(--ink-050, #232a3a);
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .ann-item-title {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .ann-item-time {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .ann-urgent-tag {
+    background: rgba(220, 38, 38, .18);
+    color: #f87171;
+}
+
+:root[data-theme="dark"] .ann-high-tag {
+    background: rgba(217, 119, 6, .18);
+    color: #fbbf24;
+}
+
+:root[data-theme="dark"] .ann-dropdown-footer {
+    border-top-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .ann-empty {
+    color: var(--text-muted);
+}
+
+/* ─── چیپِ بیننده‌هایِ تسک (task-detail.php) ─── */
+.viewer-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg-page);
+    color: var(--text-strong);
+    border: 1px solid var(--border-soft);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: .78rem;
+}
+
+.viewer-chip i {
+    color: #dc2626;
+}
+
+:root[data-theme="dark"] .viewer-chip i {
+    color: #f87171;
+}
+
 
 /* ────────── Holidays ────────── */
 .page-header {
@@ -6683,6 +6826,76 @@ body.login-page::after {
 .legend-color.today {
     background: rgba(116, 76, 164, 0.15);
     border: 2px solid #744ca4;
+}
+
+/* ─── دارک‌مودِ صفحه‌ی روزهای تعطیل (holidays.php) ─── */
+:root[data-theme="dark"] .calendar-container,
+:root[data-theme="dark"] .holidays-list-container {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+:root[data-theme="dark"] .calendar-header,
+:root[data-theme="dark"] .holidays-list-header,
+:root[data-theme="dark"] .calendar-legend {
+    border-bottom-color: var(--border-soft);
+    border-top-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .calendar-title,
+:root[data-theme="dark"] .holidays-list-title,
+:root[data-theme="dark"] .day-number,
+:root[data-theme="dark"] .holiday-date {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .calendar-nav-btn {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    color: #b48ee0;
+}
+
+:root[data-theme="dark"] .calendar-day-name,
+:root[data-theme="dark"] .day-label,
+:root[data-theme="dark"] .holiday-title,
+:root[data-theme="dark"] .no-holidays,
+:root[data-theme="dark"] .legend-item {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .calendar-day,
+:root[data-theme="dark"] .holiday-item {
+    background: var(--bg-page);
+}
+
+:root[data-theme="dark"] .calendar-day.today {
+    background: rgba(116, 76, 164, 0.18);
+}
+
+:root[data-theme="dark"] .calendar-day.friday {
+    background: rgba(239, 68, 68, 0.14);
+}
+
+:root[data-theme="dark"] .calendar-day.holiday {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.22) 0%, rgba(248, 113, 113, 0.22) 100%);
+}
+
+:root[data-theme="dark"] .calendar-day.holiday .day-number {
+    color: #f87171;
+}
+
+:root[data-theme="dark"] .calendar-day-name.friday {
+    color: #f87171;
+}
+
+:root[data-theme="dark"] .holiday-item:hover {
+    background: rgba(116, 76, 164, 0.15);
+}
+
+:root[data-theme="dark"] .holiday-delete-btn {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
 }
 
 /* Organization Page Styles */

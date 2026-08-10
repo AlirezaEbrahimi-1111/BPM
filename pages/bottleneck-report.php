@@ -20,7 +20,7 @@ if (!$user_id) {
 
 $__me = loadUserForPermissions($db, (int) $user_id);
 if (!$__me || !hasPermission($__me, 'view_reports')) {
-    header('Location: dashboard.php');
+    header('Location: dashboard-manager.php');
     exit;
 }
 ?>

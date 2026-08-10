@@ -5,6 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سیستم BPM</title>
+    <!-- 🌗 اعمالِ فوریِ تمِ ذخیره‌شده (همون کلیدِ localStorage که header.php روی
+         صفحاتِ بعدِ لاگین استفاده می‌کنه) — قبل از رندر، تا از فلشِ روشن جلوگیری بشه.
+         این صفحه header.php رو include نمی‌کنه، پس این بخش این‌جا تکرار شده */
+    <script>
+        (function () {
+            var theme = 'light';
+            try { theme = localStorage.getItem('bpm_theme') || 'light'; } catch (e) {}
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <link href="assets/fonts/Vazirmatn-font-face.css" rel="stylesheet">
     <link href="assets/css/custom.css?v=1.3" rel="stylesheet">
 
@@ -658,13 +668,95 @@
                 border-right: none;
             }
         }
+
+        /* ===== تمِ تاریک ===== */
+        :root[data-theme="dark"] body {
+            background: var(--bg-page);
+        }
+
+        :root[data-theme="dark"] .brand-headline,
+        :root[data-theme="dark"] .brand-company-name,
+        :root[data-theme="dark"] .field-label,
+        :root[data-theme="dark"] .remember-label,
+        :root[data-theme="dark"] .otp-phone-display b,
+        :root[data-theme="dark"] .otp-box,
+        :root[data-theme="dark"] .user-chip b {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .brand-sub,
+        :root[data-theme="dark"] .feature-label,
+        :root[data-theme="dark"] .input-icon-right,
+        :root[data-theme="dark"] .input-icon-left,
+        :root[data-theme="dark"] .input-icon-left svg,
+        :root[data-theme="dark"] .field-input::placeholder,
+        :root[data-theme="dark"] .otp-phone-display,
+        :root[data-theme="dark"] .method-tab,
+        :root[data-theme="dark"] .otp-resend-row,
+        :root[data-theme="dark"] .security-bar {
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .feature-icon-wrap {
+            background: rgba(139, 92, 246, 0.15);
+        }
+
+        :root[data-theme="dark"] .field-input,
+        :root[data-theme="dark"] .otp-box,
+        :root[data-theme="dark"] .method-switch,
+        :root[data-theme="dark"] .otp-phone-display,
+        :root[data-theme="dark"] .security-bar {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .field-input:focus,
+        :root[data-theme="dark"] .otp-box:focus,
+        :root[data-theme="dark"] .otp-box.filled {
+            background: var(--surface);
+        }
+
+        :root[data-theme="dark"] .step-divider,
+        :root[data-theme="dark"] .register-cta {
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .user-chip {
+            background: rgba(139, 92, 246, 0.18);
+            color: #c4b5fd;
+        }
+
+        :root[data-theme="dark"] .btn-back {
+            background: var(--surface);
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .btn-back:hover {
+            background: var(--border-soft);
+            color: #c4b5fd;
+        }
+
+        :root[data-theme="dark"] .btn-secondary {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.35);
+            color: #c4b5fd;
+        }
+
+        :root[data-theme="dark"] .btn-secondary:hover {
+            background: rgba(139, 92, 246, 0.18);
+            border-color: #a78bfa;
+        }
+
+        :root[data-theme="dark"] .otp-resend-btn:disabled {
+            color: #6d5a99;
+        }
     </style>
 </head>
 
 <body>
     <canvas id="networkCanvas"></canvas>
     <div class="top-logo" style="position:fixed; top:0; left:0; padding:16px 20px; z-index:100;">
-        <img src="https://computeryekta.com/wp-content/uploads/2026/06/modified_logo.png" alt="لوگو" style="height:40px;">
+        <img src="https://computeryekta.com/wp-content/uploads/2026/06/modified_logo.png" alt="لوگو" style="height:30px;">
     </div>
     <div class="page-wrapper">
 
@@ -1093,7 +1185,7 @@
 
                         showAlert('ورود موفقیت‌آمیز', 'success');
                         stopResendTimer();
-                        window.location.href = '/pages/dashboard.php';
+                        window.location.href = '/pages/dashboard-manager.php';
                     } else {
                         showAlert(result.message, 'danger');
                         otpBoxes.forEach(b => b.classList.add('error'));

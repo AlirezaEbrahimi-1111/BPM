@@ -896,7 +896,7 @@ function toPersianNumber($num) {
 
             <!-- Buttons -->
             <div class="form-actions">
-                <button type="button" class="btn btn-back" onclick="window.location.href='dashboard.php'">
+                <button type="button" class="btn btn-back" onclick="window.location.href='dashboard-manager.php'">
                     <i class="bi bi-arrow-right"></i> بازگشت
                 </button>
                 <button type="reset" class="btn btn-reset">

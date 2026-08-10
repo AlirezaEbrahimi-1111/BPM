@@ -76,7 +76,12 @@ if (!$__me) {
             align-items: center;
             gap: 10px;
             padding: 8px 4px;
-            border-bottom: 1px solid #f0f0f0;
+        }
+
+        /* در پیکرِ افزودنِ دسترسی، hintِ زیرِ فیلد هیچ‌وقت پر نمی‌شه (فقط تویِ حالتِ
+           واگذاریِ تک‌نفره پر می‌شه) — فضایِ خالیِ رزروشده‌اش رو جمع می‌کنیم */
+        #addViewerPicker .ap-hint {
+            display: none;
         }
 
         .checklist-detail-item:hover {
@@ -2326,9 +2331,13 @@ if (!$__me) {
 
                         // تاریخچه از سمت سرور فیلتر شده است
                         window._isChecklistOnly = (data.is_checklist_only === true);
+                        window._isViewerOnly = (data.is_viewer_only === true); // 🆕
+                        window._viewerCanViewAttachments = (data.viewer_can_view_attachments !== false); // 🆕
+                        window._viewerCanViewHistory = (data.viewer_can_view_history !== false); // 🆕
 
                         displayTaskDetails(taskData, data.history);
                         renderTaskGroup(taskData); // 🆕
+                        renderTaskViewers(taskData); // 🆕
                         setupActionButtons(taskData); // ← isAssignee اینجا مقدار می‌گیرد
                         updateDeadlineDisplay(taskData);
                         checkDeadlineRequests(taskId);
@@ -2341,7 +2350,7 @@ if (!$__me) {
                         loadChecklist();
                     } else {
                         showToast(data.message || 'به این کار دسترسی ندارید', 'warning');
-                        setTimeout(() => window.location.replace('dashboard.php'), 1200);
+                        setTimeout(() => window.location.replace('dashboard-manager.php'), 1200);
                     }
                 } catch (error) {
                     const t = showToast('خطا در ارتباط با سرور', 'warning');
@@ -2430,6 +2439,153 @@ if (!$__me) {
                 }
             }
 
+            // ─────────────── بیننده‌هایِ کار (task_viewers) ───────────────
+            let addViewerPickerInst = null;
+
+            async function renderTaskViewers(task) {
+                const cell = document.getElementById('taskViewersCell');
+                if (!cell) return;
+
+                let data;
+                try {
+                    const res = await fetch(`../api/tasks/list-viewers.php?task_id=${task.id}`, {
+                        headers: { 'Authorization': 'Bearer ' + authToken }
+                    });
+                    data = await res.json();
+                } catch {
+                    cell.innerHTML = '<span class="text-muted">خطا در بارگذاری</span>';
+                    return;
+                }
+                if (!data.success) {
+                    cell.innerHTML = '<span class="text-muted">—</span>';
+                    return;
+                }
+                renderViewersCell(task.id, data.viewers, !!data.can_manage);
+            }
+
+            function renderViewersCell(taskId, viewers, canManage) {
+                const cell = document.getElementById('taskViewersCell');
+                if (!cell) return;
+
+                let html = '<div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">';
+
+                if (canManage) {
+                    html += `<button class="btn btn-link btn-sm p-0" id="addViewerBtn" title="افزودنِ دسترسی" style="margin-left:10px;">
+                        <i class="bi bi-person-plus"></i>
+                    </button>`;
+                }
+
+                if (!viewers.length) {
+                    html += '<span class="text-muted">کسی اضافه نشده</span>';
+                } else {
+                    html += viewers.map(v =>
+                        `<span class="viewer-chip mb-1">${escapeHtml(v.full_name)}` +
+                        (canManage ? ` <i class="bi bi-x-circle" style="cursor:pointer" onclick="removeTaskViewer(${taskId}, ${v.id})" title="حذف"></i>` : '') +
+                        `</span>`
+                    ).join('');
+                }
+                html += '</div>';
+
+                if (canManage) {
+                    html += `<div id="addViewerWrap" style="display:none; margin-top:6px; align-items:flex-start; gap:6px; max-width:400px;">
+                        <div style="flex:1; min-width:0;">
+                            <div id="addViewerPicker"></div>
+                            <div style="display:flex; align-items:center; gap:16px; margin-top:4px;">
+                                <div class="form-check form-switch mb-0" style="display:flex; align-items:center; gap:6px; padding:0; margin:0;">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="viewerCanAttachments" checked style="margin:0; flex-shrink:0;">
+                                    <label class="form-check-label small" for="viewerCanAttachments" style="margin:0;">دسترسیِ پیوست‌ها</label>
+                                </div>
+                                <div class="form-check form-switch mb-0" style="display:flex; align-items:center; gap:6px; padding:0; margin:0;">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="viewerCanHistory" checked style="margin:0; flex-shrink:0;">
+                                    <label class="form-check-label small" for="viewerCanHistory" style="margin:0;">دسترسیِ تاریخچه</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" id="submitAddViewerBtn" style="flex-shrink:0;">افزودن</button>
+                    </div>`;
+                }
+
+                cell.innerHTML = html;
+
+                if (canManage) {
+                    document.getElementById('addViewerBtn').addEventListener('click', () => openAddViewerPicker(taskId));
+                    document.getElementById('submitAddViewerBtn').addEventListener('click', () => submitAddViewers(taskId));
+                }
+            }
+
+            async function openAddViewerPicker(taskId) {
+                const wrap = document.getElementById('addViewerWrap');
+                wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';
+                if (wrap.style.display === 'none') return;
+
+                if (!addViewerPickerInst) {
+                    let viewerPickerUsers = [];
+                    try {
+                        const res = await fetch('../api/users/list.php', {
+                            headers: { 'Authorization': 'Bearer ' + authToken }
+                        });
+                        const data = await res.json();
+                        if (data.success) viewerPickerUsers = data.users;
+                    } catch {}
+
+                    addViewerPickerInst = AssigneePicker.create({
+                        container: '#addViewerPicker',
+                        users: viewerPickerUsers,
+                        multiSelect: true,
+                        onSelect: () => {}
+                    });
+                }
+            }
+
+            async function submitAddViewers(taskId) {
+                const val = addViewerPickerInst ? addViewerPickerInst.getValue() : null;
+                const userIds = val ? val.value : [];
+                if (!userIds.length) {
+                    showToast('حداقل یک نفر را انتخاب کنید', 'warning');
+                    return;
+                }
+                const canAttachments = document.getElementById('viewerCanAttachments').checked;
+                const canHistory = document.getElementById('viewerCanHistory').checked;
+                try {
+                    const res = await fetch('../api/tasks/add-viewers.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                        body: JSON.stringify({
+                            task_id: taskId, user_ids: userIds,
+                            can_view_attachments: canAttachments, can_view_history: canHistory
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast('دسترسی اضافه شد', 'success');
+                        addViewerPickerInst = null; // نمونهٔ بعدی از نو با داده‌یِ تازه ساخته بشه
+                        renderTaskViewers(taskData);
+                    } else {
+                        showToast(data.message || 'خطا در افزودنِ دسترسی', 'error');
+                    }
+                } catch {
+                    showToast('خطا در ارتباط با سرور', 'error');
+                }
+            }
+
+            async function removeTaskViewer(taskId, userId) {
+                try {
+                    const res = await fetch('../api/tasks/remove-viewer.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                        body: JSON.stringify({ task_id: taskId, user_id: userId })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        renderTaskViewers(taskData);
+                    } else {
+                        showToast(data.message || 'خطا در حذفِ دسترسی', 'error');
+                    }
+                } catch {
+                    showToast('خطا در ارتباط با سرور', 'error');
+                }
+            }
+
             function displayTaskDetails(task, history) {
 
                 document.getElementById('taskTitle').textContent = task.title;
@@ -2480,6 +2636,10 @@ if (!$__me) {
                 <div class="info-item">
                     <div class="info-label">گروه:</div>
                     <div class="info-value" id="taskGroupCell"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">دسترسی به:</div>
+                    <div class="info-value" id="taskViewersCell">در حال بارگذاری...</div>
                 </div>
 
                 <div class="info-item">
@@ -3394,6 +3554,18 @@ ${task.overdue_periods > 0 ? `
                     return; // خروج از تابع — نیازی به ادامه نیست
                 }
 
+                // 🆕 بیننده‌یِ صرف (فقط از راهِ task_viewers دسترسی داره) — هیچ دکمهٔ
+                // اقدامی نباید ببینه، فقط جزئیات رو مشاهده می‌کنه
+                if (window._isViewerOnly) {
+                    [startBtn, completeBtn, addDiscBtn, delegateBtn, editBtn, deleteBtn, redefineBtn, approveBtn, rejectBtn].forEach(btn => {
+                        if (btn) btn.style.display = 'none';
+                    });
+                    if (terminationBtn) terminationBtn.style.display = 'none';
+                    const uploadArea = document.getElementById('uploadArea');
+                    if (uploadArea) uploadArea.style.display = 'none';
+                    return;
+                }
+
                 isCreator = currentUser && currentUser.id == task.creator_id;
                 isAssignee = currentUser && currentUser.id == task.assignee_id;
                 const isPendingApproval = task.status === 'pending_approval' && task.is_pending_approval == 1;
@@ -3741,8 +3913,9 @@ ${task.overdue_periods > 0 ? `
             }
 
             function displayHistory(history) {
-                // 🔒 کاربری که فقط آیتم چک‌لیست به او ارجاع شده: کل بخش تاریخچه پنهان
-                if (window._isChecklistOnly) {
+                // 🔒 کاربری که فقط آیتم چک‌لیست به او ارجاع شده، یا بیننده‌ای که
+                // دسترسیِ تاریخچه براش خاموش شده: کل بخش تاریخچه پنهان
+                if (window._isChecklistOnly || (window._isViewerOnly && !window._viewerCanViewHistory)) {
                     const hs = document.getElementById('historySection');
                     if (hs) hs.style.display = 'none';
                     return;
@@ -4759,6 +4932,13 @@ ${task.overdue_periods > 0 ? `
             async function loadAttachments() {
                 try {
                     if (!taskId) return;
+
+                    // 🔒 بیننده‌ای که دسترسیِ پیوست براش خاموش شده: کل بخش پنهان
+                    if (window._isViewerOnly && !window._viewerCanViewAttachments) {
+                        const section = document.getElementById('attachmentsSection');
+                        if (section) section.style.display = 'none';
+                        return;
+                    }
 
                     try {
                         const response = await fetch(`../api/tasks/get-attachments.php?task_id=${taskId}`, {

@@ -32,9 +32,10 @@ try {
     $userSections = us_getUserSections($db, $userId);
     $sectionsCsv  = implode(',', $userSections);   // مثل 'warehouse,technical'
 
-    $isSuper   = ($userId === 1);
-    $canManage = in_array($role, ['management', 'supervisor']);
-    $showAll   = isset($_GET['all']) && $_GET['all'] == '1' && ($isSuper || $canManage);
+    $isSuper     = ($userId === 1);
+    $canManage   = in_array($role, ['management', 'supervisor']);
+    $showAll     = isset($_GET['all']) && $_GET['all'] == '1' && ($isSuper || $canManage);
+    $unreadOnly  = isset($_GET['unread_only']) && $_GET['unread_only'] == '1' && !$showAll;
 
     if ($showAll) {
         // ───── حالت مدیریت ─────
@@ -91,7 +92,8 @@ try {
                               )
                           )
                       )
-                  )
+                  )" . ($unreadOnly ? "
+                  AND a.id NOT IN (SELECT announcement_id FROM announcement_reads WHERE user_id = :uid_unread)" : "") . "
                 ORDER BY a.is_pinned DESC, a.created_at DESC
                 LIMIT :limit OFFSET :offset";
 
@@ -102,6 +104,7 @@ try {
         $stmt->bindValue(':now2', $now, PDO::PARAM_STR);
         $stmt->bindValue(':org', $org, PDO::PARAM_INT);
         $stmt->bindValue(':sections_csv', $sectionsCsv, PDO::PARAM_STR);
+        if ($unreadOnly) $stmt->bindValue(':uid_unread', $userId, PDO::PARAM_INT);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();

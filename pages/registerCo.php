@@ -136,7 +136,7 @@
 
                     // ریدایرکت به داشبورد
                     setTimeout(() => {
-                        window.location.href = `/pages/dashboard.php`;
+                        window.location.href = `/pages/dashboard-manager.php`;
                     }, 2000);
 
                 } else {

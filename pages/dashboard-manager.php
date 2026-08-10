@@ -1011,8 +1011,15 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             top: auto;
             left: auto;
             transform: none;
-            max-height: none;
-            overflow: visible;
+            /* سقفِ واقعی = ویوپورت منهایِ حاشیهٔ ۲۵px بالا/پایینِ modal-dialog؛
+               بدونِ این سقف، هر وقت گرید کاملاً جا نمی‌شد، rapper بیرونیِ
+               بوت‌استرپ (.modal که خودش overflow-y:auto پیش‌فرض داره) هم
+               اسکرول می‌شد — یعنی هم‌زمان دو ناحیه‌ی اسکرولِ تودرتو (خودِ
+               مودال + modal-body) که تجربه‌ی دوگانه/گیج‌کننده می‌ساخت.
+               با این سقف + overflow:hidden، مودالِ بیرونی هیچ‌وقت نیاز به
+               اسکرول پیدا نمی‌کنه و تنها ناحیه‌ی اسکرول، خودِ modal-body است */
+            max-height: calc(100vh - 50px);
+            overflow: hidden;
         }
 
         /* قبلاً چون modal-content با position:fixed از جریانِ عادی خارج بود،
@@ -1029,10 +1036,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
            هم به‌صورتِ پویا در JS، بر اساسِ همین فضایِ آزادشده، محاسبه می‌شه) */
         #monthModal .modal-header {
             padding-top: 0;
-        }
-
-        #monthModal .modal-footer {
-            padding-bottom: 0;
+            padding-bottom: 8px;
         }
 
         #planModal .btn-close,
@@ -2144,6 +2148,14 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             background: var(--pm-purple) !important;
         }
 
+        /* در تمِ تاریک، بنفشِ روشنِ برند کنارِ پس‌زمینهٔ تقریباً مشکیِ صفحه
+           زننده/نامتناسب دیده می‌شد — طبقِ تأییدِ کاربر، به‌جایِ یک بنفشِ
+           سفارشیِ دیگه، همون توکنِ استانداردِ تیره‌ی کل سایت (var(--surface))
+           استفاده می‌شه تا سربرگ کاملاً با بقیه‌ی صفحه یکدست باشه */
+        :root[data-theme="dark"] body .navbar {
+            background: var(--surface) !important;
+        }
+
         body .navbar-brand {
             background: none !important;
             -webkit-text-fill-color: #fff !important;
@@ -2436,7 +2448,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 <div class="modal-body" style="padding:12px 16px;max-height:76vh;overflow:auto;">
                     <div class="mo-grid" id="moGrid" onmouseover="moGridOver(event)" onmouseleave="moGridLeave()"></div>
                 </div>
-                <div class="modal-footer" style="padding:12px 20px;">
+                <div class="modal-footer" style="padding:8px 20px 6px;">
                     <a href="my-tasks.php?filter=month" id="moSeeAllBtn" class="btn btn-sm" style="background:var(--pm-purple);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
@@ -4343,7 +4355,10 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         /* ─── هاور: بزرگ‌شدنِ کلِ ردیف + کلِ ستونِ سلولِ هاورشده (به‌جای زوم خودِ سلول) ─── */
         let MO_ROW_PX = 100; // ارتفاعِ پایهٔ هر ردیف (px) — قبلِ هر render، پویا بازمحاسبه می‌شود
-        const MO_ROW_PX_MIN = 56; // زیرِ این مقدار سلول‌ها غیرِقابلِ‌استفاده می‌شوند؛ در این حالتِ نادر، اسکرولِ modal-body به‌عنوانِ راهِ‌فرار باقی می‌ماند
+        const MO_ROW_PX_MIN = 44; // زیرِ این مقدار سلول‌ها غیرِقابلِ‌استفاده می‌شوند؛ در این حالتِ نادر، اسکرولِ modal-body به‌عنوانِ راهِ‌فرار باقی می‌ماند
+        // ⚠️ ۴۴ به‌جایِ ۵۶ عمداً پایین‌تره: روی لپ‌تاپ‌هایِ ۱۳۶۶×۷۶۸ (به‌خصوص با
+        // scaleِ ۱۲۵٪/۱۵۰٪ ویندوز که فضایِ واقعیِ CSS رو کمتر می‌کنه)، ماه‌هایِ
+        // ۶ردیفی با کفِ ۵۶ از پایینِ مودال بیرون می‌زدن و نیاز به اسکرول داشتن
         const MO_ROW_PX_MAX = 100; // سقفِ ایمنی — حتی اگر تخمینِ فضایِ آزاد کمی خوش‌بینانه باشه، ردیف‌ها هیچ‌وقت بزرگ‌تر از این نمی‌شن
         const MO_HEADER_ROW_PX = 26; // ارتفاعِ تقریبیِ ردیفِ نام‌روزها (auto) — از رویِ CSSِ ثابتِ .mo-weekday
         const MO_GRID_GAP_PX = 6; // باید با gap در CSSِ .mo-grid یکی باشد
@@ -4354,10 +4369,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         /* گامِ اول: تخمینِ تحلیلی، تا modal-body به‌اندازه‌ی فضایِ واقعاً موجود رشد
            کنه (بدونِ این گام، اگر رندرِ اول به‌خاطرِ کلمپِ حداقلی کوچیک شروع بشه،
            دیگه هیچ‌وقت به فضایِ واقعی رشد نمی‌کنه چون overflowِ گامِ دوم صفر
-           می‌مونه و دلیلی برایِ بزرگ‌شدن پیدا نمی‌شه).
-           گامِ دوم: اگر بازم (به‌خاطرِ خطایِ تخمینِ هدر/فوتر/حاشیه‌ها) چیزی از
-           پایینِ viewport بیرون زده، دقیقاً به همون‌اندازه که واقعاً اندازه‌گیری
-           شده کم می‌کنیم — این گام بر اساسِ رندرِ واقعیِ مرورگره، نه حدس */
+           می‌مونه و دلیلی برایِ بزرگ‌شدن پیدا نمی‌شه). */
         function moFitModalBody() {
             const dialog = document.querySelector('#monthModal .modal-dialog');
             const header = document.querySelector('#monthModal .modal-header');
@@ -4369,11 +4381,6 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             const margins = parseFloat(dm.marginTop) + parseFloat(dm.marginBottom);
             const estimated = window.innerHeight - margins - header.offsetHeight - footer.offsetHeight - 8;
             body.style.height = Math.max(200, estimated) + 'px';
-
-            const overflow = dialog.getBoundingClientRect().bottom - window.innerHeight;
-            if (overflow > 0) {
-                body.style.height = Math.max(200, body.clientHeight - overflow - 8) + 'px';
-            }
         }
 
         function moComputeRowPx(totalRows) {
@@ -4387,14 +4394,28 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         /* بازمحاسبه‌ی ارتفاعِ ردیف‌ها بعدِ اتمامِ ترنزیشنِ نمایشِ مودال (وقتی
            اندازه‌گیری‌هایِ واقعی در دسترسه) — بدونِ رندرِ دوباره‌ی HTML، فقط
-           ارتفاعِ modal-body و grid-template-rows به‌روزرسانی می‌شه */
+           ارتفاعِ modal-body و grid-template-rows به‌روزرسانی می‌شه.
+           گامِ دوم (اصلاح): چون الان modal-content سقفِ CSSِ خودش رو داره
+           (overflow:hidden + max-height)، دیگه هیچ‌وقت از ویوپورت بیرون
+           نمی‌زنه — یعنی مقایسه‌یِ قبلیِ «پایینِ dialog با پایینِ ویوپورت»
+           همیشه صفر می‌شد و اصلاً سرریزِ واقعی رو تشخیص نمی‌داد. اینجا مستقیم
+           scrollHeightِ خودِ گرید رو با clientHeightِ modal-body مقایسه
+           می‌کنیم — دقیقاً همون‌جایی که سرریز واقعاً اتفاق می‌افته */
         function moReapplyRowPx() {
             if (moTotalRows <= 0) return;
             moFitModalBody();
             MO_ROW_PX = moComputeRowPx(moTotalRows);
             const grid = document.getElementById('moGrid');
-            if (!grid) return;
+            const body = grid?.parentElement;
+            if (!grid || !body) return;
             grid.style.gridTemplateRows = moBaseGridTemplate(moTotalRows).rows;
+
+            const bodyOverflow = grid.scrollHeight - body.clientHeight;
+            if (bodyOverflow > 0 && MO_ROW_PX > MO_ROW_PX_MIN) {
+                const shrinkPerRow = Math.ceil(bodyOverflow / moTotalRows);
+                MO_ROW_PX = Math.max(MO_ROW_PX_MIN, MO_ROW_PX - shrinkPerRow);
+                grid.style.gridTemplateRows = moBaseGridTemplate(moTotalRows).rows;
+            }
         }
 
         function moBaseGridTemplate(totalRows) {

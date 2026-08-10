@@ -28,7 +28,7 @@ if (!$user_id) {
 
 // 🔒 فقط مدیر کل (superadmin)
 if (!in_array((int)$user_id, getSuperAdminIds(), true)) {
-    header('Location: dashboard.php');
+    header('Location: dashboard-manager.php');
     exit;
 }
 

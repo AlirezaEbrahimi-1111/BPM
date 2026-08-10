@@ -184,6 +184,21 @@ try {
             $is_checklist_only = true;   // 🆕 نه سازنده، نه مسئول، نه مدیر — فقط چک‌لیست
         }
     }
+    // 7. بیننده‌هایِ صریحاً اضافه‌شده (فقط مشاهده — task_viewers)
+    $is_viewer_only = false;
+    $viewer_can_view_attachments = true;
+    $viewer_can_view_history = true;
+    if (!$hasAccess) {
+        $stmt = $db->prepare("SELECT can_view_attachments, can_view_history FROM task_viewers WHERE task_id = ? AND user_id = ?");
+        $stmt->execute([$_GET['id'], $user_id]);
+        $viewerRow = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($viewerRow) {
+            $hasAccess = true;
+            $is_viewer_only = true;
+            $viewer_can_view_attachments = (bool) $viewerRow['can_view_attachments'];
+            $viewer_can_view_history = (bool) $viewerRow['can_view_history'];
+        }
+    }
     if (!$hasAccess) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
@@ -298,7 +313,10 @@ try {
         'task' => $task,
         'history' => $history,
         'is_checklist_only' => $is_checklist_only,
-        'can_edit' => $hasAccess
+        'is_viewer_only' => $is_viewer_only, // 🆕 فقط از راهِ task_viewers دسترسی داره — نه ویرایش/اقدام
+        'viewer_can_view_attachments' => $viewer_can_view_attachments, // 🆕 فقط برایِ is_viewer_only معنا داره
+        'viewer_can_view_history' => $viewer_can_view_history,         // 🆕
+        'can_edit' => $hasAccess && !$is_viewer_only
     ]);
 } catch (Exception $e) {
     http_response_code(500);

@@ -26,6 +26,14 @@ if (!$__me) {
     header('Location: ../index.php');
     exit;
 }
+
+// تقارنِ گیتِ dashboard-manager.php: اونجا کاربرِ غیرِ manager/supervisor
+// به این‌جا هدایت می‌شه؛ این‌جا هم برعکسش رعایت می‌شه — اگه manager/supervisor
+// مستقیم (مثلاً با تایپِ آدرس) وارد این صفحه بشه، به داشبوردِ خودش برمی‌گرده
+if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
+    header('Location: dashboard-manager.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -2166,6 +2174,14 @@ if (!$__me) {
         /* ═══ استثنا: فقط در این صفحه، هدر بالا بنفش با متن/آیکون سفید ═══ */
         body .navbar {
             background: var(--pm-purple) !important;
+        }
+
+        /* در تمِ تاریک، بنفشِ روشنِ برند کنارِ پس‌زمینهٔ تقریباً مشکیِ صفحه
+           زننده/نامتناسب دیده می‌شد — طبقِ تأییدِ کاربر، به‌جایِ یک بنفشِ
+           سفارشیِ دیگه، همون توکنِ استانداردِ تیره‌ی کل سایت (var(--surface))
+           استفاده می‌شه تا سربرگ کاملاً با بقیه‌ی صفحه یکدست باشه */
+        :root[data-theme="dark"] body .navbar {
+            background: var(--surface) !important;
         }
 
         body .navbar-brand {
