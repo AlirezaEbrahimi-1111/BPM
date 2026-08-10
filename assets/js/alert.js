@@ -22,6 +22,10 @@
  *   ]
  * });
  */
+// وقتی toastِ فعلی دکمه داره، کلیدِ Enter باید دکمهٔ پیش‌فرض (primary) رو
+// اجرا کنه — این listener سطحِ ماژوله تا موقعِ جایگزینی/بستنِ toast پاک بشه
+let _toastEnterHandler = null;
+
 function showToast(message, type = 'success', options = {}) {
 
     const { duration = 5000, buttons = [] } = options;
@@ -62,6 +66,10 @@ function showToast(message, type = 'success', options = {}) {
 
     // ─── حذف toast قبلی (اگر وجود دارد) ──────────────────────
     document.querySelector('.custom-toast')?.remove();
+    if (_toastEnterHandler) {
+        document.removeEventListener('keydown', _toastEnterHandler);
+        _toastEnterHandler = null;
+    }
 
     // ─── ساخت المان اصلی ──────────────────────────────────────
     const toast = document.createElement('div');
@@ -117,6 +125,8 @@ function showToast(message, type = 'success', options = {}) {
             justifyContent: 'flex-end',
         });
 
+        let primaryBtnEl = null;
+
         buttons.forEach(btn => {
             const el = document.createElement('button');
             el.textContent = btn.label ?? '';
@@ -142,10 +152,24 @@ function showToast(message, type = 'success', options = {}) {
                 closeToast();
             };
 
+            if (isPrimary) primaryBtnEl = el;
             btnRow.appendChild(el);
         });
 
         toast.appendChild(btnRow);
+
+        // ─── Enterِ صفحه‌کلید = کلیکِ دکمهٔ پیش‌فرض ─────────────
+        // اگه هیچ دکمه‌ای style:'primary' نداشت، اولین دکمه پیش‌فرض حساب می‌شه
+        const defaultBtnEl = primaryBtnEl || btnRow.firstElementChild;
+        if (defaultBtnEl) {
+            _toastEnterHandler = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    defaultBtnEl.click();
+                }
+            };
+            document.addEventListener('keydown', _toastEnterHandler);
+        }
     }
 
     // ─── نوار پیشرفت ──────────────────────────────────────────
@@ -185,6 +209,10 @@ function showToast(message, type = 'success', options = {}) {
         toast.style.transform = 'translateX(-420px)';
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 400);
+        if (_toastEnterHandler) {
+            document.removeEventListener('keydown', _toastEnterHandler);
+            _toastEnterHandler = null;
+        }
     }
 
     // دکمه X

@@ -1035,6 +1035,10 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
         let currentTemplateId = null;
         let stepCounter = 0;
 
+        function toFa(n) {
+            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+        }
+
         const UNITS = [{
                 value: 'sales',
                 label: 'فروش'
@@ -1123,7 +1127,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                     <div class="card-footer">
                         <div class="card-meta">
                             <i class="bi bi-list-check"></i>
-                            <span>${t.steps_count || 0} مرحله</span>
+                            <span>${toFa(t.steps_count || 0)} مرحله</span>
                         </div>
                         <div class="card-actions">
                             <button class="btn-icon view" title="مشاهده"
@@ -1393,7 +1397,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
 
             const html = `
                 <div class="step-item step-row" data-step-id="${stepId}" draggable="true">
-                    <span class="step-num">${stepCounter}</span>
+                    <span class="step-num">${toFa(stepCounter)}</span>
                     <span class="drag-hint" title="بکشید"><i class="bi bi-grip-vertical"></i></span>
 
                     <input type="text" class="form-control form-control-sm step-name sr-name"
@@ -1589,14 +1593,14 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             }).join('');
 
             if (toggle && countLabel) {
-                countLabel.textContent = items.length ? `چک‌لیست (${items.length})` : 'چک‌لیست';
+                countLabel.textContent = items.length ? `چک‌لیست (${toFa(items.length)})` : 'چک‌لیست';
                 toggle.classList.toggle('has-items', items.length > 0);
             }
         }
 
         function updateStepNumbers() {
             document.querySelectorAll('.step-item').forEach((el, i) => {
-                el.querySelector('.step-num').textContent = i + 1;
+                el.querySelector('.step-num').textContent = toFa(i + 1);
             });
             updateExecPreview();
         }

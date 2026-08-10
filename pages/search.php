@@ -30,6 +30,10 @@ $searchTerm = isset($_GET['q']) ? trim($_GET['q']) : '';
 $isWholeWord = isset($_GET['w']);
 $isCaseSensitive = isset($_GET['cs']);
 
+function toFaNum($n) {
+    return strtr((string) $n, ['0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹']);
+}
+
 // متغیرهای نتایج را مقداردهی اولیه کن
 $results = [];
 $totalHits = 0;
@@ -156,7 +160,7 @@ $duration = microtime(true) - $startTime;
                 <div class="alert alert-danger"><?= $error ?></div>
             <?php elseif (!empty($searchTerm)): ?>
                 <div class="stats">
-                    <strong><?= count($results) ?></strong> فایل و <strong><?= $totalHits ?></strong> نتیجه در مدت <strong><?= round($duration, 3) ?></strong> ثانیه یافت شد.
+                    <strong><?= toFaNum(count($results)) ?></strong> فایل و <strong><?= toFaNum($totalHits) ?></strong> نتیجه در مدت <strong><?= toFaNum(round($duration, 3)) ?></strong> ثانیه یافت شد.
                 </div>
                 
                 <?php if (empty($results)): ?>
@@ -166,7 +170,7 @@ $duration = microtime(true) - $startTime;
                 <?php foreach ($results as $path => $matches): ?>
                     <div class="file-group">
                         <div class="file-header">
-                            📄 <strong><?= htmlspecialchars($path) ?></strong> (<?= count($matches) ?> مورد)
+                            📄 <strong><?= htmlspecialchars($path) ?></strong> (<?= toFaNum(count($matches)) ?> مورد)
                         </div>
                         <?php foreach ($matches as $match): ?>
                             <div class="match-block">

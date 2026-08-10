@@ -1370,7 +1370,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                 return true;
             });
 
-            document.getElementById('usersCount').textContent = filteredUsers.length + ' کاربر';
+            document.getElementById('usersCount').textContent = toFa(filteredUsers.length) + ' کاربر';
             if (gridApi) gridApi.setGridOption('rowData', filteredUsers);
         }
 
@@ -1770,7 +1770,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         <span class="role-badge role-${u.role} ms-2">${ROLE_NAMES[u.role]||u.role}</span></div>`;
             if (subs.length) {
                 html += `<div class="hierarchy-line"></div><div class="ps-3">
-            <small class="text-muted d-block mb-1"><i class="bi bi-people ms-1"></i>زیردستان (${subs.length}):</small>
+            <small class="text-muted d-block mb-1"><i class="bi bi-people ms-1"></i>زیردستان (${toFa(subs.length)}):</small>
             ${subs.map(s=>`<div class="hierarchy-node h-sub"><i class="bi bi-person"></i>
                 ${[s.first_name,s.last_name].filter(Boolean).join(' ')||s.phone}
                 <span class="role-badge role-${s.role} ms-2">${ROLE_NAMES[s.role]||s.role}</span></div>`).join('')}

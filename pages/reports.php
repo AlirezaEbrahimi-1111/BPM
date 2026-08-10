@@ -612,6 +612,10 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
         let reportsPerPage = 10;
         let currentReportData = null;
 
+        function toFa(n) {
+            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+        }
+
         // بارگذاری اولیه
         document.addEventListener('DOMContentLoaded', function () {
             checkAuth();
@@ -690,10 +694,10 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
 
                 const data = await response.json();
                 if (data.success) {
-                    document.getElementById('totalReports').textContent = data.stats.total || 0;
-                    document.getElementById('todayReports').textContent = data.stats.today || 0;
-                    document.getElementById('weekReports').textContent = data.stats.week || 0;
-                    document.getElementById('monthReports').textContent = data.stats.month || 0;
+                    document.getElementById('totalReports').textContent = toFa(data.stats.total || 0);
+                    document.getElementById('todayReports').textContent = toFa(data.stats.today || 0);
+                    document.getElementById('weekReports').textContent = toFa(data.stats.week || 0);
+                    document.getElementById('monthReports').textContent = toFa(data.stats.month || 0);
                 }
             } catch (error) {
                 console.error('Error loading stats:', error);
@@ -909,7 +913,7 @@ ${highlightedContent}${contentPreview.length > 4096 ? '...' : ''}
                 if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
                     html += `
                         <li class="page-item ${i === currentPage ? 'active' : ''}">
-                            <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                            <a class="page-link" href="#" onclick="changePage(${i})">${toFa(i)}</a>
                         </li>
                     `;
                 } else if (i === currentPage - 3 || i === currentPage + 3) {
@@ -1107,7 +1111,7 @@ ${highlightedContent}${contentPreview.length > 4096 ? '...' : ''}
                 <body>
                     <div class="header">
                         <h1>گزارش‌های ارسال شده</h1>
-                        <p>تعداد: ${filteredReports.length} گزارش</p>
+                        <p>تعداد: ${toFa(filteredReports.length)} گزارش</p>
                     </div>
             `;
 

@@ -1229,7 +1229,7 @@ if (!$__me) {
                 const endMs = new Date(taskData.end_date).getTime();
                 const diffDays = (endMs - startMs) / 864e5;
                 if (diffDays < minDays) {
-                    showToast(`تاریخ پایان باید حداقل ${minDays} روز بعد از تاریخ شروع باشد`, 'error');
+                    showToast(`تاریخ پایان باید حداقل ${enTofaNumber(minDays)} روز بعد از تاریخ شروع باشد`, 'error');
 
                     return;
                 }
@@ -1519,7 +1519,7 @@ if (!$__me) {
                         stepsList.innerHTML = '';
                         data.steps.forEach(step => {
                             const li = document.createElement('li');
-                            li.textContent = `${step.title} - واحد: ${step.activity_section} (${step.duration_days} روز)`;
+                            li.textContent = `${step.title} - واحد: ${step.activity_section} (${enTofaNumber(step.duration_days)} روز)`;
                             stepsList.appendChild(li);
                         });
                         previewDiv.style.display = 'block';
@@ -1665,7 +1665,7 @@ if (!$__me) {
             const maxSize = 20 * 1024 * 1024;
             for (let file of files) {
                 if (file.size > maxSize) {
-                    showToast(`فایل "${file.name}" بیش از 20MB است و اضافه نشد.`, 'warning');
+                    showToast(`فایل "${file.name}" بیش از ${enTofaNumber(20)}MB است و اضافه نشد.`, 'warning');
                     continue;
                 }
                 pendingFiles.push(file);
@@ -1766,7 +1766,7 @@ if (!$__me) {
             const maxSize = 20 * 1024 * 1024;
             for (let file of files) {
                 if (file.size > maxSize) {
-                    showToast(`فایل "${file.name}" بیش از 20MB است.`, 'warning');
+                    showToast(`فایل "${file.name}" بیش از ${enTofaNumber(20)}MB است.`, 'warning');
                     continue;
                 }
                 workflowPendingFiles.push({

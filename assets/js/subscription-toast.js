@@ -22,6 +22,11 @@
     var TOAST_DURATION   = 60000;                  // 60 ثانیه نمایش
     var API_URL          = '/api/organization/check-subscription.php';
 
+    /* تبدیلِ اعدادِ لاتین به فارسی، برایِ حفظِ اصلِ «مستقل» بودنِ این فایل */
+    function toFa(n) {
+        return String(n).replace(/\d/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; });
+    }
+
     /* ──────────────────────────────────────────── */
     /*  بررسی اصلی                                  */
     /* ──────────────────────────────────────────── */
@@ -102,7 +107,7 @@
             borderColor = '#f59e0b';
             iconColor   = '#f59e0b';
         } else {
-            message     = 'اشتراک سازمان شما ' + daysRemaining + ' روز دیگر منقضی می‌شود. لطفاً برای خرید یا تمدید اشتراک با پشتیبانی ارتباط بگیرید.';
+            message     = 'اشتراک سازمان شما ' + toFa(daysRemaining) + ' روز دیگر منقضی می‌شود. لطفاً برای خرید یا تمدید اشتراک با پشتیبانی ارتباط بگیرید.';
             icon        = 'bi-exclamation-triangle-fill';
             bgColor     = '#fffbeb';
             borderColor = '#f59e0b';

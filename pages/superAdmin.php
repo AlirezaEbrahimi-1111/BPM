@@ -368,7 +368,7 @@ async function confirmExtend() {
 /* سقف کاربران */
 function openLimit(id) {
   const o = byId[id]; curId = id;
-  document.getElementById('lmName').textContent = o.name + ' — فعلی: ' + (o.max_users || '—') + ' نفر';
+  document.getElementById('lmName').textContent = o.name + ' — فعلی: ' + (o.max_users ? faNum(o.max_users) : '—') + ' نفر';
   document.getElementById('lmInput').value = o.max_users || 50;
   document.getElementById('ovLimit').classList.add('show');
 }

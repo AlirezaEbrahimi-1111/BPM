@@ -2444,7 +2444,7 @@ if (!$__me) {
         function updateMsgSearchCount() {
             var el = document.getElementById('chatMsgSearchCount');
             el.textContent = msgSearchMatches.length
-                ? (msgSearchActiveIdx + 1) + ' از ' + msgSearchMatches.length
+                ? toFa(msgSearchActiveIdx + 1) + ' از ' + toFa(msgSearchMatches.length)
                 : (document.getElementById('chatMsgSearchInput').value ? 'موردی نیست' : '');
             document.getElementById('chatMsgSearchPrevBtn').disabled = msgSearchMatches.length === 0;
             document.getElementById('chatMsgSearchNextBtn').disabled = msgSearchMatches.length === 0;
@@ -2602,7 +2602,7 @@ if (!$__me) {
                 }
                 var active = c.conversation_id === activeConversationId ? ' active' : '';
                 var badge = c.unread_count > 0
-                    ? '<span class="chat-unread-badge' + (c.is_muted ? ' muted' : '') + '">' + (c.unread_count > 99 ? '99+' : c.unread_count) + '</span>'
+                    ? '<span class="chat-unread-badge' + (c.is_muted ? ' muted' : '') + '">' + (c.unread_count > 99 ? toFa(99) + '+' : toFa(c.unread_count)) + '</span>'
                     : '';
                 var muteIcon = c.is_muted ? '<i class="bi bi-bell-slash-fill chat-conv-mute-icon"></i>' : '';
                 var time = c.last_message_at ? new Date(c.last_message_at.replace(' ', 'T')).toLocaleTimeString('fa-IR', {
@@ -3688,9 +3688,9 @@ if (!$__me) {
 
         function fmtFileSize(bytes) {
             bytes = Number(bytes) || 0;
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            if (bytes < 1024) return toFa(bytes) + ' B';
+            if (bytes < 1024 * 1024) return toFa((bytes / 1024).toFixed(1)) + ' KB';
+            return toFa((bytes / (1024 * 1024)).toFixed(1)) + ' MB';
         }
 
         function openMediaGallery() {
@@ -4224,7 +4224,7 @@ if (!$__me) {
                             '<div class="chat-empty-list">' + esc(data.message || 'خطا در بارگذاریِ اعضا') + '</div>';
                         return;
                     }
-                    document.getElementById('groupInfoTitle').textContent = activeConversationTitle + ' — ' + data.members.length + ' عضو';
+                    document.getElementById('groupInfoTitle').textContent = activeConversationTitle + ' — ' + toFa(data.members.length) + ' عضو';
                     document.getElementById('groupInfoAddBtn').style.display = data.is_owner ? 'block' : 'none';
                     groupInfoIsOwner = !!data.is_owner;
                     document.getElementById('groupInfoAvatarWrap').innerHTML =
@@ -4338,12 +4338,12 @@ if (!$__me) {
             var then = new Date(dateStr.replace(' ', 'T'));
             var diffMin = Math.round((Date.now() - then.getTime()) / 60000);
             if (diffMin < 1) return 'همین الان';
-            if (diffMin < 60) return diffMin + ' دقیقه پیش';
+            if (diffMin < 60) return toFa(diffMin) + ' دقیقه پیش';
             var diffHour = Math.round(diffMin / 60);
-            if (diffHour < 24) return diffHour + ' ساعت پیش';
+            if (diffHour < 24) return toFa(diffHour) + ' ساعت پیش';
             var diffDay = Math.round(diffHour / 24);
             if (diffDay === 1) return 'دیروز';
-            if (diffDay < 30) return diffDay + ' روز پیش';
+            if (diffDay < 30) return toFa(diffDay) + ' روز پیش';
             return then.toLocaleDateString('fa-IR');
         }
 

@@ -148,10 +148,10 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         }
 
         function updateStats(stats) {
-            document.getElementById('totalSMS').textContent = stats.total || 0;
-            document.getElementById('sentSMS').textContent = stats.sent || 0;
-            document.getElementById('failedSMS').textContent = stats.failed || 0;
-            document.getElementById('pendingSMS').textContent = stats.pending || 0;
+            document.getElementById('totalSMS').textContent = toFa(stats.total || 0);
+            document.getElementById('sentSMS').textContent = toFa(stats.sent || 0);
+            document.getElementById('failedSMS').textContent = toFa(stats.failed || 0);
+            document.getElementById('pendingSMS').textContent = toFa(stats.pending || 0);
         }
 
         function renderLogs(logs) {

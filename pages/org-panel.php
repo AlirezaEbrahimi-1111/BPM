@@ -221,6 +221,10 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
   const token = localStorage.getItem('auth_token');
   if (!token) { window.location.href = '/index.php'; }
 
+  function toFa(n) {
+    return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+  }
+
   // ── دریافت و نمایش اطلاعات ──
   async function loadData() {
     try {
@@ -263,15 +267,15 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     document.getElementById('orgMeta').innerHTML = meta;
 
     // آمار
-    document.getElementById('statTotal').textContent = d.stats.total;
-    document.getElementById('statActive').textContent = d.stats.active;
-    document.getElementById('statCapacity').textContent = d.stats.capacity_pct + '٪';
+    document.getElementById('statTotal').textContent = toFa(d.stats.total);
+    document.getElementById('statActive').textContent = toFa(d.stats.active);
+    document.getElementById('statCapacity').textContent = toFa(d.stats.capacity_pct) + '٪';
 
     // اشتراک
     document.getElementById('subPlan').textContent = d.subscription.plan_label;
     document.getElementById('subEnd').textContent = d.subscription.end_jalali;
     const st = document.getElementById('subStatus');
-    if (d.subscription.status === 'active') st.innerHTML = '<span class="badge badge-success"><i class="bi bi-dot"></i> فعال (' + d.subscription.days_left + ' روز مانده)</span>';
+    if (d.subscription.status === 'active') st.innerHTML = '<span class="badge badge-success"><i class="bi bi-dot"></i> فعال (' + toFa(d.subscription.days_left) + ' روز مانده)</span>';
     else if (d.subscription.status === 'expired') st.innerHTML = '<span class="badge badge-danger"><i class="bi bi-dot"></i> منقضی</span>';
     else st.innerHTML = '<span class="badge badge-gray">بدون اشتراک</span>';
 
@@ -282,7 +286,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     // هشدار انقضا
     const alertBox = document.getElementById('expireAlert');
     if (d.subscription.status === 'active' && d.subscription.days_left <= 7) {
-      alertBox.innerHTML = '<div class="alert-expire ' + (d.subscription.days_left <= 3 ? 'crit' : 'warn') + '"><i class="bi bi-exclamation-triangle"></i> اشتراک شما تا ' + d.subscription.days_left + ' روز دیگر منقضی می‌شود. لطفاً تمدید کنید.</div>';
+      alertBox.innerHTML = '<div class="alert-expire ' + (d.subscription.days_left <= 3 ? 'crit' : 'warn') + '"><i class="bi bi-exclamation-triangle"></i> اشتراک شما تا ' + toFa(d.subscription.days_left) + ' روز دیگر منقضی می‌شود. لطفاً تمدید کنید.</div>';
     } else if (d.subscription.status === 'expired') {
       alertBox.innerHTML = '<div class="alert-expire crit"><i class="bi bi-x-octagon"></i> اشتراک شما منقضی شده است. برای ادامه‌ی استفاده تمدید کنید.</div>';
     } else { alertBox.innerHTML = ''; }

@@ -106,6 +106,10 @@
         const DOMAIN = 'bpm.computeryekta.com';  // ← دامنه اصلی خودت
         const API_BASE = '/api/organization';
 
+        function toFa(n) {
+            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+        }
+
         // ارسال فرم
         document.getElementById('registerForm').addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -132,7 +136,7 @@
 
                     alert.className = 'alert alert-success';
                     alert.textContent =
-                        `✅ سازمان شما ثبت شد! ${data.trial_days} روز آزمایشی رایگان فعال است.`;
+                        `✅ سازمان شما ثبت شد! ${toFa(data.trial_days)} روز آزمایشی رایگان فعال است.`;
 
                     // ریدایرکت به داشبورد
                     setTimeout(() => {

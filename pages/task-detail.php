@@ -4725,7 +4725,7 @@ ${task.overdue_periods > 0 ? `
                 const attachmentItems = document.querySelectorAll('#attachmentsList [data-attachment-id]');
                 if (attachmentItems.length > 0) {
                     attachmentsOption.style.display = 'block';
-                    attachmentsCount.textContent = attachmentItems.length + ' فایل پیوست موجود است';
+                    attachmentsCount.textContent = enTofaNumber(attachmentItems.length) + ' فایل پیوست موجود است';
                 } else {
                     attachmentsOption.style.display = 'none';
                 }
