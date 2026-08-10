@@ -5145,68 +5145,82 @@ ${task.overdue_periods > 0 ? `
             }
 
             // آپلود فایل
-            async function uploadFile(file) {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('task_id', taskId);
+            // ⚠️ قبلاً این تابع async بود ولی درونش فقط XMLHttpRequest با addEventListener
+            // صدا می‌زد، بدون اینکه یک Promise واقعی به اتمامِ آپلود گره بخوره — یعنی
+            // await uploadFile(file) عملاً تقریباً فوری resolve می‌شد، نه بعدِ تمومِ آپلودِ
+            // واقعی. جایی مثلِ submitAddDiscWithFiles() که بعدِ حلقهٔ await، با فاصلهٔ کوتاه
+            // (۱.۵ ثانیه) صفحه رو reload می‌کرد، اگه آپلودِ واقعی (شبکه/سرور) از اون فاصله
+            // بیشتر طول می‌کشید، reload درخواستِ نیمه‌تمام رو قطع می‌کرد و فایل هیچ‌وقت
+            // واقعاً ذخیره نمی‌شد — با اینکه تویِ UI انتخاب‌شده به‌نظر می‌رسید
+            function uploadFile(file) {
+                return new Promise((resolve, reject) => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('task_id', taskId);
 
-                const progressBar = document.getElementById('uploadProgressBar');
-                const progressContainer = document.getElementById('uploadProgress');
+                    const progressBar = document.getElementById('uploadProgressBar');
+                    const progressContainer = document.getElementById('uploadProgress');
 
-                progressContainer.style.display = 'block';
-                progressBar.style.width = '0%';
+                    progressContainer.style.display = 'block';
+                    progressBar.style.width = '0%';
 
-                try {
-                    const xhr = new XMLHttpRequest();
+                    try {
+                        const xhr = new XMLHttpRequest();
 
-                    // پیشرفت آپلود
-                    xhr.upload.addEventListener('progress', (e) => {
-                        if (e.lengthComputable) {
-                            const percent = (e.loaded / e.total) * 100;
-                            progressBar.style.width = percent + '%';
-                        }
-                    });
-
-                    xhr.addEventListener('load', () => {
-                        progressContainer.style.display = 'none';
-
-                        if (xhr.status === 200) {
-                            const data = JSON.parse(xhr.responseText);
-                            if (data.success) {
-                                showAlert('فایل با موفقیت آپلود شد', 'success');
-                                loadAttachments(); // بارگذاری مجدد لیست
-                                // باز کردن آکاردئون پیوست‌ها بعد از آپلود
-                                const attachmentsBody = document.getElementById('attachmentsBody');
-                                const attachmentsChevron = document.getElementById('attachmentsChevron');
-                                if (attachmentsBody) {
-                                    attachmentsBody.style.display = 'block';
-                                }
-                                if (attachmentsChevron) {
-                                    attachmentsChevron.style.transform = 'rotate(180deg)';
-                                }
-                                document.getElementById('fileInput').value = ''; // پاک کردن input
-                            } else {
-                                showAlert(data.message || 'خطا در آپلود فایل', 'danger');
+                        // پیشرفت آپلود
+                        xhr.upload.addEventListener('progress', (e) => {
+                            if (e.lengthComputable) {
+                                const percent = (e.loaded / e.total) * 100;
+                                progressBar.style.width = percent + '%';
                             }
-                        } else {
-                            showAlert('خطا در آپلود فایل', 'danger');
-                        }
-                    });
+                        });
 
-                    xhr.addEventListener('error', () => {
+                        xhr.addEventListener('load', () => {
+                            progressContainer.style.display = 'none';
+
+                            if (xhr.status === 200) {
+                                const data = JSON.parse(xhr.responseText);
+                                if (data.success) {
+                                    showAlert('فایل با موفقیت آپلود شد', 'success');
+                                    loadAttachments(); // بارگذاری مجدد لیست
+                                    // باز کردن آکاردئون پیوست‌ها بعد از آپلود
+                                    const attachmentsBody = document.getElementById('attachmentsBody');
+                                    const attachmentsChevron = document.getElementById('attachmentsChevron');
+                                    if (attachmentsBody) {
+                                        attachmentsBody.style.display = 'block';
+                                    }
+                                    if (attachmentsChevron) {
+                                        attachmentsChevron.style.transform = 'rotate(180deg)';
+                                    }
+                                    document.getElementById('fileInput').value = ''; // پاک کردن input
+                                    resolve(data);
+                                } else {
+                                    showAlert(data.message || 'خطا در آپلود فایل', 'danger');
+                                    reject(new Error(data.message || 'خطا در آپلود فایل'));
+                                }
+                            } else {
+                                showAlert('خطا در آپلود فایل', 'danger');
+                                reject(new Error('خطا در آپلود فایل'));
+                            }
+                        });
+
+                        xhr.addEventListener('error', () => {
+                            progressContainer.style.display = 'none';
+                            showAlert('خطا در ارتباط با سرور', 'danger');
+                            reject(new Error('خطا در ارتباط با سرور'));
+                        });
+
+                        xhr.open('POST', '../api/tasks/upload-attachment.php');
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
+                        xhr.send(formData);
+
+                    } catch (error) {
                         progressContainer.style.display = 'none';
-                        showAlert('خطا در ارتباط با سرور', 'danger');
-                    });
-
-                    xhr.open('POST', '../api/tasks/upload-attachment.php');
-                    xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
-                    xhr.send(formData);
-
-                } catch (error) {
-                    progressContainer.style.display = 'none';
-                    console.error('Upload error:', error);
-                    showAlert('خطا در آپلود فایل', 'danger');
-                }
+                        console.error('Upload error:', error);
+                        showAlert('خطا در آپلود فایل', 'danger');
+                        reject(error);
+                    }
+                });
             }
 
             // دانلود فایل

@@ -7,7 +7,8 @@
     <title>سیستم BPM</title>
     <!-- 🌗 اعمالِ فوریِ تمِ ذخیره‌شده (همون کلیدِ localStorage که header.php روی
          صفحاتِ بعدِ لاگین استفاده می‌کنه) — قبل از رندر، تا از فلشِ روشن جلوگیری بشه.
-         این صفحه header.php رو include نمی‌کنه، پس این بخش این‌جا تکرار شده */
+         این صفحه header.php رو include نمی‌کنه، پس این بخش این‌جا تکرار شده -->
+
     <script>
         (function () {
             var theme = 'light';
@@ -961,7 +962,7 @@
 
     </div>
     <script src="assets/js/alert.js?v=1.0"></script>
-    <script src="assets/js/network-canvas.js?v=2.0"></script>
+    <script src="assets/js/network-canvas.js?v=2.1"></script>
     <script>
         // ========== سوییچ روش ورود + ورود با کد یکبارمصرف (OTP) ==========
         document.addEventListener('DOMContentLoaded', function() {

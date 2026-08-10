@@ -116,6 +116,7 @@
     });
     (function(){
     const canvas = document.getElementById('networkCanvas');
+    if (!canvas) return;   // این صفحه (یا این لحظه‌ی بارگذاری) کانواسی نداره — انیمیشن رد می‌شه
     const ctx = canvas.getContext('2d');
     const colors = ['#6c3ff4','#00c9a7','#a78bfa','#38bdf8','#f472b6'];
     let nodes = [];
