@@ -12,6 +12,8 @@
  * $task باید حداقل این کلیدها رو داشته باشه: id, creator_id, assignee_id, organization_id
  */
 
+require_once __DIR__ . '/permissions.php'; // loadUserForPermissions/hasPermission/isSameOrganization/canManageTargetUser
+
 function taskUserAccess(PDO $db, int $userId, array $task): array
 {
     $taskId = (int) $task['id'];
@@ -21,6 +23,7 @@ function taskUserAccess(PDO $db, int $userId, array $task): array
         'is_viewer_only' => false,
         'viewer_can_view_attachments' => true,
         'viewer_can_view_history' => true,
+        'viewer_can_view_checklist' => true,
     ];
 
     // ۱. سازنده یا مسئولِ فعلی
@@ -40,6 +43,24 @@ function taskUserAccess(PDO $db, int $userId, array $task): array
     if (canManageTargetUser($db, $me, (int) $task['creator_id'])
         || canManageTargetUser($db, $me, (int) $task['assignee_id'])) {
         $result['has_access'] = true;
+        return $result;
+    }
+
+    // بیننده‌هایِ صریحاً اضافه‌شده (فقط مشاهده — task_viewers) — این چک باید
+    // زودتر از قانونِ «شرکت‌کننده در تاریخچه» و «مسئولِ چک‌لیست» بررسی بشه:
+    // کسی که به‌عنوانِ بیننده اضافه می‌شه، تقریباً همیشه قبلاً یک ردِ پایی هم
+    // در تاریخچه‌یِ همون کار داره (ارجاع/تخصیصِ قبلی)، پس اگر آن قانون‌ها زودتر
+    // اجرا می‌شدند، همیشه دسترسیِ کامل و نامحدود برمی‌گردوندن و محدودیت‌هایِ
+    // صریحاً تنظیم‌شده (مثلاً غیرفعال‌کردنِ تاریخچه) هیچ‌وقت واقعاً اعمال نمی‌شد
+    $stmt = $db->prepare("SELECT can_view_attachments, can_view_history, can_view_checklist FROM task_viewers WHERE task_id = ? AND user_id = ?");
+    $stmt->execute([$taskId, $userId]);
+    $viewerRow = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($viewerRow) {
+        $result['has_access'] = true;
+        $result['is_viewer_only'] = true;
+        $result['viewer_can_view_attachments'] = (bool) $viewerRow['can_view_attachments'];
+        $result['viewer_can_view_history'] = (bool) $viewerRow['can_view_history'];
+        $result['viewer_can_view_checklist'] = (bool) $viewerRow['can_view_checklist'];
         return $result;
     }
 
@@ -82,17 +103,6 @@ function taskUserAccess(PDO $db, int $userId, array $task): array
         $result['has_access'] = true;
         $result['is_checklist_only'] = true;
         return $result;
-    }
-
-    // بیننده‌هایِ صریحاً اضافه‌شده (فقط مشاهده — task_viewers)
-    $stmt = $db->prepare("SELECT can_view_attachments, can_view_history FROM task_viewers WHERE task_id = ? AND user_id = ?");
-    $stmt->execute([$taskId, $userId]);
-    $viewerRow = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($viewerRow) {
-        $result['has_access'] = true;
-        $result['is_viewer_only'] = true;
-        $result['viewer_can_view_attachments'] = (bool) $viewerRow['can_view_attachments'];
-        $result['viewer_can_view_history'] = (bool) $viewerRow['can_view_history'];
     }
 
     return $result;

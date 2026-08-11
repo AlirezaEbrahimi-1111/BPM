@@ -838,6 +838,34 @@ if (!$__me) {
             setupFormHandlers();
             await loadUsers(); // ← sections و acticity_section آماده‌اند
             setupCreateTaskUpload();
+            applyPrefillFromQuery();
+        }
+
+        // پیش‌پرکردنِ عنوان/توضیحات/موعد/مسئول از کوئری‌استرینگ — برایِ لینکِ
+        // «تکمیلِ اطلاعات» تویِ مودالِ «تعریفِ کار از رویِ پیام» در chat.php
+        function applyPrefillFromQuery() {
+            const params = new URLSearchParams(window.location.search);
+            const title = params.get('title');
+            const description = params.get('description');
+            const dueDate = params.get('due_date'); // فرمتِ میلادی YYYY-MM-DD
+            const assigneeId = params.get('assignee_id');
+
+            if (title) document.getElementById('manualTitle').value = title;
+            if (description) document.getElementById('manualDescription').value = description;
+            if (assigneeId && mainAssigneePickerInst) mainAssigneePickerInst.selectByUserId(assigneeId);
+
+            if (dueDate) {
+                const dueDateInput = document.getElementById('manualDueDate');
+                const wrap = dueDateInput ? dueDateInput.closest('.persian-datepicker-wrapper') : null;
+                if (wrap && wrap.datepickerInstance) {
+                    const [gy, gm, gd] = dueDate.split('-').map(Number);
+                    const jalali = wrap.datepickerInstance.gregorianToJalali(new Date(gy, gm - 1, gd));
+                    wrap.datepickerInstance.selectDate(jalali.year, jalali.month, jalali.day, true);
+                }
+            }
+
+            // عنوان همیشه فوکوسِ پیش‌فرضِ صفحه‌ست — چه پرشده باشه چه خالی
+            document.getElementById('manualTitle').focus();
         }
 
         // بررسی دسترسی کاربر

@@ -530,6 +530,18 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
 
         function reset() { if (_input) _resetSelection(); }
 
+        // انتخابِ برنامه‌ایِ یک کاربرِ مشخص با شناسه — برایِ پیش‌پرکردنِ فرم از
+        // بیرون (مثلاً از کوئری‌استرینگ). فقط حالتِ تک‌انتخابی؛ اگه کاربر تویِ
+        // cfg.users پیدا نشه (هنوز لود نشده یا شناسه نامعتبره)، کاری نمی‌کنه
+        function selectByUserId(userId) {
+            if (_isMulti) return;
+            const id = String(userId);
+            const found = (_cfg.users || []).find(u => String(u.id) === id);
+            if (!found) return;
+            const label = found.full_name || `${found.first_name || ''} ${found.last_name || ''}`.trim() || found.phone;
+            _pick('user', found.id, label);
+        }
+
         function updateData(users, sections, sectionMap) {
             if (users      !== undefined) _cfg.users      = users;
             if (sections   !== undefined) _cfg.sections   = sections;
@@ -537,10 +549,23 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
             if (_open) _renderDropdown(_filterText);
         }
 
+        // فوکوسِ برنامه‌ایِ فیلد جستجو — چون input پیش‌فرض readonly هست (تا با
+        // کلیک واردِ حالتِ ویرایش/جستجو بشه)، صرفِ input.focus() کافی نیست؛
+        // باید همون منطقِ رویدادِ click رو دستی اجرا کنیم
+        function focus() {
+            if (!_input) return;
+            _input.removeAttribute('readonly');
+            _filterText = '';
+            _input.value = '';
+            _renderDropdown('');
+            _openDropdown();
+            _input.focus();
+        }
+
         /* راه‌اندازی */
         _build();
 
-        return { getValue, reset, updateData };
+        return { getValue, reset, updateData, selectByUserId, focus };
     }
 
     /* ══════════════════════════════════════════════════════════════════

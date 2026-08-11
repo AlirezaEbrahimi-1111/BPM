@@ -17,6 +17,16 @@ class PersianDatePicker {
     }
 
     init() {
+        // وقتی این تقویم داخلِ یک مودالِ بوت‌استرپی باز می‌شه، حتی با
+        // position:fixed هم ممکنه ناقص دیده بشه، چون overflow:hidden رویِ
+        // .modal-content هر فرزندی رو (صرف‌نظر از position) در مرزِ خودش
+        // کلیپ می‌کنه. برایِ فرار از این کلیپ‌شدن، خودِ تقویم رو مستقیماً
+        // زیرِ body می‌بریم؛ چون position:fixed viewport-centered هست، جابه‌جاییِ
+        // parent هیچ تأثیری رویِ محلِ نمایشش نداره
+        if (this.calendar.parentElement !== document.body) {
+            document.body.appendChild(this.calendar);
+        }
+
         const today = this.gregorianToJalali(new Date());
         this.currentYear = today.year;
         this.currentMonth = today.month;
@@ -65,15 +75,24 @@ class PersianDatePicker {
     }
 
     show() {
+        // ⚠️ .persian-datepicker خودش position:fixed و z-index بالا داره تا
+        // همیشه بالایِ هر مودالی (حتی وقتی این تقویم داخلِ یک مودالِ بوت‌استرپی
+        // باز شده) بشینه — ولی بدونِ یک بک‌دراپِ مشخص، از دیدِ کاربر معلوم
+        // نبود که این یک لایه‌ی مستقل و بالاتره، نه بخشی از خودِ مودال؛ این‌جا
+        // یک بک‌دراپِ مشترک (برایِ کلِ صفحه، نه هر instance جداگانه) رو نشون می‌دیم
+        PersianDatePicker._showBackdrop(() => this.hide());
         this.calendar.classList.add('show');
     }
 
     hide() {
         this.calendar.classList.remove('show');
+        PersianDatePicker._hideBackdrop();
     }
 
     handleOutsideClick(e) {
-        if (!this.element.contains(e.target)) {
+        // چون تقویم دیگه زیرِ this.element نیست (به body منتقل شده)، باید
+        // جداگانه هم چک کنیم که کلیکِ روی خودِ تقویم باعثِ بسته‌شدنش نشه
+        if (!this.element.contains(e.target) && !this.calendar.contains(e.target)) {
             this.hide();
         }
     }
@@ -360,6 +379,26 @@ class PersianDatePicker {
         this.input.removeAttribute('data-date');
         this.selectedDate = null;
         this.render();
+    }
+
+    // یک بک‌دراپِ مشترک برایِ کلِ صفحه (نه یکی به‌ازایِ هر instance) — همیشه
+    // پشتِ همون تقویمی می‌مونه که همین لحظه بازه، حتی وقتی داخلِ یک مودالِ
+    // دیگه‌ست، و با کلیک روش، همون تقویم بسته می‌شه
+    static _showBackdrop(onClose) {
+        let bd = document.getElementById('sharedDatepickerBackdrop');
+        if (!bd) {
+            bd = document.createElement('div');
+            bd.id = 'sharedDatepickerBackdrop';
+            bd.className = 'datepicker-backdrop';
+            document.body.appendChild(bd);
+        }
+        bd.onclick = onClose;
+        bd.classList.add('show');
+    }
+
+    static _hideBackdrop() {
+        const bd = document.getElementById('sharedDatepickerBackdrop');
+        if (bd) bd.classList.remove('show');
     }
 }
 

@@ -92,6 +92,7 @@ try {
     $is_viewer_only = $access['is_viewer_only'];
     $viewer_can_view_attachments = $access['viewer_can_view_attachments'];
     $viewer_can_view_history = $access['viewer_can_view_history'];
+    $viewer_can_view_checklist = $access['viewer_can_view_checklist'];
 
     if (!$hasAccess) {
         http_response_code(403);
@@ -202,6 +203,12 @@ try {
         }));
     }
 
+    // 🔒 بیننده‌ای که دسترسیِ تاریخچه براش خاموش شده: علاوه بر پنهان‌کردنِ
+    // بخش در فرانت، خودِ داده هم از پاسخ حذف بشه (وگرنه از تبِ Network قابلِ دیدن بود)
+    if ($is_viewer_only && !$viewer_can_view_history) {
+        $history = [];
+    }
+
     echo json_encode([
         'success' => true,
         'task' => $task,
@@ -210,6 +217,7 @@ try {
         'is_viewer_only' => $is_viewer_only, // 🆕 فقط از راهِ task_viewers دسترسی داره — نه ویرایش/اقدام
         'viewer_can_view_attachments' => $viewer_can_view_attachments, // 🆕 فقط برایِ is_viewer_only معنا داره
         'viewer_can_view_history' => $viewer_can_view_history,         // 🆕
+        'viewer_can_view_checklist' => $viewer_can_view_checklist,     // 🆕
         'can_edit' => $hasAccess && !$is_viewer_only
     ]);
 } catch (Exception $e) {

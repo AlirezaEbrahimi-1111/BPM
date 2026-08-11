@@ -210,6 +210,13 @@
     box-shadow: 0 3px 12px rgba(102, 126, 234, 0.4);
 }
 
+/* وقتی «امروز» هم‌زمان انتخاب‌شده هم هست (مثلاً پیش‌فرضِ مودالِ تعریفِ کار)،
+   رنگِ .selected (سفید) روی رنگِ .today غالب می‌شد و روی پس‌زمینه‌یِ کم‌رنگ
+   به‌سختی دیده می‌شد — این‌جا صریحاً مشکی می‌کنیم */
+.datepicker-day.today.selected {
+    color: #1a1a1a;
+}
+
 .datepicker-day.disabled {
     color: #ddd;
     cursor: not-allowed;
@@ -363,6 +370,10 @@
 
 :root[data-theme="dark"] .datepicker-day.selected {
     box-shadow: 0 2px 10px rgba(102, 126, 234, 0.45);
+}
+
+:root[data-theme="dark"] .datepicker-day.today.selected {
+    color: #fff;
 }
 
 :root[data-theme="dark"] .datepicker-day.datepicker-friday.datepicker-holiday {

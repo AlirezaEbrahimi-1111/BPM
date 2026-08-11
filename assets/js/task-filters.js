@@ -196,8 +196,13 @@ window.TF = (function () {
         // ── کار مقطعی ────────────────────────────────
         if (t.task_type === 'periodic') {
             const due = effectiveDue(t);
+            // 🔒 وضعیتِ 'delegated' هم باید اینجا حساب بشه: بعد از ارجاع (حتی
+            // ارجاعِ برگشتی به خودِ تعریف‌کننده)، status در دیتابیس همچنان
+            // 'delegated' می‌مونه — اگه اینجا لحاظ نشه، کارِ عقب‌افتاده‌ای که
+            // الان واقعاً مسئولش کاربرِ جاریه، به‌جایِ «عقب افتاده»، همچنان
+            // برچسبِ نامربوطِ «ارجاع شده» رو نشون می‌ده
             return !!due && due < td &&
-                   (t.status === 'not_started' || t.status === 'in_progress');
+                   (t.status === 'not_started' || t.status === 'in_progress' || t.status === 'delegated');
         }
 
         return false;
@@ -236,9 +241,16 @@ window.TF = (function () {
 
     /**
      * HTML آمادهٔ برچسب وضعیت.
-     * اگر کار عقب‌افتاده باشد، برچسب «عقب افتاده» اولویت دارد.
+     * اگر کار عقب‌افتاده باشد، برچسب «عقب افتاده» اولویت دارد — به‌جز وقتی
+     * وضعیت «در انتظار تأیید» است: مثلاً وقتی خودِ کاربرِ جاری تأییدکننده است
+     * و دیر در تأییدکردن است، isOverdue() هم true برمی‌گردد؛ ولی چیزی که
+     * الان واقعاً باید به کاربر گفته بشه اینه که باید تأیید کنه، نه صرفاً
+     * اینکه کار «عقب افتاده»— پس «در انتظار تأیید» اولویتِ بالاتری داره
      */
     function statusBadge(t, user) {
+        if (t.status === 'pending_approval') {
+            return `<span class="status-badge ${statusClass(t.status)}">${statusLabel(t.status)}</span>`;
+        }
         if (isOverdue(t, user)) {
             return '<span class="status-badge status-overdue">عقب افتاده</span>';
         }

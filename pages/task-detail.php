@@ -78,6 +78,14 @@ if (!$__me) {
             padding: 8px 4px;
         }
 
+        .viewer-name {
+            transition: color .15s ease;
+        }
+
+        .viewer-name:hover {
+            color: var(--icon-accent, #744CA4);
+        }
+
         /* در پیکرِ افزودنِ دسترسی، hintِ زیرِ فیلد هیچ‌وقت پر نمی‌شه (فقط تویِ حالتِ
            واگذاریِ تک‌نفره پر می‌شه) — فضایِ خالیِ رزروشده‌اش رو جمع می‌کنیم */
         #addViewerPicker .ap-hint {
@@ -1587,6 +1595,13 @@ if (!$__me) {
                     checklistGateState = { total: 0, done: 0 };
                     return;
                 }
+                // 🔒 بیننده‌ای که دسترسیِ چک‌لیست براش خاموش شده: کل بخش پنهان
+                if (window._isViewerOnly && !window._viewerCanViewChecklist) {
+                    const section = document.getElementById('checklistDetailSection');
+                    if (section) section.style.display = 'none';
+                    checklistGateState = { total: 0, done: 0 };
+                    return;
+                }
                 try {
                     const res = await fetch(`../api/checklist/get.php?task_id=${taskId}`, {
                         headers: {
@@ -2334,6 +2349,7 @@ if (!$__me) {
                         window._isViewerOnly = (data.is_viewer_only === true); // 🆕
                         window._viewerCanViewAttachments = (data.viewer_can_view_attachments !== false); // 🆕
                         window._viewerCanViewHistory = (data.viewer_can_view_history !== false); // 🆕
+                        window._viewerCanViewChecklist = (data.viewer_can_view_checklist !== false); // 🆕
 
                         displayTaskDetails(taskData, data.history);
                         renderTaskGroup(taskData); // 🆕
@@ -2444,6 +2460,7 @@ if (!$__me) {
 
             async function renderTaskViewers(task) {
                 const cell = document.getElementById('taskViewersCell');
+                const item = document.getElementById('taskViewersItem');
                 if (!cell) return;
 
                 let data;
@@ -2453,56 +2470,97 @@ if (!$__me) {
                     });
                     data = await res.json();
                 } catch {
-                    cell.innerHTML = '<span class="text-muted">خطا در بارگذاری</span>';
                     return;
                 }
-                if (!data.success) {
-                    cell.innerHTML = '<span class="text-muted">—</span>';
+                // این بخش صرفاً یک ابزارِ مدیریتیه (اضافه/حذف/ویرایشِ دسترسیِ
+                // دیگران)؛ خودِ بینندگان نباید فهرستِ سایرِ بینندگان و دسترسی‌شون
+                // رو ببینن، حتی به‌صورتِ غیرفعال — پس برایِ غیرِ مدیر، کلاً مخفی می‌مونه
+                if (!data.success || !data.can_manage) {
+                    if (item) item.style.display = 'none';
                     return;
                 }
+                if (item) item.style.display = '';
                 renderViewersCell(task.id, data.viewers, !!data.can_manage);
+            }
+
+            // یک سوییچِ کوچکِ دسترسی برایِ ردیفِ یک بیننده — سه‌بار (پیوست/تاریخچه/چک‌لیست) صدا زده می‌شه
+            function viewerSwitchHtml(inputId, checked, labelText, disabled) {
+                return `<div class="form-check form-switch mb-0" style="display:flex; align-items:center; gap:5px; padding:0; margin:0;">
+                    <input class="form-check-input" type="checkbox" role="switch" id="${inputId}" ${checked ? 'checked' : ''} ${disabled ? 'disabled' : ''} style="margin:0; flex-shrink:0;">
+                    <label class="form-check-label small" for="${inputId}" style="margin:0; white-space:nowrap;">${labelText}</label>
+                </div>`;
+            }
+
+            // بازکردن/بستنِ ردیفِ یک بیننده — پیش‌فرض فقط نام دیده می‌شه؛ با
+            // کلیک، جزئیاتِ دسترسی (سوییچ‌ها/اعمال/حذف) باز می‌شه — برایِ
+            // نگه‌داشتنِ طراحیِ خلوت به‌جایِ نمایشِ همیشگیِ همه‌چیز
+            function toggleViewerRow(userId) {
+                const detail = document.getElementById(`viewerDetail-${userId}`);
+                const chevron = document.getElementById(`viewerChevron-${userId}`);
+                if (!detail) return;
+                const isOpen = detail.style.display !== 'none';
+                detail.style.display = isOpen ? 'none' : 'flex';
+                if (chevron) {
+                    // فلشِ افقی — باید با حالتِ نهاییِ ردیف هماهنگ باشه (هم بعدِ کلیک،
+                    // هم در رندرِ اولیه‌یِ پیش‌فرض که پایین‌تر «بسته» ساخته می‌شه):
+                    // باز → سمتِ راست، بسته → سمتِ چپ (همون آیکنِ پیش‌فرض)
+                    chevron.classList.toggle('bi-chevron-left', isOpen);
+                    chevron.classList.toggle('bi-chevron-right', !isOpen);
+                }
             }
 
             function renderViewersCell(taskId, viewers, canManage) {
                 const cell = document.getElementById('taskViewersCell');
                 if (!cell) return;
 
-                let html = '<div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">';
+                let html = '';
 
                 if (canManage) {
-                    html += `<button class="btn btn-link btn-sm p-0" id="addViewerBtn" title="افزودنِ دسترسی" style="margin-left:10px;">
-                        <i class="bi bi-person-plus"></i>
+                    html += `<button class="btn btn-link btn-sm p-0 mb-1" id="addViewerBtn" title="افزودنِ دسترسی" style="display:flex; align-items:center; gap:4px;">
+                        <i class="bi bi-person-plus"></i> افزودنِ دسترسی
                     </button>`;
                 }
 
-                if (!viewers.length) {
-                    html += '<span class="text-muted">کسی اضافه نشده</span>';
-                } else {
-                    html += viewers.map(v =>
-                        `<span class="viewer-chip mb-1">${escapeHtml(v.full_name)}` +
-                        (canManage ? ` <i class="bi bi-x-circle" style="cursor:pointer" onclick="removeTaskViewer(${taskId}, ${v.id})" title="حذف"></i>` : '') +
-                        `</span>`
-                    ).join('');
-                }
-                html += '</div>';
-
+                // فرمِ افزودنِ دسترسیِ جدید: بالایِ فهرستِ کاربرانِ دسترسی‌داده‌شده
                 if (canManage) {
-                    html += `<div id="addViewerWrap" style="display:none; margin-top:6px; align-items:flex-start; gap:6px; max-width:400px;">
-                        <div style="flex:1; min-width:0;">
-                            <div id="addViewerPicker"></div>
-                            <div style="display:flex; align-items:center; gap:16px; margin-top:4px;">
-                                <div class="form-check form-switch mb-0" style="display:flex; align-items:center; gap:6px; padding:0; margin:0;">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="viewerCanAttachments" checked style="margin:0; flex-shrink:0;">
-                                    <label class="form-check-label small" for="viewerCanAttachments" style="margin:0;">دسترسیِ پیوست‌ها</label>
-                                </div>
-                                <div class="form-check form-switch mb-0" style="display:flex; align-items:center; gap:6px; padding:0; margin:0;">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="viewerCanHistory" checked style="margin:0; flex-shrink:0;">
-                                    <label class="form-check-label small" for="viewerCanHistory" style="margin:0;">دسترسیِ تاریخچه</label>
-                                </div>
+                    // align-items:flex-start (نه center) چون وقتی کاربری از پیکر
+                    // انتخاب می‌شه، یک ردیفِ چیپ زیرِ فیلدِ جستجو اضافه می‌شه و
+                    // ارتفاعِ اون بلوک بیشتر از دکمه/سوییچ‌ها می‌شه؛ با center
+                    // دکمه‌یِ افزودن و سوییچ‌ها به‌جایِ هم‌ردیف‌بودن با فیلدِ جستجو،
+                    // به وسطِ ارتفاعِ کلی می‌رفتن و توازنِ ردیف به‌هم می‌خورد
+                    html += `<div id="addViewerWrap" style="display:none; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:8px;">
+                        <div style="display:flex; align-items:flex-start; gap:6px; flex:1; min-width:220px;">
+                            <div id="addViewerPicker" style="flex:1; min-width:0;"></div>
+                            <button class="btn btn-primary btn-sm" id="submitAddViewerBtn" style="flex-shrink:0;">افزودن</button>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                            ${viewerSwitchHtml('viewerCanAttachments', true, 'پیوست‌ها')}
+                            ${viewerSwitchHtml('viewerCanHistory', true, 'تاریخچه')}
+                            ${viewerSwitchHtml('viewerCanChecklist', true, 'چک‌لیست')}
+                        </div>
+                    </div>`;
+                }
+
+                if (!viewers.length) {
+                    html += '<div><span class="text-muted">کسی اضافه نشده</span></div>';
+                } else {
+                    html += '<div style="display:flex; flex-direction:column; gap:4px;">';
+                    html += viewers.map(v => `
+                        <div class="viewer-row" data-user-id="${v.id}" style="display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:5px 8px; border-radius:8px; background:var(--bg-page);">
+                            <span class="viewer-name" style="font-weight:600; display:flex; align-items:center; gap:4px; flex-shrink:0; cursor:pointer;" onclick="toggleViewerRow(${v.id})">
+                                ${escapeHtml(v.full_name)}
+                                <i class="bi bi-chevron-left" id="viewerChevron-${v.id}" style="font-size:.75em;"></i>
+                            </span>
+                            <div id="viewerDetail-${v.id}" style="display:none; align-items:center; flex-wrap:wrap; gap:12px;">
+                                ${viewerSwitchHtml(`viewerRowAtt-${v.id}`, v.can_view_attachments, 'پیوست‌ها')}
+                                ${viewerSwitchHtml(`viewerRowHist-${v.id}`, v.can_view_history, 'تاریخچه')}
+                                ${viewerSwitchHtml(`viewerRowChk-${v.id}`, v.can_view_checklist, 'چک‌لیست')}
+                                <button class="btn btn-outline-primary btn-sm py-0" onclick="applyViewerPermission(${taskId}, ${v.id})">اعمال</button>
+                                <i class="bi bi-x-circle" style="cursor:pointer" onclick="removeTaskViewer(${taskId}, ${v.id})" title="حذف"></i>
                             </div>
                         </div>
-                        <button class="btn btn-primary btn-sm" id="submitAddViewerBtn" style="flex-shrink:0;">افزودن</button>
-                    </div>`;
+                    `).join('');
+                    html += '</div>';
                 }
 
                 cell.innerHTML = html;
@@ -2535,6 +2593,7 @@ if (!$__me) {
                         onSelect: () => {}
                     });
                 }
+                addViewerPickerInst.focus();
             }
 
             async function submitAddViewers(taskId) {
@@ -2546,13 +2605,15 @@ if (!$__me) {
                 }
                 const canAttachments = document.getElementById('viewerCanAttachments').checked;
                 const canHistory = document.getElementById('viewerCanHistory').checked;
+                const canChecklist = document.getElementById('viewerCanChecklist').checked;
                 try {
                     const res = await fetch('../api/tasks/add-viewers.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
                         body: JSON.stringify({
                             task_id: taskId, user_ids: userIds,
-                            can_view_attachments: canAttachments, can_view_history: canHistory
+                            can_view_attachments: canAttachments, can_view_history: canHistory,
+                            can_view_checklist: canChecklist
                         })
                     });
                     const data = await res.json();
@@ -2562,6 +2623,35 @@ if (!$__me) {
                         renderTaskViewers(taskData);
                     } else {
                         showToast(data.message || 'خطا در افزودنِ دسترسی', 'error');
+                    }
+                } catch {
+                    showToast('خطا در ارتباط با سرور', 'error');
+                }
+            }
+
+            // ویرایشِ دسترسیِ یک بیننده‌ی از قبل‌موجود — دقیقاً همون اندپوینتِ
+            // افزودن رو با یک‌نفره و پرچم‌هایِ به‌روزشده دوباره صدا می‌زنه
+            // (ON DUPLICATE KEY UPDATE سمتِ سرور، سطرِ موجود رو جای‌گزین می‌کنه)
+            async function applyViewerPermission(taskId, userId) {
+                const canAttachments = document.getElementById(`viewerRowAtt-${userId}`).checked;
+                const canHistory = document.getElementById(`viewerRowHist-${userId}`).checked;
+                const canChecklist = document.getElementById(`viewerRowChk-${userId}`).checked;
+                try {
+                    const res = await fetch('../api/tasks/add-viewers.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                        body: JSON.stringify({
+                            task_id: taskId, user_ids: [userId],
+                            can_view_attachments: canAttachments, can_view_history: canHistory,
+                            can_view_checklist: canChecklist
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast('تغییرات اعمال شد', 'success');
+                        renderTaskViewers(taskData);
+                    } else {
+                        showToast(data.message || 'خطا در اعمالِ تغییرات', 'error');
                     }
                 } catch {
                     showToast('خطا در ارتباط با سرور', 'error');
@@ -2637,7 +2727,7 @@ if (!$__me) {
                     <div class="info-label">گروه:</div>
                     <div class="info-value" id="taskGroupCell"></div>
                 </div>
-                <div class="info-item">
+                <div class="info-item" id="taskViewersItem" style="display:none;">
                     <div class="info-label">دسترسی به:</div>
                     <div class="info-value" id="taskViewersCell">در حال بارگذاری...</div>
                 </div>

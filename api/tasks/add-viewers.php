@@ -21,10 +21,14 @@ try {
     $input = json_decode(file_get_contents('php://input'), true) ?: [];
     $task_id = (int) ($input['task_id'] ?? 0);
     $userIds = array_values(array_unique(array_map('intval', $input['user_ids'] ?? [])));
-    // پیش‌فرض روشن — «بیننده» یعنی حداقل جزئیاتِ اصلی رو می‌بینه؛ این دو فقط
-    // اختیاریِ خاموش‌کردنه (همون یک ست برایِ کلِ این دسته‌یِ افزودن)
+    // پیش‌فرض روشن — «بیننده» یعنی حداقل جزئیاتِ اصلی رو می‌بینه؛ این‌ها فقط
+    // اختیاریِ خاموش‌کردنه (همون یک ست برایِ کلِ این دسته‌یِ افزودن).
+    // ⚠️ همین اندپوینت برایِ ویرایشِ دسترسیِ یک بیننده‌ی موجود هم دوباره صدا
+    // زده می‌شه (با user_ids شاملِ همون یک نفر) — چون ON DUPLICATE KEY UPDATE
+    // پایین، سطرِ موجود رو به‌روزرسانی می‌کنه، نیازی به اندپوینتِ جداگانه نیست
     $canViewAttachments = !array_key_exists('can_view_attachments', $input) || !empty($input['can_view_attachments']);
     $canViewHistory     = !array_key_exists('can_view_history', $input) || !empty($input['can_view_history']);
+    $canViewChecklist   = !array_key_exists('can_view_checklist', $input) || !empty($input['can_view_checklist']);
 
     if (!$task_id || empty($userIds)) {
         http_response_code(400);
@@ -44,11 +48,14 @@ try {
         exit;
     }
 
+    // 🔒 مدیریتِ دسترسیِ بینندگان فقط با تعریف‌کننده‌یِ کار (یا مدیرِ سازمانی‌اش)
+    // است، نه با مسئولِ فعلیِ انجامِ کار — چون canManageTargetUser خودش خودِ
+    // کاربر رو هم «مدیرِ خودش» حساب می‌کنه، چکِ روی assignee_id قبلاً باعث
+    // می‌شد هر مسئولِ کاری بتونه بدونِ اجازه‌یِ تعریف‌کننده، بیننده اضافه/حذف کنه
     $me = loadUserForPermissions($db, $user_id);
     $canManageViewers = (
         (int) $task['creator_id'] === (int) $user_id
         || canManageTargetUser($db, $me, (int) $task['creator_id'])
-        || canManageTargetUser($db, $me, (int) $task['assignee_id'])
         || (hasPermission($me, 'view_all_org_tasks') && isSameOrganization($me, $task['organization_id'] ?? 0))
     );
     if (!$canManageViewers) {
@@ -69,15 +76,21 @@ try {
         exit;
     }
 
+    // آیا این‌ها بیننده‌هایِ از قبل‌موجود بودن؟ (برایِ اینکه فقط به تازه‌اضافه‌شده‌ها اعلان بره)
+    $existingPh = implode(',', array_fill(0, count($validIds), '?'));
+    $existingStmt = $db->prepare("SELECT user_id FROM task_viewers WHERE task_id = ? AND user_id IN ($existingPh)");
+    $existingStmt->execute(array_merge([$task_id], $validIds));
+    $alreadyViewers = array_map('intval', $existingStmt->fetchAll(PDO::FETCH_COLUMN));
+
     $stmt = $db->prepare("
-        INSERT INTO task_viewers (task_id, user_id, granted_by, can_view_attachments, can_view_history)
-        VALUES (?, ?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE can_view_attachments = VALUES(can_view_attachments), can_view_history = VALUES(can_view_history)
+        INSERT INTO task_viewers (task_id, user_id, granted_by, can_view_attachments, can_view_history, can_view_checklist)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE can_view_attachments = VALUES(can_view_attachments), can_view_history = VALUES(can_view_history), can_view_checklist = VALUES(can_view_checklist)
     ");
     $notif = new Notification($db);
     foreach ($validIds as $viewerId) {
-        $stmt->execute([$task_id, $viewerId, $user_id, $canViewAttachments ? 1 : 0, $canViewHistory ? 1 : 0]);
-        if ($viewerId !== $user_id) {
+        $stmt->execute([$task_id, $viewerId, $user_id, $canViewAttachments ? 1 : 0, $canViewHistory ? 1 : 0, $canViewChecklist ? 1 : 0]);
+        if ($viewerId !== $user_id && !in_array($viewerId, $alreadyViewers, true)) {
             $notif->create([
                 'to_user_id'   => $viewerId,
                 'title'        => 'دسترسیِ مشاهدهٔ یک کار',

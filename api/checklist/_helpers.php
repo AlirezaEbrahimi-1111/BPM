@@ -3,9 +3,13 @@
 // این فایل توسط بقیه API‌های چک‌لیست require می‌شود.
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-access.php';
 
 /**
- * گرفتن کار + بررسی دسترسی پایه (کاربر باید creator یا assignee باشد)
+ * گرفتن کار + بررسی دسترسی (زنجیره‌ی مشترکِ taskUserAccess: سازنده/مسئول/
+ * مدیر/تاریخچه/چک‌لیست/بیننده — همان منبعِ حقیقتی که detail.php و
+ * get-attachments.php هم استفاده می‌کنند، تا بیننده‌ای که با task_viewers
+ * دسترسیِ چک‌لیست براش صریحاً روشن/خاموش شده، اینجا هم واقعاً رعایت بشه)
  * خروجی: آرایه task یا null
  */
 function getTaskForChecklist($db, $task_id, $user_id)
@@ -17,43 +21,19 @@ function getTaskForChecklist($db, $task_id, $user_id)
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$task) return null;
 
-    $isCreator  = (int)$task['creator_id']  === (int)$user_id;
-    $isAssignee = (int)$task['assignee_id'] === (int)$user_id;
+    $access = taskUserAccess($db, (int) $user_id, $task);
 
-    // آیا کاربر مسئولِ حداقل یک آیتم چک‌لیست است؟ (مستقیم یا از طریق واحدش)
-    $isChecklistAssignee = false;
-    if (!$isCreator && !$isAssignee) {
-        // سازمانِ کاربر را بخوان
-        $secStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
-        $secStmt->execute([$user_id]);
-        $user_row = $secStmt->fetch(PDO::FETCH_ASSOC) ?: [];
-
-        // ارجاعِ «واحد» فقط وقتی معتبر است که کاربر در همان سازمانِ کار باشد
-        // (چون رشته‌ی section_key می‌تواند بین سازمان‌های مختلف یکسان باشد)
-        $sameOrg = isset($user_row['organization_id']) && (int)$user_row['organization_id'] === (int)$task['organization_id'];
-
-        // 🆕 همهٔ واحدهای کاربر (نه فقط واحد اصلی)
-        $userSections = $sameOrg ? us_getUserSections($db, $user_id) : [];
-        $ph = us_placeholders($userSections);
-
-        $chkStmt = $db->prepare("
-            SELECT COUNT(*) FROM task_checklist_items ci
-            WHERE ci.task_id = ?
-              AND (
-                  (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
-                  OR (ci.assignee_type = 'section' AND ci.assignee_value IN ($ph))
-              )
-        ");
-        $chkStmt->execute(array_merge([$task_id, (string)$user_id], $userSections));
-        $isChecklistAssignee = ((int)$chkStmt->fetchColumn() > 0);
+    // بیننده‌ای که صریحاً دسترسیِ چک‌لیست براش خاموش شده، حتی اگر از راهِ
+    // دیگه‌ای (مثلاً مسئولِ یک آیتم) هم واجدِ شرایط بود، دسترسی نداره
+    if ($access['is_viewer_only'] && !$access['viewer_can_view_checklist']) {
+        return null;
     }
+    if (!$access['has_access']) return null;
 
-    // هیچ‌کدام نبود → دسترسی ندارد
-    if (!$isCreator && !$isAssignee && !$isChecklistAssignee) return null;
-
-    $task['_is_creator']            = $isCreator;
-    $task['_is_assignee']           = $isAssignee;
-    $task['_is_checklist_assignee'] = $isChecklistAssignee;  // 🆕 فلگ جدید
+    $task['_is_creator']            = ((int) $task['creator_id']  === (int) $user_id);
+    $task['_is_assignee']           = ((int) $task['assignee_id'] === (int) $user_id);
+    $task['_is_checklist_assignee'] = $access['is_checklist_only'];  // مسئولِ صرفِ یک/چند آیتم → دیدِ محدود
+    $task['_is_pure_viewer']        = $access['is_viewer_only'];     // 🆕 بیننده‌یِ task_viewers → دیدِ کامل، فقط مشاهده
     return $task;
 }
 

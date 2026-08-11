@@ -33,17 +33,18 @@ try {
         exit;
     }
 
+    // 🔒 مدیریتِ دسترسیِ بینندگان فقط با تعریف‌کننده‌یِ کار (یا مدیرِ سازمانی‌اش)
+    // است، نه با مسئولِ فعلیِ انجامِ کار
     $me = loadUserForPermissions($db, $user_id);
     $canManageViewers = (
         (int) $task['creator_id'] === (int) $user_id
         || canManageTargetUser($db, $me, (int) $task['creator_id'])
-        || canManageTargetUser($db, $me, (int) $task['assignee_id'])
         || (hasPermission($me, 'view_all_org_tasks') && isSameOrganization($me, $task['organization_id'] ?? 0))
     );
 
     $stmt = $db->prepare("
         SELECT tv.user_id AS id, TRIM(CONCAT(u.first_name, ' ', u.last_name)) AS full_name,
-               tv.can_view_attachments, tv.can_view_history
+               tv.can_view_attachments, tv.can_view_history, tv.can_view_checklist
         FROM task_viewers tv
         JOIN users u ON u.id = tv.user_id
         WHERE tv.task_id = ?

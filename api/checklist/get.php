@@ -26,8 +26,9 @@ try {
         echo json_encode(['success' => false, 'message' => 'دسترسی به این کار ندارید']);
         exit;
     }
-    // آیا کاربر فقط «مسئول چک‌لیست» است؟ (نه creator و نه assignee تسک)
-    $onlyChecklistAssignee = !$task['_is_creator'] && !$task['_is_assignee'];
+    // آیا کاربر فقط «مسئول چک‌لیست» است؟ (نه creator، نه assignee، و نه بیننده‌یِ
+    // task_viewers — بیننده باید کلِ چک‌لیست رو ببینه، نه فقط آیتم‌هایِ خودش)
+    $onlyChecklistAssignee = $task['_is_checklist_assignee'];
 
     // 🆕 همهٔ واحدهای کاربر (برای تشخیص آیتم‌های ارجاع‌شده به واحدهایش)
     $userSections = us_getUserSections($db, $user_id);

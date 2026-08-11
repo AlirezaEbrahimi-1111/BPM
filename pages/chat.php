@@ -43,6 +43,13 @@ if (!$__me) {
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/jquery.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/custom.css') ?>">
+    <!-- تقویمِ شمسی — برایِ فیلدِ موعدِ مودالِ «تعریفِ کار از رویِ پیام»؛ دقیقاً
+         همون ست‌ِ فایل‌هایی که task-detail.php/create-task.php استفاده می‌کنن
+         (پیاده‌سازیِ سفارشیِ خودِ پروژه، نه یک کتابخانه‌یِ دیگه) -->
+    <link rel="stylesheet" href="<?= asset('../assets/js/cdn/persian-datepicker.min.css') ?>">
+    <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
+    <script src="<?= asset('../assets/js/cdn/persian-date.min.js') ?>"></script>
+    <script src="<?= asset('../assets/js/persian-datepicker.js') ?>"></script>
 
     <style>
         /* ═══════════════════════════════════════════════════════════
@@ -822,6 +829,12 @@ if (!$__me) {
             background: var(--ink-050);
         }
 
+        .chat-ctx-menu-divider {
+            height: 1px;
+            background: var(--border-soft, #eee);
+            margin: 4px 2px;
+        }
+
         .chat-ctx-menu-item.danger i,
         .chat-ctx-menu-item.danger {
             color: #b3382c;
@@ -1477,6 +1490,7 @@ if (!$__me) {
         }
 
         .chat-attach-btn,
+        .chat-emoji-btn,
         .chat-send-btn {
             width: 38px;
             height: 38px;
@@ -1495,6 +1509,12 @@ if (!$__me) {
             color: var(--text-muted);
         }
 
+        #chatEmojiBtn {
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        #chatEmojiBtn:hover,
         #chatAttachBtn:hover {
             background: var(--ink-050);
             color: var(--ink-900);
@@ -1508,6 +1528,86 @@ if (!$__me) {
         .chat-send-btn:disabled {
             opacity: .4;
             cursor: not-allowed;
+        }
+
+        /* ─── پیکرِ ایموجی ─── */
+        .chat-emoji-picker {
+            position: absolute;
+            bottom: 54px;
+            right: 8px;
+            width: 280px;
+            max-height: 260px;
+            overflow-y: auto;
+            background: var(--surface);
+            border: 1px solid var(--border-soft, #eee);
+            border-radius: 12px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, .18);
+            padding: 8px;
+            display: none;
+            z-index: 50;
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .chat-emoji-picker.show {
+            display: grid;
+        }
+
+        .chat-emoji-picker span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            padding: 4px;
+            border-radius: 6px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .chat-emoji-picker span:hover {
+            background: var(--ink-050);
+        }
+
+        /* ─── سوئیچِ دوگزینه‌ایِ «برایِ کیه؟» در مودالِ تعریفِ کار ─── */
+        .qt-toggle {
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            background: var(--ink-050, #f1f2f6);
+            border: 1px solid var(--border-soft, #e5e7eb);
+            border-radius: 999px;
+        }
+
+        .qt-toggle input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .qt-toggle label {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin: 0;
+            padding: 8px 10px;
+            border-radius: 999px;
+            font-size: .85rem;
+            font-weight: 500;
+            color: var(--text-muted, #6b7280);
+            cursor: pointer;
+            transition: background .2s ease, color .2s ease, box-shadow .2s ease;
+        }
+
+        .qt-toggle input:checked + label {
+            background: var(--brand-gradient);
+            color: #fff;
+            box-shadow: 0 3px 10px rgba(99, 102, 241, .35);
+        }
+
+        .qt-toggle input:focus-visible + label {
+            outline: 2px solid var(--icon-accent);
+            outline-offset: 2px;
         }
 
         .chat-composer-input {
@@ -1962,10 +2062,14 @@ if (!$__me) {
                     <div class="chat-composer">
                         <div class="chat-mention-autocomplete" id="mentionAutocomplete" style="display:none;"></div>
                         <div class="chat-mention-autocomplete" id="linkRefAutocomplete" style="display:none;"></div>
+                        <div class="chat-emoji-picker" id="chatEmojiPicker"></div>
                         <button class="chat-attach-btn" id="chatAttachBtn" onclick="document.getElementById('chatFileInput').click()" title="پیوست فایل">
                             <i class="bi bi-paperclip"></i>
                         </button>
                         <input type="file" id="chatFileInput" multiple style="display:none;">
+                        <button class="chat-emoji-btn" id="chatEmojiBtn" onclick="toggleEmojiPicker(event)" title="ایموجی">
+                            <i class="bi bi-emoji-smile"></i>
+                        </button>
                         <textarea class="chat-composer-input" id="chatComposerInput" rows="1" placeholder="پیامی بنویسید..."></textarea>
                         <button class="chat-send-btn" id="chatSendBtn" onclick="sendChatMessage()">
                             <i class="bi bi-send-fill"></i>
@@ -2144,6 +2248,69 @@ if (!$__me) {
         </div>
     </div>
 
+    <!-- مودالِ تعریفِ کار از رویِ یک پیامِ چت -->
+    <div class="modal fade" id="quickTaskModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title"><i class="bi bi-list-task me-2"></i>تعریفِ کار</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">عنوانِ کار *</label>
+                        <input type="text" class="form-control" id="quickTaskTitle" placeholder="عنوانِ کار را وارد کنید...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">توضیحات</label>
+                        <textarea class="form-control" id="quickTaskDescription" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3" id="quickTaskAssigneeRow" style="display:none;">
+                        <label class="form-label d-block">این کار برایِ کیه؟</label>
+                        <div class="qt-toggle">
+                            <input type="radio" name="quickTaskAssignee" id="quickTaskAssigneeMe" value="me" checked>
+                            <label for="quickTaskAssigneeMe"><i class="bi bi-person-fill"></i>خودم</label>
+                            <input type="radio" name="quickTaskAssignee" id="quickTaskAssigneeOther" value="other">
+                            <label for="quickTaskAssigneeOther" id="quickTaskAssigneeOtherLabel"><i class="bi bi-people-fill"></i>مخاطبِ چت</label>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">موعدِ انجام</label>
+                        <div class="persian-datepicker-wrapper" id="quickTaskDueDateWrap" data-restrict-past="0">
+                            <input type="text" id="quickTaskDueDate" class="persian-datepicker-input form-control"
+                                placeholder="انتخاب تاریخ..." readonly>
+                            <div class="persian-datepicker">
+                                <div class="datepicker-header">
+                                    <button type="button" class="datepicker-nav" data-action="prev">►</button>
+                                    <span class="datepicker-current">-</span>
+                                    <button type="button" class="datepicker-nav" data-action="next">◄</button>
+                                </div>
+                                <div class="datepicker-weekdays">
+                                    <div class="datepicker-weekday">ش</div>
+                                    <div class="datepicker-weekday">ی</div>
+                                    <div class="datepicker-weekday">د</div>
+                                    <div class="datepicker-weekday">س</div>
+                                    <div class="datepicker-weekday">چ</div>
+                                    <div class="datepicker-weekday">پ</div>
+                                    <div class="datepicker-weekday">ج</div>
+                                </div>
+                                <div class="datepicker-days"></div>
+                                <button type="button" class="datepicker-today-btn">امروز</button>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#" id="quickTaskCompleteLink" style="font-size:.82rem;">
+                        <i class="bi bi-arrow-up-left-circle me-2"></i>تکمیلِ اطلاعات (فیلدهایِ بیشتر)
+                    </a>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">انصراف</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="quickTaskSubmitBtn" onclick="submitQuickTask()">ایجادِ کار</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- مودالِ ارسالِ فایل/عکس همراه با توضیح -->
     <div class="modal fade" id="fileCaptionModal" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
@@ -2173,6 +2340,10 @@ if (!$__me) {
             <span onclick="reactFromCtxMenu('😢')">😢</span>
             <span onclick="reactFromCtxMenu('🙏')">🙏</span>
         </div>
+        <div class="chat-ctx-menu-item" id="chatCtxTaskItem" onclick="taskFromCtxMenu()">
+            <i class="bi bi-list-task"></i>
+            <span>تعریفِ کار</span>
+        </div>
         <div class="chat-ctx-menu-item" onclick="replyFromCtxMenu()">
             <i class="bi bi-reply-fill"></i>
             <span>پاسخ</span>
@@ -2180,6 +2351,10 @@ if (!$__me) {
         <div class="chat-ctx-menu-item" onclick="forwardFromCtxMenu()">
             <i class="bi bi-arrow-return-right"></i>
             <span>فوروارد</span>
+        </div>
+        <div class="chat-ctx-menu-item" id="chatCtxCopyItem" onclick="copyFromCtxMenu()">
+            <i class="bi bi-clipboard"></i>
+            <span>کپیِ متن</span>
         </div>
         <div class="chat-ctx-menu-item" id="chatCtxPinItem" onclick="pinFromCtxMenu()">
             <i class="bi bi-pin-angle-fill"></i>
@@ -2190,7 +2365,7 @@ if (!$__me) {
             <span>ویرایش پیام</span>
         </div>
         <div class="chat-ctx-menu-item danger" id="chatCtxDeleteItem" onclick="deleteFromCtxMenu()">
-            <i class="bi bi-trash3"></i>
+            <i class="bi bi-trash"></i>
             <span>حذف پیام</span>
         </div>
     </div>
@@ -2390,6 +2565,65 @@ if (!$__me) {
         }
 
         // رشدِ خودکارِ کادرِ نوشتن تا سقفِ ۱۰ خط؛ بعد از آن اسکرولِ داخلیِ خودِ کادر فعال می‌شود
+        // ─────────────── پیکرِ ایموجی (سبک، بدونِ کتابخانه‌یِ بیرونی) ───────────────
+        var EMOJI_LIST = [
+            '😀', '😁', '😂', '🤣', '😊', '😍', '😘', '😉', '😎', '🤩',
+            '🥳', '😇', '🙂', '🙃', '😅', '😆', '😋', '😜', '🤗', '🤔',
+            '🤨', '😐', '😑', '😴', '🥱', '😪', '🤤', '😷', '🤒', '🤕',
+            '😭', '😢', '😔', '😞', '😟', '😕', '🙁', '😣', '😖', '😫',
+            '😩', '🥺', '😤', '😠', '😡', '🤬', '😳', '😱', '😨', '😰',
+            '👍', '👎', '👏', '🙏', '🤝', '💪', '✌️', '🤞', '👌', '🤙',
+            '👋', '🖐️', '✋', '🤚', '👊', '✊', '🫡', '💅', '🤲', '🙌',
+            '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '💔', '💕',
+            '💯', '🔥', '✨', '🎉', '🎊', '🌟', '⭐', '⚡', '🌹', '🎁',
+            '☕', '🍕', '🍰', '🍎', '⏰', '📌', '✅', '❌', '❗', '❓'
+        ];
+        var emojiPickerOpen = false;
+
+        function renderEmojiPicker() {
+            var box = document.getElementById('chatEmojiPicker');
+            if (box.childElementCount) return; // فقط بارِ اول
+            box.innerHTML = EMOJI_LIST.map(function (e) {
+                return '<span onclick="insertEmoji(\'' + e + '\')">' + e + '</span>';
+            }).join('');
+        }
+
+        function toggleEmojiPicker(ev) {
+            if (ev) ev.stopPropagation();
+            renderEmojiPicker();
+            var box = document.getElementById('chatEmojiPicker');
+            emojiPickerOpen = !emojiPickerOpen;
+            box.classList.toggle('show', emojiPickerOpen);
+        }
+
+        function closeEmojiPicker() {
+            emojiPickerOpen = false;
+            var box = document.getElementById('chatEmojiPicker');
+            if (box) box.classList.remove('show');
+        }
+
+        document.addEventListener('click', function (e) {
+            var box = document.getElementById('chatEmojiPicker');
+            var btn = document.getElementById('chatEmojiBtn');
+            if (!box || !emojiPickerOpen) return;
+            if (!box.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+                closeEmojiPicker();
+            }
+        });
+
+        // درجِ ایموجیِ انتخاب‌شده در محلِ نشانگرِ ماوس داخلِ کادرِ پیام (نه لزوماً انتهایِ متن)
+        function insertEmoji(emoji) {
+            var input = document.getElementById('chatComposerInput');
+            var start = input.selectionStart ?? input.value.length;
+            var end = input.selectionEnd ?? input.value.length;
+            input.value = input.value.slice(0, start) + emoji + input.value.slice(end);
+            var newPos = start + emoji.length;
+            input.focus();
+            input.setSelectionRange(newPos, newPos);
+            autoGrowComposer(input);
+            saveComposerDraft();
+        }
+
         function autoGrowComposer(el) {
             var lineHeight = parseFloat(getComputedStyle(el).lineHeight);
             var verticalPadding = parseFloat(getComputedStyle(el).paddingTop) + parseFloat(getComputedStyle(el).paddingBottom);
@@ -3232,8 +3466,11 @@ if (!$__me) {
             var menu = document.getElementById('chatCtxMenu');
             var canEdit = row.getAttribute('data-can-edit') === '1';
             var canDelete = row.getAttribute('data-can-delete') === '1';
+            var hasText = !!(row.getAttribute('data-message-text') || '').trim();
             document.getElementById('chatCtxEditItem').style.display = canEdit ? 'flex' : 'none';
             document.getElementById('chatCtxDeleteItem').style.display = canDelete ? 'flex' : 'none';
+            document.getElementById('chatCtxCopyItem').style.display = hasText ? 'flex' : 'none';
+            document.getElementById('chatCtxTaskItem').style.display = hasText ? 'flex' : 'none';
 
             var messageId = parseInt(row.getAttribute('data-message-id'), 10);
             var isPinned = pinnedMessage && pinnedMessage.id === messageId;
@@ -3281,6 +3518,140 @@ if (!$__me) {
             var text = ctxMenuTargetRow.getAttribute('data-message-text');
             closeChatCtxMenu();
             beginReplyMessage(messageId, senderName, text);
+        }
+
+        // ─────────────── کپیِ متنِ پیام ───────────────
+        function copyFromCtxMenu() {
+            if (!ctxMenuTargetRow) return;
+            var text = ctxMenuTargetRow.getAttribute('data-message-text') || '';
+            closeChatCtxMenu();
+            if (!text) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showToast('متن کپی شد', 'success'))
+                    .catch(() => showToast('کپی ناموفق بود', 'error'));
+            } else {
+                // راهِ‌فرار برای مرورگرهایِ بدونِ Clipboard API (مثلاً بافرِ non-HTTPS)
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('متن کپی شد', 'success');
+                } catch (e) {
+                    showToast('کپی ناموفق بود', 'error');
+                }
+                document.body.removeChild(ta);
+            }
+        }
+
+        // ─────────────── تعریفِ کار از رویِ یک پیام ───────────────
+        var quickTaskModalInst = null;
+
+        function taskFromCtxMenu() {
+            if (!ctxMenuTargetRow) return;
+            var text = ctxMenuTargetRow.getAttribute('data-message-text') || '';
+            closeChatCtxMenu();
+
+            document.getElementById('quickTaskTitle').value = '';
+            document.getElementById('quickTaskDescription').value = text;
+            document.getElementById('quickTaskDueDate').value = '';
+            document.getElementById('quickTaskDueDate').removeAttribute('data-date');
+            document.getElementById('quickTaskAssigneeMe').checked = true;
+
+            // «مخاطبِ چت» فقط تویِ گفتگویِ مستقیم معنی داره (تویِ گروه یک نفرِ
+            // مشخص به‌عنوانِ «طرفِ مقابل» وجود نداره)
+            var conv = conversations.find(c => c.conversation_id === activeConversationId);
+            var assigneeRow = document.getElementById('quickTaskAssigneeRow');
+            if (activeConversationType === 'direct' && conv && conv.other_user_id) {
+                assigneeRow.style.display = 'block';
+                document.getElementById('quickTaskAssigneeOtherLabel').textContent = activeConversationTitle;
+                document.getElementById('quickTaskAssigneeOther').setAttribute('data-user-id', conv.other_user_id);
+            } else {
+                assigneeRow.style.display = 'none';
+            }
+
+            if (!quickTaskModalInst) {
+                quickTaskModalInst = new bootstrap.Modal(document.getElementById('quickTaskModal'));
+                document.getElementById('quickTaskModal').addEventListener('shown.bs.modal', function () {
+                    document.getElementById('quickTaskTitle').focus();
+                    // پیش‌فرضِ موعد = امروز (بدونِ تأییدِ جمعه/تعطیلی که برایِ انتخابِ دستی هست)
+                    var wrap = document.getElementById('quickTaskDueDateWrap');
+                    if (wrap.datepickerInstance) {
+                        var today = wrap.datepickerInstance.gregorianToJalali(new Date());
+                        wrap.datepickerInstance.selectDate(today.year, today.month, today.day, true);
+                    }
+                });
+            }
+            quickTaskModalInst.show();
+        }
+
+        // لینکِ «تکمیلِ اطلاعات» — همون عنوان/توضیحات/موعدی که تا این لحظه تویِ
+        // مودال وارد شده رو به‌عنوانِ پیش‌پرشده به create-task.php منتقل می‌کنه
+        function selectedQuickTaskAssigneeId() {
+            var otherRadio = document.getElementById('quickTaskAssigneeOther');
+            if (otherRadio && otherRadio.checked) {
+                return otherRadio.getAttribute('data-user-id');
+            }
+            return null; // یعنی خودم — سرور به‌طورِ پیش‌فرض همینو در نظر می‌گیره
+        }
+
+        function goToFullCreateTask(ev) {
+            ev.preventDefault();
+            var params = new URLSearchParams();
+            var title = document.getElementById('quickTaskTitle').value.trim();
+            var description = document.getElementById('quickTaskDescription').value.trim();
+            var dueDate = document.getElementById('quickTaskDueDate').getAttribute('data-date');
+            var assigneeId = selectedQuickTaskAssigneeId();
+            if (title) params.set('title', title);
+            if (description) params.set('description', description);
+            if (dueDate) params.set('due_date', dueDate);
+            if (assigneeId) params.set('assignee_id', assigneeId);
+            window.location.href = 'create-task.php?' + params.toString();
+        }
+        document.getElementById('quickTaskCompleteLink').addEventListener('click', goToFullCreateTask);
+
+        async function submitQuickTask() {
+            var title = document.getElementById('quickTaskTitle').value.trim();
+            if (!title) {
+                showToast('عنوانِ کار الزامی است', 'warning');
+                document.getElementById('quickTaskTitle').focus();
+                return;
+            }
+            var description = document.getElementById('quickTaskDescription').value.trim();
+            var dueDate = document.getElementById('quickTaskDueDate').getAttribute('data-date') || null;
+            var assigneeId = selectedQuickTaskAssigneeId();
+
+            var btn = document.getElementById('quickTaskSubmitBtn');
+            btn.disabled = true;
+            try {
+                var payload = {
+                    title: title,
+                    description: description,
+                    task_type: 'periodic',
+                    due_date: dueDate
+                };
+                if (assigneeId) payload.assignee_id = parseInt(assigneeId, 10);
+                var res = await fetch('../api/tasks/create.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                    body: JSON.stringify(payload)
+                });
+                var data = await res.json();
+                btn.disabled = false;
+                if (data.success) {
+                    showToast('کار ایجاد شد', 'success');
+                    quickTaskModalInst.hide();
+                } else {
+                    showToast(data.message || 'خطا در ایجادِ کار', 'error');
+                }
+            } catch (e) {
+                btn.disabled = false;
+                showToast('خطا در ارتباط با سرور', 'error');
+            }
         }
 
         // ─────────────── فورواردِ پیام ───────────────
