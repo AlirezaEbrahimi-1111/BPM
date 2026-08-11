@@ -2964,7 +2964,17 @@ if (!$__me) {
             var pos = input.selectionStart;
             var textBefore = input.value.slice(0, pos);
             var hashIndex = textBefore.lastIndexOf('#');
-            if (hashIndex === -1 || /\s/.test(textBefore.slice(hashIndex + 1))) {
+            if (hashIndex === -1) {
+                box.style.display = 'none';
+                clearTimeout(linkRefSearchTimer);
+                return;
+            }
+            var partial = textBefore.slice(hashIndex + 1);
+            // برخلافِ @منشن (که معمولاً یک کلمه‌ست)، عنوانِ کار/تیکت اغلب چندکلمه‌ایه؛
+            // قبلاً با اولین فاصله جستجو کاملاً بسته می‌شد و امکانِ جستجو با عنوانِ
+            // چندکلمه‌ای اصلاً وجود نداشت — الان فقط با خطِ‌جدید یا طولانی‌شدنِ
+            // بیش‌ازحد (که دیگه به‌وضوح یک جستجو نیست) می‌بندیم
+            if (/[\n\r]/.test(partial) || partial.length > 60) {
                 box.style.display = 'none';
                 clearTimeout(linkRefSearchTimer);
                 return;
@@ -2973,7 +2983,6 @@ if (!$__me) {
                 box.style.display = 'none';
                 return;
             }
-            var partial = textBefore.slice(hashIndex + 1);
             linkRefRangeStart = hashIndex;
 
             clearTimeout(linkRefSearchTimer);
@@ -3519,6 +3528,12 @@ if (!$__me) {
             if (!text) return;
 
             var btn = document.getElementById('chatSendBtn');
+            // ⚠️ کلیک روی دکمه‌ی غیرفعال خودش رویداد نمی‌سازه، ولی کلیدِ Enter از
+            // این چک عبور نمی‌کنه — اگه کاربر Enter رو دوبار پشتِ‌سرِهم بزنه (یا
+            // به‌خاطرِ auto-repeatِ صفحه‌کلید کمی نگه‌داره)، قبل از این‌که پاسخِ
+            // درخواستِ اول برسه و متن پاک بشه، همون متن دوباره ارسال می‌شد —
+            // این گارد جلویِ ارسالِ تکراری رو می‌گیره
+            if (btn.disabled) return;
             btn.disabled = true;
 
             var fd = new FormData();

@@ -811,6 +811,78 @@ function toPersianNumber($num) {
                 margin-right: 0;
             }
         }
+
+        /* ─── دارک‌مود ─── */
+        :root[data-theme="dark"] html,
+        :root[data-theme="dark"] body {
+            background: var(--bg-page);
+        }
+
+        :root[data-theme="dark"] .settings-group {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .group-header {
+            border-bottom-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .group-header:hover,
+        :root[data-theme="dark"] .setting-item:hover,
+        :root[data-theme="dark"] .group-count {
+            background: var(--bg-page);
+        }
+
+        :root[data-theme="dark"] .group-title,
+        :root[data-theme="dark"] .setting-label,
+        :root[data-theme="dark"] .setting-control input[type="number"] {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .group-count,
+        :root[data-theme="dark"] .setting-help,
+        :root[data-theme="dark"] .setting-unit,
+        :root[data-theme="dark"] .group-toggle {
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .setting-item {
+            border-bottom-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .setting-control input[type="number"] {
+            background: var(--bg-page);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .form-actions {
+            background: var(--bg-page);
+        }
+
+        :root[data-theme="dark"] .btn-reset,
+        :root[data-theme="dark"] .btn-back {
+            background: var(--surface);
+            border-color: var(--border-soft);
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .btn-reset:hover,
+        :root[data-theme="dark"] .btn-back:hover {
+            background: var(--border-soft);
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .toast-message.success {
+            background: rgba(34, 197, 94, .12);
+            color: #86efac;
+            border-color: rgba(34, 197, 94, .3);
+        }
+
+        :root[data-theme="dark"] .toast-message.error {
+            background: rgba(239, 68, 68, .12);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, .3);
+        }
     </style>
 </head>
 <body>

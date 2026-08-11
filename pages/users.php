@@ -358,6 +358,84 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             color: #16a34a;
         }
 
+        /* ─── دارک‌مود ─── */
+        :root[data-theme="dark"] .page-header-bar h1 {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .filters-bar {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .filters-bar .users-count {
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .unit-badge {
+            background: var(--bg-page);
+            border-color: var(--border-soft);
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .modal-tabs {
+            background: var(--bg-page);
+            border-bottom-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .modal-tab {
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .unit-card {
+            background: var(--bg-page);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .unit-card.selected {
+            background: rgba(79, 70, 229, .18);
+            border-color: #4f46e5;
+        }
+
+        :root[data-theme="dark"] .access-card {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .hierarchy-node {
+            border-color: var(--border-soft);
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .h-manager {
+            background: rgba(99, 102, 241, .15);
+            border-color: rgba(99, 102, 241, .4);
+        }
+
+        :root[data-theme="dark"] .h-current {
+            background: rgba(59, 130, 246, .18);
+            border-color: rgba(59, 130, 246, .45);
+        }
+
+        :root[data-theme="dark"] .h-sub {
+            background: rgba(34, 197, 94, .15);
+            border-color: rgba(34, 197, 94, .4);
+        }
+
+        :root[data-theme="dark"] .hierarchy-line {
+            background: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .ag-action-btn {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .ag-action-btn:hover {
+            background: var(--bg-page);
+            border-color: var(--text-muted);
+        }
+
         .sec-picker {
             position: relative;
         }

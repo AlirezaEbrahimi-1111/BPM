@@ -206,10 +206,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
         const persianWeekdayNames = { 0: 'یکشنبه', 1: 'دوشنبه', 2: 'سه‌شنبه', 3: 'چهارشنبه', 4: 'پنج‌شنبه', 5: 'جمعه', 6: 'شنبه' };
 
-        function toFa(n) {
-            if (n === null || n === undefined || n === '') return '';
-            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
-        }
+        // toFa از assets/js/common.js میاد (لود شده در header.php)
 
         function onHolidayTypeChange() {
             const isWeekly = document.getElementById('holidayType').value === 'weekly';

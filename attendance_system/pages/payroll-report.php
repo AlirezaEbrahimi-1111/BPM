@@ -163,6 +163,42 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
         .ud-table td { padding:8px; border-bottom:1px solid #EEF2F7; vertical-align:middle; }
         .ud-table tbody tr:hover { background:#FAF7FF; }
         .ud-badge { display:inline-block; color:#fff; font-size:11px; font-weight:700; padding:2px 7px; border-radius:8px; margin:1px 0; white-space:nowrap; }
+
+        /* ─── دارک‌مود ─── */
+        :root[data-theme="dark"] body {
+            background: var(--bg-page);
+        }
+
+        :root[data-theme="dark"] .payroll-controls select {
+            background: var(--surface);
+            border-color: var(--border-soft);
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .pcard,
+        :root[data-theme="dark"] .ud-card {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .pcard .lbl,
+        :root[data-theme="dark"] .ud-card .ud-lbl {
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .pcard .val,
+        :root[data-theme="dark"] .ud-card .ud-val {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .ud-table td {
+            border-bottom-color: var(--border-soft);
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .ud-table tbody tr:hover {
+            background: var(--bg-page);
+        }
     </style>
     </style>
 </head>

@@ -351,6 +351,58 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
                 gap: 12px;
             }
         }
+
+        /* ─── دارک‌مود ─── */
+        :root[data-theme="dark"] .bn-page-head h1,
+        :root[data-theme="dark"] .bn-stat-num,
+        :root[data-theme="dark"] .bn-stage-name {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .bn-page-sub,
+        :root[data-theme="dark"] .bn-stat-label,
+        :root[data-theme="dark"] .bn-template,
+        :root[data-theme="dark"] .bn-metric-label,
+        :root[data-theme="dark"] .bn-instance-started,
+        :root[data-theme="dark"] .bn-empty,
+        :root[data-theme="dark"] .bn-loading {
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .bn-stat,
+        :root[data-theme="dark"] .bn-item,
+        :root[data-theme="dark"] .bn-instance {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .bn-item.open .bn-item-head {
+            background: linear-gradient(90deg, var(--bn-orange-soft), var(--surface));
+        }
+
+        :root[data-theme="dark"] .bn-rank,
+        :root[data-theme="dark"] .bn-unit-badge,
+        :root[data-theme="dark"] .bn-bar-wrap {
+            background: var(--border-soft);
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .bn-details {
+            background: var(--bg-page);
+            border-top-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .bn-instance:hover {
+            background: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .bn-instance-title {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .bn-chevron {
+            color: var(--text-muted);
+        }
     </style>
 </head>
 

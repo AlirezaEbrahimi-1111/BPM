@@ -332,6 +332,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     </div>
     <script>bpmApplyTheme(bpmGetTheme());</script>
 </nav>
+<script src="<?= asset('/assets/js/common.js') ?>"></script>
 <script src="<?= asset('/assets/js/table-utils.js') ?>"></script>
 <script src="<?= asset('/assets/js/date-utils.js') ?>"></script>
     <script src="/assets/js/alert.js?v=<?= filemtime($_SERVER['DOCUMENT_ROOT'] . '/assets/js/alert.js') ?>"></script>
@@ -347,11 +348,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     let annUnreadCount = 0;
     let annCache = {}; // ذخیرهٔ کاملِ اطلاعیه‌ها برای نمایش در مودال
 
-    // اعدادِ بج‌ها (زنگ/مگافون/چت) باید فارسی نمایش داده بشن
-    function toFa(n) {
-        if (n === null || n === undefined || n === '') return '';
-        return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
-    }
+    // toFa/enTofaNumber/faNum از assets/js/common.js میاد (لود شده بالاتر)
 
     // ============================================
     // تابع کمکی URL

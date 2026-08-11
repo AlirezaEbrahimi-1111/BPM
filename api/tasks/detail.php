@@ -14,6 +14,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-dates-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-access.php';
 try {
     $user_id = requireAuth();
 
@@ -29,84 +30,15 @@ try {
 
     $task = $taskManager->getTask($_GET['id']);
 
-    // بررسی دسترسی
-    $hasAccess = false;
+    // بررسی دسترسی — زنجیره‌ی مشترک (سازنده/مسئول/مدیر/تاریخچه/چک‌لیست/بیننده)
+    // از includes/task-access.php میاد؛ فقط قوانینِ تخصصیِ همین صفحه (عضویتِ
+    // مرحله‌ی workflow و عضویتِ سراسریِ واحد برایِ کارهایِ روتین) پایین‌تر
+    // به‌عنوانِ راهِ‌فرارِ اضافی باقی می‌مونن
+    $access = taskUserAccess($db, (int) $user_id, $task);
+    $hasAccess = $access['has_access'];
+    $me = loadUserForPermissions($db, $user_id);
 
-    // 1. سازنده کار
-    if ($task['creator_id'] == $user_id) {
-        $hasAccess = true;
-    }
-
-    // 2. فرد تخصیص داده شده (حتی اگر قبلاً بوده)
-    if ($task['assignee_id'] == $user_id) {
-        $hasAccess = true;
-    }
-
-    // سوپرادمین یا supervisor/adminِ هم‌سازمانِ این کار
-    if (!$hasAccess) {
-        $me = loadUserForPermissions($db, $user_id);
-
-        if (
-            hasPermission($me, 'view_all_org_tasks')
-            && isSameOrganization($me, $task['organization_id'] ?? 0)
-        ) {
-            $hasAccess = true;
-        }
-    }
-
-    // managerِ فقط اگر سازنده/مسئولِ این کار زیرمجموعهٔ خودش باشد
-    // (نه هر «مدیر»ی در سازمان)
-    if (!$hasAccess) {
-        $me = $me ?? loadUserForPermissions($db, $user_id);
-
-        if (
-            canManageTargetUser($db, $me, (int) $task['creator_id'])
-            || canManageTargetUser($db, $me, (int) $task['assignee_id'])
-        ) {
-            $hasAccess = true;
-        }
-    }
-
-    // 3. افرادی که در زنجیره ارجاعات کار بوده‌اند
-    if (!$hasAccess) {
-        $stmt = $db->prepare("
-            SELECT COUNT(*) as count 
-            FROM task_history 
-            WHERE task_id = ? 
-            AND (from_user_id = ? OR to_user_id = ?)
-            AND action NOT LIKE 'checklist%'
-            AND action <> ''
-            AND action IS NOT NULL
-        ");
-        $stmt->execute([$_GET['id'], $user_id, $user_id]);
-        $historyCount = $stmt->fetch()['count'];
-
-        if ($historyCount > 0) {
-            $hasAccess = true;
-        }
-    }
-    // 5. مسئولِ حداقل یک آیتم چک‌لیست (کاربر مستقیم یا واحدش)
-    // این قانون با getTaskForChecklist و my-tasks.php هماهنگ است
-    if (!$hasAccess) {
-        // واحدِ کاربر جاری را می‌خوانیم (برای آیتم‌های ارجاع‌شده به واحد)
-        $secStmt = $db->prepare("SELECT activity_section FROM users WHERE id = ?");
-        $secStmt->execute([$user_id]);
-        $user_section = $secStmt->fetchColumn() ?: '';
-
-        $chkStmt = $db->prepare("
-            SELECT COUNT(*) FROM task_checklist_items ci
-            WHERE ci.task_id = ?
-              AND (
-                  (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
-                  OR (ci.assignee_type = 'section' AND ci.assignee_value = ?)
-              )
-        ");
-        $chkStmt->execute([$_GET['id'], (string)$user_id, $user_section]);
-        if ((int)$chkStmt->fetchColumn() > 0) {
-            $hasAccess = true;
-        }
-    }
-    // 4. چک دسترسی برای workflow tasks
+    // چک دسترسی برای workflow tasks
     if (!$hasAccess && $task['is_workflow_task'] == 1 && $task['workflow_instance_id']) {
         try {
             $stmt = $db->prepare("
@@ -154,51 +86,13 @@ try {
             $hasAccess = true;
         }
     }
-    // 6. کاربرانی که آیتم چک‌لیست به آن‌ها (یا واحدشان) ارجاع شده
-    $is_checklist_only = false;   // 🆕 دسترسی فقط از راه چک‌لیست؟
-    if (!$hasAccess) {
-        // سازمانِ کاربر را بخوان
-        $secStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
-        $secStmt->execute([$user_id]);
-        $user_row = $secStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    // چک‌لیست/بیننده از قبل توسطِ taskUserAccess() بالاتر بررسی شده؛ اگه هنوزم
+    // دسترسی نبود یعنی نه از راهِ اون‌ها نه از راهِ workflow/periodic بالا
+    $is_checklist_only = $access['is_checklist_only'];
+    $is_viewer_only = $access['is_viewer_only'];
+    $viewer_can_view_attachments = $access['viewer_can_view_attachments'];
+    $viewer_can_view_history = $access['viewer_can_view_history'];
 
-        $sameOrg = isset($user_row['organization_id']) && (int)$user_row['organization_id'] === (int)$task['organization_id'];
-
-        // 🆕 همهٔ واحدهای کاربر
-        $userSections = $sameOrg ? us_getUserSections($db, $user_id) : [];
-        $ph = us_placeholders($userSections);
-
-        $chkStmt = $db->prepare("
-            SELECT COUNT(*) FROM task_checklist_items ci
-            WHERE ci.task_id = ?
-              AND (
-                  (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
-                  OR (ci.assignee_type = 'section' AND ci.assignee_value IN ($ph))
-              )
-        ");
-        $chkStmt->execute(array_merge([$_GET['id'], (string)$user_id], $userSections));
-        $checklistCount = $stmt->fetch()['count'];
-
-        if ($checklistCount > 0) {
-            $hasAccess = true;
-            $is_checklist_only = true;   // 🆕 نه سازنده، نه مسئول، نه مدیر — فقط چک‌لیست
-        }
-    }
-    // 7. بیننده‌هایِ صریحاً اضافه‌شده (فقط مشاهده — task_viewers)
-    $is_viewer_only = false;
-    $viewer_can_view_attachments = true;
-    $viewer_can_view_history = true;
-    if (!$hasAccess) {
-        $stmt = $db->prepare("SELECT can_view_attachments, can_view_history FROM task_viewers WHERE task_id = ? AND user_id = ?");
-        $stmt->execute([$_GET['id'], $user_id]);
-        $viewerRow = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($viewerRow) {
-            $hasAccess = true;
-            $is_viewer_only = true;
-            $viewer_can_view_attachments = (bool) $viewerRow['can_view_attachments'];
-            $viewer_can_view_history = (bool) $viewerRow['can_view_history'];
-        }
-    }
     if (!$hasAccess) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);

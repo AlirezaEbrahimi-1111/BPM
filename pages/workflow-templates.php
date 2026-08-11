@@ -862,6 +862,12 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             color: #744CA4;
         }
 
+        :root[data-theme="dark"] .sm-btn {
+            background: var(--surface);
+            border-color: var(--border-soft);
+            color: var(--text-muted);
+        }
+
         .sm-btn.active.sm-parallel {
             background: #ECFDF3;
             border-color: #12B76A;

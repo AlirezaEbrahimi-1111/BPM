@@ -47,6 +47,20 @@ if (!$__me || !hasPermission($__me, 'manage_activity_sections')) {
             --radius:    12px;
         }
 
+        /* این صفحه توکن‌هایِ محلیِ خودش رو داره که بدونِ این بلوک، تویِ تمِ
+           تاریک هیچ‌وقت عوض نمی‌شدن — چون --bg/--border/--text/--muted فقط
+           همین‌جا تعریف شدن و جایِ دیگه‌ای بازتعریفِ دارک ندارن.
+           ⚠️ --surface عمداً اینجا تکرار نشده: custom.css خودش با همین
+           سطحِ تعیّن (:root[data-theme="dark"]) اونو بازتعریف می‌کنه؛ اگه
+           اینجا هم بنویسیم var(--surface)، چون خودارجاعه، طبقِ اسپکِ CSS
+           نامعتبر محاسبه می‌شه و مقدار رو کلاً می‌شکنه */
+        :root[data-theme="dark"] {
+            --bg:     var(--bg-page);
+            --border: var(--border-soft);
+            --text:   var(--text-strong);
+            --muted:  var(--text-muted);
+        }
+
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {

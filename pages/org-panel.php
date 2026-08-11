@@ -213,6 +213,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
   </div>
 </div>
 
+<script src="<?= asset('/assets/js/common.js') ?>"></script>
 <script src="<?= asset('/assets/js/alert.js') ?>"></script>
 <script>
   // قیمت هر ماه (فقط برای نمایش؛ قیمت واقعی را سرور تعیین می‌کند)

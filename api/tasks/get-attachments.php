@@ -11,6 +11,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-access.php';
 try {
     $user_id = requireAuth();
 
@@ -41,44 +42,11 @@ $task = $stmt->fetch(PDO::FETCH_ASSOC);
         exit;
     }
 
-    // چک دسترسی
-    $hasAccess = false;
-
-    if ($task['creator_id'] == $user_id || $task['assignee_id'] == $user_id) {
-        $hasAccess = true;
-    }
-
-    // 🔒 سوپرادمین، یا supervisor/adminِ هم‌سازمان، یا managerِ فقط اگر
-    // سازنده/مسئولِ این کار زیرمجموعهٔ خودش باشد (نه هر «مدیر»ی در سازمان)
-    if (!$hasAccess) {
-        $stmt = $db->prepare("SELECT id, role, organization_id FROM users WHERE id = ?");
-        $stmt->execute([$user_id]);
-        $me = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($me
-            && (canManageTargetUser($db, $me, (int) $task['creator_id'])
-                || canManageTargetUser($db, $me, (int) $task['assignee_id']))
-        ) {
-            $hasAccess = true;
-        }
-    }
-
-    if (!$hasAccess) {
-        $stmt = $db->prepare("
-            SELECT COUNT(*) as count 
-            FROM task_history 
-            WHERE task_id = ? 
-            AND (from_user_id = ? OR to_user_id = ?)
-            AND action NOT LIKE 'checklist%'
-            AND action <> ''
-            AND action IS NOT NULL
-        ");
-        $stmt->execute([$task_id, $user_id, $user_id]);
-        $historyCount = $stmt->fetch()['count'];
-
-        if ($historyCount > 0) {
-            $hasAccess = true;
-        }
-    }
+    // چک دسترسی — زنجیره‌ی مشترک از includes/task-access.php؛ فقط قانونِ
+    // تخصصیِ عضویتِ مرحله‌ی workflow پایین‌تر جداگانه باقی می‌مونه
+    $access = taskUserAccess($db, (int) $user_id, $task);
+    $hasAccess = $access['has_access'];
+    $is_checklist_only = $access['is_checklist_only'];
 
 // چک دسترسی برای workflow tasks
     if (!$hasAccess && $task['is_workflow_task'] == 1 && $task['workflow_instance_id']) {
@@ -101,41 +69,10 @@ $task = $stmt->fetch(PDO::FETCH_ASSOC);
         }
     }
 
-    // 🆕 کاربرانی که آیتم چک‌لیست به آن‌ها (یا یکی از واحدهایشان) ارجاع شده
-    $is_checklist_only = false;
-    if (!$hasAccess) {
-        $orgStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
-        $orgStmt->execute([$user_id]);
-        $userOrg = $orgStmt->fetchColumn();
-        $sameOrg = ((int)$userOrg === (int)($task['organization_id'] ?? -1));
-
-        $userSections = $sameOrg ? us_getUserSections($db, $user_id) : [];
-        $ph = us_placeholders($userSections);
-
-        $stmt = $db->prepare("
-            SELECT COUNT(*) as count
-            FROM task_checklist_items ci
-            WHERE ci.task_id = ?
-              AND (
-                  (ci.assignee_type = 'user'    AND ci.assignee_value = ?)
-                  OR (ci.assignee_type = 'section' AND ci.assignee_value IN ($ph))
-              )
-        ");
-        $stmt->execute(array_merge([$task_id, (string)$user_id], $userSections));
-        if ((int)$stmt->fetch()['count'] > 0) {
-            $hasAccess = true;
-            $is_checklist_only = true;   // دسترسی فقط از راه چک‌لیست
-        }
-    }
-
-    // 🆕 بیننده‌هایِ صریحاً اضافه‌شده — فقط اگه can_view_attachments روشن باشه
-    if (!$hasAccess) {
-        $stmt = $db->prepare("SELECT can_view_attachments FROM task_viewers WHERE task_id = ? AND user_id = ?");
-        $stmt->execute([$task_id, $user_id]);
-        $viewerRow = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($viewerRow && (int) $viewerRow['can_view_attachments'] === 1) {
-            $hasAccess = true;
-        }
+    // 🆕 بیننده‌هایِ صریحاً اضافه‌شده — از قبل توسطِ taskUserAccess() بررسی شده؛
+    // فقط اگه can_view_attachments روشن باشه، دسترسیِ بیننده‌بودن معتبره
+    if ($access['is_viewer_only'] && !$access['viewer_can_view_attachments']) {
+        $hasAccess = false;
     }
 
     if (!$hasAccess) {

@@ -11,6 +11,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-access.php';
 
 try {
     $user_id = requireAuth();
@@ -109,40 +110,12 @@ try {
         exit;
     }
 
-    // چک دسترسی
-    $hasAccess = false;
-    if ($task['creator_id'] == $user_id || $task['assignee_id'] == $user_id) {
-        $hasAccess = true;
-    }
-    // سوپرادمین یا supervisor/adminِ هم‌سازمانِ این کار
-    if (!$hasAccess) {
-        $me = loadUserForPermissions($db, $user_id);
-
-        if (hasPermission($me, 'view_all_org_tasks')
-            && isSameOrganization($me, $task['organization_id'])) {
-            $hasAccess = true;
-        }
-    }
-    // managerِ فقط اگر سازنده/مسئولِ این کار زیرمجموعهٔ خودش باشد
-    if (!$hasAccess) {
-        $me = $me ?? loadUserForPermissions($db, $user_id);
-        if (canManageTargetUser($db, $me, (int) $task['creator_id'])
-            || canManageTargetUser($db, $me, (int) $task['assignee_id'])) {
-            $hasAccess = true;
-        }
-    }
-    if (!$hasAccess) {
-        $stmt = $db->prepare("
-            SELECT COUNT(*) as count 
-            FROM task_history 
-            WHERE task_id = ? 
-            AND (from_user_id = ? OR to_user_id = ?)
-        ");
-        $stmt->execute([$task_id, $user_id, $user_id]);
-        if ($stmt->fetch()['count'] > 0) {
-            $hasAccess = true;
-        }
-    }
+    // چک دسترسی — زنجیره‌ی مشترک از includes/task-access.php. قبلاً این فایل
+    // نه قانونِ چک‌لیست رو داشت (مسئولِ یک آیتمِ چک‌لیست اصلاً نمی‌تونست
+    // پیوست آپلود کنه) نه از وجودِ بیننده‌هایِ صرف (task_viewers) خبر داشت؛
+    // چون بیننده‌ها فقط حقِ مشاهده دارن، صریحاً از آپلود مستثنا می‌شن
+    $access = taskUserAccess($db, (int) $user_id, $task);
+    $hasAccess = $access['has_access'] && !$access['is_viewer_only'];
 
     if (!$hasAccess) {
         error_log("upload-attachment.php denied | user_id={$user_id} | task_id={$task_id}");

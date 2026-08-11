@@ -961,6 +961,7 @@
         </div>
 
     </div>
+    <script src="assets/js/common.js"></script>
     <script src="assets/js/alert.js?v=1.0"></script>
     <script src="assets/js/network-canvas.js?v=2.1"></script>
     <script>

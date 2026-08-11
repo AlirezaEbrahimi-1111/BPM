@@ -50,6 +50,8 @@ if (!$__me || !hasPermission($__me, 'manage_task_groups')) {
         .gm-color.active { border-color: #000; }
         .gm-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; }
         .gm-icon.active { background: #e7f1ff; border-color: #6366f1; }
+        :root[data-theme="dark"] .gm-icon { border-color: var(--border-soft); }
+        :root[data-theme="dark"] .gm-icon.active { background: rgba(99, 102, 241, .2); border-color: #6366f1; }
         .gm-act-btn { background: none; border: none; cursor: pointer; padding: 2px 6px; font-size: 1rem; }
         .gm-act-edit { color: #2563eb; }
         .gm-act-del { color: #dc2626; }

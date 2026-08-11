@@ -1,8 +1,13 @@
 <?php
 /**
  * quick-search.php
- * جستجوی سبک بین تسک‌های قابل‌دسترسِ کاربر فعلی (سازنده یا مسئول)،
- * برای استفاده در پیوستِ یک تسک به تیکتِ پشتیبانی (create-ticket.php).
+ * جستجوی سبک بین تسک‌های قابل‌دسترسِ کاربر فعلی — سازنده/مسئولِ فعلی، یا هر
+ * کسی که طبق task_history حداقل یک‌بار در این کار مشارکت داشته (مثلاً قبلاً
+ * مسئولش بوده و بعداً ارجاع/تکمیل/تأیید شده) — دقیقاً همون قاعده‌ای که
+ * api/tasks/detail.php برای دسترسیِ مشاهده استفاده می‌کنه، تا کاربر بتونه
+ * کارهایی که در گذشته روش کار کرده رو هم پیدا کنه، نه فقط کارهای فعلاً بازش.
+ * برای استفاده در پیوستِ یک تسک به تیکتِ پشتیبانی (create-ticket.php) و
+ * پیوندِ کار در چت (#... در chat.php).
  * برخلاف جستجوی صفحاتِ کارها، اینجا فقط شناسه/عنوان لازم است — سبک و سریع.
  */
 
@@ -36,13 +41,23 @@ try {
         SELECT t.id, t.title, t.status, t.task_type
         FROM tasks t
         WHERE t.is_deleted = 0
-          AND (t.creator_id = ? OR t.assignee_id = ?)
+          AND (
+              t.creator_id = ? OR t.assignee_id = ?
+              OR EXISTS (
+                  SELECT 1 FROM task_history th
+                  WHERE th.task_id = t.id
+                    AND (th.from_user_id = ? OR th.to_user_id = ?)
+                    AND th.action NOT LIKE 'checklist%'
+                    AND th.action <> ''
+                    AND th.action IS NOT NULL
+              )
+          )
           AND (t.title LIKE ? OR t.id = ?)
         ORDER BY t.created_at DESC
         LIMIT 15
     ");
     $idMatch = ctype_digit($q) ? (int)$q : 0;
-    $stmt->execute([$user_id, $user_id, '%' . $q . '%', $idMatch]);
+    $stmt->execute([$user_id, $user_id, $user_id, $user_id, '%' . $q . '%', $idMatch]);
     $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode(['success' => true, 'tasks' => $tasks], JSON_UNESCAPED_UNICODE);

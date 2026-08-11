@@ -406,6 +406,47 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
         .toggle-advanced:hover {
             text-decoration: underline;
         }
+
+        /* ─── دارک‌مود ─── */
+        :root[data-theme="dark"] body {
+            background-color: var(--bg-page);
+        }
+
+        :root[data-theme="dark"] .search-section,
+        :root[data-theme="dark"] .stat-card {
+            background: var(--surface);
+        }
+
+        :root[data-theme="dark"] .report-code,
+        :root[data-theme="dark"] .report-content,
+        :root[data-theme="dark"] .report-full-content {
+            background: var(--bg-page);
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .report-date,
+        :root[data-theme="dark"] .stat-label,
+        :root[data-theme="dark"] .empty-state,
+        :root[data-theme="dark"] .loading {
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .empty-state i {
+            color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .stat-number {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .search-highlight {
+            background-color: #7a5f0f;
+            color: #fff3cd;
+        }
+
+        :root[data-theme="dark"] .advanced-search {
+            border-top-color: var(--border-soft);
+        }
     </style>
 </head>
 

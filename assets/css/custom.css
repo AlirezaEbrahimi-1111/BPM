@@ -208,6 +208,10 @@ h6 {
     margin-bottom: 1.5rem;
 }
 
+:root[data-theme="dark"] .card {
+    background: var(--surface);
+}
+
 .card:hover {
     box-shadow: var(--shadow-md);
 }
@@ -985,6 +989,27 @@ s-normal {
     margin-right: 8px;
 }
 
+:root[data-theme="dark"] .workflow-preview {
+    background: var(--surface);
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .workflow-preview h6 {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .step-preview-item {
+    background: var(--bg-page);
+}
+
+:root[data-theme="dark"] .step-preview-item:hover {
+    background: var(--border-soft);
+}
+
+:root[data-theme="dark"] .step-preview-item i.bi-arrow-left {
+    color: var(--text-muted);
+}
+
 .step-number {
     width: 32px;
     height: 32px;
@@ -1194,6 +1219,13 @@ s-normal {
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
+:root[data-theme="dark"] .filter-select,
+:root[data-theme="dark"] .filter-input {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    color: var(--text-strong);
+}
+
 /* --- filter-item (select با آیکون ▼) --- */
 .filter-item {
     position: relative;
@@ -1358,6 +1390,20 @@ s-normal {
     background: white;
     color: var(--primary);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+:root[data-theme="dark"] .per-page-btn {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .per-page-btn:hover {
+    background: var(--border-soft);
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .per-page-btn.active {
+    background: var(--surface);
+    color: var(--icon-accent);
 }
 
 /* ========================================
@@ -5635,6 +5681,20 @@ body.login-page::after {
 
 .stats-grid .stat-card.overdue {
     border-right-color: var(--danger);
+}
+
+:root[data-theme="dark"] .stats-grid .stat-card,
+:root[data-theme="dark"] .steps-section {
+    background: var(--surface);
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] .stats-grid .stat-card .stat-number {
+    color: var(--text-strong);
+}
+
+:root[data-theme="dark"] .stats-grid .stat-card .stat-label {
+    color: var(--text-muted);
 }
 
 /* --- نشانگر مراحل (Steps Indicator) --- */
