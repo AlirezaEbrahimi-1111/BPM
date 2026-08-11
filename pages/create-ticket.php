@@ -452,7 +452,6 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
 
     </div>
 
-    <script src="<?= asset('../assets/js/alert.js') ?>"></script>
     <script>
         var selectedFiles = [];
 

@@ -164,7 +164,6 @@ if (!$__me || !hasPermission($__me, 'manage_task_groups')) {
 
     <?php include 'footer.php'; ?>
     <script src="../assets/js/cdn/bootstrap.bundle.min.js"></script>
-    <script src="../assets/js/alert.js"></script>
     <script>
         const GROUP_COLORS = ['#6366f1','#ef4444','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#64748b','#0ea5e9'];
         const GROUP_ICONS  = ['bi-tag','bi-briefcase','bi-house','bi-heart','bi-star','bi-flag','bi-bullseye','bi-people','bi-cart','bi-tools','bi-book','bi-lightning'];

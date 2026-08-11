@@ -1894,7 +1894,6 @@ if (!$__me) {
         }
     </script>
     <script src="<?= asset('../assets/js/deadline-toast.js') ?>"></script>
-    <script src="<?= asset('../assets/js/alert.js') ?>"></script>
 
 </body>
 

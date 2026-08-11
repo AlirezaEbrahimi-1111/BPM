@@ -2195,7 +2195,6 @@ if (!$__me) {
         </div>
     </div>
 
-    <script src="<?= asset('../assets/js/alert.js') ?>"></script>
     <script>
         // ⚠️ عمداً بدونِ «= null»: header.php از قبل، توی یک IIFE سینکرون (که زودتر از این
         // اسکریپت اجرا می‌شه)، authToken رو درست از localStorage خونده. اگه اینجا با

@@ -725,7 +725,6 @@ if (!$__me) {
         </div>
     </div>
 
-    <script src="<?= asset('../assets/js/alert.js') ?>"></script>
     <script src="<?= asset('/assets/js/undo-toast.js') ?>"></script>
     <script>
         async function markTicketNotificationsRead(ticketId) {

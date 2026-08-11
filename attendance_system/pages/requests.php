@@ -3484,7 +3484,6 @@ function formatDateJalali($gregorianDate)
             });
         })();
     </script>
-    <script src="/assets/js/alert.js?v=<?= filemtime($_SERVER['DOCUMENT_ROOT'] . '/assets/js/alert.js') ?>"></script>
 
     <script>
         (async function checkAuth() {

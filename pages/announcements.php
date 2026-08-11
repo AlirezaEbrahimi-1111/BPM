@@ -217,7 +217,6 @@ if (!$__me) {
 
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script src="<?= asset('../assets/js/persian-datepicker.js') ?>"></script>
-    <script src="<?= asset('../assets/js/alert.js') ?>"></script>
 
     <script>
         if (!authToken) { window.location.href = '../index.php'; }

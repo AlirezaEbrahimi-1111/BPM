@@ -6066,7 +6066,6 @@ ${task.overdue_periods > 0 ? `
         <script src="<?= asset('../assets/js/task-groups.js') ?>"></script>
         <script src="<?= asset('../assets/js/cdn/intro.min.js') ?>"></script>
         <!--<script src="<?= asset('../assets/js/deadline-toast.js') ?>"></script>-->
-        <script src="<?= asset('../../assets/js/alert.js') ?>"></script>
 
         <!-- مودال ویرایش آیتم چک‌لیست -->
         <div class="modal fade" id="editChecklistModal" tabindex="-1" aria-hidden="true">

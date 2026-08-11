@@ -24,7 +24,11 @@
  */
 // وقتی toastِ فعلی دکمه داره، کلیدِ Enter باید دکمهٔ پیش‌فرض (primary) رو
 // اجرا کنه — این listener سطحِ ماژوله تا موقعِ جایگزینی/بستنِ toast پاک بشه
-let _toastEnterHandler = null;
+// ⚠️ عمداً var نه let: چندین صفحه (مثلِ task-detail.php و requests.php)
+// alert.js رو دوبار لود می‌کنن (یک‌بار از header.php، یک‌بار مستقیم خودشون).
+// let/const با تکرارِ خودش تویِ همون scope هم SyntaxError می‌ده و کلِ اسکریپت
+// (و در نتیجه کلِ صفحه) رو می‌شکنه؛ var در برابرِ لودِ دوباره امنه
+var _toastEnterHandler = null;
 
 function showToast(message, type = 'success', options = {}) {
 
