@@ -1047,61 +1047,54 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         return lines.length > 0 ? lines.join('<br>') : null;
     }
     // ============================================
-    // تولید Fingerprint سبک دستگاه (بدون کتابخانه)
+    // شناسهٔ پایدارِ دستگاه — یک کدِ تصادفیِ یک‌بارساخته (نه محاسبه‌شده از
+    // مشخصاتِ مرورگر). نسخهٔ قبلی از User-Agent/canvas/اندازهٔ صفحه هش
+    // می‌ساخت که با هر آپدیتِ مرورگر یا رندرِ متفاوتِ فونت/GPU عوض می‌شد و
+    // کاربر را هر چند روز یک‌بار دوباره «در انتظارِ تأیید» می‌کرد. این کد
+    // فقط یک‌بار (اولین بازدید) تصادفی ساخته و برایِ همیشه همان می‌ماند —
+    // هم در localStorage هم در یک کوکیِ بلندمدت، تا از دستِ‌رفتنِ یکی از
+    // این دو (مثلاً پاک‌شدنِ localStorage توسطِ ITPِ سافاری) مشکلی پیش نیاد
     // ============================================
     function getDeviceFingerprint() {
         try {
-            // ✅ پایداری: اگر قبلاً ساخته و ذخیره شده، همان را برگردان
-            let stored = '';
-            try {
-                stored = localStorage.getItem('yekta_device_fp') || '';
-            } catch (e) {}
-            if (stored && stored.length >= 16) return stored;
+            let token = getDeviceCookie('yekta_device_token');
+            if (!token) {
+                try { token = localStorage.getItem('yekta_device_token') || ''; } catch (e) {}
+            }
+            if (token && token.length >= 16) {
+                try { localStorage.setItem('yekta_device_token', token); } catch (e) {}
+                setDeviceCookie('yekta_device_token', token, 730);
+                return token;
+            }
 
-            const parts = [
-                navigator.userAgent || '',
-                navigator.language || '',
-                (navigator.languages || []).join(','),
-                Intl.DateTimeFormat().resolvedOptions().timeZone || '',
-                screen.width + 'x' + screen.height + 'x' + (screen.colorDepth || ''),
-                (navigator.hardwareConcurrency || '') + '',
-                (navigator.deviceMemory || '') + '',
-                (navigator.platform || '') + '',
-                getCanvasSignature()
-            ];
-            const raw = parts.join('|');
-            const fp = simpleHash(raw);
-            try {
-                localStorage.setItem('yekta_device_fp', fp);
-            } catch (e) {}
-            return fp;
+            token = (window.crypto && crypto.randomUUID)
+                ? crypto.randomUUID().replace(/-/g, '')
+                : simpleHash(String(Math.random()) + Date.now() + navigator.userAgent);
+
+            try { localStorage.setItem('yekta_device_token', token); } catch (e) {}
+            setDeviceCookie('yekta_device_token', token, 730);
+            return token;
         } catch (e) {
             return '';
         }
     }
 
-    // امضای کوچک canvas (تفاوت رندر بین دستگاه‌ها)
-    function getCanvasSignature() {
-        try {
-            const c = document.createElement('canvas');
-            c.width = 200;
-            c.height = 40;
-            const ctx = c.getContext('2d');
-            ctx.textBaseline = 'top';
-            ctx.font = "14px 'Arial'";
-            ctx.fillStyle = '#f60';
-            ctx.fillRect(0, 0, 100, 20);
-            ctx.fillStyle = '#069';
-            ctx.fillText('yekta-fp-۱۲۳', 2, 2);
-            ctx.fillStyle = 'rgba(102,0,153,0.7)';
-            ctx.fillText('yekta-fp-۱۲۳', 4, 6);
-            return c.toDataURL();
-        } catch (e) {
-            return 'no-canvas';
-        }
+    function getDeviceCookie(name) {
+        const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+        return m ? decodeURIComponent(m[1]) : '';
     }
 
-    // هش ساده (FNV-1a 32بیت → رشتهٔ هگز ۱۶ کاراکتری)
+    function setDeviceCookie(name, value, days) {
+        try {
+            const d = new Date();
+            d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
+            document.cookie = name + '=' + encodeURIComponent(value) +
+                '; expires=' + d.toUTCString() + '; path=/; SameSite=Lax; Secure';
+        } catch (e) {}
+    }
+
+    // هش ساده (FNV-1a 32بیت → رشتهٔ هگز ۱۶ کاراکتری) — فقط به‌عنوانِ راهِ
+    // پشتیبان اگه crypto.randomUUID در دسترس نبود (مرورگرهایِ خیلی قدیمی)
     function simpleHash(str) {
         let h1 = 0x811c9dc5,
             h2 = 0x1000193;
