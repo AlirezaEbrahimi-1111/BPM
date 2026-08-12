@@ -2632,13 +2632,11 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 loadSectionMap().then(() => renderTopDelayed());
             }
 
-            const [mine, delegated, recent, routines, topDelayed] = await Promise.all([
-                apiGet('../api/tasks/my-tasks.php'),
-                apiGet('../api/tasks/delegated-tasks.php'),
-                apiGet('../api/workflows/list.php'),
-                apiGet('../api/workflows/active-summary.php'),
-                apiGet('../api/reports/top-delayed-users.php')
-            ]);
+            // ۵ فراخوانیِ جدا قبلاً این‌جا با Promise.all انجام می‌شد — با
+            // یک درخواستِ باندل‌شده جایگزین شد تا صفِ اتصالِ HTTP/1.1 کم بشه
+            // (بدونِ تغییرِ منطقِ خودِ هر بخش، فقط جمع‌شدنِ درخواست‌ها)
+            const bundle = await apiGet('../api/dashboard/bootstrap.php');
+            const { mine, delegated, recent, routines, topDelayed } = bundle || {};
 
             store.mine = pickList(mine);
             store.delegated = pickList(delegated);

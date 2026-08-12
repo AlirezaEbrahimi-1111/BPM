@@ -2615,12 +2615,10 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         async function loadAll() {
-            const [mine, delegated, recent, routines] = await Promise.all([
-                apiGet('../api/tasks/my-tasks.php'),
-                apiGet('../api/tasks/delegated-tasks.php'),
-                apiGet('../api/workflows/list.php'),
-                apiGet('../api/workflows/active-summary.php')
-            ]);
+            // قبلاً این ۴ فراخوانی جدا با Promise.all انجام می‌شد — با یک
+            // درخواستِ باندل‌شده جایگزین شد تا صفِ اتصالِ HTTP/1.1 کم بشه
+            const bundle = await apiGet('../api/dashboard/bootstrap.php');
+            const { mine, delegated, recent, routines } = bundle || {};
 
             store.mine = pickList(mine);
             store.delegated = pickList(delegated);
