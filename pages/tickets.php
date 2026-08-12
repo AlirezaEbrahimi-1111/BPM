@@ -290,13 +290,13 @@ if (!$__me) {
                         <div class="num" id="sTotal">–</div><div class="lbl">کل</div>
                     </div>
                     <div class="stat-card" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);" onclick="filterByStatus('open')">
-                        <div class="num" id="sOpen">–</div><div class="lbl">باز</div>
+                        <div class="num" id="sOpen">–</div><div class="lbl">در انتظار پاسخ پشتیبان</div>
                     </div>
                     <div class="stat-card" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);" onclick="filterByStatus('in_progress')">
                         <div class="num" id="sProgress">–</div><div class="lbl">در حال بررسی</div>
                     </div>
                     <div class="stat-card" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);" onclick="filterByStatus('waiting_reply')">
-                        <div class="num" id="sWaiting">–</div><div class="lbl">منتظر پاسخ</div>
+                        <div class="num" id="sWaiting">–</div><div class="lbl">در انتظار پاسخ کاربر</div>
                     </div>
                     <div class="stat-card" style="background:linear-gradient(135deg,#10b981,#34d399);" onclick="filterByStatus('resolved')">
                         <div class="num" id="sResolved">–</div><div class="lbl">حل شده</div>
@@ -314,9 +314,9 @@ if (!$__me) {
                     <div class="filter-item">
                         <select id="fStatus" onchange="loadTickets()">
                             <option value="">همه وضعیت‌ها</option>
-                            <option value="open">باز</option>
+                            <option value="open">در انتظار پاسخ پشتیبان</option>
                             <option value="in_progress">در حال بررسی</option>
-                            <option value="waiting_reply">منتظر پاسخ</option>
+                            <option value="waiting_reply">در انتظار پاسخ کاربر</option>
                             <option value="resolved">حل شده</option>
                             <option value="closed">بسته شده</option>
                             <option value="cancelled">لغو شده</option>
