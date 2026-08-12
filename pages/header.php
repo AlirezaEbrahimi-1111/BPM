@@ -338,10 +338,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     </div>
     <script>bpmApplyTheme(bpmGetTheme());</script>
 </nav>
-<script src="<?= asset('/assets/js/common.js') ?>"></script>
-<script src="<?= asset('/assets/js/table-utils.js') ?>"></script>
-<script src="<?= asset('/assets/js/date-utils.js') ?>"></script>
-    <script src="/assets/js/alert.js?v=<?= filemtime($_SERVER['DOCUMENT_ROOT'] . '/assets/js/alert.js') ?>"></script>
+<script src="<?= asset('/assets/js/common-bundle.js') ?>"></script>
 
 
 <script>
@@ -1577,7 +1574,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 <script>
     window.SUBSCRIPTION_CHECK_URL = '/api/organization/check-subscription.php';
 </script>
-<script src="<?= asset('/assets/js/subscription-toast.js') ?>"></script>
 <script>
     window.NAJVA = {};
     var s = document.createElement("script");
