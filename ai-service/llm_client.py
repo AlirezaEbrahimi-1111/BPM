@@ -2,12 +2,12 @@
 نقطه‌ی تعویضِ LLM (بندِ ۲.۳ سند) — تمامِ فراخوانی‌هایِ مدل فقط از همین
 فایل عبور می‌کنند.
 
-ارائه‌دهنده‌یِ فعلی: **AvalAI** (یک Gatewayِ ایرانی، سازگار با فرمتِ APIِ
-OpenAI، با پرداختِ ریالی) — طبقِ بندِ ۲۲.۱، چون هم OpenAIِ رسمی و هم
-DeepSeek به روشِ پرداختی نیاز داشتند که در دسترس نبود. مدلِ انتخاب‌شده
-از طریقِ همین Gateway، `claude-sonnet-5` است. سوییچِ بعدی (به هرجایِ
-دیگر) هم فقط تغییرِ `OPENAI_BASE_URL`/`OPENAI_API_KEY`/نامِ مدل است،
-نه تغییرِ ساختارِ کد.
+ارائه‌دهنده از طریقِ `.env` تعیین می‌شه (`OPENAI_BASE_URL`/`OPENAI_API_KEY`/
+`OPENAI_MODEL`) — تا الان AvalAI و GapGPT (هردو Gatewayِ ایرانی، سازگار
+با فرمتِ APIِ OpenAI، پرداختِ ریالی) امتحان شدن، چون طبقِ بندِ ۲۲.۱،
+OpenAIِ رسمی و DeepSeek به روشِ پرداختی نیاز داشتند که در دسترس نبود.
+سوییچِ بعدی (به هرجایِ دیگر) فقط تغییرِ همین سه مقدار در `.env` است،
+بدونِ تغییرِ این فایل.
 
 ⚠️ برایِ اجرایِ واقعی نیاز به یک کلیدِ معتبر (`OPENAI_API_KEY` در `.env`)
 با اعتبارِ کافی دارد — بدونِ آن، فراخوانی‌هایِ این فایل با خطایِ
@@ -58,7 +58,7 @@ async def classify_intent(question: str, history: list[dict]) -> str:
     """طبقِ بندِ ۴ سند — یکی از 'operational' | 'document' | 'combined' را برمی‌گرداند."""
     client = get_client()
     resp = await client.chat.completions.create(
-        model="claude-sonnet-5",
+        model=cfg.OPENAI_MODEL,
         messages=[
             {
                 "role": "system",
@@ -97,7 +97,7 @@ async def generate_answer(question: str, context_parts: list[str], history: list
     })
 
     resp = await client.chat.completions.create(
-        model="claude-sonnet-5",
+        model=cfg.OPENAI_MODEL,
         messages=messages,
         max_tokens=800,
     )

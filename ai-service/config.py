@@ -23,5 +23,12 @@ SIGNATURE_WINDOW_SECONDS = 30
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
-# طبقِ بندِ ۲۲.۱ — باید به یک نمایندگیِ منطقه‌ای/پراکسیِ خارج از ایران اشاره کند
+# آدرسِ Gateway — می‌تونه OpenAIِ رسمی باشه (که طبقِ بندِ ۲۲.۱ ممکنه به یک
+# پراکسی/نمایندگیِ خارج از ایران نیاز داشته باشه)، یا یکی از Gatewayهایِ
+# ایرانیِ سازگار با فرمتِ OpenAI (مثلِ AvalAI یا GapGPT، بدونِ نیازِ پراکسی)
 OPENAI_BASE_URL = os.environ.get("OPENAI_BASE_URL") or None
+
+# اسمِ مدل هم از طریقِ env میاد — قبلاً توی llm_client.py هاردکد بود که
+# یعنی سوییچِ ارائه‌دهنده، بدونِ تغییرِ کد ممکن نبود؛ الان با همون منطقِ
+# بقیه‌یِ این فایل هماهنگه (همه‌چیز از env، نه هاردکد)
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "claude-sonnet-5")
