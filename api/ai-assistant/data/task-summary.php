@@ -49,6 +49,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/TaskManager.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-dates-helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-status-helper.php';
 
 try {
     $requester_id = requireAuth();
@@ -108,30 +111,63 @@ try {
     // ۵) فقط سازمانِ خودش — با organization_id در WHERE، نه فقط با اعتماد به تطبیقِ کاربر
     // ۶) کارهای حذف‌شده هرگز نمایش داده نمی‌شوند — is_deleted = 0 (بدونِ استثنا)
     $terminalStatuses = "'completed', 'rejected', 'stopped', 'period_done'";
+    // 🔒 ستون‌ها و JOINهایِ dr/ph دقیقاً همون‌هایی هستن که api/tasks/my-tasks.php
+    // برایِ تشخیصِ «در انتظارِ تأییدِ من» / «در انتظارِ تمدیدِ من» استفاده می‌کنه —
+    // بدونِ این‌ها، taskIsOverdue()/taskIsDueToday() نمی‌تونن این دو حالتِ خاص
+    // رو تشخیص بدن (includes/task-status-helper.php)
     $stmt = $db->prepare("
-        SELECT id, title, status, priority, task_type, due_date, deadline, assignee_id, creator_id
-        FROM tasks
-        WHERE organization_id = ?
-          AND is_deleted = 0
+        SELECT
+            t.id, t.title, t.status, t.priority, t.task_type,
+            t.due_date, t.deadline, t.original_deadline, t.start_date, t.end_date,
+            t.assignee_id, t.creator_id, t.is_workflow_task, t.is_pending_approval,
+            t.has_pending_deadline_request,
+            dr.current_approver_id,
+            dr.created_at AS deadline_request_date,
+            ph.last_pending_date
+        FROM tasks t
+        LEFT JOIN deadline_requests dr ON t.id = dr.task_id AND dr.status = 'pending'
+        LEFT JOIN (
+            SELECT h1.task_id, h1.created_at AS last_pending_date
+            FROM task_history h1
+            WHERE h1.action = 'pending_approval'
+              AND NOT EXISTS (
+                  SELECT 1 FROM task_history h2
+                  WHERE h2.task_id = h1.task_id AND h2.action = 'rejected' AND h2.created_at > h1.created_at
+              )
+              AND h1.created_at = (
+                  SELECT MAX(h3.created_at) FROM task_history h3
+                  WHERE h3.task_id = h1.task_id AND h3.action = 'pending_approval'
+                    AND NOT EXISTS (
+                        SELECT 1 FROM task_history h4
+                        WHERE h4.task_id = h3.task_id AND h4.action = 'rejected' AND h4.created_at > h3.created_at
+                    )
+              )
+        ) ph ON t.id = ph.task_id
+        WHERE t.organization_id = ?
+          AND t.is_deleted = 0
           AND (
-              creator_id = ?
-              OR assignee_id = ?
+              t.creator_id = ?
+              OR t.assignee_id = ?
               OR EXISTS (
                   SELECT 1 FROM task_history th
-                  WHERE th.task_id = tasks.id
+                  WHERE th.task_id = t.id
                     AND th.from_user_id = ?
                     AND th.action = 'delegated'
-                    AND tasks.status NOT IN ($terminalStatuses)
+                    AND t.status NOT IN ($terminalStatuses)
               )
           )
         ORDER BY
-            CASE WHEN status NOT IN ($terminalStatuses) THEN 0 ELSE 1 END ASC,
-            COALESCE(deadline, due_date) ASC,
-            id DESC
+            CASE WHEN t.status NOT IN ($terminalStatuses) THEN 0 ELSE 1 END ASC,
+            COALESCE(t.deadline, t.due_date) ASC,
+            t.id DESC
         LIMIT 50
     ");
     $stmt->execute([$requester['organization_id'], $targetUserId, $targetUserId, $targetUserId]);
     $taskRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // برایِ enrichTaskDates()/pe_state() — همون الگویِ بقیه‌یِ ماژولِ کارها
+    // (بدونِ organization_id، طبقِ رفتارِ فعلیِ سراسریِ این ماژول)
+    $holidays = getHolidaySet($db);
 
     // ─── فهرستِ کارهایی که هدف در آن‌ها هنوز «ارجاع‌دهنده‌یِ فعال» است (برایِ برچسبِ نقش) ───
     $stmt = $db->prepare("
@@ -143,26 +179,16 @@ try {
     $stmt->execute([$targetUserId]);
     $activeReferrerTaskIds = array_flip($stmt->fetchAll(PDO::FETCH_COLUMN));
 
-    // طبقِ مقادیرِ واقعیِ ستونِ status در جدولِ tasks (نه فرضی)
-    $statusLabels = [
-        'not_started'      => 'شروع‌نشده',
-        'in_progress'      => 'در حالِ انجام',
-        'pending_approval' => 'منتظرِ تأیید',
-        'completed'        => 'تکمیل‌شده',
-        'rejected'         => 'ردشده',
-        'stopped'          => 'متوقف‌شده',
-        'delegated'        => 'ارجاع‌شده',
-        'period_done'      => 'دوره‌ی جاری تکمیل‌شده',
-    ];
-
-    // 🔒 «کارهایِ امروز» طبقِ تعریفِ سازمان (نه فقط due_date=امروز): هر کارِ فعالی
-    // که موعدش امروز یا زودتر است (یعنی امروز + معوقه‌ها با هم). این عمداً اینجا
-    // (سمتِ PHP، با تاریخِ واقعیِ سرور) محاسبه می‌شود، نه به‌عهده‌ی LLM گذاشته
-    // می‌شود — چون استدلالِ تاریخ با مدل‌هایِ زبانی قابلِ‌اعتماد نیست.
+    // 🔒 معوقه/امروز/برچسبِ وضعیت — دیگه این‌جا دوباره و ساده‌شده محاسبه
+    // نمی‌شن؛ همون طبقه‌بندی‌کننده‌یِ کاننیکِ includes/task-status-helper.php
+    // صدا زده می‌شه (که خودش دقیقاً هم‌معنیِ TF.isOverdue/TF.isDueToday در
+    // assets/js/task-filters.js است — یعنی دستیار دقیقاً همون چیزی رو
+    // می‌بینه که خودِ کاربر روی داشبورد می‌بینه، نه یک تفسیرِ ساده‌شده‌یِ
+    // جداگانه). تاریخ عمداً سمتِ PHP محاسبه می‌شه، نه به‌عهده‌یِ LLM.
     $today = date('Y-m-d');
     $dueTodayOrEarlierCount = 0;
 
-    $tasks = array_map(function ($t) use ($targetUserId, $statusLabels, $activeReferrerTaskIds, $today, &$dueTodayOrEarlierCount) {
+    $tasks = array_map(function ($t) use ($targetUserId, $activeReferrerTaskIds, $today, $db, $holidays, &$dueTodayOrEarlierCount) {
         $roles = [];
         if ((int) $t['creator_id'] === $targetUserId) {
             $roles[] = 'تعریف‌کننده';
@@ -174,23 +200,36 @@ try {
             $roles[] = 'ارجاع‌دهنده (در حالِ پیگیری)';
         }
 
-        $dueDate = $t['deadline'] ?: $t['due_date'];
-        $isTerminal = in_array($t['status'], ['completed', 'rejected', 'stopped', 'period_done'], true);
-        $isDueTodayOrEarlier = $dueDate && !$isTerminal && substr($dueDate, 0, 10) <= $today;
-        if ($isDueTodayOrEarlier) {
+        // next_due_date/overdue_periods (برایِ کارِ دوره‌ای) از همین‌جا میان —
+        // همون موتورِ مشترکی که api/tasks/detail.php و بقیه‌یِ صفحات استفاده می‌کنن
+        $t = enrichTaskDates($t, $db, $holidays, $today);
+        $statusInfo = taskStatusInfo($t, $targetUserId, $today);
+
+        if ($statusInfo['is_overdue'] || $statusInfo['is_due_today']) {
             $dueTodayOrEarlierCount++;
         }
+
+        $dueDate = $t['next_due_date'] ?: ($t['deadline'] ?: $t['due_date']);
 
         return [
             'id'                    => (int) $t['id'],
             'title'                 => $t['title'],
-            'status'                => $statusLabels[$t['status']] ?? $t['status'],
+            'status'                => $statusInfo['label'],
             'priority'              => $t['priority'],
             'due_date'              => $dueDate,
-            'due_today_or_earlier'  => $isDueTodayOrEarlier,
+            'is_overdue'            => $statusInfo['is_overdue'],
+            'is_due_today'          => $statusInfo['is_due_today'],
+            'due_today_or_earlier'  => $statusInfo['is_overdue'] || $statusInfo['is_due_today'],
             'role'                  => implode(' و ', $roles),
         ];
     }, $taskRows);
+
+    // آمارِ «معوقه/امروز» برایِ خلاصه‌یِ کلی، از همین فهرست جمع زده می‌شه (نه
+    // از TaskManager::getTaskStats) — تا خلاصه و ریزِ کارها همیشه با هم
+    // بخونن؛ getTaskStats قاعده‌یِ متفاوتی برایِ «معوقه» داره (کارهایِ
+    // فرآیندی رو نمی‌بینه، تمدیدِ مهلت رو لحاظ نمی‌کنه) که فعلاً دست‌نخورده
+    // مونده چون جایِ دیگه هم استفاده می‌شه
+    $overdueCount = count(array_filter($tasks, fn($t) => $t['is_overdue']));
 
     echo json_encode([
         'success' => true,
@@ -200,6 +239,8 @@ try {
         // stats.today (که فقط due_date دقیقاً امروز را می‌شمارد و باعثِ
         // پاسخِ ناقص می‌شد)
         'due_today_or_earlier_count' => $dueTodayOrEarlierCount,
+        // 🆕 معوقه‌یِ دقیق و هم‌خوان با فهرستِ ریزِ زیر — به‌جایِ stats.overdue
+        'overdue_count' => $overdueCount,
         'tasks'   => $tasks,
     ], JSON_UNESCAPED_UNICODE);
 

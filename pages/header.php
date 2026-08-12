@@ -250,6 +250,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 </a>
             </div>
 
+            <div class="nav-item">
+                <a class="nav-link settings-btn" href="../../pages/ai-assistant-test.php" title="دستیارِ هوش‌مصنوعی">
+                    <i class="bi bi-stars" style="font-size:1.2rem;color:var(--icon-accent);"></i>
+                </a>
+            </div>
+
             <div class="dropdown" style="position: relative;">
                 <!-- آیکون مگافون با بج -->
                 <a href="#" class="nav-link position-relative settings-btn" id="announcementDropdown"
