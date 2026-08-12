@@ -1,0 +1,21 @@
+name: Deploy to VPS
+
+# دستی‌ست، عمداً — هیچ push‌ای خودش دیپلوی نمی‌کنه؛ فقط از تبِ Actions با
+# دکمهٔ «Run workflow» اجرا می‌شه
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            deploy-update
+            sudo -u www-data php /var/www/itmalek/migrate.php up
