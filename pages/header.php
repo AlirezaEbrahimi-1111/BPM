@@ -250,7 +250,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 </a>
             </div>
 
-            <div class="nav-item">
+            <!-- آیکنِ دستیارِ هوش‌مصنوعی موقتاً مخفی — صفحه هنوز در حالِ توسعه/تسته -->
+            <div class="nav-item" style="display:none;">
                 <a class="nav-link settings-btn" href="../../pages/ai-assistant-test.php" title="دستیارِ هوش‌مصنوعی">
                     <i class="bi bi-stars" style="font-size:1.2rem;color:var(--icon-accent);"></i>
                 </a>
@@ -403,7 +404,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     // ============================================
     // بارگذاری اعلان‌ها
     // ============================================
-    async function loadNotifications() {
+    // preData: اگه از قبل fetch شده باشه (مثلاً از باندلِ header/bootstrap.php
+    // در بارگذاریِ اولیه‌ی صفحه)، همون استفاده می‌شه؛ وگرنه (رفرش‌هایِ دوره‌ای
+    // با setInterval) مثلِ قبل مستقیم fetch می‌کنه.
+    async function loadNotifications(preData) {
         const listContainer = document.getElementById('notificationList');
 
         if (!authToken) {
@@ -411,35 +415,40 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             return;
         }
 
-        if (listContainer) {
+        if (listContainer && !preData) {
             listContainer.innerHTML = '<div class="notification-loading"><div class="spinner-border" role="status"></div></div>';
         }
 
         try {
-            const apiUrl = '/api/notifications/list.php?unread_only=1&limit=50';
+            let data;
+            if (preData) {
+                data = preData;
+            } else {
+                const apiUrl = '/api/notifications/list.php?unread_only=1&limit=50';
 
-            const response = await fetch(apiUrl, {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + authToken,
-                    'Content-Type': 'application/json'
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const contentType = response.headers.get('content-type');
+
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('❌ HTML returned:', text.substring(0, 200));
+                    throw new Error('پاسخ JSON نیست');
                 }
-            });
 
-            const contentType = response.headers.get('content-type');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'خطای سرور');
+                }
 
-            if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                console.error('❌ HTML returned:', text.substring(0, 200));
-                throw new Error('پاسخ JSON نیست');
+                data = await response.json();
             }
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'خطای سرور');
-            }
-
-            const data = await response.json();
 
             if (data.success && listContainer) {
                 if (data.notifications && data.notifications.length > 0) {
@@ -502,24 +511,31 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     }
 
     // ─── بارگذاری اطلاعیه‌ها ───
-    async function loadAnnouncements() {
+    async function loadAnnouncements(preData) {
         const listContainer = document.getElementById('announcementList');
         if (!authToken || !listContainer) return;
 
-        listContainer.innerHTML = `
+        if (!preData) {
+            listContainer.innerHTML = `
         <div class="notification-loading">
             <div class="spinner-border" role="status"></div>
         </div>`;
+        }
 
         try {
-            const response = await fetch('/api/announcements/list.php?limit=8&offset=0&unread_only=1', {
-                headers: {
-                    'Authorization': 'Bearer ' + authToken
-                }
-            });
+            let data;
+            if (preData) {
+                data = preData;
+            } else {
+                const response = await fetch('/api/announcements/list.php?limit=8&offset=0&unread_only=1', {
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    }
+                });
 
-            if (!response.ok) throw new Error('server error');
-            const data = await response.json();
+                if (!response.ok) throw new Error('server error');
+                data = await response.json();
+            }
 
             if (data.success) {
                 renderAnnouncementList(data.announcements, data.unread_count);
@@ -908,17 +924,22 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     // ============================================
     // ✅ نشانگرِ پیام‌های خوانده‌نشدهٔ چت (هدر)
     // ============================================
-    async function updateChatUnreadBadge() {
+    async function updateChatUnreadBadge(preData) {
         if (!authToken) return;
         const badge = document.getElementById('chatUnreadBadge');
         if (!badge) return;
         try {
-            const response = await fetch('/api/chat/conversations.php', {
-                headers: { 'Authorization': 'Bearer ' + authToken },
-                cache: 'no-store'
-            });
-            if (!response.ok) return;
-            const data = await response.json();
+            let data;
+            if (preData) {
+                data = preData;
+            } else {
+                const response = await fetch('/api/chat/conversations.php', {
+                    headers: { 'Authorization': 'Bearer ' + authToken },
+                    cache: 'no-store'
+                });
+                if (!response.ok) return;
+                data = await response.json();
+            }
             if (!data.success) return;
             // گفتگوهای بی‌صداشده در شمارشِ زنگوله‌ی کلیِ هدر حساب نمی‌شوند
             const total = (data.conversations || []).reduce((sum, c) => sum + (c.is_muted ? 0 : (c.unread_count || 0)), 0);
@@ -936,7 +957,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     // ============================================
     // ✅ بارگذاری وضعیت حضور و غیاب - نسخه مینیمال
     // ============================================
-    async function loadAttendanceStatus() {
+    async function loadAttendanceStatus(preData) {
         const container = document.getElementById('attendanceContainer');
 
         if (!authToken || !container) {
@@ -945,27 +966,32 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         }
 
         try {
-            const apiUrl = getApiUrl('attendance/today-status.php');
+            let data;
+            if (preData) {
+                data = preData;
+            } else {
+                const apiUrl = getApiUrl('attendance/today-status.php');
 
-            const response = await fetch(apiUrl, {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + authToken,
-                    'Content-Type': 'application/json'
-                },
-                cache: 'no-store',
-                // 🔒 اگه درخواست به هر دلیلی (تداخل با درخواست‌های دیگه، شبکه، ...) خیلی طول
-                // بکشه، به‌جای گیرکردنِ ابدیِ اسپینر، بعد از ۸ ثانیه لغو و مخفی می‌شه
-                signal: AbortSignal.timeout(8000)
-            });
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    },
+                    cache: 'no-store',
+                    // 🔒 اگه درخواست به هر دلیلی (تداخل با درخواست‌های دیگه، شبکه، ...) خیلی طول
+                    // بکشه، به‌جای گیرکردنِ ابدیِ اسپینر، بعد از ۸ ثانیه لغو و مخفی می‌شه
+                    signal: AbortSignal.timeout(8000)
+                });
 
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                container.style.display = 'none';
-                return;
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    container.style.display = 'none';
+                    return;
+                }
+
+                data = await response.json();
             }
-
-            const data = await response.json();
 
             if (!data.success) {
                 throw new Error(data.message || 'API Error');
@@ -1528,20 +1554,40 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             });
         }
 
+        // بارگذاریِ اولیه‌یِ ۴ فراخوانیِ سطحِ هدر (اعلان‌ها، پیام‌ها، وضعیتِ
+        // حضور، چت) با یک درخواستِ باندل‌شده به‌جایِ ۴ فراخوانیِ هم‌زمانِ جدا —
+        // رفرش‌هایِ دوره‌ای (setInterval پایین) همچنان جدا fetch می‌کنن چون
+        // فاصله‌ی زمانیِ متفاوتی دارن و هم‌زمان نیستن.
+        async function loadHeaderBundle() {
+            try {
+                const response = await fetch('/api/header/bootstrap.php', {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                if (!response.ok) throw new Error('bundle fetch failed');
+                const bundle = await response.json();
+                if (!bundle.success) throw new Error('bundle response not successful');
+                loadAnnouncements(bundle.announcements);
+                loadNotifications(bundle.notifications);
+                loadAttendanceStatus(bundle.attendance);
+                updateChatUnreadBadge(bundle.conversations);
+            } catch (error) {
+                console.error('❌ خطا در بارگذاریِ باندلِ هدر، fallback به فراخوانیِ جداگانه:', error);
+                loadAnnouncements();
+                loadNotifications();
+                loadAttendanceStatus();
+                updateChatUnreadBadge();
+            }
+        }
+
         function initializeHeader() {
             console.log('✅ Initializing header...');
             setupAnnouncementDropdown();
-            if (authToken) {
-                loadAnnouncements();
-            }
             toggleManagerMenu();
             setupOverviewForUnit();
             setupDropdownBehavior();
             setupNavDropdowns();
             if (authToken) {
-                loadNotifications();
-                loadAttendanceStatus();
-                updateChatUnreadBadge();
+                loadHeaderBundle();
 
                 // بررسی هر 30 ثانیه
                 setInterval(checkNewNotifications, 30000);

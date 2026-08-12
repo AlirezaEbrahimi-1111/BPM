@@ -86,6 +86,4 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
         'message' => $e->getMessage()
     ], JSON_UNESCAPED_UNICODE);
 }
-
-exit;
 ?>

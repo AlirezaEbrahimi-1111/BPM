@@ -69,40 +69,45 @@ try {
     $stmt->execute([$user_id, $user_id, $user_id, $archived]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    if (!$rows) {
-        echo json_encode(['success' => true, 'conversations' => []]);
-        exit;
-    }
-
-    $convIds = array_column($rows, 'conversation_id');
-    $placeholders = implode(',', array_fill(0, count($convIds), '?'));
-
-    // ─── تعدادِ پیام‌های خوانده‌نشده به‌ازای هر گفتگو (یک کوئریِ دسته‌ای) ───
-    $stmt = $db->prepare("
-        SELECT m.conversation_id, COUNT(*) AS unread
-        FROM chat_messages m
-        JOIN chat_participants cp ON cp.conversation_id = m.conversation_id AND cp.user_id = ?
-        LEFT JOIN chat_message_hidden h ON h.message_id = m.id AND h.user_id = ?
-        WHERE m.conversation_id IN ($placeholders)
-          AND m.user_id != ?
-          AND m.is_deleted = 0
-          AND h.id IS NULL
-          AND (cp.last_read_message_id IS NULL OR m.id > cp.last_read_message_id)
-        GROUP BY m.conversation_id
-    ");
-    $stmt->execute(array_merge([$user_id, $user_id], $convIds, [$user_id]));
+    // 🔒 دو کوئریِ زیر فقط وقتی گفتگویی هست اجرا می‌شن — چون با $rows خالی،
+    // «IN ()» خالی تولید می‌شد که SQL نامعتبره. (قبلاً این حالت با یک
+    // exit زودهنگام کنار گذاشته می‌شد؛ همون رفتار حالا با unreadMap/
+    // typingSet خالی و ادامه‌ی طبیعیِ اجرا تا echoِ انتهایِ فایل حفظ شده —
+    // چون این فایل هم مستقل صدا زده می‌شه هم از api/dashboard و هدرِ
+    // مشترک include می‌شه، و include نمی‌تونه با exit وسطِ فایل کنار بیاد.)
     $unreadMap = [];
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
-        $unreadMap[(int) $r['conversation_id']] = (int) $r['unread'];
-    }
+    $typingSet = [];
 
-    // ─── آیا طرفِ مقابلِ هر گفتگو الان در حالِ تایپ است (یک کوئریِ دسته‌ای) ───
-    $stmt = $db->prepare("
-        SELECT conversation_id FROM chat_participants
-        WHERE conversation_id IN ($placeholders) AND user_id != ? AND typing_until > NOW()
-    ");
-    $stmt->execute(array_merge($convIds, [$user_id]));
-    $typingSet = array_flip(array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN)));
+    if ($rows) {
+        $convIds = array_column($rows, 'conversation_id');
+        $placeholders = implode(',', array_fill(0, count($convIds), '?'));
+
+        // ─── تعدادِ پیام‌های خوانده‌نشده به‌ازای هر گفتگو (یک کوئریِ دسته‌ای) ───
+        $stmt = $db->prepare("
+            SELECT m.conversation_id, COUNT(*) AS unread
+            FROM chat_messages m
+            JOIN chat_participants cp ON cp.conversation_id = m.conversation_id AND cp.user_id = ?
+            LEFT JOIN chat_message_hidden h ON h.message_id = m.id AND h.user_id = ?
+            WHERE m.conversation_id IN ($placeholders)
+              AND m.user_id != ?
+              AND m.is_deleted = 0
+              AND h.id IS NULL
+              AND (cp.last_read_message_id IS NULL OR m.id > cp.last_read_message_id)
+            GROUP BY m.conversation_id
+        ");
+        $stmt->execute(array_merge([$user_id, $user_id], $convIds, [$user_id]));
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            $unreadMap[(int) $r['conversation_id']] = (int) $r['unread'];
+        }
+
+        // ─── آیا طرفِ مقابلِ هر گفتگو الان در حالِ تایپ است (یک کوئریِ دسته‌ای) ───
+        $stmt = $db->prepare("
+            SELECT conversation_id FROM chat_participants
+            WHERE conversation_id IN ($placeholders) AND user_id != ? AND typing_until > NOW()
+        ");
+        $stmt->execute(array_merge($convIds, [$user_id]));
+        $typingSet = array_flip(array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN)));
+    }
 
     // 🔒 آستانهٔ آنلاین‌بودن: اگر آخرین پینگ در 1 دقیقهٔ اخیر بوده باشد
     $onlineThresholdSeconds = 60;

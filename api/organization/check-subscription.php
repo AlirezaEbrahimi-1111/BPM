@@ -33,65 +33,67 @@ try {
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    // 🔒 دو حالتِ «سازمان یافت نشد» و «اشتراکی ثبت نشده» قبلاً با exit
+    // زودهنگام تموم می‌شدن؛ چون این فایل هم مستقل صدا زده می‌شه هم داخلِ
+    // باندلِ هدر include می‌شه (که با exitِ وسطِ فایل کنار نمیاد)، هردو به
+    // if/else تبدیل شدن — خروجیِ هر دو حالت دقیقاً مثلِ قبل می‌مونه.
     if (!$user || !$user['organization_id']) {
         echo json_encode([
             'success' => false,
             'message' => 'سازمان کاربر یافت نشد'
         ]);
-        exit;
-    }
-
-    $orgId = $user['organization_id'];
-
-    // آخرین اشتراک فعال
-    $stmt = $db->prepare("
-        SELECT end_date, is_active 
-        FROM subscriptions 
-        WHERE organization_id = ? 
-        ORDER BY end_date DESC 
-        LIMIT 1
-    ");
-    $stmt->execute([$orgId]);
-    $subscription = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$subscription) {
-        echo json_encode([
-            'success' => true,
-            'has_subscription' => false,
-            'days_remaining' => 0,
-            'status' => 'no_subscription'
-        ]);
-        exit;
-    }
-
-    // محاسبه روزهای باقیمانده
-    // ریست ساعت به 00:00:00 تا محاسبه روز دقیق باشه
-    // مثال: امروز 24 می ساعت 10:32 و انقضا 26 می → باید 2 روز باشه نه 1
-    $endDate = new DateTime($subscription['end_date']);
-    $endDate->setTime(0, 0, 0);
-
-    $today = new DateTime();
-    $today->setTime(0, 0, 0);
-
-    $diff = $today->diff($endDate);
-    $daysRemaining = $endDate >= $today ? (int)$diff->days : -(int)$diff->days;
-
-    // تعیین وضعیت
-    if ($subscription['is_active'] && $daysRemaining > 0) {
-        $status = 'active';
-    } elseif ($daysRemaining <= 0) {
-        $status = 'expired';
     } else {
-        $status = 'inactive';
-    }
+        $orgId = $user['organization_id'];
 
-    echo json_encode([
-        'success' => true,
-        'has_subscription' => true,
-        'days_remaining' => $daysRemaining,
-        'end_date' => $subscription['end_date'],
-        'status' => $status
-    ]);
+        // آخرین اشتراک فعال
+        $stmt = $db->prepare("
+            SELECT end_date, is_active
+            FROM subscriptions
+            WHERE organization_id = ?
+            ORDER BY end_date DESC
+            LIMIT 1
+        ");
+        $stmt->execute([$orgId]);
+        $subscription = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$subscription) {
+            echo json_encode([
+                'success' => true,
+                'has_subscription' => false,
+                'days_remaining' => 0,
+                'status' => 'no_subscription'
+            ]);
+        } else {
+            // محاسبه روزهای باقیمانده
+            // ریست ساعت به 00:00:00 تا محاسبه روز دقیق باشه
+            // مثال: امروز 24 می ساعت 10:32 و انقضا 26 می → باید 2 روز باشه نه 1
+            $endDate = new DateTime($subscription['end_date']);
+            $endDate->setTime(0, 0, 0);
+
+            $today = new DateTime();
+            $today->setTime(0, 0, 0);
+
+            $diff = $today->diff($endDate);
+            $daysRemaining = $endDate >= $today ? (int)$diff->days : -(int)$diff->days;
+
+            // تعیین وضعیت
+            if ($subscription['is_active'] && $daysRemaining > 0) {
+                $status = 'active';
+            } elseif ($daysRemaining <= 0) {
+                $status = 'expired';
+            } else {
+                $status = 'inactive';
+            }
+
+            echo json_encode([
+                'success' => true,
+                'has_subscription' => true,
+                'days_remaining' => $daysRemaining,
+                'end_date' => $subscription['end_date'],
+                'status' => $status
+            ]);
+        }
+    }
 
 } catch (Exception $e) {
     http_response_code(500);

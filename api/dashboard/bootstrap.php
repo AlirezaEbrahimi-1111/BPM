@@ -24,25 +24,20 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 // (requireAuth خودش exit می‌زنه) و ۵ include بی‌فایده اجرا نمی‌شه.
 $user_id = requireAuth();
 
-// ⏱️ ابزارِ تشخیصیِ موقت — بعدِ پیداکردنِ گلوگاه حذف بشه
-$bpm_timing = [];
-function bpm_dashboard_capture(string $absPath, string $label): array {
-    global $bpm_timing;
-    $t0 = microtime(true);
+function bpm_dashboard_capture(string $absPath): array {
     ob_start();
     include $absPath;
     $raw = ob_get_clean();
-    $bpm_timing[$label] = round((microtime(true) - $t0) * 1000);
     $decoded = json_decode($raw, true);
     return is_array($decoded) ? $decoded : ['success' => false, 'message' => 'invalid upstream response'];
 }
 
 $root = $_SERVER['DOCUMENT_ROOT'];
 
-$mine      = bpm_dashboard_capture($root . '/api/tasks/my-tasks.php', 'mine');
-$delegated = bpm_dashboard_capture($root . '/api/tasks/delegated-tasks.php', 'delegated');
-$recent    = bpm_dashboard_capture($root . '/api/workflows/list.php', 'recent');
-$routines  = bpm_dashboard_capture($root . '/api/workflows/active-summary.php', 'routines');
+$mine      = bpm_dashboard_capture($root . '/api/tasks/my-tasks.php');
+$delegated = bpm_dashboard_capture($root . '/api/tasks/delegated-tasks.php');
+$recent    = bpm_dashboard_capture($root . '/api/workflows/list.php');
+$routines  = bpm_dashboard_capture($root . '/api/workflows/active-summary.php');
 
 // reports/top-delayed-users.php مخصوصِ کاربرانی‌ست که مجوزِ
 // view_all_org_tasks دارن (مدیران) — requirePermission داخلِ اون فایل
@@ -55,7 +50,7 @@ $me = loadUserForPermissions($db, $user_id);
 $db = null;
 
 if (hasPermission($me, 'view_all_org_tasks')) {
-    $topDelayed = bpm_dashboard_capture($root . '/api/reports/top-delayed-users.php', 'topDelayed');
+    $topDelayed = bpm_dashboard_capture($root . '/api/reports/top-delayed-users.php');
 } else {
     $topDelayed = ['success' => true, 'users' => []];
 }
@@ -68,5 +63,4 @@ echo json_encode([
     'recent'     => $recent,
     'routines'   => $routines,
     'topDelayed' => $topDelayed,
-    '_timing_ms' => $bpm_timing,
 ]);
