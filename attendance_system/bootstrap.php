@@ -88,7 +88,7 @@ function getCurrentUser($user_id = null) {
 }
 
 // CORS Headers
-header('Access-Control-Allow-Origin: https://bpm.computeryekta.com');
+header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json; charset=utf-8');

@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: https://bpm.computeryekta.com');
+header('Access-Control-Allow-Origin: *');
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

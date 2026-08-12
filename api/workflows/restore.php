@@ -1,7 +1,7 @@
 <?php
 // api/workflows/restore.php — بازگرداندن روتین حذف‌شده (Undo)
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: https://bpm.computeryekta.com');
+header('Access-Control-Allow-Origin: *');
 error_reporting(0);
 ini_set('display_errors', 0);
 

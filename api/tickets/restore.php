@@ -1,7 +1,7 @@
 <?php
 // api/tickets/restore.php — بازگرداندن تیکت حذف‌شده (فقط کاربر id=1)
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: https://bpm.computeryekta.com');
+header('Access-Control-Allow-Origin: *');
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
