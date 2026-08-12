@@ -42,6 +42,12 @@ if (empty($_SESSION['user_id'])) {
         .console-msg .meta { font-size: .72rem; color: #888; margin-top: 6px; }
         .console-sources { font-size: .75rem; color: #666; margin-top: 8px; }
         .console-sources li { margin-bottom: 2px; }
+
+        /* رندرِ سبکِ Markdown برایِ جوابِ دستیار — فقط بولد و لیست، بدونِ کتابخانه */
+        .console-msg .answer { white-space: pre-wrap; }
+        .console-msg .answer ul { margin: 6px 0; padding-inline-start: 1.4rem; }
+        .console-msg .answer li { margin-bottom: 6px; }
+        .console-msg .answer li b { color: var(--icon-accent, #744CA4); }
     </style>
 </head>
 
@@ -81,10 +87,33 @@ if (empty($_SESSION['user_id'])) {
             return d.innerHTML;
         }
 
+        // رندرِ سبکِ Markdown، فقط دو قابلیت (بدونِ کتابخانه‌یِ بیرونی):
+        // خط‌هایِ شروع‌شده با «- » → آیتمِ لیست، و **متن** → پررنگ.
+        // اول escape می‌کنیم (امنیت در برابرِ XSS)، بعد رویِ همون متنِ
+        // escape‌شده این دو الگو رو با تگ جایگزین می‌کنیم.
+        function mdLite(text) {
+            var lines = (text == null ? '' : String(text)).split('\n');
+            var html = '';
+            var inList = false;
+            lines.forEach(function (line) {
+                var isBullet = /^\s*-\s+/.test(line);
+                if (isBullet && !inList) { html += '<ul>'; inList = true; }
+                if (!isBullet && inList) { html += '</ul>'; inList = false; }
+
+                var content = esc(isBullet ? line.replace(/^\s*-\s+/, '') : line);
+                content = content.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+
+                html += isBullet ? ('<li>' + content + '</li>') : (content + '\n');
+            });
+            if (inList) html += '</ul>';
+            return html;
+        }
+
         function appendMsg(role, text, extraHtml) {
             var div = document.createElement('div');
             div.className = 'console-msg ' + role;
-            div.innerHTML = '<div>' + esc(text) + '</div>' + (extraHtml || '');
+            var body = role === 'assistant' ? mdLite(text) : esc(text);
+            div.innerHTML = '<div class="answer">' + body + '</div>' + (extraHtml || '');
             document.getElementById('msgList').appendChild(div);
             div.scrollIntoView({ behavior: 'smooth' });
         }
