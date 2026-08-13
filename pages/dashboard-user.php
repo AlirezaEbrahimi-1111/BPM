@@ -1007,6 +1007,10 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
             .dash-wrap {
                 height: auto;
+                /* 150px+150px پدینگِ دسکتاپ رويِ موبایل عملاً کلِ محتوا رو
+                   به یه ستونِ ~60-90 پیکسلی فشار می‌داد — دلیلِ اصلیِ
+                   بهم‌ریختگیِ کلِ صفحه، نه فقط یه ویجتِ خاص */
+                padding: 14px 12px 14px 12px;
             }
 
             .plan-grid {
