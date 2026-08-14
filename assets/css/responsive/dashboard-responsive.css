@@ -644,6 +644,12 @@ body.drawer-body-open {
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 6px !important;
     padding: 0 8px 10px 8px !important;
+    /* قاعده‌ی دسکتاپ margin:auto!important روی گرید باعث
+       می‌شد کلِ ردیف به‌جایِ پرکردنِ عرض، جمع‌وجور و وسط‌چین
+       بمونه — با فضایِ خالیِ محسوس دو طرف */
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
   }
 
   .plan-item {
@@ -669,6 +675,41 @@ body.drawer-body-open {
     font-size: 0.72rem !important;
   }
 
+  /* فیلترهایِ «همه/امروز/عقب‌افتاده» روی دسکتاپ توی همون
+     ردیفِ تب‌ها (سمتِ چپ) جا می‌شن؛ روی موبایل با ۴ تب کنارِ
+     هم جا نمی‌شن — می‌رن زیرِ تب‌ها، توی ردیفِ خودشون */
+  .dash-tabs {
+    flex-wrap: wrap;
+  }
+
+  .dash-tabs .dash-filters {
+    flex-basis: 100%;
+    margin-right: 0;
+    order: 2;
+    padding: 6px 0 8px;
+  }
+
+  /* ۴ تبِ کارها (من/واگذارشده/اخیر/منتخب) با متنِ کامل روی
+     موبایل کنارِ هم جا نمی‌شن و سه‌خطی می‌شدن — به‌جایِ کوتاه‌
+     کردنِ متن یا کوچیک‌کردنِ فونت، این ردیف اسکرولِ افقی می‌شه
+     (با انگشت swipe می‌شه، متنِ کاملِ هر تب هم دست‌نخورده می‌مونه) */
+  .dash-tabs-scroll {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-basis: 100%;
+    order: 1;
+  }
+
+  .dash-tabs-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dash-tabs-scroll .dash-tab {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
 }
 
 /* «فرآیندهای جاری» + «کارها»: کنارِ هم (grid ۲ستونه‌یِ tasks-row:

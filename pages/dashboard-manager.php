@@ -2252,6 +2252,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 </div>
 
                 <div class="dash-tabs">
+                    <div class="dash-tabs-scroll">
                     <button class="dash-tab" data-tab="mine">
                         <span>کارهای من</span>
                         <i class="bi bi-pin-angle tab-pin" data-pin="mine"></i>
@@ -2268,6 +2269,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                         <span>منتخب</span>
                         <i class="bi bi-pin-angle tab-pin" data-pin="starred"></i>
                     </button>
+                    </div>
 <div class="dash-filters">
                         <button class="filter-chip active" data-filter="all">همه</button>
                         <button class="filter-chip" data-filter="today">امروز</button>
