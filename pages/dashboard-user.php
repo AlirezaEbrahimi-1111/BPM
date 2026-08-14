@@ -344,6 +344,16 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             align-items: center;
         }
 
+        /* wrapperِ ۴ تب (برایِ اسکرولِ افقیِ موبایل اضافه شد) — روی
+           دسکتاپ هم باید flex بمونه، وگرنه چون هر .dash-tab خودش
+           display:flex داره (یعنی block-level)، بدونِ این قانون
+           به‌جایِ کنارِ هم، زیرِ هم می‌افتن */
+        .dash-tabs-scroll {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
         /* گروه فیلترها سمت چپ همین ردیف */
         .dash-tabs .dash-filters {
             margin-right: auto;
