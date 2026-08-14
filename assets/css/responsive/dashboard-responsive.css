@@ -694,11 +694,14 @@ body.drawer-body-open {
      کردنِ متن یا کوچیک‌کردنِ فونت، این ردیف اسکرولِ افقی می‌شه
      (با انگشت swipe می‌شه، متنِ کاملِ هر تب هم دست‌نخورده می‌مونه) */
   .dash-tabs-scroll {
-    display: flex;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     flex-basis: 100%;
+    width: 100%;
     order: 1;
   }
 
@@ -707,8 +710,8 @@ body.drawer-body-open {
   }
 
   .dash-tabs-scroll .dash-tab {
-    flex-shrink: 0;
-    white-space: nowrap;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
   }
 }
 
