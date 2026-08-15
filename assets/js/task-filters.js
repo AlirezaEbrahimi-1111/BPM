@@ -254,6 +254,15 @@ window.TF = (function () {
         if (isOverdue(t, user)) {
             return '<span class="status-badge status-overdue">عقب افتاده</span>';
         }
+        // status='delegated' یعنی این کار به یه assigneeِ جدید ارجاع شده — ولی
+        // از نگاهِ خودِ همون assigneeِ جدید (کاربرِ فعلی)، دیگه «ارجاع‌شده» معنی
+        // نداره: نوبتِ خودشه که شروعش کنه، نه این‌که منتظرِ کسِ دیگه‌ای باشه.
+        // بقیه‌ی سیستم (شروعِ خودکار با تیکِ چک‌لیست، دکمه‌ی «شروع کار» در
+        // task-detail.php) هم دقیقاً delegated رو هم‌ردیفِ not_started می‌دونه،
+        // پس برچسب هم باید همین رفتار رو داشته باشه
+        if (t.status === 'delegated' && user && Number(t.assignee_id) === Number(user.id)) {
+            return `<span class="status-badge ${statusClass('not_started')}">${statusLabel('not_started')}</span>`;
+        }
         const s = t.status || 'not_started';
         return `<span class="status-badge ${statusClass(s)}">${statusLabel(s)}</span>`;
     }
