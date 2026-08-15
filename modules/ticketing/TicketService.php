@@ -95,7 +95,7 @@ class TicketService
                 'title'        => 'تیکت جدید: ' . $ticketNumber,
                 'message'      => 'تیکت «' . trim($data['subject']) . '» ثبت شد',
                 'type'         => 'info',
-                'link'         => 'ticket-detail.php?id=' . $ticketId,
+                'link'         => '/pages/ticket-detail.php?id=' . $ticketId,
                 'related_type' => 'ticket',
                 'related_id'   => $ticketId,
                 'sms_pattern'  => 'ticket_created',

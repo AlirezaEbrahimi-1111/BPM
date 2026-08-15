@@ -99,7 +99,7 @@ WHERE t.id = ? AND t.deleted_at IS NULL
                 'title'        => 'تغییر وضعیت تیکت: ' . $ticket['ticket_number'],
                 'message'      => 'وضعیت تیکت «'.$ticket['subject'].'» به '.$newStatus['label'].' تغییر یافت',
                 'type'         => 'info',
-                'link'         => 'ticket-detail.php?id=' . $ticketId,
+                'link'         => '/pages/ticket-detail.php?id=' . $ticketId,
                 'related_type' => 'ticket',
                 'related_id'   => $ticketId,
                 'sms_pattern'  => 'ticket_status_changed',

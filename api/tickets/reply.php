@@ -171,7 +171,7 @@ try {
             'title'        => 'پاسخ جدید: ' . $ticket['ticket_number'],
             'message'      => $userName . ' به تیکت «' . $ticket['subject'] . '» پاسخ داد',
             'type'         => 'info',
-            'link'         => 'ticket-detail.php?id=' . $ticketId,
+            'link'         => '/pages/ticket-detail.php?id=' . $ticketId,
             'related_type' => 'ticket',
             'related_id'   => $ticketId,
             'sms_pattern'  => 'ticket_replied',
