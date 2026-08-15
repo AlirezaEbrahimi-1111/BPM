@@ -77,7 +77,11 @@ try {
             'related_id' => $input['task_id'],
             'link' => "/pages/task-detail.php?id={$input['task_id']}",
             'sms_pattern' => 'task_assigned',
-            'sms_args'    => [$task['title'], $name]
+            'sms_args'    => [$task['title'], $name],
+            // 🔒 چند خط بالاتر assignee_id همین الان به to_user_id تغییر کرد؛
+            // چکِ self-notificationِ پیش‌فرض این رو با ارجاع‌دادن به خودِ
+            // creator اشتباه می‌گرفت و بی‌صدا نوتیف رو حذف می‌کرد
+            'skip_self_check' => true
         ]);
 
         http_response_code(200);

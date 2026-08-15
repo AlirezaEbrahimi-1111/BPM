@@ -31,7 +31,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
     
     foreach ($notifications as $notif) {
         $should_show = true;
-        
+
+        if (!empty($notif['bypass_self_filter'])) {
+            $filtered_notifications[] = $notif;
+            continue;
+        }
+
         if (!empty($notif['related_id']) && $notif['related_type'] === 'task') {
             $stmt = $db->prepare("
                 SELECT creator_id, assignee_id 

@@ -161,7 +161,11 @@ try {
             'related_id' => $input['task_id'],
             'is_read' => 0,
             'sms_pattern' => 'task_approved',
-            'sms_args' => [$task['title'] ?? 'نامشخص', $currentUserName]
+            'sms_args' => [$task['title'] ?? 'نامشخص', $currentUserName],
+            // 🔒 چند خط بالاتر assignee_id همین الان به to_user_id تغییر کرد؛
+            // چکِ self-notificationِ پیش‌فرض این رو با ارجاع‌دادن به خودِ
+            // creator اشتباه می‌گرفت و بی‌صدا نوتیف رو حذف می‌کرد
+            'skip_self_check' => true
         ]);
     } catch (Exception $notifError) {
         error_log("Notification error in approve-and-delegate: " . $notifError->getMessage());

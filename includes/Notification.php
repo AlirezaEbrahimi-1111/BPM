@@ -26,11 +26,21 @@ class Notification
             error_log("Related Type: " . ($data['related_type'] ?? 'NULL'));
             error_log("Related ID: " . ($data['related_id'] ?? 'NULL'));
 
-            // ✅ چک کردن task
-            if (!empty($data['related_id']) && ($data['related_type'] ?? null) === 'task') {
+            // ✅ چک کردن task — این چک روی وضعیتِ *زنده‌یِ فعلیِ* تسک انجام
+            // می‌شه، نه وضعیتِ قبل از این اکشن. برایِ نوتیف‌هایی که caller
+            // درست قبل از این فراخوانی خودش assignee_id رو به to_user_id
+            // آپدیت کرده (مثلِ ارجاع)، این شرط همیشه true می‌شه چون همین
+            // الان همون مقدار رو ست کردیم — نه چون واقعاً creator داره به
+            // خودش نوتیف می‌فرسته. برایِ همین caller هایی مثلِ ارجاع، صریحاً
+            // با skip_self_check این چک رو دور می‌زنن
+            if (
+                empty($data['skip_self_check']) &&
+                !empty($data['related_id']) &&
+                ($data['related_type'] ?? null) === 'task'
+            ) {
                 $stmt = $this->db->prepare("
-                    SELECT creator_id, assignee_id 
-                    FROM tasks 
+                    SELECT creator_id, assignee_id
+                    FROM tasks
                     WHERE id = ?
                 ");
                 $stmt->execute([$data['related_id']]);
@@ -54,9 +64,9 @@ class Notification
             error_log("✅ ALLOWED: Creating notification");
             error_log("===========================================");
 
-            $sql = "INSERT INTO notifications 
-                (user_id, title, message, type, link, related_type, related_id) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO notifications
+                (user_id, title, message, type, link, related_type, related_id, bypass_self_filter)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $this->db->prepare($sql);
             $result = $stmt->execute([
@@ -66,7 +76,8 @@ class Notification
                 $data['type'] ?? 'info',
                 $data['link'] ?? null,
                 $data['related_type'] ?? null,
-                $data['related_id'] ?? null
+                $data['related_id'] ?? null,
+                !empty($data['skip_self_check']) ? 1 : 0
             ]);
 
             // 🆕 اگر نوتیفیکیشن ساخته شد، پیامک هم بفرست
@@ -350,6 +361,12 @@ private function resolveSMSTemplate($data): array
      */
     private function shouldShowNotification($notification, $user_id)
     {
+        // نوتیف‌هایی که caller صراحتاً از چکِ self-notification معاف کرده
+        // (مثلِ ارجاعِ تسک به خودِ creator) — همیشه نشون داده بشن
+        if (!empty($notification['bypass_self_filter'])) {
+            return true;
+        }
+
         // اگر نوتیفیکیشن مربوط به task است
         if (!empty($notification['related_id']) && $notification['related_type'] === 'task') {
             try {
