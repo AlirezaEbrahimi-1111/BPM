@@ -3840,12 +3840,15 @@ ${task.overdue_periods > 0 ? `
                 // ── دکمه درخواست رفع دوره‌های معوقه
                 const clearOverdueBtn = document.getElementById('clearOverdueBtn');
                 if (clearOverdueBtn) {
-                    const _completed = task.completed_count || 0;
-                    const _forgiven = task.overdue_forgiven_credit || 0;
                     // ✅ از مقدار محاسبه‌شده سرور استفاده می‌کنیم (با احتساب تعطیلات و جمعه‌ها)
-                    // به جای calculateStrictlyOverduePeriods که تعطیلات رو نمی‌شناسه
+                    // به جای calculateStrictlyOverduePeriods که تعطیلات رو نمی‌شناسه.
+                    // task.overdue_periods (پیرو period-engine.php::pe_state) از قبل
+                    // هم دوره‌های تکمیل‌شده هم overdue_forgiven_credit رو کسر کرده —
+                    // کسرِ دوباره‌ی completed_count/forgiven این‌جا باعث می‌شد عدد
+                    // منفی بشه و دکمه برایِ هر تسکی که حداقل یک‌بار تکمیل شده
+                    // (حتی با معوقه‌ی واقعی) همیشه مخفی بمونه
                     const _overdue = task.overdue_periods || 0;
-                    const _remaining = Math.max(0, _overdue - _completed - _forgiven);
+                    const _remaining = Math.max(0, _overdue);
                     const canRequest = (task.task_type === 'continuous') &&
                         _remaining > 0 &&
                         (isAssignee || isCreator) &&
