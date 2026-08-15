@@ -369,6 +369,7 @@ try {
                     WHERE is_supervisor = 1
                       AND is_active = 1
                       AND organization_id = ?
+                      AND exclude_from_approval_routing = 0
                     LIMIT 1
                 ");
                 $stmt->execute([$request_owner['organization_id']]);
@@ -386,6 +387,7 @@ try {
                     WHERE is_supervisor = 1
                       AND is_active = 1
                       AND organization_id = ?
+                      AND exclude_from_approval_routing = 0
                     LIMIT 1
                 ");
                 $stmt->execute([$request_owner['organization_id']]);

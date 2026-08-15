@@ -284,7 +284,7 @@ class AutoApprovalChecker {
             $stmt->execute([$request['user_id']]);
             $requester_org_id = $stmt->fetchColumn();
 
-            $stmt = $this->db->prepare("SELECT id FROM users WHERE is_supervisor = 1 AND organization_id = ? LIMIT 1");
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE is_supervisor = 1 AND organization_id = ? AND exclude_from_approval_routing = 0 LIMIT 1");
             $stmt->execute([$requester_org_id]);
             $supervisor = $stmt->fetch();
             

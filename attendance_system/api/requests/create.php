@@ -228,6 +228,7 @@ function notifyNextApprover($db, $user_id, $request_type, $request_id, $request_
                   AND id != ?
                   AND organization_id = ?
                   AND NOT (role = 'manager' AND manager_id = id)
+                  AND exclude_from_approval_routing = 0
             ");
             $stmt->execute([$user_id, $requester['organization_id']]);
             $supervisors = $stmt->fetchAll(PDO::FETCH_ASSOC);
