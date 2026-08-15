@@ -3424,9 +3424,9 @@ if (!$__me) {
                     senderLabel +
                     forwardLabel +
                     quoteHtml +
-                    (m.message ? '<div>' + highlightLinkRefs(highlightMentions(esc(m.message), activeGroupMembers)).replace(/\n/g, '<br>') + '</div>' : '') +
                     (imagesHtml ? '<div class="chat-bubble-images">' + imagesHtml + '</div>' : '') +
                     filesHtml +
+                    (m.message ? '<div>' + highlightLinkRefs(highlightMentions(esc(m.message), activeGroupMembers)).replace(/\n/g, '<br>') + '</div>' : '') +
                     linkRefsHtml +
                     '<div class="chat-bubble-time">' + esc(m.time_jalali) + editedTag + ticksHtml + '</div>' +
                     reactionsHtml(m.id, m.reactions) +
