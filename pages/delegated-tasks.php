@@ -118,7 +118,6 @@ if (!$__me) {
                             <option value="completed">تکمیل شده</option>
                             <option value="pending_approval">منتظر تأیید</option>
                             <option value="approved">تأیید شده</option>
-                            <option value="delegated">ارجاع شده</option>
                         </select>
                     </div>
                     <div class="filter-item">

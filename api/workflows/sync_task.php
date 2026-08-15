@@ -1,4 +1,8 @@
 <?php
+// ⚠️ به‌نظر بلااستفاده می‌رسه — هیچ فراخوانی‌ای (JS fetch یا PHP require/
+// include) به «sync_task» توی کلِ پروژه پیدا نشد. حذف نشده چون grep
+// نمی‌تونه صددرصد یه فراخوان‌کننده‌ی خارجی/مخفی رو رد کنه؛ اگه بعد از
+// مدتی لاگِ اجرا نداشت، کاندیدِ حذفه.
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 
@@ -158,7 +162,13 @@ try {
             $stmt->execute([$task_id]);
             
         } elseif ($task['status'] == 'delegated') {
-            // ارجاع مرحله
+            // ⚠️ نقطه‌یِ ارجاع (approve-and-delegate.php، TaskManager::delegateTask)
+            // دیگه status='delegated' ست نمی‌کنه، همیشه 'not_started' می‌شه —
+            // این شرط از این به بعد فقط برایِ رکوردهایِ قدیمیِ باقی‌مونده
+            // فعاله؛ عمداً 'not_started' رو این‌جا اضافه نکردم چون اون status
+            // دلایلِ دیگه‌ای هم می‌تونه داشته باشه (نه فقط تازه‌ارجاع‌شدن) و
+            // این فایل به‌نظر بلااستفاده می‌رسه، نمی‌خوام رفتارِ ناشناخته‌ای
+            // براش اضافه کنم
             $stmt = $db->prepare("
                 UPDATE workflow_instance_steps 
                 SET status = 'pending'

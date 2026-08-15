@@ -124,12 +124,16 @@ try {
         ? $existingNotes . "\n---\n" . $delegationNoteText
         : $delegationNoteText;
 
-    $sql = "UPDATE tasks SET 
-                assignee_id = ?, 
-                status = 'delegated', 
+    // status مستقیماً 'not_started' ست می‌شه (نه 'delegated') — چون هرجایِ
+    // دیگه‌یِ سیستم (دکمه‌ی شروع، تیکِ چک‌لیست، فیلترها) از قبل این دو رو
+    // یکسان می‌دونست؛ خودِ رخدادِ ارجاع در task_history (action='delegated')
+    // و delegation_notes ثبت می‌مونه، پس چیزی گم نمی‌شه
+    $sql = "UPDATE tasks SET
+                assignee_id = ?,
+                status = 'not_started',
                 is_pending_approval = FALSE,
                 delegation_notes = ?,
-                updated_at = NOW() 
+                updated_at = NOW()
             WHERE id = ?";
     $stmt = $db->prepare($sql);
     $result = $stmt->execute([

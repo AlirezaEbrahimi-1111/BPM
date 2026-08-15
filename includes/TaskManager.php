@@ -665,12 +665,14 @@ class TaskManager
             $new_notes = $task['delegation_notes'] ?
                 $task['delegation_notes'] . "\n---\n" . $notes : $notes;
 
-            // بروزرسانی کار
+            // بروزرسانی کار — status مستقیماً 'not_started' می‌شه (نه
+            // 'delegated')؛ خودِ رخدادِ ارجاع چند خط پایین‌تر با addTaskHistory
+            // (action='delegated') و همین‌جا با delegation_notes ثبت می‌مونه
             if (!empty($due_date)) {
-                $sql = "UPDATE tasks SET assignee_id = ?, status = 'delegated', delegation_notes = ?, due_date = ?, updated_at = NOW() WHERE id = ?";
+                $sql = "UPDATE tasks SET assignee_id = ?, status = 'not_started', delegation_notes = ?, due_date = ?, updated_at = NOW() WHERE id = ?";
                 $params = [$to_user_id, $new_notes, $due_date, $task_id];
             } else {
-                $sql = "UPDATE tasks SET assignee_id = ?, status = 'delegated', delegation_notes = ?, updated_at = NOW() WHERE id = ?";
+                $sql = "UPDATE tasks SET assignee_id = ?, status = 'not_started', delegation_notes = ?, updated_at = NOW() WHERE id = ?";
                 $params = [$to_user_id, $new_notes, $task_id];
             }
             $stmt = $this->db->prepare($sql);

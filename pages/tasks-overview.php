@@ -80,7 +80,6 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                             <option value="completed">تکمیل شده</option>
                             <option value="pending_approval">منتظر تأیید</option>
                             <option value="approved">تأیید شده</option>
-                            <option value="delegated">ارجاع شده</option>
                         </select>
                     </div>
                     <div class="filter-item" style="display: none;">
