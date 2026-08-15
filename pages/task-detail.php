@@ -2697,7 +2697,7 @@ if (!$__me) {
                 <div class="task-meta-item">
 
                     <span class="badge status-${task.status}">
-                        ${getStatusLabel(task.status)}
+                        ${getStatusLabel(task.status, task.assignee_id)}
                     </span>
                 </div>
             `;
@@ -4473,7 +4473,14 @@ ${task.overdue_periods > 0 ? `
                 return labels[priority] || priority;
             }
 
-            function getStatusLabel(status) {
+            function getStatusLabel(status, assigneeId) {
+                // status='delegated' وقتی از دیدِ خودِ assigneeِ جدید (کاربرِ
+                // فعلی) دیده بشه، دیگه «ارجاع شد» معنی نداره — نوبتِ خودشه که
+                // شروعش کنه، دقیقاً هم‌ردیفِ not_started (مطابقِ همون منطقی که
+                // برایِ بجِ داشبورد در assets/js/task-filters.js اضافه شد)
+                if (status === 'delegated' && currentUser && Number(assigneeId) === Number(currentUser.id)) {
+                    return 'شروع نشده';
+                }
                 const labels = {
                     'in_progress': 'در حال انجام',
                     'completed': 'انجام شد',
