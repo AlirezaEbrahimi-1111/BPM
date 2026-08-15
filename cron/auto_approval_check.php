@@ -2,12 +2,12 @@
 // cron/auto_approval_check.php
 /**
  * Cron Job برای بررسی خودکار تأییدات
- * 
+ *
  * قوانین:
- * - ارسال هر درخواست: مهلت 4 روزه
- * - جانشین، مدیر، مسئول: جمعاً مهلت 5 روزه
- * - بعد از 4 روز عدم پاسخ: ارجاع به مقام بالاتر
- * 
+ * - مهلتِ نهایی (رد خودکار): از تنظیمِ approval_deadline_days
+ *   (مدیریت → تنظیمات)، پیش‌فرض ۳ روز
+ * - ارجاع به مقامِ بالاتر: یک روز زودتر از مهلتِ نهایی
+ *
  * اجرا: هر 6 ساعت یک بار
  * Crontab: 0 6 * * * /usr/bin/php /path/to/cron/auto_approval_check.php */
 
@@ -17,20 +17,30 @@ if (php_sapi_name() !== 'cli') {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/settings_helper.php';
 
 class AutoApprovalChecker {
     private $db;
     private $logFile;
-    
+    private $deadlineDays;
+    private $escalationDays;
+
     public function __construct() {
         $database = new Database();
         $this->db = $database->getConnection();
         $this->logFile = __DIR__ . '/logs/auto_approval_' . date('Y-m') . '.log';
-        
+
         // ایجاد پوشه logs اگر وجود ندارد
         if (!is_dir(__DIR__ . '/logs')) {
             mkdir(__DIR__ . '/logs', 0755, true);
         }
+
+        // مهلتِ رد خودکار از تنظیماتِ سازمان (قبلاً هاردکد ۵ روز بود و
+        // اصلاً به approval_deadline_days گوش نمی‌داد — همون چیزی که
+        // باعث می‌شد تغییرِ عدد توی صفحه‌ی تنظیمات هیچ اثری نداشته باشه)
+        $settings = loadSettings($this->db);
+        $this->deadlineDays = max(1, (int) ($settings['approval_deadline_days'] ?? 3));
+        $this->escalationDays = max(1, $this->deadlineDays - 1);
     }
     
     /**
@@ -77,7 +87,7 @@ class AutoApprovalChecker {
             WHERE lr.status = 'pending'
             AND lr.current_approver_role = 'substitute'
             AND lr.substitute_approval = 'pending'
-            AND DATEDIFF(NOW(), lr.created_at) >= 4
+            AND DATEDIFF(NOW(), lr.created_at) >= {$this->escalationDays}
         ");
         
         $escalated = 0;
@@ -96,7 +106,7 @@ class AutoApprovalChecker {
             AND lr.current_approver_role = 'manager'
             AND lr.manager_approval = 'pending'
             AND lr.substitute_approval = 'approved'
-            AND DATEDIFF(NOW(), lr.substitute_date) >= 4
+            AND DATEDIFF(NOW(), lr.substitute_date) >= {$this->escalationDays}
         ");
         
         while ($request = $stmt->fetch()) {
@@ -122,7 +132,7 @@ class AutoApprovalChecker {
             WHERE mr.status = 'pending'
             AND mr.current_approver_role = 'manager'
             AND mr.manager_approval = 'pending'
-            AND DATEDIFF(NOW(), mr.created_at) >= 4
+            AND DATEDIFF(NOW(), mr.created_at) >= {$this->escalationDays}
         ");
         
         $escalated = 0;
@@ -149,7 +159,7 @@ class AutoApprovalChecker {
             WHERE fr.status = 'pending'
             AND fr.current_approver_role = 'manager'
             AND fr.manager_approval = 'pending'
-            AND DATEDIFF(NOW(), fr.created_at) >= 4
+            AND DATEDIFF(NOW(), fr.created_at) >= {$this->escalationDays}
         ");
         
         $escalated = 0;
@@ -163,20 +173,20 @@ class AutoApprovalChecker {
     }
     
     /**
-     * بررسی درخواست‌های منقضی شده (بیش از 5 روز)
+     * بررسی درخواست‌های منقضی شده (بیش از مهلتِ approval_deadline_days)
      */
     private function checkExpiredRequests() {
-        $this->log("Checking expired requests...");
-        
+        $this->log("Checking expired requests... (deadline={$this->deadlineDays}d)");
+
         $expired = 0;
-        
-        // درخواست‌های مرخصی منقضی شده (بیشتر از 5 روز از ارسال)
+
+        // درخواست‌های مرخصی منقضی شده (بیشتر از مهلتِ تنظیم‌شده از ارسال)
         // و تاریخ شروع مرخصی هم گذشته باشد
         $stmt = $this->db->query("
             SELECT lr.*
             FROM leave_requests lr
             WHERE lr.status = 'pending'
-            AND DATEDIFF(NOW(), lr.created_at) >= 5
+            AND DATEDIFF(NOW(), lr.created_at) >= {$this->deadlineDays}
             AND lr.start_date < CURDATE()
         ");
         
@@ -192,7 +202,7 @@ class AutoApprovalChecker {
             SELECT mr.*
             FROM mission_requests mr
             WHERE mr.status = 'pending'
-            AND DATEDIFF(NOW(), mr.created_at) >= 5
+            AND DATEDIFF(NOW(), mr.created_at) >= {$this->deadlineDays}
             AND mr.start_date < NOW()
         ");
         
@@ -207,7 +217,7 @@ class AutoApprovalChecker {
             SELECT fr.*
             FROM forget_requests fr
             WHERE fr.status = 'pending'
-            AND DATEDIFF(NOW(), fr.created_at) >= 5
+            AND DATEDIFF(NOW(), fr.created_at) >= {$this->deadlineDays}
         ");
         
         while ($request = $stmt->fetch()) {
