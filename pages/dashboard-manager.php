@@ -2494,6 +2494,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         const LS_STARRED = 'mgrDash.starred';
         const LS_DEFTAB = 'mgrDash.defaultTab';
+        const LS_DEFTAB_DATE = 'mgrDash.defaultTabDate';
         const currentUser = JSON.parse(localStorage.getItem('user_info') || '{}');
 
         let currentTab = 'mine';
@@ -2580,22 +2581,44 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             if (currentTab === 'starred') renderTasks();
         }
 
-        /* ───────── تب پیش‌فرض ───────── */
+        /* ───────── تب پیش‌فرض (پین) — فقط تا پایانِ همون روز معتبره ───────── */
+        function todayLocalStr() {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+
+        // اگه پین از روزِ دیگه‌ای مونده باشه (یعنی از نیمه‌شب گذشته)، پاکش می‌کنه
+        // و true برمی‌گردونه؛ در غیرِ این‌صورت false
+        function clearExpiredPin() {
+            const savedDate = localStorage.getItem(LS_DEFTAB_DATE);
+            if (savedDate && savedDate !== todayLocalStr()) {
+                localStorage.removeItem(LS_DEFTAB);
+                localStorage.removeItem(LS_DEFTAB_DATE);
+                return true;
+            }
+            return false;
+        }
+
         function getDefaultTab() {
+            clearExpiredPin();
             return localStorage.getItem(LS_DEFTAB) || 'mine';
         }
 
         function togglePin(tabKey, ev) {
             ev.stopPropagation();
+            clearExpiredPin();
             if (localStorage.getItem(LS_DEFTAB) === tabKey) {
                 localStorage.removeItem(LS_DEFTAB);
+                localStorage.removeItem(LS_DEFTAB_DATE);
             } else {
                 localStorage.setItem(LS_DEFTAB, tabKey);
+                localStorage.setItem(LS_DEFTAB_DATE, todayLocalStr());
             }
             refreshPins();
         }
 
         function refreshPins() {
+            clearExpiredPin();
             const def = localStorage.getItem(LS_DEFTAB);
             document.querySelectorAll('.tab-pin').forEach(p => {
                 const key = p.dataset.pin;
