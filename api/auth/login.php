@@ -18,7 +18,8 @@ require_once __DIR__ . '/../../includes/sms.php';
 require_once __DIR__ . '/../../includes/sms_patterns.php';
 
 // ------------------- توابع کمکی (قبلی) -------------------
-function checkRateLimit($ip, $db) {
+function checkRateLimit($ip, $db)
+{
     $stmt = $db->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND attempted_at > (NOW() - INTERVAL 15 MINUTE)");
     $stmt->execute([$ip]);
     $count = (int) $stmt->fetchColumn();
@@ -32,18 +33,21 @@ function checkRateLimit($ip, $db) {
     }
 }
 
-function recordFailedLogin($ip, $db) {
+function recordFailedLogin($ip, $db)
+{
     $stmt = $db->prepare("INSERT INTO login_attempts (ip, attempted_at) VALUES (?, NOW())");
     $stmt->execute([$ip]);
 }
 
-function resetRateLimit($ip, $db) {
+function resetRateLimit($ip, $db)
+{
     $stmt = $db->prepare("DELETE FROM login_attempts WHERE ip = ?");
     $stmt->execute([$ip]);
 }
 
 // ------------------- توابع جدید OTP -------------------
-function checkOtpRateLimit($phone, $db) {
+function checkOtpRateLimit($phone, $db)
+{
     // حداکثر ۳ درخواست کد در ۱۵ دقیقه
     $stmt = $db->prepare("SELECT COUNT(*) FROM otp_codes WHERE phone = ? AND created_at > (NOW() - INTERVAL 15 MINUTE)");
     $stmt->execute([$phone]);
@@ -58,7 +62,8 @@ function checkOtpRateLimit($phone, $db) {
     }
 }
 
-function generateOtpCode() {
+function generateOtpCode()
+{
     return str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 }
 
@@ -66,7 +71,7 @@ function generateOtpCode() {
 try {
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     $data = json_decode(file_get_contents('php://input'), true);
-    
+
     if (!is_array($data)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'درخواست نامعتبر']);
@@ -191,9 +196,12 @@ try {
             $_SESSION['organization_name'] = 'یکتا همراهان ملک';
         }
 
-        // ✅ ساخت توکن JWT — بدون این خط، header.php کاربر را به لاگین برمی‌گرداند
+
+        // ✅ ساخت توکن JWT — بدون این خط header.php کاربر را به لاگین برمی‌گرداند
+        $remember_me = $data['remember_me'] ?? false;
+        $token_expiry = $remember_me ? (30 * 24 * 60 * 60) : (3 * 60 * 60);
         $auth = new Auth();
-        $token = $auth->generateJWTToken($user['id'], null, $user['organization_id']);
+        $token = $auth->generateJWTToken($user['id'], $token_expiry, $user['organization_id']);
 
         unset($user['password']);
         echo json_encode([
@@ -209,8 +217,10 @@ try {
     // (همان کد قبلی)
     checkRateLimit($ip, $db);
 
-    if (empty($data['username']) || empty($data['password']) ||
-        !is_string($data['username']) || !is_string($data['password'])) {
+    if (
+        empty($data['username']) || empty($data['password']) ||
+        !is_string($data['username']) || !is_string($data['password'])
+    ) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'اطلاعات ورود نامعتبر است'], JSON_UNESCAPED_UNICODE);
         exit;
@@ -218,9 +228,10 @@ try {
 
     $username = trim($data['username']);
     $password = $data['password'];
+    $remember_me = $data['remember_me'] ?? false;
 
     $auth = new Auth();
-    $result = $auth->login($username, $password);
+    $result = $auth->login($username, $password, $remember_me);
 
     if ($result['success']) {
         resetRateLimit($ip, $db);
@@ -246,7 +257,6 @@ try {
         http_response_code(401);
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
     }
-
 } catch (Exception $e) {
     error_log($e->getMessage());
     http_response_code(500);
