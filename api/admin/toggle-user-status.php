@@ -5,6 +5,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/audit-log.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -52,6 +53,8 @@ try {
 
     $updateStmt = $db->prepare("UPDATE users SET is_active = ?, token_version = token_version + 1 WHERE id = ?");
     $updateStmt->execute([$newStatus, $target_user_id]);
+
+    logSecurityEvent($user_id, $newStatus == 1 ? 'user_activated' : 'user_deactivated', (int) $target_user_id);
 
     echo json_encode([
         'success' => true,

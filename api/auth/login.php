@@ -16,14 +16,26 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/sms.php';
 require_once __DIR__ . '/../../includes/sms_patterns.php';
+require_once __DIR__ . '/../../includes/audit-log.php';
 
 // ------------------- توابع کمکی (قبلی) -------------------
-function checkRateLimit($ip, $db)
+// 🔒 قبلاً فقط بر اساسِ IP محدود می‌شد — مهاجمی با چند IP/پراکسیِ مختلف
+// می‌تونست رويِ یک حسابِ مشخص بدونِ محدودیت brute-force کنه. الان هم IP
+// هم خودِ نامِ کاربری جداگانه چک می‌شن؛ عبور از هرکدوم کافیه برایِ بلاک
+function checkRateLimit($ip, $db, $username = null)
 {
     $stmt = $db->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND attempted_at > (NOW() - INTERVAL 15 MINUTE)");
     $stmt->execute([$ip]);
-    $count = (int) $stmt->fetchColumn();
-    if ($count >= 5) {
+    $ipCount = (int) $stmt->fetchColumn();
+
+    $userCount = 0;
+    if (!empty($username)) {
+        $stmt = $db->prepare("SELECT COUNT(*) FROM login_attempts WHERE username = ? AND attempted_at > (NOW() - INTERVAL 15 MINUTE)");
+        $stmt->execute([$username]);
+        $userCount = (int) $stmt->fetchColumn();
+    }
+
+    if ($ipCount >= 5 || $userCount >= 5) {
         http_response_code(429);
         echo json_encode([
             'success' => false,
@@ -33,16 +45,20 @@ function checkRateLimit($ip, $db)
     }
 }
 
-function recordFailedLogin($ip, $db)
+function recordFailedLogin($ip, $db, $username = null)
 {
-    $stmt = $db->prepare("INSERT INTO login_attempts (ip, attempted_at) VALUES (?, NOW())");
-    $stmt->execute([$ip]);
+    $stmt = $db->prepare("INSERT INTO login_attempts (ip, username, attempted_at) VALUES (?, ?, NOW())");
+    $stmt->execute([$ip, $username]);
 }
 
-function resetRateLimit($ip, $db)
+function resetRateLimit($ip, $db, $username = null)
 {
     $stmt = $db->prepare("DELETE FROM login_attempts WHERE ip = ?");
     $stmt->execute([$ip]);
+    if (!empty($username)) {
+        $stmt = $db->prepare("DELETE FROM login_attempts WHERE username = ?");
+        $stmt->execute([$username]);
+    }
 }
 
 // ------------------- توابع جدید OTP -------------------
@@ -202,6 +218,7 @@ try {
         $token_expiry = $remember_me ? (30 * 24 * 60 * 60) : (3 * 60 * 60);
         $auth = new Auth();
         $token = $auth->generateJWTToken($user['id'], $token_expiry, $user['organization_id']);
+        logSecurityEvent($user['id'], 'login_success', null, ['method' => 'otp']);
 
         unset($user['password']);
         echo json_encode([
@@ -214,9 +231,6 @@ try {
     }
 
     // ---------- ورود با رمز عبور (action = login یا بدون action) ----------
-    // (همان کد قبلی)
-    checkRateLimit($ip, $db);
-
     if (
         empty($data['username']) || empty($data['password']) ||
         !is_string($data['username']) || !is_string($data['password'])
@@ -230,11 +244,15 @@ try {
     $password = $data['password'];
     $remember_me = $data['remember_me'] ?? false;
 
+    // اعتبارسنجیِ ورودی قبل از چکِ rate limit انجام شد تا $username برایِ
+    // چکِ محدودیتِ حساب‌محور (نه فقط IP) در دسترس باشه
+    checkRateLimit($ip, $db, $username);
+
     $auth = new Auth();
     $result = $auth->login($username, $password, $remember_me);
 
     if ($result['success']) {
-        resetRateLimit($ip, $db);
+        resetRateLimit($ip, $db, $username);
         session_regenerate_id(true);
         $_SESSION['user_id'] = $result['user']['id'];
         $_SESSION['user_name'] = $result['user']['first_name'];
@@ -251,9 +269,13 @@ try {
             $_SESSION['organization_name'] = 'یکتا همراهان ملک';
         }
 
+        logSecurityEvent($result['user']['id'], 'login_success', null, ['method' => 'password']);
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
     } else {
-        recordFailedLogin($ip, $db);
+        recordFailedLogin($ip, $db, $username);
+        // user_id عمداً null است — کاربرِ ناموفق هنوز شناسایی‌نشده؛ نامِ
+        // واردشده (نه رمز، هرگز) برایِ بررسیِ بعدی توی details ثبت می‌شه
+        logSecurityEvent(null, 'login_failed', null, ['method' => 'password', 'username_attempted' => $username]);
         http_response_code(401);
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
     }

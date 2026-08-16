@@ -33,7 +33,20 @@ try {
     
     $database = new Database();
     $db = $database->getConnection();
-    
+
+    // 🔒 قبلاً این endpoint بدونِ هیچ محدودیتی بود — یعنی می‌شد با امتحان‌کردنِ
+    // پی‌درپیِ شماره‌موبایل‌ها، فهرستِ کاربرانِ ثبت‌شده رو استخراج کرد
+    // (user enumeration). حداکثر ۲۰ درخواست در ۱۵ دقیقه به‌ازایِ هر IP
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $rateStmt = $db->prepare("SELECT COUNT(*) FROM check_user_attempts WHERE ip = ? AND checked_at > (NOW() - INTERVAL 15 MINUTE)");
+    $rateStmt->execute([$ip]);
+    if ((int) $rateStmt->fetchColumn() >= 20) {
+        http_response_code(429);
+        echo json_encode(['success' => false, 'message' => 'تعداد درخواست‌ها زیاد است. لطفاً کمی بعد دوباره تلاش کنید.']);
+        exit;
+    }
+    $db->prepare("INSERT INTO check_user_attempts (ip, checked_at) VALUES (?, NOW())")->execute([$ip]);
+
     // بررسی وجود کاربر
     $stmt = $db->prepare("SELECT id, first_name, last_name, is_active FROM users WHERE phone = ?");
     $stmt->execute([$phone]);

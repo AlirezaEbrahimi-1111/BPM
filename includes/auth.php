@@ -194,6 +194,8 @@ class Auth
             $updateStmt = $this->db->prepare("UPDATE users SET password = ?, token_version = token_version + 1, updated_at = NOW() WHERE id = ?");
 
             if ($updateStmt->execute([$hashed_password, $user_id])) {
+                require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/audit-log.php';
+                logSecurityEvent($user_id, 'password_changed');
                 return ['success' => true, 'message' => 'رمز عبور با موفقیت تغییر کرد'];
             }
 
@@ -374,6 +376,8 @@ class Auth
         try {
             $stmt = $this->db->prepare("UPDATE users SET token_version = token_version + 1 WHERE id = ?");
             $stmt->execute([$user_id]);
+            require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/audit-log.php';
+            logSecurityEvent($user_id, 'logout');
             return ['success' => true, 'message' => 'خروج موفقیت‌آمیز'];
         } catch (Exception $e) {
             error_log("Logout error: " . $e->getMessage());
