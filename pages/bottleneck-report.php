@@ -567,7 +567,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
                 const instances = b.instances.map(ins => `
                     <div class="bn-instance" onclick="location.href='workflow-monitor.php?instance=${ins.instance_id}'">
                         <i class="bi bi-arrow-repeat" style="color:#9ca3af;"></i>
-                        <span class="bn-instance-title" title="${(ins.instance_title || '').replace(/"/g, '&quot;')}">${ins.instance_title || '—'}</span>
+                        <span class="bn-instance-title" title="${esc(ins.instance_title || '')}">${esc(ins.instance_title) || '—'}</span>
                         <span class="bn-instance-started">شروع: ${fmtStarted(ins.started_at)}</span>
                         <span class="bn-instance-delay">${humanDelay(ins.delay_hours)} تأخیر</span>
                     </div>
@@ -580,10 +580,10 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
                         <div class="bn-rank">${toFa(idx + 1)}</div>
                         <div class="bn-info">
                             <div class="bn-stage-name">
-                                ${b.step_name || 'نامشخص'}
+                                ${esc(b.step_name) || 'نامشخص'}
                                 ${b.activity_section ? `<span class="bn-unit-badge">${unitFa(b.activity_section)}</span>` : ''}
                             </div>
-                            <div class="bn-template">${b.template_name || 'نامشخص'}</div>
+                            <div class="bn-template">${esc(b.template_name) || 'نامشخص'}</div>
                         </div>
                         <div class="bn-metrics">
                             <div class="bn-metric">

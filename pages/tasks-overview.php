@@ -151,8 +151,8 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                 width: 90,
                 flex: 2,
                 cellRenderer: p => {
-                    const desc = p.data.description ? `<div style="font-size:0.7rem;color:#94a3b8;line-height:1.4;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${p.data.description}</div>` : '';
-                    return `<div>${p.value || '-'}${checklistMatchBadge(p.data)}${desc}</div>`;
+                    const desc = p.data.description ? `<div style="font-size:0.7rem;color:#94a3b8;line-height:1.4;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${esc(p.data.description)}</div>` : '';
+                    return `<div>${esc(p.value) || '-'}${checklistMatchBadge(p.data)}${desc}</div>`;
                 }
             },
             {
@@ -166,9 +166,9 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                 flex: 1,
                 cellRenderer: p => {
                     const t = p.data;
-                    const personName = (p.value && p.value.trim()) ? p.value.trim() : '';
+                    const personName = (p.value && p.value.trim()) ? esc(p.value.trim()) : '';
                     const isWf = (t.is_workflow_task == 1);
-                    const unitLabel = t.activity_section ? (acticity_section[t.activity_section] || t.activity_section) : '';
+                    const unitLabel = t.activity_section ? esc(acticity_section[t.activity_section] || t.activity_section) : '';
 
                     let main;
                     if (isWf) {
@@ -189,7 +189,7 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                     const extra = Array.isArray(t.checklist_assignees) ? t.checklist_assignees : [];
                     if (extra.length) {
                         const badges = extra.map(name =>
-                            `<span style="display:inline-block;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:10px;padding:1px 7px;font-size:0.68rem;margin:1px 2px;">${name}</span>`
+                            `<span style="display:inline-block;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:10px;padding:1px 7px;font-size:0.68rem;margin:1px 2px;">${esc(name)}</span>`
                         ).join('');
                         html += `<div style="margin-top:2px;line-height:1.6;">
                                     <span style="font-size:0.65rem;color:#94a3b8;">چک‌لیست:</span> ${badges}
@@ -810,7 +810,7 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
         // ارسال یادآوری (نوتیفیکیشن و SMS)
         // ========================================
         function sendReminder(taskId, title, assigneeName) {
-            uiPrompt(`ارسال یادآوری برای "${title}" به ${assigneeName}:`, async function(message) {
+            uiPrompt(`ارسال یادآوری برای "${esc(title)}" به ${esc(assigneeName)}:`, async function(message) {
                 if (!message) return;
 
                 try {
@@ -853,8 +853,8 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
 
         function buildActionButtons(t) {
             if (!t) return '';
-            const title = (t.title || '').replace(/'/g, "\\'");
-            const name = (t.assignee_name || 'نامشخص').replace(/'/g, "\\'");
+            const title = escJsAttr(t.title || '');
+            const name = escJsAttr(t.assignee_name || 'نامشخص');
             let html = '';
 
             // دکمه یادآوری — فقط اگر مسئول دارد و تکمیل نشده

@@ -889,7 +889,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
                             <div class="report-header">
                                 <div>
                                     <span class="report-code">${report.unique_code}</span>
-                                    <span class="unit-badge unit-${report.activity_unit}">${report.activity_unit}</span>
+                                    <span class="unit-badge unit-${esc(report.activity_unit)}">${esc(report.activity_unit)}</span>
                                 </div>
                                 <div class="report-date">
                                     <i class="bi bi-calendar me-1"></i>
@@ -994,7 +994,7 @@ ${highlightedContent}${contentPreview.length > 4096 ? '...' : ''}
 
             document.getElementById('modalReportCode').textContent = report.unique_code;
             document.getElementById('modalReportDate').textContent = formatPersianDate(report.report_date);
-            document.getElementById('modalActivityUnit').innerHTML = `<span class="unit-badge unit-${report.activity_unit}">${report.activity_unit}</span>`;
+            document.getElementById('modalActivityUnit').innerHTML = `<span class="unit-badge unit-${esc(report.activity_unit)}">${esc(report.activity_unit)}</span>`;
             document.getElementById('modalCreatedAt').textContent = formatPersianDateTime(report.created_at);
             document.getElementById('modalReportContent').textContent = report.content_preview;
 
@@ -1192,10 +1192,11 @@ ${highlightedContent}${contentPreview.length > 4096 ? '...' : ''}
 
         // توابع کمکی
         function highlightSearchText(text, searchQuery) {
-            if (!searchQuery || searchQuery.length < 2) return text;
+            const safeText = esc(text);
+            if (!searchQuery || searchQuery.length < 2) return safeText;
 
-            const regex = new RegExp(`(${searchQuery})`, 'gi');
-            return text.replace(regex, '<span class="search-highlight">$1</span>');
+            const regex = new RegExp(`(${esc(searchQuery)})`, 'gi');
+            return safeText.replace(regex, '<span class="search-highlight">$1</span>');
         }
 
         function formatPersianDate(dateString) {

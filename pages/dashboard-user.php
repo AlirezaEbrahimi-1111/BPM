@@ -2783,7 +2783,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 const on = isStarred(key);
                 const isWf = (t._src === 'recent');
                 const link = isWf ? `workflow-monitor.php?id=${t.id}` : `task-detail.php?id=${t.id}`;
-                const safe = (t.title || '').replace(/"/g, '&quot;');
+                const safe = esc(t.title || '');
                 const acts = isWf ? [] : pmActions(t);
 
                 // ── ردیف فعالیت اخیر: عنوان + تاریخ/ساعت ──
@@ -2796,7 +2796,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                                     onclick="toggleStar('${key}', this, event)">
                                 <i class="bi bi-star${on ? '-fill' : ''}"></i>
                             </button>
-                            <span title="${safe}">${t.title || '—'}</span>
+                            <span title="${safe}">${esc(t.title) || '—'}</span>
                         </div>
                     </td>
                     <td class="td-deadline">${faDateTime(t.started_at || t.updated_at)}</td>
@@ -2812,7 +2812,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                                 onclick="toggleStar('${key}', this, event)">
                             <i class="bi bi-star${on ? '-fill' : ''}"></i>
                         </button>
-                        <span title="${safe}">${t.title || '—'}</span>
+                        <span title="${safe}">${esc(t.title) || '—'}</span>
                     </div>
                 </td>
                 <td class="td-deadline">${faDate(TF.effectiveDue(t))}</td>
@@ -3131,9 +3131,9 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
             box.innerHTML = list.map((r, i) => {
                 const pct = Math.round((r.active_count / max) * 100);
-                const name = (r.template_name || '').replace(/'/g, "\\'");
+                const name = escJsAttr(r.template_name || '');
                 return `<div class="routine-row" onclick="location.href='workflow-monitor.php?template=${r.template_id}'">
-                <div class="routine-name" title="${r.template_name}">${r.template_name}</div>
+                <div class="routine-name" title="${esc(r.template_name)}">${esc(r.template_name)}</div>
                 <div class="routine-bar-wrap">
                     <div class="routine-bar" style="width:${pct}%; background:${colors[i % colors.length]};"></div>
                 </div>
@@ -3165,10 +3165,10 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 const prog = parseInt(w.progress) || 0;
                 return `<div class="inst-row">
                 <div class="inst-head">
-                    <div class="inst-title">${w.title || '—'}</div>
+                    <div class="inst-title">${esc(w.title) || '—'}</div>
                     ${statusBadge(w)}
                 </div>
-                <div class="inst-meta">مرحله فعلی: ${w.current_stage_name || 'نامشخص'}</div>
+                <div class="inst-meta">مرحله فعلی: ${esc(w.current_stage_name) || 'نامشخص'}</div>
                 <div class="inst-prog"><div style="width:${prog}%"></div></div>
                 <div style="text-align:left; font-size: .675rem; color:var(--gray-500); margin-top:4px;">
                     ${toFa(prog)}٪
@@ -3198,11 +3198,11 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             }
 
             box.innerHTML = list.map(t => {
-                const who = [t.assignee_first_name, t.assignee_last_name].filter(Boolean).join(' ');
-                const safe = (t.title || '').replace(/"/g, '&quot;');
+                const who = esc([t.assignee_first_name, t.assignee_last_name].filter(Boolean).join(' '));
+                const safe = esc(t.title || '');
                 return `<div class="dlg-row" onclick="location.href='task-detail.php?id=${t.id}'">
                 <div class="dlg-main">
-                    <div class="dlg-title" title="${safe}">${t.title || '—'}</div>
+                    <div class="dlg-title" title="${safe}">${esc(t.title) || '—'}</div>
                     ${who ? `<div class="dlg-sub">مسئول: ${who}</div>` : ''}
                 </div>
                 <div class="dlg-days">${toFa(daysLate(t))} روز</div>
@@ -3444,13 +3444,13 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
             box.innerHTML = list.map(t => {
                 const acts = pmActions(t);
-                const safe = (t.title || '').replace(/"/g, '&quot;');
+                const safe = esc(t.title || '');
 
                 return `
                 <div class="pm-row" id="pmRow-${t.id}">
                     <div style="flex:1; min-width:0;">
                         <div class="pm-title" onclick="location.href='task-detail.php?id=${t.id}'"
-                             title="${safe}">${t.title || '—'}</div>
+                             title="${safe}">${esc(t.title) || '—'}</div>
                         <div class="pm-form" id="pmForm-${t.id}"></div>
                     </div>
                     ${acts.length ? pmKebabHtml(t.id, acts) : ''}
@@ -4158,13 +4158,13 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 if (dayTasks.length) {
                     cards = dayTasks.map(t => {
                         const acts = pmActions(t);
-                        const safe = (t.title || '').replace(/"/g, '&quot;');
+                        const safe = esc(t.title || '');
                         const time = wkTimeOf(t);
                         return `
                         <div class="wk-card" id="pmRow-${t.id}">
                             ${acts.length ? pmKebabHtml(t.id, acts) : ''}
                             <div class="wk-card-title" onclick="location.href='task-detail.php?id=${t.id}'"
-                                 title="${safe}">${t.title || '—'}</div>
+                                 title="${safe}">${esc(t.title) || '—'}</div>
                             ${time ? `<div class="wk-card-time">${time}</div>` : ''}
                             <div class="pm-form" id="pmForm-${t.id}"></div>
                         </div>`;
@@ -4458,9 +4458,9 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 if (dayTasks.length) {
                     const shown = dayTasks.slice(0, 10);
                     tasksHtml = shown.map(t => {
-                        const full = (t.title || '—').replace(/"/g, '&quot;');
+                        const full = esc(t.title || '—');
                         return `<div class="mo-task-title" data-full="${full}"
-                             onclick="location.href='task-detail.php?id=${t.id}'">${moTruncate(t.title || '—')}</div>`;
+                             onclick="location.href='task-detail.php?id=${t.id}'">${esc(moTruncate(t.title || '—'))}</div>`;
                     }).join('');
                     if (dayTasks.length > 10) {
                         tasksHtml += `<div class="mo-more" onclick="location.href='my-tasks.php?filter=day&amp;date=${moYMD(d)}'">+${toFa(dayTasks.length - 10)} مورد دیگر</div>`;

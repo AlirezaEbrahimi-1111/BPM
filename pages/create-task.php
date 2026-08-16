@@ -36,7 +36,7 @@ if (!$__me) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ایجاد کار جدید - سیستم مدیریت کار</title>
 
-    <link href="<?= asset('../assets/js/cdn/bootstrap.min.css') ?>" rel="stylesheet">
+    <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <link href="<?= asset('../assets/js/cdn/fonts/bootstrap-icons.woff2?30af91bf14e37666a085fb8a161ff36d') ?>"
         rel="stylesheet">
@@ -696,7 +696,7 @@ if (!$__me) {
 
             let html = '<option value="">انتخاب کنید...</option>';
             workflowTemplates.forEach(template => {
-                html += `<option value="${template.id}">${template.name}</option>`;
+                html += `<option value="${template.id}">${esc(template.name)}</option>`;
             });
 
             select.innerHTML = html;
@@ -763,14 +763,14 @@ if (!$__me) {
     <div class="step-preview-item">
         <div class="step-number">${String(enTofaNumber(index + 1))}</div>
         <div class="step-info">
-            <strong>${step.step_name}</strong>
+            <strong>${esc(step.step_name)}</strong>
             <div>
                 <span class="step-unit">${
                     step.assignee_type === 'user'
-                        ? ('مسئول: ' + (step.assignee_user_name || 'نامشخص'))
+                        ? ('مسئول: ' + esc(step.assignee_user_name || 'نامشخص'))
                     : step.assignee_type === 'creator'
                         ? '↩ ایجادکنندهٔ روتین'
-                    : ('واحد: ' + (acticity_section[step.activity_section] || step.activity_section))
+                    : ('واحد: ' + esc(acticity_section[step.activity_section] || step.activity_section))
                 }</span>
                 <span class="step-time"><i class="bi bi-clock me-1"></i> ${String(enTofaNumber(step.time_limit_hours))} ساعت</span>
                 ${(step.execution_mode === 'parallel')
@@ -781,7 +781,7 @@ if (!$__me) {
                 <textarea class="form-control form-control-sm"
                     id="step_desc_${index}"
                     placeholder="توضیح اختصاصی این مرحله (اختیاری)..."
-                    rows="2">${step.step_description || ''}</textarea>
+                    rows="2">${esc(step.step_description || '')}</textarea>
             </div>
         </div>
         ${index < template.steps.length - 1 ? '<i class="bi bi-arrow-left text-muted"></i>' : ''}
@@ -796,7 +796,7 @@ if (!$__me) {
             const activeNow = [],
                 waiting = [];
             template.steps.forEach((s, i) => {
-                const nm = s.step_name || ('مرحله ' + fa(i + 1));
+                const nm = esc(s.step_name || ('مرحله ' + fa(i + 1)));
                 if (modes[i] === 'parallel' || i === firstCascade) activeNow.push(nm);
                 else {
                     let p = -1;
@@ -806,7 +806,7 @@ if (!$__me) {
                             break;
                         }
                     }
-                    waiting.push(nm + (p >= 0 ? ' (بعد از: ' + template.steps[p].step_name + ')' : ''));
+                    waiting.push(nm + (p >= 0 ? ' (بعد از: ' + esc(template.steps[p].step_name) + ')' : ''));
                 }
             });
             const summary = `<div class="exec-summary">
@@ -1714,7 +1714,7 @@ if (!$__me) {
             pendingFiles.forEach((file, index) => {
                 html += `
             <div class="d-flex justify-content-between align-items-center mb-1 p-2 border rounded">
-                <span><i class="bi bi-paperclip me-1"></i>${file.name}</span>
+                <span><i class="bi bi-paperclip me-1"></i>${esc(file.name)}</span>
                 <button type="button" class="btn btn-sm btn-outline-danger"
                         onclick="removePendingFile(${index})">حذف</button>
             </div>`;
@@ -1822,14 +1822,14 @@ if (!$__me) {
             id="vis_${index}_${step.id}" value="${step.id}"
             onchange="toggleFileVisibility(${index}, ${step.id}, this.checked)">
         <label class="form-check-label" for="vis_${index}_${step.id}">
-            مرحله ${si + 1}: ${step.step_name}
+            مرحله ${si + 1}: ${esc(step.step_name)}
         </label>
     </div>`).join('');
 
                 html += `
             <div class="border rounded p-2 mb-2">
                 <div class="d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-paperclip me-1"></i>${item.file.name}</span>
+                    <span><i class="bi bi-paperclip me-1"></i>${esc(item.file.name)}</span>
                     <button type="button" class="btn btn-sm btn-outline-danger"
                         onclick="removeWorkflowFile(${index})">حذف</button>
                 </div>

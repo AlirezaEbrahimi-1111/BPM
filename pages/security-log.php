@@ -296,5 +296,6 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <?php include 'footer.php'; ?>
+<script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
 </body>
 </html>

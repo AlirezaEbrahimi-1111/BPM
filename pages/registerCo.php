@@ -1,4 +1,8 @@
-
+<?php
+if (!headers_sent()) {
+    header("Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self'; img-src 'self' data: https://computeryekta.com; font-src 'self' data:; connect-src 'self' https://api.ipify.org; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self';");
+}
+?>
 <!DOCTYPE html>
 <html dir="rtl" lang="fa">
 
@@ -6,7 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ثبت‌نام سازمان جدید</title>
-    <link href="../assets/js/cdn/bootstrap.min.css" rel="stylesheet">
+    <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/js/cdn/bootstrap-icons.css">
     <link href="../assets/js/cdn/fonts/bootstrap-icons.woff2?30af91bf14e37666a085fb8a161ff36d" rel="stylesheet">
     <script src="../assets/js/config.js"></script>
@@ -145,7 +149,7 @@
                     }, 2000);
 
                 } else {
-                    const msgs = data.errors ? data.errors.join('<br>') : data.message;
+                    const msgs = data.errors ? data.errors.map(esc).join('<br>') : esc(data.message);
                     alert.className = 'alert alert-danger';
                     alert.innerHTML = msgs;
                     btn.disabled = false;

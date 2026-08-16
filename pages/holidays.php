@@ -30,7 +30,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مدیریت روزهای تعطیل - یکتا همراهان ملک</title>
-    <link href="<?= asset('../assets/js/cdn/bootstrap.min.css') ?>" rel="stylesheet">
+    <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <link rel="stylesheet" href="<?= asset('../../assets/fonts/Vazirmatn-font-face.css') ?>">
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
@@ -332,7 +332,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
 
                 dayEl.innerHTML = `
                     <span class="day-number">${toFa(day)}</span>
-                    ${isHoliday ? `<span class="day-label">${isHoliday.title}${isHoliday.type === 'weekly' ? ' 🔁' : ''}</span>` : ''}
+                    ${isHoliday ? `<span class="day-label">${esc(isHoliday.title)}${isHoliday.type === 'weekly' ? ' 🔁' : ''}</span>` : ''}
                     ${isHoliday ? '<div class="holiday-indicator"></div>' : ''}
                 `;
 
@@ -385,7 +385,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
                     <div class="holiday-info">
                         <span class="holiday-date">${h.jalali}${h.type === 'weekly' ? ' (هر ' + persianWeekdayNames[h.day_of_week] + ')' : ''}</span>
                         <span class="holiday-title">
-                            ${h.title}
+                            ${esc(h.title)}
                             <span class="badge ${h.is_global ? 'bg-primary' : 'bg-secondary'}" style="font-size:.65rem;">
                                 ${h.is_global ? 'سراسری' : 'سازمانِ من'}
                             </span>

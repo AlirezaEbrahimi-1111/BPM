@@ -292,10 +292,10 @@ if (!$__me) {
                     const icon = task.priority === 'high' ? '🔴' : (task.priority === 'medium' ? '🟡' : '🟢');
                     html += `
                         <div class="activity-item overdue">
-                            <div class="activity-title">${task.title}</div>
+                            <div class="activity-title">${esc(task.title)}</div>
                             <div class="activity-meta">
                                 ${icon} ${toFa(days)} روز تأخیر
-                                ${task.creator_name?.trim() ? ` │ از: ${task.creator_name.trim()}` : ''}
+                                ${task.creator_name?.trim() ? ` │ از: ${esc(task.creator_name.trim())}` : ''}
                             </div>
                         </div>
                     `;
@@ -333,12 +333,12 @@ if (!$__me) {
                     const notes = extractNotes(item.notes);
                     html += `
                         <div class="activity-item ${section.key}">
-                            <div class="activity-title">${item.task_title || 'بدون عنوان'}</div>
+                            <div class="activity-title">${esc(item.task_title) || 'بدون عنوان'}</div>
                             <div class="activity-meta">
                                 <i class="bi bi-clock me-1"></i>${toFa(time)}
-                                ${item.to_user_name?.trim() ? ` │ <i class="bi bi-person me-1"></i>${item.to_user_name.trim()}` : ''}
+                                ${item.to_user_name?.trim() ? ` │ <i class="bi bi-person me-1"></i>${esc(item.to_user_name.trim())}` : ''}
                             </div>
-                            ${notes ? `<div class="activity-notes">${notes}</div>` : ''}
+                            ${notes ? `<div class="activity-notes">${esc(notes)}</div>` : ''}
                         </div>
                     `;
                 });

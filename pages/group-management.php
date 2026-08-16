@@ -31,7 +31,7 @@ if (!$__me || !hasPermission($__me, 'manage_task_groups')) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>مدیریت گروه‌ها - سیستم مدیریت کار</title>
 
-    <link href="../assets/js/cdn/bootstrap.min.css" rel="stylesheet">
+    <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/js/cdn/bootstrap-icons.css">
     <link href="../assets/js/cdn/fonts/bootstrap-icons.woff2?30af91bf14e37666a085fb8a161ff36d" rel="stylesheet">
     <script src="../assets/js/config.js"></script>
@@ -181,7 +181,7 @@ if (!$__me || !hasPermission($__me, 'manage_task_groups')) {
         const columnDefs = [
             {
                 headerName: 'گروه', field: 'name', flex: 1, minWidth: 140, sortable: true, resizable: true,
-                cellRenderer: p => `<span class="gm-badge" style="background:${p.data.color}20;color:${p.data.color}"><i class="${p.data.icon}"></i>${p.value}</span>`
+                cellRenderer: p => `<span class="gm-badge" style="background:${esc(p.data.color)}20;color:${esc(p.data.color)}"><i class="${esc(p.data.icon)}"></i>${esc(p.value)}</span>`
             },
             {
                 headerName: 'نوع', field: 'scope', width: 100, sortable: true,

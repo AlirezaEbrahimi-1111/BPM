@@ -238,9 +238,9 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             templates.forEach(t => {
                 html += `
                     <tr>
-                        <td><code>${t.name}</code></td>
-                        <td>${t.title}</td>
-                        <td style="max-width: 300px; white-space: pre-wrap;">${t.message}</td>
+                        <td><code>${esc(t.name)}</code></td>
+                        <td>${esc(t.title)}</td>
+                        <td style="max-width: 300px; white-space: pre-wrap;">${esc(t.message)}</td>
                         <td>
                             ${t.is_active == 1 
                                 ? '<span class="badge bg-success">فعال</span>' 

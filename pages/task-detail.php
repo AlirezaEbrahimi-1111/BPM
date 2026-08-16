@@ -1786,13 +1786,13 @@ if (!$__me) {
                             actionsHTML = `<i class="bi bi-arrow-right-circle text-muted" style="cursor:help;" onclick="showAssignedLockReason()" title="این آیتم ارجاع داده شده است. برای تغییر، ابتدا آن را حذف کنید."></i>
                     <button class="btn btn-link btn-sm text-danger p-0" onclick="deleteChecklistItem(${item.id})"><i class="bi bi-trash"></i></button>`;
                         } else {
-                            const safeTitle = (item.title || '').replace(/'/g, "\\'");
+                            const safeTitle = escJsAttr(item.title || '');
                             actionsHTML = `<button class="btn btn-link btn-sm p-0" onclick="editChecklistItem(${item.id}, '${safeTitle}')"><i class="bi bi-pencil"></i></button>
                     <button class="btn btn-link btn-sm text-danger p-0" onclick="deleteChecklistItem(${item.id})"><i class="bi bi-trash"></i></button>`;
                         }
                     }
 
-                    const doneMetaHTML = (item.is_done == 1 && item.done_by_name) ? ('✓ ' + item.done_by_name.trim()) : '';
+                    const doneMetaHTML = (item.is_done == 1 && item.done_by_name) ? ('✓ ' + esc(item.done_by_name.trim())) : '';
                     const mineHTML = mine ? '<span class="badge bg-warning text-dark ms-1">به شما ارجاع شده</span>' : '';
                     const itemStyle = `${mine ? 'background:var(--warning-box-bg); border-right:3px solid #ffc107; padding-right:6px; border-radius:6px;' : ''}${item.can_toggle_this === false ? 'opacity:0.65;' : ''}`;
                     const checkboxTitle = item.is_done == 1 ?
@@ -1808,7 +1808,7 @@ if (!$__me) {
                      ${(item.can_toggle_this === false || item.is_done == 1) ? 'disabled' : ''}
                      onchange="openDoneNote(${item.id}, this)"
                      ${checkboxTitle}>
-              <span class="chk-title">${item.title}</span>
+              <span class="chk-title">${esc(item.title)}</span>
               <span class="chk-desc-zone" id="chk-desc-zone-${item.id}">${descZoneHTML}</span>
               ${renderAssigneeBadge(item)}
               ${mineHTML}
@@ -2386,9 +2386,9 @@ if (!$__me) {
                 // نمایش badge فعلی (یا «بدون گروه»)
                 function badgeHtml() {
                     if (task.group_id && task.group_name) {
-                        const color = task.group_color || '#6366f1';
+                        const color = esc(task.group_color || '#6366f1');
                         return `<span class="badge" style="background:${color}20;color:${color};border:1px solid ${color}40;">
-                                <i class="${task.group_icon || 'bi-tag'} me-1"></i>${task.group_name}</span>`;
+                                <i class="${esc(task.group_icon || 'bi-tag')} me-1"></i>${esc(task.group_name)}</span>`;
                     }
                     return '<span class="text-muted">بدون گروه</span>';
                 }
@@ -2714,13 +2714,13 @@ if (!$__me) {
                 </div>
                 <div class="info-item">
                     <div class="info-label">ایجادکننده:</div>
-                    <div class="info-value">${task.creator_name || 'نامشخص'}</div>
+                    <div class="info-value">${esc(task.creator_name) || 'نامشخص'}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">مسئول انجام:</div>
                     <div class="info-value">${task.is_workflow_task == 1
-                        ? (task.assignee_id ? (task.assignee_name || 'نامشخص') : (sectionToFarsi(task.current_step_section) || 'نامشخص'))
-                        : (task.assignee_name || 'نامشخص')
+                        ? (task.assignee_id ? (esc(task.assignee_name) || 'نامشخص') : (sectionToFarsi(task.current_step_section) || 'نامشخص'))
+                        : (esc(task.assignee_name) || 'نامشخص')
                     }</div>
                 </div>
                 <div class="info-item">
@@ -2872,7 +2872,7 @@ ${task.overdue_periods > 0 ? `
 
                 const stepDescEl = document.getElementById('taskDescription');
                 if (task.is_workflow_task == 1 && task.current_step_description) {
-                    stepDescEl.innerHTML = task.current_step_description
+                    stepDescEl.innerHTML = esc(task.current_step_description)
                         .replace(/\r\n/g, '\n')
                         .replace(/\n{2,}/g, '\n')
                         .replace(/\n/g, '<br>');
@@ -4041,7 +4041,7 @@ ${task.overdue_periods > 0 ? `
                     const actionLabel = getActionLabel(item.action);
                     const badgeClass = actionBadgeClass[item.action] || 'ab-updated';
                     const userName = item.from_user_first_name || item.from_user_last_name ?
-                        `${item.from_user_first_name || ''} ${item.from_user_last_name || ''}`.trim() :
+                        `${esc(item.from_user_first_name || '')} ${esc(item.from_user_last_name || '')}`.trim() :
                         'نامشخص';
 
                     const dateOnly = item.created_at ?
@@ -4083,12 +4083,12 @@ ${task.overdue_periods > 0 ? `
                                 <i class="bi bi-arrow-left ml-arrow-icon"></i>
                                 <span class="ml-bold-new">${newD}</span>
                             </div>
-                            ${n.reason ? `<div class="ml-reason-mini">دلیل: ${n.reason}</div>` : ''}`;
+                            ${n.reason ? `<div class="ml-reason-mini">دلیل: ${esc(n.reason)}</div>` : ''}`;
                         } catch (e) {
-                            notesHTML = `<div class="ml-notes">${item.notes}</div>`;
+                            notesHTML = `<div class="ml-notes">${esc(item.notes)}</div>`;
                         }
                     } else if (item.notes) {
-                        const txt = item.notes.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
+                        const txt = esc(item.notes).replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
                         notesHTML = `<div class="ml-notes">${txt}</div>`;
                     }
                     // ✅ ساخت متن توضیحات خاص برای هر action
@@ -4097,37 +4097,37 @@ ${task.overdue_periods > 0 ? `
                     // برای ایجاد: نمایش نام assignee
                     if (item.action === 'created') {
                         if (item.to_user_id && item.to_user_first_name) {
-                            const toName = `${item.to_user_first_name || ''} ${item.to_user_last_name || ''}`.trim();
+                            const toName = `${esc(item.to_user_first_name || '')} ${esc(item.to_user_last_name || '')}`.trim();
                             if (toName && toName !== userName) {
                                 customNotesHTML = `<div class="ml-notes">واگذار به: ${toName}</div>` + customNotesHTML;
                             }
                         }
                         // ✅ نمایش توضیحات کار در تاریخچه ایجاد
                         if (taskData && taskData.description) {
-                            const descTxt = taskData.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
+                            const descTxt = esc(taskData.description).replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
                             customNotesHTML += `<div class="ml-notes" style="color:var(--text-muted);">توضیحات: ${descTxt}</div>`;
                         }
                     }
 
                     // برای ارجاع: نمایش نام مقصد
                     if (item.action === 'delegated' && item.to_user_id && item.to_user_first_name) {
-                        const toName = `${item.to_user_first_name || ''} ${item.to_user_last_name || ''}`.trim();
+                        const toName = `${esc(item.to_user_first_name || '')} ${esc(item.to_user_last_name || '')}`.trim();
                         if (toName && !notesHTML.includes(toName)) {
                             customNotesHTML = `<div class="ml-notes">ارجاع به ${toName}</div>` + (notesHTML || '');
                         }
                     }
                     // ✅ جدید: برای در انتظار تأیید: نمایش نام تأییدکننده
                     if (item.action === 'pending_approval' && item.to_user_id && item.to_user_first_name) {
-                        const toName = `${item.to_user_first_name || ''} ${item.to_user_last_name || ''}`.trim();
+                        const toName = `${esc(item.to_user_first_name || '')} ${esc(item.to_user_last_name || '')}`.trim();
                         if (toName) {
                             customNotesHTML = (notesHTML || '') + `<div class="ml-notes">در انتظار تأیید: ${toName}</div>`;
                         }
                     }
                     // ✅ برای رد درخواست تمدید موعد: نمایش نام درخواست‌دهنده (to_user = کسی که درخواست داده بود)
                     if (item.action === 'deadline_rejected' && item.to_user_id && item.to_user_first_name) {
-                        const toName = `${item.to_user_first_name || ''} ${item.to_user_last_name || ''}`.trim();
+                        const toName = `${esc(item.to_user_first_name || '')} ${esc(item.to_user_last_name || '')}`.trim();
                         const reasonHTML = item.notes ?
-                            `<div class="ml-reason-mini">توضیح: ${item.notes.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>')}</div>` :
+                            `<div class="ml-reason-mini">توضیح: ${esc(item.notes).replace(/\r\n/g, '<br>').replace(/\n/g, '<br>')}</div>` :
                             '';
                         if (toName) {
                             customNotesHTML = `<div class="ml-notes">درخواست تمدید موعد از ${toName} رد شد</div>` + reasonHTML;
@@ -5107,7 +5107,7 @@ ${task.overdue_periods > 0 ? `
                 attachments.forEach(attachment => {
                     const icon = getFileIcon(attachment.file_type);
                     const preview = attachment.is_image ?
-                        `<img src="${attachment.file_path}" alt="${attachment.file_original_name}">` :
+                        `<img src="${esc(attachment.file_path)}" alt="${esc(attachment.file_original_name)}">` :
                         `<i class="bi ${icon}"></i>`;
 
                     const canDelete = attachment.can_delete === true;
@@ -5125,17 +5125,17 @@ ${task.overdue_periods > 0 ? `
                     ${preview}
                 </div>
                 <div class="attachment-info">
-                    <div class="attachment-name" title="${attachment.file_original_name}">
-                        ${attachment.file_original_name}
+                    <div class="attachment-name" title="${esc(attachment.file_original_name)}">
+                        ${esc(attachment.file_original_name)}
                     </div>
                     <div class="attachment-meta">
                         <span><i class="bi bi-hdd ms-1"></i>${attachment.file_size_formatted}</span>
-                        <span><i class="bi bi-person ms-1"></i>${attachment.uploader_name || 'نامشخص'}</span>
+                        <span><i class="bi bi-person ms-1"></i>${esc(attachment.uploader_name) || 'نامشخص'}</span>
                         <span><i class="bi bi-clock ms-1"></i>${formatDateTime(attachment.created_at)}</span>
                     </div>
                 </div>
                 <div class="attachment-actions">
-                    <button class="btn-icon btn-download" onclick="downloadAttachment('${attachment.file_path}', '${attachment.file_original_name}')" title="دانلود">
+                    <button class="btn-icon btn-download" onclick="downloadAttachment('${escJsAttr(attachment.file_path)}', '${escJsAttr(attachment.file_original_name)}')" title="دانلود">
                         <i class="bi bi-download" style="line-height: 0"></i>
                     </button>
                     ${deleteBtn}
@@ -5476,7 +5476,7 @@ ${task.overdue_periods > 0 ? `
             <div class="selected-file-item">
                 <div class="selected-file-info">
                     <i class="bi ${icon}"></i>
-                    <span class="selected-file-name" title="${file.name}">${file.name}</span>
+                    <span class="selected-file-name" title="${esc(file.name)}">${esc(file.name)}</span>
 <small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg (حداکثر 20MB)</small>
                 <button type="button" class="btn-remove-file" onclick="removeFileFromModal(${index})">
                     <i class="bi bi-x-circle"></i>
@@ -5822,9 +5822,9 @@ ${task.overdue_periods > 0 ? `
                 wrap.innerHTML = `
                     <div style="background:var(--surface);border-radius:12px;max-width:440px;width:92%;padding:20px;direction:rtl;">
                         <h5 style="margin-bottom:12px;">بررسی درخواست رفع دوره‌های معوقه</h5>
-                        <p style="margin:6px 0;"><strong>درخواست‌دهنده:</strong> ${request.requester_name || '-'}</p>
+                        <p style="margin:6px 0;"><strong>درخواست‌دهنده:</strong> ${esc(request.requester_name) || '-'}</p>
                         <p style="margin:6px 0;"><strong>تعداد دورهٔ معوقه:</strong> ${request.periods_count || 0}</p>
-                        ${request.reason ? `<p style="margin:6px 0;"><strong>دلیل:</strong> ${request.reason}</p>` : ''}
+                        ${request.reason ? `<p style="margin:6px 0;"><strong>دلیل:</strong> ${esc(request.reason)}</p>` : ''}
                         <textarea id="ocRejectReason" rows="2" style="width:100%;border:1px solid var(--border-soft);border-radius:8px;padding:8px;margin-top:8px;" placeholder="دلیل رد (در صورت رد)"></textarea>
                         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
                             <button class="btn btn-secondary" onclick="document.getElementById('ocReviewWrap').remove()">بستن</button>

@@ -469,8 +469,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                                 <i class="bi bi-${getNotificationIcon(notif.type)}"></i>
                             </div>
                             <div class="notification-content">
-                                <div class="notification-title">${notif.title}</div>
-                                <div class="notification-message">${notif.message}</div>
+                                <div class="notification-title">${esc(notif.title)}</div>
+                                <div class="notification-message">${esc(notif.message)}</div>
                                 <div class="notification-time">${new Date(notif.created_at).toLocaleDateString('fa-IR')}</div>
                             </div>
                         </div>
@@ -491,7 +491,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         } catch (error) {
             console.error('❌ خطا در بارگذاری اعلان‌ها:', error);
             if (listContainer) {
-                listContainer.innerHTML = '<div class="notification-empty"><i class="bi bi-wifi-off"></i><div>خطا: ' + error.message + '</div></div>';
+                listContainer.innerHTML = '<div class="notification-empty"><i class="bi bi-wifi-off"></i><div>خطا: ' + esc(error.message) + '</div></div>';
             }
             updateBadge(0);
         }

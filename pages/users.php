@@ -1066,7 +1066,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             let opts = '<option value="">انتخاب کنید</option>';
             opts += `<option value="management" ${selectedValue==='management'?'selected':''}>مدیریت</option>`;
             orgSections.forEach(s => {
-                opts += `<option value="${s.section_key}" ${selectedValue===s.section_key?'selected':''}>${s.section_label}</option>`;
+                opts += `<option value="${esc(s.section_key)}" ${selectedValue===s.section_key?'selected':''}>${esc(s.section_label)}</option>`;
             });
             return opts;
         }
@@ -1075,7 +1075,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             const c = document.getElementById('createModalAlert');
             if (!c) return;
             c.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show small mt-2" role="alert">
-        <i class="bi bi-exclamation-triangle ms-2"></i>${msg}
+        <i class="bi bi-exclamation-triangle ms-2"></i>${esc(msg)}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
             setTimeout(() => c.querySelector('.alert')?.remove(), 5000);
         }
@@ -1084,7 +1084,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             const c = document.getElementById('modalAlertContainer');
             if (!c) return;
             c.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show small mt-2" role="alert">
-        <i class="bi bi-exclamation-triangle ms-2"></i>${msg}
+        <i class="bi bi-exclamation-triangle ms-2"></i>${esc(msg)}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
             setTimeout(() => c.querySelector('.alert')?.remove(), 4000);
         }
@@ -1149,7 +1149,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                         const body = !secs.length ?
                             `<small>${getSectionLabel(p.value)}</small>` :
                             secs.map(s =>
-                                `<span style="display:inline-block; background:${s.is_primary==1?'#ddd6fe':'#ede9fe'}; color:#5b32d6; border-radius:5px; padding:8px 8px; margin:1px; font-size:.7rem; font-weight:600; line-height:1.5;">${s.is_primary==1?'★':''}${s.section_label}</span>`
+                                `<span style="display:inline-block; background:${s.is_primary==1?'#ddd6fe':'#ede9fe'}; color:#5b32d6; border-radius:5px; padding:8px 8px; margin:1px; font-size:.7rem; font-weight:600; line-height:1.5;">${s.is_primary==1?'★':''}${esc(s.section_label)}</span>`
                             ).join('');
                         return `<div style="display:flex; flex-wrap:wrap; align-items:center; gap:2px; line-height:1.2; padding:2px 0;">${body}</div>`;
                     }
@@ -1189,7 +1189,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             onclick="toggleStatus(${p.data.id},${p.data.is_active})">
         <i class="bi bi-${p.data.is_active==1?'pause':'play'}-circle"></i>
     </button>
-    <button class="ag-action-btn" title="سهمیهٔ تشویقیِ مرخصی" onclick="grantLeaveBonus(${p.data.id}, '${(p.data.first_name||'')+' '+(p.data.last_name||'')}')">
+    <button class="ag-action-btn" title="سهمیهٔ تشویقیِ مرخصی" onclick="grantLeaveBonus(${p.data.id}, '${escJsAttr((p.data.first_name||'')+' '+(p.data.last_name||''))}')">
         <i class="bi bi-wallet2"></i>
     </button>
     <button class="ag-action-btn" style="color:#dc2626" title="حذف کاربر"
@@ -1295,7 +1295,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                 .then(d => {
                     const current = d.success ? d.balance_formatted : '؟';
                     uiPrompt(
-                        `موجودیِ فعلیِ «${name.trim()}» (مرخصی+پاس): ${current} ساعت<br>چند دقیقه سهمیهٔ تشویقی اضافه شود؟ (برایِ کسر، عددِ منفی وارد کنید — مثلاً برایِ ۲ ساعت بنویسید 120)`,
+                        `موجودیِ فعلیِ «${esc(name.trim())}» (مرخصی+پاس): ${current} ساعت<br>چند دقیقه سهمیهٔ تشویقی اضافه شود؟ (برایِ کسر، عددِ منفی وارد کنید — مثلاً برایِ ۲ ساعت بنویسید 120)`,
                         function(value) {
                             const amount = parseInt(value, 10);
                             if (!amount) { showToast('عددِ نامعتبر', 'error'); return; }
@@ -1334,14 +1334,14 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                     const rows = d.requests.map(req => `
                         <div class="bonus-req-row" data-req-id="${req.id}">
                             <div class="bonus-req-info">
-                                <span><strong>${req.name}</strong> — درخواستِ ${req.requested_formatted} ساعت — موجودیِ فعلی: ${req.balance_formatted} ساعت</span>
-                                ${req.note ? `<span class="bonus-req-note">${req.note}</span>` : ''}
+                                <span><strong>${esc(req.name)}</strong> — درخواستِ ${req.requested_formatted} ساعت — موجودیِ فعلی: ${req.balance_formatted} ساعت</span>
+                                ${req.note ? `<span class="bonus-req-note">${esc(req.note)}</span>` : ''}
                             </div>
                             <div class="d-flex gap-1">
-                                <button class="btn btn-success btn-sm" onclick="resolveLeaveBonusRequest(${req.id}, 'grant', '${req.name.replace(/'/g, "\\'")}')">
+                                <button class="btn btn-success btn-sm" onclick="resolveLeaveBonusRequest(${req.id}, 'grant', '${escJsAttr(req.name)}')">
                                     <i class="bi bi-check-lg"></i> تأیید
                                 </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="resolveLeaveBonusRequest(${req.id}, 'decline', '${req.name.replace(/'/g, "\\'")}')">
+                                <button class="btn btn-outline-danger btn-sm" onclick="resolveLeaveBonusRequest(${req.id}, 'decline', '${escJsAttr(req.name)}')">
                                     <i class="bi bi-x-lg"></i> رد
                                 </button>
                             </div>
@@ -1363,14 +1363,14 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             if (action === 'grant') {
                 const req = __bonusRequestsCache.find(r => r.id === requestId);
                 uiConfirm(
-                    `${req ? req.requested_formatted : '؟'} ساعت سهمیهٔ تشویقی به «${name}» اعطا شود؟`,
+                    `${req ? req.requested_formatted : '؟'} ساعت سهمیهٔ تشویقی به «${esc(name)}» اعطا شود؟`,
                     function () {
                         submitBonusResolve(requestId, 'grant');
                     },
                     { yesText: 'بله، اعطا شود', noText: 'انصراف' }
                 );
             } else {
-                uiConfirm(`درخواستِ «${name}» رد شود؟`, function () {
+                uiConfirm(`درخواستِ «${esc(name)}» رد شود؟`, function () {
                     submitBonusResolve(requestId, 'decline');
                 }, { danger: true, yesText: 'بله، رد شود', noText: 'انصراف' });
             }
@@ -1839,18 +1839,18 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             let html = '';
             if (mgr) {
                 html += `<div class="hierarchy-node h-manager"><i class="bi bi-person-badge"></i>
-            <strong>مدیر:</strong> ${[mgr.first_name,mgr.last_name].filter(Boolean).join(' ')||mgr.phone}
+            <strong>مدیر:</strong> ${esc([mgr.first_name,mgr.last_name].filter(Boolean).join(' ')||mgr.phone)}
             <span class="role-badge role-${mgr.role} ms-2">${ROLE_NAMES[mgr.role]||mgr.role}</span></div>
             <div class="hierarchy-line"></div>`;
             }
             html += `<div class="hierarchy-node h-current"><i class="bi bi-person-circle text-primary"></i>
-        <strong>${[u.first_name,u.last_name].filter(Boolean).join(' ')||u.phone}</strong>
+        <strong>${esc([u.first_name,u.last_name].filter(Boolean).join(' ')||u.phone)}</strong>
         <span class="role-badge role-${u.role} ms-2">${ROLE_NAMES[u.role]||u.role}</span></div>`;
             if (subs.length) {
                 html += `<div class="hierarchy-line"></div><div class="ps-3">
             <small class="text-muted d-block mb-1"><i class="bi bi-people ms-1"></i>زیردستان (${toFa(subs.length)}):</small>
             ${subs.map(s=>`<div class="hierarchy-node h-sub"><i class="bi bi-person"></i>
-                ${[s.first_name,s.last_name].filter(Boolean).join(' ')||s.phone}
+                ${esc([s.first_name,s.last_name].filter(Boolean).join(' ')||s.phone)}
                 <span class="role-badge role-${s.role} ms-2">${ROLE_NAMES[s.role]||s.role}</span></div>`).join('')}
         </div>`;
             }

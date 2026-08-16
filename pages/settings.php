@@ -376,7 +376,7 @@ function fillForm() {
     const initials = fullName.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
     var avatarEl = document.getElementById('avatarInitials');
-    avatarEl.innerHTML = u.avatar_path ? '<img src="../' + u.avatar_path + '" alt="">' : (initials || '؟');
+    avatarEl.innerHTML = u.avatar_path ? '<img src="../' + esc(u.avatar_path) + '" alt="">' : (initials || '؟');
     document.getElementById('headerFullName').textContent = fullName;
     document.getElementById('headerPhone').textContent    = u.phone || '—';
     document.getElementById('headerRole').textContent     = ROLE_NAMES[u.role] || u.role || '—';
@@ -534,7 +534,7 @@ function togglePw(id, btn) {
 function showFormAlert(containerId, msg, type) {
     document.getElementById(containerId).innerHTML =
         `<div class="alert alert-${type} alert-dismissible small py-2 mb-3" role="alert">
-            <i class="bi bi-${type==='danger'?'exclamation-triangle':'check-circle'} ms-2"></i>${msg}
+            <i class="bi bi-${type==='danger'?'exclamation-triangle':'check-circle'} ms-2"></i>${esc(msg)}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>`;
 }

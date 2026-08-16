@@ -194,8 +194,8 @@ if (!$__me) {
                 sortable: true,
                 resizable: true,
                 cellRenderer: p => {
-                    const desc = p.data.description ? `<div style="font-size:0.7rem;color:#94a3b8;line-height:1.4;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${p.data.description}</div>` : '';
-                    return `<div>${p.value || '-'}${checklistMatchBadge(p.data)}${desc}</div>`;
+                    const desc = p.data.description ? `<div style="font-size:0.7rem;color:#94a3b8;line-height:1.4;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${esc(p.data.description)}</div>` : '';
+                    return `<div>${esc(p.value) || '-'}${checklistMatchBadge(p.data)}${desc}</div>`;
                 }
             },
             {
@@ -205,7 +205,7 @@ if (!$__me) {
                 width: 120,
                 resizable: true,
                 cellRenderer: p => p.value ?
-                    `<span class="badge" style="background:${p.data.group_color || '#6366f1'}20;color:${p.data.group_color || '#6366f1'};border:1px solid ${p.data.group_color || '#6366f1'}40;"><i class="${p.data.group_icon || 'bi-tag'} me-1"></i>${p.value}</span>` : '<span class="text-muted">—</span>'
+                    `<span class="badge" style="background:${esc(p.data.group_color || '#6366f1')}20;color:${esc(p.data.group_color || '#6366f1')};border:1px solid ${esc(p.data.group_color || '#6366f1')}40;"><i class="${esc(p.data.group_icon || 'bi-tag')} me-1"></i>${esc(p.value)}</span>` : '<span class="text-muted">—</span>'
             },
             {
                 field: 'creator_name',

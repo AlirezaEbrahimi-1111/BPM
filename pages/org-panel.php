@@ -259,12 +259,12 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
   function render(d) {
     // هدر سازمان
     const logo = document.getElementById('orgLogo');
-    if (d.org.logo) logo.innerHTML = '<img src="' + d.org.logo + '" alt="logo">';
+    if (d.org.logo) logo.innerHTML = '<img src="' + esc(d.org.logo) + '" alt="logo">';
     else logo.textContent = (d.org.name || '?').charAt(0);
     document.getElementById('orgName').textContent = d.org.name || '—';
-    let meta = '<span><i class="bi bi-award"></i> پلن ' + d.org.plan_label + '</span>';
-    meta += '<span><i class="bi bi-calendar3"></i> عضویت: ' + d.org.created_jalali + '</span>';
-    if (d.org.phone) meta += '<span><i class="bi bi-telephone"></i> ' + d.org.phone + '</span>';
+    let meta = '<span><i class="bi bi-award"></i> پلن ' + esc(d.org.plan_label) + '</span>';
+    meta += '<span><i class="bi bi-calendar3"></i> عضویت: ' + esc(d.org.created_jalali) + '</span>';
+    if (d.org.phone) meta += '<span><i class="bi bi-telephone"></i> ' + esc(d.org.phone) + '</span>';
     document.getElementById('orgMeta').innerHTML = meta;
 
     // آمار
@@ -296,11 +296,11 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     const tbody = document.getElementById('personnelBody');
     tbody.innerHTML = d.personnel.map(p => `
       <tr>
-        <td style="font-weight:600">${p.name}</td>
-        <td><span class="badge badge-purple">${p.role_label}</span></td>
-        <td style="color:var(--text-sub)">${p.unit_label}</td>
+        <td style="font-weight:600">${esc(p.name)}</td>
+        <td><span class="badge badge-purple">${esc(p.role_label)}</span></td>
+        <td style="color:var(--text-sub)">${esc(p.unit_label)}</td>
         <td>${p.is_active ? '<span class="badge badge-success">فعال</span>' : '<span class="badge badge-gray">غیرفعال</span>'}</td>
-        <td style="color:var(--text-sub);font-size:12.5px">${p.last_login_jalali}</td>
+        <td style="color:var(--text-sub);font-size:12.5px">${esc(p.last_login_jalali)}</td>
       </tr>`).join('');
   }
 

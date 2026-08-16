@@ -1541,9 +1541,9 @@ if (!$__me) {
                 }
                 list.innerHTML = allRoutines.map(r => `
                     <div class="filter-dropdown-item" data-id="${r.id}"
-                         onclick="selectRoutine(${r.id}, '${r.name.replace(/'/g, "\'")}')">
+                         onclick="selectRoutine(${r.id}, '${escJsAttr(r.name)}')">
                         <i class="bi bi-diagram-3" style="font-size:0.85rem;color:var(--primary);"></i>
-                        ${r.name}
+                        ${esc(r.name)}
                         <i class="bi bi-check check-icon"></i>
                     </div>
                 `).join('');
@@ -1577,9 +1577,9 @@ if (!$__me) {
                 }
                 list.innerHTML = allSections.map(s => `
                     <div class="filter-dropdown-item" data-key="${s.section_key}"
-                         onclick="selectSection('${s.section_key}', '${s.section_label.replace(/'/g, "\'")}')">
+                         onclick="selectSection('${escJsAttr(s.section_key)}', '${escJsAttr(s.section_label)}')">
                         <i class="bi bi-building" style="font-size:0.85rem;color:var(--gray-500);"></i>
-                        ${s.section_label}
+                        ${esc(s.section_label)}
                         <i class="bi bi-check check-icon"></i>
                     </div>
                 `).join('');
@@ -1649,7 +1649,7 @@ if (!$__me) {
 
             const deleteBtn = isManagerUser ? `
                 <button class="wf-delete-btn" title="حذف روتین"
-                        onclick="deleteWorkflow(${wf.id}, '${(wf.title || '').replace(/'/g, "\\'")}', event)">
+                        onclick="deleteWorkflow(${wf.id}, '${escJsAttr(wf.title || '')}', event)">
                     <i class="bi bi-trash"></i>
                 </button>` : '';
 
@@ -1657,7 +1657,7 @@ if (!$__me) {
             <div class="wf-card ${statusCls}" onclick="showDetails(${wf.id})">
                 ${deleteBtn}
                 <div class="wf-header">
-                    <h6 class="wf-title"><span class="wf-id-badge">${toFa(wf.id)}</span>${wf.title}</h6>
+                    <h6 class="wf-title"><span class="wf-id-badge">${toFa(wf.id)}</span>${esc(wf.title)}</h6>
                     <div class="wf-badges">${statusBadge}${modeBadge}${bottleneck}</div>
                 </div>
 
@@ -1845,7 +1845,7 @@ if (!$__me) {
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div class="detail-step-title">
                             <span class="badge bg-secondary ms-2">${toFa(step.stage_sequence || idx + 1)}</span>
-                            ${step.step_name || 'مرحله ' + toFa(idx + 1)}
+                            ${esc(step.step_name) || 'مرحله ' + toFa(idx + 1)}
                         </div>
                         <div class="d-flex flex-column align-items-end gap-1">
                             ${stepBadge}
@@ -1857,7 +1857,7 @@ if (!$__me) {
                         <div>${
                             step.assignee_type === 'user'
                             ? '<span class="lbl">مسئول: </span>' + ((step.assignee_first_name || step.assignee_last_name)
-                                ? `${step.assignee_first_name || ''} ${step.assignee_last_name || ''}`.trim()
+                                ? `${esc(step.assignee_first_name || '')} ${esc(step.assignee_last_name || '')}`.trim()
                                 : 'نامشخص')
                             : step.assignee_type === 'creator'
                             ? '<span class="lbl">مسئول: </span>↩ ایجادکنندهٔ روتین'
@@ -1865,7 +1865,7 @@ if (!$__me) {
                         }</div>
                         ${step.started_at   ? `<div><span class="lbl">شروع: </span>${formatDateTime(step.started_at)}</div>` : ''}
                         ${step.completed_at ? `<div><span class="lbl">اتمام: </span>${formatDateTime(step.completed_at)}</div>` : ''}
-                        ${step.completed_by_first_name ? `<div><span class="lbl">انجام‌دهنده: </span>${step.completed_by_first_name} ${step.completed_by_last_name}</div>` : ''}
+                        ${step.completed_by_first_name ? `<div><span class="lbl">انجام‌دهنده: </span>${esc(step.completed_by_first_name)} ${esc(step.completed_by_last_name)}</div>` : ''}
                         ${step.time_limit_hours ? `<div><span class="lbl">زمان مجاز: </span>${formatDuration(step.time_limit_hours * 60)}${step.extended_minutes > 0 ? ' (+' + formatDuration(step.extended_minutes) + ')' : ''}</div>` : ''}
                         ${step.duration_minutes ? `<div><span class="lbl">زمان واقعی: </span><strong class="${activeOverdue ? 'text-danger' : (completedLate ? 'text-warning' : 'text-success')}">${formatDuration(step.duration_minutes)}</strong></div>` : ''}
                     </div>
@@ -1879,7 +1879,7 @@ if (!$__me) {
                     <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                         <div class="d-flex gap-3 flex-wrap" style="font-size:.85rem;color:var(--text-muted)">
                             <span><strong>وضعیت:</strong> ${getStatusLabel(wf.status)}</span>
-                            <span><strong>مرحله فعلی:</strong> ${wf.current_stage_name || 'نامشخص'}</span>
+                            <span><strong>مرحله فعلی:</strong> ${esc(wf.current_stage_name) || 'نامشخص'}</span>
                             <span><strong>شروع:</strong> ${formatDate(wf.started_at)}</span>
                             ${wf.completed_at ? `<span><strong>اتمام:</strong> ${formatDate(wf.completed_at)}</span>` : ''}
                         </div>

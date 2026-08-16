@@ -21,3 +21,29 @@ function toFa(n) {
     if (n === null || n === undefined || n === '') return '';
     return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
 }
+
+// escape کردنِ رشته قبل از تزریق در innerHTML — جلوگیری از XSS
+// بررسی شد: هرجا در پروژه از قبل «esc» تعریف شده، یا خودش function است
+// (redeclare سالم، override می‌شه) یا داخلِ scope محلی/IIFE است (تداخلی
+// با نسخه‌ی سراسری نداره) — پس این تعریف برایِ صفحاتی که هنوز escape
+// محلی ندارن، امن اضافه می‌شه.
+function esc(s) {
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// escape برایِ مقادیری که داخلِ رشته‌یِ جاوااسکریپتِ تک‌کوتیشن در یک
+// attribute مثلِ onclick="fn('${x}')" قرار می‌گیرن. توجه: esc() معمولی
+// این‌جا کافی نیست — چون &#39; که esc() تولید می‌کنه، توسطِ HTML parser
+// قبل از این‌که JS parser بخونتش decode میشه و دوباره ' خام می‌شه (یعنی
+// escape خنثی می‌شه). این تابع اول escape سطحِ رشته‌ی JS رو انجام می‌ده
+// (backslash, quote, newline) که HTML entity decoding خرابش نمی‌کنه.
+function escJsAttr(s) {
+    return String(s ?? '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/</g, '\\u003C')
+        .replace(/>/g, '\\u003E');
+}

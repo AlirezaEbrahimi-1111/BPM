@@ -183,11 +183,11 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
 
                 html += `
                     <tr>
-                        <td>${log.phone}</td>
-                        <td style="max-width: 300px;">${log.message}</td>
-                        <td>${log.template_name || '-'}</td>
+                        <td>${esc(log.phone)}</td>
+                        <td style="max-width: 300px;">${esc(log.message)}</td>
+                        <td>${esc(log.template_name) || '-'}</td>
                         <td><span class="badge bg-${statusClass}">${statusText}</span></td>
-                        <td style="color: #dc3545; font-size: 12px;">${log.error_message || '-'}</td>
+                        <td style="color: #dc3545; font-size: 12px;">${esc(log.error_message) || '-'}</td>
                         <td>${log.created_at}</td>
                     </tr>
                 `;

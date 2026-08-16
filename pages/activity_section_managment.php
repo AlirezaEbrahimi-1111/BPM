@@ -498,18 +498,18 @@ list.innerHTML = sections.map(s => `
         <span class="item-key">${s.section_key}</span>
 
         <span class="item-label" id="label-${s.section_key}">
-            ${s.section_label}
+            ${esc(s.section_label)}
             <small style="color:#6b7280;font-size:.75rem;margin-right:6px">(${toFa(s.user_count)} نفر)</small>
         </span>
         <input class="item-label-input" id="input-${s.section_key}"
-               value="${s.section_label}" style="display:none;"
+               value="${esc(s.section_label)}" style="display:none;"
                onkeydown="handleEditKey(event,'${s.section_key}')">
 
         <div class="item-actions" id="actions-${s.section_key}">
             <button class="btn-icon" onclick="startEdit('${s.section_key}')" title="ویرایش">
                 <i class="bi bi-pencil"></i>
             </button>
-            <button class="btn-icon del" onclick="askDelete('${s.section_key}','${s.section_label}')" title="حذف">
+            <button class="btn-icon del" onclick="askDelete('${s.section_key}','${escJsAttr(s.section_label)}')" title="حذف">
                 <i class="bi bi-trash"></i>
             </button>
         </div>
@@ -613,7 +613,7 @@ function askDelete(key, label) {
         `واحد «${label}» حذف خواهد شد. اگر کاربری در این واحد باشد، به واحد زیر منتقل می‌شود.`;
 
     sel.innerHTML = `<option value="management">مدیریت (management)</option>` +
-        others.map(s => `<option value="${s.section_key}">${s.section_label} (${s.section_key})</option>`).join('');
+        others.map(s => `<option value="${s.section_key}">${esc(s.section_label)} (${s.section_key})</option>`).join('');
 
     row.style.display = others.length ? 'block' : 'none';
     document.getElementById('deleteOverlay').style.display = 'flex';

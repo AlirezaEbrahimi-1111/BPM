@@ -4,3 +4,4 @@ httpx
 openai
 qdrant-client
 python-dotenv
+pydantic
