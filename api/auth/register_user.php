@@ -146,15 +146,15 @@ try {
     http_response_code(500);
     error_log("Database error in register: " . $e->getMessage());
     echo json_encode([
-        'success' => false, 
-        'message' => 'خطا در پایگاه داده: ' . $e->getMessage()
+        'success' => false,
+        'message' => 'خطا در پایگاه داده'
     ]);
 } catch (Exception $e) {
     http_response_code(500);
     error_log("Register error: " . $e->getMessage());
     echo json_encode([
-        'success' => false, 
-        'message' => $e->getMessage()
+        'success' => false,
+        'message' => 'خطای سرور — لطفاً دوباره تلاش کنید'
     ]);
 }
 ?>

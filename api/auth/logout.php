@@ -23,8 +23,7 @@ try {
         exit;
     }
     
-    // در اینجا می‌توانید توکن را در blacklist قرار دهید
-    $result = $auth->logout(null);
+    $result = $auth->logout($user_id);
     
     echo json_encode($result);
     

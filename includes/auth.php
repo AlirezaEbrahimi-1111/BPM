@@ -187,9 +187,11 @@ class Auth
                 return ['success' => false, 'message' => 'رمز عبور فعلی اشتباه است'];
             }
 
-            // بروزرسانی رمز جدید
+            // بروزرسانی رمز جدید — token_version هم بالا می‌ره تا با تغییرِ
+            // رمز، هر توکنِ از‌قبل‌صادرشده (مثلاً روی یه دستگاهِ دیگه) فوراً
+            // باطل بشه، نه این‌که تا انقضایِ طبیعی‌ش معتبر بمونه
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-            $updateStmt = $this->db->prepare("UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?");
+            $updateStmt = $this->db->prepare("UPDATE users SET password = ?, token_version = token_version + 1, updated_at = NOW() WHERE id = ?");
 
             if ($updateStmt->execute([$hashed_password, $user_id])) {
                 return ['success' => true, 'message' => 'رمز عبور با موفقیت تغییر کرد'];
@@ -212,10 +214,24 @@ class Auth
             $expiry_seconds = 3 * 60 * 60;
         }
 
+        // نسخه‌یِ فعلیِ توکنِ کاربر توی خودِ توکن ثبت می‌شه؛ با خروج/تغییرِ
+        // رمز/غیرفعال‌سازی این عدد توی دیتابیس بالا می‌ره و validateToken
+        // دیگه این توکن رو (که نسخه‌ش قدیمیه) معتبر نمی‌دونه — قبلاً
+        // logout/تغییرِ رمز هیچ اثری روی توکن‌هایِ صادرشده نداشت
+        $tv = 0;
+        try {
+            $stmt = $this->db->prepare("SELECT token_version FROM users WHERE id = ?");
+            $stmt->execute([$user_id]);
+            $tv = (int) ($stmt->fetchColumn() ?: 0);
+        } catch (Exception $e) {
+            error_log("generateJWTToken: خواندنِ token_version ناموفق بود: " . $e->getMessage());
+        }
+
         $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
         $payload = json_encode([
             'user_id' => $user_id,
             'organization_id' => $organization_id,
+            'tv' => $tv,
             'iat' => time(),
             'exp' => time() + $expiry_seconds
         ]);
@@ -307,6 +323,23 @@ class Auth
                 return false;
             }
 
+            // 🔒 چکِ نسخه‌یِ توکن + فعال‌بودنِ حساب — قبلاً هیچ‌کدوم از این دو
+            // در این مسیر (که اکثرِ endpointها ازش استفاده می‌کنن) چک
+            // نمی‌شدن؛ یعنی خروج/تغییرِ رمز/غیرفعال‌سازیِ حساب هیچ اثرِ
+            // فوری‌ای روی توکن‌هایِ از‌قبل‌صادرشده نداشت (تا انقضایِ طبیعی،
+            // که با «به‌خاطر بسپار» تا ۳۰ روز هم می‌رسه، معتبر می‌موند)
+            $stmt = $this->db->prepare("SELECT is_active, token_version FROM users WHERE id = ?");
+            $stmt->execute([$payloadData['user_id']]);
+            $userRow = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$userRow || (int) $userRow['is_active'] !== 1) {
+                return false;
+            }
+            $tokenTv = (int) ($payloadData['tv'] ?? 0);
+            if ((int) $userRow['token_version'] !== $tokenTv) {
+                return false;
+            }
+
             return $payloadData['user_id'];
         } catch (Exception $e) {
             error_log("Validate token error: " . $e->getMessage());
@@ -329,11 +362,23 @@ class Auth
     }
 
     /**
-     * خروج از سیستم
+     * خروج از سیستم — نسخه‌یِ توکنِ کاربر رو بالا می‌بره تا همین توکن
+     * (و هر توکنِ دیگه‌یِ صادرشده‌یِ قبلی) فوراً نامعتبر بشه. قبلاً این
+     * تابع کاملاً بی‌اثر بود؛ توکن تا انقضایِ طبیعی‌ش معتبر می‌موند
      */
-    public function logout($token)
+    public function logout($user_id)
     {
-        return ['success' => true, 'message' => 'خروج موفقیت‌آمیز'];
+        if (!$user_id) {
+            return ['success' => false, 'message' => 'کاربر مشخص نیست'];
+        }
+        try {
+            $stmt = $this->db->prepare("UPDATE users SET token_version = token_version + 1 WHERE id = ?");
+            $stmt->execute([$user_id]);
+            return ['success' => true, 'message' => 'خروج موفقیت‌آمیز'];
+        } catch (Exception $e) {
+            error_log("Logout error: " . $e->getMessage());
+            return ['success' => false, 'message' => 'خطای سرور'];
+        }
     }
 
     /**

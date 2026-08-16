@@ -45,10 +45,12 @@ try {
         exit;
     }
 
-    // معکوس کردن وضعیت
+    // معکوس کردن وضعیت — token_version هم بالا می‌ره تا در غیرفعال‌سازی،
+    // توکنِ از‌قبل‌صادرشده‌یِ این کاربر فوراً باطل بشه (نه این‌که تا انقضایِ
+    // طبیعیِ توکن، که می‌تونه تا ۳۰ روز باشه، بازم کار کنه)
     $newStatus = $targetUser['is_active'] == 1 ? 0 : 1;
 
-    $updateStmt = $db->prepare("UPDATE users SET is_active = ? WHERE id = ?");
+    $updateStmt = $db->prepare("UPDATE users SET is_active = ?, token_version = token_version + 1 WHERE id = ?");
     $updateStmt->execute([$newStatus, $target_user_id]);
 
     echo json_encode([
