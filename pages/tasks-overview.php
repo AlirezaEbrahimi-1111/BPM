@@ -647,10 +647,11 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                 if (pr && t.priority !== pr) return false;
                 if (ty && t.task_type !== ty) return false;
                 if (st) {
-                    // فیلتر پیش‌فرضِ «باز» فقط وقتی جستجویی در جریان نیست اعمال می‌شود؛
-                    // با تایپ‌کردن در کادر جستجو، کارهای تکمیل‌شده/تأییدشده هم پیدا می‌شوند
+                    // فیلترِ «باز» همیشه اعمال می‌شه، چه جستجویی در جریان باشه چه نه —
+                    // قبلاً با تایپ‌کردن در کادر جستجو، کارهای تکمیل‌شده/تأییدشده/متوقف‌شده
+                    // هم توی نتیجه‌ی «کارهای باز» ظاهر می‌شدن
                     if (st === 'open') {
-                        if (!s && (t.status === 'completed' || t.status === 'approved')) return false;
+                        if (['completed', 'approved', 'rejected'].includes(t.status)) return false;
                     } else if (t.status !== st) return false;
                 }
 
