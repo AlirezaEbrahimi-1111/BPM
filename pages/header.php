@@ -195,6 +195,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                                 <i class="bi bi-diagram-3 ms-2"></i>مدیریت گروه‌ها
                             </a>
                         </li>
+                        <li id="securityLogMenuItem" style="display:none;">
+                            <a class="dropdown-item" href="../../pages/security-log.php">
+                                <i class="bi bi-shield-lock ms-2"></i>رصدِ امنیتی
+                            </a>
+                        </li>
                         <li id="holidaysMenuItem" style="display:none;">
                             <a class="dropdown-item" href="../../pages/holidays.php">
                                 <i class="bi bi-calendar-x ms-2"></i>روزهای تعطیل
@@ -1422,6 +1427,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         const holidaysItem = document.getElementById('holidaysMenuItem');
         if (holidaysItem) {
             holidaysItem.style.display = isFullAdmin ? 'block' : 'none';
+        }
+        // 🔒 فقط سوپرادمین (هم‌راستا با getSuperAdminIds سمتِ سرور: ۱ و ۱۹) —
+        // این فقط نمایش/مخفی‌بودنِ لینکه، مرزِ امنیتیِ واقعی سمتِ سرورِ
+        // security-log.php خودش با isSuperAdmin چک می‌شه
+        const securityLogItem = document.getElementById('securityLogMenuItem');
+        if (securityLogItem) {
+            const isSuperAdminUser = [1, 19].includes(Number(user.id));
+            securityLogItem.style.display = isSuperAdminUser ? 'block' : 'none';
         }
         const overviewMenu = document.getElementById('navOverview');
         if (overviewMenu) {
