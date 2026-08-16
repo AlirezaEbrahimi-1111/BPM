@@ -1,7 +1,9 @@
 <?php
 // api/tickets/restore.php — بازگرداندن تیکت حذف‌شده (فقط کاربر id=1)
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
+$corsAllowedOrigins = ['https://itmalek.com', 'https://www.itmalek.com'];
+$corsRequestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
+header('Access-Control-Allow-Origin: ' . (in_array($corsRequestOrigin, $corsAllowedOrigins, true) ? $corsRequestOrigin : 'https://itmalek.com'));
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';

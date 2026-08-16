@@ -4,7 +4,9 @@
 // نمی‌تونه صددرصد یه فراخوان‌کننده‌ی خارجی/مخفی رو رد کنه؛ اگه بعد از
 // مدتی لاگِ اجرا نداشت، کاندیدِ حذفه.
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
+$corsAllowedOrigins = ['https://itmalek.com', 'https://www.itmalek.com'];
+$corsRequestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
+header('Access-Control-Allow-Origin: ' . (in_array($corsRequestOrigin, $corsAllowedOrigins, true) ? $corsRequestOrigin : 'https://itmalek.com'));
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
