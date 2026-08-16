@@ -35,6 +35,13 @@ try {
             echo json_encode(['success' => false, 'message' => 'نام و نام خانوادگی الزامی است']);
             exit;
         }
+        // فقط حروف (فارسی/عربی/لاتین)، فاصله، خط‌تیره — هم‌راستا با همین چک در
+        // api/auth/register_user.php (جلوگیری از تزریقِ HTML/اسکریپت در نام)
+        if (!preg_match('/^[\p{L}\s\-]+$/u', $first_name) || !preg_match('/^[\p{L}\s\-]+$/u', $last_name)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'نام و نام خانوادگی فقط می‌توانند شامل حروف باشند']);
+            exit;
+        }
         if ($email !== null && $email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'ایمیلِ واردشده معتبر نیست']);

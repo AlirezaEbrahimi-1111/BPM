@@ -9,10 +9,21 @@ date_default_timezone_set('Asia/Tehran');
 class Auth
 {
     private $db;
-    private $secret_key = "REDACTED_OLD_JWT_SECRET";
+    private $secret_key;
 
     public function __construct($db = null)
     {
+        // کلیدِ امضایِ JWT از config/config.php (که .gitignore شده) خونده می‌شه،
+        // نه هاردکد توی سورس — قبلاً همین رشته از اولین کامیتِ پروژه بدونِ
+        // تغییر توی گیت commit شده بود؛ هرکسی به سورس دسترسی داشت می‌تونست
+        // توکنِ معتبر برایِ هر کاربری جعل کنه. اگه این مقدار تنظیم نشده باشه،
+        // عمداً fail می‌کنیم (نه fallback به یه مقدارِ پیش‌فرضِ ضعیف)
+        $config = require $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
+        if (empty($config['jwt_secret'])) {
+            throw new Exception('jwt_secret در config/config.php تنظیم نشده است');
+        }
+        $this->secret_key = $config['jwt_secret'];
+
         if ($db === null) {
             // اگر Database pass نشد، خودش ایجاد کن
             require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';

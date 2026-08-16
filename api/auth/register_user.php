@@ -74,8 +74,20 @@ try {
         exit;
     }
     
-    // حذف اعتبارسنجی regex برای حروف - فقط طول چک می‌شود
-    
+    // فقط حروف (فارسی/عربی/لاتین)، فاصله، و خط‌تیره مجازن — هر چیزِ دیگه‌ای
+    // (از جمله کاراکترهایِ HTML مثلِ < > " ' که قبلاً بدونِ این چک مستقیم
+    // توی دیتابیس ذخیره و بعداً بدونِ escape جاهایی نمایش داده می‌شدن) رد می‌شه
+    if (!preg_match('/^[\p{L}\s\-]+$/u', $first_name)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'نام فقط می‌تواند شامل حروف باشد']);
+        exit;
+    }
+    if (!preg_match('/^[\p{L}\s\-]+$/u', $last_name)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'نام خانوادگی فقط می‌تواند شامل حروف باشد']);
+        exit;
+    }
+
     $database = new Database();
     $db = $database->getConnection();
     

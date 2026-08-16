@@ -3005,11 +3005,21 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 box.innerHTML = `<div class="ra-user-empty">کاربری یافت نشد</div>`;
                 return;
             }
-            box.innerHTML = list.slice(0, 50).map(u => `
-                <div class="ra-user" onclick="rowPickUser(${u.id}, this, '${(u.first_name + ' ' + u.last_name).replace(/'/g, '')}')">
-                    <i class="bi bi-person-circle"></i>
-                    <span>${u.first_name} ${u.last_name}</span>
-                </div>`).join('');
+            // 🔒 قبلاً نامِ کاربر مستقیم توی innerHTML و توی رشته‌ی onclick
+            // تزریق می‌شد (هم XSS از طریقِ <span>، هم شکستنِ اتریبیوتِ
+            // onclick با یک نامِ حاویِ نقل‌قول) — با ساختِ عنصر و
+            // addEventListener، نام هیچ‌وقت به‌عنوانِ HTML/کدِ اجراشدنی
+            // پارس نمی‌شه، صرف‌نظر از این‌که چه کاراکترهایی داشته باشه
+            box.innerHTML = '';
+            list.slice(0, 50).forEach(u => {
+                const fullName = `${u.first_name} ${u.last_name}`;
+                const row = document.createElement('div');
+                row.className = 'ra-user';
+                row.innerHTML = '<i class="bi bi-person-circle"></i><span></span>';
+                row.querySelector('span').textContent = fullName;
+                row.addEventListener('click', () => rowPickUser(u.id, row, fullName));
+                box.appendChild(row);
+            });
         }
 
         function rowPickUser(id, el, name) {
