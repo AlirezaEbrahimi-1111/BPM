@@ -19,6 +19,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/period-engine.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
 /**
  * محاسبهٔ تعداد دوره‌های معوقه و باقی‌مانده (هم‌خوان با complete-recurring.php)
  * باقی‌مانده = معوقه − تکمیل‌شده − اعتبار بخشش
@@ -124,9 +125,7 @@ try {
     $isCreator  = ((int)$task['creator_id']  === $user_id);
     $isSection  = false;
     if (!$isAssignee && !$isCreator && !empty($task['activity_section'])) {
-        $s = $db->prepare("SELECT activity_section FROM users WHERE id = ?");
-        $s->execute([$user_id]);
-        $isSection = ($s->fetchColumn() === $task['activity_section']);
+        $isSection = us_userInSection($db, $user_id, $task['activity_section']);
     }
     // سوپرادمین و سرپرست سازمان هم مجازند
     if (!$isAssignee && !$isCreator && !$isSection) {

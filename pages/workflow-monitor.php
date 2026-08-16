@@ -1245,16 +1245,20 @@ if (!$__me) {
         let _hideCompletedFromUrl = false; // وقتی از داشبورد با template آمده‌ایم
         let currentSection = null; // key واحد انتخاب‌شده
         let onlyMyRoutines = false; // فیلتر: فقط روتین‌های ساخته‌ی من
-        // شناسه و واحدِ کاربر جاری (برای تشخیص نقش‌ها)
+        // شناسه و واحدهایِ کاربر جاری (برای تشخیص نقش‌ها) — چندواحدی: فهرستِ
+        // کامل، نه فقط واحدِ اصلی، وگرنه آیکنِ «این روتین مالِ واحدِ شماست» برایِ
+        // واحدِ دومِ کاربرانِ چندواحدی نشون داده نمی‌شه
         let currentUserId = null;
-        let currentUserSection = null;
+        let currentUserSections = [];
         try {
             const _uu = JSON.parse(localStorage.getItem('user_info') || '{}');
             currentUserId = parseInt(_uu.id) || null;
-            currentUserSection = _uu.activity_section || null;
+            currentUserSections = Array.isArray(_uu.activity_sections) && _uu.activity_sections.length
+                ? _uu.activity_sections
+                : (_uu.activity_section ? [_uu.activity_section] : []);
         } catch (e) {
             currentUserId = null;
-            currentUserSection = null;
+            currentUserSections = [];
         }
         let allRoutines = []; // لیست روتین‌های تعریف‌شده
         let allSections = []; // لیست واحدها
@@ -1615,9 +1619,9 @@ if (!$__me) {
             }
 
             // نقش ۲: مسئول مرحله (مرحله‌ی فعال مالِ واحد کاربر است)
-            const isStepOwner = currentUserSection !== null &&
+            const isStepOwner = currentUserSections.length > 0 &&
                 wf.current_section &&
-                wf.current_section === currentUserSection;
+                currentUserSections.includes(wf.current_section);
             if (isStepOwner) {
                 icons += `<span class="role-icon role-step" title="مرحلهٔ فعال این روتین به واحد شما مربوط است">
                             <i class="bi bi-pin-angle-fill"></i>
@@ -1855,10 +1859,12 @@ if (!$__me) {
                     </div>
                     <div class="meta-row">
                         <div>${
-                            step.assignee_type === 'user'
-                            ? '<span class="lbl">مسئول: </span>' + ((step.assignee_first_name || step.assignee_last_name)
-                                ? `${esc(step.assignee_first_name || '')} ${esc(step.assignee_last_name || '')}`.trim()
-                                : 'نامشخص')
+                            (step.assignee_first_name || step.assignee_last_name)
+                            // 🔒 اگه یه مسئولِ واقعی برایِ این مرحله resolve شده (چه از
+                            // پیش تعریف‌شده، چه با claim‌کردنِ یه مرحلهٔ سراسرِ واحد، چه
+                            // با ارجاعِ دستی به فردِ دیگه)، همیشه همونو نشون بده — نه
+                            // برچسبِ ثابتِ «بخش: X»یِ قالب که با واقعیتِ فعلی هماهنگ نیست
+                            ? '<span class="lbl">مسئول: </span>' + `${esc(step.assignee_first_name || '')} ${esc(step.assignee_last_name || '')}`.trim()
                             : step.assignee_type === 'creator'
                             ? '<span class="lbl">مسئول: </span>↩ ایجادکنندهٔ روتین'
                             : '<span class="lbl">بخش: </span>' + (step.activity_section ? getSectionLabel(step.activity_section) : '<em class="text-muted">مرحله حذف‌شده</em>')

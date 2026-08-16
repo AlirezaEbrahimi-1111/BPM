@@ -95,6 +95,13 @@ class Auth
             // حذف اطلاعات حساس
             unset($user['password']);
 
+            // 🆕 فهرستِ کاملِ واحدهایِ کاربر (نه فقطِ واحدِ اصلی) — کاربرانِ چندواحدی
+            // (مثلاً هم انبار هم فنی) بدونِ این، تویِ صفحاتِ سمتِ کلاینت فقط با
+            // واحدِ اصلی‌شون تشخیص داده می‌شن و دکمه‌هایِ اقدام برایِ واحدِ دومشون
+            // نمایش داده نمی‌شه — even though سرور خودش این چندواحدی رو درست چک می‌کنه.
+            require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
+            $user['activity_sections'] = us_getUserSections($this->db, $user['id']);
+
             return [
                 'success' => true,
                 'token' => $token,

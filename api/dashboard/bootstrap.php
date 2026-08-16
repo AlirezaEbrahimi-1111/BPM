@@ -36,7 +36,14 @@ $root = $_SERVER['DOCUMENT_ROOT'];
 
 $mine      = bpm_dashboard_capture($root . '/api/tasks/my-tasks.php');
 $delegated = bpm_dashboard_capture($root . '/api/tasks/delegated-tasks.php');
-$recent    = bpm_dashboard_capture($root . '/api/workflows/list.php');
+
+// «فعالیت‌های اخیر» در داشبورد باید فقط فعالیتِ خودِ کاربر باشه — حتی برایِ
+// مدیر/سوپرادمین — نه کلِ سازمان (که رفتارِ پیش‌فرضِ list.php برایِ مدیرانه،
+// مالِ صفحه‌ی جداگانه‌ی نظارتِ کامل workflow-monitor.php).
+$_GET['personal_only'] = '1';
+$recent = bpm_dashboard_capture($root . '/api/workflows/list.php');
+unset($_GET['personal_only']);
+
 $routines  = bpm_dashboard_capture($root . '/api/workflows/active-summary.php');
 
 // reports/top-delayed-users.php مخصوصِ کاربرانی‌ست که مجوزِ

@@ -1113,6 +1113,18 @@ if (!$__me) {
         <script src="<?= asset('/assets/js/undo-toast.js') ?>"></script>
         <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
         <script>
+            // کاربرِ چندواحدی: به‌جایِ مقایسه با فقط واحدِ اصلی (user.activity_section)،
+            // عضویت در فهرستِ کاملِ واحدها رو چک می‌کنه. اگه user_info قدیمی (قبل از
+            // اضافه‌شدنِ activity_sections) هنوز تویِ localStorage باشه، fallback به
+            // همون یک واحدِ قدیمی می‌زنه — بدونِ نیاز به لاگین‌ِ مجدد.
+            function userInSection(user, section) {
+                if (!user || !section) return false;
+                const list = Array.isArray(user.activity_sections) && user.activity_sections.length
+                    ? user.activity_sections
+                    : [user.activity_section];
+                return list.includes(section);
+            }
+
             let currentUser = null;
             let currentUserId;
             let taskData = null;
@@ -2923,7 +2935,7 @@ ${task.overdue_periods > 0 ? `
                 if (task.is_workflow_task == 1) {
                     const inSection = currentUser && (task.assignee_id ?
                         currentUser.id == task.assignee_id :
-                        currentUser.activity_section === task.current_step_section);
+                        userInSection(currentUser, task.current_step_section));
                     const isFinished = ['completed', 'approved', 'rejected'].includes(task.status);
                     const wfBtn = document.getElementById('requestDeadlineBtn');
                     if (wfBtn) {
@@ -3709,7 +3721,7 @@ ${task.overdue_periods > 0 ? `
                     const stepActive = (task.current_step_status === 'active');
                     const inSection = currentUser && (task.assignee_id ?
                         isAssignee :
-                        (stepActive && currentUser.activity_section === task.current_step_section));
+                        (stepActive && userInSection(currentUser, task.current_step_section)));
 
                     // ✅ چک 2: آیا این task در مرحله فعلی workflow است؟
                     // const isCurrentStage = task.current_stage_id === task.current_workflow_step;

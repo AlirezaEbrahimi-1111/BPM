@@ -50,6 +50,6 @@ require_once '../includes/version.php';
     <span class="company">یکتا همراهان ملک</span>
         <span> | </span>
         <span class="footer-version">
-            نسخه: ۵.۵
+            نسخه: ۵.۶
         </span>
 </div>

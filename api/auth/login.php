@@ -19,6 +19,7 @@ require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/sms.php';
 require_once __DIR__ . '/../../includes/sms_patterns.php';
 require_once __DIR__ . '/../../includes/audit-log.php';
+require_once __DIR__ . '/../../includes/user-sections.php';
 
 // ------------------- توابع کمکی (قبلی) -------------------
 // 🔒 قبلاً فقط بر اساسِ IP محدود می‌شد — مهاجمی با چند IP/پراکسیِ مختلف
@@ -223,6 +224,12 @@ try {
         logSecurityEvent($user['id'], 'login_success', null, ['method' => 'otp']);
 
         unset($user['password']);
+        // 🆕 فهرستِ کاملِ واحدهایِ کاربر (نه فقطِ واحدِ اصلی) — بدونِ این، کاربرانِ
+        // چندواحدی (مثلاً هم انبار هم فنی) تویِ صفحاتِ سمتِ کلاینت (مثلِ جزئیاتِ
+        // تسک) فقط با واحدِ اصلی‌شون تشخیص داده می‌شن و دکمه‌هایِ اقدام برایِ
+        // واحدِ دومشون نمایش داده نمی‌شه — even though سرور خودش (TaskManager،
+        // us_userInSection) از قبل چندواحدی رو درست چک می‌کنه.
+        $user['activity_sections'] = us_getUserSections($db, $user['id']);
         echo json_encode([
             'success' => true,
             'token' => $token,

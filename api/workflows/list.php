@@ -18,30 +18,47 @@ try {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
 
     $user_id = requireAuth();
     $user = getUserInfo($user_id);
     $org_id = $user['organization_id'];
 
-    // دسترسی: مدیریت/سرپرست همه را می‌بینند؛ بقیه فقط روتین‌هایی که مرحلهٔ فعالشان مالِ واحد اوست
-    $role      = $user['role'] ?? 'employee';
-    $u_section = $user['activity_section'] ?? null;
-    $isManager = in_array((int)$user_id, getSuperAdminIds(), true) || in_array($role, ['management', 'supervisor']);
+    // دسترسی: مدیریت/سرپرست همه را می‌بینند؛ بقیه فقط روتین‌هایی که مرحلهٔ فعالشان مالِ واحد اوست.
+    // ⚠️ personal_only=1 این قاعده رو برایِ مدیر/سرپرست/سوپرادمین هم کنار می‌ذاره —
+    // برایِ تبِ «فعالیت‌های اخیر»ِ خودِ کاربر در داشبورد (که نباید کلِ سازمان رو نشون بده)،
+    // برخلافِ صفحه‌ی نظارتِ کاملِ روتین‌ها (workflow-monitor.php) که همون دیدِ کاملِ
+    // مدیریتی رو عمداً می‌خواد و بدونِ این پارامتر صدا می‌زنه.
+    $role         = $user['role'] ?? 'employee';
+    $personalOnly = (($_GET['personal_only'] ?? '') === '1');
+    $isManager    = !$personalOnly && (in_array((int)$user_id, getSuperAdminIds(), true) || in_array($role, ['management', 'supervisor']));
 
     $visibilityCond = '';
     $execParams = ['org_id' => $org_id];
     if (!$isManager) {
+        // 🆕 عضویت در هر یک از واحدهایِ کاربر (چندواحدی) — نه فقط واحدِ اصلی
+        $userSections = us_getUserSections($db, $user_id);
+        if (empty($userSections)) {
+            $secCond = 'NULL';
+        } else {
+            $secKeys = [];
+            foreach ($userSections as $i => $sec) {
+                $key = "usec{$i}";
+                $secKeys[] = ":{$key}";
+                $execParams[$key] = $sec;
+            }
+            $secCond = implode(',', $secKeys);
+        }
         $visibilityCond = " AND (
             EXISTS (
                 SELECT 1 FROM workflow_instance_steps wisV
                 JOIN workflow_steps wsV ON wisV.step_id = wsV.id
                 WHERE wisV.instance_id = wi.id
                   AND wisV.status = 'active'
-                  AND wsV.activity_section = :usec
+                  AND wsV.activity_section IN ($secCond)
             )
             OR wi.created_by = :ucreator
         )";
-        $execParams['usec'] = $u_section;
         $execParams['ucreator'] = $user_id;
     }
 
@@ -100,16 +117,21 @@ try {
                     ) THEN 1
                     ELSE 0
                 END as is_delayed,
-                (SELECT u.first_name 
+                -- 🔒 مسئولِ واقعیِ الان: تسکِ زیرینِ مرحله رو چک می‌کنه (اگه claim یا
+                -- به فردِ دیگه‌ای ارجاع شده، assignee_id واقعیِ اونه)، نه یه کاربرِ
+                -- دلبخواه که واحدش با واحدِ قالب یکی بوده (باگِ قبلی)
+                (SELECT u.first_name
                  FROM workflow_instance_steps wis
                  JOIN workflow_steps ws ON wis.step_id = ws.id
-                 LEFT JOIN users u ON ws.activity_section = u.activity_section
+                 LEFT JOIN tasks t ON t.id = wis.task_id
+                 LEFT JOIN users u ON u.id = COALESCE(t.assignee_id, CASE WHEN ws.assignee_type = 'user' THEN ws.assignee_user_id END)
                  WHERE wis.instance_id = wi.id AND wis.status = 'active'
                  LIMIT 1) as assignee_first_name,
-                (SELECT u.last_name 
+                (SELECT u.last_name
                  FROM workflow_instance_steps wis
                  JOIN workflow_steps ws ON wis.step_id = ws.id
-                 LEFT JOIN users u ON ws.activity_section = u.activity_section
+                 LEFT JOIN tasks t ON t.id = wis.task_id
+                 LEFT JOIN users u ON u.id = COALESCE(t.assignee_id, CASE WHEN ws.assignee_type = 'user' THEN ws.assignee_user_id END)
                  WHERE wis.instance_id = wi.id AND wis.status = 'active'
                  LIMIT 1) as assignee_last_name
             FROM workflow_instances wi
