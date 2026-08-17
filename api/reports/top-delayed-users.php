@@ -122,20 +122,32 @@ try {
     // ══════════════════════════════════════════════
     //  ۱) کارهای مقطعی تأخیردار
     // ══════════════════════════════════════════════
+    // 🔒 موعدِ واقعی، due_date خام نیست — بزرگ‌ترینِ due_date/deadline/
+    // original_deadline است (دقیقاً مثلِ effectiveDue در task-filters.js
+    // و ORDER BY در my-tasks.php)؛ چون تمدیدِ موعد فقط ستونِ deadline رو
+    // آپدیت می‌کنه (api/tasks/approve-deadline.php)، نه due_date. بدونِ این،
+    // کاری که موعدش تمدید شده هنوز بر اساسِ due_date قدیمی‌اش «تأخیردار»
+    // حساب می‌شه — برایِ همیشه، چون due_date دیگه هیچ‌وقت آپدیت نمی‌شه
     $stmt = $db->prepare("
-        SELECT id, assignee_id, activity_section, due_date
+        SELECT id, assignee_id, activity_section, due_date, deadline, original_deadline
         FROM tasks
         WHERE organization_id = ?
           AND is_deleted = 0
           AND task_type = 'periodic'
-          AND due_date < ?
+          AND (due_date IS NOT NULL OR deadline IS NOT NULL OR original_deadline IS NOT NULL)
+          AND GREATEST(
+                COALESCE(due_date, '1000-01-01'),
+                COALESCE(deadline, '1000-01-01'),
+                COALESCE(original_deadline, '1000-01-01')
+              ) < ?
           AND status NOT IN ('completed', 'approved', 'stopped', 'rejected')
     ");
     $stmt->execute([$org_id, $today]);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
+        $effectiveDue = max(array_filter([$t['due_date'], $t['deadline'], $t['original_deadline']]));
         $k = $bucket($t['assignee_id'], $t['activity_section']);
         $acc[$k]['periodic']++;
-        $acc[$k]['delay_days'] += calcPeriodicDelayWorkingDays($t['due_date'], $today, $holidays);
+        $acc[$k]['delay_days'] += calcPeriodicDelayWorkingDays(substr($effectiveDue, 0, 10), $today, $holidays);
     }
 
     // ══════════════════════════════════════════════
