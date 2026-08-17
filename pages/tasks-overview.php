@@ -245,7 +245,7 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                 },
                 cellRenderer: p => {
                     const d = [p.data.due_date, p.data.deadline, p.data.original_deadline].filter(d => d).sort().pop();
-                    return daysLeft(d, p.data.status);
+                    return daysLeft(d, p.data.status, p.data.working_days_delayed);
                 }
             },
             {
@@ -724,12 +724,18 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
             return `<span class="badge type-${t}"><i class="bi bi-${i}"></i>${l}</span>`;
         }
 
-        function daysLeft(d, status) {
+        function daysLeft(d, status, workingDaysDelayed) {
             if (status === 'completed' || status === 'approved')
                 return '<span class="days-badge days-normal">تکمیل</span>';
             if (!d) return '<span class="days-badge">-</span>';
             const diff = Math.ceil((new Date(d).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5);
-            if (diff < 0) return `<span class="days-badge days-overdue">${toPersian(-diff)} روز تاخیر</span>`;
+            // 🔒 تأخیر بر اساسِ روزِ کاری — از سرور (enrichTaskDates/
+            // calcPeriodicDelayWorkingDays)، نه اختلافِ تقویمیِ خام؛ چون همین
+            // تفاوت باعث می‌شد این ستون با ویجتِ داشبورد عددِ متفاوتی نشون بده
+            if (diff < 0) {
+                const wd = Math.max(1, workingDaysDelayed || 0);
+                return `<span class="days-badge days-overdue">${toPersian(wd)} روز کاری تاخیر</span>`;
+            }
             if (diff === 0) return `<span class="days-badge days-today">امروز</span>`;
             if (diff <= 3) return `<span class="days-badge days-soon">${toPersian(diff)} روز دیگر</span>`;
             return `<span class="days-badge days-normal">${toPersian(diff)} روز</span>`;
