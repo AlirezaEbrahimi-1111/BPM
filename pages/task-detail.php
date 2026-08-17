@@ -228,6 +228,7 @@ if (!$__me) {
             display: flex;
             align-items: center;
             gap: 6px;
+            direction: ltr !important;
         }
 
         .chk-note-file label {
@@ -249,6 +250,7 @@ if (!$__me) {
             gap: 8px;
             flex: 1 1 50%;
             max-width: 50%;
+            direction: ltr;
         }
 
         .chk-note-actions .btn {
@@ -1879,9 +1881,9 @@ if (!$__me) {
                                        accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg">
                             </div>
                             <div class="chk-note-actions">
-                                <button class="btn btn-link btn-sm text-muted" onclick="cancelDoneNote(${item.id})">انصراف</button>
-                                <button class="btn btn-link btn-sm" onclick="saveDoneNote(${item.id}, false)">بدون یادداشت</button>
                                 <button class="btn btn-primary btn-sm" onclick="saveDoneNote(${item.id}, true)">ثبت و انجام شد</button>
+                                <button class="btn btn-link btn-sm" onclick="saveDoneNote(${item.id}, false)">بدون یادداشت</button>
+                                <button class="btn btn-link btn-sm text-muted" onclick="cancelDoneNote(${item.id})">انصراف</button>
                             </div>
                         </div>
                     </div>` : ''}
