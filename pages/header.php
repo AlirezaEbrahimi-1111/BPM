@@ -54,6 +54,17 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         right: auto !important;
         margin: 0 !important;
     }
+
+    /* نام و نام‌خانوادگیِ کاربرِ جاری، کنارِ نامِ شرکت — کمی ریزتر */
+    #headerUserFullName {
+        font-size: .8em;
+        font-weight: 500;
+        opacity: .85;
+    }
+
+    .header-name-divider {
+        margin: 0 8px !important;
+    }
 </style>
 <!-- بستن فوری drawer قبل از render — جلوگیری از flash -->
 <script>
@@ -75,6 +86,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         <!-- نام سایت در سمت راست -->
         <a class="navbar-brand ms-auto" href="../../pages/dashboard-manager.php">
             <span id="userName" class="me-2"><?php echo isset($_SESSION['organization_name']) ? htmlspecialchars($_SESSION['organization_name']) : 'کاربر جاری'; ?></span>
+            <?php
+            $headerFullName = trim(($_SESSION['user_name'] ?? '') . ' ' . ($_SESSION['user_last_name'] ?? ''));
+            if ($headerFullName !== ''):
+            ?>
+            <span class="navbar-divider header-name-divider"></span>
+            <span id="headerUserFullName"><?php echo htmlspecialchars($headerFullName); ?></span>
+            <?php endif; ?>
         </a>
 
         <!-- دکمه همبرگر سفارشی موبایل -->

@@ -21,6 +21,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
 
 try {
     // ۱) احراز هویت
@@ -39,6 +40,27 @@ try {
         exit;
     }
 
+    // 🆕 scope=mine → فقط روتین‌هایی که مرحلهٔ فعلاً فعالشان به یکی از
+    // واحدهای کاربر جاری تعلق دارد (نه کلِ سازمان)
+    $scope = (($_GET['scope'] ?? 'all') === 'mine') ? 'mine' : 'all';
+
+    $params = [$org_id];
+    $sectionFilterSql = '';
+    if ($scope === 'mine') {
+        $sections = us_getUserSections($db, $user_id);
+        $ph = us_placeholders($sections);
+        $sectionFilterSql = "
+               AND EXISTS (
+                   SELECT 1
+                   FROM workflow_instance_steps wis
+                   JOIN workflow_steps ws2 ON ws2.id = wis.step_id
+                   WHERE wis.instance_id = wi.id
+                     AND wis.status = 'active'
+                     AND ws2.activity_section IN ($ph)
+               )";
+        $params = array_merge($params, $sections);
+    }
+
     // ۳) روتین‌ها را با تعداد نمونه‌های فعالشان بگیر
     //    JOIN بین قالب‌ها و نمونه‌های فعال، گروه‌بندی بر اساس قالب
     $sql = "SELECT
@@ -50,13 +72,14 @@ try {
                     ON wi.template_id = wt.id
                    AND wi.is_deleted = 0
                    AND wi.status IN ('in_progress', 'delayed')
-            WHERE wt.organization_id = :org_id
+            WHERE wt.organization_id = ?
+                  $sectionFilterSql
             GROUP BY wt.id, wt.name
             HAVING active_count > 0
             ORDER BY active_count DESC, wt.name ASC";
 
     $stmt = $db->prepare($sql);
-    $stmt->execute(['org_id' => $org_id]);
+    $stmt->execute($params);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // ۴) تبدیل نوع عددها (تا در JSON عدد باشند نه رشته)

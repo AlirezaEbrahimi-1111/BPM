@@ -399,10 +399,13 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .filter-chip {
+            display: flex;
+            align-items: center;
+            gap: 4px;
             border: 1px solid var(--border-soft);
             background: var(--dm-head-bg);
             border-radius: var(--radius-sm);
-            padding: 5px 14px;
+            padding: 5px 10px 5px 14px;
             font-size: .72rem;
             color: var(--text-strong);
             font-weight: 700;
@@ -421,6 +424,71 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             font-weight: 600;
         }
 
+        .filter-pin {
+            font-size: .702rem;
+            color: var(--gray-300);
+            opacity: 0;
+            transition: opacity .15s, color .15s;
+            padding: 2px;
+            border-radius: 4px;
+        }
+
+        .filter-chip:hover .filter-pin {
+            opacity: 1;
+        }
+
+        .filter-chip.active .filter-pin {
+            color: rgba(255, 255, 255, .7);
+        }
+
+        .filter-pin:hover {
+            color: var(--gray-600);
+            background: var(--gray-100);
+        }
+
+        .filter-chip.active .filter-pin:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, .2);
+        }
+
+        .filter-pin.pinned {
+            opacity: 1;
+            color: var(--warning);
+        }
+
+        .filter-chip.active .filter-pin.pinned {
+            color: var(--warning);
+        }
+
+        .routine-filters {
+            display: flex;
+            gap: 6px;
+            padding: 0 14px 12px;
+        }
+
+        .routine-filter-chip {
+            border: 1px solid var(--border-soft);
+            background: var(--dm-head-bg);
+            border-radius: var(--radius-sm);
+            padding: 5px 14px;
+            font-size: .72rem;
+            color: var(--text-strong);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .15s;
+        }
+
+        .routine-filter-chip:hover {
+            background: var(--dm-head-bg-hover);
+        }
+
+        .routine-filter-chip.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            font-weight: 600;
+        }
+
         .task-table {
             width: 100%;
             border-collapse: collapse;
@@ -430,13 +498,13 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         .task-table th:nth-child(1),
         .task-table td:nth-child(1) {
-            width: 42%;
+            width: 55%;
         }
 
         /* عنوان */
         .task-table th:nth-child(2),
         .task-table td:nth-child(2) {
-            width: 26%;
+            width: 13%;
         }
 
         /* مهلت  */
@@ -468,12 +536,12 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         .task-table thead th.col-status {
             text-align: center;
-            width: 130px;
+            width: 117px;
         }
 
         .task-table thead th.col-ops {
             text-align: center;
-            width: 90px;
+            width: 81px;
         }
 
         .task-table tbody tr {
@@ -2157,56 +2225,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             background: color-mix(in srgb, #2563eb 25%, transparent);
         }
 
-        /* ═══ استثنا: فقط در این صفحه، هدر بالا بنفش با متن/آیکون سفید ═══ */
-        body .navbar {
-            background: var(--pm-purple) !important;
-        }
-
-        /* در تمِ تاریک، بنفشِ روشنِ برند کنارِ پس‌زمینهٔ تقریباً مشکیِ صفحه
-           زننده/نامتناسب دیده می‌شد — طبقِ تأییدِ کاربر، به‌جایِ یک بنفشِ
-           سفارشیِ دیگه، همون توکنِ استانداردِ تیره‌ی کل سایت (var(--surface))
-           استفاده می‌شه تا سربرگ کاملاً با بقیه‌ی صفحه یکدست باشه */
-        :root[data-theme="dark"] body .navbar {
-            background: var(--surface) !important;
-        }
-
-        body .navbar-brand {
-            background: none !important;
-            -webkit-text-fill-color: #fff !important;
-            color: #fff !important;
-        }
-
-        body .navbar #userName {
-            color: #fff !important;
-        }
-
-        body .navbar .nav-link {
-            color: #fff !important;
-        }
-
-        body .navbar .nav-link:hover {
-            color: #F4EFFF !important;
-        }
-
-        body .navbar .settings-btn i,
-        body .navbar .settings-btn svg,
-        body .navbar .notification-bell,
-        body .navbar .announcement-bell {
-            color: #fff !important;
-            stroke: #fff !important;
-        }
-
-        body .navbar .navbar-divider {
-            background: rgba(255, 255, 255, .35);
-        }
-
-        body .navbar .navbar-toggler-icon {
-            filter: brightness(0) invert(1);
-        }
-
-        body .mobile-menu-btn .hamburger-line {
-            background: #fff !important;
-        }
+        /* رنگ/آیکون‌هایِ سفیدِ هدر اکنون یک قاعدهٔ سراسری در custom.css است
+           (برایِ همهٔ صفحات، نه فقط داشبورد) — این بلاک دیگه لازم نیست. */
     </style>
 
 
@@ -2281,9 +2301,18 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     </button>
                     </div>
 <div class="dash-filters">
-                        <button class="filter-chip active" data-filter="all">همه</button>
-                        <button class="filter-chip" data-filter="today">امروز</button>
-                        <button class="filter-chip" data-filter="overdue">عقب افتاده</button>
+                        <button class="filter-chip active" data-filter="all">
+                            <span>همه</span>
+                            <i class="bi bi-pin-angle filter-pin" data-pin="all"></i>
+                        </button>
+                        <button class="filter-chip" data-filter="today">
+                            <span>امروز</span>
+                            <i class="bi bi-pin-angle filter-pin" data-pin="today"></i>
+                        </button>
+                        <button class="filter-chip" data-filter="overdue">
+                            <span>عقب افتاده</span>
+                            <i class="bi bi-pin-angle filter-pin" data-pin="overdue"></i>
+                        </button>
                     </div>
 
                 </div>
@@ -2315,6 +2344,10 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     <a href="workflow-monitor.php" class="dash-see-all">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
                     </a>
+                </div>
+                <div class="routine-filters">
+                    <button class="routine-filter-chip active" data-scope="all">همه واحدها</button>
+                    <button class="routine-filter-chip" data-scope="mine">واحد من</button>
                 </div>
                 <div class="dash-card-body">
                     <div id="routineList">
@@ -2495,6 +2528,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         const LS_STARRED = 'mgrDash.starred';
         const LS_DEFTAB = 'mgrDash.defaultTab';
         const LS_DEFTAB_DATE = 'mgrDash.defaultTabDate';
+        const LS_DEFFILTER = 'mgrDash.defaultFilter';
+        const LS_DEFFILTER_DATE = 'mgrDash.defaultFilterDate';
         const currentUser = JSON.parse(localStorage.getItem('user_info') || '{}');
 
         let currentTab = 'mine';
@@ -2626,6 +2661,47 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 p.className = `bi ${on ? 'bi-pin-angle-fill' : 'bi-pin-angle'} tab-pin${on ? ' pinned' : ''}`;
                 p.dataset.pin = key;
                 p.title = on ? 'تب پیش‌فرض (برای لغو کلیک کنید)' : 'تعیین به‌عنوان تب پیش‌فرض';
+            });
+        }
+
+        /* ───────── فیلترِ پیش‌فرض (پین) — فقط تا پایانِ همون روز معتبره ───────── */
+        function clearExpiredFilterPin() {
+            const savedDate = localStorage.getItem(LS_DEFFILTER_DATE);
+            if (savedDate && savedDate !== todayLocalStr()) {
+                localStorage.removeItem(LS_DEFFILTER);
+                localStorage.removeItem(LS_DEFFILTER_DATE);
+                return true;
+            }
+            return false;
+        }
+
+        function getDefaultFilter() {
+            clearExpiredFilterPin();
+            return localStorage.getItem(LS_DEFFILTER) || 'all';
+        }
+
+        function toggleFilterPin(filterKey, ev) {
+            ev.stopPropagation();
+            clearExpiredFilterPin();
+            if (localStorage.getItem(LS_DEFFILTER) === filterKey) {
+                localStorage.removeItem(LS_DEFFILTER);
+                localStorage.removeItem(LS_DEFFILTER_DATE);
+            } else {
+                localStorage.setItem(LS_DEFFILTER, filterKey);
+                localStorage.setItem(LS_DEFFILTER_DATE, todayLocalStr());
+            }
+            refreshFilterPins();
+        }
+
+        function refreshFilterPins() {
+            clearExpiredFilterPin();
+            const def = localStorage.getItem(LS_DEFFILTER);
+            document.querySelectorAll('.filter-pin').forEach(p => {
+                const key = p.dataset.pin;
+                const on = (def === key);
+                p.className = `bi ${on ? 'bi-pin-angle-fill' : 'bi-pin-angle'} filter-pin${on ? ' pinned' : ''}`;
+                p.dataset.pin = key;
+                p.title = on ? 'فیلتر پیش‌فرض (برای لغو کلیک کنید)' : 'تعیین به‌عنوان فیلتر پیش‌فرض';
             });
         }
 
@@ -2761,10 +2837,13 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     return true;
                 });
             }
-            return (store[currentTab] || []).map(t => ({
+            const list = (store[currentTab] || []).map(t => ({
                 ...t,
                 _src: currentTab
             }));
+            // در «کارهای من» موارد تکمیل‌شده/تأییدشده دیگر نمایش داده نشوند
+            if (currentTab === 'mine') return list.filter(t => !TF.isDone(t));
+            return list;
         }
 
         function applyFilter(list) {
@@ -3243,6 +3322,15 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             location.href = 'bottleneck-report.php?stage=' + encodeURIComponent(stageKey);
         }
         /* ───────── فرآیندهای جاری ───────── */
+        let routineScope = 'all';
+
+        async function loadRoutines(scope) {
+            const box = document.getElementById('routineList');
+            box.innerHTML = `<div class="dash-loading"><span class="spinner-border spinner-border-sm" role="status"></span>در حال بارگذاری…</div>`;
+            const data = await apiGet('../api/workflows/active-summary.php?scope=' + encodeURIComponent(scope));
+            renderRoutines(data);
+        }
+
         function renderRoutines(data) {
             const box = document.getElementById('routineList');
             const list = (data && data.success) ? (data.routines || []) : [];
@@ -3373,6 +3461,9 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             document.querySelectorAll('.tab-pin').forEach(pin =>
                 pin.addEventListener('click', ev => togglePin(pin.dataset.pin, ev)));
 
+            document.querySelectorAll('.filter-pin').forEach(pin =>
+                pin.addEventListener('click', ev => toggleFilterPin(pin.dataset.pin, ev)));
+
             document.querySelectorAll('.filter-chip').forEach(chip => {
                 chip.addEventListener('click', () => {
                     currentFilter = chip.dataset.filter;
@@ -3389,7 +3480,21 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 location.href = 'delegated-tasks.php?filter=overdue';
             });
 
+            document.querySelectorAll('.routine-filter-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    if (chip.classList.contains('active')) return;
+                    routineScope = chip.dataset.scope;
+                    document.querySelectorAll('.routine-filter-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    loadRoutines(routineScope);
+                });
+            });
+
             refreshPins();
+            refreshFilterPins();
+            currentFilter = getDefaultFilter();
+            document.querySelectorAll('.filter-chip').forEach(c =>
+                c.classList.toggle('active', c.dataset.filter === currentFilter));
             switchTab(getDefaultTab());
             loadAll();
         });
@@ -4624,7 +4729,18 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             grid.style.gridTemplateColumns = base.cols;
             grid.style.gridTemplateRows = base.rows;
         }
+
+        function showNewTaskModal() {
+            window.location.href = 'create-task.php';
+        }
     </script>
+
+    <div class="quick-actions">
+        <button class="fab" onclick="showNewTaskModal()" title="کار جدید">
+            <i class="bi bi-plus"></i>
+        </button>
+    </div>
+
     <?php include 'footer.php'; ?>
 
 </body>

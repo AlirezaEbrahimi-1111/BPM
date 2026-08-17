@@ -126,15 +126,76 @@ h6 {
    3. ناوبری (Navbar)
 ======================================== */
 .navbar {
-    background: var(--surface) !important;
+    background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 100%) !important;
     box-shadow: 0 4px 20px rgba(135, 92, 242, 0.08);
     border-bottom: 1px solid rgba(135, 92, 242, 0.1);
     padding: 0.4rem 0 !important;
 }
 
+body .navbar-brand,
+body .navbar #userName,
+body #headerUserFullName,
+body .navbar .nav-link {
+    color: #fff !important;
+}
+
+body .navbar-brand {
+    background: none !important;
+    -webkit-text-fill-color: #fff !important;
+}
+
+body .navbar .nav-link:hover {
+    color: #F4EFFF !important;
+}
+
+body .navbar .settings-btn i,
+body .navbar .settings-btn svg,
+body .navbar .notification-bell,
+body .navbar .announcement-bell {
+    color: #fff !important;
+    stroke: #fff !important;
+}
+
+body .navbar .navbar-divider {
+    background: rgba(255, 255, 255, .35);
+}
+
+body .navbar .navbar-toggler-icon {
+    filter: brightness(0) invert(1);
+}
+
+body .mobile-menu-btn .hamburger-line {
+    background: #fff !important;
+}
+
 :root[data-theme="dark"] .navbar {
+    background: var(--surface) !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, .35);
     border-bottom: 1px solid var(--border-soft);
+}
+
+:root[data-theme="dark"] body .navbar-brand,
+:root[data-theme="dark"] body .navbar #userName,
+:root[data-theme="dark"] body #headerUserFullName,
+:root[data-theme="dark"] body .navbar .nav-link {
+    color: var(--text-strong) !important;
+    -webkit-text-fill-color: var(--text-strong) !important;
+}
+
+:root[data-theme="dark"] body .navbar .settings-btn i,
+:root[data-theme="dark"] body .navbar .settings-btn svg,
+:root[data-theme="dark"] body .navbar .notification-bell,
+:root[data-theme="dark"] body .navbar .announcement-bell {
+    color: var(--icon-accent) !important;
+    stroke: var(--icon-accent) !important;
+}
+
+:root[data-theme="dark"] body .navbar .navbar-toggler-icon {
+    filter: none;
+}
+
+:root[data-theme="dark"] body .mobile-menu-btn .hamburger-line {
+    background: var(--text-strong) !important;
 }
 
 /* متن و آیکنِ لینک‌های هدر در تم تاریک — روشن‌تر از --text-muted عمومی،
