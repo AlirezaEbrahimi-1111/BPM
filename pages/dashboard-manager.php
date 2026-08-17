@@ -2756,12 +2756,22 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             // یک درخواستِ باندل‌شده جایگزین شد تا صفِ اتصالِ HTTP/1.1 کم بشه
             // (بدونِ تغییرِ منطقِ خودِ هر بخش، فقط جمع‌شدنِ درخواست‌ها)
             const bundle = await apiGet('../api/dashboard/bootstrap.php');
-            const { mine, delegated, recent, routines, topDelayed } = bundle || {};
+            const {
+                mine, delegated, recent, routines, topDelayed,
+                orgDelegated, orgBottlenecks, canViewOrgTasks, canMonitorAllWorkflows
+            } = bundle || {};
 
             store.mine = pickList(mine);
             store.delegated = pickList(delegated);
             store.recent = pickList(recent);
             store.topDelayed = (topDelayed && topDelayed.users) ? topDelayed.users : [];
+            // 🆕 برایِ مدیرانی که مجوزِ دیدنِ کلِ سازمان دارن، این دو ویجت باید
+            // سازمانی باشن نه فقط شخصی — null یعنی «مجوز نداره، از دادهٔ شخصی
+            // استفاده کن» (نه اینکه سازمان واقعاً خالیه)
+            store.orgDelegated = canViewOrgTasks ? pickList(orgDelegated) : null;
+            store.orgBottlenecks = canMonitorAllWorkflows
+                ? ((orgBottlenecks && orgBottlenecks.bottlenecks) || [])
+                : null;
             tasksDataReady = true;
 
             renderStats();
@@ -3280,13 +3290,40 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             const box = document.getElementById('bottleneckList');
             if (!box) return;
 
-            // کل روتین‌های فعال (تکمیل‌نشده، حذف‌نشده) — مخرج درصد
+            const colors = ['#dc2626', '#ea580c', '#d97706', '#ca8a04', '#7e55b3'];
+
+            // 🆕 مدیرِ دارایِ مجوزِ monitor_all_workflows → مستقیماً از
+            // api/reports/bottleneck-report.php (سازمانی، از قبل گروه‌بندی‌شده
+            // بر اساسِ قالب+مرحله) — نه از لیستِ شخصیِ فعالیت‌هایِ اخیر
+            if (store.orgBottlenecks !== null) {
+                const groups = store.orgBottlenecks; // [{step_name, template_id, count, ...}]
+                if (!groups.length) {
+                    box.innerHTML = `<div class="dash-empty"><i class="bi bi-check2-circle"></i>گلوگاهی یافت نشد</div>`;
+                    return;
+                }
+                const totalStuck = groups.reduce((s, g) => s + g.count, 0) || 1;
+                const sorted = [...groups].sort((a, b) => b.count - a.count);
+                box.innerHTML = sorted.map((g, i) => {
+                    const pct = Math.round((g.count / totalStuck) * 100);
+                    const key = `${g.template_id || 0}::${g.step_name}`;
+                    return `
+                    <div class="routine-row" onclick="showBottleneckDetail('${escJsAttr(key)}')">
+                        <div class="routine-name" title="${esc(g.step_name)}">${esc(g.step_name)}</div>
+                        <div class="routine-bar-wrap">
+                            <div class="routine-bar" style="width:${pct}%; background:${colors[i % colors.length]};"></div>
+                        </div>
+                        <div class="routine-count">${toFa(pct)}٪</div>
+                    </div>`;
+                }).join('');
+                return;
+            }
+
+            // مسیرِ قبلی (بدونِ مجوزِ سازمانی) — از رویِ فعالیت‌هایِ شخصیِ اخیر
             const activeRoutines = (store.recent || []).filter(w =>
                 w.status !== 'completed' && w.status !== 'cancelled'
             );
             const totalActive = activeRoutines.length || 1;
 
-            // روتین‌های تأخیردار، بر اساس (قالب + مرحله)
             const delayed = activeRoutines.filter(w => w.is_delayed == 1 && w.current_stage_name);
 
             if (!delayed.length) {
@@ -3305,9 +3342,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 groups[key].count++;
             });
 
-            // مرتب‌سازی نزولی بر اساس تعداد
             const sorted = Object.values(groups).sort((a, b) => b.count - a.count);
-            const colors = ['#dc2626', '#ea580c', '#d97706', '#ca8a04', '#7e55b3'];
 
             box.innerHTML = sorted.map((g, i) => {
                 const pct = Math.round((g.count / totalActive) * 100);
@@ -3321,7 +3356,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 </div>`;
             }).join('');
         }
-        
+
         function showBottleneckDetail(stageKey) {
             // به صفحهٔ گلوگاه برو و همان آکاردئون را باز کن
             location.href = 'bottleneck-report.php?stage=' + encodeURIComponent(stageKey);
@@ -3409,7 +3444,10 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         function renderDelayed() {
             const box = document.getElementById('delayedList');
-            const list = store.delegated.filter(t => TF.isOverdue(t, currentUser));
+            // 🆕 مدیرِ دارایِ مجوزِ view_all_org_tasks → کارهایِ واگذارشده‌ی
+            // تأخیردارِ کلِ سازمان، نه فقط کارهایی که خودش شخصاً واگذار کرده
+            const source = store.orgDelegated !== null ? store.orgDelegated : store.delegated;
+            const list = source.filter(t => TF.isOverdue(t, currentUser));
 
             if (!list.length) {
                 box.innerHTML = `<div class="dash-empty">

@@ -100,9 +100,18 @@ function getPermissionMatrix(): array
         //    به زیرمجموعه از طریق canManageTargetUser() انجام می‌شود،
         //    نه این جدول. هرجا این اجازه استفاده می‌شود، باید حتماً
         //    با canManageTargetUser() ترکیب شود، نه isSameOrganization().
+        //
+        // ⚠️ 'view_org_dashboard_reports' عمداً به‌جایِ 'view_all_org_tasks'/
+        //    'monitor_all_workflows' اضافه شد: اون دو مجوز به چند endpoint
+        //    دیگه هم دسترسی می‌دن که برایِ نقشِ مدیر مناسب نیستن (مثلاً
+        //    api/admin/routines-all.php که فیلترِ organization_id نداره و
+        //    دادهٔ همهٔ سازمان‌ها رو برمی‌گردونه). این مجوزِ جدید فقط
+        //    گزارش‌های داشبورد (کارهایِ واگذارشده‌ی تأخیردار + گلوگاه‌ها) رو
+        //    برایِ کلِ سازمانِ خودِ مدیر باز می‌کنه، نه چیزِ دیگه‌ای.
         'manager' => [
             'manage_users',
             'view_section_tasks',
+            'view_org_dashboard_reports',
             'create_task',
             'create_recurring_task',
             'create_workflow',

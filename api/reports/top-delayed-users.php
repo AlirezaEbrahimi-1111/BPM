@@ -46,7 +46,11 @@ try {
 
     // ── دسترسی: باید بتواند کارهای کل سازمان را ببیند ──
     $me = loadUserForPermissions($db, $user_id);
-    requirePermission($me, 'view_all_org_tasks');
+    if (!hasPermission($me, 'view_all_org_tasks') && !hasPermission($me, 'view_org_dashboard_reports')) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 
     $org_id = (int) $me['organization_id'];
     if ($org_id <= 0) {

@@ -2742,11 +2742,14 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             // قبلاً این ۴ فراخوانی جدا با Promise.all انجام می‌شد — با یک
             // درخواستِ باندل‌شده جایگزین شد تا صفِ اتصالِ HTTP/1.1 کم بشه
             const bundle = await apiGet('../api/dashboard/bootstrap.php');
-            const { mine, delegated, recent, routines } = bundle || {};
+            const { mine, delegated, recent, routines, orgDelegated, canViewOrgTasks } = bundle || {};
 
             store.mine = pickList(mine);
             store.delegated = pickList(delegated);
             store.recent = pickList(recent);
+            // 🆕 اگر این کاربر (مثلاً مالکِ سازمان) مجوزِ دیدنِ کلِ سازمان رو
+            // داشته باشه، مثلِ داشبوردِ مدیر سازمانی نشون بده
+            store.orgDelegated = canViewOrgTasks ? pickList(orgDelegated) : null;
             tasksDataReady = true;
 
             renderStats();
@@ -3286,7 +3289,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         function renderDelayed() {
             const box = document.getElementById('delayedList');
-            const list = store.delegated.filter(t => TF.isOverdue(t, currentUser));
+            const source = store.orgDelegated !== null ? store.orgDelegated : store.delegated;
+            const list = source.filter(t => TF.isOverdue(t, currentUser));
 
             if (!list.length) {
                 box.innerHTML = `<div class="dash-empty">

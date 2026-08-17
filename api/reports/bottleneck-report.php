@@ -31,7 +31,11 @@ try {
     $db = $database->getConnection();
 
     $me = loadUserForPermissions($db, $user_id);
-    requirePermission($me, 'monitor_all_workflows');
+    if (!hasPermission($me, 'monitor_all_workflows') && !hasPermission($me, 'view_org_dashboard_reports')) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 
     $orgId = (int) $me['organization_id'];
 

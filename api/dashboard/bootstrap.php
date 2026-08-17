@@ -56,18 +56,44 @@ $db = $database->getConnection();
 $me = loadUserForPermissions($db, $user_id);
 $db = null;
 
-if (hasPermission($me, 'view_all_org_tasks')) {
+// 🆕 view_org_dashboard_reports: مجوزِ محدودتری که فقط همین ویجت‌هایِ
+// داشبورد رو سازمانی می‌کنه (بدونِ دسترسیِ اضافه به endpointهایی مثل
+// api/admin/routines-all.php که پشتِ همون دو مجوزِ اصلی قایم شدن)
+$canViewOrgTasks = hasPermission($me, 'view_all_org_tasks') || hasPermission($me, 'view_org_dashboard_reports');
+$canMonitorAllWorkflows = hasPermission($me, 'monitor_all_workflows') || hasPermission($me, 'view_org_dashboard_reports');
+
+if ($canViewOrgTasks) {
     $topDelayed = bpm_dashboard_capture($root . '/api/reports/top-delayed-users.php');
+
+    // 🆕 «کارهایِ واگذارشده‌ی تأخیردار» در داشبوردِ مدیر باید سازمانی باشه،
+    // نه فقط کارهایی که خودِ مدیر شخصاً واگذار کرده — چون ممکنه مدیر خودش
+    // چیزی واگذار نکرده باشه ولی سازمان پر از کارِ تأخیردار باشه
+    $_GET['scope'] = 'org';
+    $orgDelegated = bpm_dashboard_capture($root . '/api/tasks/delegated-tasks.php');
+    unset($_GET['scope']);
 } else {
     $topDelayed = ['success' => true, 'users' => []];
+    $orgDelegated = ['success' => true, 'tasks' => []];
+}
+
+// 🆕 «گزارشِ گلوگاه‌ها» هم همین‌طور — قبلاً از لیستِ شخصیِ فعالیت‌هایِ
+// اخیر (personal_only) ساخته می‌شد که برایِ مدیر تقریباً همیشه خالی بود
+if ($canMonitorAllWorkflows) {
+    $orgBottlenecks = bpm_dashboard_capture($root . '/api/reports/bottleneck-report.php');
+} else {
+    $orgBottlenecks = ['success' => true, 'bottlenecks' => []];
 }
 
 http_response_code(200);
 echo json_encode([
-    'success'    => true,
-    'mine'       => $mine,
-    'delegated'  => $delegated,
-    'recent'     => $recent,
-    'routines'   => $routines,
-    'topDelayed' => $topDelayed,
+    'success'                => true,
+    'mine'                   => $mine,
+    'delegated'              => $delegated,
+    'recent'                 => $recent,
+    'routines'               => $routines,
+    'topDelayed'             => $topDelayed,
+    'orgDelegated'           => $orgDelegated,
+    'orgBottlenecks'         => $orgBottlenecks,
+    'canViewOrgTasks'        => $canViewOrgTasks,
+    'canMonitorAllWorkflows' => $canMonitorAllWorkflows,
 ]);

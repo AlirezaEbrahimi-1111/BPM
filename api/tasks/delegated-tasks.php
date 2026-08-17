@@ -15,6 +15,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php'
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-dates-helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $user_id = requireAuth();
@@ -29,6 +30,32 @@ try {
     if ($filter === 'previous_delegations') {
         // نمایش ارجاعات سابق
         $tasks = $taskManager->getPreviousDelegations($user_id);
+    } elseif (isset($_GET['scope']) && $_GET['scope'] === 'org') {
+        // 🆕 نمایشِ سازمانی — همه‌ی کارهایِ واگذارشده‌ی سازمان (نه فقط
+        // خودِ کاربرِ جاری)، مخصوصِ ویجتِ «کارهایِ واگذارشده‌ی تأخیردار»یِ
+        // داشبوردِ مدیر؛ فقط برایِ کاربرانی که مجوزِ دیدنِ کلِ سازمان دارن
+        $me = loadUserForPermissions($db, $user_id);
+        if (!hasPermission($me, 'view_all_org_tasks') && !hasPermission($me, 'view_org_dashboard_reports')) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $org_id = (int) $me['organization_id'];
+
+        $stmt = $db->prepare("
+            SELECT t.*,
+                   assignee.first_name as assignee_first_name,
+                   assignee.last_name as assignee_last_name
+            FROM tasks t
+            LEFT JOIN users assignee ON t.assignee_id = assignee.id
+            WHERE t.organization_id = ?
+              AND t.is_deleted = 0
+              AND t.assignee_id IS NOT NULL
+              AND t.assignee_id != t.creator_id
+            ORDER BY t.due_date ASC
+        ");
+        $stmt->execute([$org_id]);
+        $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } else {
         // نمایش کارهای واگذار شده عادی (فقط کارهایی که خودش ایجاد کرده)
         $tasks = $taskManager->getCreatedTasks($user_id);
