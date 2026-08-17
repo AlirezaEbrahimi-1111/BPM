@@ -55,7 +55,13 @@ try {
                 JOIN workflow_steps wsV ON wisV.step_id = wsV.id
                 LEFT JOIN tasks tV ON tV.id = wisV.task_id
                 WHERE wisV.instance_id = wi.id
-                  AND wisV.status = 'active'
+                  -- 🔒 'active' تنها لحظه‌ی کوتاهیه؛ به‌محضِ گذشتنِ ددلاین، یه
+                  -- کرون (checkDelays در WorkflowManager.php) وضعیتِ مرحله رو
+                  -- برایِ همیشه به 'delayed' تغییر می‌ده. تویِ دیتابیسِ واقعی،
+                  -- تقریباً همه‌ی مراحلِ «در جریان» همین الان delayed هستن، نه
+                  -- active (۶۷ به ۱) — پس هرجا فقط status='active' چک بشه، عملاً
+                  -- تقریباً هیچی رو نمی‌بینه
+                  AND wisV.status IN ('active', 'delayed')
                   AND (
                       wsV.activity_section IN ($secCond)
                       -- 🆕 مرحله‌ای که مستقیم به یه کاربرِ خاص واگذار شده (نه به یه
@@ -96,7 +102,7 @@ try {
                 FROM workflow_instance_steps wis
                 JOIN workflow_steps ws ON wis.step_id = ws.id
                 WHERE wis.instance_id = wi.id
-                AND wis.status = 'active'
+                AND wis.status IN ('active', 'delayed')
                 ORDER BY wis.step_order ASC
                 LIMIT 1
                 ) AS current_section,
@@ -116,16 +122,24 @@ try {
                     / 
                     NULLIF((SELECT COUNT(*) FROM workflow_instance_steps WHERE instance_id = wi.id), 0)
                 ) * 100) as progress,
-                CASE 
+                CASE
                     WHEN EXISTS (
                         SELECT 1 FROM workflow_instance_steps wis2
                         JOIN workflow_steps ws2 ON wis2.step_id = ws2.id
-                        WHERE wis2.instance_id = wi.id 
-                        AND wis2.status = 'active'
-                        AND wis2.started_at IS NOT NULL
-                        AND NOW() > COALESCE(
-                            wis2.deadline,
-                            DATE_ADD(wis2.started_at, INTERVAL ws2.time_limit_hours HOUR)
+                        WHERE wis2.instance_id = wi.id
+                        AND (
+                            -- 🔒 کرون (checkDelays) وضعیتِ مرحله رو دائمی به
+                            -- 'delayed' تغییر می‌ده — پس اگه همین الان delayed
+                            -- هست، دیگه لازم نیست ددلاین رو دوباره زنده محاسبه کنیم
+                            wis2.status = 'delayed'
+                            OR (
+                                wis2.status = 'active'
+                                AND wis2.started_at IS NOT NULL
+                                AND NOW() > COALESCE(
+                                    wis2.deadline,
+                                    DATE_ADD(wis2.started_at, INTERVAL ws2.time_limit_hours HOUR)
+                                )
+                            )
                         )
                     ) THEN 1
                     ELSE 0
@@ -138,14 +152,14 @@ try {
                  JOIN workflow_steps ws ON wis.step_id = ws.id
                  LEFT JOIN tasks t ON t.id = wis.task_id
                  LEFT JOIN users u ON u.id = COALESCE(t.assignee_id, CASE WHEN ws.assignee_type = 'user' THEN ws.assignee_user_id END)
-                 WHERE wis.instance_id = wi.id AND wis.status = 'active'
+                 WHERE wis.instance_id = wi.id AND wis.status IN ('active', 'delayed')
                  LIMIT 1) as assignee_first_name,
                 (SELECT u.last_name
                  FROM workflow_instance_steps wis
                  JOIN workflow_steps ws ON wis.step_id = ws.id
                  LEFT JOIN tasks t ON t.id = wis.task_id
                  LEFT JOIN users u ON u.id = COALESCE(t.assignee_id, CASE WHEN ws.assignee_type = 'user' THEN ws.assignee_user_id END)
-                 WHERE wis.instance_id = wi.id AND wis.status = 'active'
+                 WHERE wis.instance_id = wi.id AND wis.status IN ('active', 'delayed')
                  LIMIT 1) as assignee_last_name
             FROM workflow_instances wi
             LEFT JOIN workflow_templates wt ON wi.template_id = wt.id
@@ -154,21 +168,26 @@ try {
             AND wi.is_deleted = 0
             $visibilityCond
             ORDER BY
-            CASE 
+            CASE
                 WHEN EXISTS (
                     SELECT 1 FROM workflow_instance_steps wis2
                     JOIN workflow_steps ws2 ON wis2.step_id = ws2.id
-                    WHERE wis2.instance_id = wi.id 
-                    AND wis2.status = 'active'
-                    AND wis2.started_at IS NOT NULL
-                    AND NOW() > COALESCE(
-                        wis2.deadline,
-                        DATE_ADD(wis2.started_at, INTERVAL ws2.time_limit_hours HOUR)
+                    WHERE wis2.instance_id = wi.id
+                    AND (
+                        wis2.status = 'delayed'
+                        OR (
+                            wis2.status = 'active'
+                            AND wis2.started_at IS NOT NULL
+                            AND NOW() > COALESCE(
+                                wis2.deadline,
+                                DATE_ADD(wis2.started_at, INTERVAL ws2.time_limit_hours HOUR)
+                            )
+                        )
                     )
                 ) THEN 1
                     WHEN wi.status = 'in_progress' THEN 2
                     WHEN wi.status = 'completed' THEN 3
-                    ELSE 4 
+                    ELSE 4
                 END,
                 wi.started_at DESC";
 

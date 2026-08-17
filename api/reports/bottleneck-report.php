@@ -74,7 +74,12 @@ try {
         WHERE wi.organization_id = ?
           AND wi.is_deleted = 0
           AND wi.status NOT IN ('completed', 'cancelled')
-          AND wis.status = 'active'
+          -- 🔒 کرون (checkDelays در WorkflowManager.php) به‌محضِ گذشتنِ ددلاین،
+          -- وضعیتِ مرحله رو دائمی از 'active' به 'delayed' تغییر می‌ده — تویِ
+          -- دیتابیسِ واقعی تقریباً همه‌ی مراحلِ تأخیردار همین الان 'delayed'ان،
+          -- نه 'active' (۲۴ به ۱). قبلاً این کوئری فقط 'active' رو می‌دید، یعنی
+          -- تقریباً هیچ‌کدوم از گلوگاه‌هایِ واقعی رو نشون نمی‌داد
+          AND wis.status IN ('active', 'delayed')
           AND wis.started_at IS NOT NULL
           AND NOW() > COALESCE(
                 wis.deadline,
