@@ -567,6 +567,14 @@ body .mobile-menu-btn .hamburger-line {
     color: #b91c1c;
 }
 
+/* نیازمندِ تصمیمِ تمدید — بازهٔ کارِ دوره‌ای تمام شده، تعیین‌تکلیف نشده.
+   بنفشِ برند، تا نه با فیروزه‌ای period_done قاطی بشه نه با قرمزِ overdue —
+   این یه اقدامِ از طرفِ خودِ کاربره، نه یه وضعیتِ منفی */
+.status-needs_renewal {
+    background: #f3e8ff;
+    color: #7e22ce;
+}
+
 .status-not_started {
     background: #f1f3f5;
     /* بود: #f3f4f6 */

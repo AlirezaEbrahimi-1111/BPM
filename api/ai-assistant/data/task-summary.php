@@ -122,7 +122,7 @@ try {
             t.id, t.title, t.status, t.priority, t.task_type,
             t.due_date, t.deadline, t.original_deadline, t.start_date, t.end_date,
             t.assignee_id, t.creator_id, t.is_workflow_task, t.is_pending_approval,
-            t.has_pending_deadline_request,
+            t.has_pending_deadline_request, t.has_pending_renewal_request,
             dr.current_approver_id,
             dr.created_at AS deadline_request_date,
             ph.last_pending_date

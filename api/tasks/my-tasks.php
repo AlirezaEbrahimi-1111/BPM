@@ -128,6 +128,7 @@ SELECT DISTINCT
     t.period_type,
     t.overdue_forgiven_credit,
     t.is_pending_approval,
+    t.has_pending_renewal_request,
     t.is_workflow_task,
     t.deadline,
     t.original_deadline,

@@ -33,6 +33,17 @@ function taskIsExpired(array $t, string $today): bool
     return !empty($t['end_date']) && substr($t['end_date'], 0, 10) < $today;
 }
 
+/**
+ * آیا این کارِ دوره‌ای نیازمندِ تصمیمِ تمدید است؟ — از قبل توسطِ
+ * enrichTaskDates() (includes/task-dates-helper.php) محاسبه و رویِ خودِ
+ * کار نشسته؛ این‌جا فقط خونده می‌شه (نه بازمحاسبه، چون باید بر پایه‌یِ
+ * ساعتِ سرور باشه، نه فراخوانیِ دوباره)
+ */
+function taskNeedsRenewalDecision(array $t): bool
+{
+    return !empty($t['needs_renewal_decision']);
+}
+
 /** معادلِ isWaitingMyApproval */
 function taskIsWaitingMyApproval(array $t, int $userId): bool
 {
@@ -104,6 +115,7 @@ function taskIsDueToday(array $t, int $userId, string $today): bool
     }
 
     if ($t['task_type'] === 'continuous') {
+        if (taskNeedsRenewalDecision($t)) return true;
         if (taskIsExpired($t, $today)) return false;
         if ((int) ($t['overdue_periods'] ?? 0) > 0) return true;
         return ($t['next_due_date'] ?? null) === $today;
@@ -145,7 +157,9 @@ function taskStatusInfo(array $t, int $userId, string $today): array
     $isOverdue = taskIsOverdue($t, $userId, $today);
     $isDueToday = !$isOverdue && taskIsDueToday($t, $userId, $today);
 
-    if ($t['status'] === 'pending_approval') {
+    if (taskNeedsRenewalDecision($t)) {
+        $label = 'نیازمند تمدید';
+    } elseif ($t['status'] === 'pending_approval') {
         $label = TASK_STATUS_LABELS['pending_approval'];
     } elseif ($isOverdue) {
         $label = 'عقب افتاده';

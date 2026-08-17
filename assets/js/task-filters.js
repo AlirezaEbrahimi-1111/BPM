@@ -92,6 +92,15 @@ window.TF = (function () {
         return !!(t.end_date && dateOnly(t.end_date) < td);
     }
 
+    /**
+     * آیا این کارِ دوره‌ای نیازمندِ تصمیمِ تمدید است؟ — از قبل توسطِ
+     * enrichTaskDates() سمتِ سرور (بر پایه‌یِ ساعتِ سرور) رویِ کار محاسبه
+     * شده؛ این‌جا فقط خونده می‌شه
+     */
+    function needsRenewalDecision(t) {
+        return !!t.needs_renewal_decision;
+    }
+
     /** آیا کار منتظر تأیید همین کاربر است؟ */
     function isWaitingMyApproval(t, user) {
         if (!user || t.is_pending_approval != 1) return false;
@@ -136,6 +145,10 @@ window.TF = (function () {
 
         // ── کار دوره‌ای ──────────────────────────────
         if (t.task_type === 'continuous') {
+            // ⏰ بازه‌اش تمام شده و هنوز تعیین‌تکلیف نشده → همیشه در «امروز»،
+            // تا کاربر تصمیم بگیرد (تمدید یا اتمام)
+            if (needsRenewalDecision(t)) return true;
+
             if (isExpired(t, td)) return false;
 
             // ۱) دورهٔ معوقه دارد
@@ -259,6 +272,9 @@ window.TF = (function () {
      * اینکه کار «عقب افتاده»— پس «در انتظار تأیید» اولویتِ بالاتری داره
      */
     function statusBadge(t, user) {
+        if (needsRenewalDecision(t)) {
+            return '<span class="status-badge status-needs_renewal">نیازمند تمدید</span>';
+        }
         if (t.status === 'pending_approval') {
             return `<span class="status-badge ${statusClass(t.status)}">${statusLabel(t.status)}</span>`;
         }
@@ -292,6 +308,7 @@ window.TF = (function () {
         // وضعیت پایه
         isDone,
         isExpired,
+        needsRenewalDecision,
         isWaitingMyApproval,
         isWaitingMyDeadline,
 

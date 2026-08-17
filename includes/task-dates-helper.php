@@ -62,6 +62,17 @@ function enrichTaskDates(array $task, PDO $db, array $holidays, string $today, ?
         $task['can_complete']         = $s['can_complete'];
         $task['current_period_date']  = $s['current_period_date'];
 
+        // 🆕 نیازمندِ تصمیمِ تمدید؟ — دقیقاً هم‌معنیِ TaskManager::isReadyForRenewal()
+        // (end_date <= امروز + بدونِ تأییدِ در جریان/درخواستِ تمدیدِ در جریان)،
+        // به‌اضافه‌یِ حذفِ کارهایِ از قبل بسته‌شده (تکمیل/تأیید/متوقف‌شده). این‌جا
+        // (نه سمتِ جاوااسکریپت) محاسبه می‌شه تا بر پایه‌یِ ساعتِ سرور باشه، نه
+        // ساعتِ مرورگر
+        $task['needs_renewal_decision'] = !empty($task['end_date'])
+            && substr($task['end_date'], 0, 10) <= $today
+            && (int) ($task['is_pending_approval'] ?? 0) !== 1
+            && (int) ($task['has_pending_renewal_request'] ?? 0) !== 1
+            && !in_array($task['status'] ?? '', ['completed', 'approved', 'rejected'], true);
+
         return $task;
     }
 

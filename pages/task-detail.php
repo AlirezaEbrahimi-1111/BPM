@@ -2446,6 +2446,7 @@ if (!$__me) {
                         updateDeadlineDisplay(taskData);
                         checkDeadlineRequests(taskId);
                         loadTerminationRequest();
+                        showRenewalAlarmIfNeeded(taskData);
 
                         // ← اینجا اضافه کنید (بعد از setupActionButtons):
                         setupUploadListeners();
@@ -5714,6 +5715,31 @@ ${task.overdue_periods > 0 ? `
                 } catch (err) {
                     console.error('loadTerminationRequest error:', err);
                 }
+            }
+
+            // ─── آلارمِ پایانِ دورهٔ کارِ دوره‌ای (تمدید لازم است) ──────────
+            // needs_renewal_decision از سمتِ سرور (enrichTaskDates) روی خودِ
+            // تسک محاسبه شده — نیازی به فراخوانیِ جداگانه نیست
+            function showRenewalAlarmIfNeeded(task) {
+                if (!task || !task.needs_renewal_decision) return;
+                if (!isCreator && !isAssignee) return;
+
+                showToast(
+                    'دورهٔ این کار به پایان رسیده است. در صورت لزوم می‌توانید تمدید دوره بزنید.',
+                    'warning', {
+                        duration: 150000,
+                        buttons: [{
+                                label: isCreator ? 'تمدید دوره' : 'درخواستِ تمدید دوره',
+                                style: 'primary',
+                                onClick: () => openRenewalModal(isCreator ? 'apply' : 'request')
+                            },
+                            {
+                                label: 'بعداً',
+                                style: 'ghost'
+                            }
+                        ]
+                    }
+                );
             }
 
             // ─── نمایش modal درخواست (assignee) ──────────────────────────
