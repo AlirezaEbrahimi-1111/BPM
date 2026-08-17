@@ -51,7 +51,12 @@ try {
     $isOrg = ($scope === 'org');
 
     // ── ۱) رویدادهایِ task_history (کارهایِ معمولی + مراحلِ فرآیندی) ──
-    $userCond = $isOrg ? '' : 'AND (th.from_user_id = :uid OR th.to_user_id = :uid2)';
+    // 🔒 «شخصی» یعنی فقط کارهایی که خودِ کاربر انجام داده (from_user_id) —
+    // قبلاً to_user_id هم حساب می‌شد (یعنی رویدادهایی که کسِ دیگه‌ای انجام
+    // داده بود ولی به این کاربر ارجاع/نیازِ تأیید داشت)، که چون حالا نامِ
+    // عاملِ هر ردیف هم نشون داده می‌شه، باعث می‌شد اسمِ افرادِ دیگه توی
+    // فیدِ «شخصی» ظاهر بشه — گیج‌کننده و غیرمنتظره بود
+    $userCond = $isOrg ? '' : 'AND th.from_user_id = :uid';
     $stmt = $db->prepare("
         SELECT
             th.task_id,
@@ -79,8 +84,7 @@ try {
     ");
     $params = ['org_id' => $org_id, 'days' => RECENT_ACTIVITY_DAYS];
     if (!$isOrg) {
-        $params['uid']  = $user_id;
-        $params['uid2'] = $user_id;
+        $params['uid'] = $user_id;
     }
     $stmt->execute($params);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
