@@ -461,8 +461,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .filter-chip.active {
-            background: var(--primary);
-            border-color: var(--primary);
+            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
+            border-color: #8346fd;
             color: #fff;
             font-weight: 600;
         }
@@ -535,8 +535,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .routine-filter-chip.active {
-            background: var(--primary);
-            border-color: var(--primary);
+            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
+            border-color: #8346fd;
             color: #fff;
             font-weight: 600;
         }
@@ -630,6 +630,10 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             display: flex;
             align-items: center;
             gap: 8px;
+            /* بدونِ این، ردیف‌هایِ تبِ «تاریخچه فعالیت» (که نه دکمه‌ی ستاره
+               دارن نه بجِ وضعیت) کوتاه‌تر از ردیف‌هایِ بقیه‌ی تب‌ها به‌نظر
+               می‌رسیدن */
+            min-height: 28px;
         }
 
         .td-title i.doc {
@@ -1472,7 +1476,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .pm-btn-primary {
-            background: var(--pm-purple);
+            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
             color: #fff;
         }
 
@@ -2094,7 +2098,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .pm-btn-primary {
-            background: #2563eb;
+            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
             color: #fff;
         }
 
@@ -2263,6 +2267,12 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         /* رنگ/آیکون‌هایِ سفیدِ هدر اکنون یک قاعدهٔ سراسری در custom.css است
            (برایِ همهٔ صفحات، نه فقط داشبورد) — این بلاک دیگه لازم نیست. */
+
+        /* دکمه‌ی شناورِ + (کار جدید) — فقط در همین صفحه، هم‌رنگ با گرادیانتِ
+           هدر (نه --primary-gradient که در بقیه‌ی صفحات هم استفاده می‌شه) */
+        .fab {
+            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%) !important;
+        }
     </style>
 
 
@@ -2439,7 +2449,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 </div>
                 <div class="modal-body" id="pmBody"></div>
                 <div class="modal-footer" style="padding:10px 18px;">
-                    <a href="my-tasks.php" class="btn btn-sm btn-primary">مشاهده همه کارها</a>
+                    <a href="my-tasks.php" class="btn btn-sm" style="background:linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>
@@ -2467,7 +2477,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     <div class="wk-grid" id="wkGrid"></div>
                 </div>
                 <div class="modal-footer" style="padding:12px 12px 0 12px;">
-                    <a href="my-tasks.php?filter=week" class="btn btn-sm" style="background:var(--pm-purple);color:#fff;">مشاهده همه کارها</a>
+                    <a href="my-tasks.php?filter=week" class="btn btn-sm" style="background:linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>
@@ -2495,7 +2505,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     <div class="mo-grid" id="moGrid" onmouseover="moGridOver(event)" onmouseleave="moGridLeave()"></div>
                 </div>
                 <div class="modal-footer" style="padding:12px 12px 0 12px;">
-                    <a href="my-tasks.php?filter=month" id="moSeeAllBtn" class="btn btn-sm" style="background:var(--pm-purple);color:#fff;">مشاهده همه کارها</a>
+                    <a href="my-tasks.php?filter=month" id="moSeeAllBtn" class="btn btn-sm" style="background:linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>
@@ -2864,7 +2874,16 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     const link = `task-detail.php?id=${t.task_id}`;
                     const itemTitle = t.item_title ? esc(t.item_title) : '';
                     const mainTitle = itemTitle || esc(t.title) || '—';
-                    const label = `${activityLabel(t.action)}: ${mainTitle}`;
+                    const who = t.actor_name ? `(${esc(t.actor_name)})` : '';
+                    // action ممکنه تویِ دیتایِ قدیمی خالی باشه — اگه خالی بود،
+                    // دیگه «- :» یا «:» بی‌مصرف قبل از عنوان نمیاریم
+                    const verb = activityLabel(t.action);
+                    let label;
+                    if (verb) {
+                        label = who ? `${who} - ${verb}: ${mainTitle}` : `${verb}: ${mainTitle}`;
+                    } else {
+                        label = who ? `${who}: ${mainTitle}` : mainTitle;
+                    }
                     return `<tr onclick="location.href='${link}'">
                     <td>
                         <div class="td-title">

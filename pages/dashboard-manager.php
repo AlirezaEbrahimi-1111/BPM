@@ -418,8 +418,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .filter-chip.active {
-            background: var(--primary);
-            border-color: var(--primary);
+            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
+            border-color: #8346fd;
             color: #fff;
             font-weight: 600;
         }
@@ -491,8 +491,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         .routine-filter-chip.active,
         .activity-scope-chip.active {
-            background: var(--primary);
-            border-color: var(--primary);
+            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
+            border-color: #8346fd;
             color: #fff;
             font-weight: 600;
         }
@@ -1392,7 +1392,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-btn-primary {
-            background: var(--pm-purple);
+            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
             color: #fff;
         }
 
@@ -1994,7 +1994,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-btn-primary {
-            background: #2563eb;
+            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
             color: #fff;
         }
 
@@ -2247,6 +2247,12 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         /* رنگ/آیکون‌هایِ سفیدِ هدر اکنون یک قاعدهٔ سراسری در custom.css است
            (برایِ همهٔ صفحات، نه فقط داشبورد) — این بلاک دیگه لازم نیست. */
+
+        /* دکمه‌ی شناورِ + (کار جدید) — فقط در همین صفحه، هم‌رنگ با گرادیانتِ
+           هدر (نه --primary-gradient که در بقیه‌ی صفحات هم استفاده می‌شه) */
+        .fab {
+            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%) !important;
+        }
     </style>
 
 
@@ -2335,10 +2341,10 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                         </button>
                     </div>
                     <div class="activity-scope-filters" id="activityScopeFilters" style="display:none;">
-                        <button class="activity-scope-chip active" data-scope="personal">
+                        <button class="activity-scope-chip" data-scope="personal">
                             <span>شخصی</span>
                         </button>
-                        <button class="activity-scope-chip" data-scope="org">
+                        <button class="activity-scope-chip active" data-scope="org">
                             <span>کل سازمان</span>
                         </button>
                     </div>
@@ -2470,7 +2476,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 </div>
                 <div class="modal-body" id="pmBody"></div>
                 <div class="modal-footer" style="padding:10px 18px;">
-                    <a href="my-tasks.php" class="btn btn-sm btn-primary">مشاهده همه کارها</a>
+                    <a href="my-tasks.php" class="btn btn-sm" style="background:linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>
@@ -2498,7 +2504,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     <div class="wk-grid" id="wkGrid"></div>
                 </div>
                 <div class="modal-footer" style="padding:12px 12px 0 12px;">
-                    <a href="my-tasks.php?filter=week" class="btn btn-sm" style="background:var(--pm-purple);color:#fff;">مشاهده همه کارها</a>
+                    <a href="my-tasks.php?filter=week" class="btn btn-sm" style="background:linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>
@@ -2526,7 +2532,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     <div class="mo-grid" id="moGrid" onmouseover="moGridOver(event)" onmouseleave="moGridLeave()"></div>
                 </div>
                 <div class="modal-footer" style="padding:8px 20px 6px;">
-                    <a href="my-tasks.php?filter=month" id="moSeeAllBtn" class="btn btn-sm" style="background:var(--pm-purple);color:#fff;">مشاهده همه کارها</a>
+                    <a href="my-tasks.php?filter=month" id="moSeeAllBtn" class="btn btn-sm" style="background:linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>
@@ -2566,7 +2572,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         let starredList = [];
         let defaultTab = '';
         let defaultFilter = '';
-        let activityScope = 'personal';
+        let activityScope = 'org';
 
         const store = {
             mine: [],
@@ -2749,7 +2755,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             // (بدونِ تغییرِ منطقِ خودِ هر بخش، فقط جمع‌شدنِ درخواست‌ها)
             const bundle = await apiGet('../api/dashboard/bootstrap.php');
             const {
-                mine, delegated, recent, activityLog, routines, topDelayed,
+                mine, delegated, recent, activityLog, activityScopeDefault, routines, topDelayed,
                 orgDelegated, orgBottlenecks, canViewOrgTasks, canMonitorAllWorkflows,
                 dashboardPrefs
             } = bundle || {};
@@ -2760,6 +2766,11 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             // گلوگاه‌ها لازمه؛ تبِ «فعالیت‌های اخیر» از store.activityLog می‌خونه
             store.recent = pickList(recent);
             store.activityLog = pickList(activityLog);
+            // 🆕 نطاقِ پیش‌فرض رو سرور تعیین می‌کنه (مدیر/سرپرست → سازمانی) —
+            // دکمه‌یِ فعال رو هم باهاش هماهنگ کن، نه فقط با پیش‌فرضِ هاردکدِ HTML
+            activityScope = activityScopeDefault || 'org';
+            document.querySelectorAll('.activity-scope-chip').forEach(c =>
+                c.classList.toggle('active', c.dataset.scope === activityScope));
             store.topDelayed = (topDelayed && topDelayed.users) ? topDelayed.users : [];
             // 🆕 برایِ مدیرانی که مجوزِ دیدنِ کلِ سازمان دارن، این دو ویجت باید
             // سازمانی باشن نه فقط شخصی — null یعنی «مجوز نداره، از دادهٔ شخصی
@@ -2922,9 +2933,16 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     const link = `task-detail.php?id=${t.task_id}`;
                     const itemTitle = t.item_title ? esc(t.item_title) : '';
                     const mainTitle = itemTitle || esc(t.title) || '—';
-                    // فیلترِ «کل سازمان» بدونِ نامِ شخص معلوم نیست کی این کارو کرده
-                    const who = t.actor_name ? `${esc(t.actor_name)} — ` : '';
-                    const label = `${who}${activityLabel(t.action)}: ${mainTitle}`;
+                    const who = t.actor_name ? `(${esc(t.actor_name)})` : '';
+                    // action ممکنه تویِ دیتایِ قدیمی خالی باشه — اگه خالی بود،
+                    // دیگه «- :» یا «:» بی‌مصرف قبل از عنوان نمیاریم
+                    const verb = activityLabel(t.action);
+                    let label;
+                    if (verb) {
+                        label = who ? `${who} - ${verb}: ${mainTitle}` : `${verb}: ${mainTitle}`;
+                    } else {
+                        label = who ? `${who}: ${mainTitle}` : mainTitle;
+                    }
                     return `<tr onclick="location.href='${link}'">
                     <td>
                         <div class="td-title">

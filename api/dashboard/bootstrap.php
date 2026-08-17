@@ -34,6 +34,13 @@ function bpm_dashboard_capture(string $absPath): array {
 
 $root = $_SERVER['DOCUMENT_ROOT'];
 
+// از قبل اینجا لود می‌شد ولی پایین‌تر — نیازش داریم تا نطاقِ پیش‌فرضِ
+// «فعالیت‌های اخیر» (پایین‌تر) رو بر اساسِ نقش تعیین کنیم
+$database = new Database();
+$db = $database->getConnection();
+$me = loadUserForPermissions($db, $user_id);
+$db = null;
+
 $mine      = bpm_dashboard_capture($root . '/api/tasks/my-tasks.php');
 $delegated = bpm_dashboard_capture($root . '/api/tasks/delegated-tasks.php');
 
@@ -49,17 +56,19 @@ $routines  = bpm_dashboard_capture($root . '/api/workflows/active-summary.php');
 // 🆕 تبِ «فعالیت‌های اخیر» در داشبورد یه لاگِ تاریخچه‌ایه (چه‌کاری/چه‌وقتی)،
 // نه لیستِ فرآیندهایِ در‌جریان (که همون $recent بالاست و برایِ ویجتِ
 // گلوگاه‌ها هنوز لازمه) — منبعِ جدا: api/dashboard/recent-activity.php
+// پیش‌فرضِ نطاق: مدیر/سرپرست → سازمانی (چون سوییچرِ نطاق فقط تویِ
+// داشبوردِ مدیر هست)؛ بقیه → شخصی (بدونِ سوییچری که نشونش بده)
+$isManagerRole = in_array($me['role'] ?? '', ['manager', 'supervisor'], true) || isSuperAdmin($me);
+$activityScopeDefault = $isManagerRole ? 'org' : 'personal';
+$_GET['scope'] = $activityScopeDefault;
 $activityLog = bpm_dashboard_capture($root . '/api/dashboard/recent-activity.php');
+unset($_GET['scope']);
 
 // reports/top-delayed-users.php مخصوصِ کاربرانی‌ست که مجوزِ
 // view_all_org_tasks دارن (مدیران) — requirePermission داخلِ اون فایل
 // در صورتِ نبودِ مجوز خودش exit می‌زنه، که include‌شدنش این‌جا کلِ
 // پردازشِ بوت‌استرپ رو (برایِ کاربرانِ عادی) قطع می‌کرد. برایِ همین قبل
 // از include، خودمون مجوز رو (بدونِ exit) چک می‌کنیم.
-$database = new Database();
-$db = $database->getConnection();
-$me = loadUserForPermissions($db, $user_id);
-$db = null;
 
 // 🆕 view_org_dashboard_reports: مجوزِ محدودتری که فقط همین ویجت‌هایِ
 // داشبورد رو سازمانی می‌کنه (بدونِ دسترسیِ اضافه به endpointهایی مثل
@@ -117,6 +126,7 @@ echo json_encode([
     'delegated'              => $delegated,
     'recent'                 => $recent,
     'activityLog'            => $activityLog,
+    'activityScopeDefault'   => $activityScopeDefault,
     'routines'               => $routines,
     'topDelayed'             => $topDelayed,
     'orgDelegated'           => $orgDelegated,
