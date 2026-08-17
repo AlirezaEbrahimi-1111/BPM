@@ -207,34 +207,18 @@ function checklistProgressFromItems(array $items): array
 }
 
 /**
- * بررسی و اعمال تکمیل خودکار.
- * اگر گزینه روشن باشد و همه آیتم‌ها تیک خورده باشند،
- * کار را از مسیر استاندارد updateTaskStatus به 'completed' می‌برد
- * (که خودش تصمیم می‌گیرد pending_approval شود یا completed).
- * خروجی: true اگر تکمیل خودکار اجرا شد.
+ * ⚠️ عمداً غیرفعال شده (طبقِ درخواستِ صریح): تیک‌زدنِ آخرین آیتمِ چک‌لیست
+ * دیگر هیچ‌وقت خودش کار را completed/period_done نمی‌کند — حتی برایِ
+ * تسکِ خودمسئولی (creator == assignee) که قبلاً بدونِ هیچ تأییدِ اضافه‌ای
+ * مستقیم finalize می‌شد. تیک‌کاملِ چک‌لیست فقط قفلِ دکمهٔ «تکمیلِ کار» را
+ * باز می‌کند (این قفل از قبل در TaskManager::updateTaskStatus هست)؛ خودِ
+ * تکمیل همیشه باید با کلیکِ صریحِ کاربر روی همون دکمه انجام بشه — که
+ * برایِ کارهایِ واگذارشده، طبقِ همون منطقِ موجود، نیازمندِ تأییدِ نهاییِ
+ * تعریف‌کننده (pending_approval) خواهد بود.
  */
 function maybeAutoComplete($db, $task, $user_id)
 {
-    if (empty($task['checklist_auto_complete'])) return false;
-
-    $p = checklistProgress($db, $task['id']);
-    if ($p['total'] === 0 || $p['done'] < $p['total']) return false;
-
-    // کار قبلاً تکمیل/تأیید شده؟ کاری نکن
-    if (in_array($task['status'], ['completed', 'approved', 'pending_approval'])) return false;
-
-    // ══════════════════════════════════════════════════════════════
-    //  تسک دوره‌ای (continuous): به‌جای «تکمیل»، «ثبت دوره» می‌کنیم
-    // ══════════════════════════════════════════════════════════════
-    if (($task['task_type'] ?? '') === 'continuous') {
-        return registerRecurringPeriod($db, $task, $user_id);
-    }
-
-    // ── تسک عادی (رفتار قبلی، بدون تغییر) ──
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/TaskManager.php';
-    $tm = new TaskManager($db);
-    $tm->updateTaskStatus($task['id'], 'completed', $user_id, 'تکمیل خودکار با اتمام چک‌لیست');
-    return true;
+    return false;
 }
 
 /**
