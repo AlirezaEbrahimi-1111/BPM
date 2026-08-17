@@ -13,7 +13,15 @@ class PersianDatePicker {
         this.restrictPastDays = parseInt(element.dataset.restrictPast) || 0; // 0 یعنی بدون محدودیت
         this.holidays = [];        // لیست تاریخ‌های تعطیل (فرمت: 'YYYY-MM-DD' میلادی)
         this.holidayTitles = {};   // نگاشت تاریخ → عنوان تعطیل
+        // فاصله‌ی ساعتِ سرور با ساعتِ سیستمِ کلاینت (میلی‌ثانیه) — تا وقتی
+        // loadHolidays() جواب بده، صفره (یعنی موقتاً به ساعتِ کلاینت متکی‌ایم)
+        this.serverOffset = 0;
         this.init();
+    }
+
+    /** «الان»یِ واقعی — بر پایه‌ی ساعتِ سرور، نه ساعتِ (احتمالاً دستکاری‌شده‌ی) سیستمِ کلاینت */
+    _now() {
+        return new Date(Date.now() + this.serverOffset);
     }
 
     init() {
@@ -27,6 +35,8 @@ class PersianDatePicker {
             document.body.appendChild(this.calendar);
         }
 
+        // پیش‌فرضِ اولیه با ساعتِ کلاینت — تا وقتی loadHolidays() ساعتِ
+        // سرور رو برگردونه (پایینِ همین تابع)، جایگزین می‌شه
         const today = this.gregorianToJalali(new Date());
         this.currentYear = today.year;
         this.currentMonth = today.month;
@@ -47,7 +57,14 @@ class PersianDatePicker {
             this.selectToday();
         });
 
-        this.loadHolidays().then(() => this.render());
+        this.loadHolidays().then(() => {
+            // حالا که serverOffset مشخص شده، اگه کاربر تا این لحظه ماه رو
+            // عوض نکرده، ماهِ نمایش‌داده‌شده رو با «امروز»ِ واقعی هماهنگ کن
+            const today = this.gregorianToJalali(this._now());
+            this.currentYear = today.year;
+            this.currentMonth = today.month;
+            this.render();
+        });
     }
 
     async loadHolidays() {
@@ -57,7 +74,7 @@ class PersianDatePicker {
                 || localStorage.getItem('auth_token')
                 || localStorage.getItem('token')
                 || '';
-    
+
             const res = await fetch('/api/holidays/list.php', {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
@@ -68,6 +85,10 @@ class PersianDatePicker {
                 data.holidays.forEach(h => {
                     this.holidayTitles[h.holiday_date] = h.title;
                 });
+            }
+            // 🆕 لنگرِ «الان»ِ واقعی — تفاوتِ ساعتِ سرور با ساعتِ سیستمِ کلاینت
+            if (data.success && typeof data.server_time === 'number') {
+                this.serverOffset = data.server_time - Date.now();
             }
         } catch (e) {
             // بدون تعطیلات ادامه می‌دیم
@@ -116,7 +137,7 @@ class PersianDatePicker {
     }
 
     selectToday() {
-        const today = this.gregorianToJalali(new Date());
+        const today = this.gregorianToJalali(this._now());
         this.selectDate(today.year, today.month, today.day);
     }
 
@@ -160,7 +181,7 @@ class PersianDatePicker {
         const firstDayOfWeek = this.getFirstDayOfWeek(this.currentYear, this.currentMonth);
 
         // تاریخ امروز به شمسی
-        const todayJalali = this.gregorianToJalali(new Date());
+        const todayJalali = this.gregorianToJalali(this._now());
 
         this.daysContainer.innerHTML = '';
 
@@ -182,7 +203,7 @@ class PersianDatePicker {
             // اگر محدودیت فعال باشد
             if (this.restrictPastDays >= 0) {
                 // محاسبه تاریخ حداقل مجاز (امروز منهای restrictPastDays روز)
-                const minDate = new Date();
+                const minDate = this._now();
                 minDate.setDate(minDate.getDate() - this.restrictPastDays);
                 const minJalali = this.gregorianToJalali(minDate);
                 const minJalaliNumber = minJalali.year * 10000 + minJalali.month * 100 + minJalali.day;

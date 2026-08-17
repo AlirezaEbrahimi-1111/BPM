@@ -92,7 +92,15 @@ try {
     }
 
     ob_clean();
-    echo json_encode(['success' => true, 'holidays' => $holidays], JSON_UNESCAPED_UNICODE);
+    echo json_encode([
+        'success'     => true,
+        'holidays'    => $holidays,
+        // 🆕 «امروز»ِ واقعی (سرور، نه ساعتِ سیستمِ کلاینت) — تاریخ‌گزینِ
+        // مشترک (assets/js/persian-datepicker.js) این رو به‌عنوانِ لنگر
+        // استفاده می‌کنه تا اگه کاربر ساعتِ سیستمش رو دستی عوض کرده باشه،
+        // «امروز» و محدودیتِ تاریخِ گذشته همچنان درست باشن
+        'server_time' => round(microtime(true) * 1000),
+    ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
     ob_end_clean();

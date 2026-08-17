@@ -53,13 +53,26 @@ try {
             EXISTS (
                 SELECT 1 FROM workflow_instance_steps wisV
                 JOIN workflow_steps wsV ON wisV.step_id = wsV.id
+                LEFT JOIN tasks tV ON tV.id = wisV.task_id
                 WHERE wisV.instance_id = wi.id
                   AND wisV.status = 'active'
-                  AND wsV.activity_section IN ($secCond)
+                  AND (
+                      wsV.activity_section IN ($secCond)
+                      -- 🆕 مرحله‌ای که مستقیم به یه کاربرِ خاص واگذار شده (نه به یه
+                      -- واحد) هم باید دیده بشه — قبلاً فقط activity_section چک
+                      -- می‌شد، پس مرحله‌ای که assignee_type='user' بود (یا با
+                      -- ارجاع، مسئولِ واقعی‌اش عوض شده بود) هیچ‌وقت اینجا دیده
+                      -- نمی‌شد، حتی اگه همین لحظه رویِ میزِ خودِ کاربر بود
+                      OR COALESCE(tV.assignee_id, CASE WHEN wsV.assignee_type = 'user' THEN wsV.assignee_user_id END) = :ucurrentassignee
+                  )
             )
             OR wi.created_by = :ucreator
         )";
+        // 🔒 نه :ucreator با مقدارِ تکراری: این کانکشن با پریپِرهایِ نیتیو
+        // (نه emulated) کار می‌کنه، پس یک نامِ placeholder نمی‌تونه دوبار
+        // در یک کوئری استفاده بشه — even اگه مقدارش یکی باشه
         $execParams['ucreator'] = $user_id;
+        $execParams['ucurrentassignee'] = $user_id;
     }
 
     $sql = "SELECT
