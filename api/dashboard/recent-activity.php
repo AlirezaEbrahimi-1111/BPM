@@ -13,10 +13,12 @@
  *       به یه کاربرِ خاص (نه واحد) اختصاص داده شده.
  *
  *  scope=personal (پیش‌فرض): فقط فعالیتِ خودِ کاربرِ جاری.
- *  scope=org: فعالیتِ کلِ سازمان — با نامِ شخص روی هر ردیف (چون دیگه
- *  «خودم» بودنش بدیهی نیست). محدودیتِ مجوزِ خاصی نداره؛ هر کسی که این
+ *  scope=org: فعالیتِ کلِ سازمان. محدودیتِ مجوزِ خاصی نداره؛ هر کسی که این
  *  ویجت رو می‌بینه (یعنی manager/supervisor — دسترسیِ خودِ صفحه از قبل
  *  به این دو نقش محدوده) می‌تونه تبِ سازمانی رو هم ببینه.
+ *
+ *  نامِ عامل (actor_name) در هر دو حالت برگردونده می‌شه — تویِ حالتِ
+ *  شخصی هم، تا همیشه معلوم باشه چه کسی این رویداد رو ایجاد کرده.
  * ═══════════════════════════════════════════════════════════════════
  */
 
@@ -89,7 +91,7 @@ try {
             'is_workflow_task' => (int) $row['is_workflow_task'],
             'action'           => $row['action'],
             'timestamp'        => $row['ts'],
-            'actor_name'       => $isOrg ? ($row['actor_name'] ?: null) : null,
+            'actor_name'       => $row['actor_name'] ?: null,
         ];
     }
 
@@ -123,7 +125,7 @@ try {
             'is_workflow_task' => (int) $row['is_workflow_task'],
             'action'           => 'checklist_assigned',
             'timestamp'        => $row['ts'],
-            'actor_name'       => $isOrg ? ($row['actor_name'] ?: null) : null,
+            'actor_name'       => $row['actor_name'] ?: null,
         ];
     }
 
@@ -158,7 +160,7 @@ try {
             'is_workflow_task' => (int) $row['is_workflow_task'],
             'action'           => 'checklist_done',
             'timestamp'        => $row['ts'],
-            'actor_name'       => $isOrg ? ($row['actor_name'] ?: null) : null,
+            'actor_name'       => $row['actor_name'] ?: null,
         ];
     }
 
