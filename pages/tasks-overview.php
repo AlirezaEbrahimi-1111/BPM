@@ -83,8 +83,8 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                             <option value="period_done">دوره انجام شد</option>
                             <option value="completed">تکمیل شده</option>
                             <option value="approved">تأیید شده</option>
-                            <option value="rejected">متوقف</option>
-                            <option value="stopped">متوقف شده</option>
+                            <option value="rejected">متوقفِ دستی</option>
+                            <option value="stopped">توقفِ فرآیند</option>
                         </select>
                     </div>
                     <div class="filter-item" style="display: none;">
