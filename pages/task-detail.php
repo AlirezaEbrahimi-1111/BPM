@@ -3850,10 +3850,10 @@ ${task.overdue_periods > 0 ? `
                 }
 
                 const completedCount = task.completed_count || 0;
-                // ✅ نمایش دکمه بازتعریف فقط برای creator، و فقط وقتی کار در
-                // وضعیتِ پایانی (تکمیل/کنسل/متوقف) نیست
-                const isTaskTerminal = ['completed', 'approved', 'stopped', 'rejected'].includes(task.status);
-                if (isCreator && !isTaskTerminal) {
+                // ✅ نمایش دکمه بازتعریف فقط برای creator — طبقِ درخواستِ صریح، دیگه
+                // وضعیتِ پایانیِ کار (تکمیل/کنسل/متوقف/رد) مانعِ بازتعریف نیست؛
+                // تعریف‌کننده باید بتونه حتی بعدِ اتمامِ کار هم یه نسخه‌ی جدید بسازه
+                if (isCreator) {
                     redefineBtn.style.display = 'inline-block';
                 } else {
                     redefineBtn.style.display = 'none';
