@@ -71,21 +71,7 @@ try {
     $itemStmt->execute([$item_id]);
     $item = $itemStmt->fetch(PDO::FETCH_ASSOC);
 
-    $assigneeType  = $item['assignee_type']  ?? null;
-    $assigneeValue = $item['assignee_value'] ?? null;
-
-    $canToggle = false;
-
-    if ($assigneeType === 'user') {
-        // فقط همان کاربر
-        $canToggle = ((string)$assigneeValue === (string)$user_id);
-    } elseif ($assigneeType === 'section') {
-        // 🆕 عضو هر یک از واحدهای کاربر
-        $canToggle = in_array($assigneeValue, us_getUserSections($db, $user_id), true);
-    } else {
-        // بدون ارجاع → فقط مسئولِ فعلیِ کار
-        $canToggle = $task['_is_assignee'];
-    }
+    $canToggle = canActOnChecklistItem($db, $item, $task, $user_id);
 
     if (!$canToggle) {
         http_response_code(403);

@@ -14,6 +14,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-access.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/checklist/_helpers.php';
 
 try {
     $user_id = requireAuth();
@@ -26,7 +27,14 @@ try {
     }
 
     $task_id = intval($_POST['task_id']);
-    
+
+    // 🆕 پیوستِ متعلق به یک آیتمِ چک‌لیستِ خاص (مثلاً موقعِ تأییدِ آیتمِ
+    // ارجاع‌شده) — اختیاری؛ اگه داده بشه، باید مالِ همین task باشه و کاربر
+    // باید دقیقاً همون کسی باشه که مجاز به عمل‌کردن رویِ همین آیتمه (نه صرفاً
+    // دسترسیِ کلیِ کار)، وگرنه بیننده‌ها/همکارانِ دیگه می‌تونستن به آیتمِ
+    // فردِ دیگه‌ای فایل بچسبونن.
+    $checklist_item_id = !empty($_POST['checklist_item_id']) ? intval($_POST['checklist_item_id']) : null;
+
     // دریافت step_ids (آرایه JSON از مرحله‌ها) - برای کارهای روتین
     $step_ids = null;
     if (!empty($_POST['step_ids'])) {
@@ -126,6 +134,28 @@ try {
         exit;
     }
 
+    // 🔒 اگه این پیوست مالِ یک آیتمِ چک‌لیستِ خاصه، همون قانونِ toggle.php رو
+    // دوباره چک می‌کنیم — دسترسیِ کلیِ کار کافی نیست، باید دقیقاً مسئولِ
+    // همین آیتم باشه
+    if ($checklist_item_id) {
+        $itemStmt = $db->prepare("SELECT id, task_id, assignee_type, assignee_value FROM task_checklist_items WHERE id = ?");
+        $itemStmt->execute([$checklist_item_id]);
+        $checklistItem = $itemStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$checklistItem || (int) $checklistItem['task_id'] !== $task_id) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'آیتم چک‌لیست نامعتبر است']);
+            exit;
+        }
+
+        $taskForCheck = ['_is_assignee' => ((int) $task['assignee_id'] === (int) $user_id)];
+        if (!canActOnChecklistItem($db, $checklistItem, $taskForCheck, $user_id)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'شما مجاز به پیوست‌کردنِ فایل برای این آیتم نیستید']);
+            exit;
+        }
+    }
+
     if ($step_ids) {
     $stepIdsArray = json_decode($step_ids, true);
     if (is_array($stepIdsArray) && count($stepIdsArray) > 0) {
@@ -163,29 +193,29 @@ try {
 
     $relativePath = '/uploads/tasks/' . $fileName;
 
-    // ========== ذخیره در دیتابیس با step_ids ==========
-    
+    // ========== ذخیره در دیتابیس (با step_ids و/یا checklist_item_id، هرکدوم که باشه) ==========
+
     // اگر step_ids داریم (کار روتین با چند مرحله)
     if ($step_ids) {
         $stmt = $db->prepare("
-            INSERT INTO task_attachments 
-            (task_id, step_ids, uploaded_by, file_name, file_original_name, file_path, file_size, file_type, mime_type)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO task_attachments
+            (task_id, checklist_item_id, step_ids, uploaded_by, file_name, file_original_name, file_path, file_size, file_type, mime_type)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
-            $task_id, $step_ids, $user_id, $fileName, $file['name'],
+            $task_id, $checklist_item_id, $step_ids, $user_id, $fileName, $file['name'],
             $relativePath, $file['size'], $fileExtension, $fileMimeType
         ]);
-    } 
+    }
     // تسک معمولی (بدون step_ids)
     else {
         $stmt = $db->prepare("
-            INSERT INTO task_attachments 
-            (task_id, uploaded_by, file_name, file_original_name, file_path, file_size, file_type, mime_type)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO task_attachments
+            (task_id, checklist_item_id, uploaded_by, file_name, file_original_name, file_path, file_size, file_type, mime_type)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
-            $task_id, $user_id, $fileName, $file['name'],
+            $task_id, $checklist_item_id, $user_id, $fileName, $file['name'],
             $relativePath, $file['size'], $fileExtension, $fileMimeType
         ]);
     }
@@ -203,6 +233,7 @@ try {
         'message' => 'فایل با موفقیت آپلود شد',
         'attachment' => [
             'id' => $attachmentId,
+            'checklist_item_id' => $checklist_item_id,
             'step_ids' => $step_ids ? json_decode($step_ids) : null,
             'file_name' => $fileName,
             'file_original_name' => $file['name'],

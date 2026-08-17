@@ -37,6 +37,27 @@ function getTaskForChecklist($db, $task_id, $user_id)
     return $task;
 }
 
+/**
+ * آیا این کاربر مجاز به عمل‌کردن (تیک‌زدن یا پیوست‌کردنِ فایل موقعِ تأیید)
+ * رویِ این آیتمِ چک‌لیستِ خاصه؟ منبعِ حقیقتِ مشترک برایِ toggle.php و
+ * upload-attachment.php — قانون: آیتمِ ارجاع‌شده → فقط مسئولش (کاربر یا
+ * عضوِ واحد)؛ آیتمِ بدون ارجاع → فقط مسئولِ فعلیِ کار.
+ * $item باید assignee_type/assignee_value داشته باشد؛ $task باید _is_assignee داشته باشد.
+ */
+function canActOnChecklistItem($db, array $item, array $task, $user_id): bool
+{
+    $assigneeType  = $item['assignee_type']  ?? null;
+    $assigneeValue = $item['assignee_value'] ?? null;
+
+    if ($assigneeType === 'user') {
+        return ((string) $assigneeValue === (string) $user_id);
+    }
+    if ($assigneeType === 'section') {
+        return in_array($assigneeValue, us_getUserSections($db, $user_id), true);
+    }
+    return !empty($task['_is_assignee']);
+}
+
 function isChecklistLocked($task)
 {
     $lockedStatuses = ['completed', 'approved', 'stopped', 'cancelled', 'period_done'];

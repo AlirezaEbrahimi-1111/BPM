@@ -119,7 +119,7 @@ if ($wfRow) {
 if ($task['is_workflow_task'] == 1 && $task['workflow_instance_id']) {
     // workflow: فایل‌های همه تسک‌های همین workflow
     $stmt = $db->prepare("
-        SELECT 
+        SELECT
             ta.id,
             ta.file_name,
             ta.file_original_name,
@@ -130,10 +130,13 @@ if ($task['is_workflow_task'] == 1 && $task['workflow_instance_id']) {
             ta.uploaded_by as uploader_id,
             ta.created_at,
             ta.step_ids,
+            ta.checklist_item_id,
+            tci.title as checklist_item_title,
             u.first_name,
             u.last_name
         FROM task_attachments ta
         LEFT JOIN users u ON ta.uploaded_by = u.id
+        LEFT JOIN task_checklist_items tci ON ta.checklist_item_id = tci.id
         WHERE ta.task_id IN (
             SELECT id FROM tasks 
             WHERE workflow_instance_id = ?
@@ -144,7 +147,7 @@ if ($task['is_workflow_task'] == 1 && $task['workflow_instance_id']) {
 } else {
     // تسک معمولی: فقط فایل‌های همین task_id
     $stmt = $db->prepare("
-        SELECT 
+        SELECT
             ta.id,
             ta.file_name,
             ta.file_original_name,
@@ -155,10 +158,13 @@ if ($task['is_workflow_task'] == 1 && $task['workflow_instance_id']) {
             ta.uploaded_by as uploader_id,
             ta.created_at,
             ta.step_ids,
+            ta.checklist_item_id,
+            tci.title as checklist_item_title,
             u.first_name,
             u.last_name
         FROM task_attachments ta
         LEFT JOIN users u ON ta.uploaded_by = u.id
+        LEFT JOIN task_checklist_items tci ON ta.checklist_item_id = tci.id
         WHERE ta.task_id = ?
         ORDER BY ta.created_at DESC
     ");

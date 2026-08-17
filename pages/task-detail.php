@@ -1837,6 +1837,11 @@ if (!$__me) {
                         <label for="chk-note-${item.id}">چه چیزی را ثبت می‌کنید؟ (اختیاری)</label>
                         <textarea id="chk-note-${item.id}" rows="2"
                                   placeholder="مثلاً: فاکتور با شماره ۴۸۲۱ صادر شد"></textarea>
+                        <label for="chk-file-${item.id}" style="margin-top:6px;">
+                            <i class="bi bi-paperclip"></i> پیوستِ فایل (اختیاری)
+                        </label>
+                        <input type="file" id="chk-file-${item.id}" class="form-control form-control-sm"
+                               accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg">
                         <div class="chk-note-actions">
                             <button class="btn btn-primary btn-sm" onclick="saveDoneNote(${item.id}, true)">ثبت و انجام شد</button>
                             <button class="btn btn-light btn-sm" onclick="saveDoneNote(${item.id}, false)">بدون یادداشت</button>
@@ -1992,13 +1997,41 @@ if (!$__me) {
                     ?.classList.remove('noting');
             }
 
-            /* ثبت نهایی — با یادداشت یا بدون آن */
+            /* ثبت نهایی — با یادداشت یا بدون آن، و فایلِ پیوستِ اختیاری */
             function saveDoneNote(itemId, withNote) {
                 const box = document.getElementById('chk-note-' + itemId);
                 const note = (withNote && box) ? box.value.trim() : '';
-                toggleChecklistItem(itemId, true, note);
+                const fileInput = document.getElementById('chk-file-' + itemId);
+                const file = (fileInput && fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
+                toggleChecklistItem(itemId, true, note, file);
             }
-            async function toggleChecklistItem(itemId, isDone, note = '') {
+
+            /* آپلودِ فایلِ ضمیمه‌شده موقعِ تأییدِ یک آیتمِ چک‌لیست — بعدِ موفقیتِ
+               تیک‌زدن صدا زده می‌شه، جدا از خودِ toggle، تا اگه آپلود خطا داد
+               حداقل خودِ «انجام‌شد» ثبت‌شده باقی بمونه */
+            async function uploadChecklistItemFile(itemId, file) {
+                try {
+                    const fd = new FormData();
+                    fd.append('task_id', taskId);
+                    fd.append('checklist_item_id', itemId);
+                    fd.append('file', file);
+                    const res = await fetch('../api/tasks/upload-attachment.php', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + authToken },
+                        body: fd
+                    });
+                    const data = await res.json();
+                    if (!data.success) {
+                        showToast('فایل پیوست نشد: ' + (data.message || 'خطا'), 'warning');
+                    } else {
+                        if (typeof loadAttachments === 'function') loadAttachments();
+                    }
+                } catch (e) {
+                    showToast('خطا در آپلودِ فایلِ پیوست', 'warning');
+                }
+            }
+
+            async function toggleChecklistItem(itemId, isDone, note = '', file = null) {
                 try {
                     const res = await fetch('../api/checklist/toggle.php', {
                         method: 'POST',
@@ -2017,6 +2050,10 @@ if (!$__me) {
                         showToast(data.message || 'خطا در ثبت', 'warning');
                         loadChecklist();
                         return;
+                    }
+                    // 🆕 تیک موفق بود؛ اگه موقعِ تأیید فایلی هم انتخاب شده بود، همین الان پیوستش کن
+                    if (isDone && file) {
+                        await uploadChecklistItemFile(itemId, file);
                     }
                     if (data.auto_completed) {
                         showToast('همه آیتم‌ها تکمیل شدند. کار طبق روال ادامه یافت.', 'success');
@@ -5145,6 +5182,7 @@ ${task.overdue_periods > 0 ? `
                         <span><i class="bi bi-person ms-1"></i>${esc(attachment.uploader_name) || 'نامشخص'}</span>
                         <span><i class="bi bi-clock ms-1"></i>${formatDateTime(attachment.created_at)}</span>
                     </div>
+                    ${attachment.checklist_item_title ? `<div class="attachment-meta" style="margin-top:2px;"><span><i class="bi bi-check2-square ms-1"></i>برای آیتم: ${esc(attachment.checklist_item_title)}</span></div>` : ''}
                 </div>
                 <div class="attachment-actions">
                     <button class="btn-icon btn-download" onclick="downloadAttachment('${escJsAttr(attachment.file_path)}', '${escJsAttr(attachment.file_original_name)}')" title="دانلود">
