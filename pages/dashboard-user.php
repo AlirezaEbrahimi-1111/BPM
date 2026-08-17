@@ -422,7 +422,6 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         .tab-pin:hover {
             color: var(--gray-600);
-            background: var(--gray-100);
         }
 
         .tab-pin.pinned {
@@ -439,14 +438,14 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .filter-chip {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
             border: 1px solid var(--border-soft);
             background: var(--du-head-bg);
             border-radius: var(--radius-sm);
-            padding: 5px 10px 5px 14px;
+            padding: 5px 18px;
             font-size: .72rem;
             color: var(--text-strong);
             font-weight: 700;
@@ -469,7 +468,13 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             font-weight: 600;
         }
 
+        /* پشتِ متنِ دکمه (خارج از جریانِ فلکس) تا حضورش وسط‌چین‌شدنِ متن
+           را جابه‌جا نکند — فقط روی هاورِ خودِ دکمه نمایان می‌شود */
         .filter-pin {
+            position: absolute;
+            left: 4px;
+            top: 50%;
+            transform: translateY(-50%);
             font-size: .702rem;
             color: var(--gray-300);
             opacity: 0;
@@ -488,12 +493,10 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         .filter-pin:hover {
             color: var(--gray-600);
-            background: var(--gray-100);
         }
 
         .filter-chip.active .filter-pin:hover {
             color: #fff;
-            background: rgba(255, 255, 255, .2);
         }
 
         .filter-pin.pinned {

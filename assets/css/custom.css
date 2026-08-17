@@ -148,6 +148,11 @@ body .navbar .nav-link:hover {
     color: #F4EFFF !important;
 }
 
+body .navbar .nav-link:hover::before,
+body .navbar .nav-link.active::before {
+    background: #fff !important;
+}
+
 body .navbar .settings-btn i,
 body .navbar .settings-btn svg,
 body .navbar .notification-bell,
@@ -207,6 +212,11 @@ body .mobile-menu-btn .hamburger-line {
 :root[data-theme="dark"] .navbar .nav-link:hover,
 :root[data-theme="dark"] .navbar .nav-link.active {
     color: var(--icon-accent) !important;
+}
+
+:root[data-theme="dark"] .navbar .nav-link:hover::before,
+:root[data-theme="dark"] .navbar .nav-link.active::before {
+    background: var(--icon-accent) !important;
 }
 
 /* دراورِ موبایل: dashboard-responsive.css یک رنگ ثابت (#334155) با !important

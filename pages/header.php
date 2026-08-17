@@ -99,13 +99,27 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         <a class="navbar-brand ms-auto" href="../../pages/dashboard-manager.php">
             <span id="userName" class="me-2"><?php echo isset($_SESSION['organization_name']) ? htmlspecialchars($_SESSION['organization_name']) : 'کاربر جاری'; ?></span>
         </a>
-        <?php
-        $headerFullName = trim(($_SESSION['user_name'] ?? '') . ' ' . ($_SESSION['user_last_name'] ?? ''));
-        if ($headerFullName !== ''):
-        ?>
-        <span class="navbar-divider header-name-divider"></span>
-        <span id="headerUserFullName"><?php echo htmlspecialchars($headerFullName); ?></span>
-        <?php endif; ?>
+        <span class="navbar-divider header-name-divider" id="headerNameDivider" style="display:none;"></span>
+        <span id="headerUserFullName" style="display:none;"></span>
+        <script>
+            /* نام‌ونام‌خانوادگیِ کاربر از localStorage.user_info (نه سشنِ سرور) —
+               چون این مقدار همون لحظه‌یِ لاگین پر می‌شه و نیازی به لاگینِ
+               مجدد نداره (بر خلافِ $_SESSION که فقط موقعِ لاگین ست می‌شه) */
+            (function () {
+                try {
+                    var u = JSON.parse(localStorage.getItem('user_info') || '{}');
+                    var full = ((u.first_name || '') + ' ' + (u.last_name || '')).trim();
+                    if (!full) return;
+                    var el = document.getElementById('headerUserFullName');
+                    var div = document.getElementById('headerNameDivider');
+                    if (el) {
+                        el.textContent = full;
+                        el.style.display = '';
+                    }
+                    if (div) div.style.display = '';
+                } catch (e) {}
+            })();
+        </script>
 
         <!-- دکمه همبرگر سفارشی موبایل -->
         <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="باز کردن منو">

@@ -205,7 +205,6 @@ try {
         session_regenerate_id(true);
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['first_name'];
-        $_SESSION['user_last_name'] = $user['last_name'];
         $_SESSION['organization_id'] = $user['organization_id'];
         try {
             $orgStmt = $db->prepare("SELECT name FROM organizations WHERE id = ?");
@@ -266,7 +265,6 @@ try {
         session_regenerate_id(true);
         $_SESSION['user_id'] = $result['user']['id'];
         $_SESSION['user_name'] = $result['user']['first_name'];
-        $_SESSION['user_last_name'] = $result['user']['last_name'];
         $_SESSION['organization_id'] = $result['user']['organization_id'];
 
         try {
