@@ -418,7 +418,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .filter-chip.active {
-            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
+            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
             border-color: #8346fd;
             color: #fff;
             font-weight: 600;
@@ -491,7 +491,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         .routine-filter-chip.active,
         .activity-scope-chip.active {
-            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
+            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
             border-color: #8346fd;
             color: #fff;
             font-weight: 600;
@@ -1392,7 +1392,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-btn-primary {
-            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
+            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
             color: #fff;
         }
 
@@ -1994,7 +1994,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-btn-primary {
-            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
+            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
             color: #fff;
         }
 
@@ -2251,7 +2251,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         /* دکمه‌ی شناورِ + (کار جدید) — فقط در همین صفحه، هم‌رنگ با گرادیانتِ
            هدر (نه --primary-gradient که در بقیه‌ی صفحات هم استفاده می‌شه) */
         .fab {
-            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%) !important;
+            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%) !important;
         }
     </style>
 
@@ -2476,7 +2476,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 </div>
                 <div class="modal-body" id="pmBody"></div>
                 <div class="modal-footer" style="padding:10px 18px;">
-                    <a href="my-tasks.php" class="btn btn-sm" style="background:linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
+                    <a href="my-tasks.php" class="btn btn-sm" style="background:linear-gradient(135deg, #a57aff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>
@@ -2504,7 +2504,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     <div class="wk-grid" id="wkGrid"></div>
                 </div>
                 <div class="modal-footer" style="padding:12px 12px 0 12px;">
-                    <a href="my-tasks.php?filter=week" class="btn btn-sm" style="background:linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
+                    <a href="my-tasks.php?filter=week" class="btn btn-sm" style="background:linear-gradient(135deg, #a57aff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>
@@ -2532,7 +2532,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     <div class="mo-grid" id="moGrid" onmouseover="moGridOver(event)" onmouseleave="moGridLeave()"></div>
                 </div>
                 <div class="modal-footer" style="padding:8px 20px 6px;">
-                    <a href="my-tasks.php?filter=month" id="moSeeAllBtn" class="btn btn-sm" style="background:linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
+                    <a href="my-tasks.php?filter=month" id="moSeeAllBtn" class="btn btn-sm" style="background:linear-gradient(135deg, #a57aff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>

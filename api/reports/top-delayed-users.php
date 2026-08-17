@@ -15,6 +15,14 @@
  *    • اگر نباشد (روتینِ ارجاع‌به‌واحد) → پای واحد (activity_section)
  *
  *  خروجی: فهرست نزولی بر اساس مجموع تأخیر، با تفکیک نوع
+ *
+ *  🔒 چرا 'rejected' هم باید کنار 'completed'/'approved'/'stopped' حذف بشه؟
+ *  terminate-period.php با اتمامِ زودهنگامِ یک کارِ دوره‌ای/مقطعی توسط
+ *  تعریف‌کننده، فقط status رو 'rejected' می‌کنه — due_date/end_date دست‌نخورده
+ *  می‌مونه. بدونِ این حذف، یه کارِ سال‌ها پیش بسته‌شده هنوز هر روز تأخیرِ
+ *  «زنده» تولید می‌کنه و مجموع رو کاذب بالا می‌بره (مثلاً بجایِ ۱۰۰ روزِ
+ *  واقعی، ۱۲۳۳ روز). tasks-overview.php و my-tasks.php از قبل rejected رو
+ *  کنار می‌ذارن؛ این فایل، تنها جایی بود که یادش رفته بود.
  * ═══════════════════════════════════════════════════════════════════
  */
 
@@ -121,7 +129,7 @@ try {
           AND is_deleted = 0
           AND task_type = 'periodic'
           AND due_date < ?
-          AND status NOT IN ('completed', 'approved', 'stopped')
+          AND status NOT IN ('completed', 'approved', 'stopped', 'rejected')
     ");
     $stmt->execute([$org_id, $today]);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
@@ -138,7 +146,7 @@ try {
         WHERE organization_id = ?
           AND is_deleted = 0
           AND task_type = 'continuous'
-          AND status NOT IN ('completed', 'approved', 'stopped')
+          AND status NOT IN ('completed', 'approved', 'stopped', 'rejected')
     ");
     $stmt->execute([$org_id]);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {

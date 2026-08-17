@@ -47,7 +47,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         /* ─── Hero Header ─── */
         .ad-hero {
             /* هم‌رنگ با گرادیانتِ هدرِ سایت */
-            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
+            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
             border-radius: var(--radius-lg);
             padding: 1.75rem 2rem;
             margin-bottom: 1.75rem;

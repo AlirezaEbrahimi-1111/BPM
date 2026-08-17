@@ -52,7 +52,7 @@ if (!$__me) {
         /* ── هدر تیکت ── */
         .tkt-header {
             /* هم‌رنگ با گرادیانتِ هدرِ سایت */
-            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
+            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
             color: #fff;
             border-radius: 16px;
             padding: 22px 26px;
@@ -64,6 +64,7 @@ if (!$__me) {
             margin: 0 0 8px;
             font-size: 1.08rem;
             padding-left: 80px;
+            color: white;
         }
         .tkt-header-meta {
             display: flex;
@@ -645,7 +646,7 @@ if (!$__me) {
             .td-wrap { margin-top: 70px; }
             .info-grid { grid-template-columns: 1fr; }
             .tkt-header-meta { flex-direction: column; gap: 4px; }
-            .tkt-header h5 { padding-left: 60px; }
+            .tkt-header h5 { padding-left: 60px; color: white; }
         }
     </style>
 </head>

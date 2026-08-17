@@ -126,7 +126,7 @@ h6 {
    3. ناوبری (Navbar)
 ======================================== */
 .navbar {
-    background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%) !important;
+    background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%) !important;
     box-shadow: 0 4px 20px rgba(135, 92, 242, 0.08);
     border-bottom: 1px solid rgba(135, 92, 242, 0.1);
     padding: 0.4rem 0 !important;
@@ -1956,7 +1956,7 @@ td:nth-child(2) {
     /* هم‌رنگ با گرادیانتِ هدرِ سایت (نه --primary-gradient — اون متغیر
        جاهایِ دیگه‌ای مثلِ دکمه‌ی ورود/FAB/کارت‌هدرها هم استفاده می‌شه که
        قرار نیست عوض بشن) */
-    background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
+    background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
     color: white;
     padding: 1.5rem 2rem;
     position: relative;

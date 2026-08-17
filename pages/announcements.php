@@ -52,7 +52,7 @@ if (!$__me) {
 
     .ann-head-card {
         /* هم‌رنگ با گرادیانتِ هدرِ سایت */
-        background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
+        background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
         border-radius: var(--radius-lg, 16px); padding: 1.2rem 1.4rem; margin-bottom: 1.25rem;
         box-shadow: var(--shadow-md); color: #fff;
         display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap;
