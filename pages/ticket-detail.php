@@ -52,7 +52,8 @@ if (!$__me) {
 
         /* ── هدر تیکت ── */
         .tkt-header {
-            background: linear-gradient(135deg, #744ca4, #9b6dd7);
+            /* هم‌رنگ با گرادیانتِ هدرِ سایت */
+            background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
             color: #fff;
             border-radius: 16px;
             padding: 22px 26px;

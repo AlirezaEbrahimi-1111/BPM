@@ -1945,7 +1945,10 @@ td:nth-child(2) {
 }
 
 .taskDetail-header {
-    background: var(--primary-gradient);
+    /* هم‌رنگ با گرادیانتِ هدرِ سایت (نه --primary-gradient — اون متغیر
+       جاهایِ دیگه‌ای مثلِ دکمه‌ی ورود/FAB/کارت‌هدرها هم استفاده می‌شه که
+       قرار نیست عوض بشن) */
+    background: linear-gradient(135deg, #cdb5ff 0%, #8346fd 60%);
     color: white;
     padding: 1.5rem 2rem;
     position: relative;
