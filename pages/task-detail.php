@@ -3879,7 +3879,11 @@ ${task.overdue_periods > 0 ? `
                         completeBtn.style.display = 'none';
                         addDiscBtn.style.display = 'none';
                     } else {
-                        const canComplete = canCompleteNow(task);
+                        // ✅ از can_complete محاسبه‌شده‌ی سرور (period-engine.php::pe_state)
+                        // استفاده می‌کنیم — نه canCompleteNow قدیمی که با completed_count
+                        // خامِ کل عمرِ کار (که با تمدید دوره صفر نمی‌شه) مقایسه می‌کرد و
+                        // بعد از هر تمدید، دکمه رو برای همیشه مخفی نگه می‌داشت
+                        const canComplete = !!task.can_complete;
                         if (!canComplete) {
                             completeBtn.style.display = 'none';
                             addDiscBtn.style.display = 'none';
@@ -4009,25 +4013,6 @@ ${task.overdue_periods > 0 ? `
                 lastApprovedDate.setHours(0, 0, 0, 0);
 
                 return today.getTime() === lastApprovedDate.getTime();
-            }
-
-            function canCompleteNow(task) {
-                if (task.task_type !== 'continuous') return true;
-
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
-                const startDate = new Date(task.start_date);
-                startDate.setHours(0, 0, 0, 0);
-
-                if (today < startDate) {
-                    return false;
-                }
-
-                const completedCount = task.completed_count || 0;
-                const forgiven = task.overdue_forgiven_credit || 0;
-                const overdueCount = calculateOverduePeriods(task);
-                return completedCount + forgiven < overdueCount;
             }
 
             function calculateOverduePeriods(task) {
