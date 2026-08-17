@@ -55,15 +55,27 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         margin: 0 !important;
     }
 
-    /* نام و نام‌خانوادگیِ کاربرِ جاری، کنارِ نامِ شرکت — کمی ریزتر */
+    /* نام و نام‌خانوادگیِ کاربرِ جاری، کنارِ نامِ شرکت — کمی ریزتر.
+       عمداً خارجِ تگِ <a> (نه داخلش) قرار گرفته تا هاور/کلیک‌پذیریِ
+       navbar-brand را به ارث نبرد — فقط متنِ ساده است. */
     #headerUserFullName {
         font-size: .8em;
         font-weight: 500;
         opacity: .85;
+        white-space: nowrap;
+        cursor: default;
     }
 
     .header-name-divider {
         margin: 0 8px !important;
+    }
+
+    /* موبایل: همبرگر order:1 و navbar-brand order:2 هستند (custom.css) —
+       بدونِ order صریح، این اسپن قبل از اون‌ها می‌افته */
+    @media (max-width: 1399px) {
+        #headerUserFullName {
+            order: 3;
+        }
     }
 </style>
 <!-- بستن فوری drawer قبل از render — جلوگیری از flash -->
@@ -86,14 +98,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         <!-- نام سایت در سمت راست -->
         <a class="navbar-brand ms-auto" href="../../pages/dashboard-manager.php">
             <span id="userName" class="me-2"><?php echo isset($_SESSION['organization_name']) ? htmlspecialchars($_SESSION['organization_name']) : 'کاربر جاری'; ?></span>
-            <?php
-            $headerFullName = trim(($_SESSION['user_name'] ?? '') . ' ' . ($_SESSION['user_last_name'] ?? ''));
-            if ($headerFullName !== ''):
-            ?>
-            <span class="navbar-divider header-name-divider"></span>
-            <span id="headerUserFullName"><?php echo htmlspecialchars($headerFullName); ?></span>
-            <?php endif; ?>
         </a>
+        <?php
+        $headerFullName = trim(($_SESSION['user_name'] ?? '') . ' ' . ($_SESSION['user_last_name'] ?? ''));
+        if ($headerFullName !== ''):
+        ?>
+        <span class="navbar-divider header-name-divider"></span>
+        <span id="headerUserFullName"><?php echo htmlspecialchars($headerFullName); ?></span>
+        <?php endif; ?>
 
         <!-- دکمه همبرگر سفارشی موبایل -->
         <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="باز کردن منو">

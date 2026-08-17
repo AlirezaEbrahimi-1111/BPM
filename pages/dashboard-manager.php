@@ -401,6 +401,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         .filter-chip {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 4px;
             border: 1px solid var(--border-soft);
             background: var(--dm-head-bg);
@@ -462,8 +463,9 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         .routine-filters {
             display: flex;
+            justify-content: flex-end;
             gap: 6px;
-            padding: 0 14px 12px;
+            padding: 10px 14px 12px;
         }
 
         .routine-filter-chip {
