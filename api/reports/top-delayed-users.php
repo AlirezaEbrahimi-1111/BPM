@@ -128,26 +128,32 @@ try {
     // آپدیت می‌کنه (api/tasks/approve-deadline.php)، نه due_date. بدونِ این،
     // کاری که موعدش تمدید شده هنوز بر اساسِ due_date قدیمی‌اش «تأخیردار»
     // حساب می‌شه — برایِ همیشه، چون due_date دیگه هیچ‌وقت آپدیت نمی‌شه
+    // 🔒 effective_due با HAVING (نه max/array_filter سمتِ PHP) محاسبه می‌شه —
+    // چون اگه هر سه‌تا ستون یه مقدارِ غیرِواقعی/تهی داشته باشن (مثلاً '' یا
+    // ردیفِ قدیمیِ خراب)، max() سمتِ PHP رویِ آرایه‌یِ خالی خطایِ کشنده می‌ده،
+    // و اگه سنتینلِ '1000-01-01' به‌جایِ همچین تاریخی به
+    // calcPeriodicDelayWorkingDays برسه، حلقه‌ی روزبه‌روزش باید ~۳۷۵هزار روز
+    // رو بشمره → timeout و خرابیِ کلِ ویجت. HAVING این ردیف‌ها رو قبل از
+    // رسیدن به PHP حذف می‌کنه
     $stmt = $db->prepare("
-        SELECT id, assignee_id, activity_section, due_date, deadline, original_deadline
+        SELECT id, assignee_id, activity_section,
+            GREATEST(
+                COALESCE(due_date, '1000-01-01'),
+                COALESCE(deadline, '1000-01-01'),
+                COALESCE(original_deadline, '1000-01-01')
+            ) AS effective_due
         FROM tasks
         WHERE organization_id = ?
           AND is_deleted = 0
           AND task_type = 'periodic'
-          AND (due_date IS NOT NULL OR deadline IS NOT NULL OR original_deadline IS NOT NULL)
-          AND GREATEST(
-                COALESCE(due_date, '1000-01-01'),
-                COALESCE(deadline, '1000-01-01'),
-                COALESCE(original_deadline, '1000-01-01')
-              ) < ?
           AND status NOT IN ('completed', 'approved', 'stopped', 'rejected')
+        HAVING effective_due > '1000-01-01' AND effective_due < ?
     ");
     $stmt->execute([$org_id, $today]);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
-        $effectiveDue = max(array_filter([$t['due_date'], $t['deadline'], $t['original_deadline']]));
         $k = $bucket($t['assignee_id'], $t['activity_section']);
         $acc[$k]['periodic']++;
-        $acc[$k]['delay_days'] += calcPeriodicDelayWorkingDays(substr($effectiveDue, 0, 10), $today, $holidays);
+        $acc[$k]['delay_days'] += calcPeriodicDelayWorkingDays(substr($t['effective_due'], 0, 10), $today, $holidays);
     }
 
     // ══════════════════════════════════════════════
@@ -183,7 +189,7 @@ try {
           AND wis.status = 'active'
           AND t.deadline IS NOT NULL
           AND t.deadline < NOW()
-          AND t.status NOT IN ('completed', 'approved', 'stopped')
+          AND t.status NOT IN ('completed', 'approved', 'stopped', 'rejected')
     ");
     $stmt->execute([$org_id]);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
