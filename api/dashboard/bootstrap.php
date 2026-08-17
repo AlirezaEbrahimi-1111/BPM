@@ -84,6 +84,27 @@ if ($canMonitorAllWorkflows) {
     $orgBottlenecks = ['success' => true, 'bottlenecks' => []];
 }
 
+// 🆕 تنظیماتِ روزانه‌ی داشبورد (کارهایِ ستاره‌دار + تبِ/فیلترِ پیش‌فرض) —
+// با CURDATE()ِ سرور خونده می‌شه، نه با مقایسه‌ی تاریخِ ساعتِ سیستمِ
+// کلاینت (localStorage) که کاربرهایی با ساعتِ سیستمِ نادرست هیچ‌وقت
+// ریست‌شدنش رو نمی‌دیدن
+$database2 = new Database();
+$dbPrefs = $database2->getConnection();
+$prefsStmt = $dbPrefs->prepare("
+    SELECT pref_key, pref_value FROM user_dashboard_prefs
+    WHERE user_id = ? AND pref_date = CURDATE()
+");
+$prefsStmt->execute([$user_id]);
+$dashboardPrefs = ['starred_tasks' => [], 'default_tab' => '', 'default_filter' => ''];
+foreach ($prefsStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    if ($row['pref_key'] === 'starred_tasks') {
+        $decoded = json_decode($row['pref_value'], true);
+        $dashboardPrefs['starred_tasks'] = is_array($decoded) ? $decoded : [];
+    } elseif (in_array($row['pref_key'], ['default_tab', 'default_filter'], true)) {
+        $dashboardPrefs[$row['pref_key']] = (string) $row['pref_value'];
+    }
+}
+
 http_response_code(200);
 echo json_encode([
     'success'                => true,
@@ -96,4 +117,5 @@ echo json_encode([
     'orgBottlenecks'         => $orgBottlenecks,
     'canViewOrgTasks'        => $canViewOrgTasks,
     'canMonitorAllWorkflows' => $canMonitorAllWorkflows,
+    'dashboardPrefs'         => $dashboardPrefs,
 ]);

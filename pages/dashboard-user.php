@@ -2523,16 +2523,19 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
     <script>
         /* متغیر authToken از header.php می‌آید */
 
-        const LS_STARRED = 'mgrDash.starred';
-        const LS_DEFTAB = 'mgrDash.defaultTab';
-        const LS_DEFTAB_DATE = 'mgrDash.defaultTabDate';
-        const LS_DEFFILTER = 'mgrDash.defaultFilter';
-        const LS_DEFFILTER_DATE = 'mgrDash.defaultFilterDate';
         const currentUser = JSON.parse(localStorage.getItem('user_info') || '{}');
 
         let currentTab = 'mine';
         let currentFilter = 'all';
         let tasksDataReady = false; // تا وقتی داده‌های واقعی نیامده، renderTasks نباید حالت خالی نشان بدهد
+
+        // 🆕 دیگه در localStorage نیستن — از bootstrap.php (dashboardPrefs)
+        // می‌آن و با CURDATE()ِ سرور هر روز خودکار ریست می‌شن، نه با مقایسه‌ی
+        // تاریخِ ساعتِ سیستمِ کلاینت (کاربرهایی با ساعتِ سیستمِ نادرست هیچ‌وقت
+        // ریست‌شدنِ localStorage رو نمی‌دیدن)
+        let starredList = [];
+        let defaultTab = '';
+        let defaultFilter = '';
 
         const store = {
             mine: [],
@@ -2585,118 +2588,83 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             return d;
         }
 
+        /* ───────── ذخیره‌ی تنظیماتِ روزانه‌ی داشبورد در سرور (نه localStorage) ─────────
+           user_dashboard_prefs با pref_date=CURDATE() ذخیره می‌شه؛ فردا (طبقِ
+           تاریخِ سرور) bootstrap.php دیگه این ردیف رو برنمی‌گردونه — یعنی ریست
+           خودکاره و به ساعتِ سیستمِ کلاینت وابسته نیست */
+        function saveDashboardPref(prefKey, prefValue) {
+            fetch('../api/dashboard/prefs-set.php', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + authToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pref_key: prefKey, pref_value: prefValue })
+            }).catch(() => {}); // ذخیره‌ی پس‌زمینه‌ست؛ خطاش UI رو قفل نمی‌کنه
+        }
+
         /* ───────── منتخب ───────── */
         function getStarred() {
-            try {
-                return JSON.parse(localStorage.getItem(LS_STARRED) || '[]');
-            } catch {
-                return [];
-            }
+            return starredList;
         }
 
         function isStarred(k) {
-            return getStarred().includes(k);
+            return starredList.includes(k);
         }
 
         function toggleStar(key, btn, ev) {
             ev.stopPropagation();
-            let list = getStarred();
-            if (list.includes(key)) {
-                list = list.filter(k => k !== key);
+            if (starredList.includes(key)) {
+                starredList = starredList.filter(k => k !== key);
                 btn.classList.remove('on');
                 btn.innerHTML = '<i class="bi bi-star"></i>';
             } else {
-                list.push(key);
+                starredList.push(key);
                 btn.classList.add('on');
                 btn.innerHTML = '<i class="bi bi-star-fill"></i>';
             }
-            localStorage.setItem(LS_STARRED, JSON.stringify(list));
+            saveDashboardPref('starred_tasks', JSON.stringify(starredList));
             if (currentTab === 'starred') renderTasks();
         }
 
-        /* ───────── تب پیش‌فرض (پین) — فقط تا پایانِ همون روز معتبره ───────── */
-        function todayLocalStr() {
-            const d = new Date();
-            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-        }
-
-        // اگه پین از روزِ دیگه‌ای مونده باشه (یعنی از نیمه‌شب گذشته)، پاکش می‌کنه
-        // و true برمی‌گردونه؛ در غیرِ این‌صورت false
-        function clearExpiredPin() {
-            const savedDate = localStorage.getItem(LS_DEFTAB_DATE);
-            if (savedDate && savedDate !== todayLocalStr()) {
-                localStorage.removeItem(LS_DEFTAB);
-                localStorage.removeItem(LS_DEFTAB_DATE);
-                return true;
-            }
-            return false;
-        }
-
+        /* ───────── تب پیش‌فرض (پین) — فقط تا پایانِ همون روز معتبره (روزِ سرور) ───────── */
         function getDefaultTab() {
-            clearExpiredPin();
-            return localStorage.getItem(LS_DEFTAB) || 'mine';
+            return defaultTab || 'mine';
         }
 
         function togglePin(tabKey, ev) {
             ev.stopPropagation();
-            clearExpiredPin();
-            if (localStorage.getItem(LS_DEFTAB) === tabKey) {
-                localStorage.removeItem(LS_DEFTAB);
-                localStorage.removeItem(LS_DEFTAB_DATE);
-            } else {
-                localStorage.setItem(LS_DEFTAB, tabKey);
-                localStorage.setItem(LS_DEFTAB_DATE, todayLocalStr());
-            }
+            defaultTab = (defaultTab === tabKey) ? '' : tabKey;
+            saveDashboardPref('default_tab', defaultTab);
             refreshPins();
         }
 
         function refreshPins() {
-            clearExpiredPin();
-            const def = localStorage.getItem(LS_DEFTAB);
             document.querySelectorAll('.tab-pin').forEach(p => {
                 const key = p.dataset.pin;
-                const on = (def === key);
+                const on = (defaultTab === key);
                 p.className = `bi ${on ? 'bi-pin-angle-fill' : 'bi-pin-angle'} tab-pin${on ? ' pinned' : ''}`;
                 p.dataset.pin = key;
                 p.title = on ? 'تب پیش‌فرض (برای لغو کلیک کنید)' : 'تعیین به‌عنوان تب پیش‌فرض';
             });
         }
 
-        /* ───────── فیلترِ پیش‌فرض (پین) — فقط تا پایانِ همون روز معتبره ───────── */
-        function clearExpiredFilterPin() {
-            const savedDate = localStorage.getItem(LS_DEFFILTER_DATE);
-            if (savedDate && savedDate !== todayLocalStr()) {
-                localStorage.removeItem(LS_DEFFILTER);
-                localStorage.removeItem(LS_DEFFILTER_DATE);
-                return true;
-            }
-            return false;
-        }
-
+        /* ───────── فیلترِ پیش‌فرض (پین) — فقط تا پایانِ همون روز معتبره (روزِ سرور) ───────── */
         function getDefaultFilter() {
-            clearExpiredFilterPin();
-            return localStorage.getItem(LS_DEFFILTER) || 'all';
+            return defaultFilter || 'all';
         }
 
         function toggleFilterPin(filterKey, ev) {
             ev.stopPropagation();
-            clearExpiredFilterPin();
-            if (localStorage.getItem(LS_DEFFILTER) === filterKey) {
-                localStorage.removeItem(LS_DEFFILTER);
-                localStorage.removeItem(LS_DEFFILTER_DATE);
-            } else {
-                localStorage.setItem(LS_DEFFILTER, filterKey);
-                localStorage.setItem(LS_DEFFILTER_DATE, todayLocalStr());
-            }
+            defaultFilter = (defaultFilter === filterKey) ? '' : filterKey;
+            saveDashboardPref('default_filter', defaultFilter);
             refreshFilterPins();
         }
 
         function refreshFilterPins() {
-            clearExpiredFilterPin();
-            const def = localStorage.getItem(LS_DEFFILTER);
             document.querySelectorAll('.filter-pin').forEach(p => {
                 const key = p.dataset.pin;
-                const on = (def === key);
+                const on = (defaultFilter === key);
                 p.className = `bi ${on ? 'bi-pin-angle-fill' : 'bi-pin-angle'} filter-pin${on ? ' pinned' : ''}`;
                 p.dataset.pin = key;
                 p.title = on ? 'فیلتر پیش‌فرض (برای لغو کلیک کنید)' : 'تعیین به‌عنوان فیلتر پیش‌فرض';
@@ -2742,7 +2710,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             // قبلاً این ۴ فراخوانی جدا با Promise.all انجام می‌شد — با یک
             // درخواستِ باندل‌شده جایگزین شد تا صفِ اتصالِ HTTP/1.1 کم بشه
             const bundle = await apiGet('../api/dashboard/bootstrap.php');
-            const { mine, delegated, recent, routines, orgDelegated, canViewOrgTasks } = bundle || {};
+            const { mine, delegated, recent, routines, orgDelegated, canViewOrgTasks, dashboardPrefs } = bundle || {};
 
             store.mine = pickList(mine);
             store.delegated = pickList(delegated);
@@ -2750,6 +2718,19 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             // 🆕 اگر این کاربر (مثلاً مالکِ سازمان) مجوزِ دیدنِ کلِ سازمان رو
             // داشته باشه، مثلِ داشبوردِ مدیر سازمانی نشون بده
             store.orgDelegated = canViewOrgTasks ? pickList(orgDelegated) : null;
+
+            // 🆕 تنظیماتِ روزانه‌ی داشبورد (ستاره‌ها + تبِ/فیلترِ پیش‌فرض) — از
+            // سرور می‌آد، نه localStorage؛ باید قبلِ اولین renderTasks اعمال بشه
+            starredList = (dashboardPrefs && Array.isArray(dashboardPrefs.starred_tasks)) ? dashboardPrefs.starred_tasks : [];
+            defaultTab = (dashboardPrefs && dashboardPrefs.default_tab) || '';
+            defaultFilter = (dashboardPrefs && dashboardPrefs.default_filter) || '';
+            refreshPins();
+            refreshFilterPins();
+            currentFilter = getDefaultFilter();
+            document.querySelectorAll('.filter-chip').forEach(c =>
+                c.classList.toggle('active', c.dataset.filter === currentFilter));
+            switchTab(getDefaultTab());
+
             tasksDataReady = true;
 
             renderStats();
@@ -3376,12 +3357,9 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 });
             });
 
-            refreshPins();
-            refreshFilterPins();
-            currentFilter = getDefaultFilter();
-            document.querySelectorAll('.filter-chip').forEach(c =>
-                c.classList.toggle('active', c.dataset.filter === currentFilter));
-            switchTab(getDefaultTab());
+            // پین‌ها/تبِ پیش‌فرض/فیلترِ پیش‌فرض دیگه اینجا اعمال نمی‌شن — چون
+            // از سرور می‌آن (loadAll → bootstrap.php → dashboardPrefs)، نه از
+            // localStorageِ همیشه‌در‌دسترس؛ اعمال‌شدنشون داخلِ خودِ loadAll است
             loadAll();
         });
 

@@ -40,7 +40,10 @@ class DailyMaintenance {
             
             // 5. آمارگیری روزانه
             $this->generateDailyStats();
-            
+
+            // 6. پاکسازی تنظیماتِ روزانه‌ی داشبورد (ستاره/پین) که دیگه امروز نیستن
+            $this->cleanupDashboardPrefs();
+
             $this->log("========== Daily Maintenance Completed ==========\n");
             
         } catch (Exception $e) {
@@ -248,6 +251,23 @@ class DailyMaintenance {
         $this->log("Yesterday stats: " . json_encode($stats));
     }
     
+    /**
+     * پاکسازیِ تنظیماتِ روزانه‌ی داشبورد (ستاره‌ها + تبِ/فیلترِ پیش‌فرض) —
+     * خودِ bootstrap.php هم با شرطِ pref_date=CURDATE() این ردیف‌هایِ
+     * قدیمی رو نادیده می‌گیره (پس درستیِ منطق به این cron وابسته نیست)،
+     * این فقط برایِ جلوگیری از تجمعِ بی‌نهایتِ ردیف‌هایِ کهنه در جدوله
+     */
+    private function cleanupDashboardPrefs() {
+        $this->log("Cleaning stale dashboard prefs...");
+
+        $stmt = $this->db->query("
+            DELETE FROM user_dashboard_prefs WHERE pref_date < CURDATE()
+        ");
+
+        $deleted = $stmt->rowCount();
+        $this->log("Dashboard prefs cleaned: $deleted deleted");
+    }
+
     /**
      * ارسال نوتیفیکیشن
      */
