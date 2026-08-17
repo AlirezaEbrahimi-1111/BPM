@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 // ✅ بعد
 $database = new Database();
@@ -24,9 +25,16 @@ if (!$user_id) {
     echo json_encode(['success' => false, 'message' => 'عدم احراز هویت'], JSON_UNESCAPED_UNICODE);
     exit;
 }
-$stmtUser = $db->prepare("SELECT id, organization_id FROM users WHERE id = ?");
-$stmtUser->execute([$user_id]);
-$user = $stmtUser->fetch(PDO::FETCH_ASSOC);
+// 🔒 هم‌راستا با قاعدهٔ api/tickets/detail.php (canManageTargetUser) — قبلاً
+// اینجا فقط بر اساسِ سازمان فیلتر می‌شد، یعنی هر کارمندِ عادی لیستِ کلِ
+// تیکت‌هایِ سازمان (نه فقط خودش) رو می‌دید؛ فقط بازکردنِ تکیِ تیکتِ کسِ
+// دیگه بلاک می‌شد. الان همون قاعده اینجا هم اعمال می‌شه.
+$me = loadUserForPermissions($db, $user_id);
+if (!$me) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'کاربر یافت نشد'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 $page     = max(1, intval($_GET['page'] ?? 1));
 $limit    = min(200, max(1, intval($_GET['limit'] ?? 20)));
@@ -43,9 +51,25 @@ try {
     $baseWhere  = [];
     $baseParams = [];
     $baseWhere[] = 't.deleted_at IS NULL';
-    if ($user['id'] != 1) {
-        $baseWhere[]  = 't.organization_id = ?';
-        $baseParams[] = $user['organization_id'];
+
+    if (!isSuperAdmin($me)) {
+        $role = $me['role'] ?? 'employee';
+        if (in_array($role, ['supervisor', 'admin'], true)) {
+            // سرپرست/ادمین: کلِ تیکت‌هایِ سازمانِ خودش
+            $baseWhere[]  = 't.organization_id = ?';
+            $baseParams[] = $me['organization_id'];
+        } elseif ($role === 'manager') {
+            // مدیر: تیکتِ خودش + زیرمجموعه‌اش
+            $subIds   = getSubordinateIds($db, (int) $user_id);
+            $subIds[] = (int) $user_id;
+            $ph = implode(',', array_fill(0, count($subIds), '?'));
+            $baseWhere[] = "t.created_by IN ($ph)";
+            $baseParams  = array_merge($baseParams, $subIds);
+        } else {
+            // کارمندِ عادی: فقط تیکتِ خودش
+            $baseWhere[]  = 't.created_by = ?';
+            $baseParams[] = $user_id;
+        }
     }
     $baseWhereSQL = 'WHERE ' . implode(' AND ', $baseWhere);
 

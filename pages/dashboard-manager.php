@@ -471,7 +471,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             padding: 10px 14px 12px;
         }
 
-        .routine-filter-chip {
+        .routine-filter-chip,
+        .activity-scope-chip {
             border: 1px solid var(--border-soft);
             background: var(--dm-head-bg);
             border-radius: var(--radius-sm);
@@ -483,15 +484,25 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             transition: all .15s;
         }
 
-        .routine-filter-chip:hover {
+        .routine-filter-chip:hover,
+        .activity-scope-chip:hover {
             background: var(--dm-head-bg-hover);
         }
 
-        .routine-filter-chip.active {
+        .routine-filter-chip.active,
+        .activity-scope-chip.active {
             background: var(--primary);
             border-color: var(--primary);
             color: #fff;
             font-weight: 600;
+        }
+
+        .activity-scope-filters {
+            display: flex;
+            gap: 6px;
+            padding: 10px 14px;
+            flex-shrink: 0;
+            align-self: self-end;
         }
 
         .task-table {
@@ -2319,6 +2330,14 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                             <i class="bi bi-pin-angle filter-pin" data-pin="overdue"></i>
                         </button>
                     </div>
+                    <div class="activity-scope-filters" id="activityScopeFilters" style="display:none;">
+                        <button class="activity-scope-chip active" data-scope="personal">
+                            <span>شخصی</span>
+                        </button>
+                        <button class="activity-scope-chip" data-scope="org">
+                            <span>کل سازمان</span>
+                        </button>
+                    </div>
 
                 </div>
                     
@@ -2543,6 +2562,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         let starredList = [];
         let defaultTab = '';
         let defaultFilter = '';
+        let activityScope = 'personal';
 
         const store = {
             mine: [],
@@ -2812,6 +2832,14 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             return `${src === 'recent' ? 'wf' : 'task'}:${t.id}`;
         }
 
+        // بارگذاریِ لاگِ فعالیت با نطاقِ دلخواه (شخصی/کل‌سازمان) — تبِ
+        // «فعالیت‌های اخیر» فقط وقتی خودش فعاله این رو صدا می‌زنه
+        async function loadActivityLog(scope) {
+            const data = await apiGet('../api/dashboard/recent-activity.php?scope=' + encodeURIComponent(scope));
+            store.activityLog = pickList(data);
+            if (currentTab === 'recent') renderTasks();
+        }
+
         function getTabList() {
             if (currentTab === 'starred') {
                 const starred = getStarred();
@@ -2890,7 +2918,9 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     const link = `task-detail.php?id=${t.task_id}`;
                     const itemTitle = t.item_title ? esc(t.item_title) : '';
                     const mainTitle = itemTitle || esc(t.title) || '—';
-                    const label = `${activityLabel(t.action)}: ${mainTitle}`;
+                    // فیلترِ «کل سازمان» بدونِ نامِ شخص معلوم نیست کی این کارو کرده
+                    const who = t.actor_name ? `${esc(t.actor_name)} — ` : '';
+                    const label = `${who}${activityLabel(t.action)}: ${mainTitle}`;
                     return `<tr onclick="location.href='${link}'">
                     <td>
                         <div class="td-title">
@@ -3498,10 +3528,15 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             document.querySelectorAll('.dash-tab').forEach(b =>
                 b.classList.toggle('active', b.dataset.tab === tab));
 
-            // فیلترها در تب فعالیت‌های اخیر معنا ندارند → مخفی
+            // فیلترها در تب فعالیت‌های اخیر معنا ندارند → مخفی؛ برعکسش برایِ
+            // فیلترِ شخصی/سازمانیِ همون تب صادقه
             const filters = document.querySelector('.dash-filters');
             if (filters) {
                 filters.style.display = (tab === 'recent') ? 'none' : '';
+            }
+            const scopeFilters = document.getElementById('activityScopeFilters');
+            if (scopeFilters) {
+                scopeFilters.style.display = (tab === 'recent') ? '' : 'none';
             }
 
             updateTasksSeeAll();
@@ -3542,6 +3577,16 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     document.querySelectorAll('.routine-filter-chip').forEach(c => c.classList.remove('active'));
                     chip.classList.add('active');
                     loadRoutines(routineScope);
+                });
+            });
+
+            document.querySelectorAll('.activity-scope-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    if (chip.classList.contains('active')) return;
+                    activityScope = chip.dataset.scope;
+                    document.querySelectorAll('.activity-scope-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    loadActivityLog(activityScope);
                 });
             });
 

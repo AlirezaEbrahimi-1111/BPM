@@ -3,15 +3,20 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
  *  API: dashboard/recent-activity.php
- *  «فعالیت‌های اخیرِ» خودِ کاربر — یک لاگِ تاریخچه‌ای (نه یک لیستِ کارهایِ
- *  بازِ فعلی؛ اون‌ها تویِ تب‌هایِ «کارهای من»/«کارهای واگذار شده» هستن).
+ *  «فعالیت‌های اخیر» — یک لاگِ تاریخچه‌ای (نه یک لیستِ کارهایِ بازِ فعلی؛
+ *  اون‌ها تویِ تب‌هایِ «کارهای من»/«کارهای واگذار شده» هستن).
  *
  *  دو منبع ترکیب می‌شه:
  *    ۱) task_history — همه‌ی رویدادهایِ کارهایِ معمولی و کارهایِ فرآیندی
- *       (چون هر مرحله‌ی روتین هم یک ردیفِ tasks داره)، هرجا کاربرِ جاری
- *       from_user_id یا to_user_id بوده.
+ *       (چون هر مرحله‌ی روتین هم یک ردیفِ tasks داره).
  *    ۲) task_checklist_items — ارجاع/تکمیلِ آیتم‌هایِ چک‌لیستی که مستقیماً
- *       به خودِ کاربر (نه واحدش) اختصاص داده شده.
+ *       به یه کاربرِ خاص (نه واحد) اختصاص داده شده.
+ *
+ *  scope=personal (پیش‌فرض): فقط فعالیتِ خودِ کاربرِ جاری.
+ *  scope=org: فعالیتِ کلِ سازمان — با نامِ شخص روی هر ردیف (چون دیگه
+ *  «خودم» بودنش بدیهی نیست). محدودیتِ مجوزِ خاصی نداره؛ هر کسی که این
+ *  ویجت رو می‌بینه (یعنی manager/supervisor — دسترسیِ خودِ صفحه از قبل
+ *  به این دو نقش محدوده) می‌تونه تبِ سازمانی رو هم ببینه.
  * ═══════════════════════════════════════════════════════════════════
  */
 
@@ -31,6 +36,7 @@ const RECENT_ACTIVITY_DAYS  = 30;
 
 try {
     $user_id = requireAuth();
+    $scope   = (($_GET['scope'] ?? '') === 'org') ? 'org' : 'personal';
 
     $database = new Database();
     $db = $database->getConnection();
@@ -40,30 +46,34 @@ try {
     $org_id = (int) $orgStmt->fetchColumn();
 
     $activities = [];
+    $isOrg = ($scope === 'org');
 
     // ── ۱) رویدادهایِ task_history (کارهایِ معمولی + مراحلِ فرآیندی) ──
+    $userCond = $isOrg ? '' : 'AND (th.from_user_id = :uid OR th.to_user_id = :uid2)';
     $stmt = $db->prepare("
         SELECT
             th.task_id,
             t.title,
             t.is_workflow_task,
             th.action,
-            th.created_at AS ts
+            th.created_at AS ts,
+            TRIM(CONCAT(COALESCE(fu.first_name,''), ' ', COALESCE(fu.last_name,''))) AS actor_name
         FROM task_history th
         JOIN tasks t ON t.id = th.task_id
-        WHERE (th.from_user_id = :uid OR th.to_user_id = :uid2)
-          AND t.organization_id = :org_id
+        LEFT JOIN users fu ON fu.id = th.from_user_id
+        WHERE t.organization_id = :org_id
           AND t.is_deleted = 0
           AND th.created_at >= DATE_SUB(NOW(), INTERVAL :days DAY)
+          $userCond
         ORDER BY th.created_at DESC
         LIMIT " . RECENT_ACTIVITY_LIMIT . "
     ");
-    $stmt->execute([
-        'uid'     => $user_id,
-        'uid2'    => $user_id,
-        'org_id'  => $org_id,
-        'days'    => RECENT_ACTIVITY_DAYS,
-    ]);
+    $params = ['org_id' => $org_id, 'days' => RECENT_ACTIVITY_DAYS];
+    if (!$isOrg) {
+        $params['uid']  = $user_id;
+        $params['uid2'] = $user_id;
+    }
+    $stmt->execute($params);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
         $activities[] = [
             'task_id'          => (int) $row['task_id'],
@@ -72,23 +82,32 @@ try {
             'is_workflow_task' => (int) $row['is_workflow_task'],
             'action'           => $row['action'],
             'timestamp'        => $row['ts'],
+            'actor_name'       => $isOrg ? ($row['actor_name'] ?: null) : null,
         ];
     }
 
-    // ── ۲الف) آیتم‌هایِ چک‌لیستی که به خودِ کاربر ارجاع شدن ──
+    // ── ۲الف) آیتم‌هایِ چک‌لیستی که به یه کاربر ارجاع شدن ──
+    // (شخصی: فقط خودِ کاربرِ جاری — سازمانی: هر کسی، با نامِ همون مسئول)
+    $assigneeCond = $isOrg ? '' : 'AND ci.assignee_value = :uid';
     $stmt = $db->prepare("
-        SELECT ci.task_id, t.title AS task_title, t.is_workflow_task, ci.title AS item_title, ci.created_at AS ts
+        SELECT ci.task_id, t.title AS task_title, t.is_workflow_task, ci.title AS item_title, ci.created_at AS ts,
+               TRIM(CONCAT(COALESCE(au.first_name,''), ' ', COALESCE(au.last_name,''))) AS actor_name
         FROM task_checklist_items ci
         JOIN tasks t ON t.id = ci.task_id
+        LEFT JOIN users au ON au.id = ci.assignee_value
         WHERE ci.assignee_type = 'user'
-          AND ci.assignee_value = :uid
           AND t.organization_id = :org_id
           AND t.is_deleted = 0
           AND ci.created_at >= DATE_SUB(NOW(), INTERVAL :days DAY)
+          $assigneeCond
         ORDER BY ci.created_at DESC
         LIMIT " . RECENT_ACTIVITY_LIMIT . "
     ");
-    $stmt->execute(['uid' => (string) $user_id, 'org_id' => $org_id, 'days' => RECENT_ACTIVITY_DAYS]);
+    $params = ['org_id' => $org_id, 'days' => RECENT_ACTIVITY_DAYS];
+    if (!$isOrg) {
+        $params['uid'] = (string) $user_id;
+    }
+    $stmt->execute($params);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
         $activities[] = [
             'task_id'          => (int) $row['task_id'],
@@ -97,24 +116,33 @@ try {
             'is_workflow_task' => (int) $row['is_workflow_task'],
             'action'           => 'checklist_assigned',
             'timestamp'        => $row['ts'],
+            'actor_name'       => $isOrg ? ($row['actor_name'] ?: null) : null,
         ];
     }
 
-    // ── ۲ب) آیتم‌هایِ چک‌لیستی که خودِ کاربر تکمیل کرده ──
+    // ── ۲ب) آیتم‌هایِ چک‌لیستی که تکمیل شدن ──
+    // (شخصی: فقط خودِ کاربرِ جاری تکمیل کرده باشه — سازمانی: هر کسی)
+    $doneCond = $isOrg ? '' : 'AND ci.done_by = :uid';
     $stmt = $db->prepare("
-        SELECT ci.task_id, t.title AS task_title, t.is_workflow_task, ci.title AS item_title, ci.done_at AS ts
+        SELECT ci.task_id, t.title AS task_title, t.is_workflow_task, ci.title AS item_title, ci.done_at AS ts,
+               TRIM(CONCAT(COALESCE(du.first_name,''), ' ', COALESCE(du.last_name,''))) AS actor_name
         FROM task_checklist_items ci
         JOIN tasks t ON t.id = ci.task_id
-        WHERE ci.done_by = :uid
-          AND ci.is_done = 1
+        LEFT JOIN users du ON du.id = ci.done_by
+        WHERE ci.is_done = 1
           AND ci.done_at IS NOT NULL
           AND t.organization_id = :org_id
           AND t.is_deleted = 0
           AND ci.done_at >= DATE_SUB(NOW(), INTERVAL :days DAY)
+          $doneCond
         ORDER BY ci.done_at DESC
         LIMIT " . RECENT_ACTIVITY_LIMIT . "
     ");
-    $stmt->execute(['uid' => $user_id, 'org_id' => $org_id, 'days' => RECENT_ACTIVITY_DAYS]);
+    $params = ['org_id' => $org_id, 'days' => RECENT_ACTIVITY_DAYS];
+    if (!$isOrg) {
+        $params['uid'] = $user_id;
+    }
+    $stmt->execute($params);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
         $activities[] = [
             'task_id'          => (int) $row['task_id'],
@@ -123,6 +151,7 @@ try {
             'is_workflow_task' => (int) $row['is_workflow_task'],
             'action'           => 'checklist_done',
             'timestamp'        => $row['ts'],
+            'actor_name'       => $isOrg ? ($row['actor_name'] ?: null) : null,
         ];
     }
 
