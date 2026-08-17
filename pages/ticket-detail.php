@@ -224,6 +224,20 @@ if (!$__me) {
             color: #999;
             white-space: nowrap;
         }
+        .msg-delete-btn {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: .8rem;
+            padding: 2px 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-inline-start: 4px;
+        }
+        .msg-delete-btn:hover {
+            color: #dc2626;
+            background: rgba(220, 38, 38, .1);
+        }
         .msg-text {
             white-space: pre-wrap;
             word-wrap: break-word;
@@ -987,10 +1001,15 @@ if (!$__me) {
                     }).join('') + '</div>';
                 }
 
+                // 🔒 فقط کاربر id=1 — هم‌راستا با api/tickets/delete-message.php
+                var deleteBtn = (Number(currentUserId) === 1)
+                    ? '<button type="button" class="msg-delete-btn" title="حذفِ این پیام" onclick="deleteMessage(' + m.id + ')"><i class="bi bi-trash"></i></button>'
+                    : '';
+
                 html += '<div class="msg-bubble ' + cls + '">';
                 html += '<div class="msg-head">';
                 html += '<span class="msg-author"><i class="bi bi-person"></i><span>' + esc(m.user_name) + '</span>' + senderBadge + '</span>';
-                html += '<span class="msg-time">' + time + '</span>';
+                html += '<span class="msg-time">' + time + '</span>' + deleteBtn;
                 html += '</div>';
                 if (m.message) html += '<div class="msg-text">' + esc(m.message) + '</div>';
                 html += imagesHtml;
@@ -998,6 +1017,32 @@ if (!$__me) {
             }
             el.innerHTML = html;
             el.scrollTop = el.scrollHeight; // ✅ همیشه آخرین پیام نمایش داده شود
+        }
+
+        // ─── حذفِ منطقیِ یک پیام (فقط کاربر id=1) ───
+        function deleteMessage(messageId) {
+            uiConfirm('این پیام برای همیشه حذف می‌شود. مطمئنید؟', function () {
+                fetch('../api/tickets/delete-message.php', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message_id: messageId })
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        if (data.success) {
+                            showToast('پیام حذف شد', 'success');
+                            loadDetail();
+                        } else {
+                            showToast(data.message || 'خطا در حذفِ پیام', 'error');
+                        }
+                    })
+                    .catch(function () {
+                        showToast('خطا در ارتباط با سرور', 'error');
+                    });
+            });
         }
 
         // ─── پیوست‌ها ───

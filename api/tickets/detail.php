@@ -96,7 +96,7 @@ try {
             u.role AS user_role
         FROM ticket_messages tm
         LEFT JOIN users u ON tm.user_id = u.id
-        WHERE tm.ticket_id = ?
+        WHERE tm.ticket_id = ? AND tm.deleted_at IS NULL
         ORDER BY tm.created_at ASC
     ";
     $stmt = $db->prepare($msgSql);
