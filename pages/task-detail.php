@@ -214,10 +214,45 @@ if (!$__me) {
             border-color: #6c3ff4;
         }
 
+        /* ردیفِ واحد: پیوستِ فایل (۵۰٪) + انصراف/بدون‌یادداشت/ثبت (۵۰٪) */
+        .chk-note-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 9px;
+        }
+
+        .chk-note-file {
+            flex: 0 0 50%;
+            max-width: 50%;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chk-note-file label {
+            margin: 0;
+            display: inline-flex;
+            color: #6c3ff4;
+            font-size: .95rem;
+            flex-shrink: 0;
+        }
+
+        .chk-note-file input[type="file"] {
+            flex: 1;
+            min-width: 0;
+        }
+
         .chk-note-actions {
             display: flex;
+            align-items: center;
             gap: 8px;
-            margin-top: 9px;
+            flex: 1 1 50%;
+            max-width: 50%;
+        }
+
+        .chk-note-actions .btn {
+            white-space: nowrap;
         }
 
         /* یادداشت ثبت‌شده زیر آیتم */
@@ -1837,15 +1872,17 @@ if (!$__me) {
                         <label for="chk-note-${item.id}">چه چیزی را ثبت می‌کنید؟ (اختیاری)</label>
                         <textarea id="chk-note-${item.id}" rows="2"
                                   placeholder="مثلاً: فاکتور با شماره ۴۸۲۱ صادر شد"></textarea>
-                        <label for="chk-file-${item.id}" style="margin-top:6px;">
-                            <i class="bi bi-paperclip"></i> پیوستِ فایل (اختیاری)
-                        </label>
-                        <input type="file" id="chk-file-${item.id}" class="form-control form-control-sm"
-                               accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg">
-                        <div class="chk-note-actions">
-                            <button class="btn btn-primary btn-sm" onclick="saveDoneNote(${item.id}, true)">ثبت و انجام شد</button>
-                            <button class="btn btn-light btn-sm" onclick="saveDoneNote(${item.id}, false)">بدون یادداشت</button>
-                            <button class="btn btn-link btn-sm text-muted" onclick="cancelDoneNote(${item.id})">انصراف</button>
+                        <div class="chk-note-row">
+                            <div class="chk-note-file">
+                                <label for="chk-file-${item.id}" title="پیوستِ فایل (اختیاری)"><i class="bi bi-paperclip"></i></label>
+                                <input type="file" id="chk-file-${item.id}" class="form-control form-control-sm"
+                                       accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg">
+                            </div>
+                            <div class="chk-note-actions">
+                                <button class="btn btn-link btn-sm text-muted" onclick="cancelDoneNote(${item.id})">انصراف</button>
+                                <button class="btn btn-link btn-sm" onclick="saveDoneNote(${item.id}, false)">بدون یادداشت</button>
+                                <button class="btn btn-primary btn-sm" onclick="saveDoneNote(${item.id}, true)">ثبت و انجام شد</button>
+                            </div>
                         </div>
                     </div>` : ''}
                   </div>`;
