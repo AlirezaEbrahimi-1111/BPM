@@ -135,12 +135,17 @@ try {
     // calcPeriodicDelayWorkingDays برسه، حلقه‌ی روزبه‌روزش باید ~۳۷۵هزار روز
     // رو بشمره → timeout و خرابیِ کلِ ویجت. HAVING این ردیف‌ها رو قبل از
     // رسیدن به PHP حذف می‌کنه
+    // 🔒 CAST(...AS DATE) — بدونِ این، GREATEST/COALESCE این سه ستون رو به‌عنوانِ
+    // رشته می‌بینه، و چون due_date/deadline/original_deadline collationِ
+    // یکسانی باهم ندارن (ناهماهنگیِ قدیمیِ خودِ اسکیما)، مقایسه‌ی HAVING با
+    // خطایِ «Illegal mix of collations» (1267) کرش می‌کنه. تبدیل به DATE این
+    // مشکل رو کاملاً کنار می‌ذاره چون DATE اصلاً collation نداره
     $stmt = $db->prepare("
         SELECT id, assignee_id, activity_section,
             GREATEST(
-                COALESCE(due_date, '1000-01-01'),
-                COALESCE(deadline, '1000-01-01'),
-                COALESCE(original_deadline, '1000-01-01')
+                COALESCE(CAST(due_date AS DATE), CAST('1000-01-01' AS DATE)),
+                COALESCE(CAST(deadline AS DATE), CAST('1000-01-01' AS DATE)),
+                COALESCE(CAST(original_deadline AS DATE), CAST('1000-01-01' AS DATE))
             ) AS effective_due
         FROM tasks
         WHERE organization_id = ?
