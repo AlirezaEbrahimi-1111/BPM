@@ -12,7 +12,6 @@ if (!headers_sent()) {
     <title>ثبت‌نام سازمان جدید</title>
     <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/js/cdn/bootstrap-icons.css">
-    <link href="../assets/js/cdn/fonts/bootstrap-icons.woff2?30af91bf14e37666a085fb8a161ff36d" rel="stylesheet">
     <script src="../assets/js/config.js"></script>
     <script src="../assets/js/common.js"></script>
     <script src="../assets/js/cdn/intro.min.js"></script>

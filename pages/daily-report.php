@@ -35,7 +35,6 @@ if (!$__me) {
 
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
-    <link href="<?= asset('../assets/js/cdn/fonts/bootstrap-icons.woff2') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
 </head>
 

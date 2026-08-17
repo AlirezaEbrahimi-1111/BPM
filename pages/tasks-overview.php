@@ -35,7 +35,6 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
     <!-- Bootstrap 5 RTL -->
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
-    <link href="<?= asset('../assets/js/cdn/fonts/bootstrap-icons.woff2?30af91bf14e37666a085fb8a161ff36d') ?>" rel="stylesheet">
 
     <script src="<?= asset('../assets/js/config.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">

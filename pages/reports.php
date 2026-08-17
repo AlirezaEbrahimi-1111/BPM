@@ -35,7 +35,6 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
 
     <!-- فونت فارسی -->
-    <link href="<?= asset('../assets/js/cdn/fonts/bootstrap-icons.woff2?30af91bf14e37666a085fb8a161ff36d') ?>" rel="stylesheet">
 
     <!-- تقویم شمسی -->
     <link rel="stylesheet"

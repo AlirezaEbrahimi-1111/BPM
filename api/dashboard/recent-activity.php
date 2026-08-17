@@ -57,10 +57,17 @@ try {
             t.is_workflow_task,
             th.action,
             th.created_at AS ts,
-            TRIM(CONCAT(COALESCE(fu.first_name,''), ' ', COALESCE(fu.last_name,''))) AS actor_name
+            -- 🔒 اولویت با from_user_id (کسی که این اقدام رو انجام داده)؛ اگه
+            -- اون کاربر دیگه در دسترس نبود (مثلاً حذفِ فیزیکی)، to_user_id
+            -- به‌عنوانِ جایگزین — تا ردیف بدونِ نام نمونه
+            COALESCE(
+                NULLIF(TRIM(CONCAT(COALESCE(fu.first_name,''), ' ', COALESCE(fu.last_name,''))), ''),
+                NULLIF(TRIM(CONCAT(COALESCE(tu.first_name,''), ' ', COALESCE(tu.last_name,''))), '')
+            ) AS actor_name
         FROM task_history th
         JOIN tasks t ON t.id = th.task_id
         LEFT JOIN users fu ON fu.id = th.from_user_id
+        LEFT JOIN users tu ON tu.id = th.to_user_id
         WHERE t.organization_id = :org_id
           AND t.is_deleted = 0
           AND th.created_at >= DATE_SUB(NOW(), INTERVAL :days DAY)

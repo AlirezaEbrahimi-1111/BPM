@@ -39,7 +39,6 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
     
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
-    <link href="<?= asset('../assets/js/cdn/fonts/bootstrap-icons.woff2?30af91bf14e37666a085fb8a161ff36d') ?>" rel="stylesheet">
 
     <script src="<?= asset('../assets/js/config.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/persian-date.min.js') ?>"></script>
@@ -331,7 +330,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         /* گروه فیلترها سمت چپ همین ردیف */
-        .dash-tabs .dash-filters {
+        .dash-tabs .dash-filters,
+        .dash-tabs .activity-scope-filters {
             margin-right: auto;
             /* هل به چپ (RTL) */
             padding: 6px 0;
@@ -500,7 +500,6 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         .activity-scope-filters {
             display: flex;
             gap: 6px;
-            padding: 10px 14px;
             flex-shrink: 0;
             align-self: self-end;
         }
@@ -582,6 +581,10 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             display: flex;
             align-items: center;
             gap: 8px;
+            /* بدونِ این، ردیف‌هایِ تبِ «تاریخچه فعالیت» (که دکمه‌ی ستاره ندارن)
+               کوتاه‌تر از بقیه‌ی ردیف‌ها به‌نظر می‌رسیدن — این ارتفاع رو با
+               ردیف‌هایی که دکمه‌ی ستاره دارن یکی می‌کنه */
+            min-height: 22px;
         }
 
         .td-title i.doc {
