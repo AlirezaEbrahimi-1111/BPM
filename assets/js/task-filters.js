@@ -218,16 +218,21 @@ window.TF = (function () {
      * برای افزودن وضعیت جدید، فقط یک ردیف اینجا اضافه کنید.
      */
     const statusCfg = {
-        not_started:           { label: 'شروع نشده',        cls: 'status-not_started' },
-        in_progress:           { label: 'در حال انجام',      cls: 'status-in_progress' },
-        pending_approval:      { label: 'در انتظار تایید',   cls: 'status-pending_approval' },
-        completed:             { label: 'تکمیل شده',         cls: 'status-completed' },
-        approved:              { label: 'تأیید شده',         cls: 'status-approved' },
-        delegated:             { label: 'ارجاع شده',         cls: 'status-delegated' },
-        rejected:              { label: 'متوقف',             cls: 'status-rejected' },
-        stopped:               { label: 'متوقف شده',         cls: 'status-stopped' },
-        period_done:           { label: 'دوره انجام شد',     cls: 'status-period_done' },
-        termination_requested: { label: 'در انتظار اتمام',   cls: 'status-termination_requested' }
+        not_started:           { label: 'شروع نشده',        cls: 'status-not_started',           icon: 'circle' },
+        in_progress:           { label: 'در حال انجام',      cls: 'status-in_progress',           icon: 'play-circle' },
+        pending_approval:      { label: 'در انتظار تایید',   cls: 'status-pending_approval',      icon: 'hourglass-split' },
+        completed:             { label: 'تکمیل شده',         cls: 'status-completed',             icon: 'check-circle' },
+        approved:              { label: 'تأیید شده',         cls: 'status-approved',              icon: 'check-circle-fill' },
+        delegated:             { label: 'ارجاع شده',         cls: 'status-delegated',             icon: 'arrow-left-right' },
+        // 🆕 rejected/stopped عمداً از هم متمایز شدن — قبلاً «متوقف»/«متوقف شده»
+        // بودن که تقریباً یک‌کلمه‌ای به‌نظر می‌رسیدن با اینکه دو معنیِ کاملاً
+        // متفاوت دارن: rejected = تعریف‌کننده دستی یک کارِ دوره‌ای رو زودتر
+        // از موعد تمام کرده؛ stopped = کار بخشی از یک فرآیند/روتین بوده که
+        // کلِ اون فرآیند قبل از پایان، متوقف شده
+        rejected:              { label: 'متوقفِ دستی',        cls: 'status-rejected',              icon: 'pause-circle' },
+        stopped:               { label: 'توقفِ فرآیند',       cls: 'status-stopped',               icon: 'stop-circle' },
+        period_done:           { label: 'دوره انجام شد',     cls: 'status-period_done',           icon: 'calendar-check' },
+        termination_requested: { label: 'در انتظار اتمام',   cls: 'status-termination_requested', icon: 'hourglass-split' }
     };
 
     /** برچسب فارسی یک وضعیت */
@@ -238,6 +243,11 @@ window.TF = (function () {
     /** کلاس CSS یک وضعیت */
     function statusClass(status) {
         return (statusCfg[status] && statusCfg[status].cls) || 'status-not_started';
+    }
+
+    /** آیکنِ بوت‌استرپ‌آیکنزِ یک وضعیت (بدونِ پیشوندِ bi-) */
+    function statusIcon(status) {
+        return (statusCfg[status] && statusCfg[status].icon) || 'circle';
     }
 
     /**
@@ -293,6 +303,7 @@ window.TF = (function () {
         statusCfg,
         statusLabel,
         statusClass,
+        statusIcon,
         statusBadge
     };
 })();

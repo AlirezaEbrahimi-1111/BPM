@@ -1149,6 +1149,7 @@ if (!$__me) {
         <script src="<?= asset('../../assets/js/table-utils.js') ?>"></script>
         <script src="<?= asset('/assets/js/undo-toast.js') ?>"></script>
         <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
+        <script src="<?= asset('/assets/js/task-filters.js') ?>"></script>
         <script>
             // کاربرِ چندواحدی: به‌جایِ مقایسه با فقط واحدِ اصلی (user.activity_section)،
             // عضویت در فهرستِ کاملِ واحدها رو چک می‌کنه. اگه user_info قدیمی (قبل از
@@ -4572,18 +4573,10 @@ ${task.overdue_periods > 0 ? `
                 if (status === 'delegated' && currentUser && Number(assigneeId) === Number(currentUser.id)) {
                     return 'شروع نشده';
                 }
-                const labels = {
-                    'in_progress': 'در حال انجام',
-                    'completed': 'انجام شد',
-                    'approved': 'تأیید و انجام شد',
-                    'pending_approval': 'در انتظار تأیید',
-                    'delegated': 'ارجاع شد',
-                    'not_started': 'شروع نشده',
-                    'termination_requested': 'درخواست اتمام',
-                    'rejected': 'متوقف شده',
-                    'period_done': 'دوره انجام شد'
-                };
-                return labels[status] || status;
+                // برچسبِ وضعیت از assets/js/task-filters.js (تنها مرجع) —
+                // قبلاً اینجا یک جدولِ محلیِ جداگانه بود که rejected رو با
+                // برچسبِ اشتباهِ «متوقف شده» (که مالِ stopped هست) نشون می‌داد
+                return TF.statusLabel(status);
             }
 
             function getPeriodLabel(period) {

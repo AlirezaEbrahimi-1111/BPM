@@ -763,18 +763,6 @@ if (!$__me) {
         }
 
         // Helpers
-        const statusCfg = {
-            not_started: ['شروع نشده', 'circle'],
-            in_progress: ['در حال انجام', 'play-circle'],
-            completed: ['تکمیل شده', 'check-circle'],
-            pending_approval: ['منتظر تأیید', 'hourglass-split'],
-            approved: ['تأیید شده', 'check-circle-fill'],
-            delegated: ['ارجاع شده', 'arrow-left-right'],
-            rejected: ['متوقف', 'pause-circle'],
-            stopped: ['متوقف شده', 'stop-circle'],
-            termination_requested: ['در انتظار اتمام', 'hourglass-split'],
-            period_done: ['دوره انجام شد', 'calendar-check']
-        };
         const priorityCfg = {
             high: ['بالا', 'arrow-up'],
             medium: ['متوسط', 'dash'],
@@ -785,9 +773,9 @@ if (!$__me) {
             continuous: ['دوره‌ای', 'arrow-repeat']
         };
 
+        // برچسب/آیکن/رنگِ وضعیت — از assets/js/task-filters.js (تنها مرجع)
         function statusBadge(s) {
-            const [l, i] = statusCfg[s] || [s, 'circle'];
-            return `<span class="badge status-${s}"><i class="bi bi-${i}"></i>${l}</span>`;
+            return `<span class="badge ${TF.statusClass(s)}"><i class="bi bi-${TF.statusIcon(s)}"></i>${TF.statusLabel(s)}</span>`;
         }
 
         function priorityBadge(p) {
