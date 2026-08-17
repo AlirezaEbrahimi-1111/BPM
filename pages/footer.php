@@ -47,9 +47,9 @@ require_once '../includes/version.php';
     <span>تهیه شده با</span>
     <span class="heart" style="color:red;">♥</span>
     <span>در شرکت</span>
-    <span class="company">یکتا همراهان ملک</span>
+    <span class="company">آوای شرق ملک</span>
         <span> | </span>
-        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۵/۲۶ - ۰۶:۱۲">
-            نسخه: ۵.۱۵
+        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۵/۲۶ - ۰۶:۲۲">
+            نسخه: ۵.۱۶
         </span>
 </div>

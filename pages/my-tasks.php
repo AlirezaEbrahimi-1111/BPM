@@ -129,9 +129,14 @@ if (!$__me) {
                             <option value="open">کارهای باز</option>
                             <option value="not_started">شروع نشده</option>
                             <option value="in_progress">در حال انجام</option>
-                            <option value="completed">تکمیل شده</option>
+                            <option value="delegated">ارجاع شده</option>
                             <option value="pending_approval">منتظر تأیید</option>
+                            <option value="termination_requested">در انتظار اتمام</option>
+                            <option value="period_done">دوره انجام شد</option>
+                            <option value="completed">تکمیل شده</option>
                             <option value="approved">تأیید شده</option>
+                            <option value="rejected">متوقف</option>
+                            <option value="stopped">متوقف شده</option>
                             <option value="checklist_archive">کارهای تمام‌شده‌ی من (چک‌لیست)</option>
                         </select>
                     </div>
@@ -766,6 +771,7 @@ if (!$__me) {
             approved: ['تأیید شده', 'check-circle-fill'],
             delegated: ['ارجاع شده', 'arrow-left-right'],
             rejected: ['متوقف', 'pause-circle'],
+            stopped: ['متوقف شده', 'stop-circle'],
             termination_requested: ['در انتظار اتمام', 'hourglass-split'],
             period_done: ['دوره انجام شد', 'calendar-check']
         };

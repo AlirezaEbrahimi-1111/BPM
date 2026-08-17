@@ -225,6 +225,7 @@ window.TF = (function () {
         approved:              { label: 'تأیید شده',         cls: 'status-approved' },
         delegated:             { label: 'ارجاع شده',         cls: 'status-delegated' },
         rejected:              { label: 'متوقف',             cls: 'status-rejected' },
+        stopped:               { label: 'متوقف شده',         cls: 'status-stopped' },
         period_done:           { label: 'دوره انجام شد',     cls: 'status-period_done' },
         termination_requested: { label: 'در انتظار اتمام',   cls: 'status-termination_requested' }
     };
