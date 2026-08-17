@@ -67,7 +67,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     }
 
     .header-name-divider {
-        margin: 0 8px !important;
+        margin: 0 !important;
     }
 
     /* موبایل: همبرگر order:1 و navbar-brand order:2 هستند (custom.css) —

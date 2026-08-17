@@ -148,8 +148,14 @@ body .navbar .nav-link:hover {
     color: #F4EFFF !important;
 }
 
-body .navbar .nav-link:hover::before,
-body .navbar .nav-link.active::before {
+body .navbar .nav-link:hover i {
+    color: #fff !important;
+}
+
+/* بدونِ :hover/.active هم سفید بمونه — وگرنه هنگامِ خروجِ موس، همزمان با
+   جمع‌شدنِ عرضِ زیرخط (transition)، رنگش لحظه‌ای به گرادیانتِ بنفشِ
+   پیش‌فرض برمی‌گرده و یک «فلاشِ» رنگی دیده می‌شه */
+body .navbar .nav-link::before {
     background: #fff !important;
 }
 
@@ -214,8 +220,13 @@ body .mobile-menu-btn .hamburger-line {
     color: var(--icon-accent) !important;
 }
 
-:root[data-theme="dark"] .navbar .nav-link:hover::before,
-:root[data-theme="dark"] .navbar .nav-link.active::before {
+:root[data-theme="dark"] .navbar .nav-link:hover i {
+    color: var(--icon-accent) !important;
+}
+
+/* بدونِ :hover/.active هم — همون دلیلِ نسخهٔ روشن (جلوگیری از فلاشِ رنگ
+   هنگامِ جمع‌شدنِ انیمیشنِ عرض) */
+:root[data-theme="dark"] .navbar .nav-link::before {
     background: var(--icon-accent) !important;
 }
 
