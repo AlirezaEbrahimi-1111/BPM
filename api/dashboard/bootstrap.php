@@ -46,6 +46,11 @@ unset($_GET['personal_only']);
 
 $routines  = bpm_dashboard_capture($root . '/api/workflows/active-summary.php');
 
+// 🆕 تبِ «فعالیت‌های اخیر» در داشبورد یه لاگِ تاریخچه‌ایه (چه‌کاری/چه‌وقتی)،
+// نه لیستِ فرآیندهایِ در‌جریان (که همون $recent بالاست و برایِ ویجتِ
+// گلوگاه‌ها هنوز لازمه) — منبعِ جدا: api/dashboard/recent-activity.php
+$activityLog = bpm_dashboard_capture($root . '/api/dashboard/recent-activity.php');
+
 // reports/top-delayed-users.php مخصوصِ کاربرانی‌ست که مجوزِ
 // view_all_org_tasks دارن (مدیران) — requirePermission داخلِ اون فایل
 // در صورتِ نبودِ مجوز خودش exit می‌زنه، که include‌شدنش این‌جا کلِ
@@ -111,6 +116,7 @@ echo json_encode([
     'mine'                   => $mine,
     'delegated'              => $delegated,
     'recent'                 => $recent,
+    'activityLog'            => $activityLog,
     'routines'               => $routines,
     'topDelayed'             => $topDelayed,
     'orgDelegated'           => $orgDelegated,

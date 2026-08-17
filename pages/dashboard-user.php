@@ -2692,7 +2692,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             if (!d) return [];
             if (Array.isArray(d)) return d;
 
-            const keys = ['tasks', 'data', 'workflows', 'instances', 'items', 'result', 'rows'];
+            const keys = ['tasks', 'data', 'workflows', 'instances', 'items', 'result', 'rows', 'activities'];
             for (const k of keys)
                 if (Array.isArray(d[k])) return d[k];
 
@@ -2710,11 +2710,14 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             // قبلاً این ۴ فراخوانی جدا با Promise.all انجام می‌شد — با یک
             // درخواستِ باندل‌شده جایگزین شد تا صفِ اتصالِ HTTP/1.1 کم بشه
             const bundle = await apiGet('../api/dashboard/bootstrap.php');
-            const { mine, delegated, recent, routines, orgDelegated, canViewOrgTasks, dashboardPrefs } = bundle || {};
+            const { mine, delegated, recent, activityLog, routines, orgDelegated, canViewOrgTasks, dashboardPrefs } = bundle || {};
 
             store.mine = pickList(mine);
             store.delegated = pickList(delegated);
+            // 🆕 store.recent (فرآیندهایِ در‌جریان) هنوز برایِ fallback ویجتِ
+            // گلوگاه‌ها لازمه؛ تبِ «فعالیت‌های اخیر» از store.activityLog می‌خونه
             store.recent = pickList(recent);
+            store.activityLog = pickList(activityLog);
             // 🆕 اگر این کاربر (مثلاً مالکِ سازمان) مجوزِ دیدنِ کلِ سازمان رو
             // داشته باشه، مثلِ داشبوردِ مدیر سازمانی نشون بده
             store.orgDelegated = canViewOrgTasks ? pickList(orgDelegated) : null;
@@ -2809,6 +2812,11 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     return true;
                 });
             }
+            // 🆕 «فعالیت‌های اخیر» دیگه فرآیندها نیست — لاگِ تاریخچه‌ایِ خودِ
+            // کاربره (store.activityLog، نه store.recent)
+            if (currentTab === 'recent') {
+                return store.activityLog.map(t => ({ ...t, _src: 'recent' }));
+            }
             const list = (store[currentTab] || []).map(t => ({
                 ...t,
                 _src: currentTab
@@ -2851,31 +2859,29 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             }
 
             tbody.innerHTML = list.map(t => {
-                const key = starKey(t);
-                const on = isStarred(key);
-                const isWf = (t._src === 'recent');
-                const link = isWf ? `workflow-monitor.php?id=${t.id}` : `task-detail.php?id=${t.id}`;
-                const safe = esc(t.title || '');
-                const acts = isWf ? [] : pmActions(t);
-
-                // ── ردیف فعالیت اخیر: عنوان + تاریخ/ساعت ──
-                if (isWf) {
+                // ── ردیف فعالیت اخیر: لاگِ تاریخچه‌ای (بدونِ ستاره/عملیات؛
+                // خودِ رویداده، نه یه کارِ بازِ قابل‌اقدام) ──
+                if (currentTab === 'recent') {
+                    const link = `task-detail.php?id=${t.task_id}`;
+                    const itemTitle = t.item_title ? esc(t.item_title) : '';
+                    const mainTitle = itemTitle || esc(t.title) || '—';
+                    const label = `${activityLabel(t.action)}: ${mainTitle}`;
                     return `<tr onclick="location.href='${link}'">
                     <td>
                         <div class="td-title">
-                            <button class="td-star${on ? ' on' : ''}"
-                                    title="${on ? 'حذف از منتخب' : 'افزودن به منتخب'}"
-                                    onclick="toggleStar('${key}', this, event)">
-                                <i class="bi bi-star${on ? '-fill' : ''}"></i>
-                            </button>
-                            <span title="${safe}">${esc(t.title) || '—'}</span>
+                            <span title="${esc(t.title || '')}">${label}</span>
                         </div>
                     </td>
-                    <td class="td-deadline">${faDateTime(t.started_at || t.updated_at)}</td>
+                    <td class="td-deadline">${faDateTime(t.timestamp)}</td>
                 </tr>`;
                 }
 
-                // ── ردیف کار عادی ──
+                const key = starKey(t);
+                const on = isStarred(key);
+                const link = `task-detail.php?id=${t.id}`;
+                const safe = esc(t.title || '');
+                const acts = pmActions(t);
+
                 return `<tr onclick="location.href='${link}'">
                 <td>
                     <div class="td-title">
@@ -2892,6 +2898,30 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 <td class="td-ops">${rowMenuHtml(t.id, acts)}</td>
             </tr>`;
             }).join('');
+        }
+
+        /* برچسبِ فارسیِ نوعِ رویدادِ فعالیتِ اخیر */
+        function activityLabel(action) {
+            const labels = {
+                created: 'ایجاد شد',
+                assigned: 'واگذار شد',
+                completed: 'تکمیل شد',
+                stopped: 'متوقف شد',
+                delegated: 'ارجاع شد',
+                updated: 'یادآوری شد',
+                approved: 'تأیید شد',
+                rejected: 'رد شد',
+                pending_approval: 'در انتظار تأیید قرار گرفت',
+                deadline_extended: 'مهلت تمدید شد',
+                deadline_rejected: 'درخواست تمدید مهلت رد شد',
+                renewal_step_approved: 'تمدید دوره تأیید شد',
+                renewal_applied: 'دوره تمدید شد',
+                renewal_rejected: 'درخواست تمدید دوره رد شد',
+                workflow_prev_note: 'یادداشت مرحله‌ی قبل ثبت شد',
+                checklist_assigned: 'آیتم چک‌لیست به شما ارجاع شد',
+                checklist_done: 'آیتم چک‌لیست تکمیل شد',
+            };
+            return labels[action] || action;
         }
 
         /* منوی سه‌نقطهٔ جدول اصلی */
