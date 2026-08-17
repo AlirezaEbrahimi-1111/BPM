@@ -229,8 +229,8 @@ window.TF = (function () {
         // متفاوت دارن: rejected = تعریف‌کننده دستی یک کارِ دوره‌ای رو زودتر
         // از موعد تمام کرده؛ stopped = کار بخشی از یک فرآیند/روتین بوده که
         // کلِ اون فرآیند قبل از پایان، متوقف شده
-        rejected:              { label: 'متوقفِ دستی',        cls: 'status-rejected',              icon: 'pause-circle' },
-        stopped:               { label: 'توقفِ فرآیند',       cls: 'status-stopped',               icon: 'stop-circle' },
+        rejected:              { label: 'متوقف شده(کارهای عادی)', cls: 'status-rejected',          icon: 'pause-circle' },
+        stopped:               { label: 'متوقف شده(فرآیندها)',    cls: 'status-stopped',           icon: 'stop-circle' },
         period_done:           { label: 'دوره انجام شد',     cls: 'status-period_done',           icon: 'calendar-check' },
         termination_requested: { label: 'در انتظار اتمام',   cls: 'status-termination_requested', icon: 'hourglass-split' }
     };

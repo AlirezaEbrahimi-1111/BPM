@@ -135,8 +135,8 @@ if (!$__me) {
                             <option value="period_done">دوره انجام شد</option>
                             <option value="completed">تکمیل شده</option>
                             <option value="approved">تأیید شده</option>
-                            <option value="rejected">متوقفِ دستی</option>
-                            <option value="stopped">توقفِ فرآیند</option>
+                            <option value="rejected">متوقف شده(کارهای عادی)</option>
+                            <option value="stopped">متوقف شده(فرآیندها)</option>
                             <option value="checklist_archive">کارهای تمام‌شده‌ی من (چک‌لیست)</option>
                         </select>
                     </div>

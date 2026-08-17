@@ -130,8 +130,8 @@ const TASK_STATUS_LABELS = [
     'completed'             => 'تکمیل شده',
     'approved'              => 'تأیید شده',
     'delegated'             => 'ارجاع شده',
-    'rejected'              => 'متوقفِ دستی',
-    'stopped'               => 'توقفِ فرآیند',
+    'rejected'              => 'متوقف شده(کارهای عادی)',
+    'stopped'               => 'متوقف شده(فرآیندها)',
     'period_done'           => 'دوره انجام شد',
     'termination_requested' => 'در انتظار اتمام',
 ];
