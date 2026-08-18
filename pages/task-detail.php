@@ -386,6 +386,13 @@ if (!$__me) {
 
                 <div id="checklistDetailItems"></div>
 
+                <!-- 🆕 چرا دکمه‌ی «تکمیل کار» نیست؟ تا این پیام نبود، کاربر فقط می‌دید
+                     دکمه غیب شده، بدونِ اینکه بدونه علتش همین چک‌لیستِ ناتمومه -->
+                <div id="checklistCompleteGateNote" style="display:none; margin-top:8px; padding:8px 12px; background:var(--warning-box-bg); border:1px solid #fcd34d; border-radius:8px; font-size:0.8rem; color:var(--warning-box-text);">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    <span id="checklistCompleteGateNoteText"></span>
+                </div>
+
                 <!-- افزودن آیتم - فقط تعریف‌کننده -->
                 <div id="checklistLockNote" style="display:none; margin-top:8px; padding:8px 12px; background:var(--warning-box-bg); border:1px solid #fcd34d; border-radius:8px; font-size:0.8rem; color:var(--warning-box-text);">
                     <i class="bi bi-lock-fill me-1"></i>
@@ -1709,6 +1716,20 @@ if (!$__me) {
 
                 const incomplete = checklistGateState.total > 0 && checklistGateState.done < checklistGateState.total;
                 completeBtn.style.display = (completeBtnEligible && !incomplete) ? 'inline-block' : 'none';
+
+                // 🆕 وقتی دکمه صرفاً به‌خاطرِ چک‌لیستِ ناتموم مخفیه (نه به دلایلِ دیگه‌یِ
+                // نقش/وضعیت)، صریح بگو چرا — قبلاً کاربر فقط می‌دید دکمه نیست
+                const gateNote = document.getElementById('checklistCompleteGateNote');
+                if (gateNote) {
+                    if (completeBtnEligible && incomplete) {
+                        const remaining = checklistGateState.total - checklistGateState.done;
+                        document.getElementById('checklistCompleteGateNoteText').textContent =
+                            `برای نمایشِ دکمه‌یِ «تکمیل کار»، ابتدا ${toPersian(remaining)} آیتمِ باقی‌مانده‌یِ چک‌لیست را تیک بزنید.`;
+                        gateNote.style.display = 'block';
+                    } else {
+                        gateNote.style.display = 'none';
+                    }
+                }
             }
             // تازه‌سازی فقط بخش تاریخچه (بدون رفرش کل صفحه)
             async function refreshHistory() {
@@ -2860,11 +2881,7 @@ if (!$__me) {
                         </span>
                     </div>
                 </div>
-                ${task.working_days_delayed > 0 ? `
-                <div class="info-item">
-                    <div class="info-label">تأخیر:</div>
-                    <div class="info-value"><span class="badge bg-danger"><i class="bi bi-clock-history me-1"></i>${enTofaNumber(task.working_days_delayed)} روز کاری تأخیر</span></div>
-                </div>` : ''}
+                ${buildPeriodicDelayBadge(task)}
                 `;
                 }
 
@@ -4562,6 +4579,47 @@ ${task.overdue_periods > 0 ? `
                 // قبلاً اینجا یک جدولِ محلیِ جداگانه بود که rejected رو با
                 // برچسبِ اشتباهِ «متوقف شده» (که مالِ stopped هست) نشون می‌داد
                 return TF.statusLabel(status);
+            }
+
+            // 🔒 دو مدلِ تأخیر/مهلت: روتین/فرآیندی (is_workflow_task=1) ساعتی،
+            // بقیه (کارهایِ معمولیِ مقطعی) روزِ کاری — هر دو عدد از سرور
+            // (enrichTaskDates: hours_delayed/hours_remaining/working_days_delayed/days_remaining)
+            function buildPeriodicDelayBadge(task) {
+                const isWf = task.is_workflow_task == 1;
+
+                if (isWf) {
+                    if (task.hours_delayed > 0) {
+                        return `
+                <div class="info-item">
+                    <div class="info-label">تأخیر:</div>
+                    <div class="info-value"><span class="badge bg-danger"><i class="bi bi-clock-history me-1"></i>${enTofaNumber(task.hours_delayed)} ساعت تأخیر</span></div>
+                </div>`;
+                    }
+                    if (task.hours_remaining != null && task.hours_remaining > 0) {
+                        return `
+                <div class="info-item">
+                    <div class="info-label">مهلتِ باقی‌مانده:</div>
+                    <div class="info-value"><span class="badge bg-info text-dark" style="color:white !important;"><i class="bi bi-clock me-1"></i>${enTofaNumber(task.hours_remaining)} ساعت مانده</span></div>
+                </div>`;
+                    }
+                    return '';
+                }
+
+                if (task.working_days_delayed > 0) {
+                    return `
+                <div class="info-item">
+                    <div class="info-label">تأخیر:</div>
+                    <div class="info-value"><span class="badge bg-danger"><i class="bi bi-clock-history me-1"></i>${enTofaNumber(task.working_days_delayed)} روز کاری تأخیر</span></div>
+                </div>`;
+                }
+                if (task.days_remaining != null && task.days_remaining > 0) {
+                    return `
+                <div class="info-item">
+                    <div class="info-label">مهلتِ باقی‌مانده:</div>
+                    <div class="info-value"><span class="badge bg-info text-dark" style="color:white !important;"><i class="bi bi-clock me-1"></i>${enTofaNumber(task.days_remaining)} روز مانده</span></div>
+                </div>`;
+                }
+                return '';
             }
 
             function getPeriodLabel(period) {

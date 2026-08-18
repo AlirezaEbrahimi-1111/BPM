@@ -67,6 +67,7 @@ try {
     }
 
     $today    = date('Y-m-d');
+    $now      = date('Y-m-d H:i:s');
     $holidays = getHolidaySet($db);
 
     // انباشتگر: کلید = "user:ID" یا "section:NAME"
@@ -94,10 +95,11 @@ try {
                     'kind'       => 'user',
                     'ref_id'     => (int)$assignee_id,
                     'name'       => $userNames[(int)$assignee_id],
-                    'periodic'   => 0,
-                    'continuous' => 0,
-                    'workflow'   => 0,
-                    'delay_days' => 0,
+                    'periodic'    => 0,
+                    'continuous'  => 0,
+                    'workflow'    => 0,
+                    'delay_days'  => 0,
+                    'delay_hours' => 0,
                 ];
             }
             return $key;
@@ -107,13 +109,14 @@ try {
         $key = 'section:' . $sec;
         if (!isset($acc[$key])) {
             $acc[$key] = [
-                'kind'       => 'section',
-                'ref_id'     => $sec,
-                'name'       => $sec,
-                'periodic'   => 0,
-                'continuous' => 0,
-                'workflow'   => 0,
-                'delay_days' => 0,
+                'kind'        => 'section',
+                'ref_id'      => $sec,
+                'name'        => $sec,
+                'periodic'    => 0,
+                'continuous'  => 0,
+                'workflow'    => 0,
+                'delay_days'  => 0,
+                'delay_hours' => 0,
             ];
         }
         return $key;
@@ -200,19 +203,21 @@ try {
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
         $k = $bucket($t['assignee_id'], $t['activity_section']);
         $acc[$k]['workflow']++;
-        $deadlineDate = substr($t['deadline'], 0, 10); // 'Y-m-d H:i:s' → 'Y-m-d'
-        $acc[$k]['delay_days'] += calcPeriodicDelayWorkingDays($deadlineDate, $today, $holidays);
+        // 🔒 روتین/فرآیندی ساعتی حساب می‌شه، نه روزِ کاری — طبقِ قاعده‌یِ
+        // «کارهایِ روتین همیشه ساعتی» — بدونِ کوتاه‌کردنِ deadline به روز
+        $acc[$k]['delay_hours'] += calcHourDelay($t['deadline'], $now);
     }
 
-    // ── خروجی: مرتب نزولی بر اساس مجموعِ روزهای تأخیر ──
+    // ── خروجی: مرتب نزولی — اول بر اساسِ روزِ کاری (مقطعی+دوره‌ای)، بعد ساعتِ
+    // روتین؛ دو واحد قاطی نمی‌شن، هرکدوم جدا نمایش داده می‌شه (لایه‌ی UI) ──
     $result = [];
     foreach ($acc as $row) {
-        if ($row['delay_days'] <= 0) continue;
-        $row['total'] = $row['delay_days'];
+        if ($row['delay_days'] <= 0 && $row['delay_hours'] <= 0) continue;
+        $row['total'] = $row['delay_days']; // 🔒 برایِ سازگاریِ عقب‌رو با هر مصرف‌کننده‌یِ قدیمی
         $result[] = $row;
     }
 
-    usort($result, fn($a, $b) => $b['total'] - $a['total']);
+    usort($result, fn($a, $b) => ($b['delay_days'] <=> $a['delay_days']) ?: ($b['delay_hours'] <=> $a['delay_hours']));
 
     echo json_encode([
         'success' => true,

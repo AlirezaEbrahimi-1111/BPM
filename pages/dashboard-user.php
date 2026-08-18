@@ -3306,14 +3306,22 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             }).join('');
         }
 
-        /* ───────── کارهای واگذار تأخیردار ───────── */
+        /* ───────── کارهای واگذار تأخیردار ─────────
+           🔒 دو مدلِ تأخیر: روتین/فرآیندی (is_workflow_task=1) ساعتی،
+           بقیه روزِ کاری — هر دو عدد از سرور (enrichTaskDates) */
         function daysLate(t) {
+            if (t.is_workflow_task == 1) {
+                return `${toFa(t.hours_delayed || 0)} ساعت`;
+            }
+            if (t.working_days_delayed) {
+                return `${toFa(t.working_days_delayed)} روز`;
+            }
             const d = dateOnly(TF.effectiveDue(t));
-            if (!d) return 0;
+            if (!d) return '';
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const diff = Math.floor((today - d) / 86400000);
-            return diff > 0 ? diff : 0;
+            return diff > 0 ? `${toFa(diff)} روز` : '';
         }
 
         function renderDelayed() {
@@ -3335,7 +3343,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     <div class="dlg-title" title="${safe}">${esc(t.title) || '—'}</div>
                     ${who ? `<div class="dlg-sub">مسئول: ${who}</div>` : ''}
                 </div>
-                <div class="dlg-days">${toFa(daysLate(t))} روز</div>
+                <div class="dlg-days">${daysLate(t)}</div>
             </div>`;
             }).join('');
         }

@@ -20,6 +20,7 @@ try {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 
     $user_id = requireAuth();
     $user = getUserInfo($user_id);
@@ -84,22 +85,47 @@ try {
     // =====================================
     // 2. کارهای معوقه
     // =====================================
+    // 🔒 دو مدلِ تأخیر: روتین/فرآیندی (is_workflow_task=1) ساعتی، بقیه
+    // روزِ کاری — و موعدِ مؤثر (نه due_dateِ خام) چون تمدیدِ موعد فقط
+    // deadline رو آپدیت می‌کنه (هم‌راستا با api/reports/top-delayed-users.php)
     $overdue_sql = "
-        SELECT 
-            t.id, t.title, t.priority, t.due_date, t.task_type,
-            DATEDIFF(CURDATE(), t.due_date) as days_overdue,
+        SELECT
+            t.id, t.title, t.priority, t.task_type, t.is_workflow_task,
+            t.due_date, t.deadline, t.original_deadline,
+            GREATEST(
+                COALESCE(CAST(t.due_date AS DATE), CAST('1000-01-01' AS DATE)),
+                COALESCE(CAST(t.deadline AS DATE), CAST('1000-01-01' AS DATE)),
+                COALESCE(CAST(t.original_deadline AS DATE), CAST('1000-01-01' AS DATE))
+            ) AS effective_due,
             CONCAT(COALESCE(c.first_name,''),' ',COALESCE(c.last_name,'')) as creator_name
         FROM tasks t
         LEFT JOIN users c ON t.creator_id = c.id
         WHERE t.assignee_id = ? AND t.is_deleted = 0
-          AND t.status NOT IN ('completed','approved')
-          AND t.due_date < CURDATE()
-        ORDER BY t.due_date ASC
+          AND t.status NOT IN ('completed','approved','stopped','rejected')
+          AND (t.due_date IS NOT NULL OR t.deadline IS NOT NULL OR t.original_deadline IS NOT NULL)
+        HAVING effective_due > '1000-01-01' AND effective_due < CURDATE()
+        ORDER BY effective_due ASC
         LIMIT 15
     ";
     $stmt = $db->prepare($overdue_sql);
     $stmt->execute([$user_id]);
     $overdue_tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $holidays = getHolidaySet($db, $user['organization_id'] ?? null);
+    $today_str = date('Y-m-d');
+    $now_str   = date('Y-m-d H:i:s');
+    foreach ($overdue_tasks as &$ot) {
+        if (!empty($ot['is_workflow_task']) && !empty($ot['deadline'])) {
+            $ot['unit']          = 'hours';
+            $ot['hours_overdue'] = calcHourDelay($ot['deadline'], $now_str);
+            $ot['days_overdue']  = null;
+        } else {
+            $ot['unit']          = 'days';
+            $ot['days_overdue']  = calcPeriodicDelayWorkingDays(substr($ot['effective_due'], 0, 10), $today_str, $holidays);
+            $ot['hours_overdue'] = null;
+        }
+    }
+    unset($ot);
 
     // =====================================
     // 3. آمار

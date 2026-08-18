@@ -3324,6 +3324,13 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 if (u.workflow > 0) parts.push(`${toFa(u.workflow)} روتین`);
                 const breakdown = parts.join(' • ');
 
+                // 🔒 دو مدلِ تأخیر: مقطعی/دوره‌ای روزِ کاری، روتین/فرآیندی ساعتی —
+                // قاطی نمی‌شن، جدا جدا نشون داده می‌شن (اگه هر دو باشن، هر دو دیده می‌شن)
+                const countParts = [];
+                if (u.delay_days > 0) countParts.push(`${toFa(u.delay_days)} روز`);
+                if (u.delay_hours > 0) countParts.push(`${toFa(u.delay_hours)} ساعت`);
+                const countText = countParts.join(' + ') || '۰ روز';
+
                 return `
                 <div class="td-user-row" onclick="openDelayedUser('${escJsAttr(u.kind)}', '${escJsAttr(String(u.ref_id))}', '${escJsAttr(displayName)}')">
                     <div class="td-user-icon"><i class="bi ${icon}"></i></div>
@@ -3331,7 +3338,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                         <div class="td-user-name">${esc(displayName)}</div>
                         <div class="td-user-breakdown">${breakdown}</div>
                     </div>
-                    <div class="td-user-count">${toFa(u.total)} روز</div>
+                    <div class="td-user-count">${countText}</div>
                 </div>`;
             }).join('');
         }
@@ -3496,14 +3503,22 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             }).join('');
         }
 
-        /* ───────── کارهای واگذار تأخیردار ───────── */
+        /* ───────── کارهای واگذار تأخیردار ─────────
+           🔒 دو مدلِ تأخیر: روتین/فرآیندی (is_workflow_task=1) ساعتی،
+           بقیه روزِ کاری — هر دو عدد از سرور (enrichTaskDates) */
         function daysLate(t) {
+            if (t.is_workflow_task == 1) {
+                return `${toFa(t.hours_delayed || 0)} ساعت`;
+            }
+            if (t.working_days_delayed) {
+                return `${toFa(t.working_days_delayed)} روز`;
+            }
             const d = dateOnly(TF.effectiveDue(t));
-            if (!d) return 0;
+            if (!d) return '';
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const diff = Math.floor((today - d) / 86400000);
-            return diff > 0 ? diff : 0;
+            return diff > 0 ? `${toFa(diff)} روز` : '';
         }
 
         function renderDelayed() {
@@ -3527,7 +3542,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     <div class="dlg-title" title="${safe}">${esc(t.title) || '—'}</div>
                     ${who ? `<div class="dlg-sub">مسئول: ${who}</div>` : ''}
                 </div>
-                <div class="dlg-days">${toFa(daysLate(t))} روز</div>
+                <div class="dlg-days">${daysLate(t)}</div>
             </div>`;
             }).join('');
         }

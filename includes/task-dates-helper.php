@@ -40,6 +40,12 @@ function enrichTaskDates(array $task, PDO $db, array $holidays, string $today, ?
     $task['next_due_date']        = null;
     $task['days_remaining']       = null;
     $task['working_days_delayed'] = 0;
+    // 🆕 کارهایِ روتین/فرآیندی (is_workflow_task=1) ساعتی نمایش داده می‌شن،
+    // نه روزانه — چون task_type این‌ها هم زیرِ پوست همیشه 'periodic'ه، این دو
+    // فیلد این‌جا (نه شاخه‌یِ جداگانه) کنارِ همون فیلدهایِ روزانه ست می‌شن، تا
+    // لایه‌ی نمایش بر اساسِ is_workflow_task انتخاب کنه کدومو نشون بده
+    $task['hours_delayed']   = 0;
+    $task['hours_remaining'] = null;
 
     $current = new DateTime($today);
     $current->setTime(0, 0, 0);
@@ -105,6 +111,17 @@ function enrichTaskDates(array $task, PDO $db, array $holidays, string $today, ?
                         $today,
                         $holidays
                     );
+                }
+            }
+
+            // 🆕 کارِ روتین/فرآیندی: ساعتی، از رویِ خودِ deadline (که ساعت‌داره)
+            // — نه از رویِ due_date/original_deadline که برایِ این‌ها معمولاً خالیه
+            if (!empty($task['is_workflow_task']) && !empty($task['deadline'])) {
+                $done = in_array($task['status'] ?? '', ['completed', 'approved'], true);
+                if (!$done) {
+                    $nowDateTime = date('Y-m-d H:i:s');
+                    $task['hours_delayed']   = calcHourDelay($task['deadline'], $nowDateTime);
+                    $task['hours_remaining'] = calcHourRemaining($task['deadline'], $nowDateTime);
                 }
             }
         } catch (Exception $e) {

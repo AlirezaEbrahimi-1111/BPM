@@ -284,3 +284,38 @@ function calcPeriodicDelayWorkingDays(
 
     return $working_delay;
 }
+
+/**
+ * معادلِ ساعتیِ calcPeriodicDelayWorkingDays — مخصوصِ کارهایِ روتین/فرآیندی
+ * (is_workflow_task=1). برخلافِ کارهایِ معمولی، اینجا جمعه/تعطیلات کسر
+ * نمی‌شه — چون مهلتِ روتین (t.deadline) از قبل با زمانِ مجازِ همون مرحله
+ * (ws.time_limit_hours، طبقِ همون منطقی که api/reports/bottleneck-report.php
+ * و includes/WorkflowManager.php استفاده می‌کنن) محاسبه شده، پس خودِ مهلت
+ * از قبل «تنظیم‌شده» است — فقط باید فاصله‌ی ساعتی تا الان رو حساب کرد.
+ *
+ * @param string $deadline تاریخ‌وساعتِ مهلت ('Y-m-d H:i:s')
+ * @param string|null $now لحظه‌ی «الان» (پیش‌فرض: ساعتِ سرور)
+ * @return int تعداد ساعتِ تأخیر (0 = هنوز به موقع)
+ */
+function calcHourDelay(string $deadline, ?string $now = null): int {
+    $now = $now ?: date('Y-m-d H:i:s');
+    $d = new DateTime($deadline);
+    $n = new DateTime($now);
+    if ($n <= $d) return 0;
+    return (int) floor(($n->getTimestamp() - $d->getTimestamp()) / 3600);
+}
+
+/**
+ * ساعتِ باقی‌مانده تا مهلتِ یک کارِ روتین/فرآیندی (هنوز نرسیده به موعد).
+ *
+ * @param string $deadline تاریخ‌وساعتِ مهلت ('Y-m-d H:i:s')
+ * @param string|null $now لحظه‌ی «الان» (پیش‌فرض: ساعتِ سرور)
+ * @return int تعداد ساعتِ باقی‌مانده (0 = مهلت گذشته یا همین الان)
+ */
+function calcHourRemaining(string $deadline, ?string $now = null): int {
+    $now = $now ?: date('Y-m-d H:i:s');
+    $d = new DateTime($deadline);
+    $n = new DateTime($now);
+    if ($d <= $n) return 0;
+    return (int) ceil(($d->getTimestamp() - $n->getTimestamp()) / 3600);
+}

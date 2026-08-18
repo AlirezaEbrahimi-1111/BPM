@@ -258,7 +258,7 @@ if (!$__me) {
                 },
                 cellRenderer: p => {
                     const d = TF.effectiveDue(p.data);
-                    return daysLeft(d, p.data.status);
+                    return daysLeft(d, p.data.status, p.data);
                 }
             },
             {
@@ -633,11 +633,27 @@ if (!$__me) {
             return `<span class="badge type-${t}"><i class="bi bi-${i}"></i>${l}</span>`;
         }
 
-        function daysLeft(d, status) {
+        // 🔒 دو مدلِ تأخیر/مهلت: روتین/فرآیندی (is_workflow_task=1) ساعتی،
+        // بقیه روزِ کاری — هر دو عدد از سرور (enrichTaskDates)، نه از new Date()
+        function daysLeft(d, status, task) {
             if (!d) return '<span class="days-badge">-</span>';
             if (status === 'completed' || status === 'approved') return '<span class="days-badge days-normal">تکمیل</span>';
+
+            if (task && task.is_workflow_task == 1) {
+                const hd = (task.hours_delayed) || 0;
+                if (hd > 0) return `<span class="days-badge days-overdue">${toPersian(hd)} ساعت تاخیر</span>`;
+                const hr = task.hours_remaining;
+                if (hr == null) return '<span class="days-badge">-</span>';
+                if (hr === 0) return `<span class="days-badge days-today">اکنون</span>`;
+                const cls = hr <= 24 ? 'days-soon' : 'days-normal';
+                return `<span class="days-badge ${cls}">${toPersian(hr)} ساعت مانده</span>`;
+            }
+
             const diff = Math.ceil((new Date(d).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5);
-            if (diff < 0) return `<span class="days-badge days-overdue">${toPersian(-diff)} روز تاخیر</span>`;
+            if (diff < 0) {
+                const wd = Math.max(1, (task && task.working_days_delayed) || 0);
+                return `<span class="days-badge days-overdue">${toPersian(wd)} روز کاری تاخیر</span>`;
+            }
             if (diff === 0) return `<span class="days-badge days-today">امروز</span>`;
             if (diff <= 3) return `<span class="days-badge days-soon">${toPersian(diff)} روز دیگر</span>`;
             return `<span class="days-badge days-normal">${toPersian(diff)} روز</span>`;

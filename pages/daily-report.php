@@ -287,13 +287,12 @@ if (!$__me) {
                         </div>
                 `;
                 overdueTasks.forEach(task => {
-                    const days = task.days_overdue || 0;
                     const icon = task.priority === 'high' ? '🔴' : (task.priority === 'medium' ? '🟡' : '🟢');
                     html += `
                         <div class="activity-item overdue">
                             <div class="activity-title">${esc(task.title)}</div>
                             <div class="activity-meta">
-                                ${icon} ${toFa(days)} روز تأخیر
+                                ${icon} ${overdueLabel(task)}
                                 ${task.creator_name?.trim() ? ` │ از: ${esc(task.creator_name.trim())}` : ''}
                             </div>
                         </div>
@@ -391,7 +390,7 @@ if (!$__me) {
                     content += `⚠️ کارهای معوقه (${toFa(overdueTasks.length)} مورد):\n`;
                     overdueTasks.forEach((task, i) => {
                         const icon = task.priority === 'high' ? '🔴' : (task.priority === 'medium' ? '🟡' : '🟢');
-                        content += `   ${toFa(i + 1)}. ${task.title} - ${icon} ${toFa(task.days_overdue || 0)} روز تأخیر\n`;
+                        content += `   ${toFa(i + 1)}. ${task.title} - ${icon} ${overdueLabel(task)}\n`;
                     });
                     content += '\n';
                 }
@@ -571,6 +570,15 @@ if (!$__me) {
 
         function toFa(n) {
             return String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+        }
+
+        // 🔒 دو مدلِ تأخیر: روتین/فرآیندی (unit==='hours') ساعتی، بقیه روزِ کاری
+        // — هر دو عدد از سرور (api/reports/get-today-activities.php)
+        function overdueLabel(task) {
+            if (task.unit === 'hours') {
+                return `${toFa(task.hours_overdue || 0)} ساعت تأخیر`;
+            }
+            return `${toFa(task.days_overdue || 0)} روز کاری تأخیر`;
         }
 
         // showAlert قبلاً یک پیاده‌سازیِ جداگانه (باکسِ alert بوت‌استرپ) داشت؛
