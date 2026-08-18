@@ -888,7 +888,16 @@ class TaskManager
                   )
             )";
             $where_conditions = ["(t.creator_id = ? OR t.assignee_id = ? OR $checklist_exists)"];
-            $params = [$user_id, $user_id, (string)$user_id, $user_section, $user_org_id];
+            // 🔒 ترتیبِ این آرایه باید دقیقاً با ترتیبِ ظاهرشدنِ «?»ها در متنِ
+            // نهاییِ SQL یکی باشه — نه ترتیبِ اضافه‌شدنشون این‌جا در PHP.
+            // چون CASE WHEN پایین‌تر (در SELECT) قبل از WHERE در متنِ SQL
+            // میاد، دو تا $user_idِ اولش مالِ همون CASE ان، نه اینجا؛ قبلاً
+            // این دو تا آخرِ آرایه اضافه می‌شدن (بعد از این ۵تا) و کلِ
+            // بایندینگ از همین‌جا به بعد یکی جابه‌جا می‌شد — یعنی
+            // t.assignee_id در WHERE عملاً با user_section مقایسه می‌شد،
+            // نه با user_id، و کارهایی که فقط assignee بودی (نه creator)
+            // اصلاً تویِ نتیجه نمی‌اومدن
+            $params = [$user_id, $user_id, $user_id, $user_id, (string)$user_id, $user_section, $user_org_id];
 
             if (!empty($filters['status'])) {
                 $where_conditions[] = "t.status = ?";
@@ -957,10 +966,6 @@ class TaskManager
                         t.priority = 'high' DESC,
                         t.priority = 'medium' DESC,
                         t.due_date ASC";
-
-            // ✅ اضافه کردن user_id دوباره برای CASE
-            $params[] = $user_id;
-            $params[] = $user_id;
 
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
