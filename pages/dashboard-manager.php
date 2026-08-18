@@ -2895,6 +2895,15 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         function applyFilter(list) {
+            // 🔒 فیلترهایِ امروز/عقب‌افتاده برایِ تبِ «فعالیت‌های اخیر» معنا
+            // ندارن — آیتم‌هایِ این تب (لاگِ تاریخچه) فیلدهایِ task_type/
+            // due_date/status ندارن، پس TF.isDueToday/isOverdue برایِ همه‌شون
+            // false برمی‌گردوند و کلِ لیست خالی می‌شد؛ بدونِ خطا، بدونِ ردی.
+            // اگه کاربر تويِ تبِ دیگه‌ای «امروز»/«عقب افتاده» رو انتخاب کرده
+            // باشه (یا این فیلترِ پیش‌فرضِ ذخیره‌شده‌ش باشه) و بعد بیاد اینجا،
+            // currentFilter دست‌نخورده می‌مونه چون switchTab فقط چیپ‌هاش رو
+            // مخفی می‌کنه، ریست‌شون نمی‌کنه
+            if (currentTab === 'recent') return list;
             if (currentFilter === 'today') return list.filter(t => TF.isDueToday(t, currentUser));
             if (currentFilter === 'overdue') return list.filter(t => TF.isOverdue(t, currentUser));
             return list;
