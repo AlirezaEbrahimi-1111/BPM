@@ -2886,7 +2886,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     const who = t.actor_name ? `(${esc(t.actor_name)})` : '';
                     // action ممکنه تویِ دیتایِ قدیمی خالی باشه — اگه خالی بود،
                     // دیگه «- :» یا «:» بی‌مصرف قبل از عنوان نمیاریم
-                    const verb = activityLabel(t.action);
+                    const verb = TF.actionVerb(t.action);
                     let label;
                     if (verb) {
                         label = who ? `${who} - ${verb}: ${mainTitle}` : `${verb}: ${mainTitle}`;
@@ -2927,29 +2927,10 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             }).join('');
         }
 
-        /* برچسبِ فارسیِ نوعِ رویدادِ فعالیتِ اخیر */
-        function activityLabel(action) {
-            const labels = {
-                created: 'ایجاد شد',
-                assigned: 'واگذار شد',
-                completed: 'تکمیل شد',
-                stopped: 'متوقف شد',
-                delegated: 'ارجاع شد',
-                updated: 'یادآوری شد',
-                approved: 'تأیید شد',
-                rejected: 'رد شد',
-                pending_approval: 'در انتظار تأیید قرار گرفت',
-                deadline_extended: 'مهلت تمدید شد',
-                deadline_rejected: 'درخواست تمدید مهلت رد شد',
-                renewal_step_approved: 'تمدید دوره تأیید شد',
-                renewal_applied: 'دوره تمدید شد',
-                renewal_rejected: 'درخواست تمدید دوره رد شد',
-                workflow_prev_note: 'یادداشت مرحله‌ی قبل ثبت شد',
-                checklist_assigned: 'آیتم چک‌لیست به شما ارجاع شد',
-                checklist_done: 'آیتم چک‌لیست تکمیل شد',
-            };
-            return labels[action] || action;
-        }
+        // 🔒 activityLabelِ محلی حذف شد — TF.actionVerb (assets/js/
+        // task-filters.js) تنها مرجعه؛ همینِ فایل، dashboard-manager.php، و
+        // task-detail.php هرکدوم نسخه‌یِ جدایِ خودشون رو داشتن که با هم
+        // ناهماهنگ بودن
 
         /* منوی سه‌نقطهٔ جدول اصلی */
         function rowMenuHtml(taskId, acts) {

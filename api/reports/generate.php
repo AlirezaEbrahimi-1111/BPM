@@ -9,6 +9,7 @@ header('Access-Control-Allow-Methods: POST');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-status-helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -38,14 +39,12 @@ try {
     $user = $stmt->fetch();
     
     // دریافت کارهای روز
-    $sql = "SELECT t.*, 
-                   CASE 
-                       WHEN t.status = 'completed' THEN 'انجام شد'
-                       WHEN t.status = 'in_progress' THEN 'در حال انجام'
-                       WHEN t.status = 'stopped' THEN 'متوقف شد'
-                       WHEN t.status = 'delegated' THEN 'ارجاع شد'
-                       ELSE t.status
-                   END as status_text
+    // 🔒 برچسبِ وضعیت دیگه تویِ خودِ SQL ساخته نمی‌شه — اون CASE فقط ۴ از ۱۰
+    // وضعیتِ ممکن رو پوشش می‌داد و برایِ بقیه (pending_approval/approved/
+    // rejected/period_done/termination_requested) متنِ خامِ انگلیسی
+    // (ELSE t.status) نشون می‌داد. حالا از TASK_STATUS_LABELS (تنها مرجع)
+    // پایین‌تر، موقعِ ساختنِ متنِ گزارش استفاده می‌شه
+    $sql = "SELECT t.*
             FROM tasks t
             WHERE t.assignee_id = ? 
             AND (t.activity_section = ? OR t.activity_section IS NULL)
@@ -70,7 +69,8 @@ try {
         $report_content .= "فعالیت‌های انجام شده:\n\n";
         
         foreach ($tasks as $index => $task) {
-            $report_content .= ($index + 1) . ". " . $task['title'] . " - وضعیت: " . $task['status_text'] . "\n";
+            $status_text = TASK_STATUS_LABELS[$task['status']] ?? $task['status'];
+            $report_content .= ($index + 1) . ". " . $task['title'] . " - وضعیت: " . $status_text . "\n";
             if (!empty($task['description'])) {
                 $report_content .= "   توضیحات: " . $task['description'] . "\n";
             }

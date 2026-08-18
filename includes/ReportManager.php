@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/task-status-helper.php';
+
 class ReportManager {
     private $db;
     
@@ -103,14 +105,12 @@ class ReportManager {
             if (!empty($pending_tasks)) {
                 $content .= "🔄 کارهای در حال انجام:\n";
                 foreach ($pending_tasks as $index => $task) {
-                    $status_text = [
-                        'not_started' => 'شروع نشده',
-                        'in_progress' => 'در حال انجام',
-                        'stopped' => 'متوقف شده',
-                        'delegated' => 'ارجاع شده'
-                    ];
-                    
-                    $content .= ($index + 1) . ". " . $task['title'] . " - " . ($status_text[$task['status']] ?? $task['status']);
+                    // 🔒 لیستِ محلیِ ناقصِ برچسب‌ها حذف شد — TASK_STATUS_LABELS
+                    // (includes/task-status-helper.php) تنها مرجعِ سمتِ PHP ئه؛
+                    // نسخه‌ی قبلی فقط ۴ از ۱۰ وضعیت رو داشت و برایِ بقیه
+                    // (pending_approval/approved/rejected/period_done/
+                    // termination_requested) متنِ خامِ انگلیسی نشون می‌داد
+                    $content .= ($index + 1) . ". " . $task['title'] . " - " . (TASK_STATUS_LABELS[$task['status']] ?? $task['status']);
                     if ($task['description']) {
                         $content .= " (" . $task['description'] . ")";
                     }

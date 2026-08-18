@@ -4109,28 +4109,10 @@ ${task.overdue_periods > 0 ? `
                     return;
                 }
 
-                const actionBadgeClass = {
-                    'created': 'ab-created',
-                    'assigned': 'ab-assigned',
-                    'completed': 'ab-completed',
-                    'pending_approval': 'ab-pending',
-                    'approved': 'ab-approved',
-                    'rejected': 'ab-rejected',
-                    'stopped': 'ab-stopped',
-                    'delegated': 'ab-delegated',
-                    'updated': 'ab-updated',
-                    'deadline_extended': 'ab-deadline',
-                    'deadline_rejected': 'ab-rejected',
-                    'checklist_sync': 'ab-updated',
-                    'checklist_assigned': 'ab-delegated',
-                    'checklist_done': 'ab-completed',
-                    'workflow_prev_note': 'ab-completed'
-                };
-
                 let html = '';
                 history.forEach(item => {
-                    const actionLabel = getActionLabel(item.action);
-                    const badgeClass = actionBadgeClass[item.action] || 'ab-updated';
+                    const actionLabel = TF.actionLabel(item.action);
+                    const badgeClass = TF.actionClass(item.action);
                     const userName = item.from_user_first_name || item.from_user_last_name ?
                         `${esc(item.from_user_first_name || '')} ${esc(item.from_user_last_name || '')}`.trim() :
                         'نامشخص';
@@ -4631,28 +4613,11 @@ ${task.overdue_periods > 0 ? `
                 return labels[period] || period;
             }
 
-            function getActionLabel(action) {
-                const labels = {
-                    'created': 'ایجاد',
-                    'assigned': 'واگذاری',
-                    'completed': 'تکمیل',
-                    'pending_approval': 'در انتظار تأیید',
-                    'approved': 'تأیید',
-                    'rejected': 'رد',
-                    'stopped': 'توقف',
-                    'delegated': 'ارجاع',
-                    'updated': 'یادآوری',
-                    'deadline_extended': 'تمدید موعد',
-                    'deadline_rejected': 'رد درخواست تمدید موعد',
-                    'termination_requested': 'درخواست اتمام',
-                    'checklist_sync': 'به‌روزرسانی چک‌لیست',
-                    'checklist_assigned': 'ارجاع آیتم چک‌لیست',
-                    'checklist_done': 'انجام آیتم چک‌لیست',
-                    'period_done': 'دوره انجام شد',
-                    'workflow_prev_note': 'توضیحات مرحلهٔ قبل',
-                };
-                return labels[action] || action;
-            }
+            // 🔒 getActionLabel/actionBadgeClassِ محلی حذف شدن — الان
+            // TF.actionLabel/TF.actionClass (assets/js/task-filters.js)
+            // تنها مرجعن؛ قبلاً این‌جا، دو داشبورد، هرکدوم یه نسخه‌یِ جدا و
+            // ناهماهنگ داشتن که با هر رویدادِ جدید (مثلِ تمدیدِ دوره) از
+            // هم عقب می‌موندن
 
             function formatPersianDate(dateString) {
                 if (!dateString) return 'نامشخص';

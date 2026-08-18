@@ -296,7 +296,63 @@ window.TF = (function () {
 
 
     /* ═══════════════════════════════════════════════════
-       ۷) خروجی عمومی
+       ۷) رویدادهایِ تاریخچه (task_history.action)
+       ───────────────────────────────────────────────────
+       تنها مرجع — قبلاً سه‌جا (task-detail.php، dashboard-manager.php،
+       dashboard-user.php) این جدول رو جدا و ناهماهنگ نگه می‌داشتن؛ هر
+       رویدادِ جدید (مثلاً تمدیدِ دوره) باید تویِ هر سه جا دستی اضافه می‌شد
+       و معمولاً یکی جا می‌افتاد — نتیجه‌ش نمایشِ کلیدِ خامِ انگلیسی
+       (مثلاً «renewal_applied») به‌جایِ برچسبِ فارسی بود.
+       دو شکلِ برچسب داریم چون دو جا با سبکِ متفاوت نمایش می‌دن:
+         • label: اسم/عبارتِ کوتاه — برایِ بجِ کوچیکِ تاریخچه‌یِ خودِ کار
+         • verb:  فعلِ کامل («... شد») — برایِ ردیفِ روایت‌گونه‌یِ
+                  «فعالیت‌های اخیر» («(نام) - VERB: عنوانِ کار»)
+       ═══════════════════════════════════════════════════ */
+    const actionCfg = {
+        created:               { label: 'ایجاد',                        verb: 'ایجاد شد',                          cls: 'ab-created' },
+        assigned:               { label: 'واگذاری',                      verb: 'واگذار شد',                         cls: 'ab-assigned' },
+        completed:              { label: 'تکمیل',                        verb: 'تکمیل شد',                          cls: 'ab-completed' },
+        pending_approval:       { label: 'در انتظار تأیید',              verb: 'در انتظار تأیید قرار گرفت',         cls: 'ab-pending' },
+        approved:               { label: 'تأیید',                        verb: 'تأیید شد',                          cls: 'ab-approved' },
+        rejected:               { label: 'رد',                           verb: 'رد شد',                             cls: 'ab-rejected' },
+        stopped:                { label: 'توقف',                         verb: 'متوقف شد',                          cls: 'ab-stopped' },
+        delegated:              { label: 'ارجاع',                        verb: 'ارجاع شد',                          cls: 'ab-delegated' },
+        updated:                { label: 'یادآوری',                      verb: 'یادآوری شد',                        cls: 'ab-updated' },
+        deadline_extended:      { label: 'تمدید موعد',                   verb: 'مهلت تمدید شد',                     cls: 'ab-deadline' },
+        deadline_rejected:      { label: 'رد درخواست تمدید موعد',        verb: 'درخواست تمدید مهلت رد شد',          cls: 'ab-rejected' },
+        termination_requested:  { label: 'درخواست اتمام',                verb: 'درخواستِ اتمامِ کار ثبت شد',         cls: 'ab-pending' },
+        checklist_sync:         { label: 'به‌روزرسانی چک‌لیست',           verb: 'چک‌لیست به‌روزرسانی شد',             cls: 'ab-updated' },
+        checklist_assigned:     { label: 'ارجاع آیتم چک‌لیست',            verb: 'آیتم چک‌لیست به شما ارجاع شد',      cls: 'ab-delegated' },
+        checklist_done:         { label: 'انجام آیتم چک‌لیست',            verb: 'آیتم چک‌لیست تکمیل شد',             cls: 'ab-completed' },
+        period_done:            { label: 'دوره انجام شد',                verb: 'دوره انجام شد',                     cls: 'ab-completed' },
+        workflow_prev_note:     { label: 'توضیحات مرحلهٔ قبل',           verb: 'یادداشت مرحله‌ی قبل ثبت شد',        cls: 'ab-completed' },
+        renewal_applied:        { label: 'تمدید دوره',                   verb: 'دوره تمدید شد',                     cls: 'ab-approved' },
+        renewal_requested:      { label: 'درخواست تمدید دوره',           verb: 'درخواستِ تمدید دوره ثبت شد',        cls: 'ab-pending' },
+        renewal_step_approved:  { label: 'تأیید تمدید دوره',             verb: 'تمدید دوره تأیید شد',               cls: 'ab-approved' },
+        renewal_rejected:       { label: 'رد تمدید دوره',                verb: 'درخواست تمدید دوره رد شد',          cls: 'ab-rejected' },
+        deleted:                { label: 'حذف',                          verb: 'حذف شد',                            cls: 'ab-rejected' },
+        in_progress:            { label: 'شروع',                         verb: 'شروع شد',                           cls: 'ab-updated' },
+        not_started:            { label: 'شروع نشده',                    verb: 'به حالتِ شروع‌نشده بازگشت',          cls: 'ab-pending' }
+    };
+
+    /** برچسبِ کوتاه (اسمی) یک رویداد — برایِ بجِ تاریخچه */
+    function actionLabel(action) {
+        return (actionCfg[action] && actionCfg[action].label) || action || '—';
+    }
+
+    /** برچسبِ فعلی (جمله‌ای، «... شد») یک رویداد — برایِ ردیفِ روایت‌گونه */
+    function actionVerb(action) {
+        return (actionCfg[action] && actionCfg[action].verb) || action || '';
+    }
+
+    /** کلاسِ CSSِ بجِ یک رویداد */
+    function actionClass(action) {
+        return (actionCfg[action] && actionCfg[action].cls) || 'ab-updated';
+    }
+
+
+    /* ═══════════════════════════════════════════════════
+       ۸) خروجی عمومی
        ═══════════════════════════════════════════════════ */
     return {
         // تاریخ
@@ -321,6 +377,12 @@ window.TF = (function () {
         statusLabel,
         statusClass,
         statusIcon,
-        statusBadge
+        statusBadge,
+
+        // رویدادهایِ تاریخچه
+        actionCfg,
+        actionLabel,
+        actionVerb,
+        actionClass
     };
 })();
