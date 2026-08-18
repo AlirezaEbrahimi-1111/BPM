@@ -214,7 +214,7 @@ AND t.status != 'rejected'
           t.is_workflow_task = 1
           AND NOT EXISTS (
               SELECT 1 FROM workflow_instance_steps wis
-              WHERE wis.task_id = t.id AND wis.status = 'active'
+              WHERE wis.task_id = t.id AND wis.status IN ('active', 'pending', 'delayed')
           )
         )
       )
@@ -226,7 +226,7 @@ AND t.status != 'rejected'
         AND (t.assignee_id IS NULL OR t.assignee_id = 0)
         AND EXISTS (
             SELECT 1 FROM workflow_instance_steps wis
-            WHERE wis.task_id = t.id AND wis.status = 'active'
+            WHERE wis.task_id = t.id AND wis.status IN ('active', 'pending', 'delayed')
         )
       )
       OR (t.is_pending_approval = 1 AND t.assignee_id = ?)

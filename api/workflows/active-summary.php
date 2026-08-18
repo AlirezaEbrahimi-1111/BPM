@@ -55,7 +55,7 @@ try {
                    FROM workflow_instance_steps wis
                    JOIN workflow_steps ws2 ON ws2.id = wis.step_id
                    WHERE wis.instance_id = wi.id
-                     AND wis.status = 'active'
+                     AND wis.status IN ('active', 'pending', 'delayed')
                      AND ws2.activity_section IN ($ph)
                )";
         $params = array_merge($params, $sections);

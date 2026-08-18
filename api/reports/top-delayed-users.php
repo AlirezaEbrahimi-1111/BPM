@@ -194,7 +194,7 @@ try {
         WHERE t.organization_id = ?
           AND t.is_deleted = 0
           AND t.is_workflow_task = 1
-          AND wis.status = 'active'
+          AND wis.status IN ('active', 'pending', 'delayed')
           AND t.deadline IS NOT NULL
           AND t.deadline < NOW()
           AND t.status NOT IN ('completed', 'approved', 'stopped', 'rejected')
