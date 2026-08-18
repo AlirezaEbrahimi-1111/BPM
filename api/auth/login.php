@@ -230,6 +230,10 @@ try {
         // واحدِ دومشون نمایش داده نمی‌شه — even though سرور خودش (TaskManager،
         // us_userInSection) از قبل چندواحدی رو درست چک می‌کنه.
         $user['activity_sections'] = us_getUserSections($db, $user['id']);
+        // 🔒 نامِ سازمان هم تویِ خودِ جوابِ لاگین — تا localStorage.user_info
+        // این رو داشته باشه و هدر دیگه فقط به $_SESSION (که با انقضایِ زودتر
+        // از JWT، خالی می‌مونه و «کاربر جاری» نشون می‌ده) وابسته نباشه
+        $user['organization_name'] = $_SESSION['organization_name'];
         echo json_encode([
             'success' => true,
             'token' => $token,
@@ -277,6 +281,9 @@ try {
         } catch (Exception $e) {
             $_SESSION['organization_name'] = 'یکتا همراهان ملک';
         }
+
+        // 🔒 نامِ سازمان هم تویِ خودِ جوابِ لاگین — دلیل: بالاتر توضیح داده شد
+        $result['user']['organization_name'] = $_SESSION['organization_name'];
 
         logSecurityEvent($result['user']['id'], 'login_success', null, ['method' => 'password']);
         echo json_encode($result, JSON_UNESCAPED_UNICODE);

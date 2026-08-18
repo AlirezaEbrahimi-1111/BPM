@@ -136,6 +136,17 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             (function () {
                 try {
                     var u = JSON.parse(localStorage.getItem('user_info') || '{}');
+
+                    // 🔒 نامِ سازمان: اگه localStorage.user_info مقدارش رو داشته
+                    // باشه (لاگین‌هایِ جدید، بعدِ این اصلاح)، جایگزینِ همونی می‌شه
+                    // که PHP از رویِ $_SESSION رندر کرده — چون $_SESSION زودتر از
+                    // JWT منقضی می‌شه و رویِ سشن‌هایِ قدیمی، هدر «کاربر جاری»
+                    // نشون می‌داد با اینکه کاربر هنوز (طبقِ JWT) لاگین بود
+                    if (u.organization_name) {
+                        var orgEl = document.getElementById('userName');
+                        if (orgEl) orgEl.textContent = u.organization_name;
+                    }
+
                     var full = ((u.first_name || '') + ' ' + (u.last_name || '')).trim();
                     if (!full) return;
                     var el = document.getElementById('headerUserFullName');
