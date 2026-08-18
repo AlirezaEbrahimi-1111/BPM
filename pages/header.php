@@ -70,11 +70,39 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         margin: 0 !important;
     }
 
-    /* موبایل: همبرگر order:1 و navbar-brand order:2 هستند (custom.css) —
-       بدونِ order صریح، این اسپن قبل از اون‌ها می‌افته */
+    /* 🆕 موبایل: نامِ کاربر کنارِ نامِ سازمان+همبرگر+آیکن‌ها تویِ یک ردیفِ
+       باریک جا نمی‌شد و هدر رو بهم می‌ریخت. این‌جا کاملاً از نوارِ بالا
+       حذف می‌شه؛ به‌جاش داخلِ منویِ پروفایل (پایین‌تر، #profileDropdownName)
+       نشون داده می‌شه — دسکتاپ دست‌نخورده می‌مونه (نامِ کاربر همون‌جای همیشگی) */
     @media (max-width: 1399px) {
-        #headerUserFullName {
-            order: 3;
+
+        #headerUserFullName,
+        #headerNameDivider {
+            display: none !important;
+        }
+    }
+
+    /* نامِ کاربر داخلِ منویِ پروفایل — پیش‌فرض مخفی (دسکتاپ نیازی نداره،
+       چون بالای هدر خودش نشون داده می‌شه)، فقط موبایل نمایش داده می‌شه */
+    .profile-dropdown-name {
+        display: none;
+    }
+
+    .profile-dropdown-name-divider {
+        display: none;
+    }
+
+    @media (max-width: 1399px) {
+        .profile-dropdown-name {
+            display: flex !important;
+            align-items: center;
+            padding: .5rem 1rem;
+            font-weight: 600;
+            color: var(--text-strong, #1f2937);
+        }
+
+        .profile-dropdown-name-divider {
+            display: block !important;
         }
     }
 </style>
@@ -117,6 +145,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         el.style.display = '';
                     }
                     if (div) div.style.display = '';
+
+                    // 🆕 همون نام، داخلِ منویِ پروفایل هم — نمایشِ نهایی‌ش رو
+                    // CSS (@media) تصمیم می‌گیره (فقط موبایل)
+                    var ddText = document.getElementById('profileDropdownNameText');
+                    if (ddText) ddText.textContent = full;
                 } catch (e) {}
             })();
         </script>
@@ -366,6 +399,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                     <i class="bi bi-person" style="font-size:1.25rem;color:var(--icon-accent);"></i>
                 </a>
                 <ul class="dropdown-menu" id="profileDropdownMenu" aria-labelledby="profileDropdown">
+                    <li class="profile-dropdown-name" id="profileDropdownName">
+                        <i class="bi bi-person-circle ms-2"></i><span id="profileDropdownNameText"></span>
+                    </li>
+                    <li class="profile-dropdown-name-divider" style="display:none;"><hr class="dropdown-divider"></li>
                     <li>
                         <a class="dropdown-item" href="../../pages/settings.php">
                             <i class="bi bi-gear ms-2"></i>تنظیمات

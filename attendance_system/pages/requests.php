@@ -1054,7 +1054,9 @@ function formatDateJalali($gregorianDate)
 
         .page-header {
             display: flex;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
+            /* بود: nowrap — با ۴ کارت روی موبایل، کارت‌ها له می‌شدن و متنِ
+               nowrap داخلشون از لبه‌ی کارت بیرون می‌زد */
             gap: 12px;
             width: 100%;
         }
@@ -2137,13 +2139,67 @@ function formatDateJalali($gregorianDate)
                 grid-template-columns: 1fr;
             }
 
+            /* 🔒 کارت‌های آماری: به‌جایِ ردیفِ افقیِ له‌شده، دو‌ستونه —
+               اگه متنِ یه لیبل هنوز جا نشد، به‌جایِ بیرون‌زدن، توی خودِ
+               کارت می‌شکنه (white-space:normal) */
+            .page-header {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stat-card.stat-card-inline {
+                white-space: normal;
+                flex-wrap: wrap;
+            }
+
+            /* 🔒 تب‌های مودال: ۴ تا با min-width:100px روی صفحه‌ی باریک جا
+               نمی‌شدن؛ به‌جایِ له‌شدن، افقی اسکرول می‌شن */
+            .tabs-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tab-button {
+                flex: 0 0 auto;
+                min-width: 82px;
+                font-size: 12px;
+                padding: 12px 10px;
+            }
+
+            /* 🔒 کاهشِ پدینگِ داخلیِ مودال/سایدبار روی موبایل — عرضِ مفید
+               بیشتری برایِ فرم می‌مونه */
+            .modal-overlay {
+                padding: 10px;
+            }
+
+            .modal-header {
+                padding: 16px;
+            }
+
+            .tab-content {
+                padding: 14px 16px;
+            }
+
+            .form-actions {
+                padding: 16px;
+            }
+
+            .user-info-box {
+                padding: 16px;
+            }
+
             .modal-content {
                 max-width: 95%;
             }
 
-            .tab-button {
-                font-size: 12px;
-                padding: 12px;
+            /* 🔒 ارتفاعِ ثابتِ گریدِ حضور/درخواست‌ها (۷۰۰/۵۶۰px inline) رویِ
+               موبایل بیش‌ازحدِ صفحه‌س — قبلِ رسیدن به بقیه‌ی صفحه، اسکرولِ
+               زیادی لازمه */
+            #attendanceGrid,
+            .attendance-table-wrapper,
+            #requestsGrid,
+            #pendingApprovalsGrid {
+                height: 460px !important;
             }
         }
 
