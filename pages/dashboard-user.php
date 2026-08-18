@@ -752,6 +752,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         .row-menu button:hover {
             background: #7e55b3;
+            color: #fff;
         }
 
         .row-menu button i {
@@ -3083,6 +3084,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                             <button type="button" class="datepicker-today-btn">امروز</button>
                         </div>
                     </div>
+                    <textarea id="rowNote" class="ra-input"
+                              placeholder="دلیل تمدید (الزامی)" rows="3"></textarea>
                     <div class="ra-actions">
                         <button class="pm-btn pm-btn-primary" onclick="rowSubmit(${task.id},'extend',this)">ثبت درخواست</button>
                         <button class="pm-btn pm-btn-ghost" onclick="rowModal.hide()">انصراف</button>
@@ -3181,11 +3184,16 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     pmToast('لطفاً موعد جدید را انتخاب کنید', 'err');
                     return;
                 }
+                const note = document.getElementById('rowNote').value.trim();
+                if (!note) {
+                    pmToast('لطفاً دلیل تمدید را بنویسید', 'err');
+                    return;
+                }
                 url = '../api/tasks/request-deadline.php';
                 payload = {
                     task_id: taskId,
                     new_deadline: d,
-                    reason: 'تمدید از داشبورد'
+                    reason: note
                 };
             }
 
