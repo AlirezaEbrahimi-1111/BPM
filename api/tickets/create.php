@@ -25,6 +25,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/VoiceCall.php';
 
 try {
     $user_id = requireAuth();
@@ -181,6 +182,12 @@ try {
     ]);
 
     $db->commit();
+
+    // ─── تماسِ صوتیِ هشدار برایِ تیکتِ «بحرانی» (زرین‌کال) ───
+    // 🔴 شماره‌یِ هشدار — فعلاً فقط شماره‌یِ شخصیِ درخواست‌دهنده، هاردکد
+    if ($priority_id === 4) {
+        VoiceCall::dispatchCriticalTicketCallAsync(['09105255090'], $ticketId);
+    }
 
     echo json_encode([
         'success'       => true,
