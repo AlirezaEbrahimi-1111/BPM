@@ -111,6 +111,8 @@ function taskIsDueToday(array $t, int $userId, string $today): bool
     if (taskIsWaitingMyDeadline($t, $userId)) return true;
 
     if (!empty($t['is_workflow_task']) && in_array($t['status'], ['in_progress', 'not_started'], true)) {
+        $wfDue = $t['next_due_date'] ?? null;
+        if ($wfDue && $wfDue > $today) return false;
         return true;
     }
 

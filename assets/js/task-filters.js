@@ -137,9 +137,11 @@ window.TF = (function () {
         // منتظر تأیید تمدید موعد توسط من (فارغ از تاریخ)
         if (isWaitingMyDeadline(t, user)) return true;
 
-        // کارهای فرآیندی که در جریان‌اند
+        // کارهای فرآیندی که در جریان‌اند — ولی اگه موعدش آینده‌ست، «امروز» نیست
         if (t.is_workflow_task == 1 &&
             (t.status === 'in_progress' || t.status === 'not_started')) {
+            const wfDue = effectiveDue(t);
+            if (wfDue && wfDue > td) return false;
             return true;
         }
 
