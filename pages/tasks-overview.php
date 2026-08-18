@@ -731,6 +731,18 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
         function daysLeft(d, status, task) {
             if (status === 'completed' || status === 'approved')
                 return '<span class="days-badge days-normal">تکمیل</span>';
+
+            // 🔒 کارِ دوره‌ای: تأخیرِ واقعی یعنی دوره‌هایِ معوقه، نه اختلافِ
+            // تقویمیِ next_due_date — چون next_due_date همیشه نزدیکِ امروزه
+            // (حتی وقتی ده‌ها دوره معوقه داره)، محاسبه‌ی رو‌به‌پایین می‌تونست
+            // «امروز»/«N روز دیگر» نشون بده و تأخیرِ واقعی رو کاملاً پنهان کنه
+            if (task && task.task_type === 'continuous') {
+                const op = task.overdue_periods || 0;
+                if (op > 0) {
+                    return `<span class="days-badge days-overdue">${toPersian(op)} دوره معوقه</span>`;
+                }
+            }
+
             if (!d) return '<span class="days-badge">-</span>';
 
             if (task && task.is_workflow_task == 1) {

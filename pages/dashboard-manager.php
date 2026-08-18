@@ -3329,7 +3329,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 const countParts = [];
                 if (u.delay_days > 0) countParts.push(`${toFa(u.delay_days)} روز`);
                 if (u.delay_hours > 0) countParts.push(`${toFa(u.delay_hours)} ساعت`);
-                const countText = countParts.join(' + ') || '۰ روز';
+                const countText = countParts.join(' • ') || '۰ روز';
 
                 return `
                 <div class="td-user-row" onclick="openDelayedUser('${escJsAttr(u.kind)}', '${escJsAttr(String(u.ref_id))}', '${escJsAttr(displayName)}')">
@@ -3509,6 +3509,14 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         function daysLate(t) {
             if (t.is_workflow_task == 1) {
                 return `${toFa(t.hours_delayed || 0)} ساعت`;
+            }
+            // 🔒 کارِ دوره‌ای: working_days_delayed فقط تأخیرِ دوره‌ی جاریه (که
+            // معمولاً ۰ست چون next_due_date همیشه نزدیکِ امروزه) — معیارِ درستِ
+            // تأخیر برای این نوع، تعدادِ دوره‌های معوقه‌ست (هم‌راستا با
+            // بجِ «X دوره معوقه» در task-detail.php)
+            if (t.task_type === 'continuous') {
+                const op = t.overdue_periods || 0;
+                return op > 0 ? `${toFa(op)} دوره معوقه` : '';
             }
             if (t.working_days_delayed) {
                 return `${toFa(t.working_days_delayed)} روز`;
