@@ -1775,6 +1775,7 @@ function formatDateJalali($gregorianDate)
             max-height: 90vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         @keyframes slideUp {
@@ -1818,8 +1819,26 @@ function formatDateJalali($gregorianDate)
             opacity: 0.6;
         }
 
+        /* 🔒 <form id="requestForm"> (نه یه <div> ساده) بینِ .modal-content
+           (flex-column) و .modal-body قرار گرفته — چون <form> خودش هیچ
+           قاعده‌ی flex ای نداره، flex:1 روی .modal-body هیچ‌وقت واقعاً اعمال
+           نمی‌شه، ارتفاعش هیچ‌وقت محدود نمی‌شه، و overflow:auto هم چون چیزی
+           برایِ اسکرول‌کردن نداره (همه‌چی راست تویِ ارتفاعِ طبیعیِ خودش جا
+           می‌شه) کار نمی‌کنه — نتیجه: رویِ موبایل (که ارتفاعِ صفحه کمه) کلِ
+           فرم از پایینِ مودال بیرون می‌زد و دکمه‌ی ارسال هیچ‌وقت با اسکرول در
+           دسترس نبود. این‌جا زنجیره‌ی flex رو با اضافه‌کردنِ همون قاعده‌ها به
+           خودِ <form> ترمیم می‌کنیم */
+        #requestForm {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
         .modal-body {
             flex: 1;
+            min-height: 0;
             padding: 0;
             overflow: auto;
             display: flex;
@@ -1875,6 +1894,7 @@ function formatDateJalali($gregorianDate)
             padding: 18px 24px;
             overflow-y: auto;
             flex: 1;
+            min-height: 0;
         }
 
         .tab-content.active {
@@ -2119,9 +2139,10 @@ function formatDateJalali($gregorianDate)
         }
 
         @media (max-width: 768px) {
-            body {
-                padding-top: 120px;
-            }
+            /* 🔒 بود: padding-top:120px — رویِ ۵۶px مارجینِ سراسریِ هدر
+               (custom.css) اضافه می‌شد و ~۱۷۶px فضایِ خالیِ بلااستفاده بالایِ
+               صفحه می‌ساخت. هدرِ موبایلِ این صفحه هم مثلِ همه‌جایِ دیگه
+               تک‌ردیفه، نیازی به فضایِ اضافه نداره */
 
             .main-layout {
                 padding: 16px;
@@ -2200,6 +2221,39 @@ function formatDateJalali($gregorianDate)
             #requestsGrid,
             #pendingApprovalsGrid {
                 height: 460px !important;
+            }
+
+            /* 🔒 سه‌تبِ سوییچِ اصلی (ورود‌وخروج/درخواست‌ها/منتظرِ تأیید): آیکن
+               کنارِ متنِ بلند جا نمی‌شد و متن به‌شکلِ زشتی می‌شکست — آیکن رو
+               بالایِ متن می‌بریم تا هرکدوم عرضِ کاملِ خودشون رو برایِ متن داشته باشن */
+            .section-tab {
+                flex-direction: column;
+                gap: 4px;
+                padding: 10px 4px;
+                font-size: 11px;
+                line-height: 1.3;
+            }
+
+            .section-tab i {
+                font-size: 16px;
+            }
+
+            /* 🔒 ماه + سه‌آمارِ ریالی: دو‌ردیفِ دو‌ستونیِ مرتب به‌جایِ شکستنِ
+               نامنظمِ flex-wrap — با display:contents، سه‌تا اسپنِ آمار از
+               داخلِ .att-month-toolbar-stats مستقیم عضوِ گریدِ والد می‌شن */
+            .att-month-toolbar {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px 14px;
+            }
+
+            .att-month-toolbar-stats {
+                display: contents;
+            }
+
+            .att-inline-stat {
+                white-space: normal;
+                font-size: 12px;
             }
         }
 
