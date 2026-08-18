@@ -10,7 +10,8 @@ class VoiceCall
     private $apikey = 'c39eea73-9a5f-4a18-88b3-a895ac89018b.d1933abb-7754-41b0-9518-72deaa7afb18'; // 🔴 پنلِ زرین‌کال
 
     // VoiceIdِ پیامِ هشدارِ «تیکتِ بحرانی» — از پنلِ زرین‌کال آپلود شده
-    private $critical_ticket_voice_id = '21f2440a-1ab0-420a-97ea-6d5faad3e239';
+    // (StoreForEver=true، ۱۹ ثانیه، تأییدشده با Voice/Get قبلِ استفاده)
+    private $critical_ticket_voice_id = '74d01fa6-0da2-460b-b1ab-a46dd0e38a4d';
 
     public function __construct($database)
     {
