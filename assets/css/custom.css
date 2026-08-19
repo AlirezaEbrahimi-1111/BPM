@@ -3651,6 +3651,92 @@ td:nth-child(2) {
     background: linear-gradient(180deg, #657ae7 0%, #744ca4 100%);
 }
 
+/* ═══ نوارِ جستجو/فیلترِ اعلان‌ها و اطلاعیه‌ها — دقیقاً یکسان برایِ هردو ═══ */
+.notif-toolbar {
+    padding: 10px 16px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1px solid #f1f5f9;
+    background: #fff;
+}
+
+.notif-search {
+    position: relative;
+}
+
+.notif-search i {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: .78rem;
+    pointer-events: none;
+}
+
+.notif-search input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #e5e9ee;
+    border-radius: 8px;
+    padding: 7px 32px 7px 10px;
+    font-size: .78rem;
+    font-family: inherit;
+    background: #fff;
+    color: #111827;
+}
+
+.notif-search input:focus {
+    outline: none;
+    border-color: #8e57fe;
+    box-shadow: 0 0 0 3px rgba(142, 87, 254, .12);
+}
+
+.notif-chips {
+    display: flex;
+    gap: 6px;
+}
+
+.notif-chip {
+    flex: 1;
+    border: 1px solid #e5e9ee;
+    background: #fff;
+    color: #374151;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: .74rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+}
+
+.notif-chip.active {
+    background: #8e57fe;
+    border-color: #8e57fe;
+    color: #fff;
+}
+
+.notif-day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 10px 4px;
+    font-size: .72rem;
+    font-weight: 700;
+    color: #6b7280;
+}
+
+.notif-day-mark-all {
+    background: none;
+    border: none;
+    color: #8e57fe;
+    font-size: .68rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
 .notification-item {
     padding: 8px 8px;
     border-radius: 12px;
@@ -3690,19 +3776,21 @@ td:nth-child(2) {
 }
 
 .notification-item.unread {
-    box-shadow: 0 2px 8px rgba(116, 76, 164, 0.15);
+    background: rgba(142, 87, 254, .08);
+    box-shadow: 0 2px 8px rgba(142, 87, 254, 0.15);
 }
 
-.notification-item.unread::after {
+.notification-item.unread::after,
+.announcement-item.unread::after {
     content: '';
     position: absolute;
     top: 14px;
     left: 14px;
     width: 8px;
     height: 8px;
-    background: linear-gradient(135deg, #744ca4 0%, #657ae7 100%);
+    background: #8e57fe;
     border-radius: 50%;
-    box-shadow: 0 0 8px rgba(116, 76, 164, 0.6);
+    box-shadow: 0 0 8px rgba(142, 87, 254, 0.6);
     animation: pulse-dot 2s ease-in-out infinite;
 }
 
@@ -3796,32 +3884,8 @@ td:nth-child(2) {
     }
 }
 
-:root[data-theme="dark"] .dropdown-menu.notification-dropdown {
-    background: linear-gradient(135deg, var(--surface) 0%, #1f2536 100%);
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
-}
-
-:root[data-theme="dark"] .notification-header {
-    background: linear-gradient(135deg, var(--surface) 0%, #1f2536 100%);
-    border-bottom-color: var(--border-soft);
-}
-
-:root[data-theme="dark"] .notification-item {
-    background: var(--info-box-bg);
-}
-
-:root[data-theme="dark"] .notification-item:hover {
-    background: linear-gradient(135deg, rgba(116, 76, 164, 0.15) 0%, rgba(101, 122, 231, 0.15) 100%);
-    border-color: rgba(116, 76, 164, 0.35);
-}
-
-:root[data-theme="dark"] .notification-title {
-    color: var(--text-strong);
-}
-
-:root[data-theme="dark"] .notification-message {
-    color: var(--text-muted);
-}
+/* منویِ اعلان‌ها/اطلاعیه‌ها عمداً همیشه روشن می‌مونه، صرف‌نظر از
+   تاگلِ تمِ کلیِ سایت — پس دیگه override دارک‌مود نداره */
 
 /* ======================================== 
            🍞 Toast Notification
@@ -6381,6 +6445,7 @@ body.login-page::after {
 
 /* ─── آیتم اطلاعیه (همسان با notification-item) ─── */
 .announcement-item {
+    position: relative;
     display: flex;
     align-items: flex-start;
     gap: 10px;
@@ -6390,6 +6455,7 @@ body.login-page::after {
     transition: background 0.15s;
     text-decoration: none;
     color: inherit;
+    background: #fff;
 }
 
 .announcement-item:last-child {
@@ -6401,8 +6467,7 @@ body.login-page::after {
 }
 
 .announcement-item.unread {
-    background: #fafbff;
-    border-right: 3px solid #667eea;
+    background: rgba(142, 87, 254, .08);
 }
 
 .announcement-item.unread .ann-item-title {
@@ -6530,18 +6595,8 @@ body.login-page::after {
 
 /* ─── تمِ تاریک — این بخش تا حالا رنگ‌هایِ هاردکدِ روشن داشت و اصلاً
    با تاگلِ تمِ سراسری هماهنگ نبود (منویِ زنگولهٔ اطلاعیه در هدر) ─── */
-:root[data-theme="dark"] .announcement-item {
-    border-bottom-color: var(--border-soft);
-    color: var(--text-strong);
-}
-
-:root[data-theme="dark"] .announcement-item:hover {
-    background: #232a3a;
-}
-
-:root[data-theme="dark"] .announcement-item.unread {
-    background: rgba(102, 126, 234, .1);
-}
+/* .announcement-item عمداً همیشه روشن می‌مونه، صرف‌نظر از تاگلِ
+   تمِ کلیِ سایت — پس دیگه override دارک‌مود نداره */
 
 :root[data-theme="dark"] .ann-priority-icon.urgent {
     background: rgba(220, 38, 38, .18);

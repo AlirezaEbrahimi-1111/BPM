@@ -368,6 +368,17 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         همه خوانده شد
                     </button>
                 </div>
+                <div class="notif-toolbar">
+                    <div class="notif-search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" placeholder="جستجو در اطلاعیه‌ها..." id="annSearchInput"
+                               oninput="annSearchQuery = this.value.trim(); renderAnnouncementList();">
+                    </div>
+                    <div class="notif-chips">
+                        <button type="button" class="notif-chip" data-mode="unread" onclick="annSetFilterMode('unread')">خوانده‌نشده</button>
+                        <button type="button" class="notif-chip active" data-mode="all" onclick="annSetFilterMode('all')">همه</button>
+                    </div>
+                </div>
                 <!-- لیست اطلاعیه‌ها -->
                 <div class="notification-list-container" id="announcementList">
                     <div class="notification-loading">
@@ -392,6 +403,17 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                     <button class="mark-all-btn" onclick="markAllAsRead()" id="markAllBtn">
                         همه خوانده شد
                     </button>
+                </div>
+                <div class="notif-toolbar">
+                    <div class="notif-search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" placeholder="جستجو در اعلان‌ها..." id="notifSearchInput"
+                               oninput="notifSearchQuery = this.value.trim(); renderNotificationList();">
+                    </div>
+                    <div class="notif-chips">
+                        <button type="button" class="notif-chip" data-mode="unread" onclick="notifSetFilterMode('unread')">خوانده‌نشده</button>
+                        <button type="button" class="notif-chip active" data-mode="all" onclick="notifSetFilterMode('all')">همه</button>
+                    </div>
                 </div>
                 <!-- لیست اعلان‌ها -->
                 <div class="notification-list-container" id="notificationList">
@@ -448,6 +470,35 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     var lastNotificationId = 0;
     let annUnreadCount = 0;
     let annCache = {}; // ذخیرهٔ کاملِ اطلاعیه‌ها برای نمایش در مودال
+
+    // ─── وضعیتِ فیلتر/جستجویِ لیستِ اعلان‌ها و اطلاعیه‌ها (هردو یکسان) ───
+    let annAllItems = [];
+    let annFilterMode = 'all'; // 'all' | 'unread'
+    let annSearchQuery = '';
+    let notifAllItems = [];
+    let notifFilterMode = 'all';
+    let notifSearchQuery = '';
+
+    /** برچسبِ گروهِ روز — «امروز»/«دیروز»/«قدیمی‌تر»، برایِ هر دو لیست مشترک */
+    function bpmDayGroupLabel(dateStr) {
+        const d = new Date(dateStr);
+        const startOfDay = dt => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()).getTime();
+        const diffDays = Math.round((startOfDay(new Date()) - startOfDay(d)) / 86400000);
+        if (diffDays <= 0) return 'امروز';
+        if (diffDays === 1) return 'دیروز';
+        return 'قدیمی‌تر';
+    }
+
+    /** items رو بر اساسِ روز (امروز/دیروز/قدیمی‌تر) گروه‌بندی می‌کنه، با همون ترتیبِ ورودی (که از قبل created_at DESC هست) */
+    function bpmGroupByDay(items, dateField) {
+        const order = ['امروز', 'دیروز', 'قدیمی‌تر'];
+        const groups = {};
+        items.forEach(it => {
+            const label = bpmDayGroupLabel(it[dateField]);
+            (groups[label] = groups[label] || []).push(it);
+        });
+        return order.filter(l => groups[l]).map(l => ({ label: l, items: groups[l] }));
+    }
 
     // toFa/enTofaNumber/faNum از assets/js/common.js میاد (لود شده بالاتر)
 
@@ -521,7 +572,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             if (preData) {
                 data = preData;
             } else {
-                const apiUrl = '/api/notifications/list.php?unread_only=1&limit=50';
+                const apiUrl = '/api/notifications/list.php?limit=50';
 
                 const response = await fetch(apiUrl, {
                     method: 'GET',
@@ -548,36 +599,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             }
 
             if (data.success && listContainer) {
-                if (data.notifications && data.notifications.length > 0) {
-                    listContainer.innerHTML = '';
-                    data.notifications.forEach(notif => {
-                        const item = document.createElement('a');
-                        item.className = `notification-item ${notif.is_read ? '' : 'unread'}`;
-                        item.href = notif.link || '#';
-                        item.setAttribute('data-notif-id', notif.id);
-                        item.innerHTML = `
-                        <div class="d-flex align-items-start">
-                            <div class="notification-icon ${notif.type}">
-                                <i class="bi bi-${getNotificationIcon(notif.type)}"></i>
-                            </div>
-                            <div class="notification-content">
-                                <div class="notification-title">${esc(notif.title)}</div>
-                                <div class="notification-message">${esc(notif.message)}</div>
-                                <div class="notification-time">${new Date(notif.created_at).toLocaleDateString('fa-IR')}</div>
-                            </div>
-                        </div>
-                    `;
-                        item.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            if (notif.is_read === 0) markAsRead(notif.id);
-                            if (notif.link && notif.link !== '#') window.location.href = notif.link;
-                        });
-                        listContainer.appendChild(item);
-                    });
-                    lastNotificationId = Math.max(...data.notifications.map(n => parseInt(n.id)));
-                } else {
-                    listContainer.innerHTML = '<div class="notification-empty"><i class="bi bi-bell-slash"></i><div>هیچ اعلان جدیدی وجود ندارد</div></div>';
+                notifAllItems = data.notifications || [];
+                if (notifAllItems.length > 0) {
+                    lastNotificationId = Math.max(...notifAllItems.map(n => parseInt(n.id)));
                 }
+                renderNotificationList();
                 updateBadge(data.unread_count || 0);
             }
         } catch (error) {
@@ -587,6 +613,79 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             }
             updateBadge(0);
         }
+    }
+
+    function notifSetFilterMode(mode) {
+        notifFilterMode = mode;
+        document.querySelectorAll('#notificationDropdownMenu .notif-chip').forEach(c =>
+            c.classList.toggle('active', c.dataset.mode === mode));
+        renderNotificationList();
+    }
+
+    /** خواندنِ همه‌ی موارد نخوانده‌ی یک گروهِ روز (بدونِ حذف از لیست) */
+    async function notifMarkGroupRead(label) {
+        const ids = notifAllItems
+            .filter(n => bpmDayGroupLabel(n.created_at) === label && !n.is_read)
+            .map(n => n.id);
+        for (const id of ids) await markAsRead(id);
+        renderNotificationList();
+    }
+
+    // ─── رندر لیست (از notifAllItems، با فیلتر/جستجویِ فعلی) ───
+    function renderNotificationList() {
+        const listContainer = document.getElementById('notificationList');
+        if (!listContainer) return;
+
+        const q = (notifSearchQuery || '').toLowerCase();
+        const filtered = notifAllItems.filter(notif => {
+            if (notifFilterMode === 'unread' && notif.is_read) return false;
+            if (q && !((notif.title || '') + (notif.message || '')).toLowerCase().includes(q)) return false;
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            listContainer.innerHTML = '<div class="notification-empty"><i class="bi bi-bell-slash"></i><div>اعلانی وجود ندارد</div></div>';
+            return;
+        }
+
+        let html = '';
+        bpmGroupByDay(filtered, 'created_at').forEach(group => {
+            const groupHasUnread = group.items.some(n => !n.is_read);
+            html += `
+            <div class="notif-day-header">
+                <span>${group.label}</span>
+                ${groupHasUnread ? `<button type="button" class="notif-day-mark-all" onclick="notifMarkGroupRead('${group.label}')">خواندن همه</button>` : ''}
+            </div>`;
+
+            group.items.forEach(notif => {
+                const isUnread = !notif.is_read;
+                html += `
+                <a class="notification-item ${isUnread ? 'unread' : ''}" href="${notif.link || '#'}" data-notif-id="${notif.id}">
+                    <div class="d-flex align-items-start">
+                        <div class="notification-icon ${notif.type}">
+                            <i class="bi bi-${getNotificationIcon(notif.type)}"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title">${esc(notif.title)}</div>
+                            <div class="notification-message">${esc(notif.message)}</div>
+                            <div class="notification-time">${getSmartAnnTime(notif.created_at)}</div>
+                        </div>
+                    </div>
+                </a>`;
+            });
+        });
+
+        listContainer.innerHTML = html;
+
+        listContainer.querySelectorAll('.notification-item').forEach(item => {
+            const notifId = item.getAttribute('data-notif-id');
+            const notif = notifAllItems.find(n => String(n.id) === notifId);
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (notif && !notif.is_read) markAsRead(notif.id);
+                if (notif && notif.link && notif.link !== '#') window.location.href = notif.link;
+            });
+        });
     }
 
     function updateAnnouncementBadge(count) {
@@ -624,7 +723,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             if (preData) {
                 data = preData;
             } else {
-                const response = await fetch('/api/announcements/list.php?limit=8&offset=0&unread_only=1', {
+                const response = await fetch('/api/announcements/list.php?limit=50&offset=0', {
                     headers: {
                         'Authorization': 'Bearer ' + authToken
                     }
@@ -635,7 +734,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             }
 
             if (data.success) {
-                renderAnnouncementList(data.announcements, data.unread_count);
+                annAllItems = data.announcements || [];
+                annCache = {};
+                annAllItems.forEach(ann => annCache[ann.id] = ann);
+                renderAnnouncementList();
                 updateAnnouncementBadge(data.unread_count || 0);
             }
         } catch (err) {
@@ -648,12 +750,36 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         }
     }
 
-    // ─── رندر لیست ───
-    function renderAnnouncementList(announcements, unreadCount) {
+    function annSetFilterMode(mode) {
+        annFilterMode = mode;
+        document.querySelectorAll('#announcementDropdownMenu .notif-chip').forEach(c =>
+            c.classList.toggle('active', c.dataset.mode === mode));
+        renderAnnouncementList();
+    }
+
+    /** خواندنِ همه‌ی موارد نخوانده‌ی یک گروهِ روز (بدونِ حذف از لیست) */
+    async function annMarkGroupRead(label) {
+        const ids = annAllItems
+            .filter(a => bpmDayGroupLabel(a.created_at) === label && (a.is_read === false || a.is_read === 0))
+            .map(a => a.id);
+        for (const id of ids) await markAnnouncementRead(id);
+        renderAnnouncementList();
+    }
+
+    // ─── رندر لیست (از annAllItems، با فیلتر/جستجویِ فعلی) ───
+    function renderAnnouncementList() {
         const listContainer = document.getElementById('announcementList');
         if (!listContainer) return;
 
-        if (!announcements || announcements.length === 0) {
+        const q = (annSearchQuery || '').toLowerCase();
+        const filtered = annAllItems.filter(ann => {
+            const isUnread = ann.is_read === false || ann.is_read === 0;
+            if (annFilterMode === 'unread' && !isUnread) return false;
+            if (q && !(ann.title || '').toLowerCase().includes(q)) return false;
+            return true;
+        });
+
+        if (filtered.length === 0) {
             listContainer.innerHTML = `
             <div class="ann-empty">
                 <i class="bi bi-megaphone"></i>
@@ -670,35 +796,41 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         };
 
         let html = '';
-        annCache = {};
-        announcements.forEach(ann => {
-            annCache[ann.id] = ann;
-            const isUnread = ann.is_read === false || ann.is_read === 0;
-            const priority = ann.priority || 'normal';
-            const icon = priorityIcons[priority] || priorityIcons.normal;
-            const timeText = getSmartAnnTime(ann.created_at);
-
-            // بج اولویت فوری/مهم روی عنوان
-            let priorityTag = '';
-            if (priority === 'urgent') priorityTag = '<span class="ann-urgent-tag">فوری</span>';
-            else if (priority === 'high') priorityTag = '<span class="ann-high-tag">مهم</span>';
-
+        bpmGroupByDay(filtered, 'created_at').forEach(group => {
+            const groupHasUnread = group.items.some(a => a.is_read === false || a.is_read === 0);
             html += `
-            <div class="announcement-item ${isUnread ? 'unread' : ''}" 
-                 data-ann-id="${ann.id}"
-                 onclick="handleAnnouncementClick(event, ${ann.id})">
-                <div class="ann-priority-icon ${priority}">${icon}</div>
-                <div class="ann-item-body">
-                    <div class="ann-item-title">
-                        ${priorityTag}
-                        ${escapeHtml(ann.title)}
-                    </div>
-                    <div class="ann-item-time">
-                        <i class="bi bi-clock" style="font-size:10px;"></i>
-                        ${timeText}
-                    </div>
-                </div>
+            <div class="notif-day-header">
+                <span>${group.label}</span>
+                ${groupHasUnread ? `<button type="button" class="notif-day-mark-all" onclick="annMarkGroupRead('${group.label}')">خواندن همه</button>` : ''}
             </div>`;
+
+            group.items.forEach(ann => {
+                const isUnread = ann.is_read === false || ann.is_read === 0;
+                const priority = ann.priority || 'normal';
+                const icon = priorityIcons[priority] || priorityIcons.normal;
+                const timeText = getSmartAnnTime(ann.created_at);
+
+                let priorityTag = '';
+                if (priority === 'urgent') priorityTag = '<span class="ann-urgent-tag">فوری</span>';
+                else if (priority === 'high') priorityTag = '<span class="ann-high-tag">مهم</span>';
+
+                html += `
+                <div class="announcement-item ${isUnread ? 'unread' : ''}"
+                     data-ann-id="${ann.id}"
+                     onclick="handleAnnouncementClick(event, ${ann.id})">
+                    <div class="ann-priority-icon ${priority}">${icon}</div>
+                    <div class="ann-item-body">
+                        <div class="ann-item-title">
+                            ${priorityTag}
+                            ${escapeHtml(ann.title)}
+                        </div>
+                        <div class="ann-item-time">
+                            <i class="bi bi-clock" style="font-size:10px;"></i>
+                            ${timeText}
+                        </div>
+                    </div>
+                </div>`;
+            });
         });
 
         // footer — لینک مشاهده همه (اگه صفحه جداگانه داری)
@@ -797,13 +929,17 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
     // ─── علامت خوانده شده (تک) ───
     async function markAnnouncementRead(annId) {
-        // بروزرسانی فوری UI
-        const item = document.querySelector(`.announcement-item[data-ann-id="${annId}"]`);
-        if (item && item.classList.contains('unread')) {
-            item.classList.remove('unread');
+        // annAllItems رو هم به‌روز کن — وگرنه رندرِ بعدی (جستجو/فیلتر) دوباره «نخوانده» نشونش می‌ده
+        const cached = annAllItems.find(a => Number(a.id) === Number(annId));
+        if (cached && (cached.is_read === false || cached.is_read === 0)) {
+            cached.is_read = true;
             const newCount = Math.max(0, annUnreadCount - 1);
             updateAnnouncementBadge(newCount);
         }
+
+        // بروزرسانی فوری UI
+        const item = document.querySelector(`.announcement-item[data-ann-id="${annId}"]`);
+        if (item) item.classList.remove('unread');
 
         try {
             await fetch('/api/announcements/update.php', {
@@ -842,6 +978,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 })
             });
 
+            annAllItems.forEach(a => a.is_read = true);
             document.querySelectorAll('.announcement-item.unread')
                 .forEach(el => el.classList.remove('unread'));
             updateAnnouncementBadge(0);
@@ -935,6 +1072,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     // علامت‌گذاری خوانده شده
     // ============================================
     async function markAsRead(notifId) {
+        const cached = notifAllItems.find(n => Number(n.id) === Number(notifId));
+        const wasUnread = cached && !cached.is_read;
+        if (!wasUnread) return; // از قبل خوانده بود — دوباره به سرور/شمارنده دست نزن
+
         try {
             const response = await fetch('/api/notifications/mark-read.php', {
                 method: 'POST',
@@ -948,6 +1089,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             });
             const data = await response.json();
             if (data.success) {
+                cached.is_read = 1;
                 unreadCount = Math.max(0, unreadCount - 1);
                 updateBadge(unreadCount);
                 const notifItem = document.querySelector(`[data-notif-id="${notifId}"]`);
@@ -979,6 +1121,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             const data = await response.json();
             if (data.success) {
                 unreadCount = 0;
+                notifAllItems.forEach(n => n.is_read = 1);
                 updateBadge(0);
                 document.querySelectorAll('.notification-item.unread').forEach(item => item.classList.remove('unread'));
                 setTimeout(() => {

@@ -38,8 +38,12 @@ function bpm_header_capture(string $absPath, array $getParams = []): array {
 
 $root = $_SERVER['DOCUMENT_ROOT'];
 
-$notifications = bpm_header_capture($root . '/api/notifications/list.php', ['unread_only' => '1', 'limit' => '50']);
-$announcements = bpm_header_capture($root . '/api/announcements/list.php', ['limit' => '8', 'offset' => '0', 'unread_only' => '1']);
+// unread_only عمداً حذف شد: قبلاً موردِ خوانده‌شده در بارگذاریِ بعدیِ
+// دراپ‌داون از دیتا اصلاً برنمی‌گشت (چون سرور فقط نخوانده‌ها رو می‌فرستاد)
+// و از لیست ناپدید می‌شد؛ فیلترِ خوانده‌نشده/همه از این به بعد سمتِ UI
+// (chip) روی همین دیتایِ کامل اعمال می‌شه، نه با پارامترِ ثابتِ سرور
+$notifications = bpm_header_capture($root . '/api/notifications/list.php', ['limit' => '50']);
+$announcements = bpm_header_capture($root . '/api/announcements/list.php', ['limit' => '50', 'offset' => '0']);
 $attendance    = bpm_header_capture($root . '/api/attendance/today-status.php');
 $conversations = bpm_header_capture($root . '/api/chat/conversations.php');
 
