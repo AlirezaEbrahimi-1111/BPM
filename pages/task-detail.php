@@ -82,7 +82,7 @@ if (!$__me) {
         }
 
         .viewer-name:hover {
-            color: var(--icon-accent, #744CA4);
+            color: var(--icon-accent, #8e57fe);
         }
 
         /* در پیکرِ افزودنِ دسترسی، hintِ زیرِ فیلد هیچ‌وقت پر نمی‌شه (فقط تویِ حالتِ
@@ -92,7 +92,7 @@ if (!$__me) {
         }
 
         .checklist-detail-item:hover {
-            background: #f8f9fa;
+            background: #e9e9e9;
             border-radius: 6px;
         }
 
@@ -123,7 +123,7 @@ if (!$__me) {
 
         .chk-desc-icon {
             font-size: 0.85rem;
-            color: #6366f1;
+            color: #8e57fe;
             margin-inline-start: 4px;
         }
 
@@ -141,7 +141,7 @@ if (!$__me) {
         }
 
         .checklist-detail-item-wrap:hover {
-            background: #f8f9fa;
+            background: #e9e9e9;
             border-radius: 6px;
         }
 
@@ -154,8 +154,8 @@ if (!$__me) {
             display: none;
             margin: 8px 0 4px 26px;
             padding: 11px 13px;
-            background: #faf9ff;
-            border: 1px solid #e5e0ff;
+            background: rgba(142, 87, 254, 0.05);
+            border: 1px solid rgba(142, 87, 254, 0.2);
             border-radius: 10px;
             animation: chkSlide .18s ease;
         }
@@ -196,7 +196,7 @@ if (!$__me) {
             width: 100%;
             font-family: inherit;
             font-size: .84rem;
-            border: 1.5px solid #e5e7eb;
+            border: 1.5px solid #e9e9e9;
             border-radius: 8px;
             padding: 8px 10px;
             resize: vertical;
@@ -210,7 +210,7 @@ if (!$__me) {
 
         .chk-note-drawer textarea:focus {
             outline: none;
-            border-color: #6c3ff4;
+            border-color: #8e57fe;
         }
 
         /* ردیفِ واحد: پیوستِ فایل (۵۰٪) + انصراف/بدون‌یادداشت/ثبت (۵۰٪) */
@@ -233,7 +233,7 @@ if (!$__me) {
         .chk-note-file label {
             margin: 0;
             display: inline-flex;
-            color: #6c3ff4;
+            color: #8e57fe;
             font-size: .95rem;
             flex-shrink: 0;
         }
@@ -260,8 +260,8 @@ if (!$__me) {
         .chk-done-note {
             margin: 6px 0 4px 26px;
             padding: 7px 11px;
-            background: #f3f4f6;
-            border-right: 3px solid #ddd6fe;
+            background: #e9e9e9;
+            border-right: 3px solid #8e57fe;
             border-radius: 8px;
             font-size: .8rem;
             color: #4b5563;
@@ -343,7 +343,7 @@ if (!$__me) {
                     <span>
                         <i class="bi bi-paperclip ms-2"></i>فایل‌های پیوست
                         <span id="attachmentsCountBadge"
-                            style="display:none; background:#744ca4; color:#fff; border-radius:50px; padding:1px 9px; font-size:0.75rem; margin-right:6px; font-weight:600;">
+                            style="display:none; background:#8e57fe; color:#fff; border-radius:50px; padding:1px 9px; font-size:0.75rem; margin-right:6px; font-weight:600;">
                         </span>
                     </span>
                     <i class="bi bi-chevron-down" id="attachmentsChevron" style="transition: transform 0.3s;"></i>
@@ -2496,7 +2496,7 @@ if (!$__me) {
                 // نمایش badge فعلی (یا «بدون گروه»)
                 function badgeHtml() {
                     if (task.group_id && task.group_name) {
-                        const color = esc(task.group_color || '#6366f1');
+                        const color = esc(task.group_color || '#8e57fe');
                         return `<span class="badge" style="background:${color}20;color:${color};border:1px solid ${color}40;">
                                 <i class="${esc(task.group_icon || 'bi-tag')} me-1"></i>${esc(task.group_name)}</span>`;
                     }
@@ -5504,16 +5504,16 @@ ${task.overdue_periods > 0 ? `
                 // Drag & Drop
                 uploadAreaModal.addEventListener('dragover', (e) => {
                     e.preventDefault();
-                    uploadAreaModal.style.borderColor = '#744ca4';
+                    uploadAreaModal.style.borderColor = '#8e57fe';
                 });
 
                 uploadAreaModal.addEventListener('dragleave', () => {
-                    uploadAreaModal.style.borderColor = 'rgba(116, 76, 164, 0.3)';
+                    uploadAreaModal.style.borderColor = 'rgba(142, 87, 254, 0.3)';
                 });
 
                 uploadAreaModal.addEventListener('drop', (e) => {
                     e.preventDefault();
-                    uploadAreaModal.style.borderColor = 'rgba(116, 76, 164, 0.3)';
+                    uploadAreaModal.style.borderColor = 'rgba(142, 87, 254, 0.3)';
                     addFilesToModal(e.dataTransfer.files);
                 });
             }

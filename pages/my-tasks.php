@@ -108,9 +108,9 @@ if (!$__me) {
                     </div>
                 </div>
 
-                <div id="dashFilterBanner" style="display:none;align-items:center;justify-content:space-between;gap:10px;background:#f0e9fd;border:1px solid rgba(126,85,179,.25);border-radius:10px;padding:8px 14px;margin-bottom:10px;font-size:13px;color:#7e55b3;">
+                <div id="dashFilterBanner" style="display:none;align-items:center;justify-content:space-between;gap:10px;background:rgba(142, 87, 254, 0.1);border:1px solid rgba(142, 87, 254, 0.25);border-radius:10px;padding:8px 14px;margin-bottom:10px;font-size:13px;color:#8e57fe;">
                     <span id="dashFilterBannerText"></span>
-                    <a href="my-tasks.php" style="color:#7e55b3;font-weight:700;text-decoration:underline;">پاک کردن فیلتر</a>
+                    <a href="my-tasks.php" style="color:#8e57fe;font-weight:700;text-decoration:underline;">پاک کردن فیلتر</a>
                 </div>
 
                 <div class="search-box">
@@ -336,7 +336,7 @@ if (!$__me) {
                 noRowsToShow: 'داده‌ای یافت نشد',
                 loadingOoo: 'در حال بارگذاری...',
             },
-            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
+            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
             animateRows: true,
             pagination: true,
             paginationPageSize: 15,

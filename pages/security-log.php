@@ -114,7 +114,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
       display: flex; flex-wrap: wrap; gap: 12px;
       align-items: center; justify-content: space-between; margin-bottom: 18px;
     }
-    .admin-toolbar h4 { margin: 0; color: #744CA4; font-weight: 700; }
+    .admin-toolbar h4 { margin: 0; color: #8e57fe; font-weight: 700; }
     .admin-toolbar .sub { font-size: 13px; color: #718096; margin-top: 2px; }
 
     .admin-cards {
@@ -137,10 +137,10 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
       margin-bottom: 16px;
     }
     .filter-bar select {
-      border: 1px solid #E2E8F0; border-radius: 9px; padding: 8px 12px;
+      border: 1px solid #e9e9e9; border-radius: 9px; padding: 8px 12px;
       font-size: 13px; font-family: inherit; outline: none; background: #fff;
     }
-    .filter-bar select:focus { border-color: #744CA4; }
+    .filter-bar select:focus { border-color: #8e57fe; }
 
     .log-table-wrap {
       background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.04);
@@ -149,16 +149,16 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     table.log-table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
     table.log-table th {
       text-align: right; padding: 12px 16px; color: #718096; font-weight: 700;
-      border-bottom: 1px solid #EDF0F4; background: #FBFBFD; font-size: 12px;
+      border-bottom: 1px solid #e9e9e9; background: #e9e9e9; font-size: 12px;
     }
-    table.log-table td { padding: 11px 16px; border-bottom: 1px solid #F4F5F7; color: #2D3748; }
+    table.log-table td { padding: 11px 16px; border-bottom: 1px solid #e9e9e9; color: #2D3748; }
     table.log-table tr:last-child td { border-bottom: none; }
-    table.log-table tr:hover td { background: #FAFAFB; }
+    table.log-table tr:hover td { background: #e9e9e9; }
 
     .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
-    .pill.ok   { background: #E6F7EF; color: #027A48; }
+    .pill.ok   { background: rgba(27, 123, 57, 0.12); color: #1b7b39; }
     .pill.bad  { background: #FEE4E2; color: #B42318; }
-    .pill.info { background: #EDE9FE; color: #744CA4; }
+    .pill.info { background: rgba(142, 87, 254, 0.12); color: #8e57fe; }
     .pill.warn { background: #FEF3E0; color: #B25E09; }
 
     .empty-row { text-align: center; padding: 40px 16px; color: #A0AEC0; }
@@ -167,10 +167,10 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     .pagination a, .pagination span {
       display: inline-flex; align-items: center; justify-content: center;
       min-width: 32px; height: 32px; border-radius: 8px; font-size: 13px;
-      text-decoration: none; color: #2D3748; border: 1px solid #E2E8F0;
+      text-decoration: none; color: #2D3748; border: 1px solid #e9e9e9;
     }
-    .pagination a:hover { border-color: #744CA4; color: #744CA4; }
-    .pagination .active { background: #744CA4; color: #fff; border-color: #744CA4; }
+    .pagination a:hover { border-color: #8e57fe; color: #8e57fe; }
+    .pagination .active { background: #8e57fe; color: #fff; border-color: #8e57fe; }
 
     @media (max-width: 768px) {
       .admin-wrap { margin-top: 84px; padding: 0 10px; }
@@ -192,7 +192,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
   <div class="admin-cards">
     <div class="pcard">
-      <div class="ic" style="background:#E6F7EF;color:#027A48;"><i class="bi bi-box-arrow-in-left"></i></div>
+      <div class="ic" style="background:rgba(27, 123, 57, 0.12);color:#1b7b39;"><i class="bi bi-box-arrow-in-left"></i></div>
       <div><div class="lbl">ورودِ موفق (۲۴ ساعتِ اخیر)</div><div class="val"><?= (int) ($stat['logins_ok'] ?? 0) ?></div></div>
     </div>
     <div class="pcard">
@@ -204,7 +204,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
       <div><div class="lbl">آی‌پیِ مسدودِ لحظه‌ای</div><div class="val"><?= $blockedNow ?></div></div>
     </div>
     <div class="pcard">
-      <div class="ic" style="background:#EDE9FE;color:#744CA4;"><i class="bi bi-person-x"></i></div>
+      <div class="ic" style="background:rgba(142, 87, 254, 0.12);color:#8e57fe;"><i class="bi bi-person-x"></i></div>
       <div><div class="lbl">غیرفعال‌سازیِ کاربر (۲۴ ساعتِ اخیر)</div><div class="val"><?= (int) ($stat['deactivations'] ?? 0) ?></div></div>
     </div>
   </div>

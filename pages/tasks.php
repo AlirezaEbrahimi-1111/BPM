@@ -209,7 +209,7 @@ if (!$__me) {
                 width: 120,
                 resizable: true,
                 cellRenderer: p => p.value ?
-                    `<span class="badge" style="background:${esc(p.data.group_color || '#6366f1')}20;color:${esc(p.data.group_color || '#6366f1')};border:1px solid ${esc(p.data.group_color || '#6366f1')}40;"><i class="${esc(p.data.group_icon || 'bi-tag')} me-1"></i>${esc(p.value)}</span>` : '<span class="text-muted">—</span>'
+                    `<span class="badge" style="background:${esc(p.data.group_color || '#8e57fe')}20;color:${esc(p.data.group_color || '#8e57fe')};border:1px solid ${esc(p.data.group_color || '#8e57fe')}40;"><i class="${esc(p.data.group_icon || 'bi-tag')} me-1"></i>${esc(p.value)}</span>` : '<span class="text-muted">—</span>'
             },
             {
                 field: 'creator_name',
@@ -307,7 +307,7 @@ if (!$__me) {
                 sortable: true,
                 resizable: true
             },
-            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
+            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
             onGridReady: params => {
                 const saved = localStorage.getItem('allTasksGridState');
                 if (saved) params.api.applyColumnState({

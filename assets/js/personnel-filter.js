@@ -72,9 +72,9 @@ function loadAndDisplayPersonnel() {
             <div class="submenu-item personnel-item" 
                  data-id="${id}"
                  onclick="filterByPersonnel(${id}, '${data.name}')"
-                 style="display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0.9rem; cursor: pointer; transition: all 0.2s ease; font-size: 0.85rem; ${isSelected ? 'background: rgba(124, 58, 237, 0.15); color: var(--primary); border-right: 3px solid var(--primary);' : 'border-right: 3px solid transparent;'} margin-bottom: 0.2rem; border-radius: 0;">
+                 style="display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0.9rem; cursor: pointer; transition: all 0.2s ease; font-size: 0.85rem; ${isSelected ? 'background: rgba(142, 87, 254, 0.15); color: var(--primary); border-right: 3px solid var(--primary);' : 'border-right: 3px solid transparent;'} margin-bottom: 0.2rem; border-radius: 0;">
                 <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1; min-width: 0;">
-                    <div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #5b21b6); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.7rem; flex-shrink: 0;">
+                    <div style="width: 24px; height: 24px; border-radius: 50%; background: #8e57fe; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.7rem; flex-shrink: 0;">
                         ${data.name.charAt(0)}
                     </div>
                     <span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">

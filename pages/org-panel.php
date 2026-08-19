@@ -32,10 +32,10 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
   <link rel="stylesheet" href="../assets/js/cdn/bootstrap-icons.css">
   <style>
     :root {
-      --bg:#F7F8FA; --surface:#FFFFFF; --border:#EAECF0;
+      --bg:#F7F8FA; --surface:#FFFFFF; --border:#e9e9e9;
       --text-main:#101828; --text-sub:#667085;
-      --primary:#7C3AED; --primary-light:#EDE9FE;
-      --success:#12B76A; --success-light:#D1FAE5;
+      --primary:#8e57fe; --primary-light:rgba(142, 87, 254, 0.12);
+      --success:#1b7b39; --success-light:rgba(27, 123, 57, 0.12);
       --danger:#F04438;  --danger-light:#FEE4E2;
       --warning:#F79009; --warning-light:#FEF3C7;
       --radius:14px; --radius-sm:8px;
@@ -86,7 +86,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
 
     /* Badges */
     .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600}
-    .badge-success{background:var(--success-light);color:#027A48}
+    .badge-success{background:var(--success-light);color:#1b7b39}
     .badge-danger{background:var(--danger-light);color:#B42318}
     .badge-gray{background:#F2F4F7;color:var(--text-sub)}
     .badge-purple{background:var(--primary-light);color:var(--primary)}
@@ -149,11 +149,11 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     <!-- کارت‌های آماری -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-icon" style="background:#EDE9FE;color:#7C3AED"><i class="bi bi-people"></i></div>
+        <div class="stat-icon" style="background:rgba(142, 87, 254, 0.12);color:#8e57fe"><i class="bi bi-people"></i></div>
         <div><div class="stat-value" id="statTotal">0</div><div class="stat-label">کل پرسنل</div></div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background:#D1FAE5;color:#12B76A"><i class="bi bi-person-check"></i></div>
+        <div class="stat-icon" style="background:rgba(27, 123, 57, 0.12);color:#1b7b39"><i class="bi bi-person-check"></i></div>
         <div><div class="stat-value" id="statActive">0</div><div class="stat-label">پرسنل فعال</div></div>
       </div>
       <div class="stat-card">

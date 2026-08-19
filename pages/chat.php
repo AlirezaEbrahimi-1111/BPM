@@ -515,7 +515,7 @@ if (!$__me) {
         }
 
         .chat-search-toggle-btn.chat-notif-on {
-            color: var(--icon-accent, #744CA4);
+            color: var(--icon-accent, #8e57fe);
         }
 
         .chat-search-toggle-btn.chat-notif-blocked {
@@ -1276,7 +1276,7 @@ if (!$__me) {
         }
 
         .chat-toggle-switch input:checked + .chat-toggle-slider {
-            background: var(--icon-accent, #744CA4);
+            background: var(--icon-accent, #8e57fe);
         }
 
         .chat-toggle-switch input:checked + .chat-toggle-slider::before {

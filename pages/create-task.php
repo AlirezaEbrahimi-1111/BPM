@@ -106,15 +106,15 @@ if (!$__me) {
             align-items: center;
             gap: 8px;
             padding: 8px 10px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9e9e9;
             border-radius: 8px;
             background: #fff;
             transition: border-color .15s, background .15s;
         }
-        .cl-item:hover { border-color: #c7d2fe; background: #fafaff; }
+        .cl-item:hover { border-color: #8e57fe; background: rgba(142, 87, 254, 0.04); }
         .cl-index { color: #9ca3af; font-size: 0.85rem; flex: 0 0 auto; }
         .cl-title-input { flex: 1 1 auto; min-width: 0; border: none; background: transparent; box-shadow: none !important; }
-        .cl-title-input:focus { background: #f3f4f6; border-radius: 4px; }
+        .cl-title-input:focus { background: #e9e9e9; border-radius: 4px; }
         /* آیکون‌های توضیحات و حذف، گروه‌شده در انتهای هر آیتم (سمت چپ در RTL) */
         .cl-actions { display: flex; align-items: center; gap: 2px; flex: 0 0 auto; margin-inline-start: auto; }
         .cl-icon-btn {
@@ -123,15 +123,15 @@ if (!$__me) {
             border-radius: 6px; color: #9ca3af; cursor: pointer; transition: background .15s, color .15s;
             padding: 0; font-size: 0.9rem;
         }
-        .cl-icon-btn:hover { background: #f3f4f6; }
-        .cl-desc-btn:hover { color: #6366f1; }
-        .cl-desc-btn.has-desc { color: #6366f1; }
+        .cl-icon-btn:hover { background: #e9e9e9; }
+        .cl-desc-btn:hover { color: #8e57fe; }
+        .cl-desc-btn.has-desc { color: #8e57fe; }
         .cl-delete-btn:hover { color: #dc2626; background: #fee2e2; }
         .cl-desc-zone:empty { display: none; }
         .cl-desc-zone.open { margin-top: 6px; }
         .cl-desc-edit {
             display: flex; flex-direction: column; gap: 6px;
-            padding: 8px 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
+            padding: 8px 10px; background: #e9e9e9; border: 1px solid #e9e9e9; border-radius: 8px;
         }
         .cl-desc-edit textarea { font-size: 0.82rem; resize: vertical; }
 

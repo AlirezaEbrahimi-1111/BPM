@@ -45,12 +45,12 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/minified/introjs.min.css') ?>">
     <style>
                 :root {
-            --primary-color1: #6366F1;
-            --primary-color2: #8B5CF6;
-            --primary: #744ca4;
-            --primary-dark: #657ae7;
-            --primary-light: #8b6fb9;
-            --success: #059669;
+            --primary-color1: #8e57fe;
+            --primary-color2: #8e57fe;
+            --primary: #8e57fe;
+            --primary-dark: #8e57fe;
+            --primary-light: #8e57fe;
+            --success: #1b7b39;
             --danger: #dc2626;
             --warning: #d97706;
             --info: #0891b2;

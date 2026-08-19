@@ -15,7 +15,7 @@ try {
 
     $input = json_decode(file_get_contents('php://input'), true);
     $name  = trim($input['name'] ?? '');
-    $color = trim($input['color'] ?? '#6366f1');
+    $color = trim($input['color'] ?? '#8e57fe');
     $icon  = trim($input['icon'] ?? 'bi-tag');
     $scope = ($input['scope'] ?? 'personal') === 'org' ? 'org' : 'personal';
 

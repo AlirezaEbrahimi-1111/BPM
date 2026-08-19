@@ -1205,7 +1205,7 @@ if (!$__me) {
     <!-- Undo Toast (هماهنگ با استایل toast پروژه) -->
     <div id="undoToast" class="toast-notification">
         <div class="toast-header">
-            <i class="bi bi-trash" style="color:#744ca4;"></i>
+            <i class="bi bi-trash" style="color:#8e57fe;"></i>
             <span>حذف روتین</span>
             <button type="button" onclick="hideUndoToast()"
                 style="margin-right:auto;background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1rem;line-height:1;">
@@ -1216,7 +1216,7 @@ if (!$__me) {
             <span id="undoToastBody">روتین حذف شد</span>
             <div style="margin-top:10px;">
                 <button type="button" id="undoToastBtn"
-                    style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:#744ca4;font-weight:600;font-size:12.5px;cursor:pointer;padding:0;">
+                    style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:#8e57fe;font-weight:600;font-size:12.5px;cursor:pointer;padding:0;">
                     <i class="bi bi-arrow-counterclockwise"></i> بازگرداندن
                 </button>
             </div>

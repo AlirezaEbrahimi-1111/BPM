@@ -877,7 +877,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             },
             normal: {
                 label: 'عادی',
-                color: '#744CA4'
+                color: '#8e57fe'
             },
             low: {
                 label: 'اطلاع‌رسانی',
@@ -904,7 +904,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             '</div>' +
             '<div style="padding:16px 18px;overflow:auto;line-height:2;color:var(--text-strong);font-size:14px;">' + (contentHtml || '<span style="color:#9CA3AF;">متنی برای این اطلاعیه ثبت نشده است.</span>') + '</div>' +
             '<div style="padding:12px 18px;border-top:1px solid var(--border-soft);text-align:center;">' +
-            '<a href="/pages/announcements.php" style="color:#744CA4;font-weight:700;text-decoration:none;font-size:13px;">مشاهده همه اطلاعیه‌ها ←</a>' +
+            '<a href="/pages/announcements.php" style="color:#8e57fe;font-weight:700;text-decoration:none;font-size:13px;">مشاهده همه اطلاعیه‌ها ←</a>' +
             '</div>' +
             '</div>';
 

@@ -108,8 +108,8 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
         }
 
         .bn-stat-icon.stages {
-            background: #ede9fe;
-            color: #7c3aed;
+            background: rgba(142, 87, 254, 0.12);
+            color: #8e57fe;
         }
 
         .bn-stat-icon.stuck {

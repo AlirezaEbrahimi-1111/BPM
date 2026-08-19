@@ -46,8 +46,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
 
         /* ─── Hero Header ─── */
         .ad-hero {
-            /* هم‌رنگ با گرادیانتِ هدرِ سایت */
-            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
+            background: #8e57fe;
             border-radius: var(--radius-lg);
             padding: 1.75rem 2rem;
             margin-bottom: 1.75rem;
@@ -657,7 +656,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
                         <i class="bi bi-display" style="font-size:2.5rem;opacity:.35"></i>
                         <p style="margin:0;font-size:.875rem">دستگاهی ثبت نشده است</p>
                     </div>`,
-                overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>'
+                overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>'
             });
             devGridApi.showLoadingOverlay();
         }
@@ -877,7 +876,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
                         <i class="bi bi-check-circle" style="font-size:2.5rem;opacity:.35;color:var(--success)"></i>
                         <p style="margin:0;font-size:.875rem">تلاش ناموفقی ثبت نشده است</p>
                     </div>`,
-                overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>'
+                overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>'
             });
             logGridApi.showLoadingOverlay();
         }

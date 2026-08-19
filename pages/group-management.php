@@ -48,7 +48,7 @@ if (!$__me || !hasPermission($__me, 'manage_task_groups')) {
         .gm-color { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
         .gm-color.active { border-color: #000; }
         .gm-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; }
-        .gm-icon.active { background: #e7f1ff; border-color: #6366f1; }
+        .gm-icon.active { background: rgba(142, 87, 254, 0.12); border-color: #8e57fe; }
         :root[data-theme="dark"] .gm-icon { border-color: var(--border-soft); }
         :root[data-theme="dark"] .gm-icon.active { background: rgba(99, 102, 241, .2); border-color: #6366f1; }
         .gm-act-btn { background: none; border: none; cursor: pointer; padding: 2px 6px; font-size: 1rem; }
@@ -220,7 +220,7 @@ if (!$__me || !hasPermission($__me, 'manage_task_groups')) {
             paginationPageSize: 15,
             paginationPageSizeSelector: [15, 30, 50],
             defaultColDef: { sortable: true, resizable: true },
-            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
+            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
             // کلیک روی دکمه‌های عملیات
             onCellClicked: params => {
                 const btn = params.event.target.closest('[data-action]');

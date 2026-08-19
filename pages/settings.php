@@ -104,7 +104,7 @@ if (!$__me) {
         /* آواتار */
         .avatar-ring {
             width: 68px; height: 68px; border-radius: 50%;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: #8e57fe;
             display: flex; align-items: center; justify-content: center;
             color: #fff; font-size: 1.6rem; font-weight: 700;
             flex-shrink: 0;
@@ -116,7 +116,7 @@ if (!$__me) {
         .user-meta { font-size: .82rem; color: var(--text-muted); }
         .user-role {
             display: inline-block;
-            background: #ede9fe; color: #5b21b6;
+            background: rgba(142, 87, 254, 0.12); color: #8e57fe;
             font-size: .7rem; font-weight: 600;
             border-radius: 20px; padding: .15em .6em;
         }
@@ -140,8 +140,8 @@ if (!$__me) {
         .form-control:focus {
             background: var(--surface);
             color: var(--text-strong);
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 3px rgba(142, 87, 254, .12);
         }
         .form-control[readonly] {
             background: var(--bg-page); color: var(--text-muted); cursor: default;
@@ -150,7 +150,7 @@ if (!$__me) {
 
         /* دکمه ذخیره */
         .btn-save {
-            background: linear-gradient(135deg, #6366f1, #7c3aed);
+            background: #8e57fe;
             color: #fff; border: none; border-radius: 9px;
             padding: .6rem 1.6rem; font-size: .875rem; font-weight: 600;
             transition: opacity .15s, transform .15s;
@@ -178,7 +178,7 @@ if (!$__me) {
             background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0;
             font-size: 1rem;
         }
-        .pw-eye:hover { color: #6366f1; }
+        .pw-eye:hover { color: #8e57fe; }
 
         .s-divider { border: none; border-top: 1px solid var(--border-soft); margin: 1.2rem 0; }
 
@@ -482,11 +482,11 @@ function checkStrength(pw) {
     if (/[^A-Za-z0-9]/.test(pw)) score++;
 
     const cfg = [
-        { w:'0%',   bg:'#e5e7eb', t:'' },
+        { w:'0%',   bg:'#e9e9e9', t:'' },
         { w:'25%',  bg:'#ef4444', t:'ضعیف' },
         { w:'50%',  bg:'#f59e0b', t:'متوسط' },
         { w:'75%',  bg:'#3b82f6', t:'خوب' },
-        { w:'100%', bg:'#10b981', t:'قوی' },
+        { w:'100%', bg:'#1b7b39', t:'قوی' },
     ];
     const c = cfg[Math.min(score, 4)];
     fill.style.width      = c.w;

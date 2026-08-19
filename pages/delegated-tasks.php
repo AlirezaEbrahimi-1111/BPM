@@ -295,7 +295,7 @@ if (!$__me) {
                 sortable: true,
                 resizable: true
             },
-            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
+            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
             onGridReady: params => {
                 const saved = localStorage.getItem('delegatedTasksGridState');
                 if (saved) params.api.applyColumnState({

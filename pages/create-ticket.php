@@ -58,7 +58,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             border-radius: 14px;
             padding: 18px 22px;
             box-shadow: 0 2px 12px rgba(0,0,0,.04);
-            border: 1px solid #f0f0f0;
+            border: 1px solid #e9e9e9;
             margin-bottom: 16px;
             margin-top: 10px;
         }
@@ -77,7 +77,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             display: flex;
             align-items: center;
         }
-        .ctkt-head-text h1 i { color: #744ca4; margin-left: 8px; }
+        .ctkt-head-text h1 i { color: #8e57fe; margin-left: 8px; }
         .ctkt-head-text p {
             font-size: .84rem;
             color: #888;
@@ -90,7 +90,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             border-radius: 14px;
             padding: 28px 30px 32px;
             box-shadow: 0 2px 16px rgba(0,0,0,.04);
-            border: 1px solid #f0f0f0;
+            border: 1px solid #e9e9e9;
         }
         .form-card .form-label {
             font-weight: 600;
@@ -101,7 +101,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
         .form-card .form-control,
         .form-card .form-select {
             border-radius: 10px;
-            border: 1.5px solid #e5e7eb;
+            border: 1.5px solid #e9e9e9;
             font-size: .87rem;
             font-family: inherit;
             padding: 10px 14px;
@@ -109,8 +109,8 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
         }
         .form-card .form-control:focus,
         .form-card .form-select:focus {
-            border-color: #744ca4;
-            box-shadow: 0 0 0 3px rgba(116,76,164,.1);
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 3px rgba(142,87,254,.1);
         }
         .form-card textarea.form-control {
             min-height: 130px;
@@ -129,10 +129,10 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
         }
         .upload-zone:hover,
         .upload-zone.dragover {
-            border-color: #744ca4;
-            background: #f8f5ff;
+            border-color: #8e57fe;
+            background: rgba(142, 87, 254, 0.04);
         }
-        .upload-zone i.cloud-icon { font-size: 2rem; color: #744ca4; }
+        .upload-zone i.cloud-icon { font-size: 2rem; color: #8e57fe; }
         .upload-zone p { margin: 8px 0 0; font-size: .84rem; color: #666; }
 
         .file-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
@@ -160,7 +160,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             height: 74px;
             border-radius: 10px;
             overflow: hidden;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9e9e9;
             flex-shrink: 0;
         }
         .file-thumb img {
@@ -188,7 +188,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
 
         /* ───── دکمه‌ها ───── */
         .btn-submit-ticket {
-            background: linear-gradient(135deg, #744ca4, #9b6dd7);
+            background: #8e57fe;
             color: #fff;
             border: none;
             padding: 10px 28px;
@@ -206,9 +206,9 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
         .btn-submit-ticket:disabled { opacity: .45; cursor: default; }
 
         .btn-back-ticket {
-            background: #f1f3f5;
+            background: #e9e9e9;
             color: #495057;
-            border: 1px solid #dee2e6;
+            border: 1px solid #e9e9e9;
             padding: 10px 20px;
             border-radius: 10px;
             font-size: .86rem;
@@ -220,7 +220,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             text-decoration: none;
             transition: background .15s;
         }
-        .btn-back-ticket:hover { background: #e9ecef; color: #333; }
+        .btn-back-ticket:hover { filter: brightness(0.93); color: #333; }
 
         /* ───── فیلدهای کنار هم ───── */
         .fields-row {
@@ -255,7 +255,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             max-height: 260px;
             overflow-y: auto;
             background: #fff;
-            border: 1.5px solid #e5e7eb;
+            border: 1.5px solid #e9e9e9;
             border-radius: 10px;
             box-shadow: 0 8px 24px rgba(0,0,0,.1);
             display: none;
@@ -265,14 +265,14 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             padding: 9px 14px;
             font-size: .84rem;
             cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid #e9e9e9;
             display: flex;
             align-items: center;
             gap: 8px;
         }
         .task-search-item:last-child { border-bottom: none; }
-        .task-search-item:hover { background: #f8f5ff; }
-        .task-search-item i { color: #744ca4; }
+        .task-search-item:hover { background: rgba(142, 87, 254, 0.04); }
+        .task-search-item i { color: #8e57fe; }
         .task-search-empty {
             padding: 12px 14px;
             font-size: .82rem;
@@ -283,8 +283,8 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #f0e6ff;
-            border: 1px solid #e0d0f5;
+            background: rgba(142, 87, 254, 0.1);
+            border: 1px solid rgba(142, 87, 254, 0.25);
             border-radius: 10px;
             padding: 7px 12px;
             font-size: .84rem;
@@ -292,7 +292,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             flex-shrink: 0;
         }
         .linked-task-chip a {
-            color: #744ca4;
+            color: #8e57fe;
             font-weight: 600;
             text-decoration: none;
         }

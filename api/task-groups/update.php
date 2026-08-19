@@ -16,7 +16,7 @@ try {
     $input = json_decode(file_get_contents('php://input'), true);
     $id    = intval($input['id'] ?? 0);
     $name  = trim($input['name'] ?? '');
-    $color = trim($input['color'] ?? '#6366f1');
+    $color = trim($input['color'] ?? '#8e57fe');
     $icon  = trim($input['icon'] ?? 'bi-tag');
 
     if (!$id || $name === '') {

@@ -92,16 +92,16 @@ foreach ($orgs as $org) {
       display: flex; flex-wrap: wrap; gap: 12px;
       align-items: center; justify-content: space-between; margin-bottom: 18px;
     }
-    .admin-toolbar h4 { margin: 0; color: #744CA4; font-weight: 700; }
+    .admin-toolbar h4 { margin: 0; color: #8e57fe; font-weight: 700; }
     .admin-toolbar .sub { font-size: 13px; color: #718096; margin-top: 2px; }
 
     .admin-search { position: relative; }
     .admin-search input {
-      border: 1px solid rgba(116,76,164,.2); border-radius: 10px;
+      border: 1px solid rgba(142,87,254,.2); border-radius: 10px;
       padding: 9px 14px 9px 38px; font-size: 13px; width: 260px; outline: none;
       font-family: inherit; background: #fff; color: #2D3748; transition: border .2s;
     }
-    .admin-search input:focus { border-color: #744CA4; }
+    .admin-search input:focus { border-color: #8e57fe; }
     .admin-search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #A0AEC0; }
 
     /* کارت‌های آماری (سبک pcard از payroll-report) */
@@ -123,10 +123,10 @@ foreach ($orgs as $org) {
       --ag-font-family: 'Vazirmatn', sans-serif;
       --ag-font-size: 13px;
       --ag-header-height: 46px;
-      --ag-header-background-color: #FBFBFD;
+      --ag-header-background-color: #e9e9e9;
       --ag-header-foreground-color: #718096;
-      --ag-row-hover-color: #FAFAFB;
-      --ag-border-color: #EDF0F4;
+      --ag-row-hover-color: #e9e9e9;
+      --ag-border-color: #e9e9e9;
       --ag-cell-horizontal-padding: 18px;
       border-radius: 14px;
       box-shadow: 0 2px 10px rgba(0,0,0,.04);
@@ -136,22 +136,22 @@ foreach ($orgs as $org) {
 
     /* محتوای سلول‌ها */
     .og { display: flex; align-items: center; gap: 11px; }
-    .og .ava { width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; background: #EDE9FE; color: #744CA4; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+    .og .ava { width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; background: rgba(142, 87, 254, 0.12); color: #8e57fe; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
     .og .nm { font-weight: 700; font-size: 13.5px; line-height: 1.3; color: #2D3748; }
     .og .mt { font-size: 11px; color: #A0AEC0; line-height: 1.2; margin-top: 1px; }
 
     .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 700; }
-    .pill.ok   { background: #ffffff; color: #027A48; }
+    .pill.ok   { background: #ffffff; color: #1b7b39; }
     .pill.no   { background: #ffffff; color: #B42318; }
-    .pill.plan { background: #ffffff; color: #744CA4; }
+    .pill.plan { background: #ffffff; color: #8e57fe; }
 
-    .bar { width: 84px; height: 5px; background: #EDF0F4; border-radius: 4px; overflow: hidden; margin-top: 5px; }
-    .bar > i { display: block; height: 100%; border-radius: 4px; background: #12B76A; }
+    .bar { width: 84px; height: 5px; background: #e9e9e9; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+    .bar > i { display: block; height: 100%; border-radius: 4px; background: #1b7b39; }
     .bar > i.warn { background: #F79009; }
     .bar > i.crit { background: #F04438; }
 
-    .act { width: 34px; height: 34px; border-radius: 9px; border: 1px solid #E2E8F0; background: #fff; display: inline-flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; cursor: pointer; transition: all .15s; margin-left: 4px; }
-    .act:hover { border-color: #744CA4; color: #744CA4; background: #F4F0FB; }
+    .act { width: 34px; height: 34px; border-radius: 9px; border: 1px solid #e9e9e9; background: #fff; display: inline-flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; cursor: pointer; transition: all .15s; margin-left: 4px; }
+    .act:hover { border-color: #8e57fe; color: #8e57fe; background: rgba(142, 87, 254, 0.08); }
     .act.danger:hover { border-color: #F04438; color: #F04438; background: #FEE4E2; }
 
     /* مودال */
@@ -162,8 +162,8 @@ foreach ($orgs as $org) {
     .md h3 { font-size: 17px; font-weight: 800; margin: 0 0 6px; color: #2D3748; }
     .md .sb { font-size: 13px; color: #718096; margin: 0 0 18px; }
     .md label { font-size: 12.5px; color: #718096; display: block; margin-bottom: 6px; }
-    .md input { width: 100%; border: 1px solid #E2E8F0; border-radius: 9px; padding: 11px 14px; font-size: 14px; outline: none; font-family: inherit; transition: border .2s; }
-    .md input:focus { border-color: #744CA4; }
+    .md input { width: 100%; border: 1px solid #e9e9e9; border-radius: 9px; padding: 11px 14px; font-size: 14px; outline: none; font-family: inherit; transition: border .2s; }
+    .md input:focus { border-color: #8e57fe; }
     .md-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; direction: ltr; }
 
     :root[data-theme="dark"] .md { background: var(--surface); }
@@ -209,14 +209,14 @@ foreach ($orgs as $org) {
       </div>
     </div>
     <div class="pcard">
-      <div class="ic" style="background:#D1FAE5;color:#12B76A"><i class="bi bi-check-circle"></i></div>
+      <div class="ic" style="background:rgba(27, 123, 57, 0.12);color:#1b7b39"><i class="bi bi-check-circle"></i></div>
       <div>
         <div class="val"><?= JalaliHelper::Persian(count($active_subs)) ?></div>
         <div class="lbl">اشتراک فعال</div>
       </div>
     </div>
     <div class="pcard">
-      <div class="ic" style="background:#EDE9FE;color:#744CA4"><i class="bi bi-collection"></i></div>
+      <div class="ic" style="background:rgba(142, 87, 254, 0.12);color:#8e57fe"><i class="bi bi-collection"></i></div>
       <div>
         <div class="val"><?= JalaliHelper::Persian($total) ?></div>
         <div class="lbl">کل سازمان‌ها</div>

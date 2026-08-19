@@ -47,7 +47,7 @@ if (empty($_SESSION['user_id'])) {
         .console-msg .answer { white-space: pre-wrap; }
         .console-msg .answer ul { margin: 6px 0; padding-inline-start: 1.4rem; }
         .console-msg .answer li { margin-bottom: 6px; }
-        .console-msg .answer li b { color: var(--icon-accent, #744CA4); }
+        .console-msg .answer li b { color: var(--icon-accent, #8e57fe); }
     </style>
 </head>
 

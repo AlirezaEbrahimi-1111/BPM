@@ -41,16 +41,16 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     .co-wrap { max-width: 1100px; margin: 90px auto 40px; padding: 0 16px; }
 
     .co-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
-    .co-head h4 { margin: 0; color: #744CA4; font-weight: 700; }
+    .co-head h4 { margin: 0; color: #8e57fe; font-weight: 700; }
     .co-head .sub { font-size: 13px; color: #718096; margin-top: 2px; }
 
     .co-loading, .co-error { text-align: center; padding: 60px 16px; color: #718096; }
-    .co-spin { width: 36px; height: 36px; border: 3px solid #EAECF0; border-top-color: #744CA4; border-radius: 50%; animation: cospin .8s linear infinite; margin: 0 auto 14px; }
+    .co-spin { width: 36px; height: 36px; border: 3px solid #e9e9e9; border-top-color: #8e57fe; border-radius: 50%; animation: cospin .8s linear infinite; margin: 0 auto 14px; }
     @keyframes cospin { to { transform: rotate(360deg); } }
 
     /* هدر سازمان */
     .co-org { display: flex; align-items: center; gap: 18px; background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 2px 10px rgba(0,0,0,.04); margin-bottom: 18px; }
-    .co-logo { width: 64px; height: 64px; border-radius: 16px; background: #EDE9FE; color: #744CA4; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; flex-shrink: 0; overflow: hidden; }
+    .co-logo { width: 64px; height: 64px; border-radius: 16px; background: rgba(142, 87, 254, 0.12); color: #8e57fe; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; flex-shrink: 0; overflow: hidden; }
     .co-logo img { width: 100%; height: 100%; object-fit: cover; }
     .co-org .nm { font-size: 20px; font-weight: 700; color: #2D3748; }
     .co-org .mt { font-size: 13px; color: #718096; margin-top: 5px; display: flex; gap: 16px; flex-wrap: wrap; }
@@ -64,7 +64,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
 
     /* کارت بخش */
     .co-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.04); margin-bottom: 18px; overflow: hidden; }
-    .co-card-h { padding: 16px 22px; border-bottom: 1px solid #EDF0F4; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .co-card-h { padding: 16px 22px; border-bottom: 1px solid #e9e9e9; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
     .co-card-h h6 { font-size: 15px; font-weight: 700; margin: 0; color: #2D3748; }
     .co-card-b { padding: 22px; }
 
@@ -73,30 +73,30 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     .co-sub-item .l { font-size: 12px; color: #718096; }
     .co-sub-item .v { font-size: 15px; font-weight: 700; margin-top: 3px; color: #2D3748; }
     .co-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 700; }
-    .co-badge.ok { background: #D1FAE5; color: #027A48; }
+    .co-badge.ok { background: rgba(27, 123, 57, 0.12); color: #1b7b39; }
     .co-badge.no { background: #FEE4E2; color: #B42318; }
-    .co-badge.gray { background: #F2F4F7; color: #718096; }
+    .co-badge.gray { background: #e9e9e9; color: #718096; }
     .co-alert { margin-top: 16px; padding: 12px 16px; border-radius: 9px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
     .co-alert.warn { background: #FEF3C7; color: #B54708; }
     .co-alert.crit { background: #FEE4E2; color: #B42318; }
 
     /* لوگو */
-    .co-logo-box { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; padding: 16px; background: #F9FAFB; border-radius: 10px; border: 1px dashed #D7DCE3; }
-    .co-logo-prev { width: 80px; height: 80px; border-radius: 10px; object-fit: contain; background: #fff; border: 1px solid #EAECF0; padding: 4px; }
-    .co-logo-ph { width: 80px; height: 80px; border-radius: 10px; background: #EDF0F4; border: 1px solid #EAECF0; display: flex; align-items: center; justify-content: center; color: #A0AEC0; font-size: 30px; }
+    .co-logo-box { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; padding: 16px; background: #e9e9e9; border-radius: 10px; border: 1px dashed #e9e9e9; }
+    .co-logo-prev { width: 80px; height: 80px; border-radius: 10px; object-fit: contain; background: #fff; border: 1px solid #e9e9e9; padding: 4px; }
+    .co-logo-ph { width: 80px; height: 80px; border-radius: 10px; background: #e9e9e9; border: 1px solid #e9e9e9; display: flex; align-items: center; justify-content: center; color: #A0AEC0; font-size: 30px; }
     .co-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .co-form-grid .full { grid-column: 1 / -1; }
 
     /* جدول پرسنل */
     .co-tbl { width: 100%; border-collapse: collapse; }
-    .co-tbl thead th { padding: 11px 20px; font-size: 11.5px; font-weight: 700; color: #718096; background: #FBFBFD; border-bottom: 1px solid #EDF0F4; text-align: right; white-space: nowrap; }
-    .co-tbl tbody tr { border-bottom: 1px solid #F1F3F7; }
+    .co-tbl thead th { padding: 11px 20px; font-size: 11.5px; font-weight: 700; color: #718096; background: #e9e9e9; border-bottom: 1px solid #e9e9e9; text-align: right; white-space: nowrap; }
+    .co-tbl tbody tr { border-bottom: 1px solid #e9e9e9; }
     .co-tbl tbody tr:last-child { border-bottom: none; }
     .co-tbl tbody td { padding: 13px 20px; font-size: 13.5px; color: #2D3748; }
 
     .co-search { position: relative; }
-    .co-search input { border: 1px solid #E2E8F0; border-radius: 9px; padding: 8px 12px 8px 36px; font-size: 13px; outline: none; width: 220px; background: #fff; font-family: inherit; }
-    .co-search input:focus { border-color: #744CA4; }
+    .co-search input { border: 1px solid #e9e9e9; border-radius: 9px; padding: 8px 12px 8px 36px; font-size: 13px; outline: none; width: 220px; background: #fff; font-family: inherit; }
+    .co-search input:focus { border-color: #8e57fe; }
     .co-search i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #A0AEC0; }
 
     /* مودال */
@@ -105,8 +105,8 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     .co-md { background: #fff; border-radius: 16px; padding: 26px; width: 390px; max-width: 92vw; box-shadow: 0 14px 44px rgba(45,55,72,.2); }
     .co-md h3 { font-size: 17px; font-weight: 800; margin: 0 0 6px; color: #2D3748; }
     .co-md .sb { font-size: 13px; color: #718096; margin: 0 0 16px; }
-    .co-md input { width: 100%; border: 1px solid #E2E8F0; border-radius: 9px; padding: 11px 14px; font-size: 14px; outline: none; font-family: inherit; }
-    .co-md input:focus { border-color: #744CA4; }
+    .co-md input { width: 100%; border: 1px solid #e9e9e9; border-radius: 9px; padding: 11px 14px; font-size: 14px; outline: none; font-family: inherit; }
+    .co-md input:focus { border-color: #8e57fe; }
     .co-md .hint { font-size: 12.5px; color: #718096; margin-top: 8px; }
     .co-md-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; direction: ltr; }
 
@@ -164,11 +164,11 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     <!-- آمار -->
     <div class="co-stats">
       <div class="co-pcard">
-        <div class="ic" style="background:#EDE9FE;color:#744CA4"><i class="bi bi-people"></i></div>
+        <div class="ic" style="background:rgba(142, 87, 254, 0.12);color:#8e57fe"><i class="bi bi-people"></i></div>
         <div><div class="val" id="coStatTotal">۰</div><div class="lbl">کل پرسنل</div></div>
       </div>
       <div class="co-pcard">
-        <div class="ic" style="background:#D1FAE5;color:#12B76A"><i class="bi bi-person-check"></i></div>
+        <div class="ic" style="background:rgba(27, 123, 57, 0.12);color:#1b7b39"><i class="bi bi-person-check"></i></div>
         <div><div class="val" id="coStatActive">۰</div><div class="lbl">پرسنل فعال</div></div>
       </div>
       <div class="co-pcard">

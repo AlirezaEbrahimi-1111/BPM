@@ -28,7 +28,7 @@ require_once '../includes/version.php';
     }
 
     .site-footer .company {
-        color: var(--primary-dark, #744ca4);
+        color: var(--primary-dark, #8e57fe);
         font-weight: 700;
     }
 
@@ -49,7 +49,7 @@ require_once '../includes/version.php';
     <span>در شرکت</span>
     <span class="company">آوای شرق ملک</span>
         <span> | </span>
-        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۵/۲۸ - ۰۹:۵۰">
-            نسخه: ۵.۵۴
+        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۵/۲۸ - ۱۰:۲۸">
+            نسخه: ۵.۵۵
         </span>
 </div>
