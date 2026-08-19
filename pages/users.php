@@ -66,7 +66,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         }
 
         .page-header-bar h1 i {
-            color: #7c3aed;
+            color: #8e57fe;
         }
 
         /* ── نوار فیلتر ── */
@@ -76,7 +76,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             gap: .4rem;
             flex-wrap: wrap;
             background: #fff;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9e9e9;
             border-radius: 10px;
             padding: .6rem .85rem;
             margin-bottom: .85rem;
@@ -220,7 +220,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
 
         /* ── مودال چندتب ── */
         .modal-header-custom {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            background: #8e57fe;
             color: #fff;
             border-radius: .4rem .4rem 0 0;
             padding: .9rem 1.1rem;
@@ -229,8 +229,8 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         .modal-tabs {
             display: flex;
             gap: 0;
-            border-bottom: 2px solid #e5e7eb;
-            background: #f9fafb;
+            border-bottom: 2px solid #e9e9e9;
+            background: #e9e9e9;
             padding: 0 1rem;
         }
 
@@ -251,17 +251,17 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         }
 
         .modal-tab:hover {
-            color: #4f46e5;
+            color: #8e57fe;
         }
 
         .modal-tab.active {
-            color: #4f46e5;
-            border-bottom-color: #4f46e5;
+            color: #8e57fe;
+            border-bottom-color: #8e57fe;
             font-weight: 600;
         }
 
         .unit-card {
-            border: 1.5px solid #e5e7eb;
+            border: 1.5px solid #e9e9e9;
             border-radius: 8px;
             padding: .6rem .8rem;
             background: #fafafa;
@@ -269,20 +269,20 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         }
 
         .unit-card.selected {
-            border-color: #4f46e5;
-            background: #eef2ff;
+            border-color: #8e57fe;
+            background: rgba(142, 87, 254, 0.08);
         }
 
         .access-card {
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9e9e9;
             border-radius: 8px;
             padding: .7rem .9rem;
             background: #fff;
         }
 
         .form-check-input:checked {
-            background-color: #4f46e5;
-            border-color: #4f46e5;
+            background-color: #8e57fe;
+            border-color: #8e57fe;
         }
 
         .hierarchy-node {
@@ -290,15 +290,15 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             align-items: center;
             padding: .45rem .8rem;
             border-radius: 8px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9e9e9;
             font-size: .84rem;
             margin-bottom: .25rem;
             gap: .5rem;
         }
 
         .h-manager {
-            background: #eef2ff;
-            border-color: #c7d2fe;
+            background: rgba(142, 87, 254, 0.08);
+            border-color: #8e57fe;
         }
 
         .h-current {
@@ -308,14 +308,14 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         }
 
         .h-sub {
-            background: #f0fdf4;
-            border-color: #86efac;
+            background: rgba(27, 123, 57, 0.08);
+            border-color: #1b7b39;
         }
 
         .hierarchy-line {
             width: 2px;
             height: 12px;
-            background: #c7d2fe;
+            background: #8e57fe;
             margin: 0 1.3rem;
         }
 
@@ -333,7 +333,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             width: 28px;
             height: 28px;
             border-radius: 6px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9e9e9;
             background: #fff;
             cursor: pointer;
             font-size: .8rem;
@@ -342,12 +342,12 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         }
 
         .ag-action-btn:hover {
-            background: #f3f4f6;
-            border-color: #9ca3af;
+            background: #e9e9e9;
+            border-color: #e9e9e9;
         }
 
         .ag-action-btn.edit {
-            color: #4f46e5;
+            color: #8e57fe;
         }
 
         .ag-action-btn.toggle-on {
@@ -355,7 +355,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         }
 
         .ag-action-btn.toggle-off {
-            color: #16a34a;
+            color: #1b7b39;
         }
 
         /* ─── دارک‌مود ─── */
@@ -499,7 +499,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border: 1.5px solid #e5e7eb;
+            border: 1.5px solid #e9e9e9;
             border-radius: 10px;
             padding: 9px 12px;
             cursor: pointer;
@@ -509,7 +509,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         }
 
         .sec-picker-input:hover {
-            border-color: #c4b5fd;
+            border-color: #8e57fe;
         }
 
         .sec-dropdown {
@@ -520,7 +520,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             top: 100%;
             margin-top: 4px;
             background: #fff;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9e9e9;
             border-radius: 10px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, .1);
             max-height: 200px;
@@ -537,7 +537,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         }
 
         .sec-option:hover {
-            background: #f3f4f6;
+            background: #e9e9e9;
         }
 
         .sec-option.picked {
@@ -1203,8 +1203,8 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                 theme: agGrid.themeQuartz.withParams({
                     fontFamily: "'Vazirmatn', Tahoma, sans-serif",
                     fontSize: 13,
-                    rowHoverColor: '#f5f3ff',
-                    headerBackgroundColor: '#f9fafb',
+                    rowHoverColor: 'rgba(142, 87, 254, 0.06)',
+                    headerBackgroundColor: '#e9e9e9',
                 }),
                 columnDefs: colDefs,
                 rowData: [],
@@ -1217,7 +1217,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                     resizable: true
                 },
                 overlayNoRowsTemplate: '<span class="text-muted">کاربری یافت نشد</span>',
-                overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
+                overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
                 onPaginationChanged: () => {
                     setTimeout(() => {
                         // فارسی کردن اعداد و متن‌ها

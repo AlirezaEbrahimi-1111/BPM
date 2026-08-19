@@ -51,8 +51,7 @@ if (!$__me) {
     .overview-container { max-width: 1100px !important; }
 
     .ann-head-card {
-        /* هم‌رنگ با گرادیانتِ هدرِ سایت */
-        background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
+        background: #8e57fe;
         border-radius: var(--radius-lg, 16px); padding: 1.2rem 1.4rem; margin-bottom: 1.25rem;
         box-shadow: var(--shadow-md); color: #fff;
         display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap;
@@ -61,45 +60,45 @@ if (!$__me) {
     .ann-head-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
     .ann-head-actions .btn-ghost { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); color: #fff; border-radius: 10px; padding: .45rem .9rem; font-size: .85rem; font-weight: 600; cursor: pointer; }
     .ann-head-actions .btn-ghost:hover { background: rgba(255,255,255,.28); }
-    .ann-head-actions .btn-white { background: #fff; color: #4f46e5; border: none; border-radius: 10px; padding: .45rem 1rem; font-size: .9rem; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-sm); }
+    .ann-head-actions .btn-white { background: #fff; color: #8e57fe; border: none; border-radius: 10px; padding: .45rem 1rem; font-size: .9rem; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-sm); }
 
-    .ann-grid-card { background: #fff; border: 1px solid #eceef3; border-radius: var(--radius-lg, 16px); padding: 1rem; box-shadow: var(--shadow-sm); }
+    .ann-grid-card { background: #fff; border: 1px solid #e9e9e9; border-radius: var(--radius-lg, 16px); padding: 1rem; box-shadow: var(--shadow-sm); }
 
     /* AG Grid */
     #annGrid { width: 100%; height: 600px; }
     .ann-grid-title { font-weight: 700; color: #1e2233; }
     .ann-chev { color: #9097a6; transition: transform .15s; }
     .ann-tag { font-size: .72rem; font-weight: 700; padding: .12rem .55rem; border-radius: 999px; }
-    .ann-scope-badge { font-size: .72rem; font-weight: 600; padding: .12rem .55rem; border-radius: 999px; background: #eef2ff; color: #4f46e5; }
+    .ann-scope-badge { font-size: .72rem; font-weight: 600; padding: .12rem .55rem; border-radius: 999px; background: rgba(142, 87, 254, 0.12); color: #8e57fe; }
     .ann-readstat { font-size: .82rem; color: #6b7280; }
-    .ann-icon-btn { border: 1px solid #e6e8ef; background: #fff; color: #6b7280; width: 30px; height: 30px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s ease; }
-    .ann-icon-btn:hover { background: #f5f3ff; color: var(--primary, #6366F1); border-color: var(--primary, #6366F1); }
+    .ann-icon-btn { border: 1px solid #e9e9e9; background: #fff; color: #6b7280; width: 30px; height: 30px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s ease; }
+    .ann-icon-btn:hover { background: rgba(142, 87, 254, 0.08); color: var(--primary, #8e57fe); border-color: var(--primary, #8e57fe); }
     .ann-icon-btn.danger:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
 
     /* ردیف جزئیات (تمام‌عرض) */
-    .ann-detail { background: #fbfaff; border-right: 4px solid var(--primary, #6366F1); padding: .9rem 1.2rem; height: 100%; overflow: auto; }
+    .ann-detail { background: #fbfaff; border-right: 4px solid var(--primary, #8e57fe); padding: .9rem 1.2rem; height: 100%; overflow: auto; }
     .ann-detail-text { color: #4a5160; line-height: 2; white-space: pre-wrap; font-size: .92rem; }
     .ann-detail-meta { margin-top: .6rem; color: #9097a6; font-size: .8rem; display: flex; gap: 1rem; flex-wrap: wrap; }
 
     /* مودال */
     #annModal .modal-content { border: none; border-radius: 18px; overflow: visible; box-shadow: 0 20px 60px rgba(24,28,46,.18); }
-    #annModal .modal-header { border-bottom: 1px solid #eef0f5; padding: 1.1rem 1.4rem; }
+    #annModal .modal-header { border-bottom: 1px solid #e9e9e9; padding: 1.1rem 1.4rem; }
     #annModal .modal-title { font-weight: 800; color: #1e2233; }
     #annModal .modal-body { padding: 1.3rem 1.4rem; overflow: visible; }
-    #annModal .modal-footer { border-top: 1px solid #eef0f5; padding: 1rem 1.4rem; }
+    #annModal .modal-footer { border-top: 1px solid #e9e9e9; padding: 1rem 1.4rem; }
     #annModal .form-label { font-weight: 600; color: #1e2233; margin-bottom: .4rem; font-size: .9rem; }
-    #annModal .form-control, #annModal .form-select, #annModal .persian-datepicker-input { border: 1px solid #e3e6ef; border-radius: 10px; padding: .6rem .85rem; font-size: .92rem; min-height: 44px; }
-    #annModal .form-control:focus, #annModal .form-select:focus { border-color: var(--primary, #6366F1); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
+    #annModal .form-control, #annModal .form-select, #annModal .persian-datepicker-input { border: 1px solid #e9e9e9; border-radius: 10px; padding: .6rem .85rem; font-size: .92rem; min-height: 44px; }
+    #annModal .form-control:focus, #annModal .form-select:focus { border-color: var(--primary, #8e57fe); box-shadow: 0 0 0 3px rgba(142,87,254,.15); }
     .ann-switch { display: flex; align-items: center; gap: .6rem; padding: .55rem .2rem; }
     .ann-switch .form-check-input { width: 2.6em; height: 1.4em; margin: 0; cursor: pointer; float: none; }
-    .ann-switch .form-check-input:checked { background-color: var(--primary, #6366F1); border-color: var(--primary, #6366F1); }
+    .ann-switch .form-check-input:checked { background-color: var(--primary, #8e57fe); border-color: var(--primary, #8e57fe); }
     .ann-switch .form-check-label { font-weight: 600; color: #1e2233; cursor: pointer; }
     .ann-scope-options { display: flex; gap: .55rem; flex-wrap: wrap; }
-    .ann-scope-chip { flex: 0 0 auto; border: 1.5px solid #e6e8ef; border-radius: 12px; padding: .5rem .85rem; display: flex; align-items: center; gap: .45rem; cursor: pointer; transition: all .15s ease; font-weight: 600; color: #4a5160; user-select: none; text-align: start; font-size: .85rem; }
+    .ann-scope-chip { flex: 0 0 auto; border: 1.5px solid #e9e9e9; border-radius: 12px; padding: .5rem .85rem; display: flex; align-items: center; gap: .45rem; cursor: pointer; transition: all .15s ease; font-weight: 600; color: #4a5160; user-select: none; text-align: start; font-size: .85rem; }
     .ann-scope-chip .chip-check { color: #cfd4e4; font-size: 1.15rem; flex-shrink: 0; }
-    .ann-scope-chip.active { border-color: var(--primary, #6366F1); background: #f5f3ff; color: #4f46e5; }
-    .ann-scope-chip.active .chip-check { color: var(--primary, #6366F1); }
-    .ann-btn-primary { background: var(--primary-gradient, linear-gradient(135deg,#6366F1,#8B5CF6)) !important; border: none !important; color: #fff !important; border-radius: 10px !important; padding: .6rem 1.4rem !important; font-weight: 700 !important; box-shadow: var(--shadow-md); }
+    .ann-scope-chip.active { border-color: var(--primary, #8e57fe); background: rgba(142, 87, 254, 0.08); color: #8e57fe; }
+    .ann-scope-chip.active .chip-check { color: var(--primary, #8e57fe); }
+    .ann-btn-primary { background: var(--primary-gradient, #8e57fe) !important; border: none !important; color: #fff !important; border-radius: 10px !important; padding: .6rem 1.4rem !important; font-weight: 700 !important; box-shadow: var(--shadow-md); }
     .ann-btn-primary:hover { filter: brightness(1.06); }
 
     @media (max-width: 768px) { .overview-container { max-width: 100% !important; } .ann-head-card h1 { font-size: 1.15rem; } }
@@ -250,13 +249,13 @@ if (!$__me) {
         // ───── رندرها ─────
         function priorityCell(p) {
             if (p.data._fullWidth) return '';
-            const map = { urgent: ['فوری', '#fee2e2', '#b91c1c'], high: ['مهم', '#fef3c7', '#b45309'], normal: ['عادی', '#eef2ff', '#4f46e5'], low: ['کم', '#f1f5f9', '#64748b'] };
+            const map = { urgent: ['فوری', '#fee2e2', '#b91c1c'], high: ['مهم', '#fef3c7', '#b45309'], normal: ['عادی', 'rgba(142, 87, 254, 0.12)', '#8e57fe'], low: ['کم', '#e9e9e9', '#64748b'] };
             const m = map[p.value] || map.normal;
             return `<span class="ann-tag" style="background:${m[1]};color:${m[2]};">${m[0]}</span>`;
         }
         function titleCell(p) {
             if (p.data._fullWidth) return '';
-            const pin = p.data.is_pinned ? '<i class="bi bi-pin-angle-fill" style="color:#6d28d9;margin-left:5px;"></i>' : '';
+            const pin = p.data.is_pinned ? '<i class="bi bi-pin-angle-fill" style="color:#8e57fe;margin-left:5px;"></i>' : '';
             return `<span class="ann-grid-title">${pin}${esc(p.data.title)}</span>`;
         }
         function scopeCell(p) { if (p.data._fullWidth) return ''; return p.value ? `<span class="ann-scope-badge">${esc(p.value)}</span>` : ''; }
@@ -346,7 +345,7 @@ if (!$__me) {
                     toggleExpand(p.data.id);
                 },
                 overlayNoRowsTemplate: '<div style="padding:2rem;color:#9097a6;"><i class="bi bi-megaphone" style="font-size:2rem;display:block;margin-bottom:.5rem;color:#cfd4e4;"></i>اطلاعیه‌ای وجود ندارد</div>',
-                overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>'
+                overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>'
             };
             gridApi = agGrid.createGrid(document.getElementById('annGrid'), gridOptions);
             gridApi.showLoadingOverlay();

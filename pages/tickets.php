@@ -64,7 +64,7 @@ if (!$__me) {
             color: #1a1a1a;
             margin: 0 0 4px;
         }
-        .filters-title-col h1 i { color: #744ca4; margin-left: 8px; }
+        .filters-title-col h1 i { color: #8e57fe; margin-left: 8px; }
         .filters-title-col p {
             font-size: .84rem;
             color: #888;
@@ -77,7 +77,7 @@ if (!$__me) {
             border-radius: 14px;
             padding: 18px 22px;
             box-shadow: 0 2px 12px rgba(0,0,0,.04);
-            border: 1px solid #f0f0f0;
+            border: 1px solid #e9e9e9;
             margin-bottom: 16px;
         }
         .tickets-pagehead {
@@ -95,7 +95,7 @@ if (!$__me) {
             display: flex;
             align-items: center;
         }
-        .tickets-pagehead h1 i { color: #744ca4; margin-left: 8px; }
+        .tickets-pagehead h1 i { color: #8e57fe; margin-left: 8px; }
         .tickets-pagehead p { font-size: .86rem; color: #888; margin: 0; }
 
         /* ───── آمار — 6 ستون ───── */
@@ -147,7 +147,7 @@ if (!$__me) {
         }
         .filters-row .search-box input {
             width: 100%;
-            border: 1.5px solid #e5e7eb;
+            border: 1.5px solid #e9e9e9;
             border-radius: 10px;
             padding: 10px 40px 10px 14px;
             font-size: .85rem;
@@ -157,11 +157,11 @@ if (!$__me) {
         }
         .filters-row .search-box input:focus {
             outline: none;
-            border-color: #744ca4;
-            box-shadow: 0 0 0 3px rgba(116,76,164,.1);
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 3px rgba(142,87,254,.1);
         }
         .filter-item select {
-            border: 1.5px solid #e5e7eb;
+            border: 1.5px solid #e9e9e9;
             border-radius: 10px;
             padding: 9px 14px;
             font-size: .84rem;
@@ -172,7 +172,7 @@ if (!$__me) {
         }
         .filter-item select:focus {
             outline: none;
-            border-color: #744ca4;
+            border-color: #8e57fe;
         }
 
         /* ───── FAB مثل tasks.php ───── */
@@ -185,14 +185,14 @@ if (!$__me) {
         .fab {
             width: 52px; height: 52px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #744ca4, #9b6dd7);
+            background: #8e57fe;
             color: #fff;
             border: none;
             font-size: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 16px rgba(116,76,164,.35);
+            box-shadow: 0 4px 16px rgba(142,87,254,.35);
             cursor: pointer;
             transition: transform .2s;
         }
@@ -203,7 +203,7 @@ if (!$__me) {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: linear-gradient(135deg, #744ca4, #9b6dd7);
+            background: #8e57fe;
             color: #fff;
             border: none;
             padding: 9px 22px;
@@ -286,7 +286,7 @@ if (!$__me) {
         <div class="filters-wrapper">
                 <!-- آمار — 6 ستون -->
                 <div class="stats-row" id="statsRow">
-                    <div class="stat-card" style="background:linear-gradient(135deg,#6366f1,#818cf8);" onclick="filterByStatus('')">
+                    <div class="stat-card" style="background:#8e57fe;" onclick="filterByStatus('')">
                         <div class="num" id="sTotal">–</div><div class="lbl">کل</div>
                     </div>
                     <div class="stat-card" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);" onclick="filterByStatus('open')">
@@ -295,10 +295,10 @@ if (!$__me) {
                     <div class="stat-card" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);" onclick="filterByStatus('in_progress')">
                         <div class="num" id="sProgress">–</div><div class="lbl">در حال بررسی</div>
                     </div>
-                    <div class="stat-card" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);" onclick="filterByStatus('waiting_reply')">
+                    <div class="stat-card" style="background:#8e57fe;" onclick="filterByStatus('waiting_reply')">
                         <div class="num" id="sWaiting">–</div><div class="lbl">در انتظار پاسخ کاربر</div>
                     </div>
-                    <div class="stat-card" style="background:linear-gradient(135deg,#10b981,#34d399);" onclick="filterByStatus('resolved')">
+                    <div class="stat-card" style="background:#1b7b39;" onclick="filterByStatus('resolved')">
                         <div class="num" id="sResolved">–</div><div class="lbl">حل شده</div>
                     </div>
                     <div class="stat-card" style="background:linear-gradient(135deg,#6b7280,#9ca3af);" onclick="filterByStatus('closed')">
@@ -456,7 +456,7 @@ if (!$__me) {
             paginationPageSize: 20,
             paginationPageSizeSelector: [15, 20, 30, 50],
             defaultColDef: { sortable: true, resizable: true },
-            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#744ca4;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
+            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
             onRowClicked: params => { location.href = 'ticket-detail.php?id=' + params.data.id; },
             onPaginationChanged: () => {
                 setTimeout(() => {

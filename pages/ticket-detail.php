@@ -51,8 +51,7 @@ if (!$__me) {
 
         /* ── هدر تیکت ── */
         .tkt-header {
-            /* هم‌رنگ با گرادیانتِ هدرِ سایت */
-            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
+            background: #8e57fe;
             color: #fff;
             border-radius: 16px;
             padding: 22px 26px;
@@ -109,7 +108,7 @@ if (!$__me) {
             border-radius: 14px;
             padding: 18px 22px;
             box-shadow: 0 2px 12px rgba(0,0,0,.04);
-            border: 1px solid #f0f0f0;
+            border: 1px solid #e9e9e9;
             margin-bottom: 16px;
         }
         .tkt-card h6 {
@@ -118,7 +117,7 @@ if (!$__me) {
             margin-bottom: 14px;
             font-size: .92rem;
         }
-        .tkt-card h6 i { color: #744ca4; }
+        .tkt-card h6 i { color: #8e57fe; }
 
         /* ── اطلاعات گرید ── */
         .info-grid {
@@ -176,16 +175,16 @@ if (!$__me) {
         }
         /* پیام کاربر (ایجادکنندهٔ تیکت) → سمت راست */
         .msg-user {
-            background: #f0e6ff !important;
-            border: 1px solid #e0d0f5;
+            background: rgba(142, 87, 254, 0.1) !important;
+            border: 1px solid rgba(142, 87, 254, 0.25);
             margin-inline-start: 0;
             margin-inline-end: auto;
             border-radius: 14px 14px 4px 14px;
         }
         /* پیام پشتیبانی → سمت چپ */
         .msg-admin {
-            background: #e8f5e9 !important;
-            border: 1px solid #c8e6c9;
+            background: rgba(27, 123, 57, 0.1) !important;
+            border: 1px solid rgba(27, 123, 57, 0.25);
             margin-inline-start: auto;
             margin-inline-end: 0;
             border-radius: 14px 14px 14px 4px;
@@ -217,8 +216,8 @@ if (!$__me) {
             border-radius: 20px;
             color: #fff;
         }
-        .msg-badge-support { background: #2e7d32; }
-        .msg-badge-user { background: #744ca4; }
+        .msg-badge-support { background: #1b7b39; }
+        .msg-badge-user { background: #8e57fe; }
         .msg-time {
             font-size: .74rem;
             color: #999;
@@ -271,8 +270,8 @@ if (!$__me) {
             font-weight: 700;
             margin-bottom: 8px;
         }
-        .att-group-user { color: #744ca4; }
-        .att-group-support { color: #2e7d32; }
+        .att-group-user { color: #8e57fe; }
+        .att-group-support { color: #1b7b39; }
         .att-list {
             display: flex;
             flex-wrap: wrap;
@@ -283,14 +282,14 @@ if (!$__me) {
             align-items: center;
             gap: 6px;
             padding: 5px 12px;
-            background: #f8f9fa;
+            background: #e9e9e9;
             border-radius: 8px;
             font-size: .8rem;
             cursor: pointer;
-            border: 1px solid #e8e8e8;
+            border: 1px solid #e9e9e9;
             transition: background .15s;
         }
-        .att-chip:hover { background: #ede5f7; }
+        .att-chip:hover { background: rgba(142, 87, 254, 0.1); }
 
         /* پیش‌نمایشِ مربعیِ تصاویرِ پیوست‌شده */
         .att-thumb {
@@ -298,12 +297,12 @@ if (!$__me) {
             height: 84px;
             border-radius: 10px;
             overflow: hidden;
-            border: 1px solid #e8e8e8;
+            border: 1px solid #e9e9e9;
             cursor: pointer;
             flex-shrink: 0;
             transition: border-color .15s, transform .15s;
         }
-        .att-thumb:hover { border-color: #744ca4; transform: scale(1.03); }
+        .att-thumb:hover { border-color: #8e57fe; transform: scale(1.03); }
         .att-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
         /* ── مودالِ پیش‌نمایشِ تصویر ──
@@ -352,7 +351,7 @@ if (!$__me) {
             background: rgba(0,0,0,.55);
             color: #fff;
         }
-        .img-preview-download:hover { background: #744ca4; }
+        .img-preview-download:hover { background: #8e57fe; }
         .img-preview-close {
             right: 8px;
             background: rgba(255,255,255,.9);
@@ -365,15 +364,15 @@ if (!$__me) {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #f0e6ff;
-            border: 1px solid #e0d0f5;
+            background: rgba(142, 87, 254, 0.1);
+            border: 1px solid rgba(142, 87, 254, 0.25);
             border-radius: 10px;
             padding: 7px 12px;
             font-size: .84rem;
             margin-top: 12px;
         }
         .linked-task-chip a {
-            color: #744ca4;
+            color: #8e57fe;
             font-weight: 600;
             text-decoration: none;
         }
@@ -415,7 +414,7 @@ if (!$__me) {
             height: 60px;
             border-radius: 10px;
             overflow: hidden;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9e9e9;
             flex-shrink: 0;
         }
         .file-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -442,14 +441,14 @@ if (!$__me) {
             gap: 6px;
             margin-top: 10px;
             padding: 6px;
-            border: 1.5px solid #e0e0e0;
+            border: 1.5px solid #e9e9e9;
             border-radius: 22px;
             background: #fff;
             transition: border-color .2s, box-shadow .2s;
         }
         .chat-composer:focus-within {
-            border-color: #744ca4;
-            box-shadow: 0 0 0 3px rgba(116,76,164,.1);
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 3px rgba(142,87,254,.1);
         }
         .composer-textarea {
             flex: 1 1 auto;
@@ -483,11 +482,11 @@ if (!$__me) {
         }
         .composer-attach-btn {
             background: transparent;
-            color: #744ca4;
+            color: #8e57fe;
         }
-        .composer-attach-btn:hover { background: #f0e6ff; }
+        .composer-attach-btn:hover { background: rgba(142, 87, 254, 0.1); }
         .composer-send-btn {
-            background: linear-gradient(135deg, #744ca4, #9b6dd7);
+            background: #8e57fe;
             color: #fff;
             padding-top: 6px;
         }
@@ -1062,7 +1061,7 @@ if (!$__me) {
                 '<i class="bi ' + icon + '"></i>' +
                 '<span>' + esc(a.original_name) + '</span>' +
                 '<small class="text-muted">(' + sizeKB + ' KB)</small>' +
-                '<i class="bi bi-download" style="color:#744ca4;"></i></div>';
+                '<i class="bi bi-download" style="color:#8e57fe;"></i></div>';
         }
 
         // ✅ تفکیکِ پیوست‌ها بر اساس فرستنده — همان قاعده‌ی رنگ‌بندیِ پیام‌ها
