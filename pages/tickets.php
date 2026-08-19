@@ -143,6 +143,7 @@ if (!$__me) {
             transform: translateY(-50%);
             color: #aaa;
             font-size: .9rem;
+            pointer-events: none;
         }
         .filters-row .search-box input {
             width: 100%;
@@ -490,6 +491,15 @@ if (!$__me) {
             if (!authToken) { window.location.href = '../index.php'; return; }
             loadCategories();
             loadTickets();
+
+            // کلیک در هر نقطه از کادر جستجو (نه فقط خودِ input) باید فوکوس بده
+            var searchBox = document.querySelector('.filters-row .search-box');
+            var searchInput = document.getElementById('fSearch');
+            if (searchBox && searchInput) {
+                searchBox.addEventListener('click', function(ev){
+                    if (ev.target !== searchInput) searchInput.focus();
+                });
+            }
         });
 
         /* ── دسته‌بندی‌ها ── */

@@ -72,6 +72,17 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             overflow: hidden;
         }
 
+        /* body در custom.css مقدار margin-top: 3.5rem دارد (نوار ثابت).
+           ارتفاعِ ثابت این‌جا (نه رویِ .dash-wrap) تعریف می‌شه و body
+           خودش flex-column می‌شه تا فوتر (آخرین فرزندِ body) به‌جایِ
+           بیرون‌افتادن از ویوپورتِ ثابت، فضایِ خودش رو از .dash-wrap
+           (که flex:1 گرفته) بگیره — بدونِ نیازِ ارتفاعِ حدسیِ فوتر */
+        body {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 3.5rem);
+        }
+
         /* ═══ توکن‌های محلی تم (روشن/تاریک) — این صفحه شامل مودال‌هایی است که
            بیرون از .dash-wrap رندر می‌شوند، پس این متغیرها روی :root تعریف
            می‌شوند نه روی .dash-wrap؛ مقدار پیش‌فرض دقیقاً همان رنگ‌های
@@ -91,16 +102,17 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             --du-head-bg: var(--info-box-bg);
         }
 
-        /* body در custom.css مقدار margin-top: 3.5rem دارد (نوار ثابت) */
         .dash-wrap {
-            max-width: 1440px;
+            max-width: 70%;
             margin: 0 auto;
-            padding: 14px 150px 14px 150px;
-            height: calc(100vh - 3.5rem);
+            padding: 14px;
+            flex: 1;
+            min-height: 0;
             display: flex;
             flex-direction: column;
             gap: 14px;
             box-sizing: border-box;
+            width: 100%;
         }
 
         /* ═══ کارت بخش‌ها ═══ */
@@ -715,10 +727,10 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         .row-menu {
             display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            z-index: 30;
+            position: fixed;
+            /* ← مختصات را JS حساب می‌کند، دقیقاً مثلِ .pm-menu — تا برایِ
+               ردیف‌هایِ پایینیِ جدول، منو بیرون از ویوپورت باز نشه */
+            z-index: 3000;
             min-width: 150px;
             margin-top: 4px;
             background: var(--du-surface);
@@ -1094,10 +1106,13 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             html,
             body {
                 overflow: auto;
+                height: auto;
+                display: block;
             }
 
             .dash-wrap {
-                height: auto;
+                max-width: 100%;
+                flex: none;
                 /* 150px+150px پدینگِ دسکتاپ رويِ موبایل عملاً کلِ محتوا رو
                    به یه ستونِ ~60-90 پیکسلی فشار می‌داد — دلیلِ اصلیِ
                    بهم‌ریختگیِ کلِ صفحه، نه فقط یه ویجتِ خاص */
@@ -2943,29 +2958,62 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
             const body = items.length ? items.join('') : `<div class="empty-hint">عملیاتی موجود نیست</div>`;
 
-            return ` 
-            <div class="row-menu-wrap">
+            return `
+            <div class="row-menu-wrap" id="rowWrap-${taskId}">
                 <button class="row-kebab" onclick="rowToggleMenu(${taskId}, event)"><i class="bi bi-three-dots-vertical"></i></button>
                 <div class="row-menu" id="rowMenu-${taskId}">${body}</div>
             </div>`;
         }
 
-        /* باز/بسته کردن منوی جدول */
+        /* باز/بسته کردن منوی جدول — همون الگویِ pmToggleMenu/pmCloseMenus:
+           منو به body منتقل می‌شه (position:fixed) تا برایِ ردیف‌هایِ
+           پایینیِ جدول هم کاملاً داخلِ ویوپورت بمونه، لازم نباشه اسکرول کرد */
         function rowToggleMenu(taskId, ev) {
             ev.stopPropagation();
+
+            const btn = ev.target.closest('.row-kebab');
             const menu = document.getElementById('rowMenu-' + taskId);
             const wasOpen = menu.classList.contains('open');
-            document.querySelectorAll('.row-menu.open').forEach(m => m.classList.remove('open'));
-            if (!wasOpen) menu.classList.add('open');
+
+            rowCloseMenus();
+            if (wasOpen || !btn) return;
+
+            document.body.appendChild(menu);
+            menu.classList.add('open');
+
+            const r = btn.getBoundingClientRect();
+            const mh = menu.offsetHeight;
+            const mw = menu.offsetWidth;
+
+            let top = (window.innerHeight - r.bottom < mh + 12) ?
+                r.top - mh - 4 :
+                r.bottom + 4;
+            if (top < 8) top = 8;
+
+            let left = r.right - mw;
+            if (left < 8) left = 8;
+            if (left + mw > window.innerWidth - 8) left = window.innerWidth - mw - 8;
+
+            menu.style.top = top + 'px';
+            menu.style.left = left + 'px';
         }
-        document.addEventListener('click', () => {
-            document.querySelectorAll('.row-menu.open').forEach(m => m.classList.remove('open'));
-        });
+
+        function rowCloseMenus() {
+            document.querySelectorAll('.row-menu.open').forEach(m => {
+                m.classList.remove('open');
+                const taskId = m.id.replace('rowMenu-', '');
+                const wrap = document.getElementById('rowWrap-' + taskId);
+                if (wrap && m.parentElement !== wrap) {
+                    wrap.appendChild(m);
+                }
+            });
+        }
+        document.addEventListener('click', () => rowCloseMenus());
 
         /* اجرای عملیات از جدول — از مودال استفاده می‌کند */
         function rowAction(taskId, action, ev) {
             ev.stopPropagation();
-            document.querySelectorAll('.row-menu.open').forEach(m => m.classList.remove('open'));
+            rowCloseMenus();
 
             // کار موردنظر را پیدا کن و در مودال باز کن
             const t = store.mine.find(x => Number(x.id) === Number(taskId)) ||
