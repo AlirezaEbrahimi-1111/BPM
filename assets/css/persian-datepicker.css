@@ -24,12 +24,12 @@
 
 .persian-datepicker-input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #8e57fe;
+    box-shadow: 0 0 0 3px rgba(142, 87, 254, 0.1);
 }
 
 .persian-datepicker-input:hover {
-    border-color: #667eea;
+    border-color: #8e57fe;
 }
 
 /* تقویم اصلی */
@@ -97,7 +97,7 @@
     border: none;
     font-size: 20px;
     cursor: pointer;
-    color: #667eea;
+    color: #8e57fe;
     width: 30px;
     height: 30px;
     border-radius: 50%;
@@ -167,7 +167,7 @@
 
 .datepicker-day:hover {
     background: #f0f0ff;
-    border-color: #667eea;
+    border-color: #8e57fe;
     transform: scale(1.05);
 }
 
@@ -198,16 +198,17 @@
 }
 
 .datepicker-day.selected {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: #8e57fe;
     color: white;
     font-weight: bold;
-    border-color: #667eea;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    border-color: #8e57fe;
+    box-shadow: 0 2px 8px rgba(142, 87, 254, 0.3);
 }
 
 .datepicker-day.selected:hover {
-    background: linear-gradient(135deg, #5568d3, #6a3f91);
-    box-shadow: 0 3px 12px rgba(102, 126, 234, 0.4);
+    background: #8e57fe;
+    filter: brightness(0.9);
+    box-shadow: 0 3px 12px rgba(142, 87, 254, 0.4);
 }
 
 /* وقتی «امروز» هم‌زمان انتخاب‌شده هم هست (مثلاً پیش‌فرضِ مودالِ تعریفِ کار)،
@@ -229,7 +230,7 @@
     width: 100%;
     margin-top: 10px;
     padding: 8px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: #8e57fe;
     color: white;
     border: none;
     border-radius: 8px;
@@ -241,8 +242,9 @@
 }
 
 .datepicker-today-btn:hover {
-    background: linear-gradient(135deg, #5568d3, #6a3f91);
-    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+    background: #8e57fe;
+    filter: brightness(0.9);
+    box-shadow: 0 3px 10px rgba(142, 87, 254, 0.3);
     transform: translateY(-1px);
 }
 
@@ -369,7 +371,7 @@
 }
 
 :root[data-theme="dark"] .datepicker-day.selected {
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.45);
+    box-shadow: 0 2px 10px rgba(142, 87, 254, 0.45);
 }
 
 :root[data-theme="dark"] .datepicker-day.today.selected {
@@ -388,7 +390,7 @@
 .datepicker-day:focus,
 .datepicker-nav:focus,
 .datepicker-today-btn:focus {
-    outline: 2px solid #667eea;
+    outline: 2px solid #8e57fe;
     outline-offset: 2px;
 }
 

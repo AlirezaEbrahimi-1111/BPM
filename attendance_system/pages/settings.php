@@ -100,7 +100,7 @@ $settings_groups = [
     'calculation' => [
         'title' => 'قوانین محاسبه حقوق',
         'icon' => 'bi-calculator',
-        'color' => '#8B5CF6',
+        'color' => '#8e57fe',
         'settings' => [
             'shortage_multiplier' => [
                 'value' => '2',
@@ -150,7 +150,7 @@ $settings_groups = [
     'leave' => [
         'title' => 'محدودیت مرخصی',
         'icon' => 'bi-house-door',
-        'color' => '#10B981',
+        'color' => '#1b7b39',
         'settings' => [
             'leave_max_consecutive' => [
                 'value' => '20',
@@ -338,7 +338,7 @@ function toPersianNumber($num) {
 
         html, body {
             height: 100%;
-            background: #F1F5F9;
+            background: #e9e9e9;
         }
 
         body {
@@ -377,7 +377,7 @@ function toPersianNumber($num) {
 
         .header-logo i {
             font-size: 22px;
-            color: #6366F1;
+            color: #8e57fe;
         }
 
         .nav-links {
@@ -397,13 +397,13 @@ function toPersianNumber($num) {
         }
 
         .nav-links a:hover {
-            background: #F1F5F9;
+            background: #e9e9e9;
             color: #334155;
         }
 
         .nav-links a.active {
-            color: #6366F1;
-            background: #EEF2FF;
+            color: #8e57fe;
+            background: rgba(142, 87, 254, 0.1);
         }
 
         .header-right {
@@ -424,7 +424,7 @@ function toPersianNumber($num) {
         .user-avatar {
             width: 36px;
             height: 36px;
-            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            background: #8e57fe;
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -435,7 +435,7 @@ function toPersianNumber($num) {
 
         .logout-btn {
             padding: 8px 16px;
-            background: #F1F5F9;
+            background: #e9e9e9;
             color: #64748B;
             border: 1px solid #E2E8F0;
             border-radius: 8px;
@@ -537,14 +537,14 @@ function toPersianNumber($num) {
             display: flex;
             align-items: center;
             gap: 12px;
-            border-bottom: 1px solid #F1F5F9;
+            border-bottom: 1px solid #e9e9e9;
             cursor: pointer;
             user-select: none;
             transition: background 0.2s ease;
         }
 
         .group-header:hover {
-            background: #FAFBFC;
+            background: #e9e9e9;
         }
 
         .group-icon {
@@ -569,7 +569,7 @@ function toPersianNumber($num) {
         .group-count {
             font-size: 12px;
             color: #94A3B8;
-            background: #F1F5F9;
+            background: #e9e9e9;
             padding: 3px 10px;
             border-radius: 20px;
         }
@@ -610,7 +610,7 @@ function toPersianNumber($num) {
         }
 
         .setting-item:hover {
-            background: #FAFBFC;
+            background: #e9e9e9;
         }
 
         .setting-info {
@@ -654,8 +654,8 @@ function toPersianNumber($num) {
 
         .setting-control input[type="number"]:focus {
             outline: none;
-            border-color: #6366F1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 3px rgba(142, 87, 254, 0.1);
         }
 
         .setting-unit {
@@ -686,7 +686,7 @@ function toPersianNumber($num) {
             left: 0;
             right: 0;
             bottom: 0;
-            background: #CBD5E1;
+            background: #e9e9e9;
             border-radius: 26px;
             transition: all 0.3s ease;
         }
@@ -705,7 +705,7 @@ function toPersianNumber($num) {
         }
 
         .toggle-switch input:checked + .toggle-slider {
-            background: #6366F1;
+            background: #8e57fe;
         }
 
         .toggle-switch input:checked + .toggle-slider:before {
@@ -719,7 +719,7 @@ function toPersianNumber($num) {
             margin-top: 24px;
             position: sticky;
             bottom: 0;
-            background: #F1F5F9;
+            background: #e9e9e9;
             padding: 20px 0;
             z-index: 10;
         }
@@ -738,14 +738,14 @@ function toPersianNumber($num) {
         }
 
         .btn-save {
-            background: #6366F1;
+            background: #8e57fe;
             color: white;
         }
 
         .btn-save:hover {
-            background: #4F46E5;
+            filter: brightness(0.9);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 12px rgba(142, 87, 254, 0.3);
         }
 
         .btn-reset {
@@ -893,7 +893,7 @@ function toPersianNumber($num) {
         <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">
-                <i class="bi bi-sliders" style="color: #6366F1;"></i>
+                <i class="bi bi-sliders" style="color: #8e57fe;"></i>
                 مدیریت تنظیمات
             </h1>
             <p class="page-subtitle">محدودیت‌ها، سیاست‌ها و قوانین محاسباتی سیستم حضور و غیاب را تنظیم کنید</p>

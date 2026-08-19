@@ -64,7 +64,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             margin-bottom: 2rem;
         }
         .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #8e57fe;
             color: white;
             border-radius: 16px 16px 0 0 !important;
             padding: 1.5rem;
@@ -75,13 +75,13 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             padding: 10px 14px;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #8e57fe;
             border: none;
             border-radius: 8px;
             padding: 10px 24px;
         }
         .btn-success {
-            background: #28a745;
+            background: #1b7b39;
             border: none;
             border-radius: 8px;
         }

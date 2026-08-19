@@ -95,7 +95,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
         }
 
         .card-header {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: #8e57fe;
             color: white;
             border-radius: 15px 15px 0 0 !important;
             border: none;
@@ -119,12 +119,12 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
 
         .form-control:focus,
         .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 0.2rem rgba(142, 87, 254, 0.25);
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: #8e57fe;
             border: none;
             border-radius: 10px;
             font-weight: 500;
@@ -133,7 +133,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(142, 87, 254, 0.4);
         }
 
         .report-card {
@@ -221,7 +221,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
         }
 
         .unit-PR {
-            background-color: #6f42c1;
+            background-color: #8e57fe;
             color: white;
         }
 
@@ -336,7 +336,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
             border: none;
             color: white;
             font-size: 1.5rem;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 12px rgba(142, 87, 254, 0.3);
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
@@ -346,7 +346,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
         .fab:hover {
             background: #9d7bf3ff !important;
             transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(142, 87, 254, 0.4);
             color: white;
         }
 
@@ -397,7 +397,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
         }
 
         .toggle-advanced {
-            color: #667eea;
+            color: #8e57fe;
             text-decoration: none;
             font-size: 0.9rem;
         }

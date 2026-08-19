@@ -20,7 +20,7 @@ if (!isset($current_user)) {
 
 <style>
 .admin-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #8e57fe;
     color: white;
     padding: 15px 0;
     margin-bottom: 20px;
@@ -64,7 +64,7 @@ if (!isset($current_user)) {
 }
 .logout-link:hover {
     background: white;
-    color: #667eea;
+    color: #8e57fe;
 }
 </style>
 

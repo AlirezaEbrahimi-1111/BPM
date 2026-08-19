@@ -765,7 +765,7 @@ if (!$__me) {
 
                 <!-- موعد فعلی -->
                 <div
-                    style="margin-bottom: 15px; padding: 12px; background: var(--info-box-bg); border-radius: 5px; border-right: 4px solid #667eea;">
+                    style="margin-bottom: 15px; padding: 12px; background: var(--info-box-bg); border-radius: 5px; border-right: 4px solid #8e57fe;">
                     <strong style="color: var(--text-strong);" id="currentDeadlineLabel">موعد فعلی: -</strong>
                 </div>
 
@@ -806,7 +806,7 @@ if (!$__me) {
                 <!-- دکمه‌های عمل -->
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                     <button onclick="submitDeadlineRequest()"
-                        style="flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; background: #667eea; color: white; font-weight: 600; transition: background 0.2s;">
+                        style="flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; background: #8e57fe; color: white; font-weight: 600; transition: background 0.2s;">
                         ارسال درخواست
                     </button>
                     <button onclick="closeModal('requestDeadlineModal')"
@@ -825,7 +825,7 @@ if (!$__me) {
                     <button onclick="closeModal('workflowDeadlineModal')"
                         style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">✕</button>
                 </div>
-                <div style="margin-bottom:15px; padding:12px; background:var(--info-box-bg); border-radius:5px; border-right:4px solid #667eea;">
+                <div style="margin-bottom:15px; padding:12px; background:var(--info-box-bg); border-radius:5px; border-right:4px solid #8e57fe;">
                     <strong style="color:var(--text-strong);">موعد فعلی: </strong><span id="wfCurrentDeadline">-</span>
                 </div>
                 <div style="margin-bottom:15px;">
@@ -843,7 +843,7 @@ if (!$__me) {
                 </div>
                 <div style="display:flex; gap:10px; margin-top:20px;">
                     <button onclick="submitWorkflowDeadlineRequest()"
-                        style="flex:1; padding:10px; border:none; border-radius:5px; cursor:pointer; background:#667eea; color:white; font-weight:600;">
+                        style="flex:1; padding:10px; border:none; border-radius:5px; cursor:pointer; background:#8e57fe; color:white; font-weight:600;">
                         ارسال درخواست
                     </button>
                     <button onclick="closeModal('workflowDeadlineModal')"
@@ -867,13 +867,13 @@ if (!$__me) {
 
                 <!-- جزئیات -->
                 <div style="margin-bottom: 15px;">
-                    <strong style="color: #667eea;">درخواست‌کننده:</strong>
+                    <strong style="color: #8e57fe;">درخواست‌کننده:</strong>
                     <span id="requesterName" style="margin-right: 8px; color: var(--text-strong);">-</span>
                 </div>
 
                 <!-- موعد فعلی -->
                 <div
-                    style="margin-bottom: 15px; padding: 12px; background: var(--info-box-bg); border-radius: 5px; border-right: 4px solid #667eea;">
+                    style="margin-bottom: 15px; padding: 12px; background: var(--info-box-bg); border-radius: 5px; border-right: 4px solid #8e57fe;">
                     <strong style="color: var(--text-strong);" id="currentDeadlineDisplay">موعد فعلی: -</strong>
                 </div>
 
@@ -885,7 +885,7 @@ if (!$__me) {
 
                 <!-- دلیل -->
                 <div style="margin-bottom: 15px;">
-                    <strong style="color: #667eea;">دلیل درخواست:</strong>
+                    <strong style="color: #8e57fe;">دلیل درخواست:</strong>
                     <p id="extensionReasonDisplay"
                         style="margin: 8px 0 0 0; color: var(--text-muted); white-space: pre-wrap; line-height: 1.6;">-</p>
                 </div>
@@ -919,7 +919,7 @@ if (!$__me) {
                     </button>
                 </div>
 
-                <div style="margin-bottom: 15px; padding: 12px; background: var(--info-box-bg); border-radius: 5px; border-right: 4px solid #667eea;">
+                <div style="margin-bottom: 15px; padding: 12px; background: var(--info-box-bg); border-radius: 5px; border-right: 4px solid #8e57fe;">
                     <strong style="color: var(--text-strong);">دوره: <span id="renewalPeriodLabel">-</span></strong>
                 </div>
 
@@ -987,7 +987,7 @@ if (!$__me) {
 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                     <button onclick="submitRenewal()" id="renewalSubmitBtn"
-                        style="flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; background: #667eea; color: white; font-weight: 600;">
+                        style="flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; background: #8e57fe; color: white; font-weight: 600;">
                         ارسالِ درخواست
                     </button>
                     <button onclick="closeModal('renewalModal')"
@@ -1010,7 +1010,7 @@ if (!$__me) {
                 </div>
 
                 <div style="margin-bottom: 15px;">
-                    <strong style="color: #667eea;">درخواست‌کننده:</strong>
+                    <strong style="color: #8e57fe;">درخواست‌کننده:</strong>
                     <span id="renewalRequesterName" style="margin-right: 8px; color: var(--text-strong);">-</span>
                 </div>
 
@@ -1020,7 +1020,7 @@ if (!$__me) {
                 </div>
 
                 <div style="margin-bottom: 15px;">
-                    <strong style="color: #667eea;">دلیل درخواست:</strong>
+                    <strong style="color: #8e57fe;">دلیل درخواست:</strong>
                     <p id="renewalReasonDisplay" style="margin: 8px 0 0 0; color: var(--text-muted); white-space: pre-wrap; line-height: 1.6;">-</p>
                 </div>
 

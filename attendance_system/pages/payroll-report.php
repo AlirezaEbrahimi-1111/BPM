@@ -71,7 +71,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
 
         .payroll-toolbar h4 {
             margin: 0;
-            color: #744CA4;
+            color: #8e57fe;
             font-weight: 700;
         }
 
@@ -84,12 +84,12 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
 
         .payroll-controls select {
             padding: 9px 14px;
-            border: 1px solid rgba(116, 76, 164, 0.25);
+            border: 1px solid rgba(142, 87, 254, 0.25);
             border-radius: 10px;
             font-family: inherit;
             font-size: 13px;
             font-weight: 600;
-            color: #744CA4;
+            color: #8e57fe;
             background: #fff;
             cursor: pointer;
         }
@@ -98,7 +98,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
             padding: 9px 16px;
             border: none;
             border-radius: 10px;
-            background: #16A34A;
+            background: #1b7b39;
             color: #fff;
             font-family: inherit;
             font-weight: 700;
@@ -110,7 +110,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
         }
 
         .btn-excel:hover {
-            background: #15803D;
+            filter: brightness(0.9);
         }
 
         .payroll-cards {
@@ -150,18 +150,18 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
         }
 
         .pos {
-            color: #16A34A;
+            color: #1b7b39;
             font-weight: 700;
         }
 
         /* مودال جزئیات کاربر */
-        .ud-card { background:#F8FAFC; border:1px solid #EEF2F7; border-radius:12px; padding:10px 12px; }
+        .ud-card { background:#e9e9e9; border:1px solid #e9e9e9; border-radius:12px; padding:10px 12px; }
         .ud-card .ud-lbl { font-size:11px; color:#718096; font-weight:600; margin-bottom:4px; }
         .ud-card .ud-val { font-size:15px; font-weight:800; }
         .ud-table { width:100%; border-collapse:collapse; font-size:13px; }
-        .ud-table th { background:#744CA4; color:#fff; font-weight:700; padding:9px 8px; text-align:right; white-space:nowrap; position:sticky; top:0; z-index:2; }
-        .ud-table td { padding:8px; border-bottom:1px solid #EEF2F7; vertical-align:middle; }
-        .ud-table tbody tr:hover { background:#FAF7FF; }
+        .ud-table th { background:#8e57fe; color:#fff; font-weight:700; padding:9px 8px; text-align:right; white-space:nowrap; position:sticky; top:0; z-index:2; }
+        .ud-table td { padding:8px; border-bottom:1px solid #e9e9e9; vertical-align:middle; }
+        .ud-table tbody tr:hover { background:rgba(142, 87, 254, 0.06); }
         .ud-badge { display:inline-block; color:#fff; font-size:11px; font-weight:700; padding:2px 7px; border-radius:8px; margin:1px 0; white-space:nowrap; }
 
         /* ─── دارک‌مود ─── */
@@ -218,7 +218,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
         <div class="payroll-cards">
             <div class="pcard">
                 <div class="lbl">جمع حقوق پایه</div>
-                <div class="val" id="sumBase" style="color:#744CA4;">—</div>
+                <div class="val" id="sumBase" style="color:#8e57fe;">—</div>
             </div>
             <div class="pcard">
                 <div class="lbl">جمع جریمهٔ کسری</div>
@@ -226,7 +226,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
             </div>
             <div class="pcard">
                 <div class="lbl">جمع حقوق دریافتی تا دیروز</div>
-                <div class="val" id="sumReceived" style="color:#8B5CF6;">—</div>
+                <div class="val" id="sumReceived" style="color:#8e57fe;">—</div>
             </div>
             <div class="pcard">
                 <div class="lbl">جمع کسری (ساعت:دقیقه)</div>
@@ -241,7 +241,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
     <div class="modal fade" id="userDetailModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content" style="border-radius:16px;overflow:hidden;max-width:1000px !important;">
-                <div class="modal-header" style="background:#744CA4;color:#fff;border:none;">
+                <div class="modal-header" style="background:#8e57fe;color:#fff;border:none;">
                     <h5 class="modal-title" id="udTitle">جزئیات کارکرد</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="بستن"></button>
                 </div>
@@ -392,7 +392,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
             return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0');
         };
         const REQ_LABELS = { mission: 'مأموریت', leave: 'مرخصی', pass: 'پاس', technical: 'مشکل فنی', forget: 'فراموشی ثبت' };
-        const REQ_COLORS = { mission: '#0EA5E9', leave: '#8B5CF6', pass: '#F59E0B', technical: '#EF4444', forget: '#64748B' };
+        const REQ_COLORS = { mission: '#0EA5E9', leave: '#8e57fe', pass: '#F59E0B', technical: '#EF4444', forget: '#64748B' };
         let udModal = null;
 
         async function openUserDetail(row) {
@@ -429,8 +429,8 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
 
             const cards =
                 '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px;">' +
-                '<div class="ud-card"><div class="ud-lbl">واحد</div><div class="ud-val" style="color:#744CA4;">' + (u.section || dash) + '</div></div>' +
-                '<div class="ud-card"><div class="ud-lbl">حقوق پایه</div><div class="ud-val" style="color:#744CA4;">' + fmtToman(s.monthly_salary) + '</div></div>' +
+                '<div class="ud-card"><div class="ud-lbl">واحد</div><div class="ud-val" style="color:#8e57fe;">' + (u.section || dash) + '</div></div>' +
+                '<div class="ud-card"><div class="ud-lbl">حقوق پایه</div><div class="ud-val" style="color:#8e57fe;">' + fmtToman(s.monthly_salary) + '</div></div>' +
                 '<div class="ud-card"><div class="ud-lbl">کسری ×۲ (تا دیروز)</div><div class="ud-val" style="color:#F59E0B;">' + faNum(s.final_hms || '0:00') + '</div></div>' +
                 '<div class="ud-card"><div class="ud-lbl">جریمهٔ کسری</div><div class="ud-val" style="color:#EF4444;">' + fmtToman(s.shortage_money) + '</div></div>' +
                 '<div class="ud-card"><div class="ud-lbl">حقوق دریافتی تا دیروز</div><div class="ud-val" style="color:' + ((s.salary_received < 0) ? '#EF4444' : '#16A34A') + ';">' + fmtToman(s.salary_received) + '</div></div>' +

@@ -38,7 +38,7 @@ if (!$current_user) {
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #8e57fe;
             color: white;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -71,7 +71,7 @@ if (!$current_user) {
 
         .logout-btn:hover {
             background: white;
-            color: #667eea;
+            color: #8e57fe;
         }
 
         .container {
@@ -110,7 +110,7 @@ if (!$current_user) {
 
         .card h3 {
             margin-bottom: 10px;
-            color: #667eea;
+            color: #8e57fe;
         }
 
         .card p {
