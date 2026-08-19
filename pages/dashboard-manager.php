@@ -121,7 +121,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         .dash-card-title i {
             font-size: .9rem;
-            color: var(--pm-purple, #7e55b3);
+            color: var(--pm-purple, #8e57fe);
             background: none;
         }
 
@@ -242,7 +242,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .plan-item:hover {
-            border-color: #7e55b3;
+            border-color: #8e57fe;
             box-shadow: 0 3px 12px rgba(126, 85, 179, .1);
             transform: translateY(-1px);
         }
@@ -262,7 +262,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         .plan-icon.month {
             background: #f0e9fd;
-            color: #7e55b3;
+            color: #8e57fe;
         }
 
         .plan-icon.week {
@@ -298,7 +298,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .plan-label.month {
-            color: #7e55b3;
+            color: #8e57fe;
         }
 
         .plan-value {
@@ -430,8 +430,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .filter-chip.active {
-            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
-            border-color: #8346fd;
+            background: #8e57fe;
+            border-color: #8e57fe;
             color: #fff;
             font-weight: 600;
         }
@@ -503,8 +503,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         .routine-filter-chip.active,
         .activity-scope-chip.active {
-            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
-            border-color: #8346fd;
+            background: #8e57fe;
+            border-color: #8e57fe;
             color: #fff;
             font-weight: 600;
         }
@@ -673,7 +673,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .row-kebab:hover {
-            background: #7e55b3;
+            background: #8e57fe;
             color: #fff;
         }
 
@@ -711,7 +711,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .row-menu button:hover {
-            background: #7e55b3;
+            background: #8e57fe;
             color: #fff;
         }
 
@@ -721,7 +721,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .row-menu .act-approve i {
-            color: #00BF8F;
+            color: #1b7b39;
             padding-top: 5px;
             font-size: 180%;
         }
@@ -1044,18 +1044,18 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         /* ═══════════ مودال برنامه کاری (بنفش) ═══════════ */
         :root {
-            --pm-purple: #7e55b3;
-            --pm-purple-soft: #7e55b3;
-            --pm-purple-dark: #7e55b3;
-            --pm-green: #00BF8F;
-            --pm-green-soft: #00BF8F;
-            --pm-green-dark: #00BF8F;
-            --primary: #7e55b3;
-            --primary-dark: #7e55b3;
-            --primary-light: #7e55b3;
-            --primary-gradient: linear-gradient(135deg, #7e55b3 0%, #7e55b3 100%);
-            --success: #00BF8F;
-            --success-dark: #00BF8F;
+            --pm-purple: #8e57fe;
+            --pm-purple-soft: #8e57fe;
+            --pm-purple-dark: #8e57fe;
+            --pm-green: #1b7b39;
+            --pm-green-soft: #1b7b39;
+            --pm-green-dark: #1b7b39;
+            --primary: #8e57fe;
+            --primary-dark: #8e57fe;
+            --primary-light: #8e57fe;
+            --primary-gradient: linear-gradient(135deg, #8e57fe 0%, #8e57fe 100%);
+            --success: #1b7b39;
+            --success-dark: #1b7b39;
 
             /* توکن‌های محلیِ تم برای این صفحه — چون مودال‌ها (planModal/weekModal/...)
                بیرون از .dash-wrap در DOM هستند، این متغیرها روی :root تعریف می‌شوند
@@ -1197,8 +1197,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-row:hover {
-            background: #7e55b3;
-            border-color: #7e55b3;
+            background: #8e57fe;
+            border-color: #8e57fe;
         }
 
         .pm-row.removing {
@@ -1285,7 +1285,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-menu button:hover {
-            background: #7e55b3;
+            background: #8e57fe;
         }
 
         .pm-menu button i {
@@ -1295,7 +1295,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-menu button.act-approve i {
-            color: #00BF8F;
+            color: #1b7b39;
         }
 
         .pm-menu button.act-reject i {
@@ -1354,7 +1354,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             display: none;
             margin-top: 11px;
             padding-top: 11px;
-            border-top: 1px dashed #e5e7eb;
+            border-top: 1px dashed #e9e9e9;
         }
 
         .pm-form.open {
@@ -1376,7 +1376,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         .pm-form input[type="text"] {
             width: 100%;
             font-size: .765rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9e9e9;
             border-radius: 9px;
             padding: 9px 11px;
             margin-bottom: 9px;
@@ -1408,7 +1408,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-btn-primary {
-            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
+            background: #8e57fe;
             color: #fff;
         }
 
@@ -1418,7 +1418,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-btn-ghost {
-            background: #f3f4f6;
+            background: #e9e9e9;
             color: #6b7280;
         }
 
@@ -1804,7 +1804,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         #pmToast.ok {
-            background: #00BF8F;
+            background: #1b7b39;
         }
 
         #pmToast.err {
@@ -1822,7 +1822,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             display: flex;
             align-items: center;
             gap: 10px;
-            border: 1px solid #f3f4f6;
+            border: 1px solid #e9e9e9;
             border-radius: 10px;
             padding: 8px 8px;
             margin-bottom: 8px;
@@ -1831,8 +1831,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-row:hover {
-            background: #f9fafb;
-            border-color: #e5e7eb;
+            background: #e9e9e9;
+            border-color: #e9e9e9;
             cursor: pointer;
         }
 
@@ -1875,7 +1875,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-kebab:hover {
-            background: #f3f4f6;
+            background: #e9e9e9;
             color: #374151;
         }
 
@@ -1898,7 +1898,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             /* ← بالاتر از مودال */
             min-width: 165px;
             background: var(--surface);
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9e9e9;
             border-radius: 10px;
             box-shadow: 0 6px 20px rgba(0, 0, 0, .1);
             padding: 5px;
@@ -1927,7 +1927,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-menu button:hover {
-            background: #f3f4f6;
+            background: #e9e9e9;
         }
 
         .pm-menu button i {
@@ -1936,7 +1936,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-menu button.act-approve i {
-            color: #00BF8F;
+            color: #1b7b39;
         }
 
         .pm-menu button.act-reject i {
@@ -1956,7 +1956,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             display: none;
             margin-top: 10px;
             padding-top: 10px;
-            border-top: 1px dashed #e5e7eb;
+            border-top: 1px dashed #e9e9e9;
         }
 
         .pm-form.open {
@@ -1978,7 +1978,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         .pm-form input[type="text"] {
             width: 100%;
             font-size: .756rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9e9e9;
             border-radius: 8px;
             padding: 8px 10px;
             margin-bottom: 8px;
@@ -2010,7 +2010,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-btn-primary {
-            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%);
+            background: #8e57fe;
             color: #fff;
         }
 
@@ -2020,7 +2020,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-btn-ghost {
-            background: #f3f4f6;
+            background: #e9e9e9;
             color: #6b7280;
         }
 
@@ -2058,7 +2058,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         #pmToast.ok {
-            background: #00BF8F;
+            background: #1b7b39;
         }
 
         #pmToast.err {
@@ -2073,7 +2073,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         .ra-input {
             width: 100%;
             font-size: .774rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e9e9e9;
             border-radius: 9px;
             padding: 9px 11px;
             margin-bottom: 10px;
@@ -2081,7 +2081,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         .ra-input:focus {
             outline: none;
-            border-color: #7e55b3;
+            border-color: #8e57fe;
         }
 
         textarea.ra-input {
@@ -2118,11 +2118,11 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .ra-user:hover {
-            background: #7e55b3;
+            background: #8e57fe;
         }
 
         .ra-user.sel {
-            background: #7e55b3;
+            background: #8e57fe;
             color: #fff;
             font-weight: 600;
         }
@@ -2133,7 +2133,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .ra-user.sel i {
-            color: #7e55b3;
+            color: #8e57fe;
         }
 
         .ra-user-empty {
@@ -2267,7 +2267,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         /* دکمه‌ی شناورِ + (کار جدید) — فقط در همین صفحه، هم‌رنگ با گرادیانتِ
            هدر (نه --primary-gradient که در بقیه‌ی صفحات هم استفاده می‌شه) */
         .fab {
-            background: linear-gradient(135deg, #a57aff 0%, #8346fd 60%) !important;
+            background: #8e57fe !important;
         }
     </style>
 
@@ -2389,7 +2389,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-arrow-repeat" style="color:#7e55b3;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size: .9rem;flex-shrink:0;"></i><span>فرآیندهای جاری</span>
+                        <i class="bi bi-arrow-repeat" style="color:#8e57fe;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size: .9rem;flex-shrink:0;"></i><span>فرآیندهای جاری</span>
                     </div>
                     <a href="workflow-monitor.php" class="dash-see-all">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -2415,7 +2415,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-people" style="color:#00BF8F;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size: .9rem;flex-shrink:0;"></i><span>کاربران با بیشترین تأخیر کار</span>
+                        <i class="bi bi-people" style="color:#1b7b39;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size: .9rem;flex-shrink:0;"></i><span>کاربران با بیشترین تأخیر کار</span>
                     </div>
                     <a href="#" class="dash-see-all" id="topDelayedSeeAll">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -2450,7 +2450,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
-                        <i class="bi bi-graph-up-arrow" style="color:#7e55b3;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size: .9rem;flex-shrink:0;"></i><span>گزارش گلوگاه‌ها</span>
+                        <i class="bi bi-graph-up-arrow" style="color:#8e57fe;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size: .9rem;flex-shrink:0;"></i><span>گزارش گلوگاه‌ها</span>
                     </div>
                     <a href="bottleneck-report.php" class="dash-see-all" id="bottleneckSeeAll">
                         مشاهده همه <i class="bi bi-chevron-left"></i>
@@ -2492,7 +2492,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 </div>
                 <div class="modal-body" id="pmBody"></div>
                 <div class="modal-footer" style="padding:10px 18px;">
-                    <a href="my-tasks.php" class="btn btn-sm" style="background:linear-gradient(135deg, #a57aff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
+                    <a href="my-tasks.php" class="btn btn-sm" style="background:#8e57fe;color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>
@@ -2520,7 +2520,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     <div class="wk-grid" id="wkGrid"></div>
                 </div>
                 <div class="modal-footer" style="padding:12px 12px 0 12px;">
-                    <a href="my-tasks.php?filter=week" class="btn btn-sm" style="background:linear-gradient(135deg, #a57aff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
+                    <a href="my-tasks.php?filter=week" class="btn btn-sm" style="background:#8e57fe;color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>
@@ -2548,7 +2548,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     <div class="mo-grid" id="moGrid" onmouseover="moGridOver(event)" onmouseleave="moGridLeave()"></div>
                 </div>
                 <div class="modal-footer" style="padding:8px 20px 6px;">
-                    <a href="my-tasks.php?filter=month" id="moSeeAllBtn" class="btn btn-sm" style="background:linear-gradient(135deg, #a57aff 0%, #8346fd 60%);color:#fff;">مشاهده همه کارها</a>
+                    <a href="my-tasks.php?filter=month" id="moSeeAllBtn" class="btn btn-sm" style="background:#8e57fe;color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
         </div>
@@ -2563,7 +2563,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                         <i id="rowActIcon" class="bi"></i>
                     </h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        style="width:32px;height:32px;border-radius:50%;background-color:#f3f4f6;opacity:1;"></button>
+                        style="width:32px;height:32px;border-radius:50%;background-color:#e9e9e9;opacity:1;"></button>
                 </div>
                 <div class="modal-body" id="rowActBody" style="padding:16px 18px;"></div>
             </div>
@@ -3105,8 +3105,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             // ── بقیه: مودال کوچک ─────────────────────────
             const titles = {
                 reject: ['رد کار', 'bi-x-lg', '#dc2626'],
-                delegate: ['ارجاع کار', 'bi-arrow-left-right', '#7e55b3'],
-                extend: ['تمدید موعد', 'bi-calendar-plus', '#7e55b3'],
+                delegate: ['ارجاع کار', 'bi-arrow-left-right', '#8e57fe'],
+                extend: ['تمدید موعد', 'bi-calendar-plus', '#8e57fe'],
             };
             const [title, icon, color] = titles[action];
 
@@ -3407,7 +3407,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             const box = document.getElementById('bottleneckList');
             if (!box) return;
 
-            const colors = ['#dc2626', '#ea580c', '#d97706', '#ca8a04', '#7e55b3'];
+            const colors = ['#dc2626', '#ea580c', '#d97706', '#ca8a04', '#8e57fe'];
 
             // 🆕 مدیرِ دارایِ مجوزِ monitor_all_workflows → مستقیماً از
             // api/reports/bottleneck-report.php (سازمانی، از قبل گروه‌بندی‌شده
@@ -3499,7 +3499,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             }
 
             const max = Math.max(...list.map(r => r.active_count), 1);
-            const colors = ['#2563eb', '#0d9488', '#00BF8F', '#ea580c', '#7e55b3'];
+            const colors = ['#2563eb', '#0d9488', '#1b7b39', '#ea580c', '#8e57fe'];
 
             box.innerHTML = list.map((r, i) => {
                 const pct = Math.round((r.active_count / max) * 100);
@@ -4220,7 +4220,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             if (action === 'approve') {
                 return `
             <div class="pm-form-title">
-                <i class="bi bi-check-lg" style="color:#00BF8F"></i> تایید کار
+                <i class="bi bi-check-lg" style="color:#1b7b39"></i> تایید کار
             </div>
             <textarea id="pmNote-${taskId}" placeholder="یادداشت (اختیاری)"></textarea>
             <div class="pm-form-actions">
