@@ -116,7 +116,7 @@ textarea,
 .col-lg-4 .card-header .btn-light {
   font-size: 0.75rem;
   padding: 4px 10px;
-  border-radius: var(--radius-xs);
+  border-radius: 9px;
   background: rgba(255, 255, 255, 0.2);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -221,7 +221,7 @@ textarea,
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: 9px;
   cursor: pointer;
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
@@ -371,7 +371,7 @@ textarea,
   justify-content: center;
   background: #f1f5f9;
   border: none;
-  border-radius: 8px;
+  border-radius: 9px;
   color: #475569;
   font-size: 1rem;
   cursor: pointer;

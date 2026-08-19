@@ -77,18 +77,18 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         .btn-primary {
             background: #8e57fe;
             border: none;
-            border-radius: 8px;
+            border-radius: 9px;
             padding: 10px 24px;
         }
         .btn-success {
             background: #1b7b39;
             border: none;
-            border-radius: 8px;
+            border-radius: 9px;
         }
         .btn-danger {
             background: #dc3545;
             border: none;
-            border-radius: 8px;
+            border-radius: 9px;
         }
         .table {
             margin: 0;

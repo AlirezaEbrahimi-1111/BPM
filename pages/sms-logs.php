@@ -93,7 +93,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
                 <p>کل پیامک‌ها</p>
             </div>
             <div class="stat-card">
-                <h3 id="sentSMS" style="color: #28a745;">0</h3>
+                <h3 id="sentSMS" style="color: #1b7b39;">0</h3>
                 <p>ارسال شده</p>
             </div>
             <div class="stat-card">

@@ -166,7 +166,7 @@ if (!$__me) {
             bottom: 18px;
             width: 52px;
             height: 52px;
-            border-radius: 50%;
+            border-radius: var(--radius-btn);
             border: none;
             background: var(--ink-900);
             color: #fff;
@@ -497,7 +497,7 @@ if (!$__me) {
         .chat-search-toggle-btn {
             width: 32px;
             height: 32px;
-            border-radius: 4px;
+            border-radius: var(--radius-btn);
             border: none;
             background: transparent;
             color: var(--text-muted);
@@ -559,7 +559,7 @@ if (!$__me) {
         .chat-msg-search-nav-btn {
             width: 26px;
             height: 26px;
-            border-radius: 4px;
+            border-radius: var(--radius-btn);
             border: none;
             background: var(--ink-050);
             color: var(--ink-900);
@@ -672,7 +672,7 @@ if (!$__me) {
             transform: translateX(-50%) translateY(12px);
             width: 36px;
             height: 36px;
-            border-radius: 50%;
+            border-radius: var(--radius-btn);
             border: 1px solid var(--border-soft, #e5e0ee);
             background: var(--surface);
             color: var(--ink-900);
@@ -797,7 +797,7 @@ if (!$__me) {
             align-items: center;
             gap: 3px;
             background: rgba(255, 255, 255, .16);
-            border-radius: 12px;
+            border-radius: 9px;
             padding: 1px 7px;
             font-size: .78rem;
             cursor: pointer;
@@ -817,7 +817,7 @@ if (!$__me) {
             align-items: center;
             gap: 9px;
             padding: 8px 10px;
-            border-radius: 3px;
+            border-radius: 9px;
             cursor: pointer;
             font-size: .82rem;
             color: var(--text-strong);
@@ -1499,7 +1499,7 @@ if (!$__me) {
         .chat-send-btn {
             width: 38px;
             height: 38px;
-            border-radius: 50%;
+            border-radius: var(--radius-btn);
             border: none;
             display: flex;
             align-items: center;
@@ -1596,7 +1596,7 @@ if (!$__me) {
             gap: 6px;
             margin: 0;
             padding: 8px 10px;
-            border-radius: 999px;
+            border-radius: 9px;
             font-size: .85rem;
             font-weight: 500;
             color: var(--text-muted, #6b7280);
@@ -1719,7 +1719,7 @@ if (!$__me) {
             left: 8px;
             background: rgba(0, 0, 0, .55);
             color: #fff;
-            border-radius: 50%;
+            border-radius: 9px;
             width: 26px;
             height: 26px;
             display: flex;
@@ -1805,7 +1805,7 @@ if (!$__me) {
             border: none;
             background: transparent;
             padding: 7px;
-            border-radius: 6px;
+            border-radius: 9px;
             font-size: .8rem;
             font-weight: 600;
             color: var(--text-muted);
@@ -1876,7 +1876,7 @@ if (!$__me) {
             inset-inline-end: 0;
             width: 28px;
             height: 28px;
-            border-radius: 50%;
+            border-radius: 9px;
             background: var(--ink-900);
             color: #fff;
             display: flex;

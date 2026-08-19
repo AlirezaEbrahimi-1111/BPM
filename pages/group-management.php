@@ -47,7 +47,7 @@ if (!$__me || !hasPermission($__me, 'manage_task_groups')) {
         .gm-colors, .gm-icons { display: flex; flex-wrap: wrap; gap: 6px; }
         .gm-color { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
         .gm-color.active { border-color: #000; }
-        .gm-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; }
+        .gm-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd; border-radius: 9px; cursor: pointer; }
         .gm-icon.active { background: rgba(142, 87, 254, 0.12); border-color: #8e57fe; }
         :root[data-theme="dark"] .gm-icon { border-color: var(--border-soft); }
         :root[data-theme="dark"] .gm-icon.active { background: rgba(99, 102, 241, .2); border-color: #6366f1; }
@@ -185,7 +185,7 @@ if (!$__me || !hasPermission($__me, 'manage_task_groups')) {
             {
                 headerName: 'نوع', field: 'scope', width: 100, sortable: true,
                 cellRenderer: p => p.value === 'org'
-                    ? '<span style="color:#2e7d32">سازمانی</span>'
+                    ? '<span style="color:#1b7b39">سازمانی</span>'
                     : '<span style="color:#6b7280">شخصی</span>'
             },
             { headerName: 'سازنده', field: 'creator_name', flex: 1, minWidth: 120, sortable: true },

@@ -896,7 +896,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             '<div style="background:var(--surface);border-radius:16px;max-width:520px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);font-family:inherit;">' +
             '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:16px 18px;border-bottom:1px solid var(--border-soft);">' +
             '<div style="font-weight:800;color:var(--text-strong);font-size:16px;">' + escapeHtml(ann.title || 'اطلاعیه') + '</div>' +
-            '<button type="button" id="annModalClose" style="border:none;background:var(--border-soft);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;color:var(--text-strong);">&times;</button>' +
+            '<button type="button" id="annModalClose" style="border:none;background:var(--border-soft);width:32px;height:32px;border-radius:9px;cursor:pointer;font-size:18px;line-height:1;color:var(--text-strong);">&times;</button>' +
             '</div>' +
             '<div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--border-soft);">' +
             '<span style="background:' + pr.color + ';color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;">' + pr.label + '</span>' +

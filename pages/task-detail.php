@@ -128,7 +128,7 @@ if (!$__me) {
         }
 
         .chk-desc-icon:hover {
-            color: #4338ca;
+            color: #8e57fe;
         }
 
         .chk-desc-zone {
@@ -273,7 +273,7 @@ if (!$__me) {
         }
 
         .chk-done-note b {
-            color: #5b32d6;
+            color: #8e57fe;
             font-weight: 600;
         }
 
@@ -893,7 +893,7 @@ if (!$__me) {
                 <!-- دکمه‌های عمل -->
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                     <button onclick="approveDeadlineRequest()"
-                        style="flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; background: #28a745; color: white; font-weight: 600; transition: background 0.2s;">
+                        style="flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; background: #1b7b39; color: white; font-weight: 600; transition: background 0.2s;">
                         ✓ تأیید درخواست
                     </button>
                     <button onclick="rejectDeadlineRequest()"
@@ -1026,7 +1026,7 @@ if (!$__me) {
 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                     <button onclick="approveRenewalRequest()"
-                        style="flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; background: #28a745; color: white; font-weight: 600;">
+                        style="flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; background: #1b7b39; color: white; font-weight: 600;">
                         ✓ تأیید درخواست
                     </button>
                     <button onclick="showRejectRenewalReason()"

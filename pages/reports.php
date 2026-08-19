@@ -126,7 +126,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
         .btn-primary {
             background: #8e57fe;
             border: none;
-            border-radius: 10px;
+            border-radius: 9px;
             font-weight: 500;
             padding: 10px 20px;
         }
@@ -191,7 +191,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
         .btn-sm {
             padding: 5px 12px;
             font-size: 0.8rem;
-            border-radius: 6px;
+            border-radius: 9px;
         }
 
         .unit-badge {
@@ -206,7 +206,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
         }
 
         .unit-ATM {
-            background-color: #28a745;
+            background-color: #1b7b39;
             color: white;
         }
 
@@ -257,7 +257,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
         }
 
         .stat-card.today {
-            border-left-color: #28a745;
+            border-left-color: #1b7b39;
         }
 
         .stat-card.week {

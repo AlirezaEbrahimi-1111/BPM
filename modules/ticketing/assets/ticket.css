@@ -368,7 +368,7 @@ input[type="file"].form-control {
   align-items: center;
   gap: 6px;
   padding: 9px 18px;
-  border-radius: var(--radius-sm);
+  border-radius: 9px;
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;

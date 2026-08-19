@@ -97,7 +97,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
         .btn-excel {
             padding: 9px 16px;
             border: none;
-            border-radius: 10px;
+            border-radius: 9px;
             background: #1b7b39;
             color: #fff;
             font-family: inherit;
@@ -433,7 +433,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
                 '<div class="ud-card"><div class="ud-lbl">حقوق پایه</div><div class="ud-val" style="color:#8e57fe;">' + fmtToman(s.monthly_salary) + '</div></div>' +
                 '<div class="ud-card"><div class="ud-lbl">کسری ×۲ (تا دیروز)</div><div class="ud-val" style="color:#F59E0B;">' + faNum(s.final_hms || '0:00') + '</div></div>' +
                 '<div class="ud-card"><div class="ud-lbl">جریمهٔ کسری</div><div class="ud-val" style="color:#EF4444;">' + fmtToman(s.shortage_money) + '</div></div>' +
-                '<div class="ud-card"><div class="ud-lbl">حقوق دریافتی تا دیروز</div><div class="ud-val" style="color:' + ((s.salary_received < 0) ? '#EF4444' : '#16A34A') + ';">' + fmtToman(s.salary_received) + '</div></div>' +
+                '<div class="ud-card"><div class="ud-lbl">حقوق دریافتی تا دیروز</div><div class="ud-val" style="color:' + ((s.salary_received < 0) ? '#EF4444' : '#1b7b39') + ';">' + fmtToman(s.salary_received) + '</div></div>' +
                 '</div>';
 
             let tInit = 0, tCov = 0;
@@ -459,7 +459,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
                     const badges = (d.requests || []).map(r =>
                         '<span class="ud-badge" style="background:' + (REQ_COLORS[r.type] || '#64748B') + ';">' + (REQ_LABELS[r.type] || r.type) + ' ' + faNum(r.start_time) + '–' + faNum(r.end_time) + '</span>'
                     ).join(' ');
-                    c4 = (badges ? badges + '<br>' : '') + '<span style="color:#16A34A;font-weight:700;">پوشش: ' + faNum(d.covered_hms || '0:00') + '</span>';
+                    c4 = (badges ? badges + '<br>' : '') + '<span style="color:#1b7b39;font-weight:700;">پوشش: ' + faNum(d.covered_hms || '0:00') + '</span>';
                     c5 = faNum(d.uncovered_hms || '0:00');
                     c6 = '<span style="color:#EF4444;font-weight:700;">' + faNum(d.final_hms || '0:00') + '</span>';
                     c7 = (d.money > 0) ? '<span style="color:#EF4444;">' + fmtToman(d.money) + '</span>' : dash;
@@ -483,7 +483,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
                 '<td>جمع کل</td>' +
                 '<td></td>' +
                 '<td style="text-align:center;">' + faNum(minToHM(tInit)) + '</td>' +
-                '<td style="color:#16A34A;">پوشش: ' + faNum(minToHM(tCov)) + '</td>' +
+                '<td style="color:#1b7b39;">پوشش: ' + faNum(minToHM(tCov)) + '</td>' +
                 '<td style="text-align:center;">' + faNum(s.before_hms || '0:00') + '</td>' +
                 '<td style="text-align:center;color:#EF4444;">' + faNum(s.final_hms || '0:00') + '</td>' +
                 '<td style="text-align:left;color:#EF4444;white-space:nowrap;">' + fmtToman(s.shortage_money) + '</td>' +

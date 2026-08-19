@@ -332,7 +332,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
             font-size: 3rem;
             display: block;
             margin-bottom: 14px;
-            color: #86efac;
+            color: #1b7b39;
         }
 
         .bn-loading {

@@ -85,7 +85,7 @@ if (!$__me) {
             border: 1px solid rgba(255,255,255,.3);
             color: #fff;
             padding: 5px 14px;
-            border-radius: 8px;
+            border-radius: 9px;
             font-size: .82rem;
             font-family: inherit;
             cursor: pointer;
@@ -149,7 +149,7 @@ if (!$__me) {
         }
         .status-btns button {
             padding: 5px 14px;
-            border-radius: 20px;
+            border-radius: 9px;
             font-size: .77rem;
             font-weight: 600;
             border: 1.5px solid;
@@ -229,7 +229,7 @@ if (!$__me) {
             color: #999;
             font-size: .8rem;
             padding: 2px 4px;
-            border-radius: 4px;
+            border-radius: 9px;
             cursor: pointer;
             margin-inline-start: 4px;
         }
@@ -283,7 +283,7 @@ if (!$__me) {
             gap: 6px;
             padding: 5px 12px;
             background: #e9e9e9;
-            border-radius: 8px;
+            border-radius: 9px;
             font-size: .8rem;
             cursor: pointer;
             border: 1px solid #e9e9e9;
@@ -338,7 +338,7 @@ if (!$__me) {
             z-index: 5;
             width: 38px;
             height: 38px;
-            border-radius: 50%;
+            border-radius: 9px;
             border: none;
             display: flex;
             align-items: center;
@@ -424,7 +424,7 @@ if (!$__me) {
             left: 3px;
             width: 18px;
             height: 18px;
-            border-radius: 50%;
+            border-radius: 9px;
             background: rgba(0,0,0,.55);
             color: #fff;
             display: flex;
@@ -470,7 +470,7 @@ if (!$__me) {
             flex: 0 0 auto;
             width: 34px;
             height: 34px;
-            border-radius: 50%;
+            border-radius: 9px;
             border: none;
             cursor: pointer;
             display: inline-flex;
@@ -498,7 +498,7 @@ if (!$__me) {
             color: #ef4444;
             border: 1px solid #fecaca;
             padding: 8px 18px;
-            border-radius: 10px;
+            border-radius: 9px;
             font-weight: 600;
             font-size: .82rem;
             font-family: inherit;

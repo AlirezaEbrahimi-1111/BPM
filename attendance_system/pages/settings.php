@@ -438,7 +438,7 @@ function toPersianNumber($num) {
             background: #e9e9e9;
             color: #64748B;
             border: 1px solid #E2E8F0;
-            border-radius: 8px;
+            border-radius: 9px;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -498,9 +498,9 @@ function toPersianNumber($num) {
         }
 
         .toast-message.success {
-            background: #F0FDF4;
-            color: #166534;
-            border: 1px solid #BBF7D0;
+            background: rgba(27, 123, 57, 0.1);
+            color: #1b7b39;
+            border: 1px solid rgba(27, 123, 57, 0.3);
         }
 
         .toast-message.error {
@@ -727,7 +727,7 @@ function toPersianNumber($num) {
         .btn {
             padding: 12px 28px;
             border: none;
-            border-radius: 10px;
+            border-radius: 9px;
             font-weight: 600;
             font-size: 14px;
             cursor: pointer;

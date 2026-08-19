@@ -143,7 +143,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             font-size: .7rem;
             font-weight: 700;
             padding: .1rem .45rem;
-            border-radius: 999px;
+            border-radius: 9px;
             min-width: 20px;
             text-align: center;
             transition: all .18s;
@@ -204,9 +204,9 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         }
 
         .ad-pending  { color: #b45309;}
-        .ad-approved { color: #15803d;}
+        .ad-approved { color: #1b7b39;}
         .ad-rejected { color: #b91c1c;}
-        .ad-active   { color: #15803d;}
+        .ad-active   { color: #1b7b39;}
         .ad-inactive {color: var(--gray-500);}
 
         /* ─── Action icon buttons ─── */
@@ -215,7 +215,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             background: #fff;
             width: 32px;
             height: 32px;
-            border-radius: var(--radius-xs);
+            border-radius: var(--radius-btn);
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -227,11 +227,11 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         }
 
         .ad-icon-btn:hover         { transform: translateY(-1px); }
-        .ad-icon-btn.ok:hover      { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+        .ad-icon-btn.ok:hover      { background: rgba(27, 123, 57, 0.1); color: #1b7b39; border-color: rgba(27, 123, 57, 0.3); }
         .ad-icon-btn.no:hover      { background: #fef9ec; color: #b45309; border-color: #fde68a; }
         .ad-icon-btn.del:hover     { background: #fff1f2; color: #dc2626; border-color: #fecdd3; }
-        .ad-icon-btn.edit:hover    { background: #eef2ff; color: var(--primary); border-color: #c7d2fe; }
-        .ad-icon-btn.toggle:hover  { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+        .ad-icon-btn.edit:hover    { background: rgba(142, 87, 254, 0.1); color: var(--primary); border-color: rgba(142, 87, 254, 0.3); }
+        .ad-icon-btn.toggle:hover  { background: rgba(27, 123, 57, 0.1); color: #1b7b39; border-color: rgba(27, 123, 57, 0.3); }
 
         /* ─── IP Section ─── */
         .ip-add-card {

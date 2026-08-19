@@ -49,6 +49,8 @@
     --radius-sm: 8px;
     --radius-xs: 6px;
     --radius-lg: 16px;
+    /* گردیِ یکپارچه‌ی همه‌ی دکمه‌های پروژه — مبنا: .pm-btn داشبورد */
+    --radius-btn: 9px;
 
     /* ═══════════════════════════════════════════════════
        توکن‌های معنایی تم (زیرساختِ تم روشن/تاریک)
@@ -323,7 +325,7 @@ body .mobile-menu-btn .hamburger-line {
    5. دکمه‌ها
 ======================================== */
 .btn {
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-btn);
     padding: 0.625rem 1.25rem;
     font-weight: 500;
     font-size: 0.875rem;
@@ -539,8 +541,8 @@ body .mobile-menu-btn .hamburger-line {
 }
 
 .badge.management {
-    background: #e0e7ff;
-    color: #3730a3;
+    background: rgba(142, 87, 254, 0.12);
+    color: #8e57fe;
 }
 
 .badge.purchase {
@@ -574,8 +576,8 @@ body .mobile-menu-btn .hamburger-line {
    بنفشِ برند، تا نه با فیروزه‌ای period_done قاطی بشه نه با قرمزِ overdue —
    این یه اقدامِ از طرفِ خودِ کاربره، نه یه وضعیتِ منفی */
 .status-needs_renewal {
-    background: #f3e8ff;
-    color: #7e22ce;
+    background: rgba(142, 87, 254, 0.12);
+    color: #8e57fe;
 }
 
 .status-not_started {
@@ -617,10 +619,8 @@ body .mobile-menu-btn .hamburger-line {
 }
 
 .status-delegated {
-    background: #e8eaff;
-    /* بود: #e0e7ff */
-    color: #3730d4;
-    /* بود: #4338ca */
+    background: rgba(142, 87, 254, 0.12);
+    color: #8e57fe;
 }
 
 .status-stopped {
@@ -677,10 +677,8 @@ body .mobile-menu-btn .hamburger-line {
 }
 
 .type-periodic {
-    background: #e6e9ff;
-    /* بود: #e0e7ff */
-    color: #3f38d6;
-    /* بود: #8e57fe */
+    background: rgba(142, 87, 254, 0.12);
+    color: #8e57fe;
 }
 
 .type-continuous {
@@ -724,16 +722,14 @@ body .mobile-menu-btn .hamburger-line {
 }
 
 .days-normal {
-    background: #e6faec;
-    /* بود: #f0fdf4 */
-    color: #12772c;
-    /* بود: #15803d */
+    background: rgba(27, 123, 57, 0.12);
+    color: #1b7b39;
     font-weight: 600;
 }
 
 s-normal {
-    background: #f0fdf4;
-    color: #15803d;
+    background: rgba(27, 123, 57, 0.12);
+    color: #1b7b39;
 }
 
 /* --- Status Badge (درخواست‌ها) --- */
@@ -1397,7 +1393,7 @@ s-normal {
 
 .filter-btn {
     border: 1px solid var(--gray-300);
-    border-radius: 20px;
+    border-radius: var(--radius-btn);
     padding: 0.5rem 1rem;
     background: white;
     color: var(--gray-700);
@@ -1429,7 +1425,7 @@ s-normal {
     background: none;
     color: var(--gray-300);
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius-btn);
     font-size: 0.7rem;
     cursor: pointer;
     transition: all 0.2s;
@@ -1454,7 +1450,7 @@ s-normal {
     gap: 4px;
     background: #e9e9e9;
     padding: 3px;
-    border-radius: var(--radius-xs);
+    border-radius: 9px;
 }
 
 .per-page-btn {
@@ -1465,7 +1461,7 @@ s-normal {
     color: #6b7280;
     font-size: 0.75rem;
     font-weight: 500;
-    border-radius: 4px;
+    border-radius: var(--radius-btn);
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -1544,7 +1540,7 @@ s-normal {
 
 .stat-icon.total,
 .stat-icon.purple {
-    background: #ede9fe;
+    background: rgba(142, 87, 254, 0.12);
     color: #8e57fe;
 }
 
@@ -1593,8 +1589,8 @@ s-normal {
 }
 
 .stat-icon.delegated {
-    background: #e0e7ff;
-    color: #4338ca;
+    background: rgba(142, 87, 254, 0.12);
+    color: #8e57fe;
 }
 
 .stat-number {
@@ -2248,7 +2244,7 @@ td:nth-child(2) {
     height: 32px;
     border: none;
     background: #e9e9e9;
-    border-radius: var(--radius-xs);
+    border-radius: var(--radius-btn);
     font-size: 1.2rem;
     cursor: pointer;
     display: flex;
@@ -2396,7 +2392,7 @@ td:nth-child(2) {
     background: #8e57fe;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius-btn);
     cursor: pointer;
     margin-top: 10px;
     font-size: 12px;
@@ -2404,7 +2400,8 @@ td:nth-child(2) {
 }
 
 .modal .datepicker-today-btn:hover {
-    background: #5568d3;
+    background: #8e57fe;
+    filter: brightness(0.9);
 }
 
 .modal .persian-datepicker-input {
@@ -2622,7 +2619,7 @@ td:nth-child(2) {
     flex: 1;
     max-width: 150px;
     min-width: 100px;
-    border-radius: 12px;
+    border-radius: var(--radius-btn);
     padding: 0.65rem 1.25rem;
     font-weight: 600;
     font-size: 0.9rem;
@@ -2651,7 +2648,7 @@ td:nth-child(2) {
 }
 
 .action-icon-btn.edit-btn:hover {
-    background: #e0e7ff;
+    background: rgba(142, 87, 254, 0.12);
 }
 
 .action-icon-btn.delete-btn {
@@ -2671,7 +2668,7 @@ td:nth-child(2) {
     justify-content: center;
     width: 32px;
     height: 32px;
-    border-radius: 8px;
+    border-radius: 9px;
     border: none !important;
     cursor: pointer;
 
@@ -3017,7 +3014,7 @@ td:nth-child(2) {
     display: inline-flex;
     align-items: center;
     padding: 10px 14px;
-    border-radius: 12px;
+    border-radius: var(--radius-btn);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: transparent;
 }
@@ -3254,7 +3251,7 @@ td:nth-child(2) {
     position: relative;
     width: 36px;
     height: 36px;
-    border-radius: 10px;
+    border-radius: var(--radius-btn);
     border: none;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3309,7 +3306,7 @@ td:nth-child(2) {
     position: relative;
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    border-radius: var(--radius-btn);
     border: none;
     background: rgba(100, 116, 139, 0.1);
     color: #64748b;
@@ -3701,7 +3698,7 @@ td:nth-child(2) {
     border: 1px solid #e5e9ee;
     background: #fff;
     color: #374151;
-    border-radius: 8px;
+    border-radius: var(--radius-btn);
     padding: 5px 10px;
     font-size: .74rem;
     font-weight: 600;
@@ -3841,7 +3838,7 @@ td:nth-child(2) {
     font-size: 12px;
     cursor: pointer;
     padding: 6px 14px;
-    border-radius: 8px;
+    border-radius: 9px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-weight: 600;
     box-shadow: 0 2px 8px rgba(142, 87, 254, 0.2);
@@ -4250,7 +4247,7 @@ td:nth-child(2) {
     height: 26px;
     background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
     color: white;
-    border-radius: 50%;
+    border-radius: var(--radius-btn);
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
@@ -4437,7 +4434,7 @@ span.deadline-request-icon.disabled:hover {
 .btn-icon {
     width: 36px;
     height: 36px;
-    border-radius: 8px;
+    border-radius: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5009,7 +5006,7 @@ span.deadline-request-icon.disabled:hover {
     justify-content: center;
     background: #f1f5f9;
     border: none;
-    border-radius: 8px;
+    border-radius: 9px;
     color: #475569;
     cursor: pointer;
 }
@@ -5143,8 +5140,8 @@ body.drawer-body-open {
 
 .ab-created,
 .ab-assigned {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: rgba(27, 123, 57, 0.12);
+    color: #1b7b39;
 }
 
 .ab-completed,
@@ -5165,8 +5162,8 @@ body.drawer-body-open {
 }
 
 .ab-delegated {
-    background: #ede7f6;
-    color: #4527a0;
+    background: rgba(142, 87, 254, 0.12);
+    color: #8e57fe;
 }
 
 .ab-updated {
@@ -5601,7 +5598,7 @@ body.login-page::after {
     background: var(--primary-gradient);
     color: white;
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-btn);
     padding: 13px 24px;
     font-size: 0.9375rem;
     font-weight: 600;
@@ -5942,7 +5939,7 @@ body.login-page::after {
 .act-filter-btn {
     padding: 0.3rem 0.75rem;
     border: 1px solid #e2e8f0;
-    border-radius: 20px;
+    border-radius: var(--radius-btn);
     background: white;
     color: #64748b;
     font-size: 0.72rem;
@@ -6183,7 +6180,7 @@ body.login-page::after {
 .act-load-more button {
     background: none;
     border: 1px dashed #cbd5e1;
-    border-radius: 8px;
+    border-radius: 9px;
     color: #8e57fe;
     font-size: 0.73rem;
     font-weight: 600;
@@ -6194,7 +6191,7 @@ body.login-page::after {
 
 .act-load-more button:hover {
     border-color: #8e57fe;
-    background: #f5f3ff;
+    background: rgba(142, 87, 254, 0.12);
 }
 
 /* حالت خالی */
@@ -6730,7 +6727,7 @@ body.login-page::after {
 .calendar-nav-btn {
     width: 40px;
     height: 40px;
-    border-radius: 10px;
+    border-radius: var(--radius-btn);
     border: 2px solid rgba(142, 87, 254, 0.2);
     background: white;
     color: #8e57fe;
@@ -6913,7 +6910,7 @@ body.login-page::after {
 .holiday-delete-btn {
     width: 32px;
     height: 32px;
-    border-radius: 8px;
+    border-radius: 9px;
     border: none;
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;

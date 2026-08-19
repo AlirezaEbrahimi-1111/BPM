@@ -45,12 +45,12 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             --surface: #ffffff;
             --surface-2: #f8fafc;
             --surface-3: #f1f5f9;
-            --border: #e2e8f0;
-            --border-hover: #cbd5e1;
+            --border: #e9e9e9;
+            --border-hover: #8e57fe;
             --text-1: #0f172a;
             --text-2: #475569;
             --text-3: #94a3b8;
-            --success: #10b981;
+            --success: #1b7b39;
             --danger: #ef4444;
             --warning: #f59e0b;
             --radius: 12px;
@@ -123,7 +123,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border: none;
-            border-radius: var(--radius-sm);
+            border-radius: 9px;
             padding: 10px 20px;
             font-size: 0.9rem;
             font-weight: 600;
@@ -205,12 +205,12 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
         }
 
         .badge-active {
-            background: #d1fae5;
-            color: #065f46;
+            background: rgba(27, 123, 57, 0.12);
+            color: #1b7b39;
         }
 
         .badge-inactive {
-            background: #f1f5f9;
+            background: #e9e9e9;
             color: var(--text-3);
         }
 
@@ -250,7 +250,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
         .btn-icon {
             width: 32px;
             height: 32px;
-            border-radius: var(--radius-sm);
+            border-radius: 9px;
             border: 1px solid var(--border);
             background: var(--surface);
             display: inline-flex;
@@ -270,7 +270,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
         .btn-icon.edit:hover {
             color: var(--primary);
             border-color: var(--primary-light);
-            background: #eef2ff;
+            background: rgba(142, 87, 254, 0.12);
         }
 
         .btn-icon.del:hover {
@@ -475,10 +475,10 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: #eef2ff;
+            background: rgba(142, 87, 254, 0.12);
             color: var(--primary);
-            border: 1px solid #c7d2fe;
-            border-radius: var(--radius-sm);
+            border: 1px solid rgba(142, 87, 254, 0.3);
+            border-radius: 9px;
             padding: 6px 14px;
             font-size: 0.8rem;
             font-weight: 600;
@@ -487,7 +487,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
         }
 
         .btn-add-step:hover {
-            background: #e0e7ff;
+            background: rgba(142, 87, 254, 0.2);
         }
 
         .step-item {
@@ -562,7 +562,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
         .btn-remove-step {
             width: 28px;
             height: 28px;
-            border-radius: 6px;
+            border-radius: 9px;
             border: 1px solid #fca5a5;
             background: #fef2f2;
             color: var(--danger);
@@ -657,7 +657,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             border: 1px solid var(--border);
             background: var(--surface);
             color: var(--text-muted, #6b7280);
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius-btn);
             padding: 5px 10px;
             font-size: 0.75rem;
             cursor: pointer;
@@ -698,7 +698,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
         .cl-icon-btn {
             display: inline-flex; align-items: center; justify-content: center;
             width: 28px; height: 28px; border: none; background: transparent;
-            border-radius: 6px; color: #9ca3af; cursor: pointer; transition: background .15s, color .15s;
+            border-radius: 9px; color: #9ca3af; cursor: pointer; transition: background .15s, color .15s;
             padding: 0; font-size: 0.9rem;
         }
         .cl-icon-btn:hover { background: #e9e9e9; }
@@ -757,7 +757,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border: none;
-            border-radius: var(--radius-sm);
+            border-radius: 9px;
             padding: 10px 22px;
             font-size: 0.875rem;
             font-weight: 600;
@@ -778,7 +778,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             background: var(--surface);
             color: var(--text-2);
             border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
+            border-radius: 9px;
             padding: 10px 20px;
             font-size: 0.875rem;
             font-weight: 500;
@@ -848,7 +848,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             border: 1px solid #d7dce3;
             background: #fff;
             color: #667085;
-            border-radius: 8px;
+            border-radius: 9px;
             padding: 5px 12px;
             font-size: .8rem;
             cursor: pointer;

@@ -63,7 +63,7 @@ if (!$current_user) {
             color: white;
             padding: 8px 20px;
             border: 1px solid white;
-            border-radius: 5px;
+            border-radius: 9px;
             cursor: pointer;
             text-decoration: none;
             transition: all 0.3s;

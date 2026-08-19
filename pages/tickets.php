@@ -207,7 +207,7 @@ if (!$__me) {
             color: #fff;
             border: none;
             padding: 9px 22px;
-            border-radius: 10px;
+            border-radius: 9px;
             font-weight: 600;
             font-size: .85rem;
             font-family: inherit;

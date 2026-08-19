@@ -38,7 +38,7 @@ if (!headers_sent()) {
         }
 
         .check-indicator.available {
-            color: #198754;
+            color: #1b7b39;
         }
 
         .check-indicator.unavailable {

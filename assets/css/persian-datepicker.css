@@ -100,7 +100,7 @@
     color: #8e57fe;
     width: 30px;
     height: 30px;
-    border-radius: 50%;
+    border-radius: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -233,7 +233,7 @@
     background: #8e57fe;
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 9px;
     cursor: pointer;
     font-size: 13px;
     transition: all 0.3s ease;
@@ -422,12 +422,12 @@
 
 /* Success State */
 .persian-datepicker-wrapper.success .persian-datepicker-input {
-    border-color: #28a745;
+    border-color: #1b7b39;
 }
 
 .persian-datepicker-wrapper.success .persian-datepicker-input:focus {
-    border-color: #28a745;
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+    border-color: #1b7b39;
+    box-shadow: 0 0 0 3px rgba(27, 123, 57, 0.1);
 }
 
 .force-visible {

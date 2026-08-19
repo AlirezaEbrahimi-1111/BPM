@@ -472,7 +472,7 @@ if (!$__me) {
 
         function checklistMatchBadge(task) {
             if (!task._checklistOnlyMatch) return '';
-            return '<span style="display:inline-flex;align-items:center;gap:3px;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;border-radius:8px;padding:1px 6px;font-size:0.65rem;margin-inline-start:6px;vertical-align:middle;" title="این کار به‌خاطر چک‌لیستش پیدا شد"><i class="bi bi-check2-square"></i> چک‌لیست</span>';
+            return '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(142, 87, 254, 0.12);color:#8e57fe;border:1px solid rgba(142, 87, 254, 0.3);border-radius:8px;padding:1px 6px;font-size:0.65rem;margin-inline-start:6px;vertical-align:middle;" title="این کار به‌خاطر چک‌لیستش پیدا شد"><i class="bi bi-check2-square"></i> چک‌لیست</span>';
         }
 
         function normalizeDigits(str) {

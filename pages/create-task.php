@@ -120,7 +120,7 @@ if (!$__me) {
         .cl-icon-btn {
             display: inline-flex; align-items: center; justify-content: center;
             width: 28px; height: 28px; border: none; background: transparent;
-            border-radius: 6px; color: #9ca3af; cursor: pointer; transition: background .15s, color .15s;
+            border-radius: 9px; color: #9ca3af; cursor: pointer; transition: background .15s, color .15s;
             padding: 0; font-size: 0.9rem;
         }
         .cl-icon-btn:hover { background: #e9e9e9; }

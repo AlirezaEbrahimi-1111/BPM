@@ -263,9 +263,9 @@ function showToast(message, type = 'success', options = {}) {
     const config = {
         success: {
             icon: 'check-circle-fill',
-            color: '#10b981',
+            color: '#1b7b39',
             bgColor: 'var(--toast-success-bg)',
-            borderColor: '#10b981',
+            borderColor: '#1b7b39',
             label: 'موفق',
         },
         error: {

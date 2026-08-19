@@ -136,7 +136,7 @@ if (!$__me || !hasPermission($__me, 'manage_activity_sections')) {
             background: var(--accent);
             color: #fff;
             border: none;
-            border-radius: 8px;
+            border-radius: 9px;
             padding: 9px 18px;
             font-size: .9rem;
             cursor: pointer;
@@ -221,7 +221,7 @@ if (!$__me || !hasPermission($__me, 'manage_activity_sections')) {
         .btn-icon {
             background: transparent;
             border: 1px solid var(--border);
-            border-radius: 7px;
+            border-radius: 9px;
             color: var(--muted);
             padding: 5px 9px;
             cursor: pointer;
@@ -317,7 +317,7 @@ if (!$__me || !hasPermission($__me, 'manage_activity_sections')) {
         .btn-confirm-cancel {
             background: transparent;
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 9px;
             color: var(--muted);
             padding: 8px 18px;
             cursor: pointer;
@@ -328,7 +328,7 @@ if (!$__me || !hasPermission($__me, 'manage_activity_sections')) {
         .btn-confirm-del {
             background: #dc2626;
             border: 1px solid #dc2626;
-            border-radius: 8px;
+            border-radius: 9px;
             color: #fff;
             padding: 8px 18px;
             cursor: pointer;

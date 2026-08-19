@@ -149,10 +149,10 @@ if ($isCli) {
             text-align: left;
         }
         .line:last-child { border-bottom: none; }
-        .ok      { color: #15803d; }
+        .ok      { color: #1b7b39; }
         .pending { color: #b45309; }
         .error   { color: #b91c1c; background: #fef2f2; }
-        .dry     { color: #4338ca; }
+        .dry     { color: #8e57fe; }
         .info    { color: #6b7280; }
         .nav {
             padding: 14px 18px;

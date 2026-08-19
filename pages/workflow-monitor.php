@@ -83,8 +83,8 @@ if (!$__me) {
             display: inline-flex;
             align-items: center;
             gap: 0.35rem;
-            background: #dcfce7;
-            color: #166534;
+            background: rgba(27, 123, 57, 0.12);
+            color: #1b7b39;
             padding: 0.25rem 0.75rem;
             border-radius: 999px;
             font-size: 0.75rem;
@@ -94,7 +94,7 @@ if (!$__me) {
         .live-dot {
             width: 6px;
             height: 6px;
-            background: #16a34a;
+            background: #1b7b39;
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
@@ -173,7 +173,7 @@ if (!$__me) {
         }
 
         .stat-icon-wrap.green {
-            background: #f0fdf4;
+            background: rgba(27, 123, 57, 0.12);
             color: var(--success);
         }
 
@@ -208,7 +208,7 @@ if (!$__me) {
             align-items: center;
             gap: 0.4rem;
             border: 1px solid var(--gray-200);
-            border-radius: 999px;
+            border-radius: 9px;
             padding: 0.45rem 1rem;
             background: white;
             color: var(--gray-600);
@@ -301,7 +301,7 @@ if (!$__me) {
             width: 28px;
             height: 28px;
             border: none;
-            border-radius: 8px;
+            border-radius: 9px;
             background: #fef2f2;
             color: var(--danger);
             display: flex;
@@ -532,7 +532,7 @@ if (!$__me) {
             left: 1.5rem;
             width: 48px;
             height: 48px;
-            border-radius: 50%;
+            border-radius: 9px;
             background: var(--primary);
             color: white;
             border: none;
@@ -572,7 +572,7 @@ if (!$__me) {
             align-items: center;
             gap: 0.4rem;
             border: 1px solid var(--gray-200);
-            border-radius: 999px;
+            border-radius: 9px;
             padding: 0.45rem 1rem;
             background: white;
             color: var(--gray-600);
@@ -742,7 +742,7 @@ if (!$__me) {
 
         .detail-step.completed {
             border-right-color: var(--success);
-            background: #f0fdf4;
+            background: rgba(27, 123, 57, 0.12);
         }
 
         .detail-step.active {
@@ -834,7 +834,7 @@ if (!$__me) {
             width: 22px;
             height: 22px;
             border: none;
-            border-radius: 50%;
+            border-radius: 9px;
             background: var(--gray-200);
             color: var(--gray-500);
             font-size: 0.7rem;
@@ -891,8 +891,8 @@ if (!$__me) {
         }
 
         .role-creator {
-            background: #ede9fe;
-            color: #6d28d9;
+            background: rgba(142, 87, 254, 0.12);
+            color: #8e57fe;
         }
 
         .role-step {

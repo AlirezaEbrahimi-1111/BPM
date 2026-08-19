@@ -95,7 +95,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         .filters-bar .btn {
             height: 34px;
             font-size: .82rem;
-            border-radius: 7px;
+            border-radius: 9px;
         }
 
         .filters-bar .users-count {
@@ -167,7 +167,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         }
 
         .role-employee {
-            color: #166534;
+            color: #1b7b39;
         }
 
         .role-manager {
@@ -175,7 +175,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         }
 
         .role-supervisor {
-            color: #5b21b6;
+            color: #8e57fe;
         }
 
         .role-admin {
@@ -191,7 +191,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         }
 
         .status-active {
-            color: #065f46;
+            color: #1b7b39;
             padding: 0 !important;
         }
 
@@ -332,7 +332,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             justify-content: center;
             width: 28px;
             height: 28px;
-            border-radius: 6px;
+            border-radius: 9px;
             border: 1px solid #e9e9e9;
             background: #fff;
             cursor: pointer;
@@ -451,8 +451,8 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            background: #ede9fe;
-            color: #5b32d6;
+            background: rgba(142, 87, 254, 0.12);
+            color: #8e57fe;
             border-radius: 8px;
             padding: 4px 10px;
             font-size: .82rem;
@@ -460,7 +460,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         }
 
         .sec-tag.is-primary {
-            background: #ddd6fe;
+            background: rgba(142, 87, 254, 0.2);
         }
 
         .sec-tag .star {
@@ -530,7 +530,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
 
         .sec-option {
             padding: 8px 11px;
-            border-radius: 7px;
+            border-radius: 9px;
             cursor: pointer;
             font-size: .85rem;
             transition: background .12s;
@@ -1149,7 +1149,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                         const body = !secs.length ?
                             `<small>${getSectionLabel(p.value)}</small>` :
                             secs.map(s =>
-                                `<span style="display:inline-block; background:${s.is_primary==1?'#ddd6fe':'#ede9fe'}; color:#5b32d6; border-radius:5px; padding:8px 8px; margin:1px; font-size:.7rem; font-weight:600; line-height:1.5;">${s.is_primary==1?'★':''}${esc(s.section_label)}</span>`
+                                `<span style="display:inline-block; background:${s.is_primary==1?'rgba(142, 87, 254, 0.2)':'rgba(142, 87, 254, 0.1)'}; color:#8e57fe; border-radius:5px; padding:8px 8px; margin:1px; font-size:.7rem; font-weight:600; line-height:1.5;">${s.is_primary==1?'★':''}${esc(s.section_label)}</span>`
                             ).join('');
                         return `<div style="display:flex; flex-wrap:wrap; align-items:center; gap:2px; line-height:1.2; padding:2px 0;">${body}</div>`;
                     }

@@ -11,7 +11,7 @@
 :root {
     --primary: #2563eb;
     --primary-dark: #1e40af;
-    --success: #16a34a;
+    --success: #1b7b39;
     --danger: #dc2626;
     --warning: #ea580c;
     --info: #0891b2;
@@ -125,8 +125,8 @@ body {
 }
 
 .status-approved {
-    background: #dcfce7;
-    color: #166534;
+    background: rgba(27, 123, 57, 0.12);
+    color: #1b7b39;
 }
 
 .status-rejected {
@@ -135,8 +135,8 @@ body {
 }
 
 .status-recorded {
-    background: #dcfce7;
-    color: #166534;
+    background: rgba(27, 123, 57, 0.12);
+    color: #1b7b39;
 }
 
 .status-not-recorded {
@@ -151,7 +151,7 @@ body {
 .btn {
     display: inline-block;
     padding: 10px 20px;
-    border-radius: 6px;
+    border-radius: 9px;
     font-weight: 600;
     font-size: 14px;
     border: none;
@@ -176,7 +176,7 @@ body {
 }
 
 .btn-success:hover {
-    background: #15803d;
+    filter: brightness(0.9);
 }
 
 .btn-danger {

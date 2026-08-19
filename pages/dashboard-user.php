@@ -455,7 +455,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             justify-content: center;
             border: 1px solid var(--border-soft);
             background: var(--du-head-bg);
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius-btn);
             padding: 5px 18px;
             font-size: .72rem;
             color: var(--text-strong);
@@ -529,7 +529,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         .routine-filter-chip {
             border: 1px solid var(--border-soft);
             background: var(--du-head-bg);
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius-btn);
             padding: 5px 14px;
             font-size: .72rem;
             color: var(--text-strong);
@@ -716,7 +716,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             color: var(--du-ink);
             font-size: .99rem;
             padding: 4px 8px;
-            border-radius: 7px;
+            border-radius: 9px;
             transition: background .12s, color .12s;
         }
 
@@ -757,7 +757,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             display: flex;
             align-items: center;
             gap: 9px;
-            border-radius: 7px;
+            border-radius: 9px;
             font-size: .765rem;
             color: var(--du-ink);
         }
@@ -843,8 +843,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .st-delegated {
-            background: #e0e7ff;
-            color: #4338ca;
+            background: rgba(142, 87, 254, 0.12);
+            color: #8e57fe;
         }
 
         .st-rejected {
@@ -1250,7 +1250,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         #monthModal .btn-close {
             width: 26px;
             height: 26px;
-            border-radius: 50%;
+            border-radius: var(--radius-btn);
             background-color: var(--du-surface);
             border: 1px solid var(--gray-300);
             background-size: 10px;
@@ -1345,7 +1345,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             color: #9ca3af;
             font-size: 1.035rem;
             padding: 5px 9px;
-            border-radius: 8px;
+            border-radius: 9px;
             transition: background .12s, color .12s;
         }
 
@@ -1388,7 +1388,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             align-items: center;
             gap: 10px;
             padding: 10px 12px;
-            border-radius: 8px;
+            border-radius: 9px;
             font-size: .792rem;
             color: var(--du-ink);
             text-align: right;
@@ -1593,7 +1593,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .wk-nav button {
-            border-radius: 8px;
+            border-radius: 9px;
             border: none;
             cursor: pointer;
             color: white;
@@ -1965,7 +1965,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             color: #9ca3af;
             font-size: .99rem;
             padding: 4px 8px;
-            border-radius: 6px;
+            border-radius: 9px;
             transition: background .12s, color .12s;
         }
 
@@ -2019,7 +2019,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             align-items: center;
             gap: 9px;
             padding: 9px 11px;
-            border-radius: 7px;
+            border-radius: 9px;
             font-size: .765rem;
             color: var(--du-ink);
             text-align: right;
@@ -2100,7 +2100,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         .pm-btn {
             border: none;
-            border-radius: 8px;
+            border-radius: 9px;
             cursor: pointer;
             padding: 7px 16px;
             font-size: .738rem;

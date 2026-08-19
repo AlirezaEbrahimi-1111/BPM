@@ -117,8 +117,8 @@ $duration = microtime(true) - $startTime;
         .search-header h1 { margin: 0 0 1rem 0; font-size: 1.5rem; }
         form { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
         .search-input { flex-grow: 1; display: flex; }
-        .search-input input[type="text"] { flex-grow: 1; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px 0 0 4px; font-size: 1rem; }
-        .search-input button { padding: 0.75rem 1.5rem; border: 1px solid var(--primary-color); background-color: var(--primary-color); color: white; cursor: pointer; border-radius: 0 4px 4px 0; font-size: 1rem; }
+        .search-input input[type="text"] { flex-grow: 1; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 9px 0 0 9px; font-size: 1rem; }
+        .search-input button { padding: 0.75rem 1.5rem; border: 1px solid var(--primary-color); background-color: var(--primary-color); color: white; cursor: pointer; border-radius: 0 9px 9px 0; font-size: 1rem; }
         .search-options { display: flex; gap: 1rem; user-select: none; }
         .search-options label { cursor: pointer; }
         .results-body { padding: 1.5rem; }

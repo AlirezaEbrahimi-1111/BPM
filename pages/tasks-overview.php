@@ -114,7 +114,7 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                 <div id="activeFilterBar" style="display:none; margin-top:10px; padding:10px 14px; background:#fff8f0; border:1px solid #fed7aa; border-radius:10px; align-items:center; gap:10px;">
                     <i class="bi bi-funnel-fill" style="color:#ea580c;"></i>
                     <span id="activeFilterText" style="font-size:.86rem; color:#9a3412; flex:1;"></span>
-                    <button onclick="clearDashboardFilters()" style="background:#fff; border:1px solid #fed7aa; color:#ea580c; border-radius:8px; padding:5px 14px; font-size:.8rem; cursor:pointer;">
+                    <button onclick="clearDashboardFilters()" style="background:#fff; border:1px solid #fed7aa; color:#ea580c; border-radius:9px; padding:5px 14px; font-size:.8rem; cursor:pointer;">
                         پاک کردن فیلتر
                     </button>
                 </div>
@@ -194,7 +194,7 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
                     const extra = Array.isArray(t.checklist_assignees) ? t.checklist_assignees : [];
                     if (extra.length) {
                         const badges = extra.map(name =>
-                            `<span style="display:inline-block;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:10px;padding:1px 7px;font-size:0.68rem;margin:1px 2px;">${esc(name)}</span>`
+                            `<span style="display:inline-block;background:rgba(142, 87, 254, 0.12);color:#8e57fe;border:1px solid rgba(142, 87, 254, 0.3);border-radius:10px;padding:1px 7px;font-size:0.68rem;margin:1px 2px;">${esc(name)}</span>`
                         ).join('');
                         html += `<div style="margin-top:2px;line-height:1.6;">
                                     <span style="font-size:0.65rem;color:#94a3b8;">چک‌لیست:</span> ${badges}
@@ -630,7 +630,7 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
 
         function checklistMatchBadge(task) {
             if (!task._checklistOnlyMatch) return '';
-            return '<span style="display:inline-flex;align-items:center;gap:3px;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;border-radius:8px;padding:1px 6px;font-size:0.65rem;margin-inline-start:6px;vertical-align:middle;" title="این کار به‌خاطر چک‌لیستش پیدا شد"><i class="bi bi-check2-square"></i> چک‌لیست</span>';
+            return '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(142, 87, 254, 0.12);color:#8e57fe;border:1px solid rgba(142, 87, 254, 0.3);border-radius:8px;padding:1px 6px;font-size:0.65rem;margin-inline-start:6px;vertical-align:middle;" title="این کار به‌خاطر چک‌لیستش پیدا شد"><i class="bi bi-check2-square"></i> چک‌لیست</span>';
         }
 
         function applyFilters() {

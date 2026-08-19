@@ -108,31 +108,31 @@ if ($isCli) {
             border-radius: 12px; padding: 18px 22px; margin-bottom: 20px;
             font-size: 1.05rem; font-weight: bold;
         }
-        .summary.green { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        .summary.green { background: rgba(27, 123, 57, 0.12); color: #1b7b39; border: 1px solid rgba(27, 123, 57, 0.3); }
         .summary.red   { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
 
         .suite {
-            background: #fff; border: 1px solid #e5e7eb;
+            background: #fff; border: 1px solid #e9e9e9;
             border-radius: 12px; margin-bottom: 16px; overflow: hidden;
         }
         .suite-head {
-            background: #f3f4f6; border-bottom: 1px solid #e5e7eb;
+            background: #e9e9e9; border-bottom: 1px solid #e9e9e9;
             padding: 12px 18px; font-weight: bold; font-size: .95rem;
             display: flex; justify-content: space-between; align-items: center;
         }
         .badge {
             font-size: .78rem; padding: 3px 10px; border-radius: 999px; font-weight: 600;
         }
-        .badge.ok   { background: #dcfce7; color: #15803d; }
+        .badge.ok   { background: rgba(27, 123, 57, 0.12); color: #1b7b39; }
         .badge.fail { background: #fee2e2; color: #b91c1c; }
 
         .case {
-            padding: 10px 18px; border-bottom: 1px solid #f9fafb;
+            padding: 10px 18px; border-bottom: 1px solid #e9e9e9;
             font-size: .88rem; display: flex; gap: 10px; align-items: flex-start;
         }
         .case:last-child { border-bottom: none; }
         .case .mark { flex-shrink: 0; font-weight: bold; }
-        .case.ok   .mark { color: #16a34a; }
+        .case.ok   .mark { color: #1b7b39; }
         .case.fail .mark { color: #dc2626; }
         .case.fail { background: #fef2f2; }
 
@@ -146,9 +146,9 @@ if ($isCli) {
         .nav { margin-bottom: 18px; display: flex; gap: 8px; }
         .nav a {
             text-decoration: none; padding: 6px 14px; border-radius: 8px;
-            font-size: .82rem; border: 1px solid #e5e7eb; color: #374151; background: #fff;
+            font-size: .82rem; border: 1px solid #e9e9e9; color: #374151; background: #fff;
         }
-        .nav a:hover { background: #f3f4f6; }
+        .nav a:hover { background: #e9e9e9; }
     </style>
 </head>
 <body>

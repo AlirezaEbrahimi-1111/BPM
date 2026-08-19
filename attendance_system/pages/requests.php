@@ -1179,7 +1179,7 @@ function formatDateJalali($gregorianDate)
             padding: 10px 16px;
             background: var(--surface);
             border: 1px solid rgba(142, 87, 254, 0.2);
-            border-radius: 10px;
+            border-radius: 9px;
             font-size: 13px;
             font-weight: 600;
             color: #8e57fe;
@@ -1284,7 +1284,7 @@ function formatDateJalali($gregorianDate)
             background: #8e57fe;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 9px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
@@ -1382,7 +1382,7 @@ function formatDateJalali($gregorianDate)
             padding: 6px 9px;
             background: var(--surface);
             border: 1px solid rgba(142, 87, 254, 0.2);
-            border-radius: 8px;
+            border-radius: 9px;
             font-size: 11px;
             font-weight: 500;
             color: #8e57fe;
@@ -1701,7 +1701,7 @@ function formatDateJalali($gregorianDate)
             background: #8e57fe;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 9px;
             padding: 4px 10px;
             font-size: 10px;
             font-weight: 600;
@@ -1982,7 +1982,7 @@ function formatDateJalali($gregorianDate)
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
-            background: var(--info-box-bg, #eef2ff);
+            background: var(--info-box-bg, #e9e9e9);
             border: 1px solid transparent;
             transition: background .2s, border-color .2s;
         }
@@ -2010,7 +2010,7 @@ function formatDateJalali($gregorianDate)
             background: transparent;
             border: 1px solid currentColor;
             color: inherit;
-            border-radius: 20px;
+            border-radius: 9px;
             padding: 3px 12px;
             font-size: .76rem;
             font-weight: 600;
@@ -2038,7 +2038,7 @@ function formatDateJalali($gregorianDate)
             background: #8e57fe;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 9px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -2062,7 +2062,7 @@ function formatDateJalali($gregorianDate)
             background: var(--info-box-bg);
             color: var(--text-strong);
             border: 1px solid rgba(142, 87, 254, 0.2);
-            border-radius: 8px;
+            border-radius: 9px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -2276,7 +2276,7 @@ function formatDateJalali($gregorianDate)
             padding: 12px 20px;
             border: none;
             background: transparent;
-            border-radius: 8px;
+            border-radius: 9px;
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
@@ -2605,7 +2605,7 @@ function formatDateJalali($gregorianDate)
             width: 28px;
             height: 28px;
             border: none;
-            border-radius: 6px;
+            border-radius: 9px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -2718,7 +2718,7 @@ function formatDateJalali($gregorianDate)
             background: #8e57fe;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 9px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -2734,7 +2734,7 @@ function formatDateJalali($gregorianDate)
             background: var(--info-box-bg);
             color: var(--text-strong);
             border: 1px solid #e9e9e9;
-            border-radius: 8px;
+            border-radius: 9px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;

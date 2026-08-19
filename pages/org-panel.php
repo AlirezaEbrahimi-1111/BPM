@@ -99,7 +99,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     tbody td{padding:13px 20px;font-size:13.5px}
 
     /* Buttons */
-    .btn{border:none;border-radius:var(--radius-sm);padding:10px 18px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+    .btn{border:none;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
     .btn-primary{background:var(--primary);color:#fff}
     .btn-primary:hover{opacity:.92}
     .btn-ghost{background:var(--bg);color:var(--text-sub);border:1px solid var(--border)}

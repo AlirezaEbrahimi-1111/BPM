@@ -84,7 +84,7 @@ if (!headers_sent()) {
         }
 
         .brand-headline span {
-            color: #6c3ff4;
+            color: #8e57fe;
         }
 
         .brand-sub {
@@ -123,7 +123,7 @@ if (!headers_sent()) {
         .feature-icon-wrap svg {
             width: 24px;
             height: 24px;
-            stroke: #6c3ff4;
+            stroke: #8e57fe;
         }
 
         .feature-label {
@@ -135,7 +135,7 @@ if (!headers_sent()) {
         .brand-illustration {
             width: 800px;
             max-width: 100%;
-            filter: drop-shadow(0 20px 40px rgba(108, 63, 244, 0.15));
+            filter: drop-shadow(0 20px 40px rgba(142, 87, 254, 0.15));
         }
 
         /* عنوانِ نام شرکت — فقط در چیدمانِ موبایل نمایش داده می‌شود */
@@ -188,7 +188,7 @@ if (!headers_sent()) {
         .field-input {
             width: 100%;
             height: 50px;
-            border: 1.5px solid #e5e7eb;
+            border: 1.5px solid #e9e9e9;
             border-radius: 12px;
             padding: 0 48px 0 48px;
             font-size: 14px;
@@ -200,9 +200,9 @@ if (!headers_sent()) {
         }
 
         .field-input:focus {
-            border-color: #6c3ff4;
+            border-color: #8e57fe;
             background: #fff;
-            box-shadow: 0 0 0 3px rgba(108, 63, 244, 0.1);
+            box-shadow: 0 0 0 3px rgba(142, 87, 254, 0.1);
         }
 
         .field-input::placeholder {
@@ -243,7 +243,7 @@ if (!headers_sent()) {
         }
 
         .input-icon-left:hover svg {
-            stroke: #6c3ff4;
+            stroke: #8e57fe;
         }
 
         /* ردیف گزینه‌ها */
@@ -267,13 +267,13 @@ if (!headers_sent()) {
         .remember-label input[type="checkbox"] {
             width: 16px;
             height: 16px;
-            accent-color: #6c3ff4;
+            accent-color: #8e57fe;
             cursor: pointer;
         }
 
         .forgot-link {
             font-size: 13px;
-            color: #6c3ff4;
+            color: #8e57fe;
             text-decoration: none;
             font-weight: 500;
             transition: opacity 0.2s;
@@ -293,7 +293,7 @@ if (!headers_sent()) {
             padding: 12px 15px;
             margin-bottom: 18px;
             font-size: .9rem;
-            color: #4b3fa0;
+            color: #8e57fe;
         }
 
         .user-chip svg {
@@ -310,7 +310,7 @@ if (!headers_sent()) {
         /* خط جداکننده بین ورود و OTP */
         .step-divider {
             height: 1px;
-            background: #eee;
+            background: #e9e9e9;
             margin: 18px 0;
         }
 
@@ -320,20 +320,20 @@ if (!headers_sent()) {
             gap: 6px;
             width: auto;
             margin: 0 0 18px 0;
-            background: #f3f4f6;
+            background: #e9e9e9;
             border: none;
             cursor: pointer;
             color: #6b7280;
             font-size: .85rem;
             font-weight: 600;
             padding: 7px 13px;
-            border-radius: 10px;
+            border-radius: 9px;
             transition: background .12s, color .12s;
         }
 
         .btn-back:hover {
-            background: #e5e7eb;
-            color: #4b3fa0;
+            background: #e9e9e9;
+            color: #8e57fe;
         }
 
         .btn-back svg {
@@ -346,9 +346,9 @@ if (!headers_sent()) {
         .btn-login {
             width: 100%;
             height: 52px;
-            background: linear-gradient(135deg, #6c3ff4 0%, #5b32d6 100%);
+            background: #8e57fe;
             border: none;
-            border-radius: 14px;
+            border-radius: 9px;
             color: #ffffff;
             font-size: 16px;
             font-weight: 700;
@@ -358,14 +358,14 @@ if (!headers_sent()) {
             justify-content: center;
             gap: 10px;
             transition: transform 0.15s, box-shadow 0.2s;
-            box-shadow: 0 4px 20px rgba(108, 63, 244, 0.35);
+            box-shadow: 0 4px 20px rgba(142, 87, 254, 0.35);
             position: relative;
             overflow: hidden;
         }
 
         .btn-login:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 28px rgba(108, 63, 244, 0.45);
+            box-shadow: 0 6px 28px rgba(142, 87, 254, 0.45);
         }
 
         /*.btn-login:active { transform: translateY(0); }*/
@@ -377,7 +377,7 @@ if (!headers_sent()) {
 
         .btn-login:disabled:hover {
             transform: none;
-            box-shadow: 0 4px 20px rgba(108, 63, 244, 0.35);
+            box-shadow: 0 4px 20px rgba(142, 87, 254, 0.35);
         }
 
         /* ⚠️ custom.css یک کلاسِ عمومیِ .loading (بدون ربط به این دکمه) با padding:3rem
@@ -439,7 +439,7 @@ if (!headers_sent()) {
             font-weight: 600;
             color: #6b7280;
             cursor: pointer;
-            border-radius: 10px;
+            border-radius: 9px;
             transition: color 0.25s;
         }
 
@@ -453,9 +453,9 @@ if (!headers_sent()) {
             right: 4px;
             width: calc(50% - 4px);
             height: calc(100% - 8px);
-            background: linear-gradient(135deg, #6c3ff4 0%, #5b32d6 100%);
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(108, 63, 244, 0.35);
+            background: #8e57fe;
+            border-radius: 9px;
+            box-shadow: 0 2px 10px rgba(142, 87, 254, 0.35);
             transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1;
         }
@@ -469,7 +469,7 @@ if (!headers_sent()) {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #f9fafb;
+            background: #e9e9e9;
             border: 1px solid #f0f0f0;
             border-radius: 10px;
             padding: 10px 14px;
@@ -488,7 +488,7 @@ if (!headers_sent()) {
         .otp-edit-btn {
             background: none;
             border: none;
-            color: #6c3ff4;
+            color: #8e57fe;
             font-size: 12.5px;
             font-weight: 600;
             cursor: pointer;
@@ -514,7 +514,7 @@ if (!headers_sent()) {
             font-size: 20px;
             font-weight: 700;
             color: #1f2937;
-            border: 1.5px solid #e5e7eb;
+            border: 1.5px solid #e9e9e9;
             border-radius: 12px;
             background: #fafafa;
             outline: none;
@@ -522,13 +522,13 @@ if (!headers_sent()) {
         }
 
         .otp-box:focus {
-            border-color: #6c3ff4;
+            border-color: #8e57fe;
             background: #fff;
-            box-shadow: 0 0 0 3px rgba(108, 63, 244, 0.1);
+            box-shadow: 0 0 0 3px rgba(142, 87, 254, 0.1);
         }
 
         .otp-box.filled {
-            border-color: #c4b5fd;
+            border-color: #8e57fe;
             background: #fff;
         }
 
@@ -549,7 +549,7 @@ if (!headers_sent()) {
         .otp-resend-btn {
             background: none;
             border: none;
-            color: #6c3ff4;
+            color: #8e57fe;
             font-weight: 700;
             font-size: 13px;
             cursor: pointer;
@@ -558,7 +558,7 @@ if (!headers_sent()) {
         }
 
         .otp-resend-btn:disabled {
-            color: #c4b5fd;
+            color: #8e57fe;
             cursor: default;
         }
 
@@ -582,8 +582,8 @@ if (!headers_sent()) {
             gap: 8px;
             border: 1.5px solid #e5e0fb;
             background: #fbf9ff;
-            color: #6c3ff4;
-            border-radius: 14px;
+            color: #8e57fe;
+            border-radius: 9px;
             font-size: 14px;
             font-weight: 700;
             text-decoration: none;
@@ -591,7 +591,7 @@ if (!headers_sent()) {
         }
 
         .btn-secondary:hover {
-            border-color: #6c3ff4;
+            border-color: #8e57fe;
             background: #f5f0ff;
             transform: translateY(-1px);
         }
@@ -615,7 +615,7 @@ if (!headers_sent()) {
             gap: 7px;
             margin-top: 20px;
             padding: 10px 16px;
-            background: #f9fafb;
+            background: #e9e9e9;
             border: 1px solid #f0f0f0;
             border-radius: 10px;
             font-size: 12px;
@@ -625,7 +625,7 @@ if (!headers_sent()) {
         .security-bar svg {
             width: 15px;
             height: 15px;
-            stroke: #10b981;
+            stroke: #1b7b39;
             flex-shrink: 0;
         }
 

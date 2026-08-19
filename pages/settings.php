@@ -511,7 +511,7 @@ function setupRealtime() {
 }
 
 function setFieldState(el, state) {
-    if (state === 'ok')    { el.style.borderColor='#10b981'; el.style.boxShadow='0 0 0 3px rgba(16,185,129,.1)'; }
+    if (state === 'ok')    { el.style.borderColor='#1b7b39'; el.style.boxShadow='0 0 0 3px rgba(27,123,57,.1)'; }
     else if (state==='err'){ el.style.borderColor='#ef4444'; el.style.boxShadow='0 0 0 3px rgba(239,68,68,.1)'; }
     else                   { el.style.borderColor=''; el.style.boxShadow=''; }
 }

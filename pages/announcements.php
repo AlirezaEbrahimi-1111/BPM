@@ -58,9 +58,9 @@ if (!$__me) {
     }
     .ann-head-card h1 { font-size: 1.35rem; font-weight: 800; margin: 0; color: #fff; display: flex; align-items: center; gap: .5rem; }
     .ann-head-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
-    .ann-head-actions .btn-ghost { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); color: #fff; border-radius: 10px; padding: .45rem .9rem; font-size: .85rem; font-weight: 600; cursor: pointer; }
+    .ann-head-actions .btn-ghost { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); color: #fff; border-radius: 9px; padding: .45rem .9rem; font-size: .85rem; font-weight: 600; cursor: pointer; }
     .ann-head-actions .btn-ghost:hover { background: rgba(255,255,255,.28); }
-    .ann-head-actions .btn-white { background: #fff; color: #8e57fe; border: none; border-radius: 10px; padding: .45rem 1rem; font-size: .9rem; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-sm); }
+    .ann-head-actions .btn-white { background: #fff; color: #8e57fe; border: none; border-radius: 9px; padding: .45rem 1rem; font-size: .9rem; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-sm); }
 
     .ann-grid-card { background: #fff; border: 1px solid #e9e9e9; border-radius: var(--radius-lg, 16px); padding: 1rem; box-shadow: var(--shadow-sm); }
 
@@ -71,7 +71,7 @@ if (!$__me) {
     .ann-tag { font-size: .72rem; font-weight: 700; padding: .12rem .55rem; border-radius: 999px; }
     .ann-scope-badge { font-size: .72rem; font-weight: 600; padding: .12rem .55rem; border-radius: 999px; background: rgba(142, 87, 254, 0.12); color: #8e57fe; }
     .ann-readstat { font-size: .82rem; color: #6b7280; }
-    .ann-icon-btn { border: 1px solid #e9e9e9; background: #fff; color: #6b7280; width: 30px; height: 30px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s ease; }
+    .ann-icon-btn { border: 1px solid #e9e9e9; background: #fff; color: #6b7280; width: 30px; height: 30px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s ease; }
     .ann-icon-btn:hover { background: rgba(142, 87, 254, 0.08); color: var(--primary, #8e57fe); border-color: var(--primary, #8e57fe); }
     .ann-icon-btn.danger:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
 
@@ -94,11 +94,11 @@ if (!$__me) {
     .ann-switch .form-check-input:checked { background-color: var(--primary, #8e57fe); border-color: var(--primary, #8e57fe); }
     .ann-switch .form-check-label { font-weight: 600; color: #1e2233; cursor: pointer; }
     .ann-scope-options { display: flex; gap: .55rem; flex-wrap: wrap; }
-    .ann-scope-chip { flex: 0 0 auto; border: 1.5px solid #e9e9e9; border-radius: 12px; padding: .5rem .85rem; display: flex; align-items: center; gap: .45rem; cursor: pointer; transition: all .15s ease; font-weight: 600; color: #4a5160; user-select: none; text-align: start; font-size: .85rem; }
+    .ann-scope-chip { flex: 0 0 auto; border: 1.5px solid #e9e9e9; border-radius: 9px; padding: .5rem .85rem; display: flex; align-items: center; gap: .45rem; cursor: pointer; transition: all .15s ease; font-weight: 600; color: #4a5160; user-select: none; text-align: start; font-size: .85rem; }
     .ann-scope-chip .chip-check { color: #cfd4e4; font-size: 1.15rem; flex-shrink: 0; }
     .ann-scope-chip.active { border-color: var(--primary, #8e57fe); background: rgba(142, 87, 254, 0.08); color: #8e57fe; }
     .ann-scope-chip.active .chip-check { color: var(--primary, #8e57fe); }
-    .ann-btn-primary { background: var(--primary-gradient, #8e57fe) !important; border: none !important; color: #fff !important; border-radius: 10px !important; padding: .6rem 1.4rem !important; font-weight: 700 !important; box-shadow: var(--shadow-md); }
+    .ann-btn-primary { background: var(--primary-gradient, #8e57fe) !important; border: none !important; color: #fff !important; border-radius: 9px !important; padding: .6rem 1.4rem !important; font-weight: 700 !important; box-shadow: var(--shadow-md); }
     .ann-btn-primary:hover { filter: brightness(1.06); }
 
     @media (max-width: 768px) { .overview-container { max-width: 100% !important; } .ann-head-card h1 { font-size: 1.15rem; } }
