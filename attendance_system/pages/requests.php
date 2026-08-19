@@ -942,9 +942,9 @@ foreach ($all_requests as $req) {
 // ادامه کدهای قبلی (status_info, type_labels, formatDateJalali)
 $status_info = [
     'pending' => ['label' => 'در انتظار', 'color' => '#F59E0B', 'bg' => '#FEF3C7'],
-    'approved' => ['label' => 'تایید شده', 'color' => '#10B981', 'bg' => '#D1FAE5'],
+    'approved' => ['label' => 'تایید شده', 'color' => '#1b7b39', 'bg' => 'rgba(27, 123, 57, 0.12)'],
     'rejected' => ['label' => 'رد شده', 'color' => '#EF4444', 'bg' => '#FEE2E2'],
-    'cancelled' => ['label' => 'لغو شده', 'color' => '#6B7280', 'bg' => '#F3F4F6'],
+    'cancelled' => ['label' => 'لغو شده', 'color' => '#6B7280', 'bg' => '#e9e9e9'],
 ];
 
 $type_labels = [
@@ -1078,7 +1078,7 @@ function formatDateJalali($gregorianDate)
 
         .stat-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(116, 76, 164, 0.15);
+            box-shadow: 0 4px 12px rgba(142, 87, 254, 0.15);
         }
 
         .stat-label {
@@ -1095,7 +1095,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .stat-label .bi-info-circle:hover {
-            color: #744CA4 !important;
+            color: #8e57fe !important;
         }
 
         .stat-value {
@@ -1147,7 +1147,7 @@ function formatDateJalali($gregorianDate)
         .search-box input {
             width: 100%;
             padding: 10px 35px 10px 40px;
-            border: 1px solid rgba(116, 76, 164, 0.2);
+            border: 1px solid rgba(142, 87, 254, 0.2);
             border-radius: 10px;
             font-size: 14px;
             transition: all 0.3s ease;
@@ -1157,8 +1157,8 @@ function formatDateJalali($gregorianDate)
 
         .search-box input:focus {
             outline: none;
-            border-color: #744CA4;
-            box-shadow: 0 0 0 3px rgba(116, 76, 164, 0.1);
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 3px rgba(142, 87, 254, 0.1);
         }
 
         .search-box svg {
@@ -1178,25 +1178,25 @@ function formatDateJalali($gregorianDate)
         .filter-btn {
             padding: 10px 16px;
             background: var(--surface);
-            border: 1px solid rgba(116, 76, 164, 0.2);
+            border: 1px solid rgba(142, 87, 254, 0.2);
             border-radius: 10px;
             font-size: 13px;
             font-weight: 600;
-            color: #744CA4;
+            color: #8e57fe;
             cursor: pointer;
             transition: all 0.3s ease;
             white-space: nowrap;
         }
 
         .filter-btn:hover {
-            border-color: #744CA4;
-            background: rgba(116, 76, 164, 0.05);
+            border-color: #8e57fe;
+            background: rgba(142, 87, 254, 0.05);
         }
 
         .filter-btn.active {
-            background: linear-gradient(135deg, #744CA4 0%, #657AE7 100%);
+            background: #8e57fe;
             color: white;
-            border-color: #744CA4;
+            border-color: #8e57fe;
         }
 
         /* ✅ چک‌باکس فیلتر ماه جاری */
@@ -1207,15 +1207,15 @@ function formatDateJalali($gregorianDate)
             cursor: pointer;
             padding: 8px 14px;
             background: var(--surface);
-            border: 1px solid rgba(116, 76, 164, 0.2);
+            border: 1px solid rgba(142, 87, 254, 0.2);
             border-radius: 10px;
             transition: all 0.3s ease;
             user-select: none;
         }
 
         .current-month-filter:hover {
-            border-color: #744CA4;
-            background: rgba(116, 76, 164, 0.05);
+            border-color: #8e57fe;
+            background: rgba(142, 87, 254, 0.05);
         }
 
         .current-month-filter input[type="checkbox"] {
@@ -1225,7 +1225,7 @@ function formatDateJalali($gregorianDate)
         .current-month-filter .checkmark {
             width: 18px;
             height: 18px;
-            border: 2px solid rgba(116, 76, 164, 0.3);
+            border: 2px solid rgba(142, 87, 254, 0.3);
             border-radius: 4px;
             display: flex;
             align-items: center;
@@ -1245,8 +1245,8 @@ function formatDateJalali($gregorianDate)
         }
 
         .current-month-filter input[type="checkbox"]:checked+.checkmark {
-            background: linear-gradient(135deg, #744CA4 0%, #657AE7 100%);
-            border-color: #744CA4;
+            background: #8e57fe;
+            border-color: #8e57fe;
         }
 
         .current-month-filter input[type="checkbox"]:checked+.checkmark::after {
@@ -1256,7 +1256,7 @@ function formatDateJalali($gregorianDate)
         .current-month-filter .filter-label {
             font-size: 13px;
             font-weight: 600;
-            color: #744CA4;
+            color: #8e57fe;
             white-space: nowrap;
         }
 
@@ -1281,7 +1281,7 @@ function formatDateJalali($gregorianDate)
 
         .new-request-btn {
             padding: 10px 20px;
-            background: linear-gradient(135deg, #744CA4 0%, #657AE7 100%);
+            background: #8e57fe;
             color: white;
             border: none;
             border-radius: 10px;
@@ -1297,7 +1297,7 @@ function formatDateJalali($gregorianDate)
 
         .new-request-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(116, 76, 164, 0.3);
+            box-shadow: 0 4px 12px rgba(142, 87, 254, 0.3);
         }
 
         .table-container {
@@ -1319,7 +1319,7 @@ function formatDateJalali($gregorianDate)
 
         thead {
             background: var(--info-box-bg);
-            border-bottom: 1px solid rgba(116, 76, 164, 0.1);
+            border-bottom: 1px solid rgba(142, 87, 254, 0.1);
         }
 
         th {
@@ -1333,12 +1333,12 @@ function formatDateJalali($gregorianDate)
         }
 
         tbody tr {
-            border-bottom: 1px solid rgba(116, 76, 164, 0.05);
+            border-bottom: 1px solid rgba(142, 87, 254, 0.05);
             transition: all 0.3s ease;
         }
 
         tbody tr:hover {
-            background: rgba(116, 76, 164, 0.02);
+            background: rgba(142, 87, 254, 0.02);
         }
 
         td {
@@ -1375,17 +1375,17 @@ function formatDateJalali($gregorianDate)
             align-items: center;
             padding: 10px;
             gap: 8px;
-            border-top: 1px solid rgba(116, 76, 164, 0.1);
+            border-top: 1px solid rgba(142, 87, 254, 0.1);
         }
 
         .pagination-btn {
             padding: 6px 9px;
             background: var(--surface);
-            border: 1px solid rgba(116, 76, 164, 0.2);
+            border: 1px solid rgba(142, 87, 254, 0.2);
             border-radius: 8px;
             font-size: 11px;
             font-weight: 500;
-            color: #744CA4;
+            color: #8e57fe;
             cursor: pointer;
             transition: all 0.3s ease;
             min-width: 30px;
@@ -1393,15 +1393,15 @@ function formatDateJalali($gregorianDate)
         }
 
         .pagination-btn:hover:not(:disabled) {
-            border-color: #744CA4;
-            background: rgba(116, 76, 164, 0.05);
-            color: #744CA4;
+            border-color: #8e57fe;
+            background: rgba(142, 87, 254, 0.05);
+            color: #8e57fe;
         }
 
         .pagination-btn.active {
-            background: linear-gradient(135deg, #744CA4 0%, #657AE7 100%);
+            background: #8e57fe;
             color: white;
-            border-color: #744CA4;
+            border-color: #8e57fe;
         }
 
         .pagination-btn:disabled {
@@ -1416,7 +1416,7 @@ function formatDateJalali($gregorianDate)
         .user-info-box {
             background: var(--surface);
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(116, 76, 164, 0.1);
+            box-shadow: 0 4px 20px rgba(142, 87, 254, 0.1);
             padding: 24px;
         }
 
@@ -1426,13 +1426,13 @@ function formatDateJalali($gregorianDate)
             gap: 12px;
             margin-bottom: 20px;
             padding-bottom: 16px;
-            border-bottom: 2px solid rgba(116, 76, 164, 0.1);
+            border-bottom: 2px solid rgba(142, 87, 254, 0.1);
         }
 
         .user-info-icon {
             width: 48px;
             height: 48px;
-            background: linear-gradient(135deg, #744CA4 0%, #657AE7 100%);
+            background: #8e57fe;
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -1452,7 +1452,7 @@ function formatDateJalali($gregorianDate)
             display: flex;
             justify-content: space-between;
             padding: 12px 0;
-            border-bottom: 1px solid rgba(116, 76, 164, 0.05);
+            border-bottom: 1px solid rgba(142, 87, 254, 0.05);
         }
 
         .info-row:last-child {
@@ -1476,8 +1476,8 @@ function formatDateJalali($gregorianDate)
         .shift-badge {
             display: inline-block;
             padding: 4px 10px;
-            background: linear-gradient(135deg, rgba(116, 76, 164, 0.1) 0%, rgba(101, 122, 231, 0.1) 100%);
-            color: #744CA4;
+            background: linear-gradient(135deg, rgba(142, 87, 254, 0.1) 0%, rgba(142, 87, 254, 0.1) 100%);
+            color: #8e57fe;
             border-radius: 6px;
             font-size: 12px;
             font-weight: 600;
@@ -1509,7 +1509,7 @@ function formatDateJalali($gregorianDate)
 
         .att-month-toolbar select {
             padding: 8px 14px;
-            border: 1px solid rgba(116, 76, 164, 0.25);
+            border: 1px solid rgba(142, 87, 254, 0.25);
             border-radius: 10px;
             font-family: inherit;
             font-size: 13px;
@@ -1547,13 +1547,13 @@ function formatDateJalali($gregorianDate)
         .attendance-table-wrapper {
             background: var(--surface);
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(116, 76, 164, 0.1);
+            box-shadow: 0 4px 20px rgba(142, 87, 254, 0.1);
             overflow: hidden;
             height: 560px;
         }
 
         .attendance-table-header {
-            background: linear-gradient(135deg, #744ca4 0%, #657ae7 100%);
+            background: #8e57fe;
             padding: 10px 20px;
             display: flex;
             justify-content: space-between;
@@ -1583,11 +1583,11 @@ function formatDateJalali($gregorianDate)
         }
 
         .attendance-table-container::-webkit-scrollbar-track {
-            background: rgba(116, 76, 164, 0.05);
+            background: rgba(142, 87, 254, 0.05);
         }
 
         .attendance-table-container::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, #744ca4 0%, #657ae7 100%);
+            background: #8e57fe;
             border-radius: 10px;
         }
 
@@ -1601,7 +1601,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .attendance-table thead {
-            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%) !important;
+            background: #8e57fe !important;
             position: sticky;
             top: 0;
             z-index: 10;
@@ -1618,13 +1618,13 @@ function formatDateJalali($gregorianDate)
         }
 
         .attendance-table tbody tr {
-            border-bottom: 1px solid rgba(116, 76, 164, 0.08);
+            border-bottom: 1px solid rgba(142, 87, 254, 0.08);
             transition: all 0.3s ease;
             cursor: pointer;
         }
 
         .attendance-table tbody tr:hover:not(.holiday-row) {
-            background: linear-gradient(135deg, rgba(116, 76, 164, 0.04) 0%, rgba(101, 122, 231, 0.04) 100%);
+            background: linear-gradient(135deg, rgba(142, 87, 254, 0.04) 0%, rgba(142, 87, 254, 0.04) 100%);
         }
 
         .attendance-table tbody td {
@@ -1683,7 +1683,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .shortage-hours.zero {
-            color: #059669;
+            color: #1b7b39;
         }
 
         .shortage-money {
@@ -1694,11 +1694,11 @@ function formatDateJalali($gregorianDate)
         }
 
         .shortage-money.zero {
-            color: #059669;
+            color: #1b7b39;
         }
 
         .action-btn-small {
-            background: linear-gradient(135deg, #744ca4 0%, #657ae7 100%);
+            background: #8e57fe;
             color: white;
             border: none;
             border-radius: 6px;
@@ -1711,7 +1711,7 @@ function formatDateJalali($gregorianDate)
 
         .action-btn-small:hover {
             transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(116, 76, 164, 0.3);
+            box-shadow: 0 3px 10px rgba(142, 87, 254, 0.3);
         }
 
         .holiday-row {
@@ -1792,7 +1792,7 @@ function formatDateJalali($gregorianDate)
 
         .modal-header {
             padding: 24px;
-            border-bottom: 1px solid rgba(116, 76, 164, 0.1);
+            border-bottom: 1px solid rgba(142, 87, 254, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1874,13 +1874,13 @@ function formatDateJalali($gregorianDate)
         }
 
         .tab-button:hover {
-            color: #744CA4;
-            background: rgba(116, 76, 164, 0.03);
+            color: #8e57fe;
+            background: rgba(142, 87, 254, 0.03);
         }
 
         .tab-button.active {
-            color: #744CA4;
-            border-bottom-color: #744CA4;
+            color: #8e57fe;
+            border-bottom-color: #8e57fe;
         }
 
         .tab-button svg {
@@ -1936,7 +1936,7 @@ function formatDateJalali($gregorianDate)
         .form-group textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid rgba(116, 76, 164, 0.2);
+            border: 1px solid rgba(142, 87, 254, 0.2);
             border-radius: 8px;
             font-size: 14px;
             font-family: 'Vazir', sans-serif;
@@ -1949,8 +1949,8 @@ function formatDateJalali($gregorianDate)
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #744CA4;
-            box-shadow: 0 0 0 3px rgba(116, 76, 164, 0.1);
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 3px rgba(142, 87, 254, 0.1);
         }
 
         .form-group input:disabled,
@@ -1988,9 +1988,9 @@ function formatDateJalali($gregorianDate)
         }
 
         .leave-balance-box.balance-green {
-            background: #ecfdf5;
-            border-color: #a7f3d0;
-            color: #065f46;
+            background: rgba(27, 123, 57, 0.1);
+            border-color: rgba(27, 123, 57, 0.3);
+            color: #1b7b39;
         }
 
         .leave-balance-box.balance-yellow {
@@ -2028,14 +2028,14 @@ function formatDateJalali($gregorianDate)
             gap: 12px;
             padding: 24px;
             background: var(--surface);
-            border-top: 1px solid rgba(116, 76, 164, 0.1);
+            border-top: 1px solid rgba(142, 87, 254, 0.1);
             flex-shrink: 0;
         }
 
         .btn-submit {
             flex: 1;
             padding: 12px;
-            background: linear-gradient(135deg, #744CA4 0%, #657AE7 100%);
+            background: #8e57fe;
             color: white;
             border: none;
             border-radius: 8px;
@@ -2047,7 +2047,7 @@ function formatDateJalali($gregorianDate)
 
         .btn-submit:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(116, 76, 164, 0.3);
+            box-shadow: 0 4px 12px rgba(142, 87, 254, 0.3);
         }
 
         .btn-submit:disabled {
@@ -2061,7 +2061,7 @@ function formatDateJalali($gregorianDate)
             padding: 12px;
             background: var(--info-box-bg);
             color: var(--text-strong);
-            border: 1px solid rgba(116, 76, 164, 0.2);
+            border: 1px solid rgba(142, 87, 254, 0.2);
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
@@ -2086,7 +2086,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .request-badge.pass {
-            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            background: #1b7b39;
             color: white;
         }
 
@@ -2101,7 +2101,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .request-badge.forget {
-            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            background: #8e57fe;
             color: white;
         }
 
@@ -2294,7 +2294,7 @@ function formatDateJalali($gregorianDate)
 
         .section-tab.active {
             background: var(--surface);
-            color: #744CA4;
+            color: #8e57fe;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
@@ -2333,7 +2333,7 @@ function formatDateJalali($gregorianDate)
 
         .role-badge.supervisor {
             background: #F3E8FF;
-            color: #7C3AED;
+            color: #8e57fe;
         }
 
         .role-badge.admin {
@@ -2343,12 +2343,12 @@ function formatDateJalali($gregorianDate)
 
         /* دکمه‌های تأیید و رد */
         .action-icon-btn.approve-btn {
-            background: #D1FAE5;
-            color: #059669;
+            background: rgba(27, 123, 57, 0.12);
+            color: #1b7b39;
         }
 
         .action-icon-btn.approve-btn:hover {
-            background: #059669;
+            background: #1b7b39;
             color: white;
         }
 
@@ -2526,8 +2526,8 @@ function formatDateJalali($gregorianDate)
         }
 
         .timeline-dot.approved {
-            background: #10B981;
-            box-shadow: 0 0 0 2px #D1FAE5;
+            background: #1b7b39;
+            box-shadow: 0 0 0 2px rgba(27, 123, 57, 0.15);
         }
 
         .timeline-dot.rejected {
@@ -2536,7 +2536,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .timeline-dot.waiting {
-            background: #9CA3AF;
+            background: #e9e9e9;
             box-shadow: 0 0 0 2px var(--border-soft);
         }
 
@@ -2559,7 +2559,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .timeline-status.approved {
-            color: #059669;
+            color: #1b7b39;
         }
 
         .timeline-status.rejected {
@@ -2615,12 +2615,12 @@ function formatDateJalali($gregorianDate)
         }
 
         .action-icon-btn.edit-btn {
-            background: #EEF2FF;
-            color: #4F46E5;
+            background: rgba(142, 87, 254, 0.12);
+            color: #8e57fe;
         }
 
         .action-icon-btn.edit-btn:hover {
-            background: #4F46E5;
+            background: #8e57fe;
             color: white;
         }
 
@@ -2635,12 +2635,12 @@ function formatDateJalali($gregorianDate)
         }
 
         .action-icon-btn.approve-btn {
-            background: #D1FAE5;
-            color: #10B981;
+            background: rgba(27, 123, 57, 0.12);
+            color: #1b7b39;
         }
 
         .action-icon-btn.approve-btn:hover {
-            background: #10B981;
+            background: #1b7b39;
             color: white;
         }
 
@@ -2656,7 +2656,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .attendance-table tbody tr:not(.holiday-row):hover {
-            background-color: rgba(116, 76, 164, 0.08) !important;
+            background-color: rgba(142, 87, 254, 0.08) !important;
         }
 
         /* مودال ویرایش */
@@ -2715,7 +2715,7 @@ function formatDateJalali($gregorianDate)
 
         .btn-save {
             padding: 10px 20px;
-            background: linear-gradient(135deg, #744CA4 0%, #657AE7 100%);
+            background: #8e57fe;
             color: white;
             border: none;
             border-radius: 8px;
@@ -2726,14 +2726,14 @@ function formatDateJalali($gregorianDate)
 
         .btn-save:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(116, 76, 164, 0.3);
+            box-shadow: 0 4px 12px rgba(142, 87, 254, 0.3);
         }
 
         .btn-close-modal {
             padding: 10px 20px;
             background: var(--info-box-bg);
             color: var(--text-strong);
-            border: 1px solid #D1D5DB;
+            border: 1px solid #e9e9e9;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
@@ -2886,14 +2886,14 @@ function formatDateJalali($gregorianDate)
                     </div>
                     <div class="stat-card stat-card-inline">
                         <span class="stat-label">حقوق تا دیروز:</span>
-                        <span class="stat-value" style="color: #8B5CF6;" id="cardSalaryToman">—</span>
+                        <span class="stat-value" style="color: #8e57fe;" id="cardSalaryToman">—</span>
                     </div>
                     <div class="stat-card stat-card-inline">
                         <span class="stat-label">
                         <i class="bi bi-info-circle" id="monthCountInfoIcon" style="font-size:11px;cursor:help;color:#6B7280 !important;"></i>    
                         درخواست‌های این ماه:
                         </span>
-                        <span class="stat-value" id="cardCounts" style="color:#744CA4;">—</span>
+                        <span class="stat-value" id="cardCounts" style="color:#8e57fe;">—</span>
                     </div>
                 </div>
                 <script>
@@ -2914,7 +2914,7 @@ function formatDateJalali($gregorianDate)
                             <div class="att-month-toolbar-stats">
                                 <span class="att-inline-stat">حقوق پایه: <b id="attInlineBase">—</b></span>
                                 <span class="att-inline-stat">کسری ریالی: <b id="attInlineShortageMoney" style="color:#EF4444;">—</b></span>
-                                <span class="att-inline-stat">حقوق دریافتی: <b id="attInlineReceived" style="color:#8B5CF6;">—</b></span>
+                                <span class="att-inline-stat">حقوق دریافتی: <b id="attInlineReceived" style="color:#8e57fe;">—</b></span>
                             </div>
                         </div>
 
@@ -3436,7 +3436,7 @@ function formatDateJalali($gregorianDate)
                     return `<span class="status-badge status-with-timeline" style="color:#EF4444;" ${tl}>${rr} رد شده</span>`;
                 }
                 if (d.status === 'approved')
-                    return `<span class="status-badge status-with-timeline" style="color:#10B981;" ${tl}>تأیید شده</span>`;
+                    return `<span class="status-badge status-with-timeline" style="color:#1b7b39;" ${tl}>تأیید شده</span>`;
                 return `<span class="status-badge" style="color:#6b8dcf;">تأیید خودکار</span>`;
             }
 
@@ -5230,7 +5230,7 @@ function formatDateJalali($gregorianDate)
                         opacity: '0.6'
                     } : null,
                     onPaginationChanged: () => persianizePaging(),
-                    overlayNoRowsTemplate: '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;"><div style="width:64px;height:64px;border-radius:50%;background:#ECFDF5;display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><i class="bi bi-check-circle" style="font-size:30px;color:#10B981;"></i></div><div style="font-size:15px;font-weight:600;color:#10B981;">هیچ درخواستی منتظر تأیید شما نیست</div></div>'
+                    overlayNoRowsTemplate: '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;"><div style="width:64px;height:64px;border-radius:50%;background:rgba(27, 123, 57, 0.12);display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><i class="bi bi-check-circle" style="font-size:30px;color:#1b7b39;"></i></div><div style="font-size:15px;font-weight:600;color:#1b7b39;">هیچ درخواستی منتظر تأیید شما نیست</div></div>'
                 });
                 window.__pendingGridApi = pendingGridApi;
             } else {

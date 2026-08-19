@@ -4500,7 +4500,7 @@ span.deadline-request-icon.disabled:hover {
 }
 
 .file-icon-audio {
-    color: #6f42c1;
+    color: #8e57fe;
 }
 
 .file-icon-image {
@@ -7332,13 +7332,13 @@ body.login-page::after {
     transform: translateX(-50%);
     width: 0;
     height: 2px;
-    background: #764ba2;
+    background: #8e57fe;
     transition: width 0.3s ease;
 
 }
 
 .register-link-underline:hover {
-    color: #764ba2;
+    color: #8e57fe;
 }
 
 .register-link-underline:hover::after {
