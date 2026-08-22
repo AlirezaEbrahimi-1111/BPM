@@ -1549,7 +1549,7 @@ function formatDateJalali($gregorianDate)
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(142, 87, 254, 0.1);
             overflow: hidden;
-            height: 560px;
+            height: 650px;
         }
 
         .attendance-table-header {
@@ -1574,7 +1574,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .attendance-table-container {
-            /*max-height: calc(100vh - 280px);*/
+            /* max-height: calc(100vh - 280px); */
             overflow-y: auto;
         }
 
@@ -4141,10 +4141,17 @@ function formatDateJalali($gregorianDate)
                         }
                     ];
 
+                    const attendanceRowHeight = shiftCount >= 2 ? 68 : 46;
+                    const attendanceHeaderHeight = 44;
+                    // ارتفاع داخلی AG Grid به صورت خودکار از تعداد روزها محاسبه می‌شود.
+                    // این کار از بریده‌شدن روزهای پایانی ماه (خصوصاً در ماه‌های 31 روزه)
+                    // به علت ارتفاع محاسبه‌شده‌ی کانتینر ردیف‌ها جلوگیری می‌کند.
+                    const attendanceGridHeight = attendanceHeaderHeight + (data.days.length * attendanceRowHeight) + 4;
+
                     const gridOptions = {
                         enableRtl: true,
-                        rowHeight: shiftCount >= 2 ? 68 : 46,
-                        headerHeight: 44,
+                        rowHeight: attendanceRowHeight,
+                        headerHeight: attendanceHeaderHeight,
                         suppressRowHoverHighlight: true,
                         columnDefs: columnDefs,
                         rowData: data.days,
@@ -4161,7 +4168,11 @@ function formatDateJalali($gregorianDate)
                         overlayNoRowsTemplate: '<div style="padding:2rem;color:#9097a6;">داده‌ای برای نمایش وجود ندارد</div>'
                     };
 
-                    container.innerHTML = '<div id="attendanceGrid" class="ag-theme-alpine" style="width:100%;height:700px;"></div>';
+                    container.innerHTML = '<div id="attendanceGrid" class="ag-theme-alpine" style="width:100%;height:' + attendanceGridHeight + 'px;"></div>';
+                    const attendanceWrapper = container.closest('.attendance-table-wrapper');
+                    if (attendanceWrapper) {
+                        attendanceWrapper.style.height = attendanceGridHeight + 'px';
+                    }
                     if (window.attendanceGridApi) {
                         try {
                             window.attendanceGridApi.destroy();
