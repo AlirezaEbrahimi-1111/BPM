@@ -277,6 +277,27 @@ if (!$__me) {
             font-weight: 600;
         }
 
+        /* بج‌های زیر عنوان کار: کنتراست ثابت و مستقل از استایل‌های عمومی badge */
+        #taskMeta .badge {
+            border: 1px solid transparent;
+        }
+
+        /* نوع کار باید روی هدر رنگی، خنثی و خوانا باقی بماند. */
+        #taskMeta .badge.type-periodic,
+        #taskMeta .badge.type-continuous {
+            background: #fff !important;
+            color: #374151 !important;
+            border-color: #d1d5db !important;
+        }
+
+        /* وضعیت تکمیل‌شده/تأییدشده: متن سفید روی سبز تیره برای کنتراست قطعی. */
+        #taskMeta .badge.status-completed,
+        #taskMeta .badge.status-approved {
+            background: #15803d !important;
+            color: #fff !important;
+            border-color: #166534 !important;
+        }
+
         @media (prefers-reduced-motion: reduce) {
             .chk-note-drawer {
                 animation: none;
