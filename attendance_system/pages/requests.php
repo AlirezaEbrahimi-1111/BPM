@@ -1059,6 +1059,7 @@ function formatDateJalali($gregorianDate)
                nowrap داخلشون از لبه‌ی کارت بیرون می‌زد */
             gap: 12px;
             width: 100%;
+            margin-bottom: 18px !important;
         }
 
         .page-header .stat-card {
