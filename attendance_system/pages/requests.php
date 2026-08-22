@@ -1549,7 +1549,7 @@ function formatDateJalali($gregorianDate)
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(142, 87, 254, 0.1);
             overflow: hidden;
-            height: 650px;
+            height: 570px;
         }
 
         .attendance-table-header {
