@@ -4143,10 +4143,6 @@ function formatDateJalali($gregorianDate)
 
                     const attendanceRowHeight = shiftCount >= 2 ? 68 : 46;
                     const attendanceHeaderHeight = 44;
-                    // ارتفاع داخلی AG Grid به صورت خودکار از تعداد روزها محاسبه می‌شود.
-                    // این کار از بریده‌شدن روزهای پایانی ماه (خصوصاً در ماه‌های 31 روزه)
-                    // به علت ارتفاع محاسبه‌شده‌ی کانتینر ردیف‌ها جلوگیری می‌کند.
-                    const attendanceGridHeight = attendanceHeaderHeight + (data.days.length * attendanceRowHeight) + 4;
 
                     const gridOptions = {
                         enableRtl: true,
@@ -4168,11 +4164,9 @@ function formatDateJalali($gregorianDate)
                         overlayNoRowsTemplate: '<div style="padding:2rem;color:#9097a6;">داده‌ای برای نمایش وجود ندارد</div>'
                     };
 
-                    container.innerHTML = '<div id="attendanceGrid" class="ag-theme-alpine" style="width:100%;height:' + attendanceGridHeight + 'px;"></div>';
-                    const attendanceWrapper = container.closest('.attendance-table-wrapper');
-                    if (attendanceWrapper) {
-                        attendanceWrapper.style.height = attendanceGridHeight + 'px';
-                    }
+                    // ارتفاع ثابت نگه داشته می‌شود تا فقط خود AG Grid اسکرول عمودی داشته باشد
+                    // و ارتفاع کل صفحه با روزهای انتهای ماه افزایش پیدا نکند.
+                    container.innerHTML = '<div id="attendanceGrid" class="ag-theme-alpine" style="width:100%;height:570px;"></div>';
                     if (window.attendanceGridApi) {
                         try {
                             window.attendanceGridApi.destroy();
