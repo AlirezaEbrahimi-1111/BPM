@@ -105,6 +105,216 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             display: block !important;
         }
     }
+
+    /* ═══ سرچ سراسری — فلشِ زیرِ هدر + کادرِ کشویی ═══ */
+    .gs-toggle {
+        position: fixed;
+        top: 3.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1020;
+        width: 40px;
+        height: 20px;
+        background: #fff;
+        border: 1px solid var(--border-soft, #e9e9e9);
+        border-top: none;
+        border-radius: 0 0 9px 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, .08);
+        color: #8e57fe;
+        transition: background .15s;
+    }
+
+    .gs-toggle:hover {
+        background: #f5f0ff;
+    }
+
+    .gs-toggle i {
+        font-size: .9rem;
+        transition: transform .2s ease;
+    }
+
+    .gs-toggle.open i {
+        transform: rotate(180deg);
+    }
+
+    .gs-panel {
+        position: fixed;
+        top: calc(3.5rem + 14px);
+        left: 50%;
+        transform: translateX(-50%) translateY(-8px);
+        width: 40%;
+        z-index: 1010;
+        background: rgba(255, 255, 255, .5);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, .5);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        box-shadow: none;
+        transition: opacity .2s ease, transform .2s ease, visibility .2s, box-shadow .2s;
+    }
+
+    .gs-panel.open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0);
+        box-shadow: 0 16px 36px rgba(0, 0, 0, .16);
+    }
+
+    .gs-panel-inner {
+        padding: 14px 16px 16px;
+    }
+
+    .gs-search-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .gs-search-box i.bi-search {
+        position: absolute;
+        right: 14px;
+        color: #9ca3af;
+        pointer-events: none;
+    }
+
+    .gs-search-box input {
+        width: 100%;
+        border: 1.5px solid #e9e9e9;
+        border-radius: 9px;
+        padding: 10px 42px 10px 14px;
+        font-size: .9rem;
+        outline: none;
+        transition: border-color .15s;
+    }
+
+    .gs-search-box input:focus {
+        border-color: #8e57fe;
+    }
+
+    .gs-type-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+    }
+
+    .gs-type-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid rgba(142, 87, 254, .3);
+        border-radius: 9px;
+        padding: 3px 10px;
+        font-size: .72rem;
+        font-weight: 600;
+        color: #6b5a8a;
+        background: rgba(255, 255, 255, .5);
+        cursor: pointer;
+        user-select: none;
+        transition: all .15s;
+    }
+
+    .gs-type-chip.active {
+        background: #8e57fe;
+        border-color: #8e57fe;
+        color: #fff;
+    }
+
+    .gs-results {
+        margin-top: 6px;
+        max-height: 55vh;
+        overflow-y: auto;
+    }
+
+    .gs-result-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 8px;
+        border-radius: 9px;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .gs-result-item:hover {
+        background: rgba(197, 168, 255, 0.12);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+
+    .gs-result-icon {
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+        border-radius: 9px;
+        background: rgba(142, 87, 254, 0.12);
+        color: #8e57fe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .95rem;
+    }
+
+    .gs-result-main {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .gs-result-title {
+        font-size: .85rem;
+        font-weight: 600;
+        color: #1f2937;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gs-result-meta {
+        font-size: .74rem;
+        color: #9ca3af;
+        margin-top: 2px;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .gs-result-type {
+        color: #8e57fe;
+        font-weight: 600;
+    }
+
+    .gs-result-snippet {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gs-empty,
+    .gs-hint {
+        text-align: center;
+        color: #9ca3af;
+        font-size: .8rem;
+        padding: 10px 0 4px;
+    }
+
+    @media (max-width: 768px) {
+        .gs-panel {
+            width: 92%;
+        }
+
+        .gs-panel-inner {
+            padding: 12px 12px 16px;
+        }
+    }
 </style>
 <!-- بستن فوری drawer قبل از render — جلوگیری از flash -->
 <script>
@@ -364,9 +574,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 aria-labelledby="announcementDropdown" style="min-width: 360px;">
                 <div class="notification-header">
                     <span>اطلاعیه‌های سازمانی</span>
-                    <button class="mark-all-btn" onclick="markAllAnnouncementsRead()" id="markAllAnnBtn">
+                    <!-- <button class="mark-all-btn" onclick="markAllAnnouncementsRead()" id="markAllAnnBtn">
                         همه خوانده شد
-                    </button>
+                    </button> -->
                 </div>
                 <div class="notif-toolbar">
                     <div class="notif-search">
@@ -375,8 +585,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                                oninput="annSearchQuery = this.value.trim(); renderAnnouncementList();">
                     </div>
                     <div class="notif-chips">
-                        <button type="button" class="notif-chip" data-mode="unread" onclick="annSetFilterMode('unread')">خوانده‌نشده</button>
                         <button type="button" class="notif-chip active" data-mode="all" onclick="annSetFilterMode('all')">همه</button>
+                        <button type="button" class="notif-chip" data-mode="unread" onclick="annSetFilterMode('unread')">خوانده‌نشده</button>
                     </div>
                 </div>
                 <!-- لیست اطلاعیه‌ها -->
@@ -400,9 +610,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 aria-labelledby="notificationDropdown">
                 <div class="notification-header">
                     <span>اعلان‌ها</span>
-                    <button class="mark-all-btn" onclick="markAllAsRead()" id="markAllBtn">
+                    <!-- <button class="mark-all-btn" onclick="markAllAsRead()" id="markAllBtn">
                         همه خوانده شد
-                    </button>
+                    </button> -->
                 </div>
                 <div class="notif-toolbar">
                     <div class="notif-search">
@@ -411,8 +621,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                                oninput="notifSearchQuery = this.value.trim(); renderNotificationList();">
                     </div>
                     <div class="notif-chips">
-                        <button type="button" class="notif-chip" data-mode="unread" onclick="notifSetFilterMode('unread')">خوانده‌نشده</button>
-                        <button type="button" class="notif-chip active" data-mode="all" onclick="notifSetFilterMode('all')">همه</button>
+                    <button type="button" class="notif-chip active" data-mode="all" onclick="notifSetFilterMode('all')">همه</button>    
+                    <button type="button" class="notif-chip" data-mode="unread" onclick="notifSetFilterMode('unread')">خوانده‌نشده</button>
                     </div>
                 </div>
                 <!-- لیست اعلان‌ها -->
@@ -458,6 +668,28 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     </div>
     <script>bpmApplyTheme(bpmGetTheme());</script>
 </nav>
+<div class="gs-toggle" id="gsToggle" title="جستجوی سراسری" onclick="gsTogglePanel()">
+    <i class="bi bi-chevron-down"></i>
+</div>
+<div class="gs-panel" id="gsPanel">
+    <div class="gs-panel-inner">
+        <div class="gs-search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" id="gsInput" placeholder="جستجو در تسک‌ها، تیکت‌ها، اطلاعیه‌ها، نوتیفیکیشن‌ها و..." oninput="gsOnInput()">
+        </div>
+        <div class="gs-type-filters" id="gsTypeFilters">
+            <span class="gs-type-chip active" data-type="task" onclick="gsToggleType(this)">کارها</span>
+            <span class="gs-type-chip active" data-type="ticket" onclick="gsToggleType(this)">تیکت‌ها</span>
+            <span class="gs-type-chip active" data-type="announcement" onclick="gsToggleType(this)">اطلاعیه‌ها</span>
+            <span class="gs-type-chip active" data-type="notification" onclick="gsToggleType(this)">نوتیفیکیشن‌ها</span>
+            <span class="gs-type-chip active" data-type="task_history" onclick="gsToggleType(this)">تاریخچه کار</span>
+            <span class="gs-type-chip active" data-type="workflow" onclick="gsToggleType(this)">فرآیندهای جاری</span>
+        </div>
+        <div class="gs-results" id="gsResults">
+            <div class="gs-hint">برای جستجو تایپ کنید</div>
+        </div>
+    </div>
+</div>
 <script src="<?= asset('/assets/js/common-bundle.js') ?>"></script>
 
 
@@ -959,43 +1191,43 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     }
 
     // ─── علامت همه خوانده شده ───
-    async function markAllAnnouncementsRead() {
-        const btn = document.getElementById('markAllAnnBtn');
-        if (!btn || annUnreadCount === 0) return;
+    // async function markAllAnnouncementsRead() {
+    //     const btn = document.getElementById('markAllAnnBtn');
+    //     if (!btn || annUnreadCount === 0) return;
 
-        btn.disabled = true;
-        btn.textContent = '...';
+    //     btn.disabled = true;
+    //     btn.textContent = '...';
 
-        try {
-            await fetch('/api/announcements/update.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + authToken
-                },
-                body: JSON.stringify({
-                    action: 'mark_all_read'
-                })
-            });
+    //     try {
+    //         await fetch('/api/announcements/update.php', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'Authorization': 'Bearer ' + authToken
+    //             },
+    //             body: JSON.stringify({
+    //                 action: 'mark_all_read'
+    //             })
+    //         });
 
-            annAllItems.forEach(a => a.is_read = true);
-            document.querySelectorAll('.announcement-item.unread')
-                .forEach(el => el.classList.remove('unread'));
-            updateAnnouncementBadge(0);
+    //         annAllItems.forEach(a => a.is_read = true);
+    //         document.querySelectorAll('.announcement-item.unread')
+    //             .forEach(el => el.classList.remove('unread'));
+    //         updateAnnouncementBadge(0);
 
-            // بستن dropdown بعد از 500ms
-            setTimeout(() => {
-                const menu = document.getElementById('announcementDropdownMenu');
-                if (menu) menu.classList.remove('show');
-            }, 500);
+    //         // بستن dropdown بعد از 500ms
+    //         setTimeout(() => {
+    //             const menu = document.getElementById('announcementDropdownMenu');
+    //             if (menu) menu.classList.remove('show');
+    //         }, 500);
 
-        } catch (err) {
-            console.error('❌ خطا:', err);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'همه خوانده شد';
-        }
-    }
+    //     } catch (err) {
+    //         console.error('❌ خطا:', err);
+    //     } finally {
+    //         btn.disabled = false;
+    //         btn.textContent = 'همه خوانده شد';
+    //     }
+    // }
 
     // ─── راه‌اندازی dropdown ───
     function setupAnnouncementDropdown() {
@@ -1009,9 +1241,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
             const isShown = menu.classList.contains('show');
 
-            // بستن dropdown اعلان اگه باز بود
+            // بستن dropdown اعلان و کادر سرچ سراسری اگه باز بودن
             const notifMenu = document.getElementById('notificationDropdownMenu');
             if (notifMenu) notifMenu.classList.remove('show');
+            gsClosePanel();
 
             if (isShown) {
                 menu.classList.remove('show');
@@ -1103,41 +1336,41 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     // ============================================
     // علامت‌گذاری همه
     // ============================================
-    async function markAllAsRead() {
-        const btn = document.getElementById('markAllBtn');
-        if (!btn || unreadCount === 0) return;
+    // async function markAllAsRead() {
+    //     const btn = document.getElementById('markAllBtn');
+    //     if (!btn || unreadCount === 0) return;
 
-        const originalText = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = 'در حال پردازش...';
+    //     const originalText = btn.textContent;
+    //     btn.disabled = true;
+    //     btn.textContent = 'در حال پردازش...';
 
-        try {
-            const response = await fetch('/api/notifications/mark-all-read.php', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + authToken
-                }
-            });
-            const data = await response.json();
-            if (data.success) {
-                unreadCount = 0;
-                notifAllItems.forEach(n => n.is_read = 1);
-                updateBadge(0);
-                document.querySelectorAll('.notification-item.unread').forEach(item => item.classList.remove('unread'));
-                setTimeout(() => {
-                    const dropdownMenu = document.getElementById('notificationDropdownMenu');
-                    if (dropdownMenu) {
-                        dropdownMenu.classList.remove('show');
-                    }
-                }, 100);
-            }
-        } catch (error) {
-            console.error('❌ خطا:', error);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = originalText;
-        }
-    }
+    //     try {
+    //         const response = await fetch('/api/notifications/mark-all-read.php', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Authorization': 'Bearer ' + authToken
+    //             }
+    //         });
+    //         const data = await response.json();
+    //         if (data.success) {
+    //             unreadCount = 0;
+    //             notifAllItems.forEach(n => n.is_read = 1);
+    //             updateBadge(0);
+    //             document.querySelectorAll('.notification-item.unread').forEach(item => item.classList.remove('unread'));
+    //             setTimeout(() => {
+    //                 const dropdownMenu = document.getElementById('notificationDropdownMenu');
+    //                 if (dropdownMenu) {
+    //                     dropdownMenu.classList.remove('show');
+    //                 }
+    //             }, 100);
+    //         }
+    //     } catch (error) {
+    //         console.error('❌ خطا:', error);
+    //     } finally {
+    //         btn.disabled = false;
+    //         btn.textContent = originalText;
+    //     }
+    // }
 
     // ============================================
     // بررسی اعلان‌های جدید
@@ -1715,6 +1948,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
             const isShown = dropdownMenu.classList.contains('show');
 
+            // بستن dropdown اطلاعیه و کادر سرچ سراسری اگه باز بودن
+            const annMenu = document.getElementById('announcementDropdownMenu');
+            if (annMenu) annMenu.classList.remove('show');
+            gsClosePanel();
+
             if (isShown) {
                 dropdownMenu.classList.remove('show');
             } else {
@@ -1729,6 +1967,175 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             }
         });
     }
+
+    // ============================================
+    // سرچ سراسری (فلشِ زیرِ هدر)
+    // ============================================
+    var gsSearchTimer = null;
+    var gsLastQuery = '';
+    var gsResultsCache = [];
+
+    function gsGetActiveTypes() {
+        var chips = document.querySelectorAll('.gs-type-chip.active');
+        return Array.prototype.map.call(chips, function(c) { return c.dataset.type; });
+    }
+
+    function gsToggleType(el) {
+        el.classList.toggle('active');
+        var input = document.getElementById('gsInput');
+        var q = (input.value || '').trim();
+        if (q) gsRunSearch(q);
+    }
+
+    function gsClosePanel() {
+        var toggle = document.getElementById('gsToggle');
+        var panel = document.getElementById('gsPanel');
+        if (toggle) toggle.classList.remove('open');
+        if (panel) panel.classList.remove('open');
+    }
+
+    function gsTogglePanel() {
+        var toggle = document.getElementById('gsToggle');
+        var panel = document.getElementById('gsPanel');
+        if (!toggle || !panel) return;
+
+        var isOpen = panel.classList.contains('open');
+        if (isOpen) {
+            gsClosePanel();
+            return;
+        }
+
+        // بستن dropdown اعلان/اطلاعیه اگه باز بودن
+        var notifMenu = document.getElementById('notificationDropdownMenu');
+        var annMenu = document.getElementById('announcementDropdownMenu');
+        if (notifMenu) notifMenu.classList.remove('show');
+        if (annMenu) annMenu.classList.remove('show');
+
+        toggle.classList.add('open');
+        panel.classList.add('open');
+        var input = document.getElementById('gsInput');
+        if (input) {
+            setTimeout(function() { input.focus(); }, 50);
+        }
+    }
+
+    function gsOnInput() {
+        clearTimeout(gsSearchTimer);
+        var input = document.getElementById('gsInput');
+        var q = (input.value || '').trim();
+        gsSearchTimer = setTimeout(function() { gsRunSearch(q); }, 300);
+    }
+
+    function gsRunSearch(q) {
+        var box = document.getElementById('gsResults');
+        if (!box) return;
+
+        if (q === '') {
+            box.innerHTML = '<div class="gs-hint">برای جستجو تایپ کنید</div>';
+            gsLastQuery = q;
+            return;
+        }
+        if (q.length < 2) {
+            box.innerHTML = '<div class="gs-hint">حداقل ۲ حرف وارد کنید</div>';
+            gsLastQuery = q;
+            return;
+        }
+
+        gsLastQuery = q;
+        var typesParam = gsGetActiveTypes().join(',');
+        fetch('../api/search/global.php?q=' + encodeURIComponent(q) + '&types=' + encodeURIComponent(typesParam), {
+                headers: { 'Authorization': 'Bearer ' + authToken }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                // اگه کاربر تا وقتِ برگشتِ پاسخ چیزِ دیگه‌ای تایپ کرده، این پاسخِ قدیمی رو نادیده بگیر
+                if (q !== gsLastQuery) return;
+                if (!data.success) {
+                    box.innerHTML = '<div class="gs-hint">خطا در جستجو</div>';
+                    return;
+                }
+                gsRenderResults(data.results || []);
+            })
+            .catch(function() {
+                if (q !== gsLastQuery) return;
+                box.innerHTML = '<div class="gs-hint">خطا در ارتباط با سرور</div>';
+            });
+    }
+
+    function gsRenderResults(results) {
+        var box = document.getElementById('gsResults');
+        if (!box) return;
+
+        gsResultsCache = results;
+
+        if (!results.length) {
+            box.innerHTML = '<div class="gs-empty">نتیجه‌ای یافت نشد</div>';
+            return;
+        }
+
+        box.innerHTML = results.map(function(r, idx) {
+            var snippet = r.snippet ? '<span class="gs-result-snippet">' + esc(r.snippet) + '</span>' : '';
+            var isNav = (r.type !== 'announcement' && r.type !== 'notification');
+            var tag = isNav ? 'a' : 'div';
+            var hrefAttr = isNav ? (' href="' + esc(r.link || '#') + '"') : '';
+            return '<' + tag + ' class="gs-result-item"' + hrefAttr + ' onclick="gsResultClick(' + idx + ', event)">' +
+                '<div class="gs-result-icon"><i class="bi ' + esc(r.icon) + '"></i></div>' +
+                '<div class="gs-result-main">' +
+                '<div class="gs-result-title">' + esc(r.title || '—') + '</div>' +
+                '<div class="gs-result-meta"><span class="gs-result-type">' + esc(r.type_label) + '</span>' + snippet + '</div>' +
+                '</div>' +
+                '</' + tag + '>';
+        }).join('');
+    }
+
+    /** کلیک روی نتیجه — اطلاعیه: بازکردنِ همون مودالِ آشنا (بدونِ رفتن به صفحه‌ی جدید)؛
+        نوتیفیکیشن: علامتِ خوانده‌شده + رفتن به آیتمِ مرتبط (اگه لینکی داشت) */
+    function gsResultClick(idx, ev) {
+        var r = gsResultsCache[idx];
+        if (!r) return;
+
+        if (r.type === 'announcement') {
+            ev.preventDefault();
+            gsClosePanel();
+            openAnnouncementModal({
+                id: r.id,
+                title: r.title,
+                content: r.content,
+                priority: r.priority,
+                created_at: r.created_at
+            });
+            return;
+        }
+
+        if (r.type === 'notification') {
+            ev.preventDefault();
+            fetch('/api/notifications/mark-read.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + authToken
+                },
+                body: JSON.stringify({ id: r.id })
+            }).catch(function() {});
+            gsClosePanel();
+            if (r.link) {
+                location.href = r.link;
+            } else if (typeof showToast === 'function') {
+                showToast(r.message || r.title, 'info');
+            }
+            return;
+        }
+        // بقیه‌ی انواع: لینکِ ساده (رفتارِ پیش‌فرضِ <a> کافیه)
+    }
+
+    document.addEventListener('click', function(e) {
+        var toggle = document.getElementById('gsToggle');
+        var panel = document.getElementById('gsPanel');
+        if (!toggle || !panel) return;
+        if (!toggle.contains(e.target) && !panel.contains(e.target)) {
+            gsClosePanel();
+        }
+    });
 
     // ============================================
     // بارگذاری اولیه
