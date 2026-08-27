@@ -326,12 +326,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         font-weight: 600;
         color: var(--primary, #8e57fe);
         cursor: pointer;
-        text-decoration: underline;
-        text-underline-offset: 2px;
+        text-decoration: none;
     }
 
     .mark-all-link:hover {
-        opacity: .8;
+        text-decoration: underline;
+        text-underline-offset: 2px;
     }
 
     .mark-all-link:disabled {
