@@ -724,9 +724,14 @@ if (!$__me) {
                             <label class="form-label">توضیحات</label>
                             <textarea class="form-control" id="redefineDescription" rows="3"></textarea>
                         </div>
+                        <!-- نوع دوره (فقط کار دوره‌ای) — جهت اطلاع کاربر -->
+                        <div class="mb-3" id="redefinePeriodInfo" style="display:none;">
+                            <label class="form-label mb-1">نوع دوره</label>
+                            <div class="form-control-plaintext py-0 fw-bold" id="redefinePeriodLabel">-</div>
+                        </div>
                         <!-- ✅ فیلد تاریخ با ساختار کامل -->
                         <div class="mb-3" id="redefineDueDateContainer">
-                            <label class="form-label">موعد انجام</label>
+                            <label class="form-label" id="redefineDueDateLabel">موعد انجام</label>
                             <div class="persian-datepicker-wrapper" data-restrict-past="0">
                                 <input type="text" id="redefineDueDate" class="persian-datepicker-input form-control"
                                     placeholder="انتخاب تاریخ..." readonly>
@@ -4891,6 +4896,39 @@ ${task.overdue_periods > 0 ? `
             // نمایش modal بازتعریف
             let redefineTargetId = '';
 
+            // اولین تاریخِ دورهٔ بعدی بعد از امروز (با حفظِ روزِ ماه/هفته) —
+            // پیش‌فرضِ فیلدِ «تاریخ شروع دورهٔ جدید» و fallbackِ ثبت.
+            function redefineComputeNextStart() {
+                if (!(taskData.task_type === 'continuous' && taskData.period_type && taskData.start_date)) return '';
+                const [year, month, day] = taskData.start_date.split('-').map(Number);
+                const originalStart = new Date(year, month - 1, day, 12, 0, 0);
+                const today = new Date();
+                today.setHours(12, 0, 0, 0);
+                const diffDays = Math.floor((today - originalStart) / 86400000);
+                let next;
+                switch (taskData.period_type) {
+                    case 'daily':
+                        next = new Date(year, month - 1, day + diffDays + 1, 12, 0, 0);
+                        break;
+                    case 'weekly': {
+                        const weeksPassed = Math.floor(diffDays / 7);
+                        next = new Date(year, month - 1, day + (weeksPassed + 1) * 7, 12, 0, 0);
+                        break;
+                    }
+                    case 'monthly': {
+                        const monthsPassed = (today.getFullYear() - year) * 12 + (today.getMonth() - (month - 1));
+                        next = new Date(year, month - 1 + monthsPassed + 1, day, 12, 0, 0);
+                        break;
+                    }
+                    default:
+                        return '';
+                }
+                const y = next.getFullYear();
+                const m = String(next.getMonth() + 1).padStart(2, '0');
+                const d = String(next.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
             function showRedefineModal() {
                 // پر کردن فیلدها با اطلاعات فعلی
                 document.getElementById('redefineTitle').value = taskData.title;
@@ -4922,8 +4960,14 @@ ${task.overdue_periods > 0 ? `
 
                 // نمایش/مخفی کردن فیلد تاریخ بر اساس نوع تسک
                 const dueDateContainer = document.getElementById('redefineDueDateContainer');
+                const dueDateLabel = document.getElementById('redefineDueDateLabel');
+                const periodInfo = document.getElementById('redefinePeriodInfo');
+                const periodLabelEl = document.getElementById('redefinePeriodLabel');
+
                 if (taskData.task_type === 'periodic') {
                     dueDateContainer.style.display = 'block';
+                    if (dueDateLabel) dueDateLabel.textContent = 'موعد انجام';
+                    if (periodInfo) periodInfo.style.display = 'none';
 
                     // ✅ تبدیل به فرمت YYYY-MM-DD
                     const year = defaultDate.getFullYear();
@@ -4936,8 +4980,24 @@ ${task.overdue_periods > 0 ? `
                     setTimeout(() => {
                         initPersianDatepickerForModal('redefineDueDate', dateString);
                     }, 100);
+                } else if (taskData.task_type === 'continuous') {
+                    // کار دوره‌ای: تاریخِ شروعِ دورهٔ جدید قابلِ تعریف است
+                    dueDateContainer.style.display = 'block';
+                    if (dueDateLabel) dueDateLabel.textContent = 'تاریخ شروع دورهٔ جدید';
+                    if (periodInfo && periodLabelEl) {
+                        periodLabelEl.textContent = getPeriodLabel(taskData.period_type);
+                        periodInfo.style.display = 'block';
+                    }
+                    // پیش‌فرض = اولین دورهٔ بعدی (با حفظِ روزِ ماه) — اگر کاربر تغییرش دهد، همان ملاک است
+                    const nextStart = redefineComputeNextStart();
+                    if (nextStart) {
+                        setTimeout(() => {
+                            initPersianDatepickerForModal('redefineDueDate', nextStart);
+                        }, 100);
+                    }
                 } else {
                     dueDateContainer.style.display = 'none';
+                    if (periodInfo) periodInfo.style.display = 'none';
                 }
 
                 // بارگذاری لیست کاربران (پیکر سرچ‌دار)
@@ -5070,56 +5130,17 @@ ${task.overdue_periods > 0 ? `
                         requestBody.due_date = dueDate;
                     }
 
-                    // ✅ برای continuous: محاسبه start_date (اول دوره بعدی بعد از امروز)
-                    // ✅ برای continuous: محاسبه start_date (اول دوره بعدی بعد از امروز)
-                    // ✅ برای continuous: محاسبه start_date (اول دوره بعدی بعد از امروز)
-                    if (taskData.task_type === 'continuous' && taskData.period_type && taskData.start_date) {
-                        // ✅ پارس کردن تاریخ با timezone محلی
-                        const [year, month, day] = taskData.start_date.split('-').map(Number);
-                        const originalStart = new Date(year, month - 1, day, 12, 0, 0); // noon برای جلوگیری از مشکل timezone
-
-                        const today = new Date();
-                        today.setHours(12, 0, 0, 0); // noon
-
-                        // محاسبه تفاوت روزها
-                        const diffTime = today - originalStart;
-                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-                        let nextPeriodDate;
-
-                        switch (taskData.period_type) {
-                            case 'daily':
-                                // دوره بعدی = فردا
-                                nextPeriodDate = new Date(year, month - 1, day + diffDays + 1, 12, 0, 0);
-                                break;
-
-                            case 'weekly':
-                                // تعداد هفته‌های کامل گذشته
-                                const weeksPassed = Math.floor(diffDays / 7);
-                                const daysToAdd = (weeksPassed + 1) * 7;
-
-                                // دوره بعدی
-                                nextPeriodDate = new Date(year, month - 1, day + daysToAdd, 12, 0, 0);
-                                break;
-
-                            case 'monthly':
-                                // تعداد ماه‌های گذشته
-                                const todayYear = today.getFullYear();
-                                const todayMonth = today.getMonth();
-                                const monthsPassed = (todayYear - year) * 12 + (todayMonth - (month - 1));
-
-                                // دوره بعدی
-                                nextPeriodDate = new Date(year, month - 1 + monthsPassed + 1, day, 12, 0, 0);
-                                break;
+                    // ✅ برای continuous: تاریخِ شروعِ دورهٔ جدید از datepicker
+                    // (پیش‌فرضش همان «اولین دورهٔ بعدی» است؛ کاربر می‌تواند تغییرش دهد
+                    //  تا مثلاً کارِ ماهانهٔ «۵ ام» به «۱۰ ام» تبدیل شود)
+                    if (taskData.task_type === 'continuous' && taskData.period_type) {
+                        const picked = document.getElementById('redefineDueDate').getAttribute('data-date');
+                        const startDate = picked || redefineComputeNextStart();
+                        if (!startDate) {
+                            showAlert('لطفاً تاریخ شروع دورهٔ جدید را انتخاب کنید', 'warning');
+                            return;
                         }
-
-                        // ✅ تبدیل به فرمت YYYY-MM-DD
-                        const nextYear = nextPeriodDate.getFullYear();
-                        const nextMonth = String(nextPeriodDate.getMonth() + 1).padStart(2, '0');
-                        const nextDay = String(nextPeriodDate.getDate()).padStart(2, '0');
-
-                        requestBody.start_date = `${nextYear}-${nextMonth}-${nextDay}`;
-
+                        requestBody.start_date = startDate;
                     }
 
                     const response = await fetch('../api/tasks/create.php', {
