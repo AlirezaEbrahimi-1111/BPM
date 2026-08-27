@@ -316,10 +316,29 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         }
     }
 
-    .mark-all-btn:disabled {
+    /* «خواندن همه» به‌شکلِ لینک، نه دکمه */
+    .mark-all-link {
+        background: none;
+        border: none;
+        padding: 0;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--primary, #8e57fe);
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .mark-all-link:hover {
+        opacity: .8;
+    }
+
+    .mark-all-link:disabled {
         opacity: .4;
         cursor: default;
         pointer-events: none;
+        text-decoration: none;
     }
 </style>
 <!-- بستن فوری drawer قبل از render — جلوگیری از flash -->
@@ -580,7 +599,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 aria-labelledby="announcementDropdown" style="min-width: 360px;">
                 <div class="notification-header">
                     <span>اطلاعیه‌های سازمانی</span>
-                    <button type="button" class="mark-all-btn" id="annMarkAllBtn" onclick="annMarkAllRead()" disabled>
+                    <button type="button" class="mark-all-link" id="annMarkAllBtn" onclick="annMarkAllRead()" disabled>
                         خواندن همه
                     </button>
                 </div>
@@ -616,7 +635,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 aria-labelledby="notificationDropdown">
                 <div class="notification-header">
                     <span>اعلان‌ها</span>
-                    <button type="button" class="mark-all-btn" id="notifMarkAllBtn" onclick="notifMarkAllRead()" disabled>
+                    <button type="button" class="mark-all-link" id="notifMarkAllBtn" onclick="notifMarkAllRead()" disabled>
                         خواندن همه
                     </button>
                 </div>
