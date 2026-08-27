@@ -386,6 +386,7 @@ function fillForm() {
         const ll = document.getElementById('headerLastLogin');
         ll.style.display = '';
         document.getElementById('lastLoginVal').textContent =
+            window.TimeSync ? TimeSync.formatJalaliTime(u.last_login) :
             new Date(u.last_login).toLocaleString('fa-IR', {
                 year:'numeric', month:'2-digit', day:'2-digit',
                 hour:'2-digit', minute:'2-digit'

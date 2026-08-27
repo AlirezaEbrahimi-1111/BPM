@@ -929,8 +929,8 @@ if (!$__me) {
 
         // ─── اطلاعات ───
         function renderInfo(t) {
-            var created = new Date(t.created_at).toLocaleDateString('fa-IR');
-            var updated = new Date(t.updated_at).toLocaleDateString('fa-IR');
+            var created = window.TimeSync ? TimeSync.formatJalali(t.created_at) : new Date(t.created_at).toLocaleDateString('fa-IR');
+            var updated = window.TimeSync ? TimeSync.formatJalali(t.updated_at) : new Date(t.updated_at).toLocaleDateString('fa-IR');
 
             var linkedTaskHtml = '';
             if (t.source_type === 'task' && t.source_id && t.linked_task_title) {
@@ -988,7 +988,7 @@ if (!$__me) {
                 var senderBadge = isFromCreator
                     ? '<span class="msg-badge msg-badge-user">کاربر</span>'
                     : '<span class="msg-badge msg-badge-support">پشتیبانی</span>';
-                var time = new Date(m.created_at).toLocaleString('fa-IR');
+                var time = window.TimeSync ? TimeSync.formatJalaliTime(m.created_at) : new Date(m.created_at).toLocaleString('fa-IR');
 
                 var imagesHtml = '';
                 var msgImages = imagesByMessage[m.id] || [];

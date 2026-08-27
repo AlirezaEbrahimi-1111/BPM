@@ -1159,7 +1159,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                     headerName: 'ایجاد',
                     width: 105,
                     sortable: true,
-                    cellRenderer: p => p.value ? `<small>${toFa(new Date(p.value).toLocaleDateString('fa-IR'))}</small>` : '—'
+                    cellRenderer: p => p.value ? `<small>${window.TimeSync ? TimeSync.formatJalali(p.value) : toFa(new Date(p.value).toLocaleDateString('fa-IR'))}</small>` : '—'
                 },
                 {
                     field: 'is_active',
@@ -1174,7 +1174,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                     width: 130,
                     sortable: true,
                     cellRenderer: p => p.value ?
-                        `<small>${toFa(new Date(p.value).toLocaleDateString('fa-IR', { timeZone:'Asia/Tehran' }))}</small>` : '<small style="color:#9ca3af">—</small>'
+                        `<small>${window.TimeSync ? TimeSync.formatJalali(p.value) : toFa(new Date(p.value).toLocaleDateString('fa-IR', { timeZone:'Asia/Tehran' }))}</small>` : '<small style="color:#9ca3af">—</small>'
                 },
                 {
                     headerName: 'عملیات',
@@ -1605,11 +1605,9 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
             if (!secList.length && u.activity_section) secList = [u.activity_section];
             originalSections = collectSections().slice().sort().join(',');
             renderSecTags();
-            document.getElementById('e_last_login').value = u.last_login ?
-                new Date(u.last_login).toLocaleString('fa-IR', {
-                    timeZone: 'Asia/Tehran'
-                }) :
-                'هرگز وارد نشده';
+            document.getElementById('e_last_login').value = !u.last_login ? 'هرگز وارد نشده' :
+                (window.TimeSync ? TimeSync.formatJalaliTime(u.last_login)
+                    : new Date(u.last_login).toLocaleString('fa-IR', { timeZone: 'Asia/Tehran' }));
             document.getElementById('e_password').value = '';
             document.getElementById('e_password_confirm').value = '';
 

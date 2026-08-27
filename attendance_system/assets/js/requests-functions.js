@@ -152,10 +152,15 @@ function getTimelineHTML(timeline) {
         // فرمت تاریخ و ساعت
         let dateTime = '';
         if (item.date) {
-            const d = new Date(item.date);
-            const time = d.toLocaleTimeString('fa-IR', {hour: '2-digit', minute: '2-digit'});
-            const date = d.toLocaleDateString('fa-IR');
-            dateTime = `${date} - ${time}`;
+            if (window.TimeSync) {
+                const dd = TimeSync.formatJalali(item.date), tt = TimeSync.formatTimeOnly(item.date);
+                dateTime = dd ? `${dd} - ${tt}` : '';
+            } else {
+                const d = new Date(item.date);
+                const time = d.toLocaleTimeString('fa-IR', {hour: '2-digit', minute: '2-digit'});
+                const date = d.toLocaleDateString('fa-IR');
+                dateTime = `${date} - ${time}`;
+            }
         }
         
         html += `

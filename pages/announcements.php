@@ -233,6 +233,7 @@ if (!$__me) {
         function pad(n) { return n < 10 ? '0' + n : '' + n; }
         function faTime(iso) {
             if (!iso) return '';
+            if (window.TimeSync) { const s = TimeSync.formatJalaliTime(iso); return s || faNum(iso); }
             try { const d = new Date(iso.replace(' ', 'T')); if (isNaN(d)) return faNum(iso); return faNum(d.toLocaleDateString('fa-IR') + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes())); }
             catch { return faNum(iso); }
         }

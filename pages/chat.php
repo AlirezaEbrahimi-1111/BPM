@@ -2850,10 +2850,9 @@ if (!$__me) {
                     ? '<span class="chat-unread-badge' + (c.is_muted ? ' muted' : '') + '">' + (c.unread_count > 99 ? toFa(99) + '+' : toFa(c.unread_count)) + '</span>'
                     : '';
                 var muteIcon = c.is_muted ? '<i class="bi bi-bell-slash-fill chat-conv-mute-icon"></i>' : '';
-                var time = c.last_message_at ? new Date(c.last_message_at.replace(' ', 'T')).toLocaleTimeString('fa-IR', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }) : '';
+                var time = !c.last_message_at ? '' : (window.TimeSync
+                    ? TimeSync.formatTimeOnly(c.last_message_at)
+                    : new Date(c.last_message_at.replace(' ', 'T')).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }));
                 var previewHtml = c.other_user_is_typing
                     ? '<div class="chat-conv-preview typing">در حال نوشتن...</div>'
                     : (isDraft

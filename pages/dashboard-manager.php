@@ -2624,8 +2624,23 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             return toJalali(d.getFullYear(), d.getMonth() + 1, d.getDate());
         }
 
+        /* «امروز» = روزِ تقویمیِ سرور (تهران)، به‌صورتِ Date با ۰۰:۰۰ محلی —
+           تا محاسباتِ هفته/ماه/تقویم به ساعت/تایم‌زونِ دستگاه وابسته نباشد */
+        function todayLocal() {
+            if (window.TimeSync) {
+                const p = TimeSync.serverParts();
+                const d = new Date(p.y, p.mo - 1, p.d);
+                d.setHours(0, 0, 0, 0);
+                return d;
+            }
+            const n = new Date();
+            n.setHours(0, 0, 0, 0);
+            return n;
+        }
+
         function faDate(str) {
             if (!str) return '—';
+            if (window.TimeSync) { const s = TimeSync.formatJalali(str); return s || '—'; }
             const d = new Date(str);
             if (isNaN(d)) return '—';
             const [jy, jm, jd] = jalaliOf(d);
@@ -2820,8 +2835,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         /* ───────── کارت‌های آماری (بر پایه‌ی تقویم) ───────── */
         function renderStats() {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const today = todayLocal();
             const [tjy, tjm] = jalaliOf(today);
 
             const tomorrow = new Date(today);
@@ -3576,8 +3590,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             }
             const d = dateOnly(TF.effectiveDue(t));
             if (!d) return '';
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const today = todayLocal();
             const diff = Math.floor((today - d) / 86400000);
             return diff > 0 ? `${toFa(diff)} روز` : '';
         }
@@ -3749,6 +3762,10 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         /* تاریخ شمسی + ساعت */
         function faDateTime(str) {
             if (!str) return '—';
+            if (window.TimeSync) {
+                const dt = TimeSync.formatJalali(str), tm = TimeSync.formatTimeOnly(str);
+                return dt ? (tm ? `${dt} - ${tm}` : dt) : '—';
+            }
             const d = new Date(str);
             if (isNaN(d)) return '—';
             const [jy, jm, jd] = jalaliOf(d);
@@ -3775,8 +3792,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             d.setHours(0, 0, 0, 0);
             if (isNaN(d)) return false;
 
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const today = todayLocal();
 
             if (scope === 'tomorrow') {
                 const tom = new Date(today);
@@ -4569,8 +4585,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         /* شنبهٔ هفتهٔ هدف را برمی‌گرداند */
         function wkSaturdayOf(offset) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const today = todayLocal();
             // شنبه = اولین روز هفتهٔ شمسی. getDay(): شنبه=6
             const back = (today.getDay() + 1) % 7; // فاصله تا شنبهٔ همین هفته
             const sat = new Date(today);
@@ -4680,8 +4695,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         /* اولِ ماهِ شمسیِ جاری، به گرگوری */
         function moTodayMonthStart() {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const today = todayLocal();
             const jd = jalaliOf(today)[2];
             const d = new Date(today);
             d.setDate(d.getDate() - (jd - 1));
@@ -4902,8 +4916,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 cellIdx++;
             }
 
-            const todayRef = new Date();
-            todayRef.setHours(0, 0, 0, 0);
+            const todayRef = todayLocal();
             const todayTime = todayRef.getTime();
 
             for (let dayNum = 1; dayNum <= daysCount; dayNum++) {

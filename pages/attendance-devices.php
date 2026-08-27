@@ -525,6 +525,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
 
         function faTime(iso) {
             if (!iso) return '—';
+            if (window.TimeSync) { const s = TimeSync.formatJalaliTime(iso); return s || faNum(iso); }
             try {
                 const d = new Date(iso.replace(' ', 'T'));
                 if (isNaN(d)) return faNum(iso);

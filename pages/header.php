@@ -746,8 +746,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     let notifFilterMode = 'all';
     let notifSearchQuery = '';
 
-    /** برچسبِ گروهِ روز — «امروز»/«دیروز»/«قدیمی‌تر»، برایِ هر دو لیست مشترک */
+    /** برچسبِ گروهِ روز — «امروز»/«دیروز»/«قدیمی‌تر»، مبنا: امروزِ سرور (تهران) */
     function bpmDayGroupLabel(dateStr) {
+        if (window.TimeSync) {
+            const df = TimeSync.daysFromToday(dateStr); // ۰ = امروز، ‑۱ = دیروز
+            if (isNaN(df)) return 'قدیمی‌تر';
+            if (df >= 0) return 'امروز';
+            if (df === -1) return 'دیروز';
+            return 'قدیمی‌تر';
+        }
         const d = new Date(dateStr);
         const startOfDay = dt => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()).getTime();
         const diffDays = Math.round((startOfDay(new Date()) - startOfDay(d)) / 86400000);

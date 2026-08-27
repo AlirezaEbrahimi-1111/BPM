@@ -28,8 +28,9 @@ window.TF = (function () {
        ۱) کمکی‌های تاریخ
        ═══════════════════════════════════════════════════ */
 
-    /** تاریخ امروز به شکل 'YYYY-MM-DD' (وقت محلی، نه UTC) */
+    /** تاریخ امروز 'YYYY-MM-DD' — از ساعتِ سرور (تهران)، نه دستگاه. time-sync.js */
     function today() {
+        if (window.TimeSync) return TimeSync.serverToday();
         const d = new Date();
         const p = n => String(n).padStart(2, '0');
         return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;

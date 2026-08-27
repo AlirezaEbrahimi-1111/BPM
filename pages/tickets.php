@@ -409,7 +409,7 @@ if (!$__me) {
             {
                 field: 'created_at', headerName: 'تاریخ', width: 130, sortable: true, resizable: true,
                 cellRenderer: p => {
-                    const d = p.value ? new Date(p.value).toLocaleDateString('fa-IR') : '–';
+                    const d = !p.value ? '–' : (window.TimeSync ? TimeSync.formatJalali(p.value) : new Date(p.value).toLocaleDateString('fa-IR'));
                     const rel = relTime(p.value);
                     return '<span style="font-size:.84rem;">' + d + '</span>' + (rel ? '<br><span style="font-size:.72rem;color:#aaa;">' + rel + '</span>' : '');
                 }

@@ -766,7 +766,8 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
         }
 
         function fmtDate(d) {
-            return d ? new Date(d).toLocaleDateString('fa-IR') : '-';
+            if (!d) return '-';
+            return window.TimeSync ? (TimeSync.formatJalali(d) || '-') : new Date(d).toLocaleDateString('fa-IR');
         }
 
         function relTime(d) {

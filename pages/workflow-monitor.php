@@ -1915,6 +1915,7 @@ if (!$__me) {
         /* ─── Helpers ─── */
         function formatDate(d) {
             if (!d) return '—';
+            if (window.TimeSync) return TimeSync.formatJalali(d) || '—';
             return new Date(d).toLocaleDateString('fa-IR', {
                 year: 'numeric',
                 month: 'short',
@@ -1924,6 +1925,7 @@ if (!$__me) {
 
         function formatDateTime(d) {
             if (!d) return '—';
+            if (window.TimeSync) return TimeSync.formatJalaliTime(d) || '—';
             return new Date(d).toLocaleDateString('fa-IR', {
                 year: 'numeric',
                 month: 'short',
@@ -1988,10 +1990,9 @@ if (!$__me) {
         }
 
         function updateLastUpdateTime() {
-            document.getElementById('lastUpdate').textContent = 'بروزرسانی: ' + new Date().toLocaleTimeString('fa-IR', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+            document.getElementById('lastUpdate').textContent = 'بروزرسانی: ' + (window.TimeSync
+                ? TimeSync.formatTimeOnly(TimeSync.serverNow())
+                : new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }));
         }
 
         // showError از showInlineError مشترک (assets/js/alert.js) استفاده می‌کنه

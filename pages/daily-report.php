@@ -542,19 +542,21 @@ if (!$__me) {
         }
 
         function getCurrentPersianDate() {
+            // «امروز» از ساعتِ سرور، و فرمت صریحاً به وقتِ تهران
             return new Intl.DateTimeFormat('fa-IR', {
-                year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
-            }).format(new Date());
+                year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', timeZone: 'Asia/Tehran'
+            }).format(window.TimeSync ? TimeSync.serverNow() : new Date());
         }
 
         function getPersianDateFormatted() {
             return new Intl.DateTimeFormat('fa-IR', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-            }).format(new Date());
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Tehran'
+            }).format(window.TimeSync ? TimeSync.serverNow() : new Date());
         }
 
         function getTime(dt) {
             if (!dt) return '';
+            if (window.TimeSync) return TimeSync.formatTimeOnly(dt);
             try {
                 return new Date(dt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
             } catch { return ''; }

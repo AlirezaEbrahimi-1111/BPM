@@ -1291,17 +1291,25 @@ if (!$__me) {
                     return result;
                 }
 
-                // ✅ استفاده از API مرورگر برای تبدیل میلادی به شمسی
+                // تبدیل میلادی→شمسی — با time-sync.js (نه toLocaleDateString که به تایم‌زونِ دستگاه و locale وابسته است)
                 function gregorianToJalali(gDate) {
                     try {
+                        if (window.TimeSync) {
+                            let y, mo, d;
+                            if (gDate instanceof Date && !isNaN(gDate.getTime())) {
+                                y = gDate.getFullYear(); mo = gDate.getMonth() + 1; d = gDate.getDate();
+                            } else {
+                                const sp = TimeSync.serverParts();
+                                y = sp.y; mo = sp.mo; d = sp.d;
+                            }
+                            const j = TimeSync.gregorianToJalali(y, mo, d);
+                            return { year: j[0], month: j[1], day: j[2] };
+                        }
                         if (!gDate || !(gDate instanceof Date) || isNaN(gDate.getTime())) {
                             gDate = new Date();
                         }
-
-                        // استفاده از API مرورگر برای تبدیل
                         const shamsiStr = gDate.toLocaleDateString('fa-IR');
                         const parts = shamsiStr.split('/').map(p => parseInt(toEnglish(p)));
-
                         return {
                             year: parts[0],
                             month: parts[1],
@@ -3462,6 +3470,10 @@ ${task.overdue_periods > 0 ? `
 
             function formatDeadlineDisplay(dateString) {
                 if (!dateString) return 'نامشخص';
+                if (window.TimeSync) {
+                    const dt = TimeSync.formatJalaliLong(dateString), tm = TimeSync.formatTimeOnly(dateString);
+                    return dt ? `${dt} - ${tm}` : dateString;
+                }
                 try {
                     const date = new Date(dateString);
                     const options = {
@@ -4138,39 +4150,39 @@ ${task.overdue_periods > 0 ? `
                         `${esc(item.from_user_first_name || '')} ${esc(item.from_user_last_name || '')}`.trim() :
                         'نامشخص';
 
-                    const dateOnly = item.created_at ?
-                        new Date(item.created_at).toLocaleDateString('fa-IR', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        }) :
-                        '';
-                    const timeOnly = item.created_at ?
-                        new Date(item.created_at).toLocaleTimeString('fa-IR', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        }) :
-                        '';
+                    const dateOnly = !item.created_at ? '' :
+                        (window.TimeSync ? TimeSync.formatJalaliLong(item.created_at) :
+                            new Date(item.created_at).toLocaleDateString('fa-IR', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            }));
+                    const timeOnly = !item.created_at ? '' :
+                        (window.TimeSync ? TimeSync.formatTimeOnly(item.created_at) :
+                            new Date(item.created_at).toLocaleTimeString('fa-IR', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            }));
 
                     // build notes section
                     let notesHTML = '';
                     if (item.action === 'deadline_extended' && item.notes) {
                         try {
                             const n = JSON.parse(item.notes);
-                            const oldD = n.old_deadline ?
-                                new Date(n.old_deadline).toLocaleDateString('fa-IR', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                }) :
-                                'نامشخص';
-                            const newD = n.new_deadline ?
-                                new Date(n.new_deadline).toLocaleDateString('fa-IR', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                }) :
-                                'نامشخص';
+                            const oldD = !n.old_deadline ? 'نامشخص' :
+                                (window.TimeSync ? TimeSync.formatJalaliLong(n.old_deadline) :
+                                    new Date(n.old_deadline).toLocaleDateString('fa-IR', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    }));
+                            const newD = !n.new_deadline ? 'نامشخص' :
+                                (window.TimeSync ? TimeSync.formatJalaliLong(n.new_deadline) :
+                                    new Date(n.new_deadline).toLocaleDateString('fa-IR', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    }));
                             notesHTML = `
                             <div class="ml-deadline-inline">
                                 <span class="ml-cross">${oldD}</span>
@@ -4642,6 +4654,7 @@ ${task.overdue_periods > 0 ? `
 
             function formatPersianDate(dateString) {
                 if (!dateString) return 'نامشخص';
+                if (window.TimeSync) return TimeSync.formatJalaliLong(dateString) || dateString;
                 try {
                     const date = new Date(dateString);
 
@@ -4658,9 +4671,12 @@ ${task.overdue_periods > 0 ? `
 
             function formatDateTime(dateString) {
                 if (!dateString) return 'نامشخص';
+                if (window.TimeSync) {
+                    const dt = TimeSync.formatJalaliLong(dateString), tm = TimeSync.formatTimeOnly(dateString);
+                    return dt ? `${dt} - ${tm}` : dateString;
+                }
                 try {
                     const date = new Date(dateString);
-                    date.setDate(date.getDate());
                     const dateOptions = {
                         year: 'numeric',
                         month: 'long',

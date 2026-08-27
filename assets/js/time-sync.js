@@ -138,6 +138,57 @@
             ' ' + toFaDigits(pad2(p.h)) + ':' + toFaDigits(pad2(p.mi));
     }
 
+    var JMONTHS = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+        'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+
+    /* «۵ شهریور ۱۴۰۵» */
+    function formatJalaliLong(v) {
+        var p = tehranParts(v);
+        if (!p) return '';
+        var j = gregorianToJalali(p.y, p.mo, p.d);
+        return toFaDigits(j[2]) + ' ' + JMONTHS[j[1] - 1] + ' ' + toFaDigits(j[0]);
+    }
+
+    /* فقط ساعت: «۱۰:۱۶» */
+    function formatTimeOnly(v) {
+        var p = tehranParts(v);
+        if (!p) return '';
+        return toFaDigits(pad2(p.h)) + ':' + toFaDigits(pad2(p.mi));
+    }
+
+    /* ═══ کمکی‌های «امروزِ سرور» برای منطقِ دسته‌بندی (فاز ۲) ═══ */
+
+    function serverParts() { return tehranParts(serverNow()); }
+
+    /* 'YYYY-MM-DD' میلادیِ امروز، به وقتِ تهران (هم‌فرمت با تاریخِ موعدِ کارها) */
+    function serverToday() {
+        var p = serverParts();
+        return p.y + '-' + pad2(p.mo) + '-' + pad2(p.d);
+    }
+
+    /* [jy, jm, jd]ِ امروز به وقتِ تهران */
+    function serverJalali() {
+        var p = serverParts();
+        return gregorianToJalali(p.y, p.mo, p.d);
+    }
+
+    /* 'YYYY-MM-DD' میلادیِ یک تایم‌استمپ، به وقتِ تهران */
+    function dateOnly(v) {
+        var p = tehranParts(v);
+        if (!p) return '';
+        return p.y + '-' + pad2(p.mo) + '-' + pad2(p.d);
+    }
+
+    /* اختلافِ روزِ تقویمی نسبت به امروزِ سرور (مثبت = آینده، ۰ = امروز، ‑۱ = دیروز) */
+    function daysFromToday(v) {
+        var p = tehranParts(v);
+        if (!p) return NaN;
+        var t = serverParts();
+        var a = Math.floor(Date.UTC(p.y, p.mo - 1, p.d) / 86400000);
+        var b = Math.floor(Date.UTC(t.y, t.mo - 1, t.d) / 86400000);
+        return a - b;
+    }
+
     window.TimeSync = {
         __installed: true,
         sync: sync,
@@ -146,11 +197,19 @@
         tzOffsetMinutes: function () { return TZ_OFFSET_MIN; },
         serverNow: serverNow,
         serverNowMs: serverNowMs,
+        serverParts: serverParts,
+        serverToday: serverToday,
+        serverJalali: serverJalali,
+        dateOnly: dateOnly,
+        daysFromToday: daysFromToday,
         parseServerTime: parseServerTime,
         timeAgo: timeAgo,
         formatJalali: formatJalali,
         formatJalaliTime: formatJalaliTime,
+        formatJalaliLong: formatJalaliLong,
+        formatTimeOnly: formatTimeOnly,
         gregorianToJalali: gregorianToJalali,
+        jMonthName: function (m) { return JMONTHS[m - 1] || ''; },
         toFaDigits: toFaDigits
     };
 

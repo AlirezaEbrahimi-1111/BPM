@@ -283,6 +283,7 @@
     // تبدیل تاریخ میلادی به شمسی فارسی
     function formatDeadlinePersian(dateString) {
         if (!dateString) return 'نامشخص';
+        if (window.TimeSync) return TimeSync.formatJalaliLong(dateString) || dateString;
         try {
             var date = new Date(dateString);
             return date.toLocaleDateString('fa-IR', {

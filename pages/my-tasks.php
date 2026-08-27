@@ -517,8 +517,9 @@ if (!$__me) {
             if (dashFilter === 'week') {
                 bannerText.textContent = 'نمایش فقط کارهای این هفته';
             } else if (dashFilter === 'month') {
-                const targetJY = dashFilterJY || jalaliOf(new Date())[0];
-                const targetJM = dashFilterJM || jalaliOf(new Date())[1];
+                const nowJ = window.TimeSync ? TimeSync.serverJalali() : jalaliOf(new Date());
+                const targetJY = dashFilterJY || nowJ[0];
+                const targetJM = dashFilterJM || nowJ[1];
                 bannerText.textContent = 'نمایش فقط کارهای ' + months[targetJM - 1] + ' ' + toPersian(targetJY);
             } else {
                 const [gy, gm, gd] = dashFilterDate.split('-').map(Number);
@@ -687,7 +688,9 @@ if (!$__me) {
                     const d = new Date(due);
                     d.setHours(0, 0, 0, 0);
                     if (isNaN(d)) return false;
-                    const now = new Date();
+                    // «اکنون» از تاریخِ سرور (تهران)، نه ساعتِ دستگاه
+                    const sp = window.TimeSync ? TimeSync.serverParts() : null;
+                    const now = sp ? new Date(sp.y, sp.mo - 1, sp.d) : new Date();
                     now.setHours(0, 0, 0, 0);
                     const start = new Date(now);
                     start.setDate(now.getDate() - ((now.getDay() + 1) % 7));
@@ -702,8 +705,9 @@ if (!$__me) {
                     const d = new Date(due);
                     if (isNaN(d)) return false;
                     const [jy, jm] = jalaliOf(d);
-                    const targetJY = dashFilterJY || jalaliOf(new Date())[0];
-                    const targetJM = dashFilterJM || jalaliOf(new Date())[1];
+                    const nowJ = window.TimeSync ? TimeSync.serverJalali() : jalaliOf(new Date());
+                    const targetJY = dashFilterJY || nowJ[0];
+                    const targetJM = dashFilterJM || nowJ[1];
                     if (jy !== targetJY || jm !== targetJM) return false;
                 }
 
@@ -717,8 +721,9 @@ if (!$__me) {
 
                 return true;
             });
-            // ✅ محاسبه next_due_date و days_remaining برای هر تسک
-            const todayDate = new Date();
+            // ✅ محاسبه next_due_date و days_remaining برای هر تسک — «امروز» از سرور
+            const _sp = window.TimeSync ? TimeSync.serverParts() : null;
+            const todayDate = _sp ? new Date(_sp.y, _sp.mo - 1, _sp.d) : new Date();
             todayDate.setHours(0, 0, 0, 0);
 
             filteredTasks.forEach(t => {
@@ -814,7 +819,9 @@ if (!$__me) {
                 return `<span class="days-badge ${cls}">${toPersian(hr)} ساعت مانده</span>`;
             }
 
-            const diff = Math.ceil((new Date(d).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5);
+            const diff = window.TimeSync
+                ? TimeSync.daysFromToday(d)
+                : Math.ceil((new Date(d).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5);
             if (diff < 0) {
                 const wd = Math.max(1, (task && task.working_days_delayed) || 0);
                 return `<span class="days-badge days-overdue">${toPersian(wd)} روز کاری تاخیر</span>`;
@@ -825,7 +832,8 @@ if (!$__me) {
         }
 
         function fmtDate(d) {
-            return d ? new Date(d).toLocaleDateString('fa-IR') : '-';
+            if (!d) return '-';
+            return window.TimeSync ? (TimeSync.formatJalali(d) || '-') : new Date(d).toLocaleDateString('fa-IR');
         }
 
         function relTime(d) {
