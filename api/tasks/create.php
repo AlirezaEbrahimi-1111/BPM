@@ -146,6 +146,62 @@ try {
             error_log("set share_history error: " . $e->getMessage());
         }
 
+        // ─── دسترسیِ «فقط مشاهده» برای افرادِ خاص (task_viewers) ───────────
+        // هم‌رفتار با api/tasks/add-viewers.php: فقط کاربرانِ فعالِ همان سازمان،
+        // granted_by = تعریف‌کننده، و اعلان برای هر بیننده.
+        if (!empty($input['viewers']) && is_array($input['viewers'])) {
+            try {
+                $viewerRows = [];
+                foreach ($input['viewers'] as $v) {
+                    $vid = (int) ($v['user_id'] ?? 0);
+                    if ($vid <= 0 || $vid === (int) $user_id) continue;
+                    $viewerRows[$vid] = [
+                        'att'  => empty($v['can_view_attachments']) ? 0 : 1,
+                        'hist' => empty($v['can_view_history']) ? 0 : 1,
+                        'chk'  => empty($v['can_view_checklist']) ? 0 : 1,
+                    ];
+                }
+
+                if ($viewerRows) {
+                    $vph = implode(',', array_fill(0, count($viewerRows), '?'));
+                    $vStmt = $db->prepare(
+                        "SELECT id FROM users WHERE id IN ($vph) AND organization_id = ? AND is_active = 1 AND is_deleted = 0"
+                    );
+                    $vStmt->execute(array_merge(array_keys($viewerRows), [$organization_id]));
+                    $validViewerIds = array_map('intval', $vStmt->fetchAll(PDO::FETCH_COLUMN));
+
+                    if ($validViewerIds) {
+                        $ins = $db->prepare("
+                            INSERT INTO task_viewers (task_id, user_id, granted_by, can_view_attachments, can_view_history, can_view_checklist)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                            ON DUPLICATE KEY UPDATE
+                                can_view_attachments = VALUES(can_view_attachments),
+                                can_view_history     = VALUES(can_view_history),
+                                can_view_checklist   = VALUES(can_view_checklist)
+                        ");
+                        $vNotif = new Notification($db);
+                        $taskTitle = $input['title'] ?? 'کار';
+                        foreach ($validViewerIds as $vid) {
+                            $r = $viewerRows[$vid];
+                            $ins->execute([$newTaskId, $vid, $user_id, $r['att'], $r['hist'], $r['chk']]);
+                            $vNotif->create([
+                                'to_user_id'   => $vid,
+                                'title'        => 'دسترسیِ مشاهدهٔ یک کار',
+                                'message'      => 'به شما دسترسیِ مشاهدهٔ کارِ «' . $taskTitle . '» داده شد',
+                                'type'         => 'info',
+                                'link'         => '/pages/task-detail.php?id=' . $newTaskId,
+                                'related_type' => 'task',
+                                'related_id'   => $newTaskId,
+                                'sms_pattern'  => 'general',
+                            ]);
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                error_log("create.php add task_viewers error: " . $e->getMessage());
+            }
+        }
+
         // ─── کپی فایل‌های پیوست (اگر درخواست شده) ──────────────────────────
         if (!empty($input['copy_attachment_ids']) && is_array($input['copy_attachment_ids'])) {
             try {

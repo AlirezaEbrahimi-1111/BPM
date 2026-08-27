@@ -408,58 +408,96 @@ if (!$__me) {
                     </div>
                     <!-- بخش فایل‌های پیوست -->
             </div>
-            <div class="row mt-4">
-                <div class="col-md-6">
-                    <!-- اشتراک‌گذاری تاریخچه با ارجاع‌شوندگان -->
-                    <div class="form-check form-switch mt-4" id="shareHistorySection">
-                        <input class="form-check-input" type="checkbox" id="shareHistoryToggle" checked>
-                        <label class="form-check-label" for="shareHistoryToggle">
-                            تاریخچهٔ کار برای کاربران ارجاع‌شونده قابل نمایش باشد
-                        </label>
-                        <small class="form-text text-muted d-block">
-                            اگر غیرفعال شود، هر کاربری که کار به او ارجاع می‌شود فقط از زمان ورود خودش به بعد را می‌بیند.
-                        </small>
-                    </div>
+            <div class="row mt-4 g-3 align-items-stretch" id="manualExtrasRow">
+                <!-- ستون ۱: سوییچ نمایش تاریخچه برای ارجاع‌شوندگان + چک‌لیست -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <!-- اشتراک‌گذاری تاریخچه با ارجاع‌شوندگان -->
+                            <div class="form-check form-switch" id="shareHistorySection">
+                                <input class="form-check-input" type="checkbox" id="shareHistoryToggle" checked>
+                                <label class="form-check-label" for="shareHistoryToggle">
+                                    تاریخچهٔ کار برای کاربران ارجاع‌شونده قابل نمایش باشد
+                                </label>
+                                <small class="form-text text-muted d-block">
+                                    اگر غیرفعال شود، هر کاربری که کار به او ارجاع می‌شود فقط از زمان ورود خودش به بعد را می‌بیند.
+                                </small>
+                            </div>
 
-                    <!-- 🆕 بخش چک‌لیست (فقط کار عادی) -->
-                    <div class=" mt-4" id="checklistSection">
-                        <div style="display:flex; align-items:center;">
-                            <h5 style="display:flex; align-items:center; gap:8px; margin:0;">
-                                <i class="bi bi-check2-square"></i> چک‌لیست
-                            </h5>
-                        </div>
+                            <!-- 🆕 بخش چک‌لیست (فقط کار عادی) -->
+                            <div class="mt-4" id="checklistSection">
+                                <div style="display:flex; align-items:center;">
+                                    <h5 style="display:flex; align-items:center; gap:8px; margin:0;">
+                                        <i class="bi bi-check2-square"></i> چک‌لیست
+                                    </h5>
+                                </div>
 
-                        <div id="checklistItems" class="mt-2"></div>
+                                <div id="checklistItems" class="mt-2"></div>
 
-                        <div style="display:flex; gap:8px; margin-top:8px;">
-                            <input type="text" id="newChecklistItem" class="form-control form-control-sm"
-                                placeholder="افزودن آیتم جدید..."
-                                onkeydown="if(event.key==='Enter'){event.preventDefault();addChecklistItemCreate();}">
-                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addChecklistItemCreate()">
-                                <i class="bi bi-plus"></i>
-                            </button>
+                                <div style="display:flex; gap:8px; margin-top:8px;">
+                                    <input type="text" id="newChecklistItem" class="form-control form-control-sm"
+                                        placeholder="افزودن آیتم جدید..."
+                                        onkeydown="if(event.key==='Enter'){event.preventDefault();addChecklistItemCreate();}">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="addChecklistItemCreate()">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <!-- بخش فایل‌های پیوست -->
-                    <div class="attachments-section mt-4">
-                        <h5 style="display:flex; align-items:center; gap:8px;">
-                            <i class="bi bi-paperclip"></i>
-                            فایل‌های پیوست
-                            <span id="attachmentsCountBadge" class="badge bg-secondary" style="display:none;">0</span>
-                        </h5>
 
-                        <div class="upload-area" id="uploadArea" style="border:2px dashed #ccc; border-radius:8px; padding:30px;
+                <!-- ستون ۲: فایل‌های پیوست -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="attachments-section">
+                                <h5 style="display:flex; align-items:center; gap:8px;">
+                                    <i class="bi bi-paperclip"></i>
+                                    فایل‌های پیوست
+                                    <span id="attachmentsCountBadge" class="badge bg-secondary" style="display:none;">0</span>
+                                </h5>
+
+                                <div class="upload-area" id="uploadArea" style="border:2px dashed #ccc; border-radius:8px; padding:30px;
     text-align:center; cursor:pointer; margin-top:10px;">
-                            <input type="file" id="fileInput" style="display:none;"
-                                accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg" multiple>
-                            <i class="bi bi-cloud-upload fs-3"></i>
-                            &nbsp;<strong>فایل خود را اینجا رها کنید یا کلیک کنید</strong>
-                            <p><small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg (حداکثر 20MB)</small></p>
+                                    <input type="file" id="fileInput" style="display:none;"
+                                        accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg" multiple>
+                                    <i class="bi bi-cloud-upload fs-3"></i>
+                                    &nbsp;<strong>فایل خود را اینجا رها کنید یا کلیک کنید</strong>
+                                    <p><small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg (حداکثر 20MB)</small></p>
+                                </div>
+                                <div id="selectedFilesList" style="margin-top:1rem;"></div>
+                            </div>
                         </div>
-                        <div id="selectedFilesList" style="margin-top:1rem;"></div>
+                    </div>
+                </div>
 
+                <!-- ستون ۳: دسترسیِ مشاهده برای افراد دیگر (task_viewers) -->
+                <div class="col-lg-4 col-md-12">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 style="display:flex; align-items:center; gap:8px;">
+                                <i class="bi bi-people"></i> دسترسیِ مشاهده برای افراد دیگر
+                            </h5>
+                            <small class="form-text text-muted d-block mb-2">
+                                این افراد فقط جزئیاتِ کار را می‌بینند (بدون ویرایش یا اقدام). اعمالِ زیر برای همهٔ افرادِ افزوده‌شده مشترک است.
+                            </small>
+                            <div id="createViewerPicker"></div>
+                            <div class="d-flex flex-wrap gap-3 mt-2">
+                                <div class="form-check form-switch m-0">
+                                    <input class="form-check-input" type="checkbox" id="createViewerCanAtt" checked>
+                                    <label class="form-check-label" for="createViewerCanAtt">پیوست‌ها</label>
+                                </div>
+                                <div class="form-check form-switch m-0">
+                                    <input class="form-check-input" type="checkbox" id="createViewerCanHist" checked>
+                                    <label class="form-check-label" for="createViewerCanHist">تاریخچه</label>
+                                </div>
+                                <div class="form-check form-switch m-0">
+                                    <input class="form-check-input" type="checkbox" id="createViewerCanChk" checked>
+                                    <label class="form-check-label" for="createViewerCanChk">چک‌لیست</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -501,6 +539,7 @@ if (!$__me) {
         let sections = []; // لیست واحدها
         let mainAssigneePickerInst = null;
         let multiAssigneePickerInst = null;
+        let createViewerPickerInst = null; // پیکرِ «دسترسیِ مشاهده برای افراد دیگر»
         let workflowTemplates = [];
         let selectedTemplate = null;
         let userRoutines = [];
@@ -982,10 +1021,37 @@ if (!$__me) {
                         multiSelect: true,
                         onSelect: () => { /* getValue() کافی است */ }
                     });
+                    if (document.getElementById('createViewerPicker')) {
+                        // بدونِ sections — دقیقاً مثلِ پیکرِ «افزودنِ دسترسی» در task-detail
+                        createViewerPickerInst = AssigneePicker.create({
+                            container: '#createViewerPicker',
+                            users,
+                            multiSelect: true,
+                            onSelect: () => { /* getValue() کافی است */ }
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('Error loading users:', error);
             }
+        }
+
+        // جمع‌آوریِ افرادِ «دسترسیِ مشاهده» + اعمالِ مشترک — برای ارسال به create.php
+        function collectCreateViewers() {
+            if (!createViewerPickerInst) return [];
+            const val = createViewerPickerInst.getValue();
+            const ids = (val && Array.isArray(val.value)) ? val.value : [];
+            const uniq = [...new Set(ids.map(x => parseInt(x, 10)).filter(Boolean))];
+            if (!uniq.length) return [];
+            const att = document.getElementById('createViewerCanAtt')?.checked ? 1 : 0;
+            const hist = document.getElementById('createViewerCanHist')?.checked ? 1 : 0;
+            const chk = document.getElementById('createViewerCanChk')?.checked ? 1 : 0;
+            return uniq.map(uid => ({
+                user_id: uid,
+                can_view_attachments: att,
+                can_view_history: hist,
+                can_view_checklist: chk
+            }));
         }
 
         // ذخیره کار
@@ -1211,7 +1277,8 @@ if (!$__me) {
                 priority: document.getElementById('manualPriority').value,
                 assignee_id: assigneeId,
                 group_id: document.getElementById('taskGroupSelect')?.value || null, // ✅ اضافه شد
-                share_history: document.getElementById('shareHistoryToggle')?.checked ? 1 : 0
+                share_history: document.getElementById('shareHistoryToggle')?.checked ? 1 : 0,
+                viewers: collectCreateViewers() // دسترسیِ مشاهده برای افراد دیگر (task_viewers)
             };
             console.log('111');
             // شرطی کردن فیلدهای تاریخ و دوره بر اساس نوع تسک
