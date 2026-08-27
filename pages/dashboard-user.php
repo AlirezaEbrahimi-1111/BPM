@@ -2861,9 +2861,16 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             // currentFilter دست‌نخورده می‌مونه چون switchTab فقط چیپ‌هاش رو
             // مخفی می‌کنه، ریست‌شون نمی‌کنه
             if (currentTab === 'recent') return list;
-            if (currentFilter === 'today') return list.filter(t => TF.isDueToday(t, currentUser));
-            if (currentFilter === 'overdue') return list.filter(t => TF.isOverdue(t, currentUser));
-            return list;
+            let out = list;
+            if (currentFilter === 'today') out = list.filter(t => TF.isDueToday(t, currentUser));
+            else if (currentFilter === 'overdue') out = list.filter(t => TF.isOverdue(t, currentUser));
+            // ترتیب: موعد انجام قدیم→جدید (برای هر مدل کار، از effectiveDue
+            // که دوره‌ای/مقطعی/روتین رو یکسان مدیریت می‌کنه)؛ بی‌موعدها آخر لیست
+            return out.slice().sort((a, b) => {
+                const da = TF.effectiveDue(a) || '9999-99-99';
+                const db = TF.effectiveDue(b) || '9999-99-99';
+                return da < db ? -1 : da > db ? 1 : 0;
+            });
         }
 
         function renderTasks() {
@@ -2990,7 +2997,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 r.bottom + 4;
             if (top < 8) top = 8;
 
-            let left = r.right - mw;
+            let left = r.left;
             if (left < 8) left = 8;
             if (left + mw > window.innerWidth - 8) left = window.innerWidth - mw - 8;
 
@@ -3392,14 +3399,44 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             box.innerHTML = list.map(t => {
                 const who = esc([t.assignee_first_name, t.assignee_last_name].filter(Boolean).join(' '));
                 const safe = esc(t.title || '');
+                const canRemind = t.assignee_id && t.status !== 'completed' && t.status !== 'approved';
                 return `<div class="dlg-row" onclick="location.href='task-detail.php?id=${t.id}'">
                 <div class="dlg-main">
                     <div class="dlg-title" title="${safe}">${esc(t.title) || '—'}</div>
                     ${who ? `<div class="dlg-sub">مسئول: ${who}</div>` : ''}
                 </div>
                 <div class="dlg-days">${daysLate(t)}</div>
+                ${canRemind ? `<button class="btn-remind-overview" onclick="event.stopPropagation();sendReminder(${t.id},'${safe.replace(/'/g, "\\'")}','${who.replace(/'/g, "\\'") || 'نامشخص'}')" title="یادآوری"><i class="bi bi-bell"></i></button>` : ''}
             </div>`;
             }).join('');
+        }
+
+        function sendReminder(taskId, title, assigneeName) {
+            uiPrompt(`ارسال یادآوری برای "${title}" به ${assigneeName}:`, async function(message) {
+                if (!message) return;
+                try {
+                    const response = await fetch('../api/tasks/send-reminder.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({
+                            task_id: taskId,
+                            message: message
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.success) pmToast('یادآوری با موفقیت ارسال شد', 'ok');
+                    else pmToast(data.message || 'خطا در ارسال یادآوری', 'err');
+                } catch (error) {
+                    pmToast('خطا در ارتباط با سرور', 'err');
+                }
+            }, {
+                placeholder: 'پیام یادآوری...',
+                required: true,
+                okText: 'ارسال'
+            });
         }
 
         /* ───────── رویدادها ───────── */
