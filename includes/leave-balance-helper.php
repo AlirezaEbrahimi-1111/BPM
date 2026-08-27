@@ -13,6 +13,8 @@
  *   - ریستِ سالانه: دستی (طبقِ خواستِ کارفرما) — نه در این فایل
  */
 
+require_once __DIR__ . '/JalaliHelper.php';
+
 const LEAVE_MONTHLY_ACCRUAL_WORK_DAYS = 2.0;
 
 /**
@@ -61,11 +63,32 @@ function formatMinutesHM(int $minutes): string {
 }
 
 /**
- * مطمئن می‌شه تعلقِ ماهانه تا همین ماهِ جاری برایِ این کاربر ثبت شده.
+ * کلیدِ ماهِ شمسیِ یک تاریخِ میلادی (YYYY-MM-DD) به‌شکلِ "YYYY-MM" — مثل "1405-06".
+ * مبنایِ تعلقِ ماهانه، ماهِ شمسیه نه میلادی.
+ */
+function jalaliPeriodKey(string $gregorianDate): string {
+    $ts = strtotime($gregorianDate);
+    list($jy, $jm) = JalaliHelper::gregorianToJalali(
+        (int) date('Y', $ts), (int) date('n', $ts), (int) date('j', $ts)
+    );
+    return sprintf('%04d-%02d', $jy, $jm);
+}
+
+/**
+ * ماهِ شمسیِ بعدی برایِ کلیدِ "YYYY-MM" (بعد از اسفند می‌ره فروردینِ سالِ بعد).
+ */
+function nextJalaliPeriod(string $ym): string {
+    list($y, $m) = array_map('intval', explode('-', $ym));
+    if (++$m > 12) { $m = 1; $y++; }
+    return sprintf('%04d-%02d', $y, $m);
+}
+
+/**
+ * مطمئن می‌شه تعلقِ ماهانه تا همین ماهِ شمسیِ جاری برایِ این کاربر ثبت شده.
  *
  * توجه: برایِ کاربری که تا حالا هیچ تعلقی نداشته (یعنی این سیستم تازه براش
- * فعال می‌شه)، فقط از همین ماهِ جاری شروع می‌شه — نه بازگشتی. اگه قبلاً
- * تعلق داشته ولی چند ماه رد شده، از همون ماهِ بعدِ آخرین تعلق جبران می‌شه.
+ * فعال می‌شه)، فقط از همین ماهِ شمسیِ جاری شروع می‌شه — نه بازگشتی. اگه قبلاً
+ * تعلق داشته ولی چند ماهِ شمسی رد شده، از همون ماهِ بعدِ آخرین تعلق جبران می‌شه.
  */
 function ensureMonthlyLeaveAccrual(PDO $db, int $userId): void {
     $stmt = $db->prepare("
@@ -75,7 +98,7 @@ function ensureMonthlyLeaveAccrual(PDO $db, int $userId): void {
     $stmt->execute([$userId]);
     $lastPeriod = $stmt->fetchColumn();
 
-    $currentYm = date('Y-m');
+    $currentYm = jalaliPeriodKey(date('Y-m-d')); // ماهِ شمسیِ جاری
     $dailyMinutes = getUserDailyWorkMinutes($db, $userId);
     $accrualMinutes = (int) round(LEAVE_MONTHLY_ACCRUAL_WORK_DAYS * $dailyMinutes);
 
@@ -85,14 +108,15 @@ function ensureMonthlyLeaveAccrual(PDO $db, int $userId): void {
     }
 
     if ($lastPeriod >= $currentYm) {
-        return; // تا همین ماه به‌روزه
+        return; // تا همین ماهِ شمسی به‌روزه
     }
 
-    $cursor = new DateTime($lastPeriod . '-01');
-    $end    = new DateTime($currentYm . '-01');
-    while ($cursor < $end) {
-        $cursor->modify('+1 month');
-        insertLeaveAccrual($db, $userId, $cursor->format('Y-m'), $accrualMinutes);
+    // جبرانِ ماه‌هایِ شمسیِ جا‌افتاده: از ماهِ بعدِ آخرین تعلق تا ماهِ شمسیِ جاری
+    $cursor = $lastPeriod;
+    $guard  = 0;
+    while ($cursor < $currentYm && ++$guard < 240) {
+        $cursor = nextJalaliPeriod($cursor);
+        insertLeaveAccrual($db, $userId, $cursor, $accrualMinutes);
     }
 }
 
