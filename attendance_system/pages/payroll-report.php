@@ -54,12 +54,6 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
             background: #F7F8FC;
         }
 
-        .payroll-wrap {
-            max-width: 1200px;
-            margin: 90px auto 40px;
-            padding: 0 16px;
-        }
-
         .payroll-toolbar {
             display: flex;
             flex-wrap: wrap;
@@ -206,7 +200,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
 <body>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/pages/header.php'; ?>
 
-    <div class="payroll-wrap">
+    <div class="overview-container">
         <div class="payroll-toolbar">
             <h4><i class="bi bi-cash-stack ms-2"></i>گزارش حقوق پرسنل</h4>
             <div class="payroll-controls">

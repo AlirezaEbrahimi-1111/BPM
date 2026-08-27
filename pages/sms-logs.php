@@ -40,7 +40,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             min-height: 100vh;
         }
         .main-content {
-            max-width: 1400px;
+            max-width: 70%;
             margin: 0 auto;
             padding: 2rem;
         }

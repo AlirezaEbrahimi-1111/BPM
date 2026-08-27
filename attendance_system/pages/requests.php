@@ -1036,7 +1036,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .requests-section {
-            display: flex;
+            /* display: flex; */
             flex-direction: column;
             gap: 14px;
         }
@@ -1055,8 +1055,6 @@ function formatDateJalali($gregorianDate)
         .page-header {
             display: flex;
             flex-wrap: wrap;
-            /* بود: nowrap — با ۴ کارت روی موبایل، کارت‌ها له می‌شدن و متنِ
-               nowrap داخلشون از لبه‌ی کارت بیرون می‌زد */
             gap: 12px;
             width: 100%;
             margin-bottom: 15px !important;
@@ -2850,11 +2848,11 @@ function formatDateJalali($gregorianDate)
         const IS_ADMIN_ROLE = <?php echo ($is_admin_role ?? false) ? 'true' : 'false'; ?>;
     </script>
     <!-- Main Layout -->
-    <div class="main-layout">
+    <!-- <div class="main-layout"> -->
 
         <!-- یک ستون کامل با سه تب -->
-        <div class="requests-section">
-            <div class="container">
+        <!-- <div class="requests-section"> -->
+            <div class="overview-container">
                 <!-- تب‌های سوییچ -->
                 <div class="section-tabs">
                     <button class="section-tab active" onclick="switchSection('attendance')" id="tab-attendance">
@@ -3039,9 +3037,9 @@ function formatDateJalali($gregorianDate)
 
             </div>
 
-        </div>
+        <!-- </div> -->
 
-    </div>
+    <!-- </div> -->
 
     <!-- Modal درخواست -->
     <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">

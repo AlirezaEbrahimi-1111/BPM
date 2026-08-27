@@ -39,7 +39,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
 <body>
     <?php include 'header.php'; ?>
 
-    <div class="container py-4">
+    <div class="overview-container">
         <!-- Header -->
         <div class="page-header">
             <h1 class="page-title">

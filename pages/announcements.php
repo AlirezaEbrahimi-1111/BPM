@@ -48,7 +48,6 @@ if (!$__me) {
     <?php include 'header.php'; ?>
 
     <style>
-    .overview-container { max-width: 1100px !important; }
 
     .ann-head-card {
         background: #8e57fe;

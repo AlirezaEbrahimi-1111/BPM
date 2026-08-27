@@ -44,7 +44,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text-main);min-height:100vh}
-    .main{max-width:1100px;margin:auto;padding:32px}
+    .main{max-width:70%;margin:auto;padding:32px}
 
     /* Loading / message */
     #loading,#errorBox{text-align:center;padding:64px 16px;color:var(--text-sub)}

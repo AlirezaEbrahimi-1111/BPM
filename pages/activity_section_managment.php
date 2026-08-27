@@ -350,7 +350,7 @@ if (!$__me || !hasPermission($__me, 'manage_activity_sections')) {
 
 <?php include 'header.php'; ?>
 
-<div class="page-wrap">
+<div class="overview-container">
 
     <div class="page-title">
         <i class="bi bi-diagram-3"></i>

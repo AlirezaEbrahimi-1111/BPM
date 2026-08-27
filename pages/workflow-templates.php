@@ -71,12 +71,6 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             min-height: 100vh;
         }
 
-        /* ─── Page Layout ─── */
-        .page-wrapper {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-        }
 
         .page-header {
             display: flex;
@@ -917,7 +911,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
 <body>
     <?php include 'header.php'; ?>
 
-    <div class="page-wrapper">
+    <div class="overview-container">
         <!-- Header -->
         <div class="page-header">
             <div class="page-header-left">

@@ -44,11 +44,11 @@ if (!$__me) {
 
     <style>
         /* ── Layout ── */
-        .overview-container {
+        /* .overview-container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 2rem 1.5rem;
-        }
+        } */
 
         /* ── Page Header ── */
         .page-header {

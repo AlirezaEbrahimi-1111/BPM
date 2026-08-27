@@ -48,7 +48,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
         }
 
         .bn-container {
-            max-width: 1200px;
+            max-width: 70%;
             margin: 0 auto;
             padding: 24px 20px;
         }

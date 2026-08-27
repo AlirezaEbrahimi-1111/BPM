@@ -306,7 +306,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // تبدیل اعداد به فارسی
-function toPersianNumber($num) {
+function toPersianNumber($num)
+{
     $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
     return str_replace(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], $persian, $num);
 }
@@ -314,6 +315,7 @@ function toPersianNumber($num) {
 
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -336,15 +338,16 @@ function toPersianNumber($num) {
             font-family: 'Vazir', sans-serif;
         }
 
-        html, body {
-            height: 100%;
+        html,
+        body {
+            /* height: 100%; */
             background: #e9e9e9;
         }
 
-        body {
+        /* body {
             display: flex;
             flex-direction: column;
-        }
+        } */
 
         /* ===== Header ===== */
         .header {
@@ -360,13 +363,13 @@ function toPersianNumber($num) {
             z-index: 100;
         }
 
-        .header-left {
+        /* .header-left {
             display: flex;
             align-items: center;
             gap: 24px;
-        }
+        } */
 
-        .header-logo {
+        /* .header-logo {
             font-weight: 700;
             font-size: 18px;
             color: #1E293B;
@@ -378,9 +381,9 @@ function toPersianNumber($num) {
         .header-logo i {
             font-size: 22px;
             color: #8e57fe;
-        }
+        } */
 
-        .nav-links {
+        /* .nav-links {
             display: flex;
             gap: 4px;
             list-style: none;
@@ -404,13 +407,13 @@ function toPersianNumber($num) {
         .nav-links a.active {
             color: #8e57fe;
             background: rgba(142, 87, 254, 0.1);
-        }
+        } */
 
-        .header-right {
+        /* .header-right {
             display: flex;
             align-items: center;
             gap: 16px;
-        }
+        } */
 
         .user-info {
             display: flex;
@@ -493,8 +496,15 @@ function toPersianNumber($num) {
         }
 
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .toast-message.success {
@@ -704,11 +714,11 @@ function toPersianNumber($num) {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
         }
 
-        .toggle-switch input:checked + .toggle-slider {
+        .toggle-switch input:checked+.toggle-slider {
             background: #8e57fe;
         }
 
-        .toggle-switch input:checked + .toggle-slider:before {
+        .toggle-switch input:checked+.toggle-slider:before {
             transform: translateX(22px);
         }
 
@@ -720,7 +730,7 @@ function toPersianNumber($num) {
             position: sticky;
             bottom: 0;
             background: #e9e9e9;
-            padding: 20px 0;
+            padding: 20px;
             z-index: 10;
         }
 
@@ -884,12 +894,13 @@ function toPersianNumber($num) {
         }
     </style>
 </head>
+
 <body>
-        <?php include '../../pages/header.php'; ?>
+    <?php include '../../pages/header.php'; ?>
 
 
     <!-- Main Content -->
-    <div class="container">
+    <div class="overview-container">
         <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">
@@ -949,10 +960,9 @@ function toPersianNumber($num) {
                                                 name="<?php echo $key; ?>"
                                                 id="<?php echo $key; ?>"
                                                 value="<?php echo htmlspecialchars($current_settings[$key] ?? $setting['value']); ?>"
-                                                <?php if (isset($setting['min'])): ?>min="<?php echo $setting['min']; ?>"<?php endif; ?>
-                                                <?php if (isset($setting['max'])): ?>max="<?php echo $setting['max']; ?>"<?php endif; ?>
-                                                required
-                                            >
+                                                <?php if (isset($setting['min'])): ?>min="<?php echo $setting['min']; ?>" <?php endif; ?>
+                                                <?php if (isset($setting['max'])): ?>max="<?php echo $setting['max']; ?>" <?php endif; ?>
+                                                required>
                                             <?php if (isset($setting['unit'])): ?>
                                                 <span class="setting-unit"><?php echo $setting['unit']; ?></span>
                                             <?php endif; ?>
@@ -991,10 +1001,14 @@ function toPersianNumber($num) {
         }
 
         function logout() {
-            uiConfirm('آیا می‌خواهید خروج کنید؟', function () {
+            uiConfirm('آیا می‌خواهید خروج کنید؟', function() {
                 localStorage.removeItem('auth_token');
                 window.location.href = '../index.php';
-            }, { danger: true, yesText: 'بله، خروج', noText: 'انصراف' });
+            }, {
+                danger: true,
+                yesText: 'بله، خروج',
+                noText: 'انصراف'
+            });
         }
 
         // Auto-hide success message after 4 seconds
@@ -1011,4 +1025,5 @@ function toPersianNumber($num) {
         });
     </script>
 </body>
+
 </html>

@@ -39,7 +39,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     <style>
         /* ─── Layout ─── */
         .ad-container {
-            max-width: 1140px;
+            max-width: 70%;
             margin: 0 auto;
             padding: 1.5rem 1rem 3rem;
         }
@@ -375,7 +375,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
 <body>
     <?php include 'header.php'; ?>
 
-    <div class="ad-container">
+    <div class="overview-container">
 
         <!-- Hero Header -->
         <div class="ad-hero">

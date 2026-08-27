@@ -86,7 +86,7 @@ foreach ($orgs as $org) {
   <style>
     body { font-family: 'Vazirmatn', sans-serif; background: #F7F8FC; }
 
-    .admin-wrap { max-width: 1200px; margin: 90px auto 40px; padding: 0 16px; }
+    .admin-wrap { max-width: 70%; margin: 90px auto 40px; padding: 0 16px; }
 
     .admin-toolbar {
       display: flex; flex-wrap: wrap; gap: 12px;
