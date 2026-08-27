@@ -103,8 +103,8 @@ try {
                                 'related_type' => 'task',
                                 'related_id' => $input['task_id'],
                                 'is_read' => 0,
-                                'sms_pattern' => 'task_rejected',
-                                'sms_args' => [$task['title'] ?? 'نامشخص', $rejectorName]
+                                'sms_pattern' => 'task_needs_approval',
+                                'sms_args' => [$task['title'] ?? 'نامشخص']
                             ]);
                         } catch (Exception $notifError) {
                             error_log("Notification create error: " . $notifError->getMessage());
