@@ -251,16 +251,18 @@ class AutoApprovalChecker {
                     $request['manager_id'],
                     'approval_needed',
                     'درخواست ارجاع شده',
-                    'درخواستی که جانشین پاسخ نداده به شما ارجاع شد'
+                    'درخواستی که جانشین پاسخ نداده به شما ارجاع شد',
+                    '/attendance_system/pages/requests.php?tab=pending-approvals'
                 );
             }
-            
+
             // اطلاع به کاربر
             $this->sendNotification(
                 $request['user_id'],
                 'request_escalated',
                 'ارجاع به مدیر',
-                'درخواست شما به دلیل عدم پاسخ جانشین، به مدیر ارجاع داده شد'
+                'درخواست شما به دلیل عدم پاسخ جانشین، به مدیر ارجاع داده شد',
+                '/attendance_system/pages/requests.php?tab=my-requests'
             );
             
             $this->db->commit();
@@ -317,15 +319,17 @@ class AutoApprovalChecker {
                 $supervisor['id'],
                 'approval_needed',
                 'درخواست ارجاع شده',
-                'درخواستی که مدیر پاسخ نداده به شما ارجاع شد'
+                'درخواستی که مدیر پاسخ نداده به شما ارجاع شد',
+                '/attendance_system/pages/requests.php?tab=pending-approvals'
             );
-            
+
             // اطلاع به کاربر
             $this->sendNotification(
                 $request['user_id'],
                 'request_escalated',
                 'ارجاع به مسئول',
-                'درخواست شما به دلیل عدم پاسخ مدیر، به مسئول ارجاع داده شد'
+                'درخواست شما به دلیل عدم پاسخ مدیر، به مسئول ارجاع داده شد',
+                '/attendance_system/pages/requests.php?tab=my-requests'
             );
             
             $this->db->commit();
@@ -366,7 +370,8 @@ class AutoApprovalChecker {
                     $request['user_id'],
                     'request_rejected',
                     'درخواست رد شد',
-                    $reason
+                    $reason,
+                    '/attendance_system/pages/requests.php?tab=my-requests'
                 );
             }
             
@@ -382,13 +387,13 @@ class AutoApprovalChecker {
     /**
      * ارسال نوتیفیکیشن
      */
-    private function sendNotification($user_id, $type, $title, $message) {
+    private function sendNotification($user_id, $type, $title, $message, $link = null) {
         try {
             $stmt = $this->db->prepare("
-                INSERT INTO notifications (user_id, type, title, message)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO notifications (user_id, type, title, message, link)
+                VALUES (?, ?, ?, ?, ?)
             ");
-            $stmt->execute([$user_id, $type, $title, $message]);
+            $stmt->execute([$user_id, $type, $title, $message, $link]);
         } catch (Exception $e) {
             $this->log("Error sending notification: " . $e->getMessage(), 'ERROR');
         }
