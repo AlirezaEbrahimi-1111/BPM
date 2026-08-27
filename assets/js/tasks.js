@@ -71,16 +71,9 @@ function getNotificationIcon(type) {
     return icons[type] || 'bell';
 }
 
-// زمان نسبی (مثلاً: 5 دقیقه پیش)
+// زمان نسبی — از منبعِ یگانه (ساعتِ سرور، نه دستگاه) — time-sync.js
 function formatTime(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = Math.floor((now - date) / 1000); // ثانیه
-    
-    if (diff < 60) return 'همین الان';
-    if (diff < 3600) return Math.floor(diff / 60) + ' دقیقه پیش';
-    if (diff < 86400) return Math.floor(diff / 3600) + ' ساعت پیش';
-    return Math.floor(diff / 86400) + ' روز پیش';
+    return window.TimeSync ? TimeSync.timeAgo(dateString) : '';
 }
 
 // علامت‌گذاری یکی خوانده شده

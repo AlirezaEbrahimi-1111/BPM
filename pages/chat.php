@@ -4729,19 +4729,10 @@ if (!$__me) {
             }, { danger: true, yesText: 'بله، خروج', noText: 'انصراف' });
         }
 
-        // «آخرین بازدید از صفحه‌ی چت» به‌صورتِ نسبی (مثلِ تلگرام)
+        // «آخرین بازدید از صفحه‌ی چت» به‌صورتِ نسبی — منبعِ یگانه (ساعتِ سرور)
         function formatLastSeen(dateStr) {
             if (!dateStr) return 'هیچ‌وقت';
-            var then = new Date(dateStr.replace(' ', 'T'));
-            var diffMin = Math.round((Date.now() - then.getTime()) / 60000);
-            if (diffMin < 1) return 'همین الان';
-            if (diffMin < 60) return toFa(diffMin) + ' دقیقه پیش';
-            var diffHour = Math.round(diffMin / 60);
-            if (diffHour < 24) return toFa(diffHour) + ' ساعت پیش';
-            var diffDay = Math.round(diffHour / 24);
-            if (diffDay === 1) return 'دیروز';
-            if (diffDay < 30) return toFa(diffDay) + ' روز پیش';
-            return then.toLocaleDateString('fa-IR');
+            return window.TimeSync ? TimeSync.timeAgo(dateStr) : '';
         }
 
         function updateChatHeadLastSeen(conv) {

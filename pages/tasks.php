@@ -736,16 +736,8 @@ if (!$__me) {
         }
 
         function relTime(d) {
-            if (!d) return '';
-            const ms = Date.now() - new Date(d),
-                m = Math.floor(ms / 6e4),
-                h = Math.floor(ms / 36e5),
-                dy = Math.floor(ms / 864e5);
-            if (m < 60) return `${toPersian(m)} دقیقه پیش`;
-            if (h < 24) return `${toPersian(h)} ساعت پیش`;
-            if (dy < 7) return `${toPersian(dy)} روز پیش`;
-            if (dy < 30) return `${toPersian(Math.floor(dy / 7))} هفته پیش`;
-            return `${toPersian(Math.floor(dy / 30))} ماه پیش`;
+            // زمانِ نسبی از منبعِ یگانه (ساعتِ سرور، نه دستگاه) — time-sync.js
+            return window.TimeSync ? TimeSync.timeAgo(d) : '';
         }
 
         function toPersian(n) {

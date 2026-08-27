@@ -715,6 +715,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         </div>
     </div>
 </div>
+<?php $__st = new DateTime('now', new DateTimeZone('Asia/Tehran')); ?>
+<script>
+    /* زمانِ سرور — درون‌خطی تا کلاینت بدونِ round-trip با ساعتِ سرور هم‌کوک شود */
+    window.__SERVER_TIME__ = {
+        epoch_ms: <?= (int) round(microtime(true) * 1000) ?>,
+        offset_minutes: <?= (int) ($__st->getOffset() / 60) ?>,
+        mysql: "<?= $__st->format('Y-m-d H:i:s') ?>"
+    };
+</script>
+<script src="<?= asset('/assets/js/time-sync.js') ?>"></script>
 <script src="<?= asset('/assets/js/common-bundle.js') ?>"></script>
 
 
@@ -1302,19 +1312,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
     // ─── توابع کمکی ───
     function getSmartAnnTime(dateString) {
-        if (!dateString) return '';
-        const now = new Date();
-        const date = new Date(dateString);
-        const diffMin = Math.floor((now - date) / 60000);
-        const diffHour = Math.floor(diffMin / 60);
-        const diffDay = Math.floor(diffHour / 24);
-
-        if (diffMin < 1) return 'همین الان';
-        if (diffMin < 60) return diffMin + ' دقیقه پیش';
-        if (diffHour < 24) return diffHour + ' ساعت پیش';
-        if (diffDay === 1) return 'دیروز';
-        if (diffDay < 7) return diffDay + ' روز پیش';
-        return new Date(dateString).toLocaleDateString('fa-IR');
+        // زمانِ نسبی از منبعِ یگانه (ساعتِ سرور، نه دستگاه) — time-sync.js
+        return window.TimeSync ? TimeSync.timeAgo(dateString) : '';
     }
 
     function escapeHtml(text) {
