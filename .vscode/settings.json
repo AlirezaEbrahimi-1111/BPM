@@ -1,3 +1,6 @@
 {
-    "CodeGPT.apiKey": "Claude Code"
+    "CodeGPT.apiKey": "Claude Code",
+    "github-actions.workflows.pinned.workflows": [
+        ".github/workflows/ci.yml"
+    ]
 }

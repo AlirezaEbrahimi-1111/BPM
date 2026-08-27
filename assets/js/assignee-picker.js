@@ -73,7 +73,7 @@ const AssigneePicker = (() => {
   border-radius:6px;font-size:13px;font-family:inherit;outline:none;
   background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529);
   direction:rtl;transition:border-color .15s;cursor:pointer}
-.ap-input:focus{border-color:#0d6efd;box-shadow:0 0 0 .2rem rgba(13,110,253,.15)}
+.ap-input:focus{border-color:#8e57fe;box-shadow:0 0 0 .2rem #8e57fe15}
 .ap-icon{
   position:absolute;right:10px;top:50%;transform:translateY(-50%);
   color:#9ca3af;font-size:14px;pointer-events:none}

@@ -170,10 +170,6 @@ if (!$__me) {
             min-width: 130px;
             transition: border-color .2s;
         }
-        .filter-item select:focus {
-            outline: none;
-            border-color: #8e57fe;
-        }
 
         /* ───── FAB مثل tasks.php ───── */
         .quick-actions {

@@ -109,7 +109,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     /* ═══ سرچ سراسری — فلشِ زیرِ هدر + کادرِ کشویی ═══ */
     .gs-toggle {
         position: fixed;
-        top: 3.5rem;
+        top: 4.2rem;
         left: 50%;
         transform: translateX(-50%);
         z-index: 1020;
