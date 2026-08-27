@@ -340,6 +340,22 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         pointer-events: none;
         text-decoration: none;
     }
+
+    /* ورود/خروج — خوانایی روی هدرِ بنفش (override قواعدِ کم‌کنتراستِ custom.css) */
+    #attendanceContainer .attendance-complete {
+        background: rgba(255, 255, 255, 0.95);
+        color: #059669;
+    }
+
+    #attendanceContainer .attendance-info-btn {
+        background: rgba(255, 255, 255, 0.16);
+        color: #fff;
+    }
+
+    #attendanceContainer .attendance-info-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: #fff;
+    }
 </style>
 <!-- بستن فوری drawer قبل از render — جلوگیری از flash -->
 <script>
@@ -1534,8 +1550,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             if (tooltipContent) {
                 const infoBtn = document.createElement('button');
                 infoBtn.className = 'attendance-info-btn';
+                infoBtn.type = 'button';
+                infoBtn.title = 'ساعت ورود و خروج امروز';
                 infoBtn.innerHTML = `
-                <i class="bi bi-info-circle"></i>
+                <i class="bi bi-clock-history"></i>
                 <div class="attendance-tooltip">${tooltipContent}</div>
             `;
                 container.appendChild(infoBtn);
@@ -1552,23 +1570,26 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     function buildTooltipContent(data) {
         let lines = [];
 
+        // اعداد ساعت‌ها فارسی شوند
+        const fa = v => (typeof toFa === 'function' ? toFa(v) : String(v ?? ''));
+
         // شیفت 1
         if (data.shift1) {
             if (data.shift1.check_in) {
-                lines.push(`ورود${data.shift_count === 2 ? ' ۱' : ''}: ${data.shift1.check_in}`);
+                lines.push(`ورود${data.shift_count === 2 ? ' ۱' : ''}: ${fa(data.shift1.check_in)}`);
             }
             if (data.shift1.check_out) {
-                lines.push(`خروج${data.shift_count === 2 ? ' ۱' : ''}: ${data.shift1.check_out}`);
+                lines.push(`خروج${data.shift_count === 2 ? ' ۱' : ''}: ${fa(data.shift1.check_out)}`);
             }
         }
 
         // شیفت 2
         if (data.shift_count === 2 && data.shift2) {
             if (data.shift2.check_in) {
-                lines.push(`ورود ۲: ${data.shift2.check_in}`);
+                lines.push(`ورود ۲: ${fa(data.shift2.check_in)}`);
             }
             if (data.shift2.check_out) {
-                lines.push(`خروج ۲: ${data.shift2.check_out}`);
+                lines.push(`خروج ۲: ${fa(data.shift2.check_out)}`);
             }
         }
 
