@@ -53,26 +53,41 @@ try {
         ann_out(['success' => true]);
     }
 
-    // ───── همه خوانده‌شده (فقط اطلاعیه‌های مرتبط) ─────
+    // ───── همه خوانده‌شده (دقیقاً همان دامنهٔ دیدِ کاربر در list.php) ─────
     if ($action === 'mark_all_read') {
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
+        $sectionsCsv = implode(',', us_getUserSections($db, (int) $user_id));
+        $now = date('Y-m-d H:i:s');
+
         $sql = "INSERT IGNORE INTO announcement_reads (announcement_id, user_id)
                 SELECT a.id, :uid
                 FROM announcements a
                 WHERE a.is_active = 1
+                  AND a.publish_at <= :now
+                  AND (a.expire_at IS NULL OR a.expire_at > :now2)
                   AND (
-                      a.organization_id IS NULL
+                      a.target_user_id = :uid_self
                       OR (
-                          a.organization_id = :org
-                          AND (a.target_section IS NULL OR a.target_section = :section COLLATE utf8mb4_persian_ci)
+                          a.target_user_id IS NULL
+                          AND (
+                              a.organization_id IS NULL
+                              OR (
+                                  a.organization_id = :org
+                                  AND (a.target_section IS NULL OR FIND_IN_SET(a.target_section, :sections_csv))
+                              )
+                          )
                       )
                   )
                   AND a.id NOT IN (SELECT announcement_id FROM announcement_reads WHERE user_id = :uid2)";
         $st = $db->prepare($sql);
         $st->execute([
-            ':uid'     => $user_id,
-            ':uid2'    => $user_id,
-            ':org'     => intval($org),
-            ':section' => $section
+            ':uid'          => $user_id,
+            ':uid_self'     => $user_id,
+            ':uid2'         => $user_id,
+            ':now'          => $now,
+            ':now2'         => $now,
+            ':org'          => intval($org),
+            ':sections_csv' => $sectionsCsv,
         ]);
         ann_out(['success' => true, 'message' => 'همه اطلاعیه‌ها خوانده شد']);
     }

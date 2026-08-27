@@ -115,7 +115,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         z-index: 1020;
         width: 40px;
         height: 20px;
-        background: #fff;
+        background: #8549fd;
         border: 1px solid var(--border-soft, #e9e9e9);
         border-top: none;
         border-radius: 0 0 9px 9px;
@@ -124,12 +124,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         justify-content: center;
         cursor: pointer;
         box-shadow: 0 4px 10px rgba(0, 0, 0, .08);
-        color: #8e57fe;
+        color: #ffffff;
         transition: background .15s;
     }
 
     .gs-toggle:hover {
-        background: #f5f0ff;
+        background: #9560ff;
     }
 
     .gs-toggle i {
@@ -314,6 +314,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         .gs-panel-inner {
             padding: 12px 12px 16px;
         }
+    }
+
+    .mark-all-btn:disabled {
+        opacity: .4;
+        cursor: default;
+        pointer-events: none;
     }
 </style>
 <!-- بستن فوری drawer قبل از render — جلوگیری از flash -->
@@ -574,9 +580,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 aria-labelledby="announcementDropdown" style="min-width: 360px;">
                 <div class="notification-header">
                     <span>اطلاعیه‌های سازمانی</span>
-                    <!-- <button class="mark-all-btn" onclick="markAllAnnouncementsRead()" id="markAllAnnBtn">
-                        همه خوانده شد
-                    </button> -->
+                    <button type="button" class="mark-all-btn" id="annMarkAllBtn" onclick="annMarkAllRead()" disabled>
+                        خواندن همه
+                    </button>
                 </div>
                 <div class="notif-toolbar">
                     <div class="notif-search">
@@ -610,9 +616,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 aria-labelledby="notificationDropdown">
                 <div class="notification-header">
                     <span>اعلان‌ها</span>
-                    <!-- <button class="mark-all-btn" onclick="markAllAsRead()" id="markAllBtn">
-                        همه خوانده شد
-                    </button> -->
+                    <button type="button" class="mark-all-btn" id="notifMarkAllBtn" onclick="notifMarkAllRead()" disabled>
+                        خواندن همه
+                    </button>
                 </div>
                 <div class="notif-toolbar">
                     <div class="notif-search">
@@ -767,6 +773,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
         unreadCount = count;
 
+        // دکمهٔ «خواندن همه» همیشه دیده می‌شود؛ وقتی چیزی خوانده‌نشده نیست، غیرفعال
+        const markAllBtn = document.getElementById('notifMarkAllBtn');
+        if (markAllBtn) markAllBtn.disabled = count <= 0;
+
         if (count > 0) {
             badge.textContent = count > 99 ? '۹۹+' : toFa(count);
             badge.classList.remove('hidden');
@@ -854,13 +864,26 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         renderNotificationList();
     }
 
-    /** خواندنِ همه‌ی موارد نخوانده‌ی یک گروهِ روز (بدونِ حذف از لیست) */
-    async function notifMarkGroupRead(label) {
-        const ids = notifAllItems
-            .filter(n => bpmDayGroupLabel(n.created_at) === label && !n.is_read)
-            .map(n => n.id);
-        for (const id of ids) await markAsRead(id);
-        renderNotificationList();
+    /** خواندنِ همه‌ی اعلان‌های خوانده‌نشده — سراسری (نه فقط موارد بارگذاری‌شده/یک روز) */
+    async function notifMarkAllRead() {
+        const btn = document.getElementById('notifMarkAllBtn');
+        if (btn && btn.disabled) return;
+        if (btn) btn.disabled = true;
+        try {
+            const response = await fetch('/api/notifications/mark-all-read.php', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + authToken }
+            });
+            const data = await response.json();
+            if (data.success) {
+                await loadNotifications(); // لیست و شمارنده از سرور تازه می‌شوند
+            } else if (btn) {
+                btn.disabled = false;
+            }
+        } catch (error) {
+            console.error('❌ خطا در خواندن همه اعلان‌ها:', error);
+            if (btn) btn.disabled = false;
+        }
     }
 
     // ─── رندر لیست (از notifAllItems، با فیلتر/جستجویِ فعلی) ───
@@ -882,11 +905,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
         let html = '';
         bpmGroupByDay(filtered, 'created_at').forEach(group => {
-            const groupHasUnread = group.items.some(n => !n.is_read);
             html += `
             <div class="notif-day-header">
                 <span>${group.label}</span>
-                ${groupHasUnread ? `<button type="button" class="notif-day-mark-all" onclick="notifMarkGroupRead('${group.label}')">خواندن همه</button>` : ''}
             </div>`;
 
             group.items.forEach(notif => {
@@ -925,6 +946,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         if (!badge) return;
 
         annUnreadCount = count;
+
+        // دکمهٔ «خواندن همه» همیشه دیده می‌شود؛ وقتی چیزی خوانده‌نشده نیست، غیرفعال
+        const annMarkAllBtn = document.getElementById('annMarkAllBtn');
+        if (annMarkAllBtn) annMarkAllBtn.disabled = count <= 0;
 
         if (count > 0) {
             badge.textContent = count > 99 ? '۹۹+' : toFa(count);
@@ -989,13 +1014,30 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         renderAnnouncementList();
     }
 
-    /** خواندنِ همه‌ی موارد نخوانده‌ی یک گروهِ روز (بدونِ حذف از لیست) */
-    async function annMarkGroupRead(label) {
-        const ids = annAllItems
-            .filter(a => bpmDayGroupLabel(a.created_at) === label && (a.is_read === false || a.is_read === 0))
-            .map(a => a.id);
-        for (const id of ids) await markAnnouncementRead(id);
-        renderAnnouncementList();
+    /** خواندنِ همه‌ی اطلاعیه‌های خوانده‌نشده — سراسری (نه فقط موارد بارگذاری‌شده/یک روز) */
+    async function annMarkAllRead() {
+        const btn = document.getElementById('annMarkAllBtn');
+        if (btn && btn.disabled) return;
+        if (btn) btn.disabled = true;
+        try {
+            const response = await fetch('/api/announcements/update.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + authToken
+                },
+                body: JSON.stringify({ action: 'mark_all_read' })
+            });
+            const data = await response.json();
+            if (data.success) {
+                await loadAnnouncements(); // لیست و شمارنده از سرور تازه می‌شوند
+            } else if (btn) {
+                btn.disabled = false;
+            }
+        } catch (error) {
+            console.error('❌ خطا در خواندن همه اطلاعیه‌ها:', error);
+            if (btn) btn.disabled = false;
+        }
     }
 
     // ─── رندر لیست (از annAllItems، با فیلتر/جستجویِ فعلی) ───
@@ -1029,11 +1071,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
         let html = '';
         bpmGroupByDay(filtered, 'created_at').forEach(group => {
-            const groupHasUnread = group.items.some(a => a.is_read === false || a.is_read === 0);
             html += `
             <div class="notif-day-header">
                 <span>${group.label}</span>
-                ${groupHasUnread ? `<button type="button" class="notif-day-mark-all" onclick="annMarkGroupRead('${group.label}')">خواندن همه</button>` : ''}
             </div>`;
 
             group.items.forEach(ann => {
@@ -1189,45 +1229,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             console.error('❌ خطا در mark_read:', err);
         }
     }
-
-    // ─── علامت همه خوانده شده ───
-    // async function markAllAnnouncementsRead() {
-    //     const btn = document.getElementById('markAllAnnBtn');
-    //     if (!btn || annUnreadCount === 0) return;
-
-    //     btn.disabled = true;
-    //     btn.textContent = '...';
-
-    //     try {
-    //         await fetch('/api/announcements/update.php', {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 'Authorization': 'Bearer ' + authToken
-    //             },
-    //             body: JSON.stringify({
-    //                 action: 'mark_all_read'
-    //             })
-    //         });
-
-    //         annAllItems.forEach(a => a.is_read = true);
-    //         document.querySelectorAll('.announcement-item.unread')
-    //             .forEach(el => el.classList.remove('unread'));
-    //         updateAnnouncementBadge(0);
-
-    //         // بستن dropdown بعد از 500ms
-    //         setTimeout(() => {
-    //             const menu = document.getElementById('announcementDropdownMenu');
-    //             if (menu) menu.classList.remove('show');
-    //         }, 500);
-
-    //     } catch (err) {
-    //         console.error('❌ خطا:', err);
-    //     } finally {
-    //         btn.disabled = false;
-    //         btn.textContent = 'همه خوانده شد';
-    //     }
-    // }
 
     // ─── راه‌اندازی dropdown ───
     function setupAnnouncementDropdown() {
