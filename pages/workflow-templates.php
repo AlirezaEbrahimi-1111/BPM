@@ -527,6 +527,21 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             cursor: pointer;
         }
 
+        .wf-node-assignee {
+            margin-top: 4px;
+            padding-top: 4px;
+            border-top: 1px dashed var(--border);
+            font-size: .66rem;
+            color: var(--text-2);
+            direction: rtl;
+            text-align: left;
+        }
+
+        /* فاز ۴: پنلِ فاز ۳ + چک‌باکسِ «به ایجادکننده» مخفی (ادیتور روی بوم است) */
+        .sr-creator-check {
+            display: none !important;
+        }
+
         #wfCanvas .drawflow .connection .main-path {
             stroke: #1b7b39;
             stroke-width: 2.5px;
@@ -540,6 +555,38 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
         #wfCanvas .drawflow-node .output,
         #wfCanvas .drawflow-node .input {
             background: #8e57fe;
+        }
+
+        /* دایره‌های خروجیِ یک «نقطهٔ تصمیم»: بالا سبز (تأیید)، پایین قرمز (رد) */
+        #wfCanvas .drawflow-node.wf-decision .outputs .output_1 {
+            background: #16a34a;
+        }
+
+        #wfCanvas .drawflow-node.wf-decision .outputs .output_2 {
+            background: #dc2626;
+        }
+
+        #wfCanvas .drawflow-node.wf-decision .outputs .output_1::after,
+        #wfCanvas .drawflow-node.wf-decision .outputs .output_2::after {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: .6rem;
+            font-weight: 700;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        #wfCanvas .drawflow-node.wf-decision .outputs .output_1::after {
+            content: 'تأیید';
+            color: #16a34a;
+            bottom: 130%;
+        }
+
+        #wfCanvas .drawflow-node.wf-decision .outputs .output_2::after {
+            content: 'رد';
+            color: #dc2626;
+            top: 130%;
         }
 
         #templateModal.view-mode #wfCanvas {
@@ -1600,7 +1647,8 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
 
                     <input type="text" class="form-control form-control-sm step-name sr-name"
                            value="${escAttr(stepData ? stepData.step_name : '')}"
-                           placeholder="نام مرحله" oninput="updateExecPreview()" required>
+                           placeholder="نام مرحله"
+                           oninput="updateExecPreview(); if(typeof wfPatchNodeDebounced==='function') wfPatchNodeDebounced('${stepId}')" required>
 
                     <div class="sr-assignee-wrap">
                         <div class="sr-assignee" id="step_assignee_${stepId}"></div>
@@ -1691,7 +1739,8 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 sections: wfSections,
                 sectionMap: wfSectionMap,
                 showSections: true,
-                placeholder: assigneePlaceholder
+                placeholder: assigneePlaceholder,
+                onSelect: () => { if (typeof wfPatchNode === 'function') wfPatchNode(stepId); }
             });
 
             // 🆕 اگر این مرحله از نوع «ایجادکننده» است، picker را غیرفعال کن
@@ -1822,6 +1871,53 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
         let wfStartId = null, wfCreatorId = null;
         let wfSyncing = false;        // جلوگیری از حلقهٔ رویدادها هنگام بازسازی
         let wfCanvasToFormTimer = null;
+        let wfNodeIdByStepId = {};    // stepId → drawflow node id
+        let wfPatchTimers = {};
+
+        // برچسبِ مسئولِ یک مرحله برای نمایش در گوشهٔ گره
+        function wfStepAssigneeLabel(stepId) {
+            const row = document.querySelector(`.step-item[data-step-id="${stepId}"]`);
+            if (!row) return '—';
+            if (row.dataset.creatorMode === '1') return '↩ ایجادکننده';
+            const picked = stepPickers[stepId] ? stepPickers[stepId].getValue() : null;
+            let type, value;
+            if (picked && picked.value && picked.value !== '__all__' && picked.value !== '__all_users__') {
+                type = picked.type; value = picked.value;
+            } else {
+                const orig = stepOriginalData[stepId] || {};
+                type = orig.type; value = orig.value;
+            }
+            if (!value) return '—';
+            if (type === 'user') {
+                const u = (wfUsers || []).find(x => String(x.id) === String(value));
+                if (!u) return 'فرد';
+                const nm = (u.name || `${u.first_name || ''} ${u.last_name || ''}`).trim();
+                return 'فرد: ' + (nm || ('کاربر ' + value));
+            }
+            if (type === 'section') return 'واحد: ' + (wfSectionMap[value] || value);
+            return '—';
+        }
+
+        // به‌روزرسانیِ درجایِ نام/مسئولِ یک گره (بدونِ بازسازیِ کلِ بوم)
+        function wfPatchNode(stepId) {
+            const nid = wfNodeIdByStepId[stepId];
+            if (!nid) return;
+            const row = document.querySelector(`.step-item[data-step-id="${stepId}"]`);
+            if (!row) return;
+            const order = [...document.querySelectorAll('.step-item')].indexOf(row) + 1;
+            const nameEl = document.querySelector('#node-' + nid + ' .wf-node-name');
+            const asgEl = document.querySelector('#node-' + nid + ' .wf-node-assignee');
+            if (nameEl) {
+                const nm = (row.querySelector('.step-name')?.value || '').trim();
+                nameEl.textContent = nm || ('مرحلهٔ ' + toFa(order));
+            }
+            if (asgEl) asgEl.textContent = wfStepAssigneeLabel(stepId);
+        }
+
+        function wfPatchNodeDebounced(stepId) {
+            clearTimeout(wfPatchTimers[stepId]);
+            wfPatchTimers[stepId] = setTimeout(() => wfPatchNode(stepId), 150);
+        }
 
         function wfInit() {
             const el = document.getElementById('wfCanvas');
@@ -1847,10 +1943,11 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             });
         }
 
-        function wfNodeHtml(order, name, isDecision) {
+        function wfNodeHtml(order, name, isDecision, assigneeLabel) {
             return `<div class="wf-node-body">
-                <div class="wf-node-title">${toFa(order)}. <span class="wf-node-name">${escHtml(name || 'بی‌نام')}</span></div>
+                <div class="wf-node-title">${toFa(order)}. <span class="wf-node-name">${escHtml(name || ('مرحلهٔ ' + toFa(order)))}</span></div>
                 <label><input type="checkbox" class="wf-dec-chk" ${isDecision ? 'checked' : ''}> نقطهٔ تصمیم (تأیید/رد)</label>
+                <div class="wf-node-assignee">${escHtml(assigneeLabel || '—')}</div>
             </div>`;
         }
 
@@ -1879,6 +1976,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             wfSyncing = true;
             try {
                 wfEditor.clear();
+                wfNodeIdByStepId = {};
                 const steps = wfFormSteps();
                 wfStartId = wfEditor.addNode('start', 0, 1, 30, 20, 'wf-fixed', {}, '<div class="wf-node-body"><b>شروع</b></div>');
 
@@ -1886,8 +1984,9 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 steps.forEach((s, i) => {
                     const nid = wfEditor.addNode('step', 1, s.isDecision ? 2 : 1, 30, 110 + i * 95,
                         'wf-step' + (s.isDecision ? ' wf-decision' : ''),
-                        { stepId: s.stepId }, wfNodeHtml(s.order, s.name, s.isDecision));
+                        { stepId: s.stepId }, wfNodeHtml(s.order, s.name, s.isDecision, wfStepAssigneeLabel(s.stepId)));
                     idByOrder[s.order] = nid;
+                    wfNodeIdByStepId[s.stepId] = nid;
                 });
 
                 wfCreatorId = wfEditor.addNode('creator', 1, 0, 260, 110 + steps.length * 95, 'wf-fixed', {},
