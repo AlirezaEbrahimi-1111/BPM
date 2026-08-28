@@ -39,6 +39,33 @@ class WorkflowManager
             return ['success' => false, 'message' => 'خطا: ' . $e->getMessage()];  // موقت
         }
     }
+    /**
+     * فاز ۳: تنظیماتِ انشعابِ یک مرحله را نرمال می‌کند.
+     * انشعاب فقط برای مراحلِ آبشاری؛ اگر پیکربندی ناقص بود، پیش‌فرضِ امن
+     * (رد → بازگشت به تعریف‌کننده).
+     * @return array [is_decision(int), on_approve_step_order(?int), on_reject_mode(?string), on_reject_step_order(?int)]
+     */
+    private function normalizeBranchConfig($step_data, $execution_mode)
+    {
+        if ($execution_mode !== 'cascade' || empty($step_data['is_decision'])) {
+            return [0, null, null, null];
+        }
+        $toInt = function ($v) {
+            return ($v === null || $v === '' || $v === false) ? null : (int) $v;
+        };
+        $onApprove = $toInt($step_data['on_approve_step_order'] ?? null);
+        $mode = $step_data['on_reject_mode'] ?? null;
+        $mode = in_array($mode, ['step', 'creator'], true) ? $mode : 'creator';
+        $onRejectStep = null;
+        if ($mode === 'step') {
+            $onRejectStep = $toInt($step_data['on_reject_step_order'] ?? null);
+            if ($onRejectStep === null) {
+                $mode = 'creator'; // هدفِ ردِ مشخص نشده → پیش‌فرضِ امن
+            }
+        }
+        return [1, $onApprove, $mode, $onRejectStep];
+    }
+
     private function updateStep($step_id, $step_data, $step_order)
     {
         $assignee_type = $step_data['assignee_type'] ?? 'section';
@@ -61,11 +88,13 @@ class WorkflowManager
         }
 
         $execution_mode = (($step_data['execution_mode'] ?? 'cascade') === 'parallel') ? 'parallel' : 'cascade';
+        [$isDecision, $onApprove, $onRejectMode, $onRejectStep] = $this->normalizeBranchConfig($step_data, $execution_mode);
 
         $stmt = $this->db->prepare("
             UPDATE workflow_steps
             SET step_order = ?, step_name = ?, activity_section = ?, time_limit_hours = ?,
-                assignee_type = ?, assignee_user_id = ?, execution_mode = ?
+                assignee_type = ?, assignee_user_id = ?, execution_mode = ?,
+                is_decision = ?, on_approve_step_order = ?, on_reject_mode = ?, on_reject_step_order = ?
             WHERE id = ?
         ");
         return $stmt->execute([
@@ -76,6 +105,10 @@ class WorkflowManager
             $assignee_type,
             $assignee_user_id,
             $execution_mode,
+            $isDecision,
+            $onApprove,
+            $onRejectMode,
+            $onRejectStep,
             $step_id
         ]);
     }
@@ -103,7 +136,11 @@ class WorkflowManager
         }
 
         $execution_mode = (($step_data['execution_mode'] ?? 'cascade') === 'parallel') ? 'parallel' : 'cascade';
-        $stmt = $this->db->prepare("INSERT INTO workflow_steps (template_id, step_order, step_name, activity_section, time_limit_hours, assignee_type, assignee_user_id, execution_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+
+        // 🆕 فاز ۳: انشعابِ شرطی — فقط برای مراحلِ آبشاری معنی دارد
+        [$isDecision, $onApprove, $onRejectMode, $onRejectStep] = $this->normalizeBranchConfig($step_data, $execution_mode);
+
+        $stmt = $this->db->prepare("INSERT INTO workflow_steps (template_id, step_order, step_name, activity_section, time_limit_hours, assignee_type, assignee_user_id, execution_mode, is_decision, on_approve_step_order, on_reject_mode, on_reject_step_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $ok = $stmt->execute([
             $template_id,
             $step_data['step_order'],
@@ -112,7 +149,11 @@ class WorkflowManager
             $step_data['time_limit_hours'] ?? 24,
             $assignee_type,
             $assignee_user_id,
-            $execution_mode
+            $execution_mode,
+            $isDecision,
+            $onApprove,
+            $onRejectMode,
+            $onRejectStep
         ]);
 
         if ($ok && !empty($step_data['checklist_items'])) {
@@ -233,7 +274,8 @@ class WorkflowManager
             $stmt = $this->db->prepare("
         SELECT ws.id, ws.template_id, ws.step_order, ws.step_name, ws.step_description,
                ws.activity_section, ws.time_limit_hours, ws.assignee_type, ws.assignee_user_id,
-               ws.execution_mode,
+               ws.execution_mode, ws.is_decision, ws.on_approve_step_order,
+               ws.on_reject_mode, ws.on_reject_step_order,
                CONCAT(u.first_name, ' ', u.last_name) AS assignee_user_name
         FROM workflow_steps ws
         LEFT JOIN users u ON u.id = ws.assignee_user_id

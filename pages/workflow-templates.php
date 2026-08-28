@@ -366,6 +366,68 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             opacity: .85;
         }
 
+        /* ─── انشعابِ شرطیِ مرحله (فاز ۳) ─── */
+        .sr-decision-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: .72rem;
+            color: var(--text-2);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .sr-decision-toggle.has-branch {
+            border-color: #8e57fe;
+            color: #8e57fe;
+        }
+
+        .step-decision-body {
+            flex-basis: 100%;
+            margin-top: 8px;
+            padding: 10px 12px;
+            background: var(--surface-2);
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            font-size: .8rem;
+        }
+
+        .step-decision-body .dec-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .step-decision-body select {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: .8rem;
+            font-family: inherit;
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .step-decision-body .dec-config[hidden],
+        .step-decision-body .dec-reject-target[hidden] {
+            display: none;
+        }
+
+        .step-decision-body .dec-hint {
+            color: var(--text-2);
+            font-size: .72rem;
+            margin-top: 4px;
+        }
+
+        #templateModal.view-mode .step-decision-body select,
+        #templateModal.view-mode .step-decision-toggle-input {
+            pointer-events: none;
+            opacity: .85;
+        }
+
         /* ─── Form Elements ─── */
         .form-label {
             font-size: 0.825rem;
@@ -1426,6 +1488,10 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                         <i class="bi bi-check2-square"></i> <span id="scl-count-${stepId}">چک‌لیست</span>
                     </button>
 
+                    <button type="button" class="sr-decision-toggle" id="dec-toggle-${stepId}" onclick="toggleStepDecision('${stepId}')" title="انشعابِ شرطی (تأیید/رد)">
+                        <i class="bi bi-signpost-split"></i> <span id="dec-label-${stepId}">انشعاب</span>
+                    </button>
+
                     <button type="button" class="btn-remove-step sr-remove" onclick="removeStep(this)" title="حذف مرحله">
                         <i class="bi bi-x"></i>
                     </button>
@@ -1439,6 +1505,34 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="addStepChecklistItem('${stepId}')">
                                 <i class="bi bi-plus"></i>
                             </button>
+                        </div>
+                    </div>
+
+                    <div class="step-decision-body" id="dec-body-${stepId}" style="display:none;">
+                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                            <input type="checkbox" class="step-decision-toggle-input" id="dec-on-${stepId}"
+                                   onchange="onDecisionToggle('${stepId}', this)">
+                            <span>این مرحله «نقطهٔ تصمیم» است (تعریف‌کنندهٔ روتین تأیید/رد می‌کند)</span>
+                        </label>
+                        <div class="dec-config" id="dec-config-${stepId}" hidden>
+                            <div class="dec-row">
+                                <span>در صورت <b>تأیید</b> → برو به مرحلهٔ</span>
+                                <select class="dec-approve-target" id="dec-approve-${stepId}">
+                                    <option value="">مرحلهٔ بعدی (پیش‌فرض)</option>
+                                </select>
+                            </div>
+                            <div class="dec-row">
+                                <span>در صورت <b>رد</b> →</span>
+                                <select class="dec-reject-kind" id="dec-rkind-${stepId}" onchange="onRejectKindChange('${stepId}', this)">
+                                    <option value="step">برگرد به مرحلهٔ…</option>
+                                    <option value="creator">برگشت به تعریف‌کنندهٔ روتین</option>
+                                </select>
+                                <select class="dec-reject-target" id="dec-reject-${stepId}"></select>
+                            </div>
+                            <div class="dec-hint">مقصدِ رد می‌تواند هر مرحله‌ای باشد؛ حتی مراحلِ بعد از این مرحله.</div>
+                        </div>
+                        <div class="dec-hint" id="dec-parallel-hint-${stepId}" hidden>
+                            انشعاب فقط برای مراحلِ «آبشاری» است. این مرحله موازی است.
                         </div>
                     </div>
                 </div>`;
@@ -1469,8 +1563,108 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 if (cb) toggleCreatorMode(stepId, cb);
             }
 
-            updateStepNumbers();
+            // 🆕 فاز ۳: تنظیماتِ انشعاب (اگر از قبل داشت) — روی المان ذخیره می‌شود و
+            // در refreshDecisionTargets() اعمال می‌شود (چون گزینه‌های select هنوز ساخته نشده‌اند)
+            const stepEl = document.querySelector(`.step-item[data-step-id="${stepId}"]`);
+            if (stepEl && stepData && Number(stepData.is_decision) === 1) {
+                stepEl._pendingBranch = {
+                    on_approve_step_order: stepData.on_approve_step_order ?? '',
+                    on_reject_mode: stepData.on_reject_mode || 'creator',
+                    on_reject_step_order: stepData.on_reject_step_order ?? ''
+                };
+                const onCb = document.getElementById('dec-on-' + stepId);
+                if (onCb) { onCb.checked = true; onDecisionToggle(stepId, onCb); }
+                const decBody = document.getElementById('dec-body-' + stepId);
+                if (decBody) decBody.style.display = 'block'; // باز نشان بده چون انشعاب دارد
+            }
+
+            updateStepNumbers();   // ← refreshDecisionTargets() هم از این‌جا صدا زده می‌شود
             initDragAndDrop();
+        }
+
+        // ─── انشعابِ شرطیِ مرحله (فاز ۳) ─────────────────────────────
+        function toggleStepDecision(stepId) {
+            const body = document.getElementById('dec-body-' + stepId);
+            if (!body) return;
+            body.style.display = (body.style.display === 'none') ? 'block' : 'none';
+        }
+
+        function onDecisionToggle(stepId, cb) {
+            const stepEl = document.querySelector(`.step-item[data-step-id="${stepId}"]`);
+            const config = document.getElementById('dec-config-' + stepId);
+            const pHint = document.getElementById('dec-parallel-hint-' + stepId);
+            const isParallel = stepEl && stepEl.querySelector('.step-mode-toggle')?.dataset.mode === 'parallel';
+
+            if (cb.checked && isParallel) {
+                // انشعاب فقط برای آبشاری
+                cb.checked = false;
+                if (config) config.hidden = true;
+                if (pHint) pHint.hidden = false;
+            } else {
+                if (config) config.hidden = !cb.checked;
+                if (pHint) pHint.hidden = true;
+            }
+            markBranchToggle(stepId);
+            refreshDecisionTargets();
+        }
+
+        function onRejectKindChange(stepId, sel) {
+            const tgt = document.getElementById('dec-reject-' + stepId);
+            if (tgt) tgt.hidden = (sel.value !== 'step');
+        }
+
+        function markBranchToggle(stepId) {
+            const btn = document.getElementById('dec-toggle-' + stepId);
+            const on = document.getElementById('dec-on-' + stepId);
+            const lbl = document.getElementById('dec-label-' + stepId);
+            if (!btn || !on) return;
+            btn.classList.toggle('has-branch', on.checked);
+            if (lbl) lbl.textContent = on.checked ? 'انشعابِ فعال' : 'انشعاب';
+        }
+
+        // گزینه‌های dropdownِ همهٔ مراحلِ تصمیم را از ترتیبِ فعلیِ مراحل بازمی‌سازد
+        function refreshDecisionTargets() {
+            const items = [...document.querySelectorAll('.step-item')];
+            const opts = items.map((el, i) => {
+                const nm = (el.querySelector('.step-name')?.value || '').trim() || 'بی‌نام';
+                return { pos: i + 1, name: nm };
+            });
+
+            items.forEach((el, idx) => {
+                const stepId = el.dataset.stepId;
+                const selfPos = idx + 1;
+                const approveSel = document.getElementById('dec-approve-' + stepId);
+                const rejectSel = document.getElementById('dec-reject-' + stepId);
+                if (!approveSel || !rejectSel) return;
+
+                // اعمالِ pending (فقط یک‌بار، بعد از ساختِ گزینه‌ها)
+                const pending = el._pendingBranch;
+
+                const prevApprove = pending ? String(pending.on_approve_step_order ?? '') : approveSel.value;
+                const prevRejectKind = pending ? (pending.on_reject_mode || 'creator')
+                    : (document.getElementById('dec-rkind-' + stepId)?.value || 'step');
+                const prevRejectStep = pending ? String(pending.on_reject_step_order ?? '') : rejectSel.value;
+
+                const buildOptions = (includeDefault) => {
+                    let h = includeDefault ? '<option value="">مرحلهٔ بعدی (پیش‌فرض)</option>' : '<option value="">— انتخاب مرحله —</option>';
+                    opts.forEach(o => {
+                        if (o.pos === selfPos) return; // خودِ مرحله را نگذار
+                        h += `<option value="${o.pos}">${toFa(o.pos)} - ${escHtml(o.name)}</option>`;
+                    });
+                    return h;
+                };
+
+                approveSel.innerHTML = buildOptions(true);
+                rejectSel.innerHTML = buildOptions(false);
+
+                if ([...approveSel.options].some(o => o.value === prevApprove)) approveSel.value = prevApprove;
+                const rkind = document.getElementById('dec-rkind-' + stepId);
+                if (rkind && ['step', 'creator'].includes(prevRejectKind)) rkind.value = prevRejectKind;
+                if ([...rejectSel.options].some(o => o.value === prevRejectStep)) rejectSel.value = prevRejectStep;
+                if (rkind) onRejectKindChange(stepId, rkind);
+
+                if (pending) delete el._pendingBranch;
+            });
         }
 
         // ─── حذف مرحله ───────────────────────────────────
@@ -1602,6 +1796,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 el.querySelector('.step-num').textContent = toFa(i + 1);
             });
             updateExecPreview();
+            if (typeof refreshDecisionTargets === 'function') refreshDecisionTargets();
         }
 
         // ── انتخاب حالتِ یک مرحله ──
@@ -1610,6 +1805,13 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             wrap.dataset.mode = mode;
             wrap.querySelectorAll('.sm-btn').forEach(b => b.classList.remove('active'));
             wrap.querySelector(mode === 'parallel' ? '.sm-parallel' : '.sm-cascade').classList.add('active');
+            // 🆕 انشعاب فقط برای آبشاری — با تبدیل به موازی، تصمیم خاموش می‌شود
+            if (mode === 'parallel') {
+                const stepEl = wrap.closest('.step-item');
+                const stepId = stepEl?.dataset.stepId;
+                const onCb = stepId && document.getElementById('dec-on-' + stepId);
+                if (onCb && onCb.checked) { onCb.checked = false; onDecisionToggle(stepId, onCb); }
+            }
             updateExecPreview();
         }
 
@@ -1720,6 +1922,21 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                         description: (it.description || '').trim()
                     }));
 
+                // 🆕 فاز ۳: تنظیماتِ انشعابِ شرطی (فقط برای آبشاری)
+                const decOn = document.getElementById('dec-on-' + stepId);
+                const branch = { is_decision: 0, on_approve_step_order: null, on_reject_mode: null, on_reject_step_order: null };
+                if (sMode === 'cascade' && decOn && decOn.checked) {
+                    branch.is_decision = 1;
+                    branch.on_approve_step_order = document.getElementById('dec-approve-' + stepId)?.value || null;
+                    const rkind = document.getElementById('dec-rkind-' + stepId)?.value || 'creator';
+                    branch.on_reject_mode = rkind;
+                    if (rkind === 'step') {
+                        const rt = document.getElementById('dec-reject-' + stepId)?.value || '';
+                        if (!rt) { valid = false; }
+                        branch.on_reject_step_order = rt || null;
+                    }
+                }
+
                 // 🆕 حالت «به ایجادکننده»
                 if (item.dataset.creatorMode === '1') {
                     if (!sName || !sTime) {
@@ -1733,7 +1950,8 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                         assignee_type: 'creator',
                         assignee_value: 'creator', // مقدار نمادین (بک‌اند نادیده می‌گیرد)
                         execution_mode: sMode,
-                        checklist_items: stepChecklistItems
+                        checklist_items: stepChecklistItems,
+                        ...branch
                     });
                     return;
                 }
@@ -1759,12 +1977,13 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                     assignee_type: assignee.type,
                     assignee_value: assignee.value,
                     execution_mode: sMode,
-                    checklist_items: stepChecklistItems
+                    checklist_items: stepChecklistItems,
+                    ...branch
                 });
             });
 
             if (!valid) {
-                showToast('تمام فیلدها از جمله مسئولِ هر مرحله را تکمیل کنید (نه «همه واحدها»)', 'warning');
+                showToast('تمام فیلدها را تکمیل کنید — و برای مراحلِ «رد → برگرد به مرحلهٔ…»، مقصدِ رد را انتخاب کنید', 'warning');
                 return;
             }
 
