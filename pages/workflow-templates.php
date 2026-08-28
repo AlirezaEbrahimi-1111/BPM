@@ -488,6 +488,21 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 radial-gradient(circle, rgba(142, 87, 254, .12) 1px, transparent 1px) 0 0 / 22px 22px;
         }
 
+        .wf-narrative {
+            margin-top: 10px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--surface);
+            font-size: .8rem;
+            line-height: 1.9;
+            color: var(--text);
+        }
+
+        .wf-narrative div {
+            padding: 1px 0;
+        }
+
         /* تمام‌صفحه برای بومِ انشعاب */
         .wf-canvas-wrap.wf-canvas-fs {
             position: fixed;
@@ -1260,17 +1275,19 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                                 <span class="wf-legend">
                                     <span><i style="color:#1b7b39">──</i> تأیید / بعدی</span>
                                     <span><i style="color:#d33">╌╌</i> رد</span>
-                                    <span>دوبار کلیک روی خط = حذف</span>
+                                    <span>کلیک راست روی خط = حذف · دوبار کلیک = نقطهٔ خم</span>
                                 </span>
                             </div>
                             <div id="wfCanvas"></div>
                         </div>
 
+                        <div class="wf-narrative" id="wfNarrative"></div>
+
                         <div class="steps-hint">
                             <i class="bi bi-info-circle"></i>
                             جزئیاتِ هر مرحله (نام، مسئول، مهلت، چک‌لیست) در فهرستِ بالا؛ <b>ترتیب و انشعاب</b> را روی بومِ پایین مشخص کنید:
                             گرهِ «نقطهٔ تصمیم» را تیک بزنید تا دو خروجیِ «تأیید» و «رد» بگیرد، بعد آن‌ها را به گرهِ مقصد (یا گرهِ «تعریف‌کننده») وصل کنید.
-                            جای عمودیِ گره‌ها ترتیبِ اجرا را تعیین می‌کند. برای حذفِ یک خط، رویش <b>دوبار کلیک</b> کنید.
+                            جای عمودیِ گره‌ها ترتیبِ اجرا را تعیین می‌کند. <b>کلیک راست</b> روی یک خط آن را حذف می‌کند.
                         </div>
                     </form>
                 </div>
@@ -1931,6 +1948,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 nameEl.textContent = nm || ('مرحلهٔ ' + toFa(order));
             }
             if (asgEl) asgEl.textContent = wfStepAssigneeLabel(stepId);
+            if (typeof wfBuildNarrative === 'function') wfBuildNarrative();
         }
 
         function wfPatchNodeDebounced(stepId) {
@@ -1942,7 +1960,8 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             const el = document.getElementById('wfCanvas');
             if (!el || typeof Drawflow === 'undefined' || wfEditor) return;
             wfEditor = new Drawflow(el);
-            wfEditor.reroute = false;            // نقطهٔ خم روی خط لازم نیست (فقط مسیردهیِ منطقی)
+            wfEditor.reroute = true;             // دوبار کلیک روی خط → افزودنِ نقطهٔ خم
+            wfEditor.reroute_fix_curvature = true;
             wfEditor.force_first_input = false;
             wfEditor.start();
 
@@ -1960,10 +1979,11 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 wfScheduleCanvasToForm();
             });
 
-            // دوبار کلیک روی یک خط → حذفِ آن خط
-            el.addEventListener('dblclick', function (e) {
+            // کلیک راست روی یک خط → حذفِ آن خط
+            el.addEventListener('contextmenu', function (e) {
                 const conn = e.target.closest('.connection');
                 if (!conn) return;
+                e.preventDefault();
                 const cls = conn.getAttribute('class') || '';
                 const mo = cls.match(/node_out_node-(\d+)/), mi = cls.match(/node_in_node-(\d+)/);
                 const oc = cls.match(/output_\d+/), ic = cls.match(/input_\d+/);
@@ -2020,6 +2040,48 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             });
         }
 
+        // توضیحِ متنیِ چگونگیِ اجرای روتین — از شروع تا پایان. با هر تغییری به‌روز می‌شود.
+        function wfBuildNarrative() {
+            const box = document.getElementById('wfNarrative');
+            if (!box) return;
+            const steps = wfFormSteps();
+            if (!steps.length) { box.innerHTML = '<div>هنوز مرحله‌ای تعریف نشده است.</div>'; return; }
+
+            const nm = s => 'مرحلهٔ ' + toFa(s.order) + (s.name ? ' «' + s.name + '»' : '');
+            const cascade = steps.filter(s => s.mode === 'cascade');
+            const parallel = steps.filter(s => s.mode === 'parallel');
+            const lines = [];
+
+            const startActive = [];
+            if (cascade.length) startActive.push(nm(cascade[0]) + ' (آبشاری)');
+            parallel.forEach(s => startActive.push(nm(s) + ' (موازی)'));
+            lines.push('شروعِ روتین: ' + (startActive.length > 1
+                ? startActive.join(' و ') + ' هم‌زمان فعال می‌شوند.'
+                : (startActive[0] || '—') + ' فعال می‌شود.'));
+
+            cascade.forEach((s, i) => {
+                const nextOrd = (i + 1 < cascade.length) ? cascade[i + 1].order : null;
+                if (s.isDecision) {
+                    const appr = s.onApprove ? ('مرحلهٔ ' + toFa(s.onApprove)) : (nextOrd ? ('مرحلهٔ ' + toFa(nextOrd)) : 'پایانِ روتین');
+                    let rej;
+                    if (s.rkind === 'creator') rej = 'کار برای اصلاح به تعریف‌کنندهٔ روتین برمی‌گردد';
+                    else if (s.onReject) rej = 'به مرحلهٔ ' + toFa(s.onReject) + ' می‌رود';
+                    else rej = 'کار به تعریف‌کننده برمی‌گردد';
+                    lines.push(nm(s) + ' (آبشاری) یک «نقطهٔ تصمیم» است؛ تعریف‌کنندهٔ روتین بررسی می‌کند — اگر «تأیید» → ' + appr + '، اگر «رد» → ' + rej + '.');
+                } else {
+                    lines.push('پس از تکمیلِ ' + nm(s) + ' (آبشاری) → ' + (nextOrd ? ('مرحلهٔ ' + toFa(nextOrd)) : 'روتین به پایان می‌رسد') + '.');
+                }
+            });
+
+            parallel.forEach(s => {
+                lines.push(nm(s) + ' (موازی) مستقل انجام می‌شود و جریانِ اصلی را جلو نمی‌برد؛ فقط باید پیش از پایانِ روتین تکمیل شود.');
+            });
+
+            lines.push('پایانِ روتین: وقتی آخرین مرحلهٔ آبشاری و همهٔ مراحلِ موازی تکمیل شوند. مراحلی که به‌خاطرِ پرشِ تأیید/رد اجرا نشده‌اند، در پایان لغو می‌شوند.');
+
+            box.innerHTML = lines.map((l, i) => `<div><b>${toFa(i + 1)}.</b> ${escHtml(l)}</div>`).join('');
+        }
+
         // بازسازیِ کاملِ بوم از روی فهرستِ مراحل
         function wfSyncFromForm() {
             wfInit();
@@ -2074,6 +2136,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             } finally {
                 wfSyncing = false;
             }
+            if (typeof wfBuildNarrative === 'function') wfBuildNarrative();
         }
 
         function wfSetNodeDecision(nodeId, on) {
@@ -2158,6 +2221,8 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                     if (typeof onRejectKindChange === 'function') onRejectKindChange(stepId, rkind);
                 }
             });
+
+            if (typeof wfBuildNarrative === 'function') wfBuildNarrative();
         }
 
         function wfZoom(delta) { if (wfEditor) { delta > 0 ? wfEditor.zoom_in() : wfEditor.zoom_out(); } }
@@ -2294,6 +2359,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             });
             updateExecPreview();
             if (typeof refreshDecisionTargets === 'function') refreshDecisionTargets();
+            if (typeof wfBuildNarrative === 'function') wfBuildNarrative();
         }
 
         // ── انتخاب حالتِ یک مرحله ──
@@ -2357,6 +2423,8 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             box.innerHTML =
                 '<div class="ep-line"><b>از ابتدا فعال:</b> ' + (activeNow.length ? activeNow.map(escHtml).join('، ') : '—') + '</div>' +
                 '<div class="ep-line"><b>منتظر:</b> ' + (waiting.length ? waiting.map(escHtml).join('، ') : '—') + '</div>';
+
+            if (typeof wfBuildNarrative === 'function') wfBuildNarrative();
         }
 
         // ─── Drag & Drop ──────────────────────────────────
