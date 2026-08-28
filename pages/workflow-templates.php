@@ -488,6 +488,23 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 radial-gradient(circle, rgba(142, 87, 254, .12) 1px, transparent 1px) 0 0 / 22px 22px;
         }
 
+        /* تمام‌صفحه برای بومِ انشعاب */
+        .wf-canvas-wrap.wf-canvas-fs {
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            margin: 0;
+            border-radius: 0;
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wf-canvas-wrap.wf-canvas-fs #wfCanvas {
+            flex: 1;
+            height: auto;
+        }
+
         #wfCanvas .drawflow-node {
             background: var(--surface);
             border: 1.5px solid var(--border);
@@ -1236,12 +1253,14 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                             <div class="wf-canvas-toolbar">
                                 <b><i class="bi bi-diagram-2"></i> مسیر و انشعابِ روتین</b>
                                 <button type="button" onclick="wfSyncFromForm()" title="بازچینش از روی فهرستِ مراحل"><i class="bi bi-arrow-repeat"></i> همگام‌سازی</button>
-                                <button type="button" onclick="wfZoom(0.1)"><i class="bi bi-zoom-in"></i></button>
-                                <button type="button" onclick="wfZoom(-0.1)"><i class="bi bi-zoom-out"></i></button>
-                                <button type="button" onclick="wfZoomReset()">۱:۱</button>
+                                <button type="button" onclick="wfZoom(0.1)" title="بزرگ‌نمایی"><i class="bi bi-zoom-in"></i></button>
+                                <button type="button" onclick="wfZoom(-0.1)" title="کوچک‌نمایی"><i class="bi bi-zoom-out"></i></button>
+                                <button type="button" onclick="wfZoomReset()" title="بازنشانی بزرگ‌نمایی">۱:۱</button>
+                                <button type="button" id="wfFsBtn" onclick="wfToggleFullscreen()" title="تمام‌صفحه"><i class="bi bi-arrows-fullscreen"></i></button>
                                 <span class="wf-legend">
                                     <span><i style="color:#1b7b39">──</i> تأیید / بعدی</span>
                                     <span><i style="color:#d33">╌╌</i> رد</span>
+                                    <span>دوبار کلیک روی خط = حذف</span>
                                 </span>
                             </div>
                             <div id="wfCanvas"></div>
@@ -1251,7 +1270,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                             <i class="bi bi-info-circle"></i>
                             جزئیاتِ هر مرحله (نام، مسئول، مهلت، چک‌لیست) در فهرستِ بالا؛ <b>ترتیب و انشعاب</b> را روی بومِ پایین مشخص کنید:
                             گرهِ «نقطهٔ تصمیم» را تیک بزنید تا دو خروجیِ «تأیید» و «رد» بگیرد، بعد آن‌ها را به گرهِ مقصد (یا گرهِ «تعریف‌کننده») وصل کنید.
-                            جای عمودیِ گره‌ها ترتیبِ اجرا را تعیین می‌کند.
+                            جای عمودیِ گره‌ها ترتیبِ اجرا را تعیین می‌کند. برای حذفِ یک خط، رویش <b>دوبار کلیک</b> کنید.
                         </div>
                     </form>
                 </div>
@@ -1923,8 +1942,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             const el = document.getElementById('wfCanvas');
             if (!el || typeof Drawflow === 'undefined' || wfEditor) return;
             wfEditor = new Drawflow(el);
-            wfEditor.reroute = true;
-            wfEditor.reroute_fix_curvature = true;
+            wfEditor.reroute = false;            // نقطهٔ خم روی خط لازم نیست (فقط مسیردهیِ منطقی)
             wfEditor.force_first_input = false;
             wfEditor.start();
 
@@ -1941,6 +1959,39 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
                 wfSetNodeDecision(nid, e.target.checked);
                 wfScheduleCanvasToForm();
             });
+
+            // دوبار کلیک روی یک خط → حذفِ آن خط
+            el.addEventListener('dblclick', function (e) {
+                const conn = e.target.closest('.connection');
+                if (!conn) return;
+                const cls = conn.getAttribute('class') || '';
+                const mo = cls.match(/node_out_node-(\d+)/), mi = cls.match(/node_in_node-(\d+)/);
+                const oc = cls.match(/output_\d+/), ic = cls.match(/input_\d+/);
+                if (mo && mi && oc && ic) {
+                    wfEditor.removeSingleConnection(mo[1], mi[1], oc[0], ic[0]);
+                    wfScheduleCanvasToForm();
+                }
+            });
+
+            // Escape → خروج از تمام‌صفحه
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && document.getElementById('wfCanvasWrap')?.classList.contains('wf-canvas-fs')) {
+                    wfToggleFullscreen(false);
+                }
+            });
+        }
+
+        function wfToggleFullscreen(force) {
+            const wrap = document.getElementById('wfCanvasWrap');
+            const btn = document.getElementById('wfFsBtn');
+            if (!wrap) return;
+            const on = (typeof force === 'boolean') ? force : !wrap.classList.contains('wf-canvas-fs');
+            wrap.classList.toggle('wf-canvas-fs', on);
+            document.body.style.overflow = on ? 'hidden' : '';
+            if (btn) btn.innerHTML = on
+                ? '<i class="bi bi-fullscreen-exit"></i>'
+                : '<i class="bi bi-arrows-fullscreen"></i>';
+            btn?.setAttribute('title', on ? 'خروج از تمام‌صفحه' : 'تمام‌صفحه');
         }
 
         function wfNodeHtml(order, name, isDecision, assigneeLabel) {

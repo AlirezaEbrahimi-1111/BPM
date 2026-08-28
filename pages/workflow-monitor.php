@@ -1990,7 +1990,7 @@ if (!$__me) {
             try {
                 host.innerHTML = '';
                 wfmEditor = new Drawflow(host);
-                wfmEditor.reroute = true;
+                wfmEditor.reroute = false;
                 wfmEditor.start();
                 wfmEditor.editor_mode = 'fixed'; // فقط‌خواندنی
 
