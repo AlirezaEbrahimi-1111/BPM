@@ -62,6 +62,29 @@ try {
     $db = $database->getConnection();
     $taskManager = new TaskManager($db);
 
+    // 🆕 فاز ۲: اگر این تسک یک «مرحلهٔ تصمیم»ِ روتین است، تأیید/رد از منطقِ انشعابِ
+    // WorkflowManager رد شود (نه از approveOrRejectTaskِ عادی).
+    $wfDecision = $db->prepare("
+        SELECT 1 FROM tasks t
+        JOIN workflow_instance_steps wis ON wis.task_id = t.id
+        JOIN workflow_steps ws ON ws.id = wis.step_id
+        WHERE t.id = ? AND t.is_workflow_task = 1 AND ws.is_decision = 1
+    ");
+    $wfDecision->execute([$input['task_id']]);
+    if ($wfDecision->fetchColumn()) {
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/WorkflowManager.php';
+        $workflowManager = new WorkflowManager($db);
+        $result = $workflowManager->resolveStepDecision(
+            $input['task_id'],
+            $user_id,
+            $input['approve'] ? 'approve' : 'reject',
+            $input['notes'] ?? ''
+        );
+        ob_end_clean();
+        echo json_encode($result);
+        exit;
+    }
+
     // فراخوانی متد تأیید/رد
     $result = $taskManager->approveOrRejectTask(
         $input['task_id'],

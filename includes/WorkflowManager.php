@@ -424,76 +424,59 @@ class WorkflowManager
                     $resolved_assignee_id = $creator_id;
                 }
 
-                // ✅ ایجاد task برای این مرحله
-                // نکته: موعد با دقتِ ساعت/دقیقه باید در ستونِ `deadline` (DATETIME) ذخیره شود، نه `due_date`
-                // (`due_date` از نوع DATE است و بخشِ ساعت را بی‌صدا حذف می‌کند — دقیقاً همان ستونی که
-                // approve-deadline.php / request-deadline.php هم برای موعدِ کارهای روتین به‌کار می‌برند)
-                $stmt = $this->db->prepare("
-                    INSERT INTO tasks (
-                        workflow_instance_id,
-                        organization_id,
-                        is_workflow_task,
-                        title,
-                        description,
-                        creator_id,
-                        activity_section,
-                        assignee_id,
-                        task_type,
-                        priority,
-                        deadline,
-                        status,
-                        current_stage_id
-                    )
-                    VALUES (?, ?, 1, ?, '', ?, ?, ?, 'periodic', 'high', ?, ?, ?)
-                ");
-
-                $stmt->execute([
-                    $instance_id,
-                    $organization_id,                          // ✅ سازمان — این جا افتاده بود
-                    $title . ' - ' . $step['step_name'],
-                    $creator_id,
-                    $step['activity_section'],
-                    $resolved_assignee_id,
-                    $deadline,
-                    $task_status,
-                    $step['id']  // current_stage_id
-                ]);
-
-                $task_id = $this->db->lastInsertId();
-
-                if ($is_first_step) {
-                    $first_task_id = $task_id;
-                }
-
-                // ✅ کپیِ چک‌لیستِ الگوی همین مرحله به task_checklist_items (سطح نمونهٔ اجرا)
-                $clStmt = $this->db->prepare("
-                    SELECT title, description, sort_order
-                    FROM workflow_step_checklist_items
-                    WHERE step_id = ?
-                    ORDER BY sort_order ASC, id ASC
-                ");
-                $clStmt->execute([$step['id']]);
-                $stepChecklistItems = $clStmt->fetchAll(PDO::FETCH_ASSOC);
-                if ($stepChecklistItems) {
-                    $insCl = $this->db->prepare("
-                        INSERT INTO task_checklist_items (task_id, title, description, sort_order, created_by)
-                        VALUES (?, ?, ?, ?, ?)
+                // 🆕 فاز ۲: ساختِ تنبلِ تسک — تسک فقط برای مراحلِ «فعالِ همین‌الان» ساخته می‌شود.
+                // مراحلِ pending، task_id = NULL می‌مانند تا موقعِ نوبتشان در activateInstanceStep ساخته شوند
+                // (یا اگر پرش خفته‌شان کند، هیچ‌وقت). این‌طوری نه نوتیفیکیشن می‌رود نه چیزی به مسئول نمایش داده می‌شود.
+                $task_id = null;
+                if ($is_active_now) {
+                    $stmt = $this->db->prepare("
+                        INSERT INTO tasks (
+                            workflow_instance_id, organization_id, is_workflow_task, title, description,
+                            creator_id, activity_section, assignee_id, task_type, priority, deadline, status, current_stage_id
+                        )
+                        VALUES (?, ?, 1, ?, '', ?, ?, ?, 'periodic', 'high', ?, ?, ?)
                     ");
-                    foreach ($stepChecklistItems as $ci) {
-                        $insCl->execute([$task_id, $ci['title'], $ci['description'], $ci['sort_order'], $creator_id]);
+                    $stmt->execute([
+                        $instance_id,
+                        $organization_id,
+                        $title . ' - ' . $step['step_name'],
+                        $creator_id,
+                        $step['activity_section'],
+                        $resolved_assignee_id,
+                        $deadline,
+                        $task_status,
+                        $step['id']
+                    ]);
+                    $task_id = $this->db->lastInsertId();
+
+                    if ($is_first_step) {
+                        $first_task_id = $task_id;
+                    }
+
+                    // کپیِ چک‌لیستِ الگوی همین مرحله
+                    $clStmt = $this->db->prepare("
+                        SELECT title, description, sort_order
+                        FROM workflow_step_checklist_items
+                        WHERE step_id = ?
+                        ORDER BY sort_order ASC, id ASC
+                    ");
+                    $clStmt->execute([$step['id']]);
+                    $stepChecklistItems = $clStmt->fetchAll(PDO::FETCH_ASSOC);
+                    if ($stepChecklistItems) {
+                        $insCl = $this->db->prepare("
+                            INSERT INTO task_checklist_items (task_id, title, description, sort_order, created_by)
+                            VALUES (?, ?, ?, ?, ?)
+                        ");
+                        foreach ($stepChecklistItems as $ci) {
+                            $insCl->execute([$task_id, $ci['title'], $ci['description'], $ci['sort_order'], $creator_id]);
+                        }
                     }
                 }
 
-                // ✅ ایجاد رکورد در workflow_instance_steps
+                // ✅ ایجاد رکورد در workflow_instance_steps (task_id برای مراحلِ pending می‌تواند NULL باشد)
                 $stmt = $this->db->prepare("
                     INSERT INTO workflow_instance_steps (
-                        instance_id,
-                        step_id,
-                        task_id,
-                        step_order,
-                        status,
-                        deadline,
-                        started_at
+                        instance_id, step_id, task_id, step_order, status, deadline, started_at
                     ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 ");
 
@@ -504,7 +487,7 @@ class WorkflowManager
                     $task_id,
                     $step['step_order'],
                     $step_status,
-                    $deadline,
+                    $is_active_now ? $deadline : null,
                     $started_at
                 ]);
 
@@ -587,6 +570,14 @@ class WorkflowManager
                 throw new Exception('مرحله یافت نشد');
             }
 
+            // 🆕 فاز ۲: اگر این مرحله «نقطهٔ تصمیم» است، «تکمیل» = «تأیید» → منطقِ انشعاب
+            $decStmt = $this->db->prepare("SELECT is_decision FROM workflow_steps WHERE id = ?");
+            $decStmt->execute([$current_step['step_id']]);
+            if ((int) ($decStmt->fetchColumn() ?: 0) === 1) {
+                $this->db->commit(); // ترنزکشنِ خالی را ببند تا resolveStepDecision ترنزکشنِ خودش را بگیرد
+                return $this->resolveStepDecision($task_id, $user_id, 'approve', $notes);
+            }
+
             // ✅ اجازه تکمیل حتی اگر status 'pending' باشد
             if (!in_array($current_step['status'], ['active', 'pending'])) {
                 throw new Exception('این مرحله قابل تکمیل نیست (وضعیت: ' . $current_step['status'] . ')');
@@ -651,128 +642,24 @@ class WorkflowManager
             }
 
             if ($next_step) {
-                // ✅ موعدِ مرحلهٔ بعدی باید نسبتِ به لحظهٔ فعال‌شدنش حساب شود، نه لحظهٔ شروعِ کل روتین
-                // (deadline قبلی در startWorkflow() برای همهٔ مراحل از یک "الان" مشترک محاسبه شده بود)
-                $stmt = $this->db->prepare("SELECT time_limit_hours FROM workflow_steps WHERE id = ?");
-                $stmt->execute([$next_step['step_id']]);
-                $nextTimeLimitHours = $stmt->fetchColumn() ?: 24;
-                $nextDeadline = date('Y-m-d H:i:s', strtotime("+{$nextTimeLimitHours} hours"));
-
-                // فعال کردن مرحله بعدی
-                $stmt = $this->db->prepare("
-                    UPDATE workflow_instance_steps
-                    SET status = 'active', started_at = NOW(), deadline = ?
-                    WHERE id = ?
-                ");
-                $stmt->execute([$nextDeadline, $next_step['id']]);
-
-                // فعال کردن کار مرحله بعدی
-                $stmt = $this->db->prepare("
-                    UPDATE tasks
-                    SET status = 'in_progress', deadline = ?
-                    WHERE id = ?
-                ");
-                $stmt->execute([$nextDeadline, $next_step['task_id']]);
-
-                // ✅ اگر انجام‌دهندهٔ مرحلهٔ قبل توضیحی نوشته، همان را در تاریخچهٔ
-                //    تسکِ مرحلهٔ بعدی هم ثبت کن تا مسئولِ مرحلهٔ بعد ببیندش
-                //    (هر مرحله task_id جدا دارد؛ بدون این کار، تاریخچه منتقل نمی‌شود)
-                if ($notes !== '') {
-                    $stmt = $this->db->prepare("
-                        INSERT INTO task_history (task_id, from_user_id, action, notes)
-                        VALUES (?, ?, 'workflow_prev_note', ?)
-                    ");
-                    $stmt->execute([$next_step['task_id'], $user_id, $notes]);
-                }
-
-                // بروزرسانی مرحله فعلی در workflow_instances
-                $stmt = $this->db->prepare("
-                    UPDATE workflow_instances 
-                    SET current_step = ? 
-                    WHERE id = ?
-                ");
-                $stmt->execute([$next_step['step_order'], $instance_id]);
-                // دریافت اطلاعات مرحله بعدی
-                $stmt = $this->db->prepare("
-                    SELECT ws.activity_section, ws.step_name, t.title, t.assignee_id
-                    FROM workflow_steps ws 
-                    JOIN tasks t ON t.id = ?
-                    WHERE ws.id = ?
-                ");
-                $stmt->execute([$next_step['task_id'], $next_step['step_id']]);
-                $next_info = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                // ✅ ارسال نوتیفیکیشن به مسئولِ مرحلهٔ بعدی (کاربرِ مشخص یا اعضای واحد)
-                try {
-                    if (!empty($next_info['assignee_id'])) {
-                        $this->createNotification(
-                            $next_info['assignee_id'],
-                            'workflow_ready',
-                            'نوبت شما رسید',
-                            "کار روتین '{$next_info['title']}' - {$next_info['step_name']} آماده انجام است",
-                            "/pages/task-detail.php?id={$next_step['task_id']}",
-                            $instance_id
-                        );
-                    } else {
-                        $this->notifySectionMembers(
-                            $next_info['activity_section'],
-                            'workflow_ready',
-                            'نوبت شما رسید',
-                            "کار روتین '{$next_info['title']}' - {$next_info['step_name']} آماده انجام است",
-                            "/pages/task-detail.php?id={$next_step['task_id']}",
-                            $instance_id
-                        );
-                    }
-                } catch (Exception $notif_error) {
-                    error_log("Notification error: " . $notif_error->getMessage());
-                }
-
+                // 🆕 فاز ۲: فعال‌سازیِ مرحلهٔ بعدی از طریقِ helper مشترک
+                // (ساختِ تنبلِ تسک اگر task_id خالی باشد + موعدِ تازه + تاریخچه + نوتیفیکیشن + یادداشتِ مرحلهٔ قبل)
+                $this->activateInstanceStep($next_step['id'], $user_id, $notes);
+                $this->db->prepare("UPDATE workflow_instances SET current_step = ? WHERE id = ?")
+                    ->execute([$next_step['step_order'], $instance_id]);
                 $message = 'مرحله تکمیل شد و به مرحله بعدی منتقل شد';
             } else {
-                // بررسی باقی‌ماندهٔ مراحل (در موازی، تکمیل یک مرحله لزوماً پایان روتین نیست)
+                // هیچ مرحلهٔ آبشاریِ بعدی نمانده — آیا مرحلهٔ فعال/در انتظارِ دیگری هست؟
+                // (مراحلِ dormant مانع پایان نیستند؛ در completeInstance کنسل می‌شوند)
                 $remStmt = $this->db->prepare("
                     SELECT COUNT(*) FROM workflow_instance_steps
-                    WHERE instance_id = ? AND status NOT IN ('completed', 'cancelled')
+                    WHERE instance_id = ? AND status IN ('pending', 'active')
                 ");
                 $remStmt->execute([$instance_id]);
-                $remaining = (int) $remStmt->fetchColumn();
-
-                if ($remaining === 0) {
-                    // همهٔ مراحل تمام شد → کل روتین تکمیل
-                    $stmt = $this->db->prepare("
-                        UPDATE workflow_instances 
-                        SET status = 'completed', completed_at = NOW() 
-                        WHERE id = ?
-                    ");
-                    $stmt->execute([$instance_id]);
-
+                if ((int) $remStmt->fetchColumn() === 0) {
+                    $this->completeInstance($instance_id, $user_id);
                     $message = 'کار روتین با موفقیت تکمیل شد';
-
-                    // ✅ نوتیفیکیشن به ایجادکننده
-                    try {
-                        $stmt = $this->db->prepare("
-                            SELECT wi.created_by, wi.title 
-                            FROM workflow_instances wi 
-                            WHERE wi.id = ?
-                        ");
-                        $stmt->execute([$instance_id]);
-                        $workflow_info = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                        if ($workflow_info) {
-                            $this->createNotification(
-                                $workflow_info['created_by'],
-                                'workflow_completed',
-                                'کار روتین تکمیل شد',
-                                "کار روتین '{$workflow_info['title']}' با موفقیت تکمیل شد",
-                                "../pages/workflow-detail.php?id={$instance_id}",
-                                $instance_id
-                            );
-                        }
-                    } catch (Exception $notif_error) {
-                        error_log("Final notification error: " . $notif_error->getMessage());
-                    }
                 } else {
-                    // حالت موازی: این مرحله تمام شد ولی هنوز مراحل دیگری باز است
                     $message = 'مرحلهٔ شما تکمیل شد؛ در انتظار تکمیل سایر مراحل';
                 }
             }
@@ -783,6 +670,345 @@ class WorkflowManager
             $this->db->rollBack();
             error_log("CompleteStep error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطا در تکمیل مرحله: ' . $e->getMessage()];
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  فاز ۲ — انشعابِ شرطیِ مراحل: «مرحلهٔ تصمیم»، پرشِ تأیید/رد،
+    //  مراحلِ خفته (dormant)، و ساختِ تنبلِ تسک.
+    //  همه چیز additive است: اگر هیچ مرحله‌ای is_decision نباشد و هیچ
+    //  on_approve/on_reject ست نشده باشد، رفتار دقیقاً مثلِ قبل است.
+    // ═══════════════════════════════════════════════════════════════════
+
+    /** ردیفِ workflow_instance_steps بر اساسِ step_order در همین نمونه */
+    private function getInstanceStepByOrder($instance_id, $step_order)
+    {
+        $stmt = $this->db->prepare("
+            SELECT wis.* FROM workflow_instance_steps wis
+            WHERE wis.instance_id = ? AND wis.step_order = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$instance_id, $step_order]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    /**
+     * یک مرحله را «زنده» می‌کند:
+     *  - اگر task_id خالی است، همین‌جا تسک + چک‌لیست را می‌سازد (ساختِ تنبل)
+     *  - وضعیتِ مرحله را active، موعدِ تازه، started_at
+     *  - تاریخچه + نوتیفیکیشن به مسئول + یادداشتِ مرحلهٔ قبل (اگر داده شده)
+     * روی نمونه‌های قدیمی که از قبل تسک دارند هم درست کار می‌کند.
+     */
+    private function activateInstanceStep($instance_step_id, $acting_user_id, $prev_notes = '')
+    {
+        $stmt = $this->db->prepare("
+            SELECT wis.*, ws.step_name, ws.activity_section, ws.assignee_type,
+                   ws.assignee_user_id, ws.time_limit_hours,
+                   wi.title AS instance_title, wi.created_by AS instance_creator,
+                   wi.organization_id AS org_id
+            FROM workflow_instance_steps wis
+            JOIN workflow_steps ws ON ws.id = wis.step_id
+            JOIN workflow_instances wi ON wi.id = wis.instance_id
+            WHERE wis.id = ?
+        ");
+        $stmt->execute([$instance_step_id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) return null;
+
+        $hours = $row['time_limit_hours'] ?: 24;
+        $deadline = date('Y-m-d H:i:s', strtotime("+{$hours} hours"));
+        $title = $row['instance_title'] . ' - ' . $row['step_name'];
+
+        // مسئولِ مرحله
+        $assignee_id = null;
+        if (($row['assignee_type'] ?? 'section') === 'user' && !empty($row['assignee_user_id'])) {
+            $c = $this->db->prepare("SELECT id FROM users WHERE id = ? AND is_active = 1 AND organization_id = ?");
+            $c->execute([$row['assignee_user_id'], $row['org_id']]);
+            if ($c->fetch()) $assignee_id = (int) $row['assignee_user_id'];
+        } elseif (($row['assignee_type'] ?? '') === 'creator') {
+            $assignee_id = (int) $row['instance_creator'];
+        }
+
+        $task_id = $row['task_id'];
+        if (empty($task_id)) {
+            // ساختِ تنبلِ تسک
+            $ins = $this->db->prepare("
+                INSERT INTO tasks (workflow_instance_id, organization_id, is_workflow_task, title, description,
+                    creator_id, activity_section, assignee_id, task_type, priority, deadline, status, current_stage_id)
+                VALUES (?, ?, 1, ?, '', ?, ?, ?, 'periodic', 'high', ?, 'in_progress', ?)
+            ");
+            $ins->execute([
+                $row['instance_id'], $row['org_id'], $title, $row['instance_creator'],
+                $row['activity_section'], $assignee_id, $deadline, $row['step_id']
+            ]);
+            $task_id = $this->db->lastInsertId();
+
+            $cl = $this->db->prepare("
+                SELECT title, description, sort_order FROM workflow_step_checklist_items
+                WHERE step_id = ? ORDER BY sort_order ASC, id ASC
+            ");
+            $cl->execute([$row['step_id']]);
+            foreach ($cl->fetchAll(PDO::FETCH_ASSOC) as $it) {
+                $this->db->prepare("
+                    INSERT INTO task_checklist_items (task_id, title, description, sort_order, created_by)
+                    VALUES (?, ?, ?, ?, ?)
+                ")->execute([$task_id, $it['title'], $it['description'], $it['sort_order'], $row['instance_creator']]);
+            }
+
+            $this->db->prepare("
+                INSERT INTO task_history (task_id, from_user_id, action, notes)
+                VALUES (?, ?, 'created', 'کار روتین ایجاد شد')
+            ")->execute([$task_id, $row['instance_creator']]);
+        } else {
+            // نمونهٔ قدیمی: تسک از قبل هست
+            $this->db->prepare("UPDATE tasks SET status = 'in_progress', deadline = ?, updated_at = NOW() WHERE id = ?")
+                ->execute([$deadline, $task_id]);
+        }
+
+        $this->db->prepare("
+            UPDATE workflow_instance_steps
+            SET status = 'active', task_id = ?, started_at = NOW(), deadline = ?,
+                completed_at = NULL, completed_by = NULL, completion_notes = NULL
+            WHERE id = ?
+        ")->execute([$task_id, $deadline, $instance_step_id]);
+
+        $prev_notes = trim((string) $prev_notes);
+        if ($prev_notes !== '') {
+            $this->db->prepare("
+                INSERT INTO task_history (task_id, from_user_id, action, notes)
+                VALUES (?, ?, 'workflow_prev_note', ?)
+            ")->execute([$task_id, $acting_user_id, $prev_notes]);
+        }
+
+        try {
+            if ($assignee_id) {
+                $this->createNotification($assignee_id, 'workflow_ready', 'نوبت شما رسید',
+                    "کار روتین '{$title}' آماده انجام است",
+                    "/pages/task-detail.php?id={$task_id}", $row['instance_id']);
+            } else {
+                $this->notifySectionMembers($row['activity_section'], 'workflow_ready', 'نوبت شما رسید',
+                    "کار روتین '{$title}' آماده انجام است",
+                    "/pages/task-detail.php?id={$task_id}", $row['instance_id']);
+            }
+        } catch (Exception $e) {
+            error_log("activateInstanceStep notif error: " . $e->getMessage());
+        }
+
+        return $task_id;
+    }
+
+    /** پرشِ رو به جلو: مراحلِ pendingِ بازهٔ بازِ (from, to) را خفته می‌کند */
+    private function markStepsDormant($instance_id, $from_order_excl, $to_order_excl)
+    {
+        $this->db->prepare("
+            UPDATE workflow_instance_steps
+            SET status = 'dormant'
+            WHERE instance_id = ? AND step_order > ? AND step_order < ? AND status = 'pending'
+        ")->execute([$instance_id, $from_order_excl, $to_order_excl]);
+    }
+
+    /** پرشِ رو به عقب: مراحلِ [from, to) دوباره pending تا مسیر از نو طی شود */
+    private function reopenStepsRange($instance_id, $from_order, $to_order_excl)
+    {
+        $stmt = $this->db->prepare("
+            SELECT id, task_id FROM workflow_instance_steps
+            WHERE instance_id = ? AND step_order >= ? AND step_order < ?
+        ");
+        $stmt->execute([$instance_id, $from_order, $to_order_excl]);
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            $this->db->prepare("
+                UPDATE workflow_instance_steps
+                SET status = 'pending', started_at = NULL, completed_at = NULL,
+                    completed_by = NULL, completion_notes = NULL
+                WHERE id = ?
+            ")->execute([$r['id']]);
+            if (!empty($r['task_id'])) {
+                $this->db->prepare("UPDATE tasks SET status = 'not_started', updated_at = NOW() WHERE id = ?")
+                    ->execute([$r['task_id']]);
+            }
+        }
+    }
+
+    /** پایانِ نمونه: مراحلِ باقی‌مانده کنسل، نوتیفِ ایجادکننده */
+    private function completeInstance($instance_id, $completed_by = null)
+    {
+        $stmt = $this->db->prepare("
+            SELECT task_id FROM workflow_instance_steps
+            WHERE instance_id = ? AND status IN ('pending', 'dormant', 'active') AND task_id IS NOT NULL
+        ");
+        $stmt->execute([$instance_id]);
+        foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $tid) {
+            $this->db->prepare("UPDATE tasks SET status = 'cancelled', updated_at = NOW() WHERE id = ?")->execute([$tid]);
+        }
+        $this->db->prepare("
+            UPDATE workflow_instance_steps SET status = 'cancelled'
+            WHERE instance_id = ? AND status IN ('pending', 'dormant', 'active')
+        ")->execute([$instance_id]);
+
+        $this->db->prepare("
+            UPDATE workflow_instances SET status = 'completed', completed_at = NOW() WHERE id = ?
+        ")->execute([$instance_id]);
+
+        try {
+            $wi = $this->db->prepare("SELECT created_by, title FROM workflow_instances WHERE id = ?");
+            $wi->execute([$instance_id]);
+            $info = $wi->fetch(PDO::FETCH_ASSOC);
+            if ($info) {
+                $this->createNotification($info['created_by'], 'workflow_completed', 'کار روتین تکمیل شد',
+                    "کار روتین '{$info['title']}' تکمیل شد",
+                    "../pages/workflow-detail.php?id={$instance_id}", $instance_id);
+            }
+        } catch (Exception $e) {
+            error_log("completeInstance notif error: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * تصمیمِ یک «مرحلهٔ تصمیم»: 'approve' یا 'reject'.
+     * فقط تعریف‌کنندهٔ نمونه (workflow_instances.created_by) مجاز است.
+     */
+    public function resolveStepDecision($task_id, $user_id, $decision, $notes = '')
+    {
+        $decision = ($decision === 'reject') ? 'reject' : 'approve';
+        $notes = trim((string) $notes);
+
+        try {
+            $this->db->beginTransaction();
+
+            $stmt = $this->db->prepare("
+                SELECT wis.*, ws.is_decision, ws.on_approve_step_order, ws.on_reject_mode,
+                       ws.on_reject_step_order, ws.step_name,
+                       wi.created_by
+                FROM workflow_instance_steps wis
+                JOIN workflow_steps ws ON ws.id = wis.step_id
+                JOIN workflow_instances wi ON wi.id = wis.instance_id
+                WHERE wis.task_id = ?
+            ");
+            $stmt->execute([$task_id]);
+            $cur = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$cur) throw new Exception('مرحله یافت نشد');
+
+            $instance_id = (int) $cur['instance_id'];
+            $curOrder = (int) $cur['step_order'];
+
+            if ((int) $cur['is_decision'] !== 1) {
+                throw new Exception('این مرحله «نقطهٔ تصمیم» نیست');
+            }
+            if ((int) $user_id !== (int) $cur['created_by']) {
+                throw new Exception('فقط تعریف‌کنندهٔ روتین می‌تواند این مرحله را تأیید یا رد کند');
+            }
+            if (!in_array($cur['status'], ['active', 'pending'])) {
+                throw new Exception('این مرحله در وضعیتِ قابلِ تصمیم نیست (' . $cur['status'] . ')');
+            }
+
+            // قفلِ چک‌لیست فقط برای «تأیید»
+            if ($decision === 'approve') {
+                $cl = $this->db->prepare("SELECT COUNT(*) FROM task_checklist_items WHERE task_id = ? AND is_done = 0");
+                $cl->execute([$task_id]);
+                if ((int) $cl->fetchColumn() > 0) {
+                    throw new Exception('ابتدا همهٔ آیتم‌های چک‌لیستِ این مرحله را تیک بزنید');
+                }
+            }
+
+            // بستنِ تسک/مرحلهٔ فعلی
+            $this->db->prepare("UPDATE tasks SET status = ?, updated_at = NOW() WHERE id = ?")
+                ->execute([$decision === 'approve' ? 'completed' : 'rejected', $task_id]);
+            $this->db->prepare("
+                UPDATE workflow_instance_steps
+                SET status = ?, completed_at = NOW(), completed_by = ?, completion_notes = ?
+                WHERE id = ?
+            ")->execute([
+                $decision === 'approve' ? 'completed' : 'rejected',
+                $user_id, ($notes !== '' ? $notes : null), $cur['id']
+            ]);
+            $this->db->prepare("
+                INSERT INTO task_history (task_id, from_user_id, action, notes)
+                VALUES (?, ?, ?, ?)
+            ")->execute([
+                $task_id, $user_id, $decision === 'approve' ? 'approved' : 'rejected',
+                ($notes !== '' ? $notes : ($decision === 'approve' ? 'مرحله تأیید شد' : 'مرحله رد شد'))
+            ]);
+
+            // تعیینِ هدف
+            $targetOrder = null;
+            $returnToCreator = false;
+
+            if ($decision === 'approve') {
+                if ($cur['on_approve_step_order'] !== null) {
+                    $targetOrder = (int) $cur['on_approve_step_order'];
+                } else {
+                    // پیش‌فرض: مرحلهٔ بعدیِ آبشاریِ pending (رفتارِ خطی)
+                    $n = $this->db->prepare("
+                        SELECT wis.step_order FROM workflow_instance_steps wis
+                        JOIN workflow_steps ws ON ws.id = wis.step_id
+                        WHERE wis.instance_id = ? AND wis.step_order > ?
+                          AND ws.execution_mode = 'cascade' AND wis.status = 'pending'
+                        ORDER BY wis.step_order ASC LIMIT 1
+                    ");
+                    $n->execute([$instance_id, $curOrder]);
+                    $t = $n->fetchColumn();
+                    $targetOrder = ($t !== false) ? (int) $t : null;
+                }
+            } else { // reject
+                $mode = $cur['on_reject_mode'] ?? null;
+                if ($mode === 'creator') {
+                    $returnToCreator = true;
+                } elseif ($mode === 'step' && $cur['on_reject_step_order'] !== null) {
+                    $targetOrder = (int) $cur['on_reject_step_order'];
+                } else {
+                    // پیکربندی ناقص → پیش‌فرضِ امن: بازگشت به تعریف‌کننده
+                    $returnToCreator = true;
+                }
+            }
+
+            if ($returnToCreator) {
+                // مرحلهٔ تصمیم دوباره باز می‌شود، این‌بار روی میزِ تعریف‌کننده برای اصلاح
+                $this->db->prepare("
+                    UPDATE workflow_instance_steps
+                    SET status = 'active', started_at = NOW(),
+                        completed_at = NULL, completed_by = NULL, completion_notes = NULL
+                    WHERE id = ?
+                ")->execute([$cur['id']]);
+                $this->db->prepare("
+                    UPDATE tasks SET status = 'in_progress', assignee_id = ?, updated_at = NOW() WHERE id = ?
+                ")->execute([$cur['created_by'], $task_id]);
+                if ($notes !== '') {
+                    $this->db->prepare("
+                        INSERT INTO task_history (task_id, from_user_id, action, notes)
+                        VALUES (?, ?, 'workflow_prev_note', ?)
+                    ")->execute([$task_id, $user_id, 'دلیلِ رد: ' . $notes]);
+                }
+                $this->db->prepare("UPDATE workflow_instances SET current_step = ? WHERE id = ?")
+                    ->execute([$curOrder, $instance_id]);
+                $this->createNotification($cur['created_by'], 'workflow_ready', 'اصلاحِ کار روتین',
+                    "مرحلهٔ «{$cur['step_name']}» رد شد و برای اصلاح به شما برگشت",
+                    "/pages/task-detail.php?id={$task_id}", $instance_id);
+                $message = 'رد شد و برای اصلاح به تعریف‌کننده برگشت';
+            } elseif ($targetOrder === null) {
+                $this->completeInstance($instance_id, $user_id);
+                $message = $decision === 'approve' ? 'تأیید شد؛ کار روتین تکمیل شد' : 'رد شد؛ کار روتین بسته شد';
+            } else {
+                $target = $this->getInstanceStepByOrder($instance_id, $targetOrder);
+                if (!$target) throw new Exception('مرحلهٔ مقصدِ انشعاب یافت نشد (step_order=' . $targetOrder . ')');
+
+                if ($targetOrder > $curOrder) {
+                    $this->markStepsDormant($instance_id, $curOrder, $targetOrder);
+                } elseif ($targetOrder <= $curOrder) {
+                    // پرشِ رو به عقب (یا خودش) → مراحلِ [target, cur] از نو
+                    $this->reopenStepsRange($instance_id, $targetOrder, $curOrder + 1);
+                }
+                $this->activateInstanceStep($target['id'], $user_id, $notes);
+                $this->db->prepare("UPDATE workflow_instances SET current_step = ? WHERE id = ?")
+                    ->execute([$targetOrder, $instance_id]);
+                $message = ($decision === 'approve' ? 'تأیید شد؛ ' : 'رد شد؛ ') . "به مرحلهٔ {$targetOrder} منتقل شد";
+            }
+
+            $this->db->commit();
+            return ['success' => true, 'message' => $message];
+        } catch (Exception $e) {
+            if ($this->db->inTransaction()) $this->db->rollBack();
+            error_log("resolveStepDecision error: " . $e->getMessage());
+            return ['success' => false, 'message' => 'خطا در ثبتِ تصمیم: ' . $e->getMessage()];
         }
     }
 
