@@ -1137,11 +1137,17 @@ class WorkflowManager
 
             // دریافت مراحل
             $stmt = $this->db->prepare("
-                SELECT 
+                SELECT
                     wis.*,
                     ws.step_name,
                     ws.activity_section,
                     ws.time_limit_hours,
+                    ws.execution_mode,
+                    ws.assignee_type,
+                    ws.is_decision,
+                    ws.on_approve_step_order,
+                    ws.on_reject_mode,
+                    ws.on_reject_step_order,
                     t.title as task_title,
                     t.status as task_status,
                     completed_user.first_name as completed_by_first_name,

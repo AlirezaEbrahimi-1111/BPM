@@ -40,6 +40,8 @@ if (!$__me) {
     <script src="<?= asset('../assets/js/cdn/intro.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/introjs.min.css') ?>">
+    <link rel="stylesheet" href="<?= asset('../../assets/css/drawflow.min.css') ?>">
+    <script src="<?= asset('../../assets/js/cdn/drawflow.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/sections-helper.js') ?>"></script>
 
     <style>
@@ -1030,6 +1032,74 @@ if (!$__me) {
             color: var(--text-strong);
         }
 
+        /* ─── نمودارِ مسیرِ روتین (فاز ۴ — فقط‌خواندنی) ─── */
+        .wfm-chart-wrap {
+            border: 1px solid var(--border, #e5e7eb);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            background: #f7f8fc;
+        }
+
+        .wfm-chart-head {
+            padding: 6px 12px;
+            font-size: .8rem;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border, #e5e7eb);
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .wfm-chart-head .lg {
+            font-weight: 400;
+            font-size: .72rem;
+            color: #6b7280;
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .wfm-chart-head .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        #wfmChart {
+            height: 320px;
+            width: 100%;
+            direction: ltr;
+        }
+
+        #wfmChart .drawflow-node {
+            width: 180px;
+            border-radius: 12px;
+            border: 2px solid #cbd5e1;
+            background: #fff;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, .06);
+        }
+
+        #wfmChart .drawflow-node .wfm-nb {
+            padding: 8px 10px;
+            direction: rtl;
+            font-size: .8rem;
+        }
+
+        #wfmChart .drawflow-node.st-completed { border-color: #16a34a; background: #f0fdf4; }
+        #wfmChart .drawflow-node.st-active    { border-color: #2563eb; background: #eff6ff; }
+        #wfmChart .drawflow-node.st-rejected  { border-color: #dc2626; background: #fef2f2; }
+        #wfmChart .drawflow-node.st-dormant   { border-color: #cbd5e1; opacity: .55; }
+        #wfmChart .drawflow-node.st-cancelled { border-color: #cbd5e1; opacity: .4; text-decoration: line-through; }
+        #wfmChart .drawflow-node.st-delayed   { border-color: #d97706; background: #fffbeb; }
+        #wfmChart .drawflow-node.wfm-fixed    { background: #eef; border-style: dashed; }
+
+        #wfmChart .drawflow .connection .main-path { stroke: #94a3b8; stroke-width: 2px; }
+        #wfmChart .drawflow .connection.output_2 .main-path { stroke: #dc2626; stroke-dasharray: 6 4; }
+        #wfmChart .drawflow .connection.wfm-taken .main-path { stroke: #16a34a; stroke-width: 3px; }
+
     </style>
 </head>
 
@@ -1894,11 +1964,93 @@ if (!$__me) {
                         <div class="progress-bar ${barCls}" style="width:${progress}%;border-radius:999px;"></div>
                     </div>
                 </div>
+                <div class="wfm-chart-wrap">
+                    <div class="wfm-chart-head">
+                        <span><i class="bi bi-diagram-2"></i> مسیرِ روتین</span>
+                        <span class="lg"><span class="dot" style="background:#16a34a"></span>انجام‌شده</span>
+                        <span class="lg"><span class="dot" style="background:#2563eb"></span>فعال</span>
+                        <span class="lg"><span class="dot" style="background:#dc2626"></span>ردشده</span>
+                        <span class="lg"><span class="dot" style="background:#cbd5e1"></span>خفته/کنسل</span>
+                    </div>
+                    <div id="wfmChart"></div>
+                </div>
                 <p class="fw-600 mb-3" style="font-weight:600;">مراحل (${toFa(steps.length)})</p>
                 ${stepsHtml}
             `;
 
             new bootstrap.Modal(document.getElementById('detailModal')).show();
+            setTimeout(function () { wfmRenderFlow(steps); }, 120);
+        }
+
+        /* ─── نمودارِ فقط‌خواندنیِ مسیرِ روتین (فاز ۴) ─── */
+        let wfmEditor = null;
+        function wfmRenderFlow(steps) {
+            const host = document.getElementById('wfmChart');
+            if (!host || typeof Drawflow === 'undefined' || !Array.isArray(steps) || !steps.length) return;
+            try {
+                host.innerHTML = '';
+                wfmEditor = new Drawflow(host);
+                wfmEditor.reroute = true;
+                wfmEditor.start();
+                wfmEditor.editor_mode = 'fixed'; // فقط‌خواندنی
+
+                const ordered = steps.slice().sort((a, b) => (a.step_order - b.step_order));
+                const idByOrder = {};
+                const startId = wfmEditor.addNode('start', 0, 1, 20, 20, 'wfm-fixed', {}, '<div class="wfm-nb"><b>شروع</b></div>');
+
+                ordered.forEach((s, i) => {
+                    const st = String(s.status || 'pending');
+                    const dec = Number(s.is_decision) === 1;
+                    const nid = wfmEditor.addNode('s', 1, dec ? 2 : 1, 20, 100 + i * 88,
+                        'st-' + st + (dec ? ' wfm-dec' : ''),
+                        { order: s.step_order },
+                        `<div class="wfm-nb"><b>${toFa(s.step_order)}.</b> ${escHtml(s.step_name || 'مرحله')}${dec ? ' <span style="color:#8e57fe">◆</span>' : ''}</div>`);
+                    idByOrder[s.step_order] = nid;
+                });
+                const creatorId = wfmEditor.addNode('creator', 1, 0, 250, 100 + ordered.length * 88, 'wfm-fixed', {},
+                    '<div class="wfm-nb"><b>تعریف‌کننده</b></div>');
+
+                const cascadeOrders = ordered.filter(s => (s.execution_mode || 'cascade') !== 'parallel').map(s => s.step_order);
+                const taken = new Set(ordered.filter(s => ['completed', 'active', 'rejected', 'delayed'].includes(String(s.status))).map(s => s.step_order));
+
+                if (cascadeOrders.length) wfmEditor.addConnection(startId, idByOrder[cascadeOrders[0]], 'output_1', 'input_1');
+                ordered.forEach(s => {
+                    if ((s.execution_mode || 'cascade') === 'parallel') {
+                        wfmEditor.addConnection(startId, idByOrder[s.step_order], 'output_1', 'input_1');
+                        return;
+                    }
+                    const ci = cascadeOrders.indexOf(s.step_order);
+                    const nextOrd = (ci >= 0 && ci + 1 < cascadeOrders.length) ? cascadeOrders[ci + 1] : null;
+                    if (Number(s.is_decision) === 1) {
+                        const appr = s.on_approve_step_order ? parseInt(s.on_approve_step_order, 10) : nextOrd;
+                        if (appr && idByOrder[appr]) wfmEditor.addConnection(idByOrder[s.step_order], idByOrder[appr], 'output_1', 'input_1');
+                        if ((s.on_reject_mode || '') === 'creator') {
+                            wfmEditor.addConnection(idByOrder[s.step_order], creatorId, 'output_2', 'input_1');
+                        } else if (s.on_reject_step_order && idByOrder[parseInt(s.on_reject_step_order, 10)]) {
+                            wfmEditor.addConnection(idByOrder[s.step_order], idByOrder[parseInt(s.on_reject_step_order, 10)], 'output_2', 'input_1');
+                        }
+                    } else if (nextOrd && idByOrder[nextOrd]) {
+                        wfmEditor.addConnection(idByOrder[s.step_order], idByOrder[nextOrd], 'output_1', 'input_1');
+                    }
+                });
+
+                // یال‌های «طی‌شده» را پررنگ کن (هر دو سرش در مسیر)
+                Object.keys(idByOrder).forEach(ord => {
+                    if (!taken.has(parseInt(ord, 10))) return;
+                    const outNode = idByOrder[ord];
+                    document.querySelectorAll(`#wfmChart .connection.node_out_node-${outNode}`).forEach(c => {
+                        // اگر مقصد هم در مسیر است
+                        const inm = String(c.className).match(/node_in_node-(\d+)/);
+                        if (!inm) return;
+                        const inNodeId = parseInt(inm[1], 10);
+                        const inOrd = Object.keys(idByOrder).find(k => idByOrder[k] === inNodeId);
+                        if (inOrd && taken.has(parseInt(inOrd, 10))) c.classList.add('wfm-taken');
+                    });
+                });
+            } catch (e) {
+                console.error('wfmRenderFlow', e);
+                if (host) host.innerHTML = '<div style="padding:16px;color:#6b7280;font-size:.85rem;">نمودار قابل رسم نیست</div>';
+            }
         }
         /* تبدیل اعداد لاتین به فارسی */
         function toFa(n) {
