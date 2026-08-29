@@ -1058,6 +1058,7 @@ function formatDateJalali($gregorianDate)
             gap: 12px;
             width: 100%;
             margin-bottom: 15px !important;
+            padding: 15px !important;
         }
 
         .page-header .stat-card {
@@ -1196,6 +1197,14 @@ function formatDateJalali($gregorianDate)
             background: #8e57fe;
             color: white;
             border-color: #8e57fe;
+        }
+
+        /* چک‌باکسِ «فقط ماه جاری» و انتخابگرِ کارمند همیشه کنارِ هم در یک ردیف */
+        .filter-row-inline {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
         }
 
         /* ✅ چک‌باکس فیلتر ماه جاری */
@@ -2134,6 +2143,7 @@ function formatDateJalali($gregorianDate)
         @media (max-width: 992px) {
             .page-header {
                 grid-template-columns: 1fr;
+                padding: 15px;
             }
         }
 
@@ -2149,27 +2159,60 @@ function formatDateJalali($gregorianDate)
 
             .controls {
                 flex-direction: column;
+                align-items: stretch;
             }
 
             .search-box {
                 min-width: 100%;
             }
 
+            /* چک‌باکسِ «فقط ماه جاری» + انتخابگرِ کارمند: روی موبایل هم در یک
+               ردیف بمانند (نه زیرِ هم) */
+            .filter-row-inline {
+                flex-direction: row;
+                flex-wrap: nowrap;
+                gap: 10px;
+            }
+
+            .filter-row-inline .current-month-filter {
+                flex-shrink: 0;
+            }
+
+            .filter-row-inline #employeeFilterPicker {
+                flex: 1;
+                min-width: 0 !important;
+            }
+
             .form-row {
                 grid-template-columns: 1fr;
             }
 
-            /* 🔒 کارت‌های آماری: به‌جایِ ردیفِ افقیِ له‌شده، دو‌ستونه —
-               اگه متنِ یه لیبل هنوز جا نشد، به‌جایِ بیرون‌زدن، توی خودِ
-               کارت می‌شکنه (white-space:normal) */
+            /* 🔒 کارت‌های آماری روی موبایل: هر کارت یک ردیفِ کاملِ جدا، در یک
+               خط — لیبل سمتِ راست، عدد سمتِ چپ (space-between). متن نمی‌شکند؛
+               فونت کمی کوچک‌تر تا در یک خط جا شود. */
             .page-header {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr;
+                padding: 15px;
             }
 
             .stat-card.stat-card-inline {
-                white-space: normal;
-                flex-wrap: wrap;
+                white-space: nowrap;
+                flex-wrap: nowrap;
+                justify-content: space-between;
+            }
+
+            .stat-card.stat-card-inline .stat-label {
+                font-size: 10.5px;
+                min-width: 0;
+                flex: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .stat-card.stat-card-inline .stat-value {
+                font-size: 14px !important;
+                flex-shrink: 0;
             }
 
             /* 🔒 تب‌های مودال: ۴ تا با min-width:100px روی صفحه‌ی باریک جا
@@ -2222,15 +2265,20 @@ function formatDateJalali($gregorianDate)
                 height: 460px !important;
             }
 
-            /* 🔒 سه‌تبِ سوییچِ اصلی (ورود‌وخروج/درخواست‌ها/منتظرِ تأیید): آیکن
-               کنارِ متنِ بلند جا نمی‌شد و متن به‌شکلِ زشتی می‌شکست — آیکن رو
-               بالایِ متن می‌بریم تا هرکدوم عرضِ کاملِ خودشون رو برایِ متن داشته باشن */
-            .section-tab {
+            /* 🔒 سه‌تبِ سوییچِ اصلی روی موبایل: زیرِ هم (ستونی)، هر تب تمام‌عرض،
+               آیکن کنارِ متن در یک خط بدونِ شکستن */
+            .section-tabs {
                 flex-direction: column;
-                gap: 4px;
-                padding: 10px 4px;
-                font-size: 11px;
+            }
+
+            .section-tab {
+                flex-direction: row;
+                width: 100%;
+                gap: 8px;
+                padding: 11px 12px;
+                font-size: 13px;
                 line-height: 1.3;
+                white-space: nowrap;
             }
 
             .section-tab i {
@@ -2947,6 +2995,8 @@ function formatDateJalali($gregorianDate)
                             <button class="filter-btn" onclick="filterByStatus('rejected')">رد شده</button>
                         </div>
 
+                        <!-- چک‌باکسِ «فقط ماه جاری» + انتخابگرِ کارمند در یک ردیف -->
+                        <div class="filter-row-inline">
                         <!-- ✅ چک‌باکس فیلتر ماه جاری -->
                         <label class="current-month-filter">
                             <input type="checkbox" id="currentMonthFilter" onchange="toggleCurrentMonthFilter()" checked>
@@ -3003,6 +3053,7 @@ function formatDateJalali($gregorianDate)
                                 const FILTER_SECTIONS = <?php echo json_encode($filter_sections_list, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
                             </script>
                         <?php endif; ?>
+                        </div><!-- پایان filter-row-inline -->
 
                         <button class="new-request-btn" onclick="openNewRequestModal()">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"

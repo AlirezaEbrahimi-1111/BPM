@@ -374,7 +374,7 @@ if (!$__me) {
         const columnDefs = [
             {
                 field: 'ticket_number', headerName: 'شماره', width: 110, sortable: true, resizable: true,
-                cellRenderer: p => '<span style="font-family:monospace;direction:ltr;display:inline-block;color:#888;">' + esc(p.value) + '</span>'
+                cellRenderer: p => '<span style="font-family:monospace;direction:ltr;display:inline-block;color:#888;">' + toPersian(esc(p.value)) + '</span>'
             },
             {
                 field: 'subject', headerName: 'عنوان', flex: 2, sortable: true, resizable: true,
@@ -383,8 +383,8 @@ if (!$__me) {
                     const t = p.data;
                     if (t.message_count > 1 || t.attachment_count > 0) {
                         html += '<span style="display:inline-flex;gap:8px;margin-right:8px;">';
-                        if (t.message_count > 1) html += '<small style="color:#999;font-size:.78rem;"><i class="bi bi-chat-dots"></i> ' + t.message_count + '</small>';
-                        if (t.attachment_count > 0) html += '<small style="color:#999;font-size:.78rem;"><i class="bi bi-paperclip"></i> ' + t.attachment_count + '</small>';
+                        if (t.message_count > 1) html += '<small style="color:#999;font-size:.78rem;"><i class="bi bi-chat-dots"></i> ' + toPersian(t.message_count) + '</small>';
+                        if (t.attachment_count > 0) html += '<small style="color:#999;font-size:.78rem;"><i class="bi bi-paperclip"></i> ' + toPersian(t.attachment_count) + '</small>';
                         html += '</span>';
                     }
                     return html;
@@ -571,12 +571,12 @@ if (!$__me) {
 
         /* ── آمار ── */
         function renderStats(s){
-            document.getElementById('sTotal').textContent    = s.total || 0;
-            document.getElementById('sOpen').textContent     = s.open_count || 0;
-            document.getElementById('sProgress').textContent = s.in_progress_count || 0;
-            document.getElementById('sWaiting').textContent  = s.waiting_reply_count || 0;
-            document.getElementById('sResolved').textContent = s.resolved_count || 0;
-            document.getElementById('sClosed').textContent   = s.closed_count || 0;
+            document.getElementById('sTotal').textContent    = toPersian(s.total || 0);
+            document.getElementById('sOpen').textContent     = toPersian(s.open_count || 0);
+            document.getElementById('sProgress').textContent = toPersian(s.in_progress_count || 0);
+            document.getElementById('sWaiting').textContent  = toPersian(s.waiting_reply_count || 0);
+            document.getElementById('sResolved').textContent = toPersian(s.resolved_count || 0);
+            document.getElementById('sClosed').textContent   = toPersian(s.closed_count || 0);
         }
 
         /* ── فیلتر با وضعیت ── */
