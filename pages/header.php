@@ -682,7 +682,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                     style="display: inline-flex; align-items: center;">
                     <i class="bi bi-person" style="font-size:1.25rem;color:var(--icon-accent);"></i>
                 </a>
-                <ul class="dropdown-menu" id="profileDropdownMenu" aria-labelledby="profileDropdown">
+                <ul class="dropdown-menu admin-submenu" id="profileDropdownMenu" aria-labelledby="profileDropdown">
                     <li class="profile-dropdown-name" id="profileDropdownName">
                         <i class="bi bi-person-circle ms-2"></i><span id="profileDropdownNameText"></span>
                     </li>
