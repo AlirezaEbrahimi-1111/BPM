@@ -1448,6 +1448,29 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         }
     }
 
+    // منوی پروفایل (Bootstrap dropdown) را ببند — وقتی اعلان/اطلاعیه/سرچِ سراسری
+    // باز می‌شود. لازم است چون آن toggleها e.stopPropagation() می‌زنند و در نتیجه
+    // مکانیزمِ «کلیک بیرون» بوت‌استرپ برای بستنِ منوی پروفایل هیچ‌وقت اجرا نمی‌شود.
+    function closeHeaderProfileDropdown() {
+        const menu = document.getElementById('profileDropdownMenu');
+        if (!menu || !menu.classList.contains('show')) return;
+        const toggle = document.getElementById('profileDropdown');
+        const inst = window.bootstrap && bootstrap.Dropdown.getInstance(toggle);
+        if (inst) inst.hide();
+        else menu.classList.remove('show');
+    }
+
+    // برعکس: وقتی منوی پروفایل باز می‌شود، پنلِ ادغام‌شده و سرچ بسته شوند
+    function setupProfileDropdownSync() {
+        const toggle = document.getElementById('profileDropdown');
+        if (!toggle) return;
+        toggle.addEventListener('show.bs.dropdown', function() {
+            const p = document.getElementById('hdrPanelMenu');
+            if (p) p.classList.remove('show');
+            gsClosePanel();
+        });
+    }
+
     // ─── راه‌اندازیِ زنگوله/پنلِ ادغام‌شده ───
     function setupHdrPanel() {
         const toggle = document.getElementById('notificationDropdown');
@@ -2406,29 +2429,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 loadAttendanceStatus();
                 updateChatUnreadBadge();
             }
-        }
-
-        // منوی پروفایل (Bootstrap dropdown) را ببند — وقتی اعلان/اطلاعیه/سرچِ سراسری
-        // باز می‌شود. لازم است چون آن toggleها e.stopPropagation() می‌زنند و در نتیجه
-        // مکانیزمِ «کلیک بیرون» بوت‌استرپ برای بستنِ منوی پروفایل هیچ‌وقت اجرا نمی‌شود.
-        function closeHeaderProfileDropdown() {
-            const menu = document.getElementById('profileDropdownMenu');
-            if (!menu || !menu.classList.contains('show')) return;
-            const toggle = document.getElementById('profileDropdown');
-            const inst = window.bootstrap && bootstrap.Dropdown.getInstance(toggle);
-            if (inst) inst.hide();
-            else menu.classList.remove('show');
-        }
-
-        // برعکس: وقتی منوی پروفایل باز می‌شود، پنل‌های اعلان/اطلاعیه/سرچ بسته شوند
-        function setupProfileDropdownSync() {
-            const toggle = document.getElementById('profileDropdown');
-            if (!toggle) return;
-            toggle.addEventListener('show.bs.dropdown', function() {
-                const p = document.getElementById('hdrPanelMenu');
-                if (p) p.classList.remove('show');
-                gsClosePanel();
-            });
         }
 
         function initializeHeader() {
