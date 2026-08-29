@@ -719,16 +719,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             <div class="dropdown-menu notification-dropdown p-0" id="hdrPanelMenu"
                 aria-labelledby="notificationDropdown" style="min-width: 360px;">
 
-                <!-- تب‌بار (RTL: از راست) اعلان‌ها | اطلاعیه‌های سازمانی | تیکت‌ها -->
+                <!-- تب‌بار (RTL: از راست) تیکت‌ها | اطلاعیه‌های سازمانی | اعلان‌ها -->
                 <div class="hdr-tabs">
-                    <button type="button" class="hdr-tab active" data-tab="notif" onclick="hdrSwitchTab('notif')">
-                        <i class="bi bi-bell"></i><span>اعلان‌ها</span>
+                    <button type="button" class="hdr-tab" data-tab="tickets" onclick="hdrSwitchTab('tickets')">
+                        <i class="bi bi-headset"></i><span>تیکت‌ها</span>
                     </button>
                     <button type="button" class="hdr-tab" data-tab="ann" onclick="hdrSwitchTab('ann')">
                         <i class="bi bi-megaphone"></i><span>اطلاعیه‌های سازمانی</span>
                     </button>
-                    <button type="button" class="hdr-tab" data-tab="tickets" onclick="hdrSwitchTab('tickets')">
-                        <i class="bi bi-headset"></i><span>تیکت‌ها</span>
+                    <button type="button" class="hdr-tab active" data-tab="notif" onclick="hdrSwitchTab('notif')">
+                        <i class="bi bi-bell"></i><span>اعلان‌ها</span>
                     </button>
                 </div>
 
@@ -794,6 +794,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 <div class="hdr-pane" id="hdrTicketsPane">
                     <div class="notification-header">
                         <span>تیکت‌ها</span>
+                    </div>
+                    <div class="notif-toolbar">
+                        <div class="notif-search">
+                            <i class="bi bi-search"></i>
+                            <input type="text" placeholder="جستجو در تیکت‌ها..." id="hdrTicketSearch"
+                                   oninput="hdrTicketQuery = this.value.trim(); renderHdrTickets();">
+                        </div>
                     </div>
                     <div class="notification-list-container" id="hdrTicketList">
                         <div class="notification-loading">
@@ -1416,36 +1423,50 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         else if (hdrActiveTab === 'tickets') loadHdrTickets();
     }
 
+    var hdrTicketsAll = [];
+    var hdrTicketQuery = '';
+
     async function loadHdrTickets() {
         var box = document.getElementById('hdrTicketList');
         if (!authToken || !box) return;
         box.innerHTML = '<div class="notification-loading"><div class="spinner-border" role="status"></div></div>';
         try {
-            var r = await fetch('/api/tickets/list.php?limit=15', { headers: { 'Authorization': 'Bearer ' + authToken } });
+            var r = await fetch('/api/tickets/list.php?limit=50', { headers: { 'Authorization': 'Bearer ' + authToken } });
             var data = await r.json();
             if (!data.success) throw new Error(data.message || 'error');
-            var items = data.tickets || [];
-            if (!items.length) {
-                box.innerHTML = '<div class="ann-empty"><i class="bi bi-headset"></i><p>تیکتی وجود ندارد</p></div>';
-                return;
-            }
-            box.innerHTML = items.map(function(t) {
-                var raw = (t.created_at || '');
-                var dateOnly = (window.TimeSync && TimeSync.formatJalali) ? TimeSync.formatJalali(raw) : raw.split(' ')[0];
-                var c = t.status_color || '#8e57fe';
-                return '<a class="hdr-ticket-item" href="/pages/ticket-detail.php?id=' + encodeURIComponent(t.id) + '">' +
-                    '<div class="hdr-ticket-row1">' +
-                    '<span class="hdr-ticket-num">#' + toFa(esc(String(t.ticket_number || ''))) + '</span>' +
-                    '<span class="hdr-ticket-status" style="background:' + c + '18;color:' + c + ';border:1px solid ' + c + '35;">' + esc(t.status_label || '') + '</span>' +
-                    '</div>' +
-                    '<div class="hdr-ticket-subject">' + esc(t.subject || '') + '</div>' +
-                    '<div class="hdr-ticket-date"><i class="bi bi-clock" style="font-size:10px;"></i> ' + toFa(esc(dateOnly)) + '</div>' +
-                    '</a>';
-            }).join('');
+            hdrTicketsAll = data.tickets || [];
+            renderHdrTickets();
         } catch (e) {
             console.error('❌ خطا در بارگذاری تیکت‌ها:', e);
             box.innerHTML = '<div class="ann-empty"><i class="bi bi-wifi-off"></i><p>خطا در بارگذاری</p></div>';
         }
+    }
+
+    function renderHdrTickets() {
+        var box = document.getElementById('hdrTicketList');
+        if (!box) return;
+        var q = (hdrTicketQuery || '').toLowerCase();
+        var items = hdrTicketsAll.filter(function(t) {
+            if (!q) return true;
+            return ((t.subject || '') + ' ' + (t.ticket_number || '')).toLowerCase().indexOf(q) > -1;
+        });
+        if (!items.length) {
+            box.innerHTML = '<div class="ann-empty"><i class="bi bi-headset"></i><p>تیکتی یافت نشد</p></div>';
+            return;
+        }
+        box.innerHTML = items.map(function(t) {
+            var raw = (t.created_at || '');
+            var dateOnly = (window.TimeSync && TimeSync.formatJalali) ? TimeSync.formatJalali(raw) : raw.split(' ')[0];
+            var c = t.status_color || '#8e57fe';
+            return '<a class="hdr-ticket-item" href="/pages/ticket-detail.php?id=' + encodeURIComponent(t.id) + '">' +
+                '<div class="hdr-ticket-row1">' +
+                '<span class="hdr-ticket-num">#' + toFa(esc(String(t.ticket_number || ''))) + '</span>' +
+                '<span class="hdr-ticket-status" style="background:' + c + '18;color:' + c + ';border:1px solid ' + c + '35;">' + esc(t.status_label || '') + '</span>' +
+                '</div>' +
+                '<div class="hdr-ticket-subject">' + esc(t.subject || '') + '</div>' +
+                '<div class="hdr-ticket-date"><i class="bi bi-clock" style="font-size:10px;"></i> ' + toFa(esc(dateOnly)) + '</div>' +
+                '</a>';
+        }).join('');
     }
 
     // منوی پروفایل (Bootstrap dropdown) را ببند — وقتی اعلان/اطلاعیه/سرچِ سراسری
