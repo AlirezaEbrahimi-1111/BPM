@@ -3666,6 +3666,33 @@ td:nth-child(2) {
     background: #8e57fe;
 }
 
+/* ═══ اسکرول‌بارِ سراسری — یک‌شکل و بنفش، مطابقِ پنلِ اعلان‌ها.
+   قواعدِ اختصاصی‌ترِ موجود (AG-Grid، .recent-activities-scroll و ...) به‌خاطرِ
+   specificityِ بالاتر همچنان بر این غالب می‌مانند. ═══ */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #8e57fe rgba(142, 87, 254, 0.08);
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: rgba(142, 87, 254, 0.06);
+    border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: #8e57fe;
+    border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: #7a45e0;
+}
+
 /* ═══ نوارِ جستجو/فیلترِ اعلان‌ها و اطلاعیه‌ها — دقیقاً یکسان برایِ هردو ═══ */
 .notif-toolbar {
     padding: 10px 16px 6px;

@@ -464,11 +464,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         </a>
                     </li>
                 <?php endif; ?>
-                <li class="nav-item">
-                    <a class="nav-link" href="../../pages/announcements.php">
-                        <i class="bi bi-megaphone me-2"></i>اطلاعیه‌ها
-                    </a>
-                </li>
                 <li class="nav-item" style="display:none;">
                     <a class="nav-link" href="../../pages/reports.php">
                         <i class="bi bi-file-text me-2"></i>گزارشات
@@ -1294,9 +1289,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
             const isShown = menu.classList.contains('show');
 
-            // بستن dropdown اعلان و کادر سرچ سراسری اگه باز بودن
+            // بستن dropdown اعلان، منوی پروفایل و کادر سرچ سراسری اگه باز بودن
             const notifMenu = document.getElementById('notificationDropdownMenu');
             if (notifMenu) notifMenu.classList.remove('show');
+            closeHeaderProfileDropdown();
             gsClosePanel();
 
             if (isShown) {
@@ -1995,9 +1991,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
             const isShown = dropdownMenu.classList.contains('show');
 
-            // بستن dropdown اطلاعیه و کادر سرچ سراسری اگه باز بودن
+            // بستن dropdown اطلاعیه، منوی پروفایل و کادر سرچ سراسری اگه باز بودن
             const annMenu = document.getElementById('announcementDropdownMenu');
             if (annMenu) annMenu.classList.remove('show');
+            closeHeaderProfileDropdown();
             gsClosePanel();
 
             if (isShown) {
@@ -2052,11 +2049,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             return;
         }
 
-        // بستن dropdown اعلان/اطلاعیه اگه باز بودن
+        // بستن dropdown اعلان/اطلاعیه و منوی پروفایل اگه باز بودن
         var notifMenu = document.getElementById('notificationDropdownMenu');
         var annMenu = document.getElementById('announcementDropdownMenu');
         if (notifMenu) notifMenu.classList.remove('show');
         if (annMenu) annMenu.classList.remove('show');
+        closeHeaderProfileDropdown();
 
         toggle.classList.add('open');
         panel.classList.add('open');
@@ -2281,12 +2279,38 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             }
         }
 
+        // منوی پروفایل (Bootstrap dropdown) را ببند — وقتی اعلان/اطلاعیه/سرچِ سراسری
+        // باز می‌شود. لازم است چون آن toggleها e.stopPropagation() می‌زنند و در نتیجه
+        // مکانیزمِ «کلیک بیرون» بوت‌استرپ برای بستنِ منوی پروفایل هیچ‌وقت اجرا نمی‌شود.
+        function closeHeaderProfileDropdown() {
+            const menu = document.getElementById('profileDropdownMenu');
+            if (!menu || !menu.classList.contains('show')) return;
+            const toggle = document.getElementById('profileDropdown');
+            const inst = window.bootstrap && bootstrap.Dropdown.getInstance(toggle);
+            if (inst) inst.hide();
+            else menu.classList.remove('show');
+        }
+
+        // برعکس: وقتی منوی پروفایل باز می‌شود، پنل‌های اعلان/اطلاعیه/سرچ بسته شوند
+        function setupProfileDropdownSync() {
+            const toggle = document.getElementById('profileDropdown');
+            if (!toggle) return;
+            toggle.addEventListener('show.bs.dropdown', function() {
+                const n = document.getElementById('notificationDropdownMenu');
+                const a = document.getElementById('announcementDropdownMenu');
+                if (n) n.classList.remove('show');
+                if (a) a.classList.remove('show');
+                gsClosePanel();
+            });
+        }
+
         function initializeHeader() {
             console.log('✅ Initializing header...');
             setupAnnouncementDropdown();
             toggleManagerMenu();
             setupOverviewForUnit();
             setupDropdownBehavior();
+            setupProfileDropdownSync();
             setupNavDropdowns();
             if (authToken) {
                 loadHeaderBundle();

@@ -153,9 +153,9 @@ if (!$__me) {
             background: #8e57fe;
             color: #fff; border: none; border-radius: 9px;
             padding: .6rem 1.6rem; font-size: .875rem; font-weight: 600;
-            transition: opacity .15s, transform .15s;
+            transition: background .15s, transform .15s;
         }
-        .btn-save:hover { opacity: .92; transform: translateY(-1px); color: #fff; }
+        .btn-save:hover { background: #7a45e0; transform: translateY(-1px); color: #fff; }
         .btn-save:disabled { opacity: .6; transform: none; cursor: not-allowed; }
 
         /* strength bar */
