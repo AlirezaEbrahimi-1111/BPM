@@ -1635,16 +1635,21 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         .mo-weekday {
             text-align: center;
-            font-size: .702rem;
+            font-size: .72rem;
             font-weight: 700;
-            color: var(--text-muted);
-            padding-bottom: 6px;
-            border-bottom: 1px solid #eee;
+            color: #8E57FE;
+            background: #F3EEFF;
+            border-radius: 7px;
+            padding: 7px 0;
+        }
+
+        :root[data-theme="dark"] .mo-weekday {
+            background: rgba(142, 87, 254, .16);
         }
 
         /* اندازهٔ همهٔ سلول‌ها یکسان است (ارتفاع از grid-template-rows می‌آید، نه از محتوا) */
         .mo-cell {
-            background: #f2f2f6;
+            background: #FFFFFF;
             border: 1px solid #e2e2ea;
             border-radius: 10px;
             padding: 6px;
@@ -1667,16 +1672,54 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             border: none;
         }
 
+        /* رنگِ زمینه بر اساسِ تعدادِ کارهایِ روز (تراکم) */
+        .mo-cell.mo-d1 { background: #ECE3FF; border-color: #ddd0f7; }
+        .mo-cell.mo-d2 { background: #CCB4FF; border-color: #bda2f2; }
+        .mo-cell.mo-d3 { background: #8E57FE; border-color: #7d47ec; }
+        :root[data-theme="dark"] .mo-cell.mo-d1 { background: rgba(142,87,254,.20); }
+        :root[data-theme="dark"] .mo-cell.mo-d2 { background: rgba(142,87,254,.42); }
+        :root[data-theme="dark"] .mo-cell.mo-d3 { background: #8E57FE; }
+
+        .mo-cell.mo-d3 .mo-cell-date { color: #fff; }
+        .mo-cell.mo-d3 .mo-task-title {
+            color: #fff;
+            background: rgba(255, 255, 255, .16);
+            border-color: rgba(255, 255, 255, .28);
+        }
+        .mo-cell.mo-d3 .mo-more { color: #fff; }
+        .mo-cell.mo-d2 .mo-task-title { background: rgba(255, 255, 255, .5); }
+
         .mo-cell-date {
-            font-size: .666rem;
-            font-weight: 700;
+            font-size: .95rem;
+            font-weight: 800;
             color: var(--dm-ink);
-            text-align: center;
+            align-self: flex-start;   /* RTL → گوشهٔ راست‌بالایِ سلول */
             flex-shrink: 0;
+            line-height: 1.35;
+            padding: 0 2px;
         }
 
+        /* روزِ جمعه (و هر تعطیلی) — عددِ قرمز */
+        .mo-cell.mo-fri .mo-cell-date { color: #e11d48; }
+
+        /* روزِ جاری — دایرهٔ بنفش دورِ عدد */
         .mo-today .mo-cell-date {
-            color: var(--pm-purple);
+            width: 1.7rem;
+            height: 1.7rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 2px solid #8E57FE;
+            color: #8E57FE;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .mo-cell.mo-d2.mo-today .mo-cell-date,
+        .mo-cell.mo-d3.mo-today .mo-cell-date {
+            background: #fff;
+            color: #8E57FE;
         }
 
         .mo-cell-tasks {
@@ -1685,6 +1728,24 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             gap: 2px;
             overflow-y: auto;
             min-height: 0;
+            direction: ltr;   /* اسکرول‌بار سمتِ راستِ سلول */
+        }
+
+        .mo-cell-tasks > * {
+            direction: rtl;
+        }
+
+        .mo-cell-tasks::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .mo-cell-tasks::-webkit-scrollbar-thumb {
+            background: #8E57FE;
+            border-radius: 3px;
+        }
+
+        .mo-cell-tasks::-webkit-scrollbar-track {
+            background: transparent;
         }
 
         .mo-task-title {
@@ -1718,6 +1779,30 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         .mo-more:hover {
             text-decoration: underline;
+        }
+
+        /* راهنمای رنگ‌ها — از راست: بدون وظیفه، کم‌کار، متوسط، پرکار */
+        .mo-legend {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .mo-legend .mo-lg {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: .7rem;
+            color: var(--text-muted);
+        }
+
+        .mo-legend .mo-lg i {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            display: inline-block;
+            flex-shrink: 0;
         }
 
         /* ردیف کاربر تأخیردار */
@@ -2552,7 +2637,13 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 <div class="modal-body" style="padding:12px 16px;max-height:76vh;overflow:auto;">
                     <div class="mo-grid" id="moGrid" onmouseover="moGridOver(event)" onmouseleave="moGridLeave()"></div>
                 </div>
-                <div class="modal-footer" style="padding:8px 20px 6px;">
+                <div class="modal-footer" style="padding:8px 20px 6px;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div class="mo-legend">
+                        <span class="mo-lg"><i style="background:#FFFFFF;border:1px solid #e2e2ea;"></i>بدون وظیفه</span>
+                        <span class="mo-lg"><i style="background:#ECE3FF;"></i>کم‌کار</span>
+                        <span class="mo-lg"><i style="background:#CCB4FF;"></i>متوسط</span>
+                        <span class="mo-lg"><i style="background:#8E57FE;"></i>پرکار</span>
+                    </div>
                     <a href="my-tasks.php?filter=month" id="moSeeAllBtn" class="btn btn-sm" style="background:#8e57fe;color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
@@ -4955,8 +5046,12 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 const isToday = d.getTime() === todayTime;
                 const r = Math.floor(cellIdx / 7),
                     c = cellIdx % 7;
+                // تراکمِ کار: ۰ سفید، ۱–۵ کم‌کار، ۶–۱۰ متوسط، ۱۱+ پرکار
+                const n = dayTasks.length;
+                const densCls = n === 0 ? '' : (n <= 5 ? 'mo-d1' : (n <= 10 ? 'mo-d2' : 'mo-d3'));
+                const friCls = (c === 6) ? 'mo-fri' : ''; // ستونِ آخر = جمعه
                 html += `
-                <div class="mo-cell ${isToday ? 'mo-today' : ''}" data-row="${r}" data-col="${c}">
+                <div class="mo-cell ${isToday ? 'mo-today' : ''} ${densCls} ${friCls}" data-row="${r}" data-col="${c}">
                     <div class="mo-cell-date">${toFa(dayNum)}</div>
                     <div class="mo-cell-tasks">${tasksHtml}</div>
                 </div>`;
