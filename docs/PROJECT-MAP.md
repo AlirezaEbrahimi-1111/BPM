@@ -15,6 +15,7 @@
 7. قواعد پروژه
 8. دیتابیس: چرا MySQL/MariaDB
 9. برگشت به عقب (کد و دیتابیس)
+10. احراز هویت (Authentication)
 
 ---
 
@@ -289,3 +290,78 @@ php migrate.php down   # روی سرور، با SSH — تابعِ down آخری
 2. بعد `git revert` + Deploy (کد به عقب)
 
 اگر کد را عقب ببری ولی دیتابیس جلو بماند (یا برعکس)، خطای «ستون/جدول ناموجود» می‌گیری.
+
+---
+
+## ۱۰. احراز هویت (Authentication) — از صفر
+
+### واژه‌ها
+- **Authentication (احراز هویت):** «تو کی هستی؟» — چکِ نام‌کاربری/رمز.
+- **Authorization (اجازه‌دهی):** «حالا که می‌دانیم کی هستی، اجازهٔ این کار را داری؟» —
+  این‌جا کارِ `includes/permissions.php` است (نقش‌ها). با هم قاطی نشوند.
+- **Hash:** تبدیلِ یک‌طرفهٔ رمز به یک رشتهٔ نامفهوم. از هش نمی‌شود رمز را برگرداند.
+- **JWT (JSON Web Token):** یک «کارتِ شناساییِ امضاشده». سه بخش با نقطه جدا شده:
+  `header.payload.signature`. payload یک JSON است (id کاربر، انقضا و...). signature
+  با یک کلیدِ محرمانه ساخته می‌شود؛ هرکس payload را دست بزند، signature دیگر نمی‌خواند.
+- **Bearer token:** توکن در هدرِ درخواست: `Authorization: Bearer <توکن>`.
+
+### رمزِ عبور
+- موقعِ ثبت‌نام/تغییرِ رمز: `password_hash($pw, PASSWORD_DEFAULT)` (الگوریتمِ bcrypt) →
+  در `users.password` ذخیره می‌شود. **رمزِ خام هیچ‌جا ذخیره نمی‌شود.**
+- موقعِ ورود: `password_verify($pw, $user['password'])`.
+- `api/auth/login.php` قبلِ چکِ رمز، **rate limit** دارد: بیش از ۵ تلاشِ ناموفق در ۱۵
+  دقیقه (بر اساسِ IP یا نامِ کاربری) → قفلِ موقت (جدولِ `login_attempts`).
+- ورود می‌تواند با **OTP** (کدِ پیامکی) هم باشد — همان endpoint، `action: 'send_otp'` / `'verify_otp'`.
+
+### توکن — ساخت (`Auth::generateJWTToken`)
+payload:
+```json
+{ "user_id": 12, "organization_id": 3, "tv": 4, "iat": ..., "exp": ... }
+```
+- `tv` = `token_version` کاربر از جدولِ `users` (کاربردش پایین).
+- `exp` = زمانِ انقضا: **۵ ساعت** به‌صورتِ عادی، **۳۰ روز** با تیکِ «مرا به خاطر بسپار».
+- امضا: `hash_hmac('sha256', header.payload, JWT_SECRET)`.
+- `JWT_SECRET` از `config/config.php` می‌آید که `.gitignore` شده — در گیت نیست.
+
+### ذخیره‌سازی
+| کجا | چه چیزی | توضیح |
+|---|---|---|
+| مرورگر — `localStorage['auth_token']` | خودِ JWT | با `fetch` به APIها فرستاده می‌شود |
+| مرورگر — `localStorage['user_info']` | JSONِ کاربر (id، نقش، نام...) | فقط برای نمایشِ سریعِ UI؛ **مرجعِ امنیتی نیست** |
+| مرورگر — کوکیِ نشستِ PHP | `PHPSESSID` | برای **بارگذاریِ کاملِ صفحه** (که هدرِ Bearer ندارد) |
+| سرور — `users.token_version` | یک عددِ شمارنده | ابزارِ باطل‌کردنِ توکن (پایین) |
+| سرور — جدولِ `login_attempts` | تلاش‌های ناموفق | برای rate limit |
+
+خودِ JWT روی سرور **ذخیره نمی‌شود** — «بی‌حالت» (stateless) است؛ سرور فقط امضایش را
+دوباره حساب می‌کند.
+
+### هر درخواست چطور چک می‌شود
+**فراخوانیِ API (با `fetch`):** کلاینت هدرِ `Authorization: Bearer <token>` می‌گذارد.
+سمتِ سرور `Auth::getUserFromToken()` → `extractToken()` (هدر را می‌خواند) →
+`validateToken()`:
+1. توکن سه‌تکه است؟
+2. امضا را با `JWT_SECRET` دوباره بساز و با `hash_equals` مقایسه کن → اگر فرق داشت،
+   یعنی دست‌کاری شده → رد.
+3. `exp` گذشته؟ → رد.
+4. کوئری به `users`: `is_active = 1` **و** `token_version`ِ دیتابیس == `tv`ِ داخلِ توکن؟
+   → اگر نه، رد.
+5. `user_id` را برگردان (یا `false`).
+
+**بارگذاریِ کاملِ صفحه (مثلاً باز کردنِ `pages/tasks.php`):** مرورگر هدرِ Bearer
+نمی‌فرستد. صفحه اول `$_SESSION['user_id']` را چک می‌کند (که `api/auth/set-session.php`
+بعد از ورود پُر کرده)، بعد Bearer، بعد یک کوکیِ `auth_token` (فالبکِ قدیمی). هیچ‌کدام
+نبود → `header('Location: ../index.php')`.
+
+### باطل‌کردنِ توکن (Logout / تغییرِ رمز / غیرفعال‌سازی)
+JWTِ ساده را نمی‌شود پس گرفت. ترفندِ این پروژه: با هر خروج/تغییرِ رمز،
+`users.token_version` **یکی زیاد می‌شود**. آن‌وقت مرحلهٔ ۴ِ بالا برای همهٔ توکن‌های
+قبلی شکست می‌خورد → همه فوراً بی‌اعتبار.
+
+### چرا گاهی «صفحهٔ خالی» می‌شد؟
+توکن در `localStorage` بود ولی سرور ردش می‌کرد (منقضی یا `token_version` بالا رفته).
+هدر حالا روی **۴۰۱ از `api/header/bootstrap.php`** توکن را پاک و به لاگین ریدایرکت
+می‌کند (`hdrHandleAuthFailure` در `pages/header.php`).
+
+### فایل‌های کلیدی
+`includes/auth.php` (کلاسِ `Auth`) · `api/auth/login.php` · `api/auth/logout.php` ·
+`api/auth/set-session.php` · `config/config.php` (`jwt_secret`) · `includes/permissions.php` (اجازه‌دهی).
