@@ -1758,7 +1758,7 @@ if (!$__me) {
                     if (completeBtnEligible && incomplete) {
                         const remaining = checklistGateState.total - checklistGateState.done;
                         document.getElementById('checklistCompleteGateNoteText').textContent =
-                            `برای نمایشِ دکمه‌یِ «تکمیل کار»، ابتدا ${toPersian(remaining)} آیتمِ باقی‌مانده‌یِ چک‌لیست را تیک بزنید.`;
+                            `برای نمایشِ دکمه‌یِ «تکمیل کار»، ابتدا ${enTofaNumber(remaining)} آیتمِ باقی‌مانده‌یِ چک‌لیست را تیک بزنید.`;
                         gateNote.style.display = 'block';
                     } else {
                         gateNote.style.display = 'none';
