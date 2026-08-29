@@ -2457,11 +2457,33 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         // حضور، چت) با یک درخواستِ باندل‌شده به‌جایِ ۴ فراخوانیِ هم‌زمانِ جدا —
         // رفرش‌هایِ دوره‌ای (setInterval پایین) همچنان جدا fetch می‌کنن چون
         // فاصله‌ی زمانیِ متفاوتی دارن و هم‌زمان نیستن.
+        // نشستِ نامعتبر: توکن هست ولی سرور ۴۰۱ می‌دهد (سشنِ قدیمی/منقضی).
+        // در این حالت به‌جایِ ماندن روی صفحهٔ خالی، توکن را پاک و به لاگین
+        // ریدایرکت می‌کنیم. فقط رویِ ۴۰۱ِ صریح از اندپوینتِ احرازدارِ هدر —
+        // نه خطایِ شبکه/۵۰۰ — تا اشتباهی ریدایرکت نشود.
+        var hdrAuthFailed = false;
+        function hdrHandleAuthFailure() {
+            if (hdrAuthFailed) return;
+            hdrAuthFailed = true;
+            try {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('user_info');
+            } catch (e) {}
+            // ضدِ حلقه: اگر همین چند ثانیهٔ پیش از لاگین برگشتیم و باز ۴۰۱ شد،
+            // دوباره ریدایرکت نکن (احتمالاً مشکلِ دیگری است، نه توکن).
+            var now = Date.now(), last = 0;
+            try { last = parseInt(sessionStorage.getItem('hdrAuthRedirectTs') || '0', 10); } catch (e) {}
+            if (now - last < 4000) return;
+            try { sessionStorage.setItem('hdrAuthRedirectTs', String(now)); } catch (e) {}
+            window.location.replace('../index.php');
+        }
+
         async function loadHeaderBundle() {
             try {
                 const response = await fetch('/api/header/bootstrap.php', {
                     headers: { 'Authorization': 'Bearer ' + authToken }
                 });
+                if (response.status === 401) { hdrHandleAuthFailure(); return; }
                 if (!response.ok) throw new Error('bundle fetch failed');
                 const bundle = await response.json();
                 if (!bundle.success) throw new Error('bundle response not successful');

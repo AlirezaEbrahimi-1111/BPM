@@ -4769,6 +4769,20 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
 
         let moOffset = 0; // 0 = این ماه، -1 = قبل، +1 = بعد
         let moModal = null;
+        let moHolidaySet = null; // Set از 'YYYY-MM-DD'؛ روزهایِ تعطیلِ جدولِ holidays
+
+        function moLoadHolidays() {
+            if (moHolidaySet) return Promise.resolve();
+            moHolidaySet = new Set();
+            return fetch('/api/holidays/list.php', { headers: { 'Authorization': 'Bearer ' + authToken } })
+                .then(r => r.json())
+                .then(d => {
+                    if (d && d.success && Array.isArray(d.holidays)) {
+                        d.holidays.forEach(h => { if (h.holiday_date) moHolidaySet.add(h.holiday_date); });
+                    }
+                })
+                .catch(() => {});
+        }
 
         function openMonthModal() {
             moOffset = 0;
@@ -4780,6 +4794,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             }
             moModal.show();
             moRender();
+            moLoadHolidays().then(() => moRender());
 
             if (pmUsers.length === 0) pmLoadUsers();
         }
@@ -5049,7 +5064,9 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 // تراکمِ کار: ۰ سفید، ۱–۵ کم‌کار، ۶–۱۰ متوسط، ۱۱+ پرکار
                 const n = dayTasks.length;
                 const densCls = n === 0 ? '' : (n <= 5 ? 'mo-d1' : (n <= 10 ? 'mo-d2' : 'mo-d3'));
-                const friCls = (c === 6) ? 'mo-fri' : ''; // ستونِ آخر = جمعه
+                // عددِ قرمز برای جمعه (ستونِ آخر) یا هر روزِ تعطیلِ جدولِ holidays
+                const isHoliday = c === 6 || (moHolidaySet && moHolidaySet.has(moYMD(d)));
+                const friCls = isHoliday ? 'mo-fri' : '';
                 html += `
                 <div class="mo-cell ${isToday ? 'mo-today' : ''} ${densCls} ${friCls}" data-row="${r}" data-col="${c}">
                     <div class="mo-cell-date">${toFa(dayNum)}</div>

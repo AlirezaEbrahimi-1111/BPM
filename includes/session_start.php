@@ -5,9 +5,10 @@
 // سایت است تا بعداً بشه با آگاهی به نسخه‌ی enforcing (با nonce یا
 // 'unsafe-inline') رفت. مبداهایِ خارجیِ شناخته‌شده: cdnjs (کتابخانه‌ی
 // xlsx در payroll-report.php)، computeryekta.com (لوگو در index.php)،
-// api.ipify.org (تشخیصِ IP در network-canvas.js).
+// api.ipify.org (تشخیصِ IP در network-canvas.js)، najva.com (سرویسِ پوش‌نوتیفِ
+// وب که در footer/header لود می‌شود — van/events.najva.com).
 if (!headers_sent()) {
-    header("Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self'; img-src 'self' data: https://computeryekta.com; font-src 'self' data:; connect-src 'self' https://api.ipify.org; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self';");
+    header("Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://van.najva.com https://cdn.najva.com; style-src 'self'; img-src 'self' data: https://computeryekta.com https://*.najva.com; font-src 'self' data:; connect-src 'self' https://api.ipify.org https://events.najva.com https://van.najva.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self';");
 }
 
 if (session_status() === PHP_SESSION_NONE) {
