@@ -685,12 +685,17 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             z-index: 3000;
             min-width: 150px;
             margin-top: 4px;
-            background: var(--surface);
-            border: 1px solid #eee;
-            border-radius: 11px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
-            padding: 5px;
+            /* پس‌زمینه/متن مثلِ زیرمنویِ «مدیریت» هدر (.admin-submenu) */
+            background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(116, 76, 164, 0.15);
+            padding: 8px;
             text-align: right;
+        }
+
+        :root[data-theme="dark"] .row-menu {
+            background: linear-gradient(135deg, var(--surface) 0%, #1f2536 100%);
         }
 
         .row-menu.open {
@@ -705,14 +710,14 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             display: flex;
             align-items: center;
             gap: 9px;
-            border-radius: 9px;
+            border-radius: 8px;
             font-size: .765rem;
-            color: var(--dm-ink);
+            color: #64748b;
         }
 
         .row-menu button:hover {
-            background: #8e57fe;
-            color: #fff;
+            background: linear-gradient(135deg, rgba(116, 76, 164, 0.12) 0%, rgba(101, 122, 231, 0.12) 100%);
+            color: #744ca4;
         }
 
         .row-menu button i {
