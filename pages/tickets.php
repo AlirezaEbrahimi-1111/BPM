@@ -213,6 +213,24 @@ if (!$__me) {
         }
         .btn-new-ticket:hover { opacity: .88; color: #fff; }
 
+        .btn-resolve-stale {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            color: #8e57fe;
+            border: 1px solid #8e57fe;
+            padding: 8px 16px;
+            border-radius: 9px;
+            font-weight: 600;
+            font-size: .8rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .2s;
+        }
+        .btn-resolve-stale:hover { background: rgba(142, 87, 254, .08); }
+        .btn-resolve-stale:disabled { opacity: .5; cursor: default; }
+
         /* ───── ریسپانسیو ───── */
         @media (max-width: 992px) {
             .stats-row { grid-template-columns: repeat(3, 1fr); }
@@ -273,9 +291,14 @@ if (!$__me) {
                     <h1><i class="bi bi-ticket-detailed"></i> تیکت‌های پشتیبانی</h1>
                     <p>مشاهده و مدیریت تیکت‌ها</p>
                 </div>
-                <a href="create-ticket.php" class="btn-new-ticket">
-                    <i class="bi bi-plus-circle"></i>تیکت جدید
-                </a>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    <button type="button" id="btnResolveStale" class="btn-resolve-stale" style="display:none;" onclick="resolveStaleTickets()">
+                        <i class="bi bi-check2-all"></i>حل‌شده کردن تیکت‌های بی‌پاسخِ ۲۱ روزه
+                    </button>
+                    <a href="create-ticket.php" class="btn-new-ticket">
+                        <i class="bi bi-plus-circle"></i>تیکت جدید
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -488,6 +511,12 @@ if (!$__me) {
             loadCategories();
             loadTickets();
 
+            // دکمهٔ «حل‌شده کردنِ تیکت‌های بی‌پاسخِ ۲۱ روزه» — فقط مدیرِ اصلی
+            if (currentUserId == 1) {
+                var b = document.getElementById('btnResolveStale');
+                if (b) b.style.display = 'inline-flex';
+            }
+
             // کلیک در هر نقطه از کادر جستجو (نه فقط خودِ input) باید فوکوس بده
             var searchBox = document.querySelector('.filters-row .search-box');
             var searchInput = document.getElementById('fSearch');
@@ -578,6 +607,32 @@ if (!$__me) {
             document.getElementById('sResolved').textContent = toPersian(s.resolved_count || 0);
             document.getElementById('sClosed').textContent   = toPersian(s.closed_count || 0);
         }
+
+        /* ── حل‌شده کردنِ تیکت‌های «در انتظارِ پاسخِ کاربر» که ۲۱ روز بی‌پاسخ مانده‌اند (فقط id=1) ── */
+        window.resolveStaleTickets = function(){
+            uiConfirm('همهٔ تیکت‌هایی که «در انتظار پاسخ کاربر» هستند و از آخرین پیامشان ۲۱ روز گذشته، به «حل شده» تغییر کنند؟', async function(){
+                var btn = document.getElementById('btnResolveStale');
+                if (btn) btn.disabled = true;
+                try {
+                    var res = await fetch('../api/tickets/bulk-resolve-stale.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken }
+                    });
+                    var data = await res.json();
+                    if (data.success) {
+                        showToast(data.message || (toPersian(data.updated || 0) + ' تیکت به‌روزرسانی شد'), 'success');
+                        loadTickets();
+                    } else {
+                        showToast(data.message || 'انجام نشد', 'error');
+                    }
+                } catch (e) {
+                    console.error('resolveStaleTickets:', e);
+                    showToast('خطا در ارتباط با سرور', 'error');
+                } finally {
+                    if (btn) btn.disabled = false;
+                }
+            }, { yesText: 'بله، تغییر بده', noText: 'انصراف' });
+        };
 
         /* ── فیلتر با وضعیت ── */
         window.filterByStatus = function(s){
