@@ -85,6 +85,18 @@ try {
         exit;
     }
 
+    // ─── ثبتِ «این کاربر تیکت را الان دید» — مبنایِ بجِ «پیامِ دیده‌نشده» در هدر.
+    //     در try چون ممکن است جدول هنوز روی این محیط مایگریت نشده باشد. ───
+    try {
+        $db->prepare("
+            INSERT INTO ticket_message_reads (ticket_id, user_id, last_read_at)
+            VALUES (?, ?, NOW())
+            ON DUPLICATE KEY UPDATE last_read_at = NOW()
+        ")->execute([$ticketId, $user_id]);
+    } catch (Throwable $e) {
+        error_log('ticket_message_reads upsert skipped: ' . $e->getMessage());
+    }
+
     // ─── پیام‌ها ───
     $msgSql = "
         SELECT

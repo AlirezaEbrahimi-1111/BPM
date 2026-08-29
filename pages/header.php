@@ -372,6 +372,25 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         font-size: 15px;
     }
 
+    /* بجِ «تعدادِ خوانده/دیده‌نشده» کنارِ عنوانِ هر تب */
+    #hdrPanelMenu .hdr-tab-badge {
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: #ef4444;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 16px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    #hdrPanelMenu .hdr-tab-badge.hidden {
+        display: none;
+    }
+
     #hdrPanelMenu .hdr-tab:hover {
         color: #8e57fe;
     }
@@ -478,6 +497,24 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         font-size: .7rem;
         color: #9ca3af;
         margin-top: 3px;
+    }
+
+    .hdr-ticket-item.unseen {
+        background: rgba(142, 87, 254, 0.05);
+    }
+
+    .hdr-ticket-item.unseen .hdr-ticket-subject {
+        font-weight: 700;
+    }
+
+    .hdr-ticket-dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #8e57fe;
+        margin-left: 5px;
+        vertical-align: middle;
     }
 
     :root[data-theme="dark"] .hdr-ticket-num {
@@ -749,12 +786,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 <div class="hdr-tabs">
                     <button type="button" class="hdr-tab active" data-tab="tickets" onclick="hdrSwitchTab('tickets')">
                         <i class="bi bi-headset"></i><span>تیکت‌ها</span>
+                        <span class="hdr-tab-badge hidden" data-badge="tickets">0</span>
                     </button>
                     <button type="button" class="hdr-tab" data-tab="ann" onclick="hdrSwitchTab('ann')">
                         <i class="bi bi-megaphone"></i><span>اطلاعیه‌های سازمانی</span>
+                        <span class="hdr-tab-badge hidden" data-badge="ann">0</span>
                     </button>
                     <button type="button" class="hdr-tab" data-tab="notif" onclick="hdrSwitchTab('notif')">
                         <i class="bi bi-bell"></i><span>اعلان‌ها</span>
+                        <span class="hdr-tab-badge hidden" data-badge="notif">0</span>
                     </button>
                 </div>
 
@@ -989,11 +1029,30 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         hdrRefreshBellBadge();
     }
 
-    // بجِ زنگوله = مجموعِ خوانده‌نشده‌هایِ اعلان‌ها + اطلاعیه‌ها (پنلِ ادغام‌شده)
+    // تعدادِ تیکت‌هایی که پیامِ دیده‌نشده دارند (از loadHdrTickets پر می‌شود)
+    var hdrTicketsUnseen = 0;
+
+    // بجِ کوچکِ کنارِ عنوانِ یک تب
+    function hdrSetTabBadge(tab, count) {
+        var el = document.querySelector('#hdrPanelMenu .hdr-tab-badge[data-badge="' + tab + '"]');
+        if (!el) return;
+        if (count > 0) {
+            el.textContent = count > 99 ? '۹۹+' : toFa(count);
+            el.classList.remove('hidden');
+        } else {
+            el.classList.add('hidden');
+        }
+    }
+
+    // بجِ زنگوله = مجموعِ سه تب؛ و هر تب بجِ جداگانهٔ خودش را می‌گیرد
     function hdrRefreshBellBadge() {
+        hdrSetTabBadge('notif', unreadCount || 0);
+        hdrSetTabBadge('ann', annUnreadCount || 0);
+        hdrSetTabBadge('tickets', hdrTicketsUnseen || 0);
+
         const badge = document.getElementById('notificationBadge');
         if (!badge) return;
-        const total = (unreadCount || 0) + (annUnreadCount || 0);
+        const total = (unreadCount || 0) + (annUnreadCount || 0) + (hdrTicketsUnseen || 0);
         const bell = document.querySelector('.notification-bell');
         if (total > 0) {
             badge.textContent = total > 99 ? '۹۹+' : toFa(total);
@@ -1461,6 +1520,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             var data = await r.json();
             if (!data.success) throw new Error(data.message || 'error');
             hdrTicketsAll = data.tickets || [];
+            hdrTicketsUnseen = hdrTicketsAll.filter(function(t) { return Number(t.unseen_count) > 0; }).length;
+            hdrRefreshBellBadge();
             renderHdrTickets();
         } catch (e) {
             console.error('❌ خطا در بارگذاری تیکت‌ها:', e);
@@ -1484,9 +1545,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             var raw = (t.created_at || '');
             var dateOnly = (window.TimeSync && TimeSync.formatJalali) ? TimeSync.formatJalali(raw) : raw.split(' ')[0];
             var c = t.status_color || '#8e57fe';
-            return '<a class="hdr-ticket-item" href="/pages/ticket-detail.php?id=' + encodeURIComponent(t.id) + '">' +
+            var unseen = Number(t.unseen_count) > 0;
+            var dot = unseen ? '<span class="hdr-ticket-dot" title="پیامِ دیده‌نشده"></span>' : '';
+            return '<a class="hdr-ticket-item' + (unseen ? ' unseen' : '') + '" href="/pages/ticket-detail.php?id=' + encodeURIComponent(t.id) + '">' +
                 '<div class="hdr-ticket-row1">' +
-                '<span class="hdr-ticket-num">#' + toFa(esc(String(t.ticket_number || ''))) + '</span>' +
+                '<span class="hdr-ticket-num">' + dot + '#' + toFa(esc(String(t.ticket_number || ''))) + '</span>' +
                 '<span class="hdr-ticket-status" style="background:' + c + '18;color:' + c + ';border:1px solid ' + c + '35;">' + esc(t.status_label || '') + '</span>' +
                 '</div>' +
                 '<div class="hdr-ticket-subject">' + esc(t.subject || '') + '</div>' +
@@ -2509,11 +2572,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             setupNavDropdowns();
             if (authToken) {
                 loadHeaderBundle();
+                loadHdrTickets(); // تا بجِ «تیکتِ دیده‌نشده» قبل از بازکردنِ پنل هم دیده شود
 
                 // بررسی هر 30 ثانیه
                 setInterval(checkNewNotifications, 30000);
                 setInterval(loadAttendanceStatus, 60000);
                 setInterval(updateChatUnreadBadge, 15000);
+                setInterval(loadHdrTickets, 60000);
             }
             highlightActiveMenu();
         }

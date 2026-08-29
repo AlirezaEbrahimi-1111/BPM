@@ -118,6 +118,26 @@ try {
     // ── شمارش کل ──
     $total = intval($stats['total'] ?? 0);
 
+    // «پیامِ دیده‌نشده»: تعدادِ پیام‌هایِ کاربرِ دیگر که بعد از آخرین‌باری که
+    // کاربرِ جاری این تیکت را دید ثبت شده‌اند. اگر جدولِ ردیابی هنوز مایگریت
+    // نشده باشد، ستون صفر برمی‌گردد (بدونِ شکستنِ لیست).
+    $hasReads = false;
+    try {
+        $hasReads = (bool) $db->query("SHOW TABLES LIKE 'ticket_message_reads'")->fetchColumn();
+    } catch (Throwable $e) {
+    }
+    $unseenSelect = $hasReads
+        ? "(SELECT COUNT(*) FROM ticket_messages tmu
+              WHERE tmu.ticket_id = t.id
+                AND tmu.deleted_at IS NULL
+                AND tmu.user_id <> ?
+                AND tmu.created_at > COALESCE(
+                    (SELECT tmr.last_read_at FROM ticket_message_reads tmr
+                       WHERE tmr.ticket_id = t.id AND tmr.user_id = ?),
+                    '1000-01-01 00:00:00')
+           ) as unseen_count"
+        : "0 as unseen_count";
+
     // ── لیست تیکت‌ها ──
     $listSQL = "
         SELECT
@@ -140,7 +160,8 @@ try {
             tc.name    as category_name,
             CONCAT(COALESCE(u.first_name,''), ' ', COALESCE(u.last_name,'')) as creator_name,
             (SELECT COUNT(*) FROM ticket_messages tm WHERE tm.ticket_id = t.id) as message_count,
-            (SELECT COUNT(*) FROM ticket_attachments ta WHERE ta.ticket_id = t.id) as attachment_count
+            (SELECT COUNT(*) FROM ticket_attachments ta WHERE ta.ticket_id = t.id) as attachment_count,
+            {$unseenSelect}
         FROM tickets t
         LEFT JOIN ticket_statuses ts ON t.status_id = ts.id
         LEFT JOIN ticket_priorities tp ON t.priority_id = tp.id
@@ -150,8 +171,11 @@ try {
         ORDER BY t.created_at DESC
         LIMIT {$limit} OFFSET {$offset}
     ";
+    // دو placeholderِ subqueryِ unseen در متنِ SQL قبل از شرط‌های WHERE هستند،
+    // پس باید ابتدایِ آرایهٔ پارامترها بیایند.
+    $listParams = $hasReads ? array_merge([$user_id, $user_id], $params) : $params;
     $stmtList = $db->prepare($listSQL);
-    $stmtList->execute($params);
+    $stmtList->execute($listParams);
     $tickets = $stmtList->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode([
