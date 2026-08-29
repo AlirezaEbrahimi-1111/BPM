@@ -35,11 +35,11 @@ if (!$__me || !hasPermission($__me, 'manage_activity_sections')) {
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <style>
         :root {
-            --bg:        #edf1ff;
+            --bg:        #f5f1ff;
             --surface:   #ffffff;
             --border:    #d9d9d9;
-            --accent:    #4f8ef7;
-            --accent-dim:#d4e3ff;
+            --accent:    #8e57fe;
+            --accent-dim:#e9e0ff;
             --danger:    #e05252;
             --success:   #3ecf8e;
             --text:      #3a3c3f;

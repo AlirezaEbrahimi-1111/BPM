@@ -1531,6 +1531,13 @@ function formatDateJalali($gregorianDate)
             border-color: var(--border-soft);
         }
 
+        /* فوکوسِ انتخابگرِ ماه: حاشیهٔ پیش‌فرضِ مشکی/آبی → بنفشِ سازمانی */
+        .att-month-toolbar select:focus {
+            outline: none;
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 3px rgba(142, 87, 254, 0.15);
+        }
+
         .att-month-toolbar-stats {
             display: flex;
             align-items: center;
@@ -2869,6 +2876,28 @@ function formatDateJalali($gregorianDate)
 
         #attendanceGrid .att-date-num {
             font-weight: 600;
+        }
+
+        /* یکدست‌سازیِ فوکوسِ فرم‌ها با بنفشِ سازمانی — جای‌گزینِ حلقهٔ آبیِ
+           پیش‌فرضِ بوت‌استرپ/مرورگر روی هر ورودی، لیستِ کشویی و ناحیهٔ متن */
+        .form-control:focus,
+        .form-select:focus,
+        .modal input:focus,
+        .modal select:focus,
+        .modal textarea:focus {
+            outline: none;
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 3px rgba(142, 87, 254, 0.15);
+        }
+
+        /* دکمه‌های آبیِ بوت‌استرپ روی این صفحه → بنفشِ سازمانی */
+        .btn-primary,
+        .btn-primary:hover,
+        .btn-primary:focus,
+        .btn-primary:active {
+            background-color: #8e57fe;
+            border-color: #8e57fe;
+            box-shadow: none;
         }
     </style>
 </head>

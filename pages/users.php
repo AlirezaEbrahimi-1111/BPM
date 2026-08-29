@@ -560,6 +560,19 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                 padding: .8rem;
             }
         }
+
+        /* فوکوسِ همهٔ ورودی‌ها و لیست‌های کشویی: بنفشِ سازمانی به‌جایِ آبیِ
+           پیش‌فرضِ بوت‌استرپ */
+        .form-control:focus,
+        .form-select:focus,
+        .form-check-input:focus,
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 .2rem rgba(142, 87, 254, .25);
+        }
     </style>
 </head>
 

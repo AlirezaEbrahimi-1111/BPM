@@ -705,9 +705,9 @@ if (!$__me) {
         <div class="modal fade" id="redefineModal" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title">بازتعریف کار</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <div class="modal-header">
+                        <h5 class="modal-title" style="color:#8e57fe;font-weight:700;">بازتعریف کار</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="alert alert-info">
