@@ -41,7 +41,7 @@ if (!$__me) {
     <?php include 'header.php'; ?>
 
     <style>
-        .nt-wrap { max-width: 820px; margin: 84px auto 40px; padding: 0 16px; }
+        .nt-wrap { margin-bottom: 40px; }
         .nt-head {
             background: #8e57fe; color: #fff; border-radius: 16px;
             padding: 1.1rem 1.4rem; margin-bottom: 1.1rem;
@@ -73,9 +73,14 @@ if (!$__me) {
         .nt-card { background: var(--surface); border: 1px solid var(--border-soft, #e9e9e9); border-radius: 16px; padding: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
         .nt-empty { text-align: center; color: #9ca3af; padding: 40px 0; }
         .nt-empty i { font-size: 2rem; display: block; margin-bottom: .5rem; }
+
+        /* حالتِ تاریک */
+        :root[data-theme="dark"] .nt-search input { border-color: var(--border-soft); }
+        :root[data-theme="dark"] .nt-chip { border-color: var(--border-soft); color: var(--text-muted); }
+        :root[data-theme="dark"] .nt-card { box-shadow: 0 1px 4px rgba(0,0,0,.35); }
     </style>
 
-    <div class="nt-wrap">
+    <div class="overview-container nt-wrap">
         <div class="nt-head">
             <h1><i class="bi bi-bell"></i> اعلان‌ها</h1>
             <button type="button" class="nt-markall" id="ntMarkAll" onclick="ntMarkAllRead()" disabled>خواندن همه</button>

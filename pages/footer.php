@@ -7,14 +7,19 @@ require_once '../includes/version.php';
      باعث می‌شد قواعد قدیمی/بدون تم‌تاریکِ custom.css روی override محلیِ هر صفحه غالب شود. -->
 
 <style>
-    /* sticky نه fixed — فقط به کفِ ناحیه‌یِ محتوایِ خودِ صفحه می‌چسبه و
-       هیچ‌وقت رویِ اکشن‌بارهایِ fixed دیگه (مثلِ نوارِ عملیاتِ پایینِ
-       task-detail.php) نمی‌افته. کلاس عمداً footer-9 نیست چون آن نام با
-       یک قاعدهٔ ریسپانسیوِ باقی‌مانده در custom.css (مخفی‌کردنِ فوتر زیرِ
-       768px) تداخل داشت */
+    /* الگویِ sticky-footer بدونِ دست‌زدن به layoutِ body: body حداقل به‌اندازهٔ
+       ارتفاعِ صفحه بلند می‌شود و فوتر با position:sticky + top:100vh همیشه به
+       کفِ پنجره می‌چسبد — حتی وقتی محتوا کم است (قبلاً وسطِ صفحه می‌ماند). روی
+       صفحاتِ بلند، طبیعی ته صفحه قرار می‌گیرد. */
+    body {
+        min-height: calc(100vh - 3.5rem);
+    }
+
+    /* sticky نه fixed — هیچ‌وقت رویِ اکشن‌بارهایِ fixed دیگه (مثلِ نوارِ
+       عملیاتِ پایینِ task-detail.php) نمی‌افته. */
     .site-footer {
         position: sticky;
-        bottom: 0;
+        top: 100vh;
         width: 100%;
         margin-top: 24px;
         padding: 7px 0;
@@ -49,7 +54,7 @@ require_once '../includes/version.php';
     <span>در شرکت</span>
     <span class="company">آوای شرق ملک</span>
         <span> | </span>
-        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۰۷ - ۱۵:۱۴">
-            نسخه: ۵.۹۲
+        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۰۷ - ۱۵:۴۲">
+            نسخه: ۵.۹۳
         </span>
 </div>
