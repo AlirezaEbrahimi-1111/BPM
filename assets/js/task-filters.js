@@ -293,6 +293,13 @@ window.TF = (function () {
         if (t.status === 'delegated' && user && Number(t.assignee_id) === Number(user.id)) {
             return `<span class="status-badge ${statusClass('not_started')}">${statusLabel('not_started')}</span>`;
         }
+        // کارِ دوره‌ای که دورهٔ قبلی‌اش بسته شده ولی دورهٔ جدید (امروز) هنوز انجام نشده
+        // → «شروع نشده» است، نه «دوره انجام شد». (اگر عقب‌افتاده بود، بالاتر با
+        //  isOverdue به «عقب افتاده» رفته؛ اگر نیازمندِ تمدید بود، ابتدای تابع.)
+        if (t.task_type === 'continuous' && t.status === 'period_done' &&
+            t.is_today_done === false && !isDone(t)) {
+            return `<span class="status-badge ${statusClass('not_started')}">${statusLabel('not_started')}</span>`;
+        }
         const s = t.status || 'not_started';
         return `<span class="status-badge ${statusClass(s)}">${statusLabel(s)}</span>`;
     }

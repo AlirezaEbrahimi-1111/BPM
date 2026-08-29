@@ -268,7 +268,8 @@ if (!$__me) {
                 headerName: 'وضعیت',
                 width: 130,
                 resizable: true,
-                cellRenderer: p => statusBadge(p.value)
+                // برچسبِ هوشمند: «عقب افتاده» و «شروع نشدهٔ دورهٔ جدید» را هم لحاظ می‌کند
+                cellRenderer: p => TF.statusBadge(p.data, currentUser)
             },
             {
                 field: 'task_type',
