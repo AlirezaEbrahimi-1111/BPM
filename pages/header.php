@@ -1537,6 +1537,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             if (!q) return true;
             return ((t.subject || '') + ' ' + (t.ticket_number || '')).toLowerCase().indexOf(q) > -1;
         });
+        // تیکت‌هایِ دارایِ پیامِ دیده‌نشده تا وقتی read نشده‌اند، بالایِ لیست
+        items.sort(function(a, b) {
+            var ua = Number(a.unseen_count) > 0 ? 1 : 0;
+            var ub = Number(b.unseen_count) > 0 ? 1 : 0;
+            if (ua !== ub) return ub - ua;
+            return String(b.created_at || '').localeCompare(String(a.created_at || '')); // جدیدتر بالاتر
+        });
         if (!items.length) {
             box.innerHTML = '<div class="ann-empty"><i class="bi bi-headset"></i><p>تیکتی یافت نشد</p></div>';
             return;
