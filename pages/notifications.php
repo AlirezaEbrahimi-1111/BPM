@@ -199,6 +199,8 @@ if (!$__me) {
 
         document.addEventListener('DOMContentLoaded', ntLoad);
     </script>
+    <!-- Bootstrap JS — لازم برای منوهای کشویی نظارت/مدیریت/پروفایل در هدر -->
+    <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <?php include 'footer.php'; ?>
 </body>
 
