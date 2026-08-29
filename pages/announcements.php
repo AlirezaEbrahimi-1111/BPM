@@ -100,7 +100,17 @@ if (!$__me) {
     .ann-btn-primary { background: var(--primary-gradient, #8e57fe) !important; border: none !important; color: #fff !important; border-radius: 9px !important; padding: .6rem 1.4rem !important; font-weight: 700 !important; box-shadow: var(--shadow-md); }
     .ann-btn-primary:hover { filter: brightness(1.06); }
 
-    @media (max-width: 768px) { .overview-container { max-width: 100% !important; } .ann-head-card h1 { font-size: 1.15rem; } }
+    @media (max-width: 768px) {
+        .overview-container { max-width: 100% !important; }
+        .ann-head-card h1 { font-size: 1.15rem; }
+
+        /* مودالِ «اطلاعیهٔ جدید» روی موبایل: هدر/فوتر ثابت، بدنه اسکرول‌شونده
+           تا دکمه‌های پایین همیشه در دسترس باشند */
+        #annModal .modal-dialog { margin: .5rem; height: calc(100% - 1rem); }
+        #annModal .modal-content { max-height: 100%; overflow: hidden; display: flex; flex-direction: column; }
+        #annModal .modal-header, #annModal .modal-footer { flex: 0 0 auto; }
+        #annModal .modal-body { overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1 1 auto; }
+    }
 
     /* ─── تم تاریک ─── */
     :root[data-theme="dark"] .ann-grid-card { background: var(--surface); border-color: var(--border-soft); }
