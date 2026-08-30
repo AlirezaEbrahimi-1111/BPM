@@ -141,7 +141,9 @@ try {
             if ($size > $maxSize) continue;
             if (!in_array($type, $allowedTypes)) continue;
 
-            $ext = pathinfo($name, PATHINFO_EXTENSION);
+            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            // فقط پسوندهایِ امن ذخیره شوند (نه php/phtml/svg/html/js/...)
+            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'mp3', 'm4a', 'ogg', 'txt'], true)) continue;
             $storedName = uniqid('tkt_') . '_' . time() . '.' . $ext;
             $destPath = $uploadDir . $storedName;
 

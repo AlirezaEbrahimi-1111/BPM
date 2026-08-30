@@ -29,6 +29,11 @@ if (empty($input['first_name']) || empty($input['last_name'])) {
     echo json_encode(['success' => false, 'message' => 'نام و نام خانوادگی اجباری است']);
     exit;
 }
+// نام نباید کاراکترهای خطرناکِ HTML/کنترلی داشته باشد (رقم/نقطه/پرانتز مجاز)
+if (preg_match('/[<>"\'`\x00-\x1F]/', $input['first_name'] . $input['last_name'])) {
+    echo json_encode(['success' => false, 'message' => 'نام یا نام خانوادگی شامل کاراکترهای غیرمجاز است']);
+    exit;
+}
 if (!preg_match('/^09[0-9]{9}$/', $input['phone'] ?? '')) {
     echo json_encode(['success' => false, 'message' => 'شماره موبایل نامعتبر است']);
     exit;
@@ -40,6 +45,33 @@ if (!preg_match('/^09[0-9]{9}$/', $input['phone'] ?? '')) {
 if (!canManageTargetUser($db, $me, $uid)) {
     echo json_encode(['success' => false, 'message' => 'کاربر یافت نشد']);
     exit;
+}
+
+// 🔒 جلوگیری از بالا بردنِ سطحِ دسترسی از راهِ فیلدهای درخواست:
+//  - نقش فقط از لیستِ مجاز
+//  - کسی نمی‌تواند نقشی بالاتر از نقشِ خودش به دیگری بدهد
+//  - کسی نمی‌تواند نقش/فلگ‌های خودش را ارتقا دهد
+//  - فلگ‌های is_manager/is_supervisor فقط با نقشِ سازمان‌گستر (supervisor/admin)
+$roleRank = ['employee' => 0, 'manager' => 1, 'supervisor' => 2, 'admin' => 2];
+$tgtStmt = $db->prepare('SELECT role, is_manager, is_supervisor FROM users WHERE id = ?');
+$tgtStmt->execute([$uid]);
+$tgt = $tgtStmt->fetch(PDO::FETCH_ASSOC) ?: ['role' => 'employee', 'is_manager' => 0, 'is_supervisor' => 0];
+
+$actorRank = $roleRank[$me['role'] ?? 'employee'] ?? 0;
+$isSelf    = ((int) $uid === (int) ($me['id'] ?? 0));
+$orgWide   = isOrgWideRole($me);
+
+$wantRole = $input['role'] ?? $tgt['role'];
+if (!isset($roleRank[$wantRole])) {
+    $wantRole = $tgt['role'];                          // نقشِ نامعتبر → بدون تغییر
+} elseif ($isSelf || ($roleRank[$wantRole] > $actorRank)) {
+    $wantRole = $tgt['role'];                          // ارتقاءِ خود / بالاتر از خود ممنوع
+}
+$input['role'] = $wantRole;
+
+if ($isSelf || !$orgWide) {
+    $input['is_manager']    = (int) $tgt['is_manager'];
+    $input['is_supervisor'] = (int) $tgt['is_supervisor'];
 }
 
 try {
