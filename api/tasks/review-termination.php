@@ -73,17 +73,28 @@ try {
 
     $db->beginTransaction();
 
+    // 🔒 قفلِ ایمنی در برابر ارسالِ هم‌زمانِ دو درخواست (دابل‌کلیک یا دو تب):
+    // اول رکوردِ درخواست را با شرطِ status='pending' آپدیت می‌کنیم؛ فقط اولین
+    // درخواست rowCount()=1 می‌گیرد. بقیه rollback و خروج. بدونِ این، هر دو
+    // درخواست وضعیتِ tasks را عوض می‌کردند و دو رکوردِ task_history می‌ساختند
+    // (در حالتِ رد حتی می‌شد کار را به وضعیتِ اشتباه برگرداند).
+    if ($action === 'approve') {
+        $guard = $db->prepare("UPDATE task_termination_requests SET status = 'approved', reviewed_at = NOW() WHERE id = ? AND status = 'pending'");
+        $guard->execute([$request_id]);
+    } else {
+        $guard = $db->prepare("UPDATE task_termination_requests SET status = 'rejected', rejection_reason = ?, reviewed_at = NOW() WHERE id = ? AND status = 'pending'");
+        $guard->execute([trim($data['rejection_reason'] ?? ''), $request_id]);
+    }
+    if ($guard->rowCount() === 0) {
+        $db->rollBack();
+        echo json_encode(['success' => false, 'message' => 'این درخواست قبلاً بررسی شده است']);
+        exit;
+    }
+
     if ($action === 'approve') {
         // ── تأیید: وضعیت کار → completed ─────────────────
         $stmt = $db->prepare("UPDATE tasks SET status = 'completed' WHERE id = ?");
         $stmt->execute([$request['task_id']]);
-
-        $stmt = $db->prepare("
-            UPDATE task_termination_requests
-            SET status = 'approved', reviewed_at = NOW()
-            WHERE id = ?
-        ");
-        $stmt->execute([$request_id]);
 
         // تاریخچه
         $stmt = $db->prepare("
@@ -123,12 +134,7 @@ try {
         $stmt = $db->prepare("UPDATE tasks SET status = ? WHERE id = ?");
         $stmt->execute([$previousStatus, $request['task_id']]);
 
-        $stmt = $db->prepare("
-            UPDATE task_termination_requests
-            SET status = 'rejected', rejection_reason = ?, reviewed_at = NOW()
-            WHERE id = ?
-        ");
-        $stmt->execute([$rejectionReason, $request_id]);
+        // وضعیتِ رکوردِ درخواست + دلیلِ رد بالاتر (در قفلِ ایمنی) ثبت شد.
 
         // تاریخچه
         $stmt = $db->prepare("

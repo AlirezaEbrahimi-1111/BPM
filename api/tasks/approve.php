@@ -60,6 +60,21 @@ try {
 
     $database = new Database();
     $db = $database->getConnection();
+
+    // 🔒 قفلِ هم‌زمانی: دو درخواستِ تأیید/ردِ هم‌زمان برای یک کار (دابل‌کلیک،
+    // دو تب، دو تأییدکننده) نباید با هم پردازش شوند؛ وگرنه رکوردهای تکراریِ
+    // task_history و نوتیفیکیشن ساخته می‌شود و در کارهای دوره‌ای ممکن است
+    // یک مرحله از زنجیرهٔ تأیید پرش شود. قفل روی نامِ مختص همین کار گرفته
+    // می‌شود و با پایانِ درخواست خودکار آزاد می‌شود (اتصالِ PDO دائمی نیست).
+    $lockName = 'task_approve_' . (int) $input['task_id'];
+    $lockStmt = $db->prepare('SELECT GET_LOCK(?, 5)');
+    $lockStmt->execute([$lockName]);
+    if ((int) $lockStmt->fetchColumn() !== 1) {
+        http_response_code(409);
+        echo json_encode(['success' => false, 'message' => 'این کار هم‌اکنون در حال پردازش است. چند لحظه بعد دوباره تلاش کنید.']);
+        exit;
+    }
+
     $taskManager = new TaskManager($db);
 
     // 🆕 فاز ۲: اگر این تسک یک «مرحلهٔ تصمیم»ِ روتین است، تأیید/رد از منطقِ انشعابِ

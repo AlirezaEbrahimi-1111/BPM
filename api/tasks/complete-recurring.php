@@ -6,6 +6,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/period-engine.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-access.php';
 try {
     $user_id = requireAuth();
     $input = json_decode(file_get_contents('php://input'), true);
@@ -22,6 +23,18 @@ try {
 
     if (!$task) {
         echo json_encode(['success' => false, 'message' => 'کار یافت نشد']);
+        exit;
+    }
+
+    // 🔒 کنترلِ دسترسی — قبلاً هیچ چکی نبود: هر کاربرِ لاگین‌شده (حتی از
+    // سازمانِ دیگر) می‌توانست با حدسِ task_id، دورهٔ کارِ پیوستهٔ دیگران را
+    // «تکمیل‌شده» علامت بزند. taskUserAccess فقط سازنده/مسئولِ فعلی/مدیرِ
+    // هم‌سازمانِ آن‌ها را می‌پذیرد؛ بیننده و مسئولِ صرفِ چک‌لیست حق تکمیل ندارند.
+    $access = taskUserAccess($db, (int) $user_id, $task);
+    if (!$access['has_access'] || $access['is_viewer_only'] || $access['is_checklist_only']) {
+        http_response_code(403);
+        error_log("complete-recurring denied | user_id={$user_id} | task_id={$task_id}");
+        echo json_encode(['success' => false, 'message' => 'شما مجاز به تکمیل این کار نیستید'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
