@@ -14,6 +14,4 @@ if (typeof APP_CONFIG === 'undefined') {
     function getPageUrl(page) {
         return APP_CONFIG.PAGES_PATH + '/' + page;
     }
-
-    console.log('Config loaded:', APP_CONFIG.BASE_PATH);
 }

@@ -2126,7 +2126,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 menuBtn.classList.remove('menu-btn-hidden');
             }
 
-            console.log('✅ Drawer forcefully closed');
         }
 
         // اجرا بلافاصله
@@ -2457,7 +2456,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     (function() {
         authToken = localStorage.getItem('auth_token');
 
-        console.log('🔧 Header loaded - authToken:', authToken ? 'SET ✅' : 'NOT SET ❌');
 
         if (!authToken) {
             const currentPath = window.location.pathname;
@@ -2484,7 +2482,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                     new bootstrap.Dropdown(toggle);
                 });
 
-                console.log('✅ Nav dropdowns activated');
             }
 
             activateDropdowns();
@@ -2571,7 +2568,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         }
 
         function initializeHeader() {
-            console.log('✅ Initializing header...');
             toggleManagerMenu();
             setupOverviewForUnit();
             setupHdrPanel();

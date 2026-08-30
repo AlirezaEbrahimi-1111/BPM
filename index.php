@@ -1,6 +1,6 @@
 <?php
 if (!headers_sent()) {
-    header("Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://computeryekta.com; font-src 'self' data:; connect-src 'self' https://api.ipify.org; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self';");
+    header("Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://computeryekta.com; font-src 'self' data:; connect-src 'self' https://api.ipify.org; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self';");
 }
 ?>
 <!DOCTYPE html>

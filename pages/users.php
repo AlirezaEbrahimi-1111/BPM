@@ -1159,11 +1159,17 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                     width: 180,
                     cellRenderer: p => {
                         const secs = p.data.bpm_sections || [];
-                        const body = !secs.length ?
-                            `<small>${getSectionLabel(p.value)}</small>` :
-                            secs.map(s =>
-                                `<span style="display:inline-block; background:${s.is_primary==1?'rgba(142, 87, 254, 0.2)':'rgba(142, 87, 254, 0.1)'}; color:#8e57fe; border-radius:5px; padding:8px 8px; margin:1px; font-size:.7rem; font-weight:600; line-height:1.5;">${s.is_primary==1?'★':''}${esc(s.section_label)}</span>`
-                            ).join('');
+                        const chip = (label, primary) =>
+                            `<span style="display:inline-block; background:${primary?'rgba(142, 87, 254, 0.2)':'rgba(142, 87, 254, 0.1)'}; color:#8e57fe; border-radius:5px; padding:8px 8px; margin:1px; font-size:.7rem; font-weight:600; line-height:1.5;">${primary?'★':''}${esc(label)}</span>`;
+                        let body;
+                        if (secs.length) {
+                            body = secs.map(s => chip(s.section_label, s.is_primary == 1)).join('');
+                        } else if (p.value) {
+                            // واحدِ تکی (مثلِ «مدیریت») هم بجِ استاندارد بگیرد، نه متنِ ساده
+                            body = chip(getSectionLabel(p.value), false);
+                        } else {
+                            body = '<small style="color:#9ca3af;">—</small>';
+                        }
                         return `<div style="display:flex; flex-wrap:wrap; align-items:center; gap:2px; line-height:1.2; padding:2px 0;">${body}</div>`;
                     }
                 },
