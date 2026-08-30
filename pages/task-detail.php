@@ -41,10 +41,6 @@ if (!$__me) {
     <!-- تقویم شمسی -->
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/persian-datepicker.min.css') ?>">
     <script src="<?= asset('../assets/js/jalali.js') ?>"></script>
-    <!-- Moment.js -->
-    <script src="<?= asset('../assets/js/moment.min.js') ?>"></script>
-    <!-- Moment Jalaali -->
-    <script src="<?= asset('../assets/js/cdn/moment-jalaali.js') ?>"></script>
     <script src="<?= asset('../assets/js/config.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/persian-date.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">

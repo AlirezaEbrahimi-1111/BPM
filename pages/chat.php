@@ -2768,7 +2768,10 @@ if (!$__me) {
         function setAvatarContent(el, name, avatarUrl) {
             if (avatarUrl) {
                 el.style.background = '';
-                el.innerHTML = '<img class="chat-avatar-img" src="../' + avatarUrl + '" alt=""><span class="chat-avatar-online-dot"></span>';
+                // avatarUrl مسیرِ فایلی است که سرور ساخته؛ باز هم برای اطمینان
+                // کاراکترهای شکنندهٔ attribute را انکد می‌کنیم.
+                var safeUrl = String(avatarUrl).replace(/[<>"'\s]/g, encodeURIComponent);
+                el.innerHTML = '<img class="chat-avatar-img" src="../' + safeUrl + '" alt=""><span class="chat-avatar-online-dot"></span>';
             } else {
                 el.style.background = avatarColor(name);
                 el.innerHTML = esc(initials(name)) + '<span class="chat-avatar-online-dot"></span>';
