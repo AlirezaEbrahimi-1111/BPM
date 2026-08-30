@@ -36,7 +36,8 @@ $user_id = requireAuth();
         echo json_encode(['success' => false, 'message' => 'الگو یافت نشد یا دسترسی ندارید']);
     }
 } catch (Exception $e) {
+    error_log('[' . basename(__FILE__) . '] ' . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'خطای سرور']);
 }
 ?>

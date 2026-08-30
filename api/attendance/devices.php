@@ -71,5 +71,5 @@ try {
 
 } catch (Throwable $e) {
     error_log("Attendance devices operation failed | user_id=" . ($user_id ?? 'unknown') . " | ip=" . ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . " | error=" . $e->getMessage());
-    dev_out(['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()], 500);
+    dev_out(['success' => false, 'message' => 'خطای سرور'], 500);
 }

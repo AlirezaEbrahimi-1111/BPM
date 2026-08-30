@@ -99,11 +99,12 @@ try {
     }
     
 } catch (Exception $e) {
+    error_log('[' . basename(__FILE__) . '] ' . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,
         'message' => 'خطای داخلی سرور',
-        'error' => $e->getMessage()
+        'error' => 'internal_error'
     ]);
 }
 

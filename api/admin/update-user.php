@@ -159,11 +159,12 @@ try {
 
     echo json_encode(['success' => true, 'message' => 'کاربر با موفقیت بروزرسانی شد']);
 } catch (PDOException $e) {
+    error_log('[' . basename(__FILE__) . '] ' . $e->getMessage());
     if ($db->inTransaction()) $db->rollBack();
     // بررسی duplicate
     if ($e->getCode() === '23000') {
         echo json_encode(['success' => false, 'message' => 'شماره موبایل یا نام کاربری تکراری است']);
     } else {
-        echo json_encode(['success' => false, 'message' => 'خطای پایگاه داده: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'خطای پایگاه داده']);
     }
 }

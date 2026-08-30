@@ -79,7 +79,7 @@ try {
     error_log("User info error: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'خطا: ' . $e->getMessage()
+        'message' => 'خطا در پردازش درخواست'
     ]);
 }
 ?>

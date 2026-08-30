@@ -177,6 +177,6 @@ try {
     error_log("bottleneck-report.php failed | " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'خطای سرور: ' . $e->getMessage()
+        'message' => 'خطای سرور'
     ], JSON_UNESCAPED_UNICODE);
 }

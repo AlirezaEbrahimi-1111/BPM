@@ -173,6 +173,6 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     error_log("Holiday add error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => false, 'message' => 'خطا در پردازش درخواست'], JSON_UNESCAPED_UNICODE);
 }
 ?>

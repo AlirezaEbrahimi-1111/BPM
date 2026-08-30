@@ -87,6 +87,6 @@ try {
     error_log("organization/register.php signup failed | phone=" . ($data['phone'] ?? 'null') . " | org_name=" . ($data['org_name'] ?? 'null') . " | " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'خطا در ثبت سازمان: ' . $e->getMessage()
+        'message' => 'خطا در ثبت سازمان'
     ], JSON_UNESCAPED_UNICODE);
 }

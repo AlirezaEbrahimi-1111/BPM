@@ -43,7 +43,7 @@ try {
     
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'خطای سرور', 'error' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'خطای سرور', 'error' => 'internal_error']);
     error_log("Admin get user units error: " . $e->getMessage());
 }
 ?>

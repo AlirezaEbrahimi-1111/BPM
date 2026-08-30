@@ -196,6 +196,6 @@ try {
     error_log("create-bulk error: " . $e->getMessage());
     ob_end_clean();
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'خطای داخلی سرور: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'خطای داخلی سرور']);
     exit;
 }

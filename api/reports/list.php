@@ -87,7 +87,7 @@ try {
     echo json_encode([
         'success' => false,
         'message' => 'خطای سرور',
-        'error' => $e->getMessage()
+        'error' => 'internal_error'
     ], JSON_UNESCAPED_UNICODE);
 }
 ?>

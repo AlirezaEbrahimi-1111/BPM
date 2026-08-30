@@ -40,9 +40,10 @@ try {
     ]);
     
 } catch (Exception $e) {
+    error_log('[' . basename(__FILE__) . '] ' . $e->getMessage());
     echo json_encode([
         'success' => false, 
-        'message' => $e->getMessage(),
+        'message' => 'خطای سرور',
         'file' => __FILE__
     ]);
 }

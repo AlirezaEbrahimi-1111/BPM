@@ -186,5 +186,5 @@ try {
 } catch (Throwable $e) {
     error_log("Announcement update error: " . $e->getMessage() . " | user_id=" . ($user_id ?? 'n/a'));
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => false, 'message' => 'خطای سرور'], JSON_UNESCAPED_UNICODE);
 }

@@ -386,7 +386,7 @@ try {
     error_log("Register error: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'خطا: ' . $e->getMessage()
+        'message' => 'خطا در پردازش درخواست'
     ]);
 }
 ?>

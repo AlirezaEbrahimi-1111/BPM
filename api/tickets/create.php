@@ -200,6 +200,6 @@ try {
 } catch (Exception $e) {
     if ($db->inTransaction()) $db->rollBack();
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'خطای سرور']);
     error_log("Ticket create error: " . $e->getMessage());
 }

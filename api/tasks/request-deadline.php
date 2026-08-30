@@ -381,7 +381,7 @@ try {
 
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage()
+        'message' => 'خطای سرور'
     ], JSON_UNESCAPED_UNICODE);
 }
 

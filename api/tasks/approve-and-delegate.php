@@ -186,7 +186,7 @@ try {
     error_log("Approve-and-delegate error: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'خطای داخلی سرور: ' . $e->getMessage()
+        'message' => 'خطای داخلی سرور'
     ]);
 }
 

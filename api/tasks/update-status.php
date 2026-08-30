@@ -95,7 +95,7 @@ try {
     
     echo json_encode([
         'success' => false, 
-        'message' => 'خطای داخلی سرور: ' . $e->getMessage()
+        'message' => 'خطای داخلی سرور'
     ]);
 }
 

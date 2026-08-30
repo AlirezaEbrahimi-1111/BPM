@@ -186,6 +186,7 @@ try {
             'message' => 'همگام‌سازی با موفقیت انجام شد'
         ], JSON_UNESCAPED_UNICODE);
     } catch (Exception $e) {
+    error_log('[' . basename(__FILE__) . '] ' . $e->getMessage());
         $db->rollBack();
         throw $e;
     }
@@ -193,7 +194,7 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage(),
+        'message' => 'خطای سرور',
         'file' => $e->getFile(),
         'line' => $e->getLine()
     ], JSON_UNESCAPED_UNICODE);

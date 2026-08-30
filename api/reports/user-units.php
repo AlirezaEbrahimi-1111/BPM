@@ -63,6 +63,7 @@ try {
         $stmt->execute([$user_id]);
         $additionalUnits = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
+    error_log('[' . basename(__FILE__) . '] ' . $e->getMessage());
         // جدول وجود ندارد یا خطای دیگر - ادامه بدون واحدهای اضافی
     }
 
@@ -145,7 +146,7 @@ try {
     echo json_encode([
         'success' => false,
         'message' => 'خطای داخلی سرور',
-        'error' => $e->getMessage()
+        'error' => 'internal_error'
     ], JSON_UNESCAPED_UNICODE);
 }
 

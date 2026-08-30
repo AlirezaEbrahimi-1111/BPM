@@ -140,7 +140,7 @@ try {
     error_log("reject-deadline error: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'خطای سرور: ' . $e->getMessage()
+        'message' => 'خطای سرور'
     ]);
 }
 ?>

@@ -9,6 +9,17 @@
 // وب که در footer/header لود می‌شود — van/events.najva.com).
 if (!headers_sent()) {
     header("Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://van.najva.com https://cdn.najva.com; style-src 'self'; img-src 'self' data: https://computeryekta.com https://*.najva.com; font-src 'self' data:; connect-src 'self' https://api.ipify.org https://events.najva.com https://van.najva.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self';");
+
+    // هدرهای امنیتیِ پایه (این‌ها چیزی را نمی‌شکنند):
+    header('X-Frame-Options: SAMEORIGIN');            // ضدِ clickjacking — قاب‌شدن فقط از همین دامنه
+    header('X-Content-Type-Options: nosniff');        // مرورگر نوعِ فایل را حدس نزند
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    // HSTS — سایت همیشه HTTPS است (ریدایرکتِ .htaccess). یک سال، بدون preload/includeSubDomains.
+    if (($_SERVER['HTTPS'] ?? '') === 'on'
+        || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https'
+        || (int) ($_SERVER['SERVER_PORT'] ?? 0) === 443) {
+        header('Strict-Transport-Security: max-age=31536000');
+    }
 }
 
 if (session_status() === PHP_SESSION_NONE) {

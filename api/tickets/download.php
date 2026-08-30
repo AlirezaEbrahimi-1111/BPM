@@ -65,7 +65,7 @@ WHERE ta.id = ? AND t.deleted_at IS NULL
         exit;
     }
 
-    $filePath = $_SERVER['DOCUMENT_ROOT'] . '/uploads/tickets/' . $file['stored_name'];
+    $filePath = $_SERVER['DOCUMENT_ROOT'] . '/uploads/tickets/' . basename((string) $file['stored_name']);
 
     if (!file_exists($filePath)) {
         http_response_code(404);
@@ -73,16 +73,33 @@ WHERE ta.id = ? AND t.deleted_at IS NULL
         exit;
     }
 
-    // ارسال فایل
-    // ✅ حالتِ inline فقط برای تصاویر و فقط برای پیش‌نمایش (نه دانلود واقعی)،
-    // تا بشود مستقیماً به‌عنوان src=... تگ <img> استفاده شود
-    $isImage = strpos($file['mime_type'], 'image/') === 0;
-    $disposition = ($isImage && !empty($_GET['view'])) ? 'inline' : 'attachment';
+    // ارسال فایل — فقط تصاویرِ رَستِر می‌توانند inline پیش‌نمایش شوند (برای src=... تگ <img>).
+    // SVG و بقیهٔ نوع‌ها همیشه به‌صورتِ دانلود (attachment) تا فایلِ حاویِ اسکریپت
+    // (مثلِ SVG) روی دامنهٔ ما اجرا نشود.
+    $SAFE_INLINE = [
+        'image/png'  => 'image/png',
+        'image/jpeg' => 'image/jpeg',
+        'image/jpg'  => 'image/jpeg',
+        'image/gif'  => 'image/gif',
+        'image/webp' => 'image/webp',
+    ];
+    $storedMime = (string) ($file['mime_type'] ?? '');
+    $wantInline = !empty($_GET['view']) && isset($SAFE_INLINE[$storedMime]);
 
-    header('Content-Type: ' . $file['mime_type']);
-    header('Content-Disposition: ' . $disposition . '; filename="' . $file['original_name'] . '"');
-    header('Content-Length: ' . $file['file_size']);
-    header('Cache-Control: no-cache');
+    $rawName   = (string) ($file['original_name'] ?? 'file');
+    $asciiName = preg_replace('/[\r\n"\\\\]+/', '_', $rawName);
+    $asciiName = preg_replace('/[^\x20-\x7E]/', '_', $asciiName) ?: 'file';
+
+    header('X-Content-Type-Options: nosniff');
+    if ($wantInline) {
+        header('Content-Type: ' . $SAFE_INLINE[$storedMime]);
+        header('Content-Disposition: inline; filename="' . $asciiName . '"; filename*=UTF-8\'\'' . rawurlencode($rawName));
+    } else {
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . $asciiName . '"; filename*=UTF-8\'\'' . rawurlencode($rawName));
+    }
+    header('Content-Length: ' . (int) $file['file_size']);
+    header('Cache-Control: private, no-cache');
 
     readfile($filePath);
     exit;

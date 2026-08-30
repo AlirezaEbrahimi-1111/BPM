@@ -132,6 +132,6 @@ try {
     ob_end_clean();
     error_log("terminate-period error: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'خطای سرور']);
 }
 ?>

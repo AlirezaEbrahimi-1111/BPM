@@ -49,6 +49,7 @@ try {
     echo json_encode(['success' => true, 'activities' => $activities]);
     
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'خطا', 'error' => $e->getMessage()]);
+    error_log('[' . basename(__FILE__) . '] ' . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'خطا', 'error' => 'internal_error']);
 }
 ?>

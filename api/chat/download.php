@@ -47,7 +47,7 @@ try {
         exit;
     }
 
-    $filePath = $_SERVER['DOCUMENT_ROOT'] . '/uploads/chat/' . $file['stored_name'];
+    $filePath = $_SERVER['DOCUMENT_ROOT'] . '/uploads/chat/' . basename((string) $file['stored_name']);
 
     if (!file_exists($filePath)) {
         http_response_code(404);
@@ -55,13 +55,31 @@ try {
         exit;
     }
 
-    $isImage = strpos($file['mime_type'], 'image/') === 0;
-    $disposition = ($isImage && !empty($_GET['view'])) ? 'inline' : 'attachment';
+    // فقط تصاویرِ رَستِر inline پیش‌نمایش می‌شوند؛ SVG و بقیه همیشه دانلود.
+    $SAFE_INLINE = [
+        'image/png'  => 'image/png',
+        'image/jpeg' => 'image/jpeg',
+        'image/jpg'  => 'image/jpeg',
+        'image/gif'  => 'image/gif',
+        'image/webp' => 'image/webp',
+    ];
+    $storedMime = (string) ($file['mime_type'] ?? '');
+    $wantInline = !empty($_GET['view']) && isset($SAFE_INLINE[$storedMime]);
 
-    header('Content-Type: ' . $file['mime_type']);
-    header('Content-Disposition: ' . $disposition . '; filename="' . $file['original_name'] . '"');
-    header('Content-Length: ' . $file['file_size']);
-    header('Cache-Control: no-cache');
+    $rawName   = (string) ($file['original_name'] ?? 'file');
+    $asciiName = preg_replace('/[\r\n"\\\\]+/', '_', $rawName);
+    $asciiName = preg_replace('/[^\x20-\x7E]/', '_', $asciiName) ?: 'file';
+
+    header('X-Content-Type-Options: nosniff');
+    if ($wantInline) {
+        header('Content-Type: ' . $SAFE_INLINE[$storedMime]);
+        header('Content-Disposition: inline; filename="' . $asciiName . '"; filename*=UTF-8\'\'' . rawurlencode($rawName));
+    } else {
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . $asciiName . '"; filename*=UTF-8\'\'' . rawurlencode($rawName));
+    }
+    header('Content-Length: ' . (int) $file['file_size']);
+    header('Cache-Control: private, no-cache');
 
     readfile($filePath);
     exit;

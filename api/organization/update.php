@@ -130,5 +130,5 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     error_log("organization/update.php failed | org_id=" . ($orgId ?? 'null') . " | " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => false, 'message' => 'خطای سرور'], JSON_UNESCAPED_UNICODE);
 }

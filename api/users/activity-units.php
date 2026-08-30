@@ -76,7 +76,7 @@ try {
     echo json_encode([
         'success' => false,
         'message' => 'خطای داخلی سرور',
-        'error' => $e->getMessage()
+        'error' => 'internal_error'
     ]);
     error_log("Get user units error: " . $e->getMessage());
 }

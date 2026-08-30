@@ -71,5 +71,5 @@ try {
 
 } catch (Exception $e) {
     error_log('Delete ticket message error: ' . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => false, 'message' => 'خطا در پردازش درخواست'], JSON_UNESCAPED_UNICODE);
 }
