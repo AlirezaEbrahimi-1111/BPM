@@ -1819,7 +1819,7 @@ if (!$__me) {
                             `${u.first_name || ''} ${u.last_name || ''}`.trim() ||
                             u.phone;
                         const val = `user:${u.id}`;
-                        html += `<option value="${val}" ${selectedRaw === val ? 'selected' : ''}>${name}</option>`;
+                        html += `<option value="${escapeHtml(val)}" ${selectedRaw === val ? 'selected' : ''}>${escapeHtml(name)}</option>`;
                     });
                     html += `</optgroup>`;
                 }

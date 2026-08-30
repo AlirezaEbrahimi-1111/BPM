@@ -34,6 +34,20 @@
     function api(path) { return '../api/task-groups/' + path; }
     function toFa(n) { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
 
+    // ── ضدِ XSS: نامِ گروه خام داخلِ innerHTML می‌رفت؛ رنگ داخلِ style و آیکن
+    //    داخلِ class attribute ── همه باید پاک‌سازی/اعتبارسنجی شوند.
+    function tgEsc(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function tgSafeColor(c) {
+        return /^#[0-9a-fA-F]{3,8}$/.test(String(c || '')) ? String(c) : '#8e57fe';
+    }
+    function tgSafeIcon(i) {
+        return /^[a-zA-Z0-9 _-]{1,40}$/.test(String(i || '')) ? String(i) : 'bi bi-tag';
+    }
+
     // ---- بارگذاری گروه‌ها از سرور ----
     async function loadGroups() {
         try {
@@ -59,14 +73,14 @@
         if (orgGroups.length) {
             html += '<optgroup label="گروه‌های سازمانی">';
             orgGroups.forEach(g => {
-                html += `<option value="${g.id}" ${g.id == selectedValue ? 'selected' : ''}>${g.name}</option>`;
+                html += `<option value="${g.id}" ${g.id == selectedValue ? "selected" : ""}>${tgEsc(g.name)}</option>`;
             });
             html += '</optgroup>';
         }
         if (myGroups.length) {
             html += '<optgroup label="گروه‌های من">';
             myGroups.forEach(g => {
-                html += `<option value="${g.id}" ${g.id == selectedValue ? 'selected' : ''}>${g.name}</option>`;
+                html += `<option value="${g.id}" ${g.id == selectedValue ? "selected" : ""}>${tgEsc(g.name)}</option>`;
             });
             html += '</optgroup>';
         }
@@ -170,15 +184,17 @@
         }
         c.innerHTML = _groups.map(g => {
             const isOrg = g.scope === 'org';
+            const col = tgSafeColor(g.color);
+            const ico = tgSafeIcon(g.icon);
             return `
             <div class="gm-row">
-              <span class="gm-badge" style="background:${g.color}20;color:${g.color}">
-                <i class="${g.icon}"></i>${g.name}
+              <span class="gm-badge" style="background:${col}20;color:${col}">
+                <i class="${ico}"></i>${tgEsc(g.name)}
               </span>
               ${isOrg ? '<small class="text-muted">سازمانی</small>' : ''}
               <span class="ms-auto"></span>
-              <button class="btn btn-link btn-sm p-0" data-edit="${g.id}"><i class="bi bi-pencil"></i></button>
-              <button class="btn btn-link btn-sm text-danger p-0" data-del="${g.id}"><i class="bi bi-trash"></i></button>
+              <button class="btn btn-link btn-sm p-0" data-edit="${tgEsc(g.id)}"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-link btn-sm text-danger p-0" data-del="${tgEsc(g.id)}"><i class="bi bi-trash"></i></button>
             </div>`;
         }).join('');
 

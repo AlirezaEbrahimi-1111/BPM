@@ -65,20 +65,26 @@ function loadAndDisplayPersonnel() {
         return;
     }
 
+    // escapeِ HTML — نامِ پرسنل خام داخلِ innerHTML و attributeِ onclick می‌رفت (XSS)
+    const pfEsc = s => String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
     let html = '';
     Object.entries(personnelTaskCounts).forEach(([id, data]) => {
         const isSelected = selectedPersonnel == id;
+        const nm = String(data && data.name != null ? data.name : '');
         html += `
-            <div class="submenu-item personnel-item" 
-                 data-id="${id}"
-                 onclick="filterByPersonnel(${id}, '${data.name}')"
+            <div class="submenu-item personnel-item"
+                 data-id="${pfEsc(id)}"
+                 onclick="filterByPersonnel(${Number(id)})"
                  style="display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0.9rem; cursor: pointer; transition: all 0.2s ease; font-size: 0.85rem; ${isSelected ? 'background: rgba(142, 87, 254, 0.15); color: var(--primary); border-right: 3px solid var(--primary);' : 'border-right: 3px solid transparent;'} margin-bottom: 0.2rem; border-radius: 0;">
                 <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1; min-width: 0;">
                     <div style="width: 24px; height: 24px; border-radius: 50%; background: #8e57fe; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.7rem; flex-shrink: 0;">
-                        ${data.name.charAt(0)}
+                        ${pfEsc(nm.charAt(0))}
                     </div>
                     <span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        ${data.name}
+                        ${pfEsc(nm)}
                     </span>
                 </div>
                 <span style="background: ${isSelected ? 'var(--primary)' : '#e2e8f0'}; color: ${isSelected ? 'white' : 'var(--text-dark)'}; padding: 0.25rem 0.6rem; border-radius: 10px; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; margin-right: 0.4rem;">
@@ -97,12 +103,22 @@ function loadAndDisplayPersonnel() {
 
 function filterByPersonnel(personnelId, personnelName) {
     selectedPersonnel = personnelId;
-    
+
     closeAllDropdowns();
-    
+
+    // نام از onclick حذف شد (جلوگیری از تزریق)؛ از روی داده بازیابی می‌شود
+    if (personnelName == null && typeof personnelTaskCounts !== 'undefined' && personnelTaskCounts[personnelId]) {
+        personnelName = personnelTaskCounts[personnelId].name;
+    }
+    const firstName = String(personnelName == null ? '' : personnelName).split(' ')[0];
+
     const btn = document.querySelector('button[onclick*="toggleDropdown(\'personnelDropdown\')"]');
     if (btn) {
-        btn.innerHTML = `<i class="bi bi-funnel-fill"></i> <span style="font-size: 0.8rem;">${personnelName.split(' ')[0]}</span>`;
+        const lbl = document.createElement('span');
+        lbl.style.fontSize = '0.8rem';
+        lbl.textContent = firstName;
+        btn.innerHTML = '<i class="bi bi-funnel-fill"></i> ';
+        btn.appendChild(lbl);
         btn.style.borderColor = 'var(--primary)';
         btn.style.color = 'var(--primary)';
     }

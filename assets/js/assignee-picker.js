@@ -386,16 +386,21 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
         }
 
         function _itemHTML(value, label, meta, type, avatarCls, checked) {
-            const esc = str => String(str).replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            // escapeِ کاملِ HTML — قبلاً فقط " و < را می‌گرفت و روی متنِ دیده‌شونده
+            // (نامِ کاربر) اصلاً اعمال نمی‌شد → XSSِ ذخیره‌شده از راهِ نامِ کاربر.
+            const esc = str => String(str == null ? '' : str)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
             const checkboxHTML = _isMulti
                 ? `<input type="checkbox" class="form-check-input ap-check" tabindex="-1" style="pointer-events:none" ${checked ? 'checked' : ''}>`
                 : '';
-            return `<div class="ap-item" data-type="${type}" data-value="${esc(value)}" data-label="${esc(label)}">
+            const initial = esc(String(label == null ? '' : label).charAt(0));
+            return `<div class="ap-item" data-type="${esc(type)}" data-value="${esc(value)}" data-label="${esc(label)}">
   ${checkboxHTML}
-  <div class="ap-avatar ${avatarCls}">${label.charAt(0)}</div>
+  <div class="ap-avatar ${esc(avatarCls)}">${initial}</div>
   <div class="ap-item-body">
-    <div class="ap-item-name">${label}</div>
-    ${meta ? `<div class="ap-item-meta">${meta}</div>` : ''}
+    <div class="ap-item-name">${esc(label)}</div>
+    ${meta ? `<div class="ap-item-meta">${esc(meta)}</div>` : ''}
   </div>
 </div>`;
         }
@@ -430,9 +435,11 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
         /* ── نمایشِ افرادِ انتخابی زیرِ لیست (فقط حالتِ چندانتخابی) ─────── */
         function _renderChips() {
             if (!_chips) return;
-            const esc = str => String(str).replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            const esc = str => String(str == null ? '' : str)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
             _chips.innerHTML = Object.entries(_selectedMulti).map(([id, label]) =>
-                `<span class="ap-chip">${esc(label)}<span class="ap-chip-remove bi bi-x-lg" data-id="${id}"></span></span>`
+                `<span class="ap-chip">${esc(label)}<span class="ap-chip-remove bi bi-x-lg" data-id="${esc(id)}"></span></span>`
             ).join('');
             _chips.querySelectorAll('.ap-chip-remove').forEach(el => {
                 el.addEventListener('click', () => {
