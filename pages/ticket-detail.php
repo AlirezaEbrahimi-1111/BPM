@@ -994,7 +994,7 @@ if (!$__me) {
                 var msgImages = imagesByMessage[m.id] || [];
                 if (msgImages.length) {
                     imagesHtml = '<div class="msg-images">' + msgImages.map(function(a) {
-                        var url = '../api/tickets/download.php?id=' + a.id + '&token=' + token + '&view=1';
+                        var url = '../api/tickets/download.php?id=' + a.id + '&view=1';
                         return '<img class="msg-image" src="' + url + '" alt="' + esc(a.original_name) +
                             '" loading="lazy" onclick="openImagePreview(' + a.id + ')">';
                     }).join('') + '</div>';
@@ -1049,7 +1049,7 @@ if (!$__me) {
             var isImage = a.mime_type && a.mime_type.indexOf('image/') === 0;
 
             if (isImage) {
-                var thumbUrl = '../api/tickets/download.php?id=' + a.id + '&token=' + token + '&view=1';
+                var thumbUrl = '../api/tickets/download.php?id=' + a.id + '&view=1';
                 return '<div class="att-thumb" title="' + esc(a.original_name) + '" onclick="openImagePreview(' + a.id + ')">' +
                     '<img src="' + thumbUrl + '" alt="' + esc(a.original_name) + '" loading="lazy"></div>';
             }
@@ -1234,13 +1234,13 @@ if (!$__me) {
         // ─── دانلود فایل ───
 function downloadFile(id) {
     var token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
-    window.open('../api/tickets/download.php?id=' + id + '&token=' + token, '_blank');
+    window.open('../api/tickets/download.php?id=' + id, '_blank');
 }
 
 // ─── پیش‌نمایشِ تصویر در مودال ───
 function openImagePreview(id) {
     var token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
-    document.getElementById('imgPreviewImg').src = '../api/tickets/download.php?id=' + id + '&token=' + token + '&view=1';
+    document.getElementById('imgPreviewImg').src = '../api/tickets/download.php?id=' + id + '&view=1';
     document.getElementById('imgPreviewDownloadBtn').onclick = function() { downloadFile(id); };
     new bootstrap.Modal(document.getElementById('imgPreviewModal')).show();
 }

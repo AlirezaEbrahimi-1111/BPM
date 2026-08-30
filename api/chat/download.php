@@ -11,13 +11,20 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // توکن از URL برای نمایشِ مستقیم داخلِ <img>
-    if (empty($_SERVER['HTTP_AUTHORIZATION']) && !empty($_GET['token'])) {
-        $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ' . $_GET['token'];
-    }
-
+    // احراز هویت: اول هدرِ Authorization (فراخوانیِ fetch)، بعد سشنِ مرورگر
+    // (برای <img src> که هدر نمی‌فرستد). دیگر JWTِ کامل در query-string نمی‌آید —
+    // قبلاً ?token=<JWT> در لاگِ سرور و DOM نشت می‌کرد.
     $auth = new Auth($db);
     $user_id = $auth->getUserFromToken();
+    if (!$user_id) {
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
+        if (!empty($_SESSION['user_id'])) {
+            $user_id = (int) $_SESSION['user_id'];
+        }
+        if (function_exists('session_write_close')) {
+            session_write_close();
+        }
+    }
     if (!$user_id) {
         http_response_code(401);
         echo json_encode(['success' => false, 'message' => 'عدم احراز هویت']);

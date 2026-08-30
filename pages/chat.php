@@ -3384,11 +3384,11 @@ if (!$__me) {
                 var imagesHtml = '',
                     filesHtml = '';
                 (m.attachments || []).forEach(a => {
-                    var url = '../api/chat/download.php?id=' + a.id + '&token=' + authToken + '&view=1';
+                    var url = '../api/chat/download.php?id=' + a.id + '&view=1';
                     if (a.is_image) {
                         imagesHtml += '<img src="' + url + '" alt="' + esc(a.original_name) + '" onclick="window.open(\'' + url + '\',\'_blank\')">';
                     } else {
-                        var dlUrl = '../api/chat/download.php?id=' + a.id + '&token=' + authToken;
+                        var dlUrl = '../api/chat/download.php?id=' + a.id;
                         filesHtml += '<div class="chat-bubble-file" onclick="window.open(\'' + dlUrl + '\',\'_blank\')">' +
                             '<i class="bi bi-file-earmark"></i><span>' + esc(a.original_name) + '</span></div>';
                     }
@@ -4129,7 +4129,7 @@ if (!$__me) {
             if (images.length) {
                 html += '<div class="chat-media-grid">';
                 images.forEach(f => {
-                    var url = '../api/chat/download.php?id=' + f.id + '&token=' + authToken + '&view=1';
+                    var url = '../api/chat/download.php?id=' + f.id + '&view=1';
                     html += '<div class="chat-media-grid-item" onclick="window.open(\'' + url + '\',\'_blank\')" title="' + esc(f.original_name) + '">' +
                         '<img src="' + url + '" alt="' + esc(f.original_name) + '"></div>';
                 });
@@ -4138,7 +4138,7 @@ if (!$__me) {
             if (files.length) {
                 html += '<div class="chat-media-file-list">';
                 files.forEach(f => {
-                    var dlUrl = '../api/chat/download.php?id=' + f.id + '&token=' + authToken;
+                    var dlUrl = '../api/chat/download.php?id=' + f.id;
                     html += '<div class="chat-media-file-row" onclick="window.open(\'' + dlUrl + '\',\'_blank\')">' +
                         '<i class="bi bi-file-earmark"></i>' +
                         '<div class="chat-media-file-info">' +
@@ -4606,7 +4606,7 @@ if (!$__me) {
                         return;
                     }
                     grid.innerHTML = images.map(function(f) {
-                        var url = '../api/chat/download.php?id=' + f.id + '&token=' + authToken + '&view=1';
+                        var url = '../api/chat/download.php?id=' + f.id + '&view=1';
                         return '<div class="chat-media-grid-item" onclick="window.open(\'' + url + '\',\'_blank\')" title="' + esc(f.original_name) + '">' +
                             '<img src="' + url + '" alt="' + esc(f.original_name) + '"></div>';
                     }).join('');
@@ -4811,7 +4811,7 @@ if (!$__me) {
                         return;
                     }
                     grid.innerHTML = images.map(function(f) {
-                        var url = '../api/chat/download.php?id=' + f.id + '&token=' + authToken + '&view=1';
+                        var url = '../api/chat/download.php?id=' + f.id + '&view=1';
                         return '<div class="chat-media-grid-item" onclick="window.open(\'' + url + '\',\'_blank\')" title="' + esc(f.original_name) + '">' +
                             '<img src="' + url + '" alt="' + esc(f.original_name) + '"></div>';
                     }).join('');
