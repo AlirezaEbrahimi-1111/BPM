@@ -26,7 +26,9 @@ try {
     // ── بررسی سقف تعداد کاربران مجاز ──
     if ($current_org_id) {
         // تعداد کاربران فعلی سازمان
-        $countStmt = $db->prepare("SELECT COUNT(*) as total FROM users WHERE organization_id = ?");
+        // فقط کاربرانِ حذف‌نشده شمرده شوند — هم‌راستا با api/admin/check-user-limit.php.
+        // قبلاً کاربرانِ soft-delete شده هم در سقفِ اشتراک حساب می‌شدند.
+        $countStmt = $db->prepare("SELECT COUNT(*) as total FROM users WHERE organization_id = ? AND is_deleted = 0");
         $countStmt->execute([$current_org_id]);
         $currentCount = (int)$countStmt->fetch(PDO::FETCH_ASSOC)['total'];
 
