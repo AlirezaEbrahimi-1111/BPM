@@ -637,7 +637,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
 
     <!-- jQuery -->
-    <script src="<?= asset('../assets/js/cdn/jquery-3.6.0.min.js') ?>"></script>
+    <script src="<?= asset('../assets/js/cdn/jquery.min.js') ?>"></script>
 
     <!-- تقویم شمسی -->
     <script src="<?= asset('../assets/js/cdn/persian-date.min.js') ?>"></script>

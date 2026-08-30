@@ -165,7 +165,7 @@ if (!$__me) {
 
     <!-- Bootstrap JS -->
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
-    <script src="<?= asset('../assets/js/cdn/jquery-3.6.0.min.js') ?>"></script>
+    <script src="<?= asset('../assets/js/cdn/jquery.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/table-utils.js') ?>"></script>
     <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
     <script src="<?= asset('../../assets/js/task-filters.js') ?>"></script>

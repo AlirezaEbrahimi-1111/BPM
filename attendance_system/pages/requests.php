@@ -1017,7 +1017,7 @@ function formatDateJalali($gregorianDate)
     <script src="../../assets/js/config.js"></script>
     <script src="../../assets/js/cdn/intro.min.js"></script>
     <link rel="stylesheet" href="../../assets/js/cdn/introjs.min.css">
-    <script src="../../assets/js/cdn/jquery-3.6.0.min.js"></script>
+    <script src="../../assets/js/cdn/jquery.min.js"></script>
     <script src="../../assets/js/persian-datepicker.js"></script>
     <link rel="stylesheet" href="../../assets/css/persian-datepicker.css">
     <link rel="stylesheet" href="../../assets/css/deadline-toast.css">
