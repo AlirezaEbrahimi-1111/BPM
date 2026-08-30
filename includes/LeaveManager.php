@@ -641,15 +641,24 @@ class LeaveManager
     // ===================================
     private function finalizeRequest($table, $request_id, $request)
     {
-        // وضعیت را به تأیید شده تغییر بده
+        // وضعیت را به تأیید شده تغییر بده — فقط اگر قبلاً نهایی نشده باشد.
+        // شرطِ status <> 'approved' یک قفلِ ایمنی است: اگر دو درخواستِ تأییدِ
+        // هم‌زمان (دابل‌کلیک یا دو تأییدکننده) هر دو به این‌جا برسند، فقط
+        // اولی rowCount()=1 می‌گیرد و بقیه no-op می‌شوند؛ در غیر این صورت
+        // «used_leave = used_leave + ?» دو بار اجرا شده و موجودیِ مرخصیِ
+        // کاربر اشتباه کسر می‌شد.
         $stmt = $this->db->prepare("
-            UPDATE $table 
-            SET status = 'approved', can_edit = 0, can_delete = 0 
-            WHERE id = ?
+            UPDATE $table
+            SET status = 'approved', can_edit = 0, can_delete = 0
+            WHERE id = ? AND status <> 'approved'
         ");
         $stmt->execute([$request_id]);
 
-        // اگر مرخصی بود، از موجودی کسر کن
+        if ($stmt->rowCount() === 0) {
+            return true;
+        }
+
+        // اگر مرخصی بود, از موجودی کسر کن
         if ($table == 'leave_requests') {
             $year = date('Y', strtotime($request['start_date']));
             $month = date('n', strtotime($request['start_date']));
