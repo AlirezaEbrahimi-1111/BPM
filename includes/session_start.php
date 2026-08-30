@@ -14,6 +14,15 @@ if (!headers_sent()) {
     // در آینده به بازنویسیِ همهٔ inline-scriptها با nonce نیاز دارد.
     header("Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://van.najva.com https://cdn.najva.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://computeryekta.com https://*.najva.com; font-src 'self' data:; connect-src 'self' https://api.ipify.org https://events.najva.com https://van.najva.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self';");
 
+    // CSPِ واقعیِ (enforcing) — فقط شامل دستورهایی که هیچ منبعی را محدود
+    // نمی‌کنند و در این کدبیس امکان ندارد چیزی را بشکنند: هیچ تگِ
+    // <object>/<embed>/<base> و هیچ <form action> به دامنهٔ بیرونی نداریم،
+    // و frame-ancestors همین حالا با X-Frame-Options اعمال شده. این‌ها
+    // بردارهای واقعیِ تشدیدِ XSS را می‌بندند (تزریقِ <base>، پلاگین، ربودنِ
+    // مقصدِ فرم، قاب‌شدن). دستورهای پرریسک (script-src/img-src/connect-src/…)
+    // فعلاً فقط Report-Only می‌مانند تا از نبودِ نقضِ واقعی مطمئن شویم.
+    header("Content-Security-Policy: object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self';");
+
     // هدرهای امنیتیِ پایه (این‌ها چیزی را نمی‌شکنند):
     header('X-Frame-Options: SAMEORIGIN');            // ضدِ clickjacking — قاب‌شدن فقط از همین دامنه
     header('X-Content-Type-Options: nosniff');        // مرورگر نوعِ فایل را حدس نزند
