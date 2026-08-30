@@ -4,19 +4,18 @@ header('Content-Type: application/json; charset=utf-8');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $admin_id = requireAuth();
-    
+
     $database = new Database();
     $db = $database->getConnection();
-    
-    // بررسی دسترسی ادمین
-    $checkAdmin = $db->prepare("SELECT activity_section FROM users WHERE id = ?");
-    $checkAdmin->execute([$admin_id]);
-    $admin = $checkAdmin->fetch();
-    
-    if (!$admin || $admin['activity_section'] !== 'management') {
+
+    // 🔒 سیستمِ روتینِ قدیمی چندسازمانی نیست (routine_templates ستونِ
+    // organization_id ندارد) و از رابطِ کاربری فراخوانی نمی‌شود. فقط سوپرادمین
+    // تا IDORِ بین‌سازمانی رخ ندهد. (چکِ قبلی activity_section==='management' بود.)
+    if (!in_array((int) $admin_id, getSuperAdminIds(), true)) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
         exit;
