@@ -1,3 +1,4 @@
-<FilesMatch "\.(php|sql|env|ini|log)$">
-    Require all denied
-</FilesMatch>
+# هیچ فایلی در این پوشه نباید از طریق وب قابل‌دریافت باشد.
+# (config.php / database.php فقط سمتِ سرور require می‌شوند.) قبلاً فقط بر اساسِ
+# پسوند رد می‌شد و فایل‌هایی مثلِ config.php.bak-... دانلودشدنی می‌ماندند.
+Require all denied
