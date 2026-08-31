@@ -1134,6 +1134,54 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             }
         }
 
+        /* ═══ لپ‌تاپ‌های کم‌ارتفاع (نمونهٔ رایج: ۱۳۶۶×۷۶۸) ═══
+           قالبِ «کلِ داشبورد در یک نمای بدونِ اسکرول» روی صفحه‌هایی که
+           ارتفاعِ مفیدشان کم است، هر سه ردیف را چنان فشرده می‌کرد که
+           جدولِ «کارها» فقط یکی‌دو ردیف نشان می‌داد. این‌جا:
+             ۱) ارتفاعِ ثابتِ body آزاد می‌شود ⇒ صفحه اسکرول می‌گیرد
+             ۲) ردیف‌ها و بدنهٔ کارت‌ها حداقلِ ارتفاعِ کاربردی می‌گیرند
+             ۳) عرضِ ظرف از ۷۰٪ بازتر می‌شود تا کارت‌های آماری از لبه نبُرند
+           شرط بر اساسِ ارتفاعِ خودِ پنجرهٔ مرورگر است؛ روی مانیتورهای
+           بلندتر (۱۰۸۰p و بالاتر) هیچ اثری ندارد. */
+        @media (max-height: 820px) {
+
+            html,
+            body {
+                overflow: auto;
+                height: auto;
+                display: block;
+            }
+
+            .dash-wrap {
+                flex: none;
+                min-height: 0;
+                max-width: min(1400px, 92%);
+            }
+
+            .plan-row,
+            .tasks-row,
+            .bottom-row {
+                min-height: 0;
+            }
+
+            .tasks-row {
+                min-height: 340px;
+            }
+
+            .bottom-row {
+                min-height: 300px;
+            }
+
+            .tasks-row .dash-card-body,
+            .bottom-row .dash-card-body {
+                min-height: 220px;
+            }
+
+            .plan-grid {
+                gap: 32px;
+            }
+        }
+
         /* ═══════════ مودال برنامه کاری (بنفش) ═══════════ */
         :root {
             --pm-purple: #8e57fe;
