@@ -66,18 +66,54 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         cursor: default;
     }
 
+    /* خطِ عمودیِ جداکنندهٔ نامِ شرکت و نامِ کاربر. span است ولی چون فرزندِ
+       مستقیمِ فلکسِ .container-fluid است بلوکی می‌شود و width/height می‌گیرد.
+       نمایشش را JS فقط وقتی نامِ کاربر موجود باشد روشن می‌کند. */
     .header-name-divider {
-        margin: 0 !important;
+        width: 1px;
+        height: 22px;
+        margin: 0 9px;
+        background: rgba(255, 255, 255, .35);
+        align-self: center;
+        flex-shrink: 0;
     }
 
-    /* 🆕 موبایل: نامِ کاربر کنارِ نامِ سازمان جا نمی‌شد و هدر رو بهم
-       می‌ریخت؛ روی صفحه‌های باریک کاملاً از نوارِ بالا حذف می‌شه.
-       دسکتاپ دست‌نخورده می‌مونه (نامِ کاربر همون‌جای همیشگی). */
-    @media (max-width: 1399px) {
+    :root[data-theme="dark"] .header-name-divider {
+        background: var(--border-soft);
+    }
+
+    /* موبایل/تبلت (≤۱۰۹۹): نامِ کاربر و خطِ جداکننده در نوارِ باریک جا
+       نمی‌شوند → حذف. */
+    @media (max-width: 1099px) {
 
         #headerUserFullName,
-        #headerNameDivider {
+        .header-name-divider {
             display: none !important;
+        }
+    }
+
+    /* لپ‌تاپ (۱۱۰۰–۱۳۹۹): نام‌ونام‌خانوادگیِ کاربرِ جاری کنارِ نامِ شرکت،
+       بعد از خطِ عمودی — مثلِ دسکتاپ. با order:2 چسبیده به .navbar-brand
+       (آن هم order:2) می‌نشیند؛ فاصلهٔ وسطِ هدر از «بعد از لوگو» به «بعد
+       از نام» منتقل می‌شود تا لوگو + خط + نام کنارِ هم بمانند و گروهِ
+       آیکن‌ها + دکمهٔ حضور همچنان سمتِ چپ باشند. */
+    @media (min-width: 1100px) and (max-width: 1399px) {
+
+        #headerNameDivider,
+        #headerUserFullName {
+            order: 2;
+        }
+
+        #headerUserFullName {
+            margin-left: auto;
+        }
+
+        .navbar-brand {
+            margin-left: 0 !important;
+        }
+
+        #attendanceContainer {
+            margin-left: auto;
         }
     }
 
@@ -533,7 +569,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         <a class="navbar-brand ms-auto" href="../../pages/dashboard-manager.php">
             <span id="userName" class="me-2"><?php echo isset($_SESSION['organization_name']) ? htmlspecialchars($_SESSION['organization_name']) : 'کاربر جاری'; ?></span>
         </a>
-        <span class="navbar-divider header-name-divider" id="headerNameDivider" style="display:none;"></span>
+        <span class="header-name-divider" id="headerNameDivider" style="display:none;"></span>
         <span id="headerUserFullName" style="display:none;"></span>
         <script>
             /* نام‌ونام‌خانوادگیِ کاربر از localStorage.user_info (نه سشنِ سرور) —
