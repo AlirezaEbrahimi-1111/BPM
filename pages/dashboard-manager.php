@@ -159,6 +159,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             min-height: 0;
             overflow-y: auto;
             direction: ltr;
+            
         }
 
         .dash-card-body>* {
@@ -1084,6 +1085,12 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             .bottom-row {
                 height: 330px;
                 overflow: hidden;
+            }
+
+            /* سقفِ ارتفاعِ بدنهٔ هر کارت — هم دارک هم لایت (این بلوک به تم
+               وابسته نیست). محتوای بیشتر داخلِ خودِ بدنه اسکرول می‌خورد. */
+            .dash-card-body {
+                max-height: 300px !important;
             }
 
             .plan-grid {
