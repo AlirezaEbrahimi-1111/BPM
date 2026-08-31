@@ -104,16 +104,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             order: 2;
         }
 
+        /* تنها منبعِ فاصلهٔ وسطِ هدر: بعد از نامِ کاربر. (قبلاً یک
+           margin-left:auto دومی هم روی #attendanceContainer بود که فضا را
+           نصف می‌کرد و دکمهٔ حضور را وسطِ هدر معلق می‌گذاشت.) */
         #headerUserFullName {
             margin-left: auto;
         }
 
         .navbar-brand {
             margin-left: 0 !important;
-        }
-
-        #attendanceContainer {
-            margin-left: auto;
         }
     }
 
