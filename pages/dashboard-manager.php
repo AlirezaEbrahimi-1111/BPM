@@ -1077,16 +1077,13 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 min-height: 0;
             }
 
-            /* هر دو ردیف هم‌اندازه — بخش‌های ردیفِ پایین دقیقاً به‌اندازهٔ
-               «کارها» و «فرآیندهای جاری» می‌شوند، نه بزرگ‌تر */
+            /* هر دو ردیف، ارتفاعِ ثابتِ یکسان. کارت‌های ردیفِ پایین دیگر
+               برای «نمایشِ همهٔ محتوا» بلند نمی‌شوند — محتوای اضافه داخلِ
+               خودِ کارت (.dash-card-body با overflow-y:auto) اسکرول می‌خورد. */
             .tasks-row,
             .bottom-row {
-                min-height: 330px;
-            }
-
-            .tasks-row .dash-card-body,
-            .bottom-row .dash-card-body {
-                min-height: 220px;
+                height: 330px;
+                overflow: hidden;
             }
 
             .plan-grid {
