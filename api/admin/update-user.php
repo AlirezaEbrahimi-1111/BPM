@@ -77,39 +77,61 @@ if ($isSelf || !$orgWide) {
 try {
     $db->beginTransaction();
 
+    // مقادیرِ فعلیِ کاربر — پایه‌یِ «هر ستونی که در درخواست نیامده، دست‌نخورده بماند».
+    $stmtOld = $db->prepare('SELECT * FROM users WHERE id = ?');
+    $stmtOld->execute([$uid]);
+    $oldData = $stmtOld->fetch(PDO::FETCH_ASSOC) ?: [];
+
+    // 🐞 رفعِ باگِ داده‌رفت: قبلاً این آرایه برای هر فیلد از الگوی
+    // «$input['x'] ?? <پیش‌فرضِ ثابت>» استفاده می‌کرد و کلِ ردیفِ users را
+    // بازنویسی می‌کرد. فرمِ «ویرایش کاربر» بعضی ستون‌ها را اصلاً نمی‌فرستد
+    // (shift_count, daily_salary, priority, official_code, manager_code)،
+    // پس هر بار که فقط نام/موبایل عوض می‌شد، shift_count به ۱ و
+    // daily_salary به ۰ و ... ری‌ست می‌شد — کاربرِ دوشیفته یک‌شیفته می‌شد.
+    // حالا: اگر کلید در $input نبود، مقدارِ فعلیِ دیتابیس نگه داشته می‌شود؛
+    // اگر بود (حتی null، مثلِ پاک‌کردنِ عمدیِ شیفتِ ۲) همان اعمال می‌شود.
+    $keep = fn(string $k, $default = null) =>
+        array_key_exists($k, $input) ? $input[$k] : ($oldData[$k] ?? $default);
+
     // ─── ۱. بروزرسانی اطلاعات پایه ─────────────────────
     $fields = [
         'first_name'          => $input['first_name'],
         'last_name'           => $input['last_name'],
         'phone'               => $input['phone'],
-        'email'               => $input['email'] ?? null,
-        'username'            => $input['username'] ?? null,
-        'official_code'       => $input['official_code'] ?? null,
-        'activity_section'    => $input['activity_section'] ?? 'public',
+        'email'               => $keep('email'),
+        'username'            => $keep('username'),
+        'official_code'       => $keep('official_code'),
+        'activity_section'    => $keep('activity_section', 'public'),
         'role'                => $input['role'] ?? 'employee',
-        'priority'            => $input['priority'] ?? 'medium',
-        'is_active'           => isset($input['is_active']) ? (int)$input['is_active'] : 1,
+        'priority'            => $keep('priority', 'medium'),
+        'is_active'           => isset($input['is_active']) ? (int)$input['is_active'] : (int)($oldData['is_active'] ?? 1),
         // شیفت
-        'shift_type'          => $input['shift_type'] ?? 'single',
-        'daily_work_hours'    => $input['daily_work_hours'] ?? 8.00,
-        'shift_count'         => $input['shift_count'] ?? 1,
-        'shift_1_start'       => $input['shift_1_start'] ?? '08:00:00',
-        'shift_1_end'         => $input['shift_1_end']   ?? '18:00:00',
-        'shift_2_start'       => $input['shift_2_start'] ?? null,
-        'shift_2_end'         => $input['shift_2_end']   ?? null,
-        'monthly_salary'      => $input['monthly_salary'] ?? 0,
-        'daily_salary'        => $input['daily_salary']   ?? 0,
+        'shift_type'          => $keep('shift_type', 'single'),
+        'daily_work_hours'    => $keep('daily_work_hours', 8.00),
+        'shift_count'         => $keep('shift_count', 1),
+        'shift_1_start'       => $keep('shift_1_start', '08:00:00'),
+        'shift_1_end'         => $keep('shift_1_end', '18:00:00'),
+        'shift_2_start'       => $keep('shift_2_start'),
+        'shift_2_end'         => $keep('shift_2_end'),
+        'monthly_salary'      => $keep('monthly_salary', 0),
+        'daily_salary'        => $keep('daily_salary', 0),
         // دسترسی‌ها
-        'can_create_routine'  => (int)($input['can_create_routine']  ?? 0),
-        'can_create_workflow' => (int)($input['can_create_workflow'] ?? 0),
-        'is_manager'          => (int)($input['is_manager']          ?? 0),
-        'is_supervisor'       => (int)($input['is_supervisor']       ?? 0),
+        'can_create_routine'  => (int) $keep('can_create_routine', 0),
+        'can_create_workflow' => (int) $keep('can_create_workflow', 0),
+        'is_manager'          => (int) $keep('is_manager', 0),
+        'is_supervisor'       => (int) $keep('is_supervisor', 0),
         // سلسله مراتب
-        'manager_id'          => $input['manager_id']       ?? null,
-        'manager_code'        => $input['manager_code']     ?? null,
-        'manager_name'        => $input['manager_name']     ?? null,
-        'manager_lastname'    => $input['manager_lastname'] ?? null,
+        'manager_id'          => $keep('manager_id'),
+        'manager_code'        => $keep('manager_code'),
+        'manager_name'        => $keep('manager_name'),
+        'manager_lastname'    => $keep('manager_lastname'),
     ];
+
+    // shift_count همیشه از shift_type مشتق شود تا این دو ستون هیچ‌وقت واگرا
+    // نشوند. فرمِ ویرایشِ کاربر فقط shift_type (single/double) را می‌فرستد؛
+    // سیستمِ حضور و غیاب اما از shift_count می‌خواند. پس هر بار روی همین یک
+    // منبعِ حقیقت هم‌ترازشان می‌کنیم.
+    $fields['shift_count'] = ($fields['shift_type'] === 'double') ? 2 : 1;
 
     // رمز عبور (اختیاری)
     if (!empty($input['password'])) {
@@ -122,10 +144,7 @@ try {
         $fields['password'] = password_hash($input['password'], PASSWORD_BCRYPT);
     }
 
-    // خواندن مقادیر قبلی برای لاگ
-    $stmtOld = $db->prepare('SELECT * FROM users WHERE id = ?');
-    $stmtOld->execute([$uid]);
-    $oldData = $stmtOld->fetch(PDO::FETCH_ASSOC);
+    // $oldData بالاتر (قبل از ساختِ $fields) خوانده شد و برای لاگِ تغییرات هم همان به‌کار می‌رود.
 
     $setParts = array_map(fn($k) => "`$k` = :$k", array_keys($fields));
     $sql = 'UPDATE users SET ' . implode(', ', $setParts) . ' WHERE id = :__id';
