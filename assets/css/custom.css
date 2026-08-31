@@ -4977,10 +4977,22 @@ span.deadline-request-icon.disabled:hover {
         display: none !important;
     }
 
+    /* دکمهٔ حضور/غیاب (ثبت ورود و خروج): مثلِ دسکتاپ کنارِ آیکن‌ها،
+       نه چسبیده به نامِ شرکت. با order، بعد از همبرگر/لوگو و درست کنارِ
+       گروهِ آیکن‌ها می‌نشیند (فاصلهٔ وسط را همان margin-left:auto ِ لوگو
+       می‌سازد) و یک خطِ عمودیِ جداکننده بینِ خودش و آیکن‌ها می‌گیرد. */
+    #attendanceContainer {
+        order: 3;
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+        border-left: 1px solid rgba(255, 255, 255, .35);
+    }
+
     /* آیکون‌های پروفایل/notification/خروج: نمایش در موبایل */
     .navbar-nav.me-0 {
         display: flex !important;
-        order: 3;
+        order: 4;
         flex-direction: row;
         margin-right: 0;
         gap: 0;
