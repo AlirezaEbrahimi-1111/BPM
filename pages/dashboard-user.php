@@ -3087,6 +3087,16 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 const link = `task-detail.php?id=${t.id}`;
                 const safe = esc(t.title || '');
                 const acts = pmActions(t);
+                // آیکنِ یادآوری فقط در تبِ «کارهای واگذار شده»، وقتی مسئولِ
+                // کار شخصِ دیگری‌ست و کار هنوز باز است
+                const remWho = esc([t.assignee_first_name, t.assignee_last_name].filter(Boolean).join(' '));
+                const canRemind = currentTab === 'delegated'
+                    && t.assignee_id
+                    && Number(t.assignee_id) !== Number(currentUser.id)
+                    && t.status !== 'completed' && t.status !== 'approved';
+                const remindBtn = canRemind
+                    ? `<button class="btn-remind-overview" title="یادآوری به مسئول" onclick="event.stopPropagation();sendReminder(${t.id},'${safe.replace(/'/g, "\\'")}','${remWho.replace(/'/g, "\\'") || 'نامشخص'}')"><i class="bi bi-bell"></i></button>`
+                    : '';
 
                 return `<tr onclick="location.href='${link}'">
                 <td>
@@ -3101,7 +3111,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 </td>
                 <td class="td-deadline">${faDate(TF.effectiveDue(t))}</td>
                 <td class="td-status">${TF.statusBadge(t, currentUser)}</td>
-                <td class="td-ops">${rowMenuHtml(t.id, acts)}</td>
+                <td class="td-ops">${remindBtn}${rowMenuHtml(t.id, acts)}</td>
             </tr>`;
             }).join('');
         }

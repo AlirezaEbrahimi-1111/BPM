@@ -68,7 +68,7 @@ const AssigneePicker = (() => {
 .ap-wrap{position:relative;width:100%}
 .ap-input-row{display:flex;align-items:center;position:relative}
 .ap-input{
-  width:100%;padding:7px 36px 7px 32px;
+  width:100%;padding:7px 42px 7px 32px;
   border:1px solid var(--bs-border-color,#dee2e6);
   border-radius:6px;font-size:13px;font-family:inherit;outline:none;
   background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529);

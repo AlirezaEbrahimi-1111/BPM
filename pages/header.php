@@ -451,6 +451,59 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         border-bottom-color: #b492ff;
     }
 
+    /* پنلِ اعلان‌ها کمی عریض‌تر تا هر سه تب راحت جا شوند (موقعیتِ افقی‌اش
+       در setupHdrPanel به‌صورتِ پویا زیرِ آیکنِ زنگوله تنظیم می‌شود). */
+    #hdrPanelMenu.notification-dropdown {
+        width: 440px !important;
+    }
+
+    /* «مشاهدهٔ همه…» در هر سه تب داخلِ یک کارتِ حاشیه‌دار */
+    #hdrPanelMenu .ann-dropdown-footer {
+        padding: 10px 12px 12px;
+        border-top: 1px solid rgba(142, 87, 254, 0.12);
+    }
+
+    #hdrPanelMenu .ann-dropdown-footer a {
+        display: block;
+        padding: 9px 14px;
+        border: 1px solid var(--border-soft, #e5e7eb);
+        border-radius: 10px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #8e57fe;
+        text-decoration: none;
+        transition: background .15s, border-color .15s;
+    }
+
+    #hdrPanelMenu .ann-dropdown-footer a:hover {
+        background: rgba(142, 87, 254, 0.06);
+        border-color: #8e57fe;
+        text-decoration: none;
+    }
+
+    :root[data-theme="dark"] #hdrPanelMenu .ann-dropdown-footer a {
+        border-color: var(--border-soft);
+        color: #b492ff;
+    }
+
+    /* آیکن‌های هدر (چت/زنگوله/پروفایل) هم‌تراز؛ زنگوله ~۱۰٪ بزرگ‌تر از چت */
+    .navbar-nav.me-0 .nav-link.settings-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .navbar-nav.me-0 .settings-btn>i {
+        line-height: 1;
+        vertical-align: middle;
+    }
+
+    .navbar-nav.me-0 .notification-bell {
+        font-size: 1.32rem;
+        line-height: 1;
+        vertical-align: middle;
+    }
+
     /* ردیفِ تیکت در پِینِ تیکت‌ها — بدونِ خطِ جداکننده (مثلِ اطلاعیه‌ها) */
     .hdr-ticket-item {
         display: block;
@@ -789,7 +842,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 
                 <!-- تب‌بار (RTL: از راست) تیکت‌ها | اطلاعیه‌های سازمانی | اعلان‌ها -->
                 <div class="hdr-tabs">
-                    <button type="button" class="hdr-tab active" data-tab="tickets" onclick="hdrSwitchTab('tickets')">
+                    <button type="button" class="hdr-tab" data-tab="tickets" onclick="hdrSwitchTab('tickets')">
                         <i class="bi bi-headset"></i><span>تیکت‌ها</span>
                         <span class="hdr-tab-badge hidden" data-badge="tickets">0</span>
                     </button>
@@ -797,14 +850,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         <i class="bi bi-megaphone"></i><span>اطلاعیه‌های سازمانی</span>
                         <span class="hdr-tab-badge hidden" data-badge="ann">0</span>
                     </button>
-                    <button type="button" class="hdr-tab" data-tab="notif" onclick="hdrSwitchTab('notif')">
+                    <button type="button" class="hdr-tab active" data-tab="notif" onclick="hdrSwitchTab('notif')">
                         <i class="bi bi-bell"></i><span>اعلان‌ها</span>
                         <span class="hdr-tab-badge hidden" data-badge="notif">0</span>
                     </button>
                 </div>
 
                 <!-- پِینِ اعلان‌ها -->
-                <div class="hdr-pane" id="notificationDropdownMenu">
+                <div class="hdr-pane active" id="notificationDropdownMenu">
                     <div class="notification-header">
                         <span>اعلان‌ها</span>
                         <button type="button" class="mark-all-link" id="notifMarkAllBtn" onclick="notifMarkAllRead()" disabled>
@@ -828,7 +881,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         </div>
                     </div>
                     <div class="ann-dropdown-footer">
-                        <a href="/pages/notifications.php">مشاهده همه اعلان‌ها ←</a>
+                        <a href="/pages/notifications.php">مشاهده همه اعلان‌ها <i class="bi bi-chevron-left"></i></a>
                     </div>
                 </div>
 
@@ -857,12 +910,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         </div>
                     </div>
                     <div class="ann-dropdown-footer">
-                        <a href="/pages/announcements.php">مشاهده همه اطلاعیه‌های سازمانی ←</a>
+                        <a href="/pages/announcements.php">مشاهده همه اطلاعیه‌های سازمانی <i class="bi bi-chevron-left"></i></a>
                     </div>
                 </div>
 
                 <!-- پِینِ تیکت‌ها -->
-                <div class="hdr-pane active" id="hdrTicketsPane">
+                <div class="hdr-pane" id="hdrTicketsPane">
                     <div class="notification-header">
                         <span>تیکت‌ها</span>
                     </div>
@@ -879,7 +932,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         </div>
                     </div>
                     <div class="ann-dropdown-footer">
-                        <a href="/pages/tickets.php">مشاهده همه تیکت‌ها ←</a>
+                        <a href="/pages/tickets.php">مشاهده همه تیکت‌ها <i class="bi bi-chevron-left"></i></a>
                     </div>
                 </div>
             </div>
@@ -1433,7 +1486,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
             '</div>' +
             '<div style="padding:16px 18px;overflow:auto;line-height:2;color:var(--text-strong);font-size:14px;">' + (contentHtml || '<span style="color:#9CA3AF;">متنی برای این اطلاعیه ثبت نشده است.</span>') + '</div>' +
             '<div style="padding:12px 18px;border-top:1px solid var(--border-soft);text-align:center;">' +
-            '<a href="/pages/announcements.php" style="color:#8e57fe;font-weight:700;text-decoration:none;font-size:13px;">مشاهده همه اطلاعیه‌ها ←</a>' +
+            '<a href="/pages/announcements.php" style="color:#8e57fe;font-weight:700;text-decoration:none;font-size:13px;">مشاهده همه اطلاعیه‌ها <i class="bi bi-chevron-left"></i></a>' +
             '</div>' +
             '</div>';
 
@@ -1488,7 +1541,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     }
 
     // ═══ پنلِ ادغام‌شدهٔ هدر (اعلان‌ها / اطلاعیه‌ها / تیکت‌ها) ═══
-    var hdrActiveTab = 'tickets';
+    var hdrActiveTab = 'notif';
 
     function hdrSwitchTab(tab) {
         hdrActiveTab = tab;
@@ -1605,6 +1658,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                 menu.classList.remove('show');
             } else {
                 menu.classList.add('show');
+                // لبهٔ چپِ پنل دقیقاً زیرِ آیکنِ زنگوله (نه گوشهٔ صفحه).
+                // روی موبایل به همان چیدمانِ تمام‌عرضِ CSS واگذار می‌کنیم.
+                if (window.innerWidth > 768) {
+                    var br = toggle.getBoundingClientRect();
+                    menu.style.setProperty('left', Math.max(12, Math.round(br.left)) + 'px', 'important');
+                } else {
+                    menu.style.removeProperty('left');
+                }
                 hdrPanelLoadActive();
             }
         });

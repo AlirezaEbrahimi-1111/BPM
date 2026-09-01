@@ -2904,6 +2904,13 @@ if (!$__me) {
                             style="display:none;">
                             <i class="bi bi-hourglass-split"></i>
                         </span>
+                        <span id="remindAssigneeBtn"
+                            class="deadline-request-icon"
+                            title="ارسال یادآوری به مسئول انجام"
+                            style="display:none; color:#f59e0b;"
+                            onclick="sendTaskReminder()">
+                            <i class="bi bi-bell"></i>
+                        </span>
                         <span id="pendingRequestBadge"
                             class="badge badge-info"
                             style="display:none; cursor:pointer; margin-left: 10px;">
@@ -3096,9 +3103,43 @@ ${task.overdue_periods > 0 ? `
                     }
                 }
 
+                // 🔔 آیکنِ یادآوری کنارِ موعد: فقط برای تعریف‌کننده‌ای که خودش
+                // مسئولِ کار نیست (کار را واگذار کرده) و کار هنوز باز است.
+                const remindBtn = document.getElementById('remindAssigneeBtn');
+                if (remindBtn) {
+                    const openStatus = !['completed', 'approved', 'rejected'].includes(task.status);
+                    if (isCreator && !isAssignee && task.assignee_id && openStatus) {
+                        remindBtn.style.display = 'inline-block';
+                    } else {
+                        remindBtn.style.setProperty('display', 'none', 'important');
+                    }
+                }
+
                 // بارگذاری درخواست‌های منتظر
                 loadPendingDeadlineRequests();
                 loadPendingOverdueClearRequests();
+            }
+
+            async function sendTaskReminder() {
+                const msg = window.prompt('متن یادآوری برای مسئول انجام:', 'لطفاً وضعیت این کار را بررسی کنید.');
+                if (msg === null) return;
+                try {
+                    const res = await fetch('../api/tasks/send-reminder.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({ task_id: taskId, message: msg || 'یادآوری' })
+                    });
+                    const data = await res.json();
+                    showToast(
+                        data.success ? 'یادآوری ارسال شد' : (data.message || 'خطا در ارسال یادآوری'),
+                        data.success ? 'success' : 'warning'
+                    );
+                } catch (e) {
+                    showToast('خطا در ارتباط با سرور', 'warning');
+                }
             }
 
             /**
