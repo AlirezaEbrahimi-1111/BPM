@@ -579,7 +579,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .task-table tbody tr:hover {
-            background: var(--gray-50);
+            background: rgba(142, 87, 254, 0.12);
         }
 
         .task-table td {
@@ -846,7 +846,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .routine-row:hover {
-            background: var(--gray-50);
+            background: rgba(142, 87, 254, 0.12);
         }
 
         .routine-name {
@@ -891,7 +891,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .dlg-row:hover {
-            background: var(--gray-50);
+            background: rgba(142, 87, 254, 0.12);
         }
 
         .dlg-main {
@@ -1120,13 +1120,13 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                همین بلوک بازتعریف می‌شوند */
             --dm-ink: #000;
             --dm-head-bg: #e9e9e9;
-            --dm-head-bg-hover: #d8d8d8;
+            --dm-head-bg-hover: rgba(142, 87, 254, 0.12);
         }
 
         :root[data-theme="dark"] {
             --dm-ink: var(--text-strong);
             --dm-head-bg: var(--info-box-bg);
-            --dm-head-bg-hover: var(--border-soft);
+            --dm-head-bg-hover: rgba(142, 87, 254, 0.18);
         }
 
         #planModal .modal-content,
@@ -1253,8 +1253,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-row:hover {
-            background: #8e57fe;
-            border-color: #8e57fe;
+            background: rgba(142, 87, 254, 0.12);
+            border-color: rgba(142, 87, 254, 0.12);
         }
 
         .pm-row.removing {
@@ -1377,8 +1377,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .bottleneck-row:hover {
-            background: #eeeeee8a;
-            border-color: #b6b6b6;
+            background: rgba(142, 87, 254, 0.12);
+            border-color: rgba(142, 87, 254, 0.3);
         }
 
         .bn-info {
@@ -1867,8 +1867,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .td-user-row:hover {
-            background: #eeeeee8a;
-            border-color: #b6b6b6;
+            background: rgba(142, 87, 254, 0.12);
+            border-color: rgba(142, 87, 254, 0.3);
         }
 
         .td-user-icon {
@@ -1972,8 +1972,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .pm-row:hover {
-            background: #e9e9e9;
-            border-color: #e9e9e9;
+            background: rgba(142, 87, 254, 0.12);
+            border-color: rgba(142, 87, 254, 0.12);
             cursor: pointer;
         }
 
@@ -2259,7 +2259,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 
         .ra-user:hover {
-            background: #8e57fe;
+            background: rgba(142, 87, 254, 0.12);
         }
 
         .ra-user.sel {
@@ -2342,16 +2342,24 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         :root[data-theme="dark"] .inst-prog,
         :root[data-theme="dark"] .pm-btn-ghost,
         :root[data-theme="dark"] .pm-kebab:hover,
-        :root[data-theme="dark"] .bottleneck-row:hover,
-        :root[data-theme="dark"] .td-user-row:hover,
         :root[data-theme="dark"] .tab-pin:hover,
-        :root[data-theme="dark"] .task-table tbody tr:hover,
-        :root[data-theme="dark"] .routine-row:hover,
-        :root[data-theme="dark"] .dlg-row:hover,
         :root[data-theme="dark"] #planModal .btn-close:hover,
         :root[data-theme="dark"] #weekModal .btn-close:hover,
         :root[data-theme="dark"] #monthModal .btn-close:hover {
             background: var(--info-box-bg);
+        }
+
+        /* هاورِ ردیف‌های لیست/جدول — همان بنفشِ استانداردِ هاورِ سایت
+           (نه var(--info-box-bg) که برای تیره خیلی محو بود) */
+        :root[data-theme="dark"] .bottleneck-row:hover,
+        :root[data-theme="dark"] .td-user-row:hover,
+        :root[data-theme="dark"] .task-table tbody tr:hover,
+        :root[data-theme="dark"] .routine-row:hover,
+        :root[data-theme="dark"] .dlg-row:hover,
+        :root[data-theme="dark"] .pm-row:hover,
+        :root[data-theme="dark"] .ra-user:hover {
+            background: rgba(142, 87, 254, 0.18) !important;
+            border-color: rgba(142, 87, 254, 0.35);
         }
 
         /* متن‌های ثانویه/راهنما (gray-300..400 یا هگزهای مشابه مثل #9ca3af/#d1d5db) */

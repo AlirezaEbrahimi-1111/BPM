@@ -466,11 +466,11 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .filter-chip:hover {
-            background: #d8d8d8;
+            background: rgba(142, 87, 254, 0.12);
         }
 
         :root[data-theme="dark"] .filter-chip:hover {
-            background: var(--border-soft);
+            background: rgba(142, 87, 254, 0.18);
         }
 
         .filter-chip.active {
@@ -540,11 +540,11 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .routine-filter-chip:hover {
-            background: #d8d8d8;
+            background: rgba(142, 87, 254, 0.12);
         }
 
         :root[data-theme="dark"] .routine-filter-chip:hover {
-            background: var(--border-soft);
+            background: rgba(142, 87, 254, 0.18);
         }
 
         .routine-filter-chip.active {
@@ -624,11 +624,11 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .task-table tbody tr:hover {
-            background: var(--gray-50);
+            background: rgba(142, 87, 254, 0.12);
         }
 
         :root[data-theme="dark"] .task-table tbody tr:hover {
-            background: var(--info-box-bg);
+            background: rgba(142, 87, 254, 0.18);
         }
 
         .task-table td {
@@ -907,11 +907,11 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .routine-row:hover {
-            background: var(--gray-50);
+            background: rgba(142, 87, 254, 0.12);
         }
 
         :root[data-theme="dark"] .routine-row:hover {
-            background: var(--info-box-bg);
+            background: rgba(142, 87, 254, 0.18);
         }
 
         .routine-name {
@@ -964,11 +964,11 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .dlg-row:hover {
-            background: var(--gray-50);
+            background: rgba(142, 87, 254, 0.12);
         }
 
         :root[data-theme="dark"] .dlg-row:hover {
-            background: var(--info-box-bg);
+            background: rgba(142, 87, 254, 0.18);
         }
 
         .dlg-main {
@@ -1351,15 +1351,16 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .pm-row:hover {
-            background: #8e57fe;
-            border-color: #8e57fe;
+            background: rgba(142, 87, 254, 0.12);
+            border-color: rgba(142, 87, 254, 0.12);
         }
 
         /* اسپسیفیسیتیِ override بالای تیره (root+attr+class) از .pm-row:hover
            (class+pseudo) بیشتر است؛ برای اینکه رنگ بنفشِ هاور در تم تاریک هم
            باقی بماند، اینجا دوباره تصریح می‌شود */
         :root[data-theme="dark"] .pm-row:hover {
-            border-color: #8e57fe;
+            background: rgba(142, 87, 254, 0.18);
+            border-color: rgba(142, 87, 254, 0.35);
         }
 
         .pm-row.removing {
@@ -2062,8 +2063,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .pm-row:hover {
-            background: #e9e9e9;
-            border-color: #e9e9e9;
+            background: rgba(142, 87, 254, 0.12);
+            border-color: rgba(142, 87, 254, 0.12);
             cursor: pointer;
         }
 
@@ -2376,7 +2377,11 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .ra-user:hover {
-            background: #8e57fe;
+            background: rgba(142, 87, 254, 0.12);
+        }
+
+        :root[data-theme="dark"] .ra-user:hover {
+            background: rgba(142, 87, 254, 0.18);
         }
 
         .ra-user.sel {
