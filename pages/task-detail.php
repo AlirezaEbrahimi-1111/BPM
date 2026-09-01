@@ -2907,7 +2907,7 @@ if (!$__me) {
                         <span id="remindAssigneeBtn"
                             class="deadline-request-icon"
                             title="ارسال یادآوری به مسئول انجام"
-                            style="display:none; color:#f59e0b;"
+                            style="display:none;"
                             onclick="sendTaskReminder()">
                             <i class="bi bi-bell"></i>
                         </span>

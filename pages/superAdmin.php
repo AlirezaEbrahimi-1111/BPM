@@ -125,7 +125,7 @@ foreach ($orgs as $org) {
       --ag-header-height: 46px;
       --ag-header-background-color: #e9e9e9;
       --ag-header-foreground-color: #718096;
-      --ag-row-hover-color: #e9e9e9;
+      --ag-row-hover-color: rgba(142, 87, 254, 0.12);
       --ag-border-color: #e9e9e9;
       --ag-cell-horizontal-padding: 18px;
       border-radius: 14px;

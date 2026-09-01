@@ -105,7 +105,7 @@ const AssigneePicker = (() => {
   font-size:13px;border-bottom:1px solid var(--bs-border-color-translucent,rgba(0,0,0,.07));
   transition:background .1s;white-space:nowrap}
 .ap-item:last-child{border-bottom:none}
-.ap-item:hover,.ap-item.ap-focused{background:var(--bs-secondary-bg,#f0f4ff)}
+.ap-item:hover,.ap-item.ap-focused{background:rgba(142,87,254,.12)}
 .ap-item.ap-selected{background:#e7f0ff}
 .ap-check{
   flex-shrink:0;margin:0;cursor:pointer}
@@ -158,7 +158,7 @@ const AssigneePicker = (() => {
   border-bottom-color:var(--border-soft);border-top-color:var(--border-soft)}
 :root[data-theme="dark"] .ap-item{border-bottom-color:var(--border-soft)}
 :root[data-theme="dark"] .ap-item:hover,
-:root[data-theme="dark"] .ap-item.ap-focused{background:#232a3a}
+:root[data-theme="dark"] .ap-item.ap-focused{background:rgba(142,87,254,.18)}
 :root[data-theme="dark"] .ap-item.ap-selected{background:rgba(205,184,255,.15)}
 :root[data-theme="dark"] .ap-item-name{color:var(--text-strong)}
 :root[data-theme="dark"] .ap-hint{color:var(--text-muted)}

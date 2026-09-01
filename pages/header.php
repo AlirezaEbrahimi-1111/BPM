@@ -119,7 +119,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     /* ═══ سرچ سراسری — فلشِ زیرِ هدر + کادرِ کشویی ═══ */
     .gs-toggle {
         position: fixed;
-        top: 4.2rem;
+        top: 3.5rem;
         left: 50%;
         transform: translateX(-50%);
         z-index: 1020;
@@ -414,17 +414,32 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         display: none;
     }
 
+    /* پِین به‌صورتِ ستونِ فلکس: هدر/نوارِ جستجو ثابت، لیست خودش اسکرول
+       می‌خورد، فوترِ «مشاهده همه» همیشه پایینِ پنل و دیده می‌ماند — قبلاً
+       با max-height ثابت روی لیست، هر وقت محتوا زیاد می‌شد فوتر از پنل
+       بیرون می‌افتاد و پنهان می‌شد. */
     #hdrPanelMenu .hdr-pane.active {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        max-height: 500px;
     }
 
-    /* جا شدنِ تب‌بار + هدر + نوارِ جستجو + لیست + فوترِ «مشاهده همه» با هم */
-    #hdrPanelMenu.notification-dropdown {
-        max-height: 560px !important;
+    #hdrPanelMenu .notification-header,
+    #hdrPanelMenu .notif-toolbar,
+    #hdrPanelMenu .ann-dropdown-footer {
+        flex-shrink: 0;
     }
 
     #hdrPanelMenu .notification-list-container {
-        max-height: 320px;
+        flex: 1;
+        min-height: 120px;
+        max-height: none;
+        overflow-y: auto;
+    }
+
+    /* جا شدنِ تب‌بار + پِینِ فعال با هم */
+    #hdrPanelMenu.notification-dropdown {
+        max-height: 560px !important;
     }
 
     /* حالتِ تاریکِ پنلِ ادغام‌شده (سه تب) */
@@ -452,12 +467,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     }
 
     /* پنلِ اعلان‌ها کمی عریض‌تر تا هر سه تب راحت جا شوند (موقعیتِ افقی‌اش
-       در setupHdrPanel به‌صورتِ پویا زیرِ آیکنِ زنگوله تنظیم می‌شود). */
+       در setupHdrPanel به‌صورتِ پویا زیرِ آیکنِ زنگوله تنظیم می‌شود)، و
+       چسبیده‌تر به هدر (فاصله‌ی کمتر از پایینِ نوار). */
     #hdrPanelMenu.notification-dropdown {
         width: 440px !important;
+        top: 60px !important;
     }
 
-    /* «مشاهدهٔ همه…» در هر سه تب داخلِ یک کارتِ حاشیه‌دار */
+    /* «مشاهدهٔ همه…» در هر سه تب: کارتِ حاشیه‌دار خودش کاملاً ثابت است
+       (بدونِ هاور)؛ فقط متنِ داخلش هنگامِ هاور زیرخط می‌گیرد. */
     #hdrPanelMenu .ann-dropdown-footer {
         padding: 10px 12px 12px;
         border-top: 1px solid rgba(142, 87, 254, 0.12);
@@ -472,13 +490,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         font-weight: 600;
         color: #8e57fe;
         text-decoration: none;
-        transition: background .15s, border-color .15s;
     }
 
-    #hdrPanelMenu .ann-dropdown-footer a:hover {
-        background: rgba(142, 87, 254, 0.06);
-        border-color: #8e57fe;
-        text-decoration: none;
+    #hdrPanelMenu .ann-dropdown-footer a:hover span {
+        text-decoration: underline;
     }
 
     :root[data-theme="dark"] #hdrPanelMenu .ann-dropdown-footer a {
@@ -486,7 +501,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
         color: #b492ff;
     }
 
-    /* آیکن‌های هدر (چت/زنگوله/پروفایل) هم‌تراز؛ زنگوله ~۱۰٪ بزرگ‌تر از چت */
+    /* آیکن‌های هدر (چت/زنگوله/پروفایل) هم‌تراز؛ زنگوله ~۵٪ بزرگ‌تر از چت */
     .navbar-nav.me-0 .nav-link.settings-btn {
         display: inline-flex;
         align-items: center;
@@ -499,7 +514,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
     }
 
     .navbar-nav.me-0 .notification-bell {
-        font-size: 1.32rem;
+        font-size: 1.25rem;
         line-height: 1;
         vertical-align: middle;
     }
@@ -881,7 +896,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         </div>
                     </div>
                     <div class="ann-dropdown-footer">
-                        <a href="/pages/notifications.php">مشاهده همه اعلان‌ها <i class="bi bi-chevron-left"></i></a>
+                        <a href="/pages/notifications.php"><span>مشاهده همه اعلان‌ها</span> <i class="bi bi-chevron-left"></i></a>
                     </div>
                 </div>
 
@@ -910,7 +925,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         </div>
                     </div>
                     <div class="ann-dropdown-footer">
-                        <a href="/pages/announcements.php">مشاهده همه اطلاعیه‌های سازمانی <i class="bi bi-chevron-left"></i></a>
+                        <a href="/pages/announcements.php"><span>مشاهده همه اطلاعیه‌های سازمانی</span> <i class="bi bi-chevron-left"></i></a>
                     </div>
                 </div>
 
@@ -932,7 +947,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         </div>
                     </div>
                     <div class="ann-dropdown-footer">
-                        <a href="/pages/tickets.php">مشاهده همه تیکت‌ها <i class="bi bi-chevron-left"></i></a>
+                        <a href="/pages/tickets.php"><span>مشاهده همه تیکت‌ها</span> <i class="bi bi-chevron-left"></i></a>
                     </div>
                 </div>
             </div>

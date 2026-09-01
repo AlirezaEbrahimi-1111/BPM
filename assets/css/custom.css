@@ -1631,6 +1631,8 @@ s-normal {
     --ag-range-selection-background-color: rgba(142, 87, 254, 0.10);
     --ag-input-focus-border-color: #8e57fe;
     --ag-checkbox-checked-color: #8e57fe;
+    /* هاورِ ردیف = همان رنگِ استانداردِ هاورِ سایت (dropdown-menu/زیرمنوها) */
+    --ag-row-hover-color: rgba(142, 87, 254, 0.12);
 }
 
 .ag-theme-alpine .ag-cell-focus:not(.ag-cell-range-selected),
@@ -1646,7 +1648,7 @@ s-normal {
     --ag-header-foreground-color: var(--text-strong);
     --ag-border-color: var(--border-soft);
     --ag-row-border-color: var(--border-soft);
-    --ag-row-hover-color: rgba(205, 184, 255, 0.08);
+    --ag-row-hover-color: rgba(142, 87, 254, 0.18);
     --ag-odd-row-background-color: var(--surface);
     --ag-secondary-foreground-color: var(--text-muted);
     --ag-data-color: var(--text-strong);
@@ -3203,6 +3205,12 @@ td:nth-child(2) {
     text-align: right !important;
     border: none;
     box-shadow: 0 8px 32px rgba(142, 87, 254, 0.15);
+    /* رنگِ استانداردِ هاورِ کلِ سایت روی هر لیستِ کشویی/دراپ‌داون — همان
+       رنگِ هاورِ زیرمنوهای هدر (.admin-submenu). پیش‌فرضِ بوت‌استرپ یک
+       خاکستریِ کدر بود؛ از این به بعد هر منوی کشویی جدید باید همین رنگ
+       را به‌ارث ببرد، مگر دلیلِ صریحی برای رنگِ دیگری باشد. */
+    --bs-dropdown-link-hover-bg: rgba(142, 87, 254, 0.12);
+    --bs-dropdown-link-hover-color: #8e57fe;
 }
 
 /* dropdown استاندارد بوت‌استرپ از متغیرهای داخلیِ خودش (--bs-dropdown-bg و...) استفاده می‌کند
@@ -3212,8 +3220,8 @@ td:nth-child(2) {
     --bs-dropdown-bg: var(--surface);
     --bs-dropdown-color: var(--text-strong);
     --bs-dropdown-link-color: var(--text-strong);
-    --bs-dropdown-link-hover-color: var(--text-strong);
-    --bs-dropdown-link-hover-bg: #232a3a;
+    --bs-dropdown-link-hover-color: #b492ff;
+    --bs-dropdown-link-hover-bg: rgba(142, 87, 254, 0.18);
     --bs-dropdown-border-color: var(--border-soft);
     --bs-dropdown-divider-bg: var(--border-soft);
     --bs-dropdown-link-disabled-color: var(--text-muted);
