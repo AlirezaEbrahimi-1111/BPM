@@ -1,14 +1,15 @@
 // crm-service — سرویسِ CRM با Go.
 //
 // فاز ۰: فقط دو endpoint دارد:
-//   GET /crm/api/health   → بدونِ احراز هویت، فقط سلامتِ سرویس و دیتابیس
-//   GET /crm/api/me       → با توکنِ JWTِ همان اپِ PHP، اطلاعاتِ کاربرِ جاری
+//
+//	GET /crm/api/health   → بدونِ احراز هویت، فقط سلامتِ سرویس و دیتابیس
+//	GET /crm/api/me       → با توکنِ JWTِ همان اپِ PHP، اطلاعاتِ کاربرِ جاری
 //
 // این سرویس:
-//   • همان دیتابیسِ MariaDBِ اپِ اصلی را می‌خواند (فعلاً فقط SELECT روی users).
-//   • همان توکنِ JWT (HS256) را با همان jwt_secret اعتبارسنجی می‌کند — منطق
+//   - همان دیتابیسِ MariaDBِ اپِ اصلی را می‌خواند (فعلاً فقط SELECT روی users).
+//   - همان توکنِ JWT (HS256) را با همان jwt_secret اعتبارسنجی می‌کند — منطق
 //     دقیقاً برابرِ includes/auth.php (چکِ امضا + exp + is_active + token_version).
-//   • فقط روی 127.0.0.1 گوش می‌دهد؛ از بیرون فقط از طریقِ پروکسیِ /crm/ در Apache.
+//   - فقط روی 127.0.0.1 گوش می‌دهد؛ از بیرون فقط از طریقِ پروکسیِ /crm/ در Apache.
 //
 // اجرای محلی:  go run .   (بعد از go mod tidy و ساختِ config.json)
 package main
@@ -280,6 +281,19 @@ func main() {
 	mux.HandleFunc("PUT /crm/api/customers/{id}", write(s.updateCustomer))
 	mux.HandleFunc("DELETE /crm/api/customers/{id}", write(s.deleteCustomer))
 	mux.HandleFunc("POST /crm/api/customers/import", write(s.importCustomers))
+
+	// ── تنظیماتِ فاکتور + سربرگِ فروشنده ──
+	mux.HandleFunc("GET /crm/api/inv/settings", auth(s.handleGetSettings))
+	mux.HandleFunc("PUT /crm/api/inv/settings", write(s.handlePutSettings))
+
+	// ── فاکتورِ رسمی ──
+	mux.HandleFunc("GET /crm/api/inv/invoices", auth(s.listInvoices))
+	mux.HandleFunc("GET /crm/api/inv/invoices/{id}", auth(s.getInvoice))
+	mux.HandleFunc("POST /crm/api/inv/invoices", write(s.createInvoice))
+	mux.HandleFunc("PUT /crm/api/inv/invoices/{id}", write(s.updateInvoice))
+	mux.HandleFunc("POST /crm/api/inv/invoices/{id}/approve", write(s.approveInvoice))
+	mux.HandleFunc("POST /crm/api/inv/invoices/{id}/cancel", write(s.cancelInvoice))
+	mux.HandleFunc("DELETE /crm/api/inv/invoices/{id}", write(s.deleteInvoice))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{
