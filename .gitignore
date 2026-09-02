@@ -12,5 +12,6 @@ ai-service/.env
 crm-service/config.json
 crm-service/crm-service
 crm-service/crm-service.exe
+crm-service/crm-service-linux
 find.php
 uploads/
