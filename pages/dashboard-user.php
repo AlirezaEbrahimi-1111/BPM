@@ -790,11 +790,11 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .row-menu .act-delegate i {
-            color: #8e57fe;
+            color: #2563eb;
         }
 
         .row-menu .act-extend i {
-            color: #8e57fe;
+            color: #ea580c;
         }
 
         .row-menu .empty-hint {
