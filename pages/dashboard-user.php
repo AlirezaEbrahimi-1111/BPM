@@ -105,7 +105,9 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         .dash-wrap {
             max-width: 70%;
             margin: 0 auto;
-            padding: 14px;
+            /* padding-topِ بیشتر تا فلشِ سرچِ سراسریِ زیرِ هدر روی «برنامه کاری» نیفتد
+               (مثلِ بقیهٔ صفحات که .overview-container این فاصله را دارند) */
+            padding: 28px 14px 14px;
             flex: 1;
             min-height: 0;
             display: flex;
@@ -759,10 +761,13 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 9px;
-            border-radius: 8px;
-            font-size: .765rem;
-            color: #64748b;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 9px;
+            font-size: .792rem;
+            color: var(--du-ink);
+            text-align: right;
+            transition: background .1s;
         }
 
         .row-menu button:hover {
@@ -1947,55 +1952,52 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             background: transparent;
         }
 
+        /* کادرِ عنوانِ تسک در مودالِ ماه = flex؛ متن + سه‌نقطهٔ عملیات داخلِ همین کادر */
         .mo-task-title {
             font-size: .576rem;
             color: var(--du-ink);
             background: var(--du-surface);
             border: 1px solid #f0f0f3;
             border-radius: 4px;
-            padding: 1px 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
+            padding: 1px 3px;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 1px;
         }
 
         :root[data-theme="dark"] .mo-task-title {
             border-color: var(--border-soft);
         }
 
-        .mo-cell.mo-hover .mo-task-title {
+        .mo-task-title .mo-tt-text {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+
+        .mo-cell.mo-hover .mo-task-title .mo-tt-text {
             white-space: normal;
             overflow: visible;
             text-overflow: clip;
         }
 
-        /* ردیفِ تسک در مودالِ ماه: عنوان + سه‌نقطهٔ عملیات (مثلِ مودالِ هفته) */
-        .mo-task-row {
-            display: flex;
-            align-items: center;
-            gap: 1px;
-        }
-
-        .mo-task-row .mo-task-title {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .mo-task-row .row-menu-wrap {
+        .mo-task-title .row-menu-wrap {
             flex-shrink: 0;
         }
 
-        .mo-task-row .row-kebab {
-            font-size: .62rem;
-            padding: 0 2px;
+        .mo-task-title .row-kebab {
+            font-size: .58rem;
+            padding: 0 1px;
             line-height: 1;
             color: #9ca3af;
-            border-radius: 4px;
+            border-radius: 3px;
         }
 
-        .mo-task-row .row-kebab:hover {
+        .mo-task-title .row-kebab:hover {
             background: rgba(142, 87, 254, 0.12);
             color: #8e57fe;
         }
@@ -4828,14 +4830,14 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
             if (moHoveredCell) {
                 moHoveredCell.classList.remove('mo-hover');
-                moHoveredCell.querySelectorAll('.mo-task-title[data-full]').forEach(el => {
+                moHoveredCell.querySelectorAll('.mo-tt-text[data-full]').forEach(el => {
                     el.textContent = moTruncate(el.dataset.full);
                 });
             }
 
             moHoveredCell = cell;
             cell.classList.add('mo-hover');
-            cell.querySelectorAll('.mo-task-title[data-full]').forEach(el => {
+            cell.querySelectorAll('.mo-tt-text[data-full]').forEach(el => {
                 el.textContent = el.dataset.full;
             });
 
@@ -4856,7 +4858,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         function moGridLeave() {
             if (moHoveredCell) {
                 moHoveredCell.classList.remove('mo-hover');
-                moHoveredCell.querySelectorAll('.mo-task-title[data-full]').forEach(el => {
+                moHoveredCell.querySelectorAll('.mo-tt-text[data-full]').forEach(el => {
                     el.textContent = moTruncate(el.dataset.full);
                 });
                 moHoveredCell = null;
@@ -4915,8 +4917,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     tasksHtml = shown.map(t => {
                         const full = esc(t.title || '—');
                         const moActs = pmActions(t);
-                        return `<div class="mo-task-row">
-                            <span class="mo-task-title" data-full="${full}"
+                        return `<div class="mo-task-title">
+                            <span class="mo-tt-text" data-full="${full}"
                                  onclick="location.href='task-detail.php?id=${t.id}'">${esc(moTruncate(t.title || '—'))}</span>
                             ${moActs.length ? rowMenuHtml(t.id, moActs) : ''}
                         </div>`;
