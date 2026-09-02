@@ -1814,6 +1814,35 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             text-overflow: clip;
         }
 
+        /* ردیفِ تسک در مودالِ ماه: عنوان + سه‌نقطهٔ عملیات (مثلِ مودالِ هفته) */
+        .mo-task-row {
+            display: flex;
+            align-items: center;
+            gap: 1px;
+        }
+
+        .mo-task-row .mo-task-title {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .mo-task-row .row-menu-wrap {
+            flex-shrink: 0;
+        }
+
+        .mo-task-row .row-kebab {
+            font-size: .62rem;
+            padding: 0 2px;
+            line-height: 1;
+            color: #9ca3af;
+            border-radius: 4px;
+        }
+
+        .mo-task-row .row-kebab:hover {
+            background: rgba(142, 87, 254, 0.12);
+            color: #8e57fe;
+        }
+
         .mo-more {
             font-size: .54rem;
             color: var(--pm-purple);
@@ -5115,8 +5144,12 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                     const shown = dayTasks.slice(0, 10);
                     tasksHtml = shown.map(t => {
                         const full = esc(t.title || '—');
-                        return `<div class="mo-task-title" data-full="${full}"
-                             onclick="location.href='task-detail.php?id=${t.id}'">${esc(moTruncate(t.title || '—'))}</div>`;
+                        const moActs = pmActions(t);
+                        return `<div class="mo-task-row">
+                            <span class="mo-task-title" data-full="${full}"
+                                 onclick="location.href='task-detail.php?id=${t.id}'">${esc(moTruncate(t.title || '—'))}</span>
+                            ${moActs.length ? rowMenuHtml(t.id, moActs) : ''}
+                        </div>`;
                     }).join('');
                     if (dayTasks.length > 10) {
                         tasksHtml += `<div class="mo-more" onclick="location.href='my-tasks.php?filter=day&amp;date=${moYMD(d)}'">+${toFa(dayTasks.length - 10)} مورد دیگر</div>`;
