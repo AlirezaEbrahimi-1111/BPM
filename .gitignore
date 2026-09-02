@@ -9,5 +9,8 @@ tests/config.php
 __pycache__/
 *.pyc
 ai-service/.env
+crm-service/config.json
+crm-service/crm-service
+crm-service/crm-service.exe
 find.php
 uploads/
