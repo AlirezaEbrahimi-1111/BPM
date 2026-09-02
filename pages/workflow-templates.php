@@ -900,6 +900,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
         .step-row .sr-assignee input {
             font-size: 0.8rem;
             padding: 7px 10px;
+            padding-right: 30px !important;
         }
 
         /* ── چک‌لیستِ مرحله ── */

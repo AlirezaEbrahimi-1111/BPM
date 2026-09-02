@@ -140,16 +140,6 @@ if (!headers_sent()) {
             filter: drop-shadow(0 20px 40px rgba(142, 87, 254, 0.15));
         }
 
-        /* عنوانِ نام شرکت — فقط در چیدمانِ موبایل نمایش داده می‌شود */
-        .brand-company-name {
-            display: none;
-            font-size: 20px;
-            font-weight: 800;
-            color: #1a1a2e;
-            text-align: center;
-            margin-bottom: 6px;
-        }
-
         /* ===== RIGHT SIDE — فرم لاگین ===== */
         .login-side {
             flex: 1;
@@ -648,10 +638,6 @@ if (!headers_sent()) {
                 border-bottom: none;
             }
 
-            .brand-company-name {
-                display: block;
-            }
-
             .brand-sub {
                 display: none;
             }
@@ -683,7 +669,6 @@ if (!headers_sent()) {
         }
 
         :root[data-theme="dark"] .brand-headline,
-        :root[data-theme="dark"] .brand-company-name,
         :root[data-theme="dark"] .field-label,
         :root[data-theme="dark"] .remember-label,
         :root[data-theme="dark"] .otp-phone-display b,
@@ -770,7 +755,6 @@ if (!headers_sent()) {
 
         <!-- ===== چپ: برند و تصویر ===== -->
         <div class="brand-side">
-            <h2 class="brand-company-name">یکتا همراهان ملک</h2>
             <h1 class="brand-headline">
                 مدیریت <span>یکپارچه فرآیندها</span> در یک نگاه
             </h1>
