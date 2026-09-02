@@ -79,6 +79,21 @@ return [
             return array_map(fn($v) => str_replace("''", "'", $v), $vm[1]);
         };
 
+        // بندِ DEFAULT را برای MODIFY COLUMN می‌سازد.
+        // MariaDB 10.2.7+ مقدارِ پیش‌فرضِ رشته‌ای را از قبل با کوتیشن برمی‌گرداند
+        // (مثلاً "'not_started'")؛ نسخه‌های قدیمی‌تر خام. کوتیت‌کردنِ دوباره باعثِ
+        // خطای 1067 (Invalid default value) می‌شد. این تابع هر دو حالت را می‌پوشاند.
+        $defaultClause = function ($rawDefault, string $isNullable) use ($db): string {
+            if ($rawDefault === null || strtoupper((string) $rawDefault) === 'NULL') {
+                return ($isNullable === 'YES') ? ' DEFAULT NULL' : '';
+            }
+            $t = trim((string) $rawDefault);
+            if (strlen($t) >= 2 && $t[0] === "'" && $t[strlen($t) - 1] === "'") {
+                return ' DEFAULT ' . $t;            // از قبل یک لیترالِ SQL است
+            }
+            return ' DEFAULT ' . $db->quote($t);   // مقدارِ خام → کوتیت کن
+        };
+
         // ── ۲) افزودنِ مقدارِ 'dormant' به enum ستونِ status ─────────────
         $st = $colInfo('workflow_instance_steps', 'status');
         $vals = $st ? $enumVals($st['COLUMN_TYPE']) : null;
@@ -87,12 +102,7 @@ return [
                 $vals[] = 'dormant';
                 $enumList = implode(',', array_map([$db, 'quote'], $vals));
                 $nullSql = ($st['IS_NULLABLE'] === 'YES') ? 'NULL' : 'NOT NULL';
-                $defSql  = '';
-                if ($st['COLUMN_DEFAULT'] !== null) {
-                    $defSql = ' DEFAULT ' . $db->quote($st['COLUMN_DEFAULT']);
-                } elseif ($st['IS_NULLABLE'] === 'YES') {
-                    $defSql = ' DEFAULT NULL';
-                }
+                $defSql  = $defaultClause($st['COLUMN_DEFAULT'], $st['IS_NULLABLE']);
                 $db->exec("ALTER TABLE `workflow_instance_steps`
                     MODIFY COLUMN `status` ENUM($enumList) $nullSql$defSql");
             }
@@ -132,6 +142,16 @@ return [
             preg_match_all("/'((?:[^']|'')*)'/", $m[1], $vm);
             return array_map(fn($v) => str_replace("''", "'", $v), $vm[1]);
         };
+        $defaultClause = function ($rawDefault, string $isNullable) use ($db): string {
+            if ($rawDefault === null || strtoupper((string) $rawDefault) === 'NULL') {
+                return ($isNullable === 'YES') ? ' DEFAULT NULL' : '';
+            }
+            $t = trim((string) $rawDefault);
+            if (strlen($t) >= 2 && $t[0] === "'" && $t[strlen($t) - 1] === "'") {
+                return ' DEFAULT ' . $t;
+            }
+            return ' DEFAULT ' . $db->quote($t);
+        };
 
         // ۳') برگرداندنِ task_id به NOT NULL — فقط اگر هیچ ردیفِ NULL نمانده باشد
         $ti = $colInfo('workflow_instance_steps', 'task_id');
@@ -154,12 +174,7 @@ return [
                 $vals = array_values(array_filter($vals, fn($v) => $v !== 'dormant'));
                 $enumList = implode(',', array_map([$db, 'quote'], $vals));
                 $nullSql = ($st['IS_NULLABLE'] === 'YES') ? 'NULL' : 'NOT NULL';
-                $defSql  = '';
-                if ($st['COLUMN_DEFAULT'] !== null) {
-                    $defSql = ' DEFAULT ' . $db->quote($st['COLUMN_DEFAULT']);
-                } elseif ($st['IS_NULLABLE'] === 'YES') {
-                    $defSql = ' DEFAULT NULL';
-                }
+                $defSql  = $defaultClause($st['COLUMN_DEFAULT'], $st['IS_NULLABLE']);
                 $db->exec("ALTER TABLE `workflow_instance_steps`
                     MODIFY COLUMN `status` ENUM($enumList) $nullSql$defSql");
             }
