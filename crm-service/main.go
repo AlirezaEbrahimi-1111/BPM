@@ -197,8 +197,9 @@ func writeErr(w http.ResponseWriter, status int, msg string) {
 // ──────────────── سرور و هندلرها ────────────────
 
 type server struct {
-	cfg Config
-	db  *sql.DB
+	cfg                 Config
+	db                  *sql.DB
+	officialWarehouseID int64 // انبارِ «فاکتور رسمی» — کسر/افزایشِ موجودیِ فاکتور از این‌جا
 }
 
 func (s *server) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -251,9 +252,34 @@ func main() {
 
 	s := &server{cfg: cfg, db: db}
 
+	// شناسه‌ی انبارِ «فاکتور رسمی» را یک‌بار می‌خوانیم (seedِ مهاجرت).
+	if err := db.QueryRow("SELECT id FROM inv_warehouses WHERE kind = 'official' LIMIT 1").
+		Scan(&s.officialWarehouseID); err != nil {
+		log.Fatalf("انبارِ official یافت نشد — آیا مهاجرتِ inv_* اجرا شده؟ (%v)", err)
+	}
+
+	// دسترسیِ نوشتنِ کاتالوگ: کاربر باید یکی از این مجوزها را داشته باشد.
+	writeFlags := []string{"is_create_official_invoice", "is_sales_manager"}
+	auth := s.authMiddleware
+	write := func(h http.HandlerFunc) http.HandlerFunc { return auth(s.requireFlags(writeFlags, h)) }
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /crm/api/health", s.handleHealth)
-	mux.HandleFunc("GET /crm/api/me", s.authMiddleware(s.handleMe))
+	mux.HandleFunc("GET /crm/api/me", auth(s.handleMe))
+
+	// ── کالا ──
+	mux.HandleFunc("GET /crm/api/inv/products", auth(s.listProducts))
+	mux.HandleFunc("POST /crm/api/inv/products", write(s.createProduct))
+	mux.HandleFunc("PUT /crm/api/inv/products/{id}", write(s.updateProduct))
+	mux.HandleFunc("DELETE /crm/api/inv/products/{id}", write(s.deleteProduct))
+	mux.HandleFunc("POST /crm/api/inv/products/import", write(s.importProducts))
+
+	// ── مشتری (مشترک با CRM) ──
+	mux.HandleFunc("GET /crm/api/customers", auth(s.listCustomers))
+	mux.HandleFunc("POST /crm/api/customers", write(s.createCustomer))
+	mux.HandleFunc("PUT /crm/api/customers/{id}", write(s.updateCustomer))
+	mux.HandleFunc("DELETE /crm/api/customers/{id}", write(s.deleteCustomer))
+	mux.HandleFunc("POST /crm/api/customers/import", write(s.importCustomers))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{
