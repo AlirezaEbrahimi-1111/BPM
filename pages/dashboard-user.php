@@ -710,20 +710,21 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             display: inline-block;
         }
 
+        /* یکسان با منوی سه‌نقطهٔ مودالِ هفته/روز (.pm-kebab) */
         .row-kebab {
             background: none;
             border: none;
             cursor: pointer;
-            color: var(--du-ink);
-            font-size: .99rem;
-            padding: 4px 8px;
+            color: #9ca3af;
+            font-size: 1.035rem;
+            padding: 5px 9px;
             border-radius: 9px;
             transition: background .12s, color .12s;
         }
 
         .row-kebab:hover {
-            background: #8e57fe;
-            color: #fff;
+            background: rgba(142, 87, 254, 0.12);
+            color: #8e57fe;
         }
 
         .row-menu {
@@ -765,37 +766,30 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .row-menu button:hover {
-            background: linear-gradient(135deg, rgba(116, 76, 164, 0.12) 0%, rgba(101, 122, 231, 0.12) 100%);
-            color: #744ca4;
+            background: rgba(142, 87, 254, 0.12);
+            color: #8e57fe;
         }
 
         .row-menu button i {
-            font-size: .855rem;
-            width: 17px;
+            font-size: .9rem;
+            width: 18px;
+            text-align: center;
         }
 
         .row-menu .act-approve i {
             color: #1b7b39;
-            padding-top: 5px;
-            font-size: 180%;
         }
 
         .row-menu .act-reject i {
-            color: #c61717;
-            padding-top: 5px;
-            font-size: 180%;
+            color: #dc2626;
         }
 
         .row-menu .act-delegate i {
-            color: #2479b9;
-            padding-top: 5px;
-            font-size: 180%;
+            color: #8e57fe;
         }
 
         .row-menu .act-extend i {
-            color: #818181;
-            padding-top: 5px;
-            font-size: 180%;
+            color: #8e57fe;
         }
 
         .row-menu .empty-hint {
@@ -1407,8 +1401,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .pm-kebab:hover {
-            background: var(--pm-purple-soft);
-            color: var(--pm-purple);
+            background: rgba(142, 87, 254, 0.12);
+            color: #8e57fe;
         }
 
         /*.pm-menu {*/
@@ -1449,7 +1443,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .pm-menu button:hover {
-            background: #8e57fe;
+            background: rgba(142, 87, 254, 0.12);
+            color: #8e57fe;
         }
 
         .pm-menu button i {
@@ -2107,8 +2102,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .pm-kebab:hover {
-            background: #e9e9e9;
-            color: #374151;
+            background: rgba(142, 87, 254, 0.12);
+            color: #8e57fe;
         }
 
         :root[data-theme="dark"] .pm-kebab:hover {
@@ -2164,7 +2159,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .pm-menu button:hover {
-            background: #e9e9e9;
+            background: rgba(142, 87, 254, 0.12);
+            color: #8e57fe;
         }
 
         :root[data-theme="dark"] .pm-menu button:hover {
@@ -3130,9 +3126,9 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         function rowMenuHtml(taskId, acts) {
             const items = [];
             if (acts.includes('approve')) items.push(`<button class="act-approve" onclick="rowAction(${taskId},'approve',event)"><i class="bi bi-check-lg"></i> تایید</button>`);
-            if (acts.includes('reject')) items.push(`<button class="act-reject" onclick="rowAction(${taskId},'reject',event)"><i class="bi bi-x"></i> رد</button>`);
-            if (acts.includes('delegate')) items.push(`<button class="act-delegate" onclick="rowAction(${taskId},'delegate',event)"><i class="bi bi-arrow-right-short"></i> ارجاع</button>`);
-            if (acts.includes('extend')) items.push(`<button class="act-extend" onclick="rowAction(${taskId},'extend',event)"><i class="bi bi-check-lg"></i> تمدید موعد</button>`);
+            if (acts.includes('reject')) items.push(`<button class="act-reject" onclick="rowAction(${taskId},'reject',event)"><i class="bi bi-x-lg"></i> رد</button>`);
+            if (acts.includes('delegate')) items.push(`<button class="act-delegate" onclick="rowAction(${taskId},'delegate',event)"><i class="bi bi-arrow-left-right"></i> ارجاع</button>`);
+            if (acts.includes('extend')) items.push(`<button class="act-extend" onclick="rowAction(${taskId},'extend',event)"><i class="bi bi-calendar-plus"></i> تمدید موعد</button>`);
 
             const body = items.length ? items.join('') : `<div class="empty-hint">عملیاتی موجود نیست</div>`;
 
