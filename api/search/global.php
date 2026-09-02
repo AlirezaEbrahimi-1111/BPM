@@ -86,20 +86,45 @@ try {
 
     // ───── تسک‌ها ─────
     if (isset($want['task'])) {
-        $params = [$user_id, $user_id, $user_id, $user_id];
+        // 🔒 شرطِ دسترسی باید با taskUserAccess() صفحهٔ جزئیات هم‌راستا باشد؛
+        // قبلاً فقط creator/assignee/تاریخچه بود، پس کاری که یک مدیر/سرپرست
+        // می‌توانست باز کند ولی سازنده/مسئولش نبود، در سرچ دیده نمی‌شد.
+        $canViewAllOrg = hasPermission($me, 'view_all_org_tasks');
+
+        if ($canViewAllOrg) {
+            $accessSql = 't.organization_id = ?';
+            $accessParams = [$orgId];
+        } else {
+            $subIds = getSubordinateIds($db, (int) $user_id);
+            $subList = $subIds ?: [0];
+            $ph = implode(',', array_fill(0, count($subList), '?'));
+            $accessSql = "(
+                  t.creator_id = ? OR t.assignee_id = ?
+                  OR t.creator_id IN ($ph) OR t.assignee_id IN ($ph)
+                  OR EXISTS (
+                      SELECT 1 FROM task_history th
+                      WHERE th.task_id = t.id AND (th.from_user_id = ? OR th.to_user_id = ?)
+                  )
+                  OR EXISTS (
+                      SELECT 1 FROM task_viewers tv
+                      WHERE tv.task_id = t.id AND tv.user_id = ?
+                  )
+              )";
+            $accessParams = array_merge(
+                [$user_id, $user_id],
+                $subList, $subList,
+                [$user_id, $user_id, $user_id]
+            );
+        }
+
+        $params = $accessParams;
         $wordSql = gs_word_conditions(['t.title', 't.description'], $words, $params);
         $params[] = $idMatch;
         $stmt = $db->prepare("
             SELECT t.id, t.title, t.description
             FROM tasks t
             WHERE t.is_deleted = 0
-              AND (
-                  t.creator_id = ? OR t.assignee_id = ?
-                  OR EXISTS (
-                      SELECT 1 FROM task_history th
-                      WHERE th.task_id = t.id AND (th.from_user_id = ? OR th.to_user_id = ?)
-                  )
-              )
+              AND $accessSql
               AND ($wordSql OR t.id = ?)
             ORDER BY t.created_at DESC
             LIMIT $perType
