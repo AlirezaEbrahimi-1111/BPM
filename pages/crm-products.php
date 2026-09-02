@@ -27,7 +27,8 @@ if (!$__me) {
 }
 
 // فعلاً فقط کاربر id=1 — ماژولِ CRM/فاکتور در حالِ ساخت است و برای بقیه دیده نمی‌شود.
-if ((int) $user_id !== 1) {
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
+if (!crmModuleAllowed($db, (int) $user_id)) {
     header('Location: ../pages/dashboard.php');
     exit;
 }
@@ -180,8 +181,8 @@ try {
                         <input type="hidden" id="f_id">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label">کد کالا</label>
-                                <input type="text" class="form-control" id="f_code">
+                                <label class="form-label">کد کالا <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="f_code" required>
                             </div>
                             <div class="col-md-8">
                                 <label class="form-label">نام کالا <span class="text-danger">*</span></label>
@@ -192,7 +193,7 @@ try {
                                 <input type="text" class="form-control" id="f_unit" placeholder="عدد">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">قیمت واحد (ریال)</label>
+                                <label class="form-label">قیمت واحد (ریال) <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="f_unit_price" inputmode="numeric">
                             </div>
                             <div class="col-md-4" id="openingWrap">
@@ -239,7 +240,7 @@ try {
         }
 
         function faDigits(s) {
-            return String(s == null ? '' : s).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+            return String(s == null ? '' : s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
         }
 
         function toEnDigits(s) {
@@ -462,9 +463,13 @@ try {
                 is_service: document.getElementById('f_is_service').checked,
                 is_tax_exempt: document.getElementById('f_is_tax_exempt').checked,
             };
-            if (!body.name) {
+            const errs = [];
+            if (!body.name) errs.push('نام کالا');
+            if (!body.code) errs.push('کد کالا');
+            if (!(body.unit_price > 0)) errs.push('قیمت واحد');
+            if (errs.length) {
                 document.getElementById('prodModalAlert').innerHTML =
-                    '<div class="alert alert-danger py-2">نام کالا الزامی است</div>';
+                    '<div class="alert alert-danger py-2">این فیلدها الزامی‌اند: ' + errs.join('، ') + '</div>';
                 return;
             }
             try {

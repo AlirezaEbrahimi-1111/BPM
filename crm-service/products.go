@@ -43,6 +43,20 @@ func (p *productIn) normalize() {
 	}
 }
 
+// در کاتالوگ، «کد کالا» و «قیمت واحد» هم مثلِ «نام» اجباری‌اند.
+func (p *productIn) validate() string {
+	if p.Name == "" {
+		return "نام کالا الزامی است"
+	}
+	if p.Code == "" {
+		return "کد کالا الزامی است"
+	}
+	if p.UnitPrice <= 0 {
+		return "قیمت واحد باید بزرگ‌تر از صفر باشد"
+	}
+	return ""
+}
+
 // GET /crm/api/inv/products?q=&page=&per=&exclude_invoice=
 //
 // «رزرو» = مجموعِ اقلامِ فاکتورهایی که هنوز موجودیِ فیزیکی را کم نکرده‌اند:
@@ -127,8 +141,8 @@ func (s *server) createProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	in.normalize()
-	if in.Name == "" {
-		writeErr(w, http.StatusBadRequest, "نام کالا الزامی است")
+	if msg := in.validate(); msg != "" {
+		writeErr(w, http.StatusBadRequest, msg)
 		return
 	}
 	u := userOf(r.Context())
@@ -172,8 +186,8 @@ func (s *server) updateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	in.normalize()
-	if in.Name == "" {
-		writeErr(w, http.StatusBadRequest, "نام کالا الزامی است")
+	if msg := in.validate(); msg != "" {
+		writeErr(w, http.StatusBadRequest, msg)
 		return
 	}
 	u := userOf(r.Context())
@@ -241,8 +255,8 @@ func (s *server) importProducts(w http.ResponseWriter, r *http.Request) {
 	errs := []map[string]any{}
 	for i, row := range body.Rows {
 		row.normalize()
-		if row.Name == "" {
-			errs = append(errs, map[string]any{"row": i + 1, "message": "نام کالا خالی است"})
+		if msg := row.validate(); msg != "" {
+			errs = append(errs, map[string]any{"row": i + 1, "message": msg})
 			continue
 		}
 		res, e := ins.Exec(u.OrgID, nullIfEmpty(row.Code), row.Name, row.Unit, row.UnitPrice, row.IsService, row.IsTaxExempt, u.ID)

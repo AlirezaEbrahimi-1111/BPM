@@ -24,7 +24,8 @@ if (!$__me) {
     header('Location: ../index.php');
     exit;
 }
-if ((int) $user_id !== 1) {
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
+if (!crmModuleAllowed($db, (int) $user_id)) {
     header('Location: ../pages/dashboard.php');
     exit;
 }
@@ -221,6 +222,55 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             return faDigits(Math.round(n || 0).toLocaleString('en-US'));
         }
 
+        function jDate(g) {
+            if (!g) return '—';
+            try {
+                return new Date(g).toLocaleDateString('fa-IR', {
+                    timeZone: 'Asia/Tehran'
+                });
+            } catch (e) {
+                return faDigits(g);
+            }
+        }
+
+        // عددِ ریالی → حروفِ فارسی (تا مرتبه‌ی بیلیون)
+        function numToFaWords(n) {
+            n = Math.round(Math.abs(Number(n) || 0));
+            if (n === 0) return 'صفر';
+            const yek = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'];
+            const dah = ['', '', 'بیست', 'سی', 'چهل', 'پنجاه', 'شصت', 'هفتاد', 'هشتاد', 'نود'];
+            const dahdah = ['ده', 'یازده', 'دوازده', 'سیزده', 'چهارده', 'پانزده', 'شانزده', 'هفده', 'هجده', 'نوزده'];
+            const sad = ['', 'صد', 'دویست', 'سیصد', 'چهارصد', 'پانصد', 'ششصد', 'هفتصد', 'هشتصد', 'نهصد'];
+            const scale = ['', ' هزار', ' میلیون', ' میلیارد', ' بیلیون'];
+
+            function three(num) {
+                const parts = [];
+                const s = Math.floor(num / 100),
+                    r = num % 100,
+                    d = Math.floor(r / 10),
+                    u = r % 10;
+                if (s) parts.push(sad[s]);
+                if (r >= 10 && r <= 19) parts.push(dahdah[r - 10]);
+                else {
+                    if (d) parts.push(dah[d]);
+                    if (u) parts.push(yek[u]);
+                }
+                return parts.join(' و ');
+            }
+            const groups = [];
+            let x = n;
+            while (x > 0) {
+                groups.push(x % 1000);
+                x = Math.floor(x / 1000);
+            }
+            const out = [];
+            for (let i = groups.length - 1; i >= 0; i--) {
+                if (groups[i] === 0) continue;
+                out.push(three(groups[i]) + scale[i]);
+            }
+            return out.join(' و ');
+        }
+
         function esc(s) {
             return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({
                 '&': '&amp;',
@@ -279,7 +329,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <h2>${DT[inv.doc_type]||'فاکتور'}</h2>
                 <div class="sub">
                     شماره: <b>${inv.number ? faDigits(inv.number) : '—'}</b>
-                    &nbsp;|&nbsp; تاریخ: ${inv.issue_date ? faDigits(inv.issue_date) : '—'}
+                    &nbsp;|&nbsp; تاریخ: ${jDate(inv.issue_date)}
                     &nbsp;|&nbsp; <span class="status-tag ${inv.status}">${ST[inv.status]||inv.status}</span>
                 </div>
                 <div class="party">
@@ -312,6 +362,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     <div class="r"><span>مالیات بر ارزش افزوده</span><span>${money(inv.tax_amount)}</span></div>
                     <div class="r g"><span>مبلغِ قابل پرداخت (ریال)</span><span>${money(inv.total_amount)}</span></div>
                 </div>
+                <div class="foot-note"><b>مبلغِ فاکتور به حروف:</b> ${numToFaWords(inv.total_amount)} ریال</div>
                 ${inv.note ? `<div class="foot-note"><b>توضیحات:</b> ${esc(inv.note)}</div>` : ''}
                 ${footer ? `<div class="foot-note">${esc(footer)}</div>` : ''}`;
         }

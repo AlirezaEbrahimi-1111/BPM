@@ -27,7 +27,8 @@ if (!$__me) {
 }
 
 // فعلاً فقط کاربر id=1 — ماژولِ CRM/فاکتور در حالِ ساخت است و برای بقیه دیده نمی‌شود.
-if ((int) $user_id !== 1) {
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
+if (!crmModuleAllowed($db, (int) $user_id)) {
     header('Location: ../pages/dashboard.php');
     exit;
 }
@@ -248,7 +249,7 @@ try {
         }
 
         function faDigits(s) {
-            return String(s == null ? '' : s).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+            return String(s == null ? '' : s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
         }
 
         async function apiGet(path) {

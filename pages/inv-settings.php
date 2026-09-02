@@ -24,7 +24,8 @@ if (!$__me) {
     header('Location: ../index.php');
     exit;
 }
-if ((int) $user_id !== 1) {
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
+if (!crmModuleAllowed($db, (int) $user_id)) {
     header('Location: ../pages/dashboard.php');
     exit;
 }

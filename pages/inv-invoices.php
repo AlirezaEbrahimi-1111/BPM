@@ -25,7 +25,8 @@ if (!$__me) {
     exit;
 }
 // فعلاً فقط کاربر id=1 — ماژولِ فاکتور در حالِ ساخت است.
-if ((int) $user_id !== 1) {
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
+if (!crmModuleAllowed($db, (int) $user_id)) {
     header('Location: ../pages/dashboard.php');
     exit;
 }
@@ -187,7 +188,19 @@ if ((int) $user_id !== 1) {
         }
 
         function faDigits(s) {
-            return String(s == null ? '' : s).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+            return String(s == null ? '' : s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+        }
+
+        // تاریخِ میلادیِ "YYYY-MM-DD" → شمسی با رقمِ فارسی
+        function jDate(g) {
+            if (!g) return '—';
+            try {
+                return new Date(g).toLocaleDateString('fa-IR', {
+                    timeZone: 'Asia/Tehran'
+                });
+            } catch (e) {
+                return faDigits(g);
+            }
         }
 
         function money(n) {
@@ -258,7 +271,7 @@ if ((int) $user_id !== 1) {
                 headerName: 'تاریخ صدور',
                 field: 'issue_date',
                 width: 120,
-                cellRenderer: p => p.value ? faDigits(p.value) : '—'
+                cellRenderer: p => jDate(p.value)
             },
             {
                 headerName: 'مشتری',

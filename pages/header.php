@@ -1,6 +1,10 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
+// آیا این کاربر منوی «فروش / فاکتور» را ببیند؟ (ماژول در حالِ ساخت، دسترسیِ محدود)
+$__crmMenu = isset($db) && ($db instanceof PDO)
+    && crmModuleAllowed($db, (int) ($_SESSION['user_id'] ?? $user_id ?? 0));
 ?>
 <!-- 🌗 تم روشن/تاریک — اعمال فوری از localStorage، پیش از رندرِ هدر (جلوگیریِ فلاش) -->
 <script>
@@ -807,8 +811,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         </li>
                     </ul>
                 </li>
-                <?php if ((int) ($_SESSION['user_id'] ?? $user_id ?? 0) === 1): ?>
-                    <!-- منوی فروش/فاکتور — فعلاً فقط برای کاربر id=1 (در حالِ ساخت) -->
+                <?php if (!empty($__crmMenu)): ?>
+                    <!-- منوی فروش/فاکتور — دسترسیِ محدود، ببین includes/crm_access.php (در حالِ ساخت) -->
                     <li class="nav-item dropdown" id="navSalesInvoice">
                         <a class="nav-link dropdown-toggle" href="#" id="salesInvoiceDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
