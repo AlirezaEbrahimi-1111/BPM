@@ -622,8 +622,8 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             color: var(--gray-300);
             padding: 2px;
             flex-shrink: 0;
-            opacity: 0;
-            /* پیش‌فرض پنهان */
+            opacity: 1;
+            /* قبل از انتخاب هم دیده شود — خاکستریِ کم‌رنگ، مثلِ آیکنِ زنگوله */
             transition: opacity .15s, color .15s, transform .12s;
         }
 

@@ -124,6 +124,7 @@ try {
             SELECT t.id, t.title, t.description
             FROM tasks t
             WHERE t.is_deleted = 0
+              AND t.status NOT IN ('completed', 'approved', 'stopped', 'rejected')
               AND $accessSql
               AND ($wordSql OR t.id = ?)
             ORDER BY t.created_at DESC

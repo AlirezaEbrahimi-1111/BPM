@@ -24,6 +24,10 @@ if (!$__me) {
     header('Location: ../index.php');
     exit;
 }
+
+// سازمانِ اصلی (پشتیبان) — سازمانِ ۱ — پیش‌فرض تیکت‌های «در انتظار پاسخ پشتیبان» را ببیند.
+$__orgId = (int) ($__me['organization_id'] ?? ($_SESSION['organization_id'] ?? 0));
+$__defTicketStatus = ($__orgId === 1) ? 'open' : '';
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -332,8 +336,8 @@ if (!$__me) {
                     </div>
                     <div class="filter-item">
                         <select id="fStatus" onchange="loadTickets()">
-                            <option value="">همه وضعیت‌ها</option>
-                            <option value="open">در انتظار پاسخ پشتیبان</option>
+                            <option value="" <?= $__defTicketStatus === '' ? 'selected' : '' ?>>همه وضعیت‌ها</option>
+                            <option value="open" <?= $__defTicketStatus === 'open' ? 'selected' : '' ?>>در انتظار پاسخ پشتیبان</option>
                             <option value="in_progress">در حال بررسی</option>
                             <option value="waiting_reply">در انتظار پاسخ کاربر</option>
                             <option value="resolved">حل شده</option>
