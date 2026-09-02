@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -61,6 +62,7 @@ type invoiceOut struct {
 	Note           string           `json:"note"`
 	CreatedAt      string           `json:"created_at"`
 	ApprovedAt     string           `json:"approved_at"`
+	ConvertedToID  *int64           `json:"converted_to_id"`
 	Items          []invoiceItemOut `json:"items,omitempty"`
 }
 
@@ -145,7 +147,8 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 		       i.status, i.source, i.subtotal_amount, i.discount_amount,
 		       i.tax_amount, i.total_amount, COALESCE(i.note,''),
 		       DATE_FORMAT(i.created_at,'%Y-%m-%d %H:%i'),
-		       COALESCE(DATE_FORMAT(i.approved_at,'%Y-%m-%d %H:%i'),'')
+		       COALESCE(DATE_FORMAT(i.approved_at,'%Y-%m-%d %H:%i'),''),
+		       i.converted_to_id
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
 		WHERE `+where+`
@@ -160,10 +163,10 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 	items := []invoiceOut{}
 	for rows.Next() {
 		var o invoiceOut
-		var sy, sn sql.NullInt64
+		var sy, sn, conv sql.NullInt64
 		if err := rows.Scan(&o.ID, &o.DocType, &o.Number, &sy, &sn, &o.CustomerID, &o.CustomerName,
 			&o.IssueDate, &o.Status, &o.Source, &o.Subtotal, &o.DiscountAmount, &o.TaxAmount,
-			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt); err != nil {
+			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv); err != nil {
 			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 			return
 		}
@@ -174,6 +177,10 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 		if sn.Valid {
 			v := int(sn.Int64)
 			o.SeqNo = &v
+		}
+		if conv.Valid {
+			v := conv.Int64
+			o.ConvertedToID = &v
 		}
 		items = append(items, o)
 	}
@@ -186,20 +193,21 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 	u := userOf(r.Context())
 
 	var o invoiceOut
-	var sy, sn sql.NullInt64
+	var sy, sn, conv sql.NullInt64
 	err := s.db.QueryRow(`
 		SELECT i.id, i.doc_type, COALESCE(i.number,''), i.seq_year, i.seq_no,
 		       i.customer_id, COALESCE(c.name,'—'), COALESCE(i.issue_date,''),
 		       i.status, i.source, i.subtotal_amount, i.discount_amount,
 		       i.tax_amount, i.total_amount, COALESCE(i.note,''),
 		       DATE_FORMAT(i.created_at,'%Y-%m-%d %H:%i'),
-		       COALESCE(DATE_FORMAT(i.approved_at,'%Y-%m-%d %H:%i'),'')
+		       COALESCE(DATE_FORMAT(i.approved_at,'%Y-%m-%d %H:%i'),''),
+		       i.converted_to_id
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
 		WHERE i.id = ? AND i.organization_id = ?`, id, u.OrgID).
 		Scan(&o.ID, &o.DocType, &o.Number, &sy, &sn, &o.CustomerID, &o.CustomerName,
 			&o.IssueDate, &o.Status, &o.Source, &o.Subtotal, &o.DiscountAmount, &o.TaxAmount,
-			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt)
+			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv)
 	if err == sql.ErrNoRows {
 		writeErr(w, http.StatusNotFound, "فاکتور یافت نشد")
 		return
@@ -215,6 +223,10 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 	if sn.Valid {
 		v := int(sn.Int64)
 		o.SeqNo = &v
+	}
+	if conv.Valid {
+		v := conv.Int64
+		o.ConvertedToID = &v
 	}
 
 	rows, err := s.db.Query(`
@@ -598,6 +610,97 @@ func (s *server) deleteInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
+}
+
+// POST /crm/api/inv/invoices/{id}/to-official
+// از یک پیش‌فاکتور، یک فاکتورِ رسمیِ «پیش‌نویسِ» تازه می‌سازد (با همان مشتری و
+// ردیف‌ها، به‌صورتِ اسنپ‌شات). پیش‌فاکتورِ مبدأ با converted_to_id به فاکتورِ
+// تازه پیوند می‌خورد و دیگر موجودی رزرو نمی‌کند.
+func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
+	id := idParam(r)
+	u := userOf(r.Context())
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		return
+	}
+	defer tx.Rollback()
+
+	var docType, status, issueDate, note, number string
+	var convertedTo sql.NullInt64
+	var customerID, warehouseID int64
+	var subtotal, discount, tax, total int64
+	err = tx.QueryRow(`
+		SELECT doc_type, status, COALESCE(issue_date,''), COALESCE(note,''), COALESCE(number,''),
+		       customer_id, warehouse_id, subtotal_amount, discount_amount, tax_amount, total_amount,
+		       converted_to_id
+		FROM inv_invoices WHERE id = ? AND organization_id = ? FOR UPDATE`, id, u.OrgID).
+		Scan(&docType, &status, &issueDate, &note, &number, &customerID, &warehouseID,
+			&subtotal, &discount, &tax, &total, &convertedTo)
+	if err == sql.ErrNoRows {
+		writeErr(w, http.StatusNotFound, "پیش‌فاکتور یافت نشد")
+		return
+	}
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		return
+	}
+	if docType != "proforma" {
+		writeErr(w, http.StatusConflict, "فقط «پیش‌فاکتور» به فاکتور رسمی تبدیل می‌شود")
+		return
+	}
+	if status == "cancelled" {
+		writeErr(w, http.StatusConflict, "پیش‌فاکتورِ باطل قابلِ تبدیل نیست")
+		return
+	}
+	if convertedTo.Valid {
+		writeErr(w, http.StatusConflict, "این پیش‌فاکتور قبلاً به فاکتور رسمی تبدیل شده")
+		return
+	}
+
+	newNote := "برگرفته از پیش‌فاکتور"
+	if number != "" {
+		newNote += " شماره " + number
+	} else {
+		newNote += " #" + strconv.FormatInt(id, 10)
+	}
+	if note != "" {
+		newNote += "\n" + note
+	}
+
+	res, err := tx.Exec(`
+		INSERT INTO inv_invoices
+		  (organization_id, doc_type, customer_id, warehouse_id, issue_date, status, source,
+		   subtotal_amount, discount_amount, tax_amount, total_amount, note, created_by)
+		VALUES (?, 'official', ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?)`,
+		u.OrgID, customerID, warehouseID, nullIfEmpty(issueDate),
+		subtotal, discount, tax, total, newNote, u.ID)
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "ساختِ فاکتورِ رسمی ناموفق بود")
+		return
+	}
+	newID, _ := res.LastInsertId()
+
+	if _, err := tx.Exec(`
+		INSERT INTO inv_invoice_items
+		  (invoice_id, product_id, title, qty, unit_price, discount, is_tax_exempt, tax_rate, tax_amount, line_total, sort_order)
+		SELECT ?, product_id, title, qty, unit_price, discount, is_tax_exempt, tax_rate, tax_amount, line_total, sort_order
+		FROM inv_invoice_items WHERE invoice_id = ?`, newID, id); err != nil {
+		writeErr(w, http.StatusInternalServerError, "کپیِ ردیف‌ها ناموفق بود")
+		return
+	}
+
+	if _, err := tx.Exec("UPDATE inv_invoices SET converted_to_id = ? WHERE id = ?", newID, id); err != nil {
+		writeErr(w, http.StatusInternalServerError, "پیوندِ پیش‌فاکتور ناموفق بود")
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "id": newID})
 }
 
 // ───────────────────────── کمکی ─────────────────────────

@@ -82,7 +82,7 @@ func (s *server) listProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rsvWhere := "ii.product_id IS NOT NULL AND iv.status <> 'cancelled' AND NOT (iv.doc_type = 'official' AND iv.status = 'approved')"
+	rsvWhere := "ii.product_id IS NOT NULL AND iv.status <> 'cancelled' AND iv.converted_to_id IS NULL AND NOT (iv.doc_type = 'official' AND iv.status = 'approved')"
 	var rsvArgs []any
 	if excludeInv > 0 {
 		rsvWhere += " AND ii.invoice_id <> ?"

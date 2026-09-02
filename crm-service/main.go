@@ -293,6 +293,7 @@ func main() {
 	mux.HandleFunc("PUT /crm/api/inv/invoices/{id}", write(s.updateInvoice))
 	mux.HandleFunc("POST /crm/api/inv/invoices/{id}/approve", write(s.approveInvoice))
 	mux.HandleFunc("POST /crm/api/inv/invoices/{id}/cancel", write(s.cancelInvoice))
+	mux.HandleFunc("POST /crm/api/inv/invoices/{id}/to-official", write(s.convertToOfficial))
 	mux.HandleFunc("DELETE /crm/api/inv/invoices/{id}", write(s.deleteInvoice))
 
 	// ── تأمین‌کننده ──

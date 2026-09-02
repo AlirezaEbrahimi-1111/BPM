@@ -189,7 +189,24 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     <label class="form-label">تاریخِ صدور</label>
                     <div class="persian-datepicker-wrapper">
                         <input type="text" class="persian-datepicker-input form-control" id="f_issue_date" placeholder="۱۴۰۵/۰۶/۱۱" readonly>
-                        <div class="persian-datepicker"></div>
+                        <div class="persian-datepicker">
+                            <div class="datepicker-header">
+                                <button type="button" class="datepicker-nav" data-action="prev">►</button>
+                                <span class="datepicker-current"></span>
+                                <button type="button" class="datepicker-nav" data-action="next">◄</button>
+                            </div>
+                            <div class="datepicker-weekdays">
+                                <div class="datepicker-weekday">ش</div>
+                                <div class="datepicker-weekday">ی</div>
+                                <div class="datepicker-weekday">د</div>
+                                <div class="datepicker-weekday">س</div>
+                                <div class="datepicker-weekday">چ</div>
+                                <div class="datepicker-weekday">پ</div>
+                                <div class="datepicker-weekday">ج</div>
+                            </div>
+                            <div class="datepicker-days"></div>
+                            <button type="button" class="datepicker-today-btn">امروز</button>
+                        </div>
                     </div>
                 </div>
             </div>

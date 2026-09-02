@@ -252,6 +252,13 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             } else if (d.status === 'approved') {
                 h += `<button class="ag-action-btn cancel" title="ابطال" onclick="cancelInv(${d.id})"><i class="bi bi-x-octagon"></i></button>`;
             }
+            if (d.doc_type === 'proforma' && d.status !== 'cancelled') {
+                if (d.converted_to_id) {
+                    h += `<button class="ag-action-btn" style="color:#2563eb" title="مشاهده‌ی فاکتور رسمی" onclick="location.href='/pages/inv-invoice-print.php?id=${d.converted_to_id}'"><i class="bi bi-box-arrow-up-left"></i></button>`;
+                } else {
+                    h += `<button class="ag-action-btn" style="color:#0f7a57" title="تبدیل به فاکتور رسمی" onclick="convertInv(${d.id})"><i class="bi bi-file-earmark-check"></i></button>`;
+                }
+            }
             return h;
         }
 
@@ -289,12 +296,14 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             {
                 headerName: 'وضعیت',
                 field: 'status',
-                width: 110,
-                cellRenderer: p => `<span class="st-badge ${p.value}">${ST_LABEL[p.value]||p.value}</span>`
+                width: 120,
+                cellRenderer: p => p.data.converted_to_id ?
+                    '<span class="st-badge" style="background:rgba(37,99,235,.14);color:#2563eb">تبدیل‌شده</span>' :
+                    `<span class="st-badge ${p.value}">${ST_LABEL[p.value]||p.value}</span>`
             },
             {
                 headerName: 'عملیات',
-                width: 170,
+                width: 210,
                 sortable: false,
                 filter: false,
                 cellRenderer: actionCell
@@ -372,6 +381,18 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     await apiSend('POST', '/inv/invoices/' + id + '/cancel');
                     showToast('باطل شد', 'success');
                     loadAll();
+                } catch (e) {
+                    showToast(e.message || 'خطا', 'error');
+                }
+            });
+        }
+
+        function convertInv(id) {
+            uiConfirm('از این پیش‌فاکتور یک «فاکتور رسمیِ پیش‌نویس» ساخته شود؟ پیش‌فاکتور بایگانی می‌شود و دیگر موجودی رزرو نمی‌کند.', async () => {
+                try {
+                    const d = await apiSend('POST', '/inv/invoices/' + id + '/to-official');
+                    showToast('فاکتور رسمی ساخته شد', 'success');
+                    location.href = '/pages/inv-invoice-edit.php?id=' + d.id;
                 } catch (e) {
                     showToast(e.message || 'خطا', 'error');
                 }
