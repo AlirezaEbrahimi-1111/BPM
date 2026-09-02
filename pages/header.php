@@ -821,6 +821,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item" href="/pages/inv-purchases.php">
+                                    <i class="bi bi-cart-plus ms-2"></i>فاکتورهای خرید
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item" href="/pages/inv-settings.php">
                                     <i class="bi bi-gear ms-2"></i>تنظیمات فاکتور
                                 </a>
@@ -836,6 +841,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                             <li>
                                 <a class="dropdown-item" href="/pages/crm-customers.php">
                                     <i class="bi bi-people ms-2"></i>مشتریان
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/pages/inv-suppliers.php">
+                                    <i class="bi bi-truck ms-2"></i>تأمین‌کنندگان
                                 </a>
                             </li>
                         </ul>

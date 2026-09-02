@@ -295,6 +295,21 @@ func main() {
 	mux.HandleFunc("POST /crm/api/inv/invoices/{id}/cancel", write(s.cancelInvoice))
 	mux.HandleFunc("DELETE /crm/api/inv/invoices/{id}", write(s.deleteInvoice))
 
+	// ── تأمین‌کننده ──
+	mux.HandleFunc("GET /crm/api/inv/suppliers", auth(s.listSuppliers))
+	mux.HandleFunc("POST /crm/api/inv/suppliers", write(s.createSupplier))
+	mux.HandleFunc("PUT /crm/api/inv/suppliers/{id}", write(s.updateSupplier))
+	mux.HandleFunc("DELETE /crm/api/inv/suppliers/{id}", write(s.deleteSupplier))
+
+	// ── فاکتورِ خرید ──
+	mux.HandleFunc("GET /crm/api/inv/purchases", auth(s.listPurchases))
+	mux.HandleFunc("GET /crm/api/inv/purchases/{id}", auth(s.getPurchase))
+	mux.HandleFunc("POST /crm/api/inv/purchases", write(s.createPurchase))
+	mux.HandleFunc("PUT /crm/api/inv/purchases/{id}", write(s.updatePurchase))
+	mux.HandleFunc("POST /crm/api/inv/purchases/{id}/confirm", write(s.confirmPurchase))
+	mux.HandleFunc("POST /crm/api/inv/purchases/{id}/cancel", write(s.cancelPurchase))
+	mux.HandleFunc("DELETE /crm/api/inv/purchases/{id}", write(s.deletePurchase))
+
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{
 		Addr:         addr,
