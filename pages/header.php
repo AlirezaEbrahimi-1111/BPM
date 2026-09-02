@@ -821,6 +821,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item" href="/pages/inv-settings.php">
+                                    <i class="bi bi-gear ms-2"></i>تنظیمات فاکتور
+                                </a>
+                            </li>
+                            <li>
                                 <hr class="dropdown-divider">
                             </li>
                             <li>
