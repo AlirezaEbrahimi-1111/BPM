@@ -42,6 +42,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
     <script src="<?= asset('../assets/js/config.js') ?>"></script>
+    <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
