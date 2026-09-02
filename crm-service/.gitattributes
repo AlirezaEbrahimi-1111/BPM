@@ -6,4 +6,6 @@ go.sum text eol=lf
 deploy/*.service text eol=lf
 deploy/*.conf    text eol=lf
 deploy/*.sql     text eol=lf
+deploy/*.sh      text eol=lf
+deploy/sudoers-* text eol=lf
 

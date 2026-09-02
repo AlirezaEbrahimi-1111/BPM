@@ -1,0 +1,10 @@
+# /etc/sudoers.d/bmp-crm
+#
+# به کاربرِ دیپلوی اجازه می‌دهد فقط همین یک اسکریپت را به‌عنوانِ root و بدونِ رمز
+# اجرا کند. خودِ اسکریپت root-owned است و deploy نمی‌تواند تغییرش دهد، پس این
+# سطحِ دسترسی محدود و امن است. اگر نامِ کاربرِ SSHِ دیپلوی «deploy» نیست، عوضش کن.
+#
+# نصب:
+#   sudo install -m 0440 sudoers-bmp-crm /etc/sudoers.d/bmp-crm
+#   sudo visudo -c        # باید «parsed OK» بدهد
+deploy ALL=(root) NOPASSWD: /opt/bmp-crm/apply-crm-binary.sh

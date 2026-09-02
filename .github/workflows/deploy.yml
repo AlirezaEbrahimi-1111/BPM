@@ -1,7 +1,13 @@
 name: Deploy to VPS
 
 # دستی‌ست، عمداً — هیچ push‌ای خودش دیپلوی نمی‌کنه؛ فقط از تبِ Actions با
-# دکمهٔ «Run workflow» اجرا می‌شه
+# دکمهٔ «Run workflow» اجرا می‌شه.
+#
+# این workflow دو چیز را با هم می‌فرستد:
+#   ۱) کدِ PHP  → روی سرور `deploy-update` + `migrate.php up`
+#   ۲) سرویسِ Go → همین‌جا build می‌شود، باینری با scp به سرور می‌رود، و اسکریپتِ
+#      root-ownedِ /opt/bmp-crm/apply-crm-binary.sh نصب و ری‌استارتش می‌کند.
+#      (پیش‌نیازِ یک‌باره روی سرور: crm-service/deploy/DEPLOY.md بخشِ «استقرارِ خودکار».)
 on:
   workflow_dispatch:
 
@@ -10,7 +16,32 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Deploy via SSH
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: crm-service/go.mod
+          cache-dependency-path: crm-service/go.sum
+
+      - name: Build crm-service (linux/amd64)
+        working-directory: crm-service
+        run: |
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 \
+            go build -trimpath -ldflags "-s -w" -o crm-service-linux .
+
+      - name: Copy crm-service binary to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: crm-service/crm-service-linux
+          target: /opt/bmp-crm/incoming
+          strip_components: 1
+
+      - name: Deploy code + migrations + restart crm-service
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -19,3 +50,4 @@ jobs:
           script: |
             deploy-update
             sudo -u www-data php /var/www/itmalek/migrate.php up
+            sudo /opt/bmp-crm/apply-crm-binary.sh

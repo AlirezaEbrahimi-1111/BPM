@@ -383,10 +383,19 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const supName = document.getElementById('f_supplier').value.trim();
             const sup = supByName.get(supName);
             const items = [];
-            document.querySelectorAll('#itemsBody tr').forEach(tr => {
+            const unresolved = [];
+            document.querySelectorAll('#itemsBody tr').forEach((tr, i) => {
                 const pid = tr.dataset.productId ? +tr.dataset.productId : 0;
+                const typed = tr.querySelector('.it-prod').value.trim();
                 const qty = num(tr.querySelector('.it-qty').value);
-                if (!pid || qty <= 0) return;
+                if (!pid) {
+                    if (typed) unresolved.push({
+                        row: i + 1,
+                        name: typed
+                    });
+                    return;
+                }
+                if (qty <= 0) return;
                 items.push({
                     product_id: pid,
                     qty,
@@ -400,6 +409,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             return {
                 sup,
                 supName,
+                unresolved,
                 body: {
                     supplier_id: sup ? sup.id : 0,
                     supplier_ref_number: document.getElementById('f_ref').value.trim(),
@@ -414,6 +424,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const {
                 sup,
                 supName,
+                unresolved,
                 body
             } = collect();
             if (!supName) {
@@ -422,6 +433,12 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             }
             if (!sup) {
                 alertBox('تأمین‌کننده «' + supName + '» در فهرست نیست. از لینکِ بالا ثبتش کنید و دوباره انتخاب کنید.');
+                return;
+            }
+            if (unresolved.length) {
+                alertBox('این کالاها در «کاتالوگ کالا» نیستند و باید اول آن‌جا ثبت شوند: ' +
+                    unresolved.map(u => 'ردیف ' + faDigits(u.row) + ' («' + u.name + '»)').join('، ') +
+                    '. در فاکتورِ خرید فقط کالای موجود در کاتالوگ قابل انتخاب است.');
                 return;
             }
             if (!body.items.length) {

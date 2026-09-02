@@ -104,16 +104,43 @@ curl https://itmalek.com/crm/api/health
 
 ---
 
-## به‌روزرسانیِ بعدی (فقط کد عوض شد)
+## استقرارِ خودکار از GitHub Actions (یک‌بار راه‌اندازی)
+
+بعد از این، «Deploy to VPS» هم کدِ PHP و هم باینریِ Go را با هم می‌فرستد و
+دیگر هیچ `scp`ای روی ویندوز لازم نیست. `.github/workflows/deploy.yml` باینری را
+روی رانرِ گیت‌هاب build می‌کند، با scp در `/opt/bmp-crm/incoming/` می‌گذارد،
+و روی سرور `sudo /opt/bmp-crm/apply-crm-binary.sh` را صدا می‌زند.
+
+**یک‌بار روی سرور (با دسترسیِ root):**
+
+```bash
+# اسکریپتِ نصب (root-owned تا deploy نتواند تغییرش دهد)
+sudo install -o root -g root -m 0755 \
+  /var/www/itmalek/crm-service/deploy/apply-crm-binary.sh /opt/bmp-crm/apply-crm-binary.sh
+
+# پوشه‌ی مقصدِ scp — فقط deploy در آن می‌نویسد
+sudo install -o deploy -g deploy -d /opt/bmp-crm/incoming
+
+# یک خط sudoers: اجازه‌ی اجرای بی‌رمزِ فقط همین اسکریپت
+sudo install -m 0440 \
+  /var/www/itmalek/crm-service/deploy/sudoers-bmp-crm /etc/sudoers.d/bmp-crm
+sudo visudo -c        # باید «parsed OK»
+```
+
+> اگر نامِ کاربرِ SSHِ دیپلوی «deploy» نیست، در `sudoers-bmp-crm` عوضش کن و
+> `secrets.VPS_USER` را هم چک کن.
+> نیازی به secretِ جدید نیست — همان `VPS_HOST` / `VPS_USER` / `VPS_SSH_KEY`.
+
+بعد از این، به‌روزرسانی = فقط زدنِ **Actions → Deploy to VPS → Run workflow**.
+
+### به‌روزرسانیِ دستی (فقط اگر CI در دسترس نبود)
 
 ```bash
 # سیستمِ خودت:
 $env:GOOS='linux'; $env:GOARCH='amd64'; go build -o crm-service-linux .
-scp crm-service-linux deploy@SERVER:/tmp/crm-service
+scp crm-service-linux deploy@SERVER:/opt/bmp-crm/incoming/crm-service-linux
 # سرور:
-sudo mv /tmp/crm-service /opt/bmp-crm/crm-service && sudo chmod +x /opt/bmp-crm/crm-service
-sudo systemctl restart bmp-crm
-curl http://127.0.0.1:8090/crm/api/health
+sudo /opt/bmp-crm/apply-crm-binary.sh
 ```
 
 ## متوقف‌کردن / برگرداندن
