@@ -26,6 +26,12 @@ if (!$__me) {
     exit;
 }
 
+// فعلاً فقط کاربر id=1 — ماژولِ CRM/فاکتور در حالِ ساخت است و برای بقیه دیده نمی‌شود.
+if ((int) $user_id !== 1) {
+    header('Location: ../pages/dashboard.php');
+    exit;
+}
+
 $canWrite = false;
 try {
     $st = $db->prepare("SELECT (COALESCE(is_create_official_invoice,0) = 1 OR COALESCE(is_sales_manager,0) = 1) AS w FROM users WHERE id = ?");

@@ -26,6 +26,12 @@ if (!$__me) {
     exit;
 }
 
+// فعلاً فقط کاربر id=1 — ماژولِ CRM/فاکتور در حالِ ساخت است و برای بقیه دیده نمی‌شود.
+if ((int) $user_id !== 1) {
+    header('Location: ../pages/dashboard.php');
+    exit;
+}
+
 // دسترسیِ نوشتن: همان قاعده‌ی سرویسِ Go — یکی از این دو مجوز کافی است.
 $canWrite = false;
 try {

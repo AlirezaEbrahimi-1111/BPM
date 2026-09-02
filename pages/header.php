@@ -807,6 +807,27 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
                         </li>
                     </ul>
                 </li>
+                <?php if ((int) ($_SESSION['user_id'] ?? $user_id ?? 0) === 1): ?>
+                    <!-- منوی فروش/فاکتور — فعلاً فقط برای کاربر id=1 (در حالِ ساخت) -->
+                    <li class="nav-item dropdown" id="navSalesInvoice">
+                        <a class="nav-link dropdown-toggle" href="#" id="salesInvoiceDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-receipt me-2"></i>فروش / فاکتور
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end admin-submenu" aria-labelledby="salesInvoiceDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/pages/crm-products.php">
+                                    <i class="bi bi-box-seam ms-2"></i>کاتالوگ کالا
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/pages/crm-customers.php">
+                                    <i class="bi bi-people ms-2"></i>مشتریان
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php endif; ?>
                 <li class="nav-item" id="drawerLogoutDivider">
                     <hr class="dropdown-divider" style="margin: 8px 14px; opacity: .15;">
                 </li>
