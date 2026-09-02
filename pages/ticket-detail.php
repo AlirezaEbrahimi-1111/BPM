@@ -45,7 +45,7 @@ if (!$__me) {
     <style>
         .td-wrap {
             max-width: 1200px;
-            margin: 80px auto 40px;
+            margin: 88px auto 40px;
             padding: 0 16px;
         }
 
@@ -642,7 +642,7 @@ if (!$__me) {
             }
         }
         @media (max-width: 576px) {
-            .td-wrap { margin-top: 70px; }
+            .td-wrap { margin-top: 84px; }
             .info-grid { grid-template-columns: 1fr; }
             .tkt-header-meta { flex-direction: column; gap: 4px; }
             .tkt-header h5 { padding-left: 60px; color: white; }

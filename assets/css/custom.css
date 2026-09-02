@@ -1116,7 +1116,17 @@ s-normal {
 .overview-container {
     max-width: 70% !important;
     margin: 0 auto;
-    padding: 1rem 1rem;
+    /* padding-topِ ۲rem تا فاصلهٔ همهٔ صفحات از هدر یکسان شود (مثل tasks.php)
+       و فلشِ سرچِ سراسریِ زیرِ هدر روی محتوا نیفتد. body خودش margin-top:3.5rem
+       دارد؛ ۳.۵rem + ۲rem ≈ همان فاصله‌ای که tasks.php داشت. */
+    padding: 2rem 1rem 1rem;
+}
+
+/* فاصلهٔ بالا از padding-topِ کانتینر می‌آید، نه از margin-topِ اولین فرزند
+   (مثلاً .filters-wrapper) — تا روی همهٔ صفحات دقیقاً یک‌اندازه باشد. */
+.overview-container>*:first-child,
+.main-content>*:first-child {
+    margin-top: 0;
 }
 
 .overview-container h1 {
@@ -1124,7 +1134,7 @@ s-normal {
 }
 
 .main-content {
-    padding: 20px;
+    padding: 2rem 20px 20px;
     max-width: 70%;
     margin: 0 auto;
 }
@@ -2951,12 +2961,12 @@ td:nth-child(2) {
 
 @media (max-width: 768px) {
     .overview-container {
-        padding: 1rem 0.5rem;
+        padding: 2rem 0.5rem 1rem;
         max-width: 90% !important;
     }
 
     .main-content {
-        padding: 1rem;
+        padding: 2rem 1rem 1rem;
         max-width: 100% !important;
     }
 

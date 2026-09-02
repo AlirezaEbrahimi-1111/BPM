@@ -35,7 +35,7 @@ if (!$__me) {
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <style>
         * { font-family: 'Vazirmatn', 'Vazir', sans-serif !important; }
-        body { background: var(--bg-page); color: var(--text-strong); padding-top: 20px; padding-bottom: 2rem; }
+        body { background: var(--bg-page); color: var(--text-strong); padding-top: 2rem; padding-bottom: 2rem; }
 
         /* افزایش عرض کلی */
         .page-wrap {

@@ -47,6 +47,38 @@ require_once '../includes/version.php';
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.2); }
     }
+
+    /* موبایل: فوتر همیشه دیده شود — چسبیده به کفِ صفحه با سایهٔ نرم تا از
+       محتوای پشتش جدا و مشخص باشد. (روی دسکتاپ همان sticky می‌ماند.) */
+    @media (max-width: 768px) {
+        .site-footer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: auto;
+            margin-top: 0;
+            z-index: 80;
+            box-shadow: 0 -3px 14px rgba(0, 0, 0, .14);
+        }
+
+        :root[data-theme="dark"] .site-footer {
+            box-shadow: 0 -3px 14px rgba(0, 0, 0, .5);
+        }
+
+        body {
+            padding-bottom: 36px;
+        }
+
+        /* صفحاتی که نوارِ عملیاتِ ثابتِ پایین دارند (task-detail): فوتر بالای آن بنشیند */
+        body:has(.TDaction-buttons) .site-footer {
+            bottom: 58px;
+        }
+
+        body:has(.TDaction-buttons) {
+            padding-bottom: 96px;
+        }
+    }
 </style>
 <div class="site-footer">
     <span>تهیه شده با</span>
@@ -54,7 +86,7 @@ require_once '../includes/version.php';
     <span>در شرکت</span>
     <span class="company">آوای شرق ملک</span>
         <span> | </span>
-        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۰ - ۱۹:۴۴">
-            نسخه: ۶.۲۴
+        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۱ - ۱۰:۳۱">
+            نسخه: ۶.۲۵
         </span>
 </div>

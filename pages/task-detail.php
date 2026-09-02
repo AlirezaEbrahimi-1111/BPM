@@ -49,6 +49,11 @@ if (!$__me) {
     <script src="<?= asset('../assets/js/cdn/jquery.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/deadline-toast.css') ?>">
     <style>
+        /* فاصلهٔ یکسان از هدر مثل بقیهٔ صفحات (جا برای فلشِ سرچِ سراسری) */
+        .task-detail-container {
+            padding-top: 2rem;
+        }
+
         /* دو ستون اطلاعات تسک */
         #taskInfo .row {
             margin: 0;
