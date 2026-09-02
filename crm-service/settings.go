@@ -13,9 +13,15 @@ type sellerInfo struct {
 	EconomicCode string `json:"economic_code"`
 	RegNumber    string `json:"reg_number"`
 	BranchCode   string `json:"branch_code"`
+	Province     string `json:"province"`
+	Shahrestan   string `json:"shahrestan"`
+	City         string `json:"city"`
 	Address      string `json:"address"`
 	PostalCode   string `json:"postal_code"`
 	Phone        string `json:"phone"`
+	IBAN         string `json:"iban"`
+	CardNumber   string `json:"card_number"`
+	BankName     string `json:"bank_name"`
 }
 
 type invSettings struct {
@@ -39,18 +45,23 @@ func (s *server) getSettings() (invSettings, error) {
 	out.FooterNote = fn.String
 
 	var se sellerInfo
-	var cn, ni, ec, rn, bc, ad, pc, ph sql.NullString
+	var cn, ni, ec, rn, bc, pv, sh, ct, ad, pc, ph, ib, cd, bk sql.NullString
 	err = s.db.QueryRow(`
 		SELECT COALESCE(company_name,''), COALESCE(national_id,''), COALESCE(economic_code,''),
-		       COALESCE(reg_number,''), COALESCE(branch_code,''), COALESCE(address,''),
-		       COALESCE(postal_code,''), COALESCE(phone,'')
-		FROM inv_seller WHERE id = 1`).Scan(&cn, &ni, &ec, &rn, &bc, &ad, &pc, &ph)
+		       COALESCE(reg_number,''), COALESCE(branch_code,''),
+		       COALESCE(province,''), COALESCE(shahrestan,''), COALESCE(city,''),
+		       COALESCE(address,''), COALESCE(postal_code,''), COALESCE(phone,''),
+		       COALESCE(iban,''), COALESCE(card_number,''), COALESCE(bank_name,'')
+		FROM inv_seller WHERE id = 1`).
+		Scan(&cn, &ni, &ec, &rn, &bc, &pv, &sh, &ct, &ad, &pc, &ph, &ib, &cd, &bk)
 	if err != nil {
 		return out, err
 	}
 	se.CompanyName, se.NationalID, se.EconomicCode = cn.String, ni.String, ec.String
-	se.RegNumber, se.BranchCode, se.Address = rn.String, bc.String, ad.String
-	se.PostalCode, se.Phone = pc.String, ph.String
+	se.RegNumber, se.BranchCode = rn.String, bc.String
+	se.Province, se.Shahrestan, se.City = pv.String, sh.String, ct.String
+	se.Address, se.PostalCode, se.Phone = ad.String, pc.String, ph.String
+	se.IBAN, se.CardNumber, se.BankName = ib.String, cd.String, bk.String
 	out.Seller = se
 	return out, nil
 }
@@ -98,12 +109,15 @@ func (s *server) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	se := in.Seller
 	if _, err := tx.Exec(`
 		UPDATE inv_seller
-		SET company_name = ?, national_id = ?, economic_code = ?, reg_number = ?,
-		    branch_code = ?, address = ?, postal_code = ?, phone = ?
+		SET company_name = ?, national_id = ?, economic_code = ?, reg_number = ?, branch_code = ?,
+		    province = ?, shahrestan = ?, city = ?, address = ?, postal_code = ?, phone = ?,
+		    iban = ?, card_number = ?, bank_name = ?
 		WHERE id = 1`,
 		nullIfEmpty(se.CompanyName), nullIfEmpty(se.NationalID), nullIfEmpty(se.EconomicCode),
-		nullIfEmpty(se.RegNumber), nullIfEmpty(se.BranchCode), nullIfEmpty(se.Address),
-		nullIfEmpty(se.PostalCode), nullIfEmpty(se.Phone)); err != nil {
+		nullIfEmpty(se.RegNumber), nullIfEmpty(se.BranchCode),
+		nullIfEmpty(se.Province), nullIfEmpty(se.Shahrestan), nullIfEmpty(se.City),
+		nullIfEmpty(se.Address), nullIfEmpty(se.PostalCode), nullIfEmpty(se.Phone),
+		nullIfEmpty(se.IBAN), nullIfEmpty(se.CardNumber), nullIfEmpty(se.BankName)); err != nil {
 		writeErr(w, http.StatusInternalServerError, "ذخیره‌ی سربرگِ فروشنده ناموفق بود")
 		return
 	}

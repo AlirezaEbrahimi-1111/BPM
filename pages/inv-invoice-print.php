@@ -43,142 +43,141 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <style>
         body {
-            background: #f3f4f6;
-        }
-
-        .sheet {
-            max-width: 820px;
-            margin: 20px auto;
-            background: #fff;
-            color: #111;
-            padding: 28px 32px;
-            box-shadow: 0 2px 14px rgba(0, 0, 0, .1);
-        }
-
-        .sheet h2 {
-            text-align: center;
-            margin: 0 0 4px;
-            font-size: 1.35rem;
-        }
-
-        .sheet .sub {
-            text-align: center;
-            color: #555;
-            font-size: .85rem;
-            margin-bottom: 18px;
-        }
-
-        .party {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-bottom: 14px;
-            font-size: .84rem;
-        }
-
-        .party .card {
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            padding: 10px 12px;
-        }
-
-        .party .card h4 {
-            font-size: .8rem;
-            margin: 0 0 6px;
-            color: #6b21a8;
-        }
-
-        .party .row2 {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-            padding: 2px 0;
-        }
-
-        table.pi {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: .82rem;
-            margin-top: 6px;
-        }
-
-        table.pi th,
-        table.pi td {
-            border: 1px solid #cbd5e1;
-            padding: 6px 8px;
-        }
-
-        table.pi th {
-            background: #f1e9ff;
-        }
-
-        table.pi td.num,
-        table.pi th.num {
-            text-align: left;
-            white-space: nowrap;
-        }
-
-        .tots {
-            width: 300px;
-            margin-inline-start: auto;
-            margin-top: 10px;
-            font-size: .86rem;
-        }
-
-        .tots .r {
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
-            border-bottom: 1px dashed #cbd5e1;
-        }
-
-        .tots .r.g {
-            font-weight: 700;
-            font-size: 1rem;
-            border-bottom: 0;
-        }
-
-        .foot-note {
-            margin-top: 18px;
-            font-size: .8rem;
-            color: #444;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 8px;
-            white-space: pre-wrap;
-        }
-
-        .status-tag {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 999px;
-            font-size: .78rem;
-            font-weight: 700;
-        }
-
-        .status-tag.draft {
-            background: #e5e7eb;
-            color: #374151;
-        }
-
-        .status-tag.approved {
-            background: #dcfce7;
-            color: #15803d;
-        }
-
-        .status-tag.cancelled {
-            background: #fee2e2;
-            color: #b91c1c;
+            background: #eef0f3;
         }
 
         .toolbar {
-            max-width: 820px;
+            max-width: 900px;
             margin: 14px auto 0;
             display: flex;
             gap: 10px;
         }
 
-        @media print {
+        .sheet {
+            max-width: 900px;
+            margin: 14px auto 40px;
+            background: #fff;
+            color: #000;
+            padding: 14px 16px 18px;
+            box-shadow: 0 2px 14px rgba(0, 0, 0, .12);
+            font-size: 12px;
+            line-height: 1.7;
+        }
 
+        .sheet table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .sheet td,
+        .sheet th {
+            border: 1px solid #000;
+            padding: 3px 5px;
+        }
+
+        /* ── سربرگ ── */
+        .inv-top {
+            border: 1px solid #000;
+        }
+
+        .inv-top td {
+            border: 1px solid #000;
+        }
+
+        .inv-title {
+            text-align: center;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .inv-nobox td {
+            padding: 2px 6px;
+        }
+
+        .band {
+            text-align: center;
+            font-weight: 700;
+            background: #efefef;
+        }
+
+        .lbl {
+            background: #f6f6f6;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* خانه‌های تک‌رقمی برای شناسه/کد */
+        .dboxes {
+            display: inline-flex;
+            gap: 2px;
+            direction: ltr;
+        }
+
+        .dboxes span {
+            display: inline-block;
+            min-width: 13px;
+            text-align: center;
+            border: 1px solid #999;
+            font-size: 11px;
+            line-height: 15px;
+        }
+
+        table.items th {
+            background: #efefef;
+            text-align: center;
+            font-size: 10.5px;
+            vertical-align: middle;
+        }
+
+        table.items td {
+            text-align: center;
+        }
+
+        table.items td.desc {
+            text-align: right;
+        }
+
+        table.items td.num {
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        table.items tr.sum td {
+            font-weight: 700;
+            background: #f6f6f6;
+        }
+
+        .pay label {
+            margin-inline-end: 14px;
+            font-weight: 600;
+        }
+
+        .chk {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 1px solid #000;
+            text-align: center;
+            line-height: 12px;
+            margin-inline-start: 4px;
+        }
+
+        .seller-pay {
+            font-size: 11px;
+            line-height: 1.9;
+        }
+
+        .sign td {
+            height: 54px;
+            vertical-align: top;
+            font-weight: 600;
+        }
+
+        .muted {
+            color: #666;
+        }
+
+        @media print {
             body {
                 background: #fff;
             }
@@ -191,6 +190,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 box-shadow: none;
                 margin: 0;
                 max-width: none;
+                padding: 0;
             }
         }
     </style>
@@ -203,7 +203,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     </div>
 
     <div class="sheet" id="sheet">
-        <p class="text-center text-muted">در حال بارگذاری…</p>
+        <p class="text-center muted">در حال بارگذاری…</p>
     </div>
 
     <script>
@@ -219,7 +219,16 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         function money(n) {
-            return faDigits(Math.round(n || 0).toLocaleString('en-US'));
+            return faDigits(Math.round(Number(n) || 0).toLocaleString('en-US'));
+        }
+
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;'
+            } [c]));
         }
 
         function jDate(g) {
@@ -233,61 +242,18 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             }
         }
 
-        // عددِ ریالی → حروفِ فارسی (تا مرتبه‌ی بیلیون)
-        function numToFaWords(n) {
-            n = Math.round(Math.abs(Number(n) || 0));
-            if (n === 0) return 'صفر';
-            const yek = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'];
-            const dah = ['', '', 'بیست', 'سی', 'چهل', 'پنجاه', 'شصت', 'هفتاد', 'هشتاد', 'نود'];
-            const dahdah = ['ده', 'یازده', 'دوازده', 'سیزده', 'چهارده', 'پانزده', 'شانزده', 'هفده', 'هجده', 'نوزده'];
-            const sad = ['', 'صد', 'دویست', 'سیصد', 'چهارصد', 'پانصد', 'ششصد', 'هفتصد', 'هشتصد', 'نهصد'];
-            const scale = ['', ' هزار', ' میلیون', ' میلیارد', ' بیلیون'];
-
-            function three(num) {
-                const parts = [];
-                const s = Math.floor(num / 100),
-                    r = num % 100,
-                    d = Math.floor(r / 10),
-                    u = r % 10;
-                if (s) parts.push(sad[s]);
-                if (r >= 10 && r <= 19) parts.push(dahdah[r - 10]);
-                else {
-                    if (d) parts.push(dah[d]);
-                    if (u) parts.push(yek[u]);
-                }
-                return parts.join(' و ');
-            }
-            const groups = [];
-            let x = n;
-            while (x > 0) {
-                groups.push(x % 1000);
-                x = Math.floor(x / 1000);
-            }
-            const out = [];
-            for (let i = groups.length - 1; i >= 0; i--) {
-                if (groups[i] === 0) continue;
-                out.push(three(groups[i]) + scale[i]);
-            }
-            return out.join(' و ');
+        // خانه‌های تک‌رقمی
+        function boxed(s) {
+            s = String(s == null ? '' : s).trim();
+            if (!s) return '';
+            return '<span class="dboxes">' +
+                s.split('').map(c => `<span>${faDigits(esc(c))}</span>`).join('') +
+                '</span>';
         }
 
-        function esc(s) {
-            return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;'
-            } [c]));
-        }
-
-        const ST = {
-            draft: 'پیش‌نویس',
-            approved: 'تأییدشده',
-            cancelled: 'باطل‌شده'
-        };
         const DT = {
-            official: 'فاکتور فروش',
-            proforma: 'پیش‌فاکتور'
+            official: 'صورتحساب فروش کالا و خدمات',
+            proforma: 'پیش‌فاکتور فروش کالا و خدمات'
         };
 
         async function load() {
@@ -302,69 +268,136 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             });
             const d = await r.json().catch(() => ({}));
             if (!r.ok) {
-                document.getElementById('sheet').innerHTML = '<p class="text-danger text-center">' + (d.message || 'خطا') + '</p>';
+                document.getElementById('sheet').innerHTML =
+                    '<p class="text-danger text-center">' + (d.message || 'خطا') + '</p>';
                 return;
             }
-            render(d.invoice, d.seller || {}, d.footer_note || '');
+            render(d.invoice, d.customer || {}, d.seller || {}, d.footer_note || '');
         }
 
-        function kv(label, val) {
-            if (!val) return '';
-            return `<div class="row2"><span>${label}</span><span>${esc(val)}</span></div>`;
-        }
+        function render(inv, buyer, seller, footer) {
+            const cash = inv.payment_type === 'cash';
+            const credit = inv.payment_type === 'credit';
 
-        function render(inv, seller, footer) {
-            const rows = (inv.items || []).map((it, i) => `
-                <tr>
-                    <td>${faDigits(i+1)}</td>
-                    <td>${esc(it.title)}</td>
-                    <td class="num">${faDigits(it.qty)}</td>
+            const itemRows = (inv.items || []).map((it, i) => {
+                const gross = Math.round((Number(it.qty) || 0) * (Number(it.unit_price) || 0));
+                const afterDisc = gross - (Number(it.discount) || 0);
+                return `<tr>
+                    <td>${faDigits(i + 1)}</td>
+                    <td>${faDigits(esc(it.code)) || '—'}</td>
+                    <td class="desc">${esc(it.title)}</td>
+                    <td>${faDigits(it.qty)}</td>
                     <td class="num">${money(it.unit_price)}</td>
+                    <td class="num">${money(gross)}</td>
                     <td class="num">${money(it.discount)}</td>
+                    <td class="num">${money(afterDisc)}</td>
                     <td class="num">${it.is_tax_exempt ? '—' : money(it.tax_amount)}</td>
                     <td class="num">${money(it.line_total)}</td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
+
+            const afterDiscTotal = (Number(inv.subtotal_amount) || 0) - (Number(inv.discount_amount) || 0);
 
             document.getElementById('sheet').innerHTML = `
-                <h2>${DT[inv.doc_type]||'فاکتور'}</h2>
-                <div class="sub">
-                    شماره: <b>${inv.number ? faDigits(inv.number) : '—'}</b>
-                    &nbsp;|&nbsp; تاریخ: ${jDate(inv.issue_date)}
-                    &nbsp;|&nbsp; <span class="status-tag ${inv.status}">${ST[inv.status]||inv.status}</span>
-                </div>
-                <div class="party">
-                    <div class="card">
-                        <h4>فروشنده</h4>
-                        ${kv('نام', seller.company_name)}
-                        ${kv('شناسه ملی', seller.national_id)}
-                        ${kv('کد اقتصادی', seller.economic_code)}
-                        ${kv('شماره ثبت', seller.reg_number)}
-                        ${kv('تلفن', seller.phone)}
-                        ${kv('کدپستی', seller.postal_code)}
-                        ${kv('نشانی', seller.address)}
-                    </div>
-                    <div class="card">
-                        <h4>خریدار</h4>
-                        ${kv('نام', inv.customer_name)}
-                    </div>
-                </div>
-                <table class="pi">
-                    <thead><tr>
-                        <th style="width:34px">#</th><th>شرح کالا / خدمت</th>
-                        <th class="num">تعداد</th><th class="num">قیمت واحد</th>
-                        <th class="num">تخفیف</th><th class="num">مالیات</th><th class="num">جمع</th>
-                    </tr></thead>
-                    <tbody>${rows}</tbody>
-                </table>
-                <div class="tots">
-                    <div class="r"><span>جمعِ کل</span><span>${money(inv.subtotal_amount)}</span></div>
-                    <div class="r"><span>تخفیف</span><span>${money(inv.discount_amount)}</span></div>
-                    <div class="r"><span>مالیات بر ارزش افزوده</span><span>${money(inv.tax_amount)}</span></div>
-                    <div class="r g"><span>مبلغِ قابل پرداخت (ریال)</span><span>${money(inv.total_amount)}</span></div>
-                </div>
-                <div class="foot-note"><b>مبلغِ فاکتور به حروف:</b> ${numToFaWords(inv.total_amount)} ریال</div>
-                ${inv.note ? `<div class="foot-note"><b>توضیحات:</b> ${esc(inv.note)}</div>` : ''}
-                ${footer ? `<div class="foot-note">${esc(footer)}</div>` : ''}`;
+            <table class="inv-top">
+                <tr>
+                    <td style="width:150px" class="inv-nobox">
+                        <table style="border:0">
+                            <tr><td class="lbl" style="border:1px solid #000">شماره فاکتور</td>
+                                <td style="border:1px solid #000">${inv.number ? faDigits(inv.number) : '—'}</td></tr>
+                            <tr><td class="lbl" style="border:1px solid #000">تاریخ</td>
+                                <td style="border:1px solid #000">${jDate(inv.issue_date)}</td></tr>
+                        </table>
+                    </td>
+                    <td class="inv-title">${DT[inv.doc_type] || 'صورتحساب فروش کالا و خدمات'}</td>
+                </tr>
+            </table>
+
+            <table style="margin-top:-1px">
+                <tr><td colspan="6" class="band">مشخصات فروشنده</td></tr>
+                <tr>
+                    <td class="lbl">نام شخص حقیقی و حقوقی</td><td>${esc(seller.company_name)}</td>
+                    <td class="lbl">کد اقتصادی</td><td>${boxed(seller.economic_code)}</td>
+                    <td class="lbl">شناسه ملی</td><td>${boxed(seller.national_id)}</td>
+                </tr>
+                <tr>
+                    <td class="lbl">استان</td><td>${esc(seller.province)}</td>
+                    <td class="lbl">شهرستان</td><td>${esc(seller.shahrestan)}</td>
+                    <td class="lbl">شهر</td><td>${esc(seller.city)}</td>
+                </tr>
+                <tr>
+                    <td class="lbl">کد پستی ۱۰ رقمی</td><td>${boxed(seller.postal_code)}</td>
+                    <td class="lbl">شماره تلفن / نمابر</td><td colspan="3">${faDigits(esc(seller.phone))}</td>
+                </tr>
+                <tr>
+                    <td class="lbl">نشانی کامل</td><td colspan="5">${esc(seller.address)}</td>
+                </tr>
+            </table>
+
+            <table style="margin-top:-1px">
+                <tr><td colspan="6" class="band">مشخصات خریدار</td></tr>
+                <tr>
+                    <td class="lbl">نام شخص حقیقی و حقوقی</td><td>${esc(buyer.name)}</td>
+                    <td class="lbl">شماره اقتصادی</td><td>${boxed(buyer.economic_code)}</td>
+                    <td class="lbl">شناسه ملی</td><td>${boxed(buyer.national_id)}</td>
+                </tr>
+                <tr>
+                    <td class="lbl">استان</td><td>${esc(buyer.province)}</td>
+                    <td class="lbl">شهر</td><td>${esc(buyer.city)}</td>
+                    <td class="lbl">کد پستی ۱۰ رقمی</td><td>${boxed(buyer.postal_code)}</td>
+                </tr>
+                <tr>
+                    <td class="lbl">آدرس</td><td colspan="3">${esc(buyer.address)}</td>
+                    <td class="lbl">شماره تلفن</td><td>${faDigits(esc(buyer.phone || buyer.mobile))}</td>
+                </tr>
+            </table>
+
+            <table class="items" style="margin-top:-1px">
+                <tr><td colspan="10" class="band">مشخصات کالا یا خدمات مورد معامله</td></tr>
+                <tr>
+                    <th style="width:26px">ردیف</th>
+                    <th style="width:60px">کد کالا</th>
+                    <th>شرح کالا یا خدمات</th>
+                    <th style="width:64px">تعداد / مقدار</th>
+                    <th style="width:78px">مبلغ واحد (ریال)</th>
+                    <th style="width:88px">مبلغ کل (ریال)</th>
+                    <th style="width:78px">مبلغ تخفیف (ریال)</th>
+                    <th style="width:92px">مبلغ کل پس از تخفیف (ریال)</th>
+                    <th style="width:86px">جمع مالیات و عوارض (ریال)</th>
+                    <th style="width:100px">جمع مبلغ کل بعلاوه جمع مالیات و عوارض (ریال)</th>
+                </tr>
+                ${itemRows}
+                <tr class="sum">
+                    <td colspan="5">جمع کـل</td>
+                    <td class="num">${money(inv.subtotal_amount)}</td>
+                    <td class="num">${money(inv.discount_amount)}</td>
+                    <td class="num">${money(afterDiscTotal)}</td>
+                    <td class="num">${money(inv.tax_amount)}</td>
+                    <td class="num">${money(inv.total_amount)}</td>
+                </tr>
+            </table>
+
+            <table style="margin-top:-1px">
+                <tr>
+                    <td style="width:50%" class="pay">
+                        <div>شرایط و نحوه فروش:
+                            <label>نقدی <span class="chk">${cash ? '✕' : ''}</span></label>
+                            <label>غیر نقدی <span class="chk">${credit ? '✕' : ''}</span></label>
+                        </div>
+                        <div style="margin-top:6px">توضیحات: ${esc(inv.note)}</div>
+                        ${footer ? `<div style="margin-top:6px" class="muted">${esc(footer)}</div>` : ''}
+                    </td>
+                    <td class="seller-pay">
+                        <div><b>${esc(seller.company_name)}</b></div>
+                        ${seller.iban ? `<div>شماره شبا: ${faDigits(esc(seller.iban))}</div>` : ''}
+                        ${seller.card_number ? `<div>شماره کارت: ${faDigits(esc(seller.card_number))}${seller.bank_name ? ' (' + esc(seller.bank_name) + ')' : ''}</div>` : ''}
+                    </td>
+                </tr>
+                <tr class="sign">
+                    <td>مهر و امضا فروشنده</td>
+                    <td>مهر و امضا خریدار</td>
+                </tr>
+            </table>`;
         }
 
         load();

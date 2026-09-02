@@ -15,6 +15,9 @@ type customerOut struct {
 	Mobile       string `json:"mobile"`
 	NationalID   string `json:"national_id"`
 	EconomicCode string `json:"economic_code"`
+	Province     string `json:"province"`
+	City         string `json:"city"`
+	PostalCode   string `json:"postal_code"`
 	Address      string `json:"address"`
 }
 
@@ -25,6 +28,9 @@ type customerIn struct {
 	Mobile       string `json:"mobile"`
 	NationalID   string `json:"national_id"`
 	EconomicCode string `json:"economic_code"`
+	Province     string `json:"province"`
+	City         string `json:"city"`
+	PostalCode   string `json:"postal_code"`
 	Address      string `json:"address"`
 }
 
@@ -35,6 +41,9 @@ func (c *customerIn) normalize() {
 	c.Mobile = strings.TrimSpace(c.Mobile)
 	c.NationalID = strings.TrimSpace(c.NationalID)
 	c.EconomicCode = strings.TrimSpace(c.EconomicCode)
+	c.Province = strings.TrimSpace(c.Province)
+	c.City = strings.TrimSpace(c.City)
+	c.PostalCode = strings.TrimSpace(c.PostalCode)
 	c.Address = strings.TrimSpace(c.Address)
 }
 
@@ -60,7 +69,8 @@ func (s *server) listCustomers(w http.ResponseWriter, r *http.Request) {
 	rows, err := s.db.Query(`
 		SELECT id, type, name,
 		       COALESCE(phone,''), COALESCE(mobile,''), COALESCE(national_id,''),
-		       COALESCE(economic_code,''), COALESCE(address,'')
+		       COALESCE(economic_code,''), COALESCE(province,''), COALESCE(city,''),
+		       COALESCE(postal_code,''), COALESCE(address,'')
 		FROM crm_customers
 		WHERE `+where+`
 		ORDER BY name
@@ -74,7 +84,8 @@ func (s *server) listCustomers(w http.ResponseWriter, r *http.Request) {
 	items := []customerOut{}
 	for rows.Next() {
 		var it customerOut
-		if err := rows.Scan(&it.ID, &it.Type, &it.Name, &it.Phone, &it.Mobile, &it.NationalID, &it.EconomicCode, &it.Address); err != nil {
+		if err := rows.Scan(&it.ID, &it.Type, &it.Name, &it.Phone, &it.Mobile, &it.NationalID,
+			&it.EconomicCode, &it.Province, &it.City, &it.PostalCode, &it.Address); err != nil {
 			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 			return
 		}
@@ -101,10 +112,13 @@ func (s *server) createCustomer(w http.ResponseWriter, r *http.Request) {
 
 	res, err := s.db.Exec(`
 		INSERT INTO crm_customers
-		  (organization_id, type, name, phone, mobile, national_id, economic_code, address, created_by)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		  (organization_id, type, name, phone, mobile, national_id, economic_code,
+		   province, city, postal_code, address, created_by)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		u.OrgID, in.Type, in.Name, nullIfEmpty(in.Phone), nullIfEmpty(in.Mobile),
-		nullIfEmpty(in.NationalID), nullIfEmpty(in.EconomicCode), nullIfEmpty(in.Address), u.ID)
+		nullIfEmpty(in.NationalID), nullIfEmpty(in.EconomicCode),
+		nullIfEmpty(in.Province), nullIfEmpty(in.City), nullIfEmpty(in.PostalCode),
+		nullIfEmpty(in.Address), u.ID)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "درجِ مشتری ناموفق بود")
 		return
@@ -129,10 +143,13 @@ func (s *server) updateCustomer(w http.ResponseWriter, r *http.Request) {
 
 	res, err := s.db.Exec(`
 		UPDATE crm_customers
-		SET type = ?, name = ?, phone = ?, mobile = ?, national_id = ?, economic_code = ?, address = ?
+		SET type = ?, name = ?, phone = ?, mobile = ?, national_id = ?, economic_code = ?,
+		    province = ?, city = ?, postal_code = ?, address = ?
 		WHERE id = ? AND organization_id = ? AND is_deleted = 0`,
 		in.Type, in.Name, nullIfEmpty(in.Phone), nullIfEmpty(in.Mobile),
-		nullIfEmpty(in.NationalID), nullIfEmpty(in.EconomicCode), nullIfEmpty(in.Address), id, u.OrgID)
+		nullIfEmpty(in.NationalID), nullIfEmpty(in.EconomicCode),
+		nullIfEmpty(in.Province), nullIfEmpty(in.City), nullIfEmpty(in.PostalCode),
+		nullIfEmpty(in.Address), id, u.OrgID)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
@@ -180,8 +197,9 @@ func (s *server) importCustomers(w http.ResponseWriter, r *http.Request) {
 
 	ins, err := tx.Prepare(`
 		INSERT INTO crm_customers
-		  (organization_id, type, name, phone, mobile, national_id, economic_code, address, created_by)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+		  (organization_id, type, name, phone, mobile, national_id, economic_code,
+		   province, city, postal_code, address, created_by)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
@@ -197,7 +215,9 @@ func (s *server) importCustomers(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		if _, e := ins.Exec(u.OrgID, row.Type, row.Name, nullIfEmpty(row.Phone), nullIfEmpty(row.Mobile),
-			nullIfEmpty(row.NationalID), nullIfEmpty(row.EconomicCode), nullIfEmpty(row.Address), u.ID); e != nil {
+			nullIfEmpty(row.NationalID), nullIfEmpty(row.EconomicCode),
+			nullIfEmpty(row.Province), nullIfEmpty(row.City), nullIfEmpty(row.PostalCode),
+			nullIfEmpty(row.Address), u.ID); e != nil {
 			errs = append(errs, map[string]any{"row": i + 1, "message": "درج ناموفق"})
 			continue
 		}

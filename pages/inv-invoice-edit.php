@@ -209,6 +209,14 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         </div>
                     </div>
                 </div>
+                <div>
+                    <label class="form-label">نحوه‌ی فروش</label>
+                    <select class="form-select" id="f_payment_type">
+                        <option value="">—</option>
+                        <option value="cash">نقدی</option>
+                        <option value="credit">غیرنقدی</option>
+                    </select>
+                </div>
             </div>
 
             <table class="inv-items">
@@ -463,6 +471,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     doc_type: document.getElementById('f_doc_type').value,
                     customer_id: cust ? cust.id : 0,
                     issue_date: issue,
+                    payment_type: document.getElementById('f_payment_type').value,
                     note: document.getElementById('f_note').value.trim(),
                     items,
                 }
@@ -568,6 +577,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         return;
                     }
                     document.getElementById('f_doc_type').value = inv.doc_type;
+                    document.getElementById('f_payment_type').value = inv.payment_type || '';
                     const c = customers.find(x => x.id === inv.customer_id);
                     document.getElementById('f_customer').value = c ? c.name : ('#' + inv.customer_id);
                     document.getElementById('f_note').value = inv.note || '';

@@ -112,16 +112,40 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                         <input type="text" class="form-control" id="s_branch_code">
                     </div>
                     <div>
+                        <label class="form-label">استان</label>
+                        <input type="text" class="form-control" id="s_province">
+                    </div>
+                    <div>
+                        <label class="form-label">شهرستان</label>
+                        <input type="text" class="form-control" id="s_shahrestan">
+                    </div>
+                    <div>
+                        <label class="form-label">شهر</label>
+                        <input type="text" class="form-control" id="s_city">
+                    </div>
+                    <div>
                         <label class="form-label">کدپستی</label>
                         <input type="text" class="form-control" id="s_postal_code">
                     </div>
                     <div>
-                        <label class="form-label">تلفن</label>
+                        <label class="form-label">تلفن / نمابر</label>
                         <input type="text" class="form-control" id="s_phone">
                     </div>
                     <div style="grid-column:1/-1">
-                        <label class="form-label">نشانی</label>
+                        <label class="form-label">نشانی کامل</label>
                         <textarea class="form-control" id="s_address" rows="2"></textarea>
+                    </div>
+                    <div>
+                        <label class="form-label">شماره شبا</label>
+                        <input type="text" class="form-control" id="s_iban" placeholder="IR...">
+                    </div>
+                    <div>
+                        <label class="form-label">شماره کارت</label>
+                        <input type="text" class="form-control" id="s_card_number">
+                    </div>
+                    <div>
+                        <label class="form-label">نام بانک</label>
+                        <input type="text" class="form-control" id="s_bank_name">
                     </div>
                 </div>
             </div>
@@ -193,9 +217,15 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 document.getElementById('s_economic_code').value = se.economic_code || '';
                 document.getElementById('s_reg_number').value = se.reg_number || '';
                 document.getElementById('s_branch_code').value = se.branch_code || '';
+                document.getElementById('s_province').value = se.province || '';
+                document.getElementById('s_shahrestan').value = se.shahrestan || '';
+                document.getElementById('s_city').value = se.city || '';
                 document.getElementById('s_postal_code').value = se.postal_code || '';
                 document.getElementById('s_phone').value = se.phone || '';
                 document.getElementById('s_address').value = se.address || '';
+                document.getElementById('s_iban').value = se.iban || '';
+                document.getElementById('s_card_number').value = se.card_number || '';
+                document.getElementById('s_bank_name').value = se.bank_name || '';
                 document.getElementById('s_vat_rate').value = d.vat_rate ?? 10;
                 document.getElementById('s_number_prefix').value = d.number_prefix || '';
                 document.getElementById('s_footer_note').value = d.invoice_footer_note || '';
@@ -221,9 +251,15 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     economic_code: val('s_economic_code'),
                     reg_number: val('s_reg_number'),
                     branch_code: val('s_branch_code'),
+                    province: val('s_province'),
+                    shahrestan: val('s_shahrestan'),
+                    city: val('s_city'),
                     address: val('s_address'),
                     postal_code: val('s_postal_code'),
                     phone: val('s_phone'),
+                    iban: val('s_iban'),
+                    card_number: val('s_card_number'),
+                    bank_name: val('s_bank_name'),
                 }
             };
             try {

@@ -216,6 +216,18 @@ try {
                                 <label class="form-label">کد اقتصادی</label>
                                 <input type="text" class="form-control" id="f_economic_code">
                             </div>
+                            <div class="col-md-4">
+                                <label class="form-label">استان</label>
+                                <input type="text" class="form-control" id="f_province">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">شهر</label>
+                                <input type="text" class="form-control" id="f_city">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">کد پستی</label>
+                                <input type="text" class="form-control" id="f_postal_code">
+                            </div>
                             <div class="col-12">
                                 <label class="form-label">آدرس</label>
                                 <textarea class="form-control" id="f_address" rows="2"></textarea>
@@ -406,6 +418,9 @@ try {
             document.getElementById('f_mobile').value = r.mobile || '';
             document.getElementById('f_national_id').value = r.national_id || '';
             document.getElementById('f_economic_code').value = r.economic_code || '';
+            document.getElementById('f_province').value = r.province || '';
+            document.getElementById('f_city').value = r.city || '';
+            document.getElementById('f_postal_code').value = r.postal_code || '';
             document.getElementById('f_address').value = r.address || '';
             document.getElementById('custModalTitle').textContent = 'ویرایش مشتری';
             document.getElementById('custModalAlert').innerHTML = '';
@@ -421,6 +436,9 @@ try {
                 mobile: document.getElementById('f_mobile').value.trim(),
                 national_id: document.getElementById('f_national_id').value.trim(),
                 economic_code: document.getElementById('f_economic_code').value.trim(),
+                province: document.getElementById('f_province').value.trim(),
+                city: document.getElementById('f_city').value.trim(),
+                postal_code: document.getElementById('f_postal_code').value.trim(),
                 address: document.getElementById('f_address').value.trim(),
             };
             if (!body.name) {
@@ -461,6 +479,10 @@ try {
             'کد/شناسه ملی': 'national_id',
             'کد / شناسه ملی': 'national_id',
             'کد اقتصادی': 'economic_code',
+            'استان': 'province',
+            'شهر': 'city',
+            'کد پستی': 'postal_code',
+            'کدپستی': 'postal_code',
             'آدرس': 'address',
         };
 
