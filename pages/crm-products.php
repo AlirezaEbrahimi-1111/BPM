@@ -327,8 +327,25 @@ try {
                 cellRenderer: p => money(p.value)
             },
             {
-                headerName: 'موجودی',
+                headerName: 'موجودی انبار',
                 field: 'stock',
+                width: 110,
+                type: 'rightAligned',
+                cellRenderer: p => faDigits(Number(p.value || 0))
+            },
+            {
+                headerName: 'رزرو',
+                field: 'reserved',
+                width: 90,
+                type: 'rightAligned',
+                cellRenderer: p => {
+                    const v = Number(p.value || 0);
+                    return v > 0 ? `<span style="color:#d97706;font-weight:600">${faDigits(v)}</span>` : '<span class="text-muted">۰</span>';
+                }
+            },
+            {
+                headerName: 'قابل‌فروش',
+                field: 'available',
                 width: 110,
                 type: 'rightAligned',
                 cellRenderer: p => {

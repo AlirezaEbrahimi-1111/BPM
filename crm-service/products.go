@@ -15,7 +15,9 @@ type productOut struct {
 	UnitPrice   int64   `json:"unit_price"`
 	IsService   bool    `json:"is_service"`
 	IsTaxExempt bool    `json:"is_tax_exempt"`
-	Stock       float64 `json:"stock"` // موجودیِ انبارِ «فاکتور رسمی»
+	Stock       float64 `json:"stock"`     // موجودیِ فیزیکیِ انبارِ «فاکتور رسمی»
+	Reserved    float64 `json:"reserved"`  // مجموعِ اقلامِ فاکتورهایی که هنوز موجودی را کم نکرده‌اند
+	Available   float64 `json:"available"` // stock − reserved
 }
 
 // ورودیِ ساخت/ویرایشِ کالا.
@@ -41,10 +43,16 @@ func (p *productIn) normalize() {
 	}
 }
 
-// GET /crm/api/inv/products?q=&page=&per=
+// GET /crm/api/inv/products?q=&page=&per=&exclude_invoice=
+//
+// «رزرو» = مجموعِ اقلامِ فاکتورهایی که هنوز موجودیِ فیزیکی را کم نکرده‌اند:
+// یعنی وضعیت ≠ باطل، و «فاکتورِ رسمیِ تأییدشده» نیست (آن یکی قبلاً از stock کم شده).
+// پس پیش‌نویس‌ها و پیش‌فاکتورها (چه پیش‌نویس چه تأییدشده) رزرو حساب می‌شوند.
+// exclude_invoice: هنگامِ ویرایشِ یک فاکتور، خودِ آن فاکتور از رزرو کنار گذاشته می‌شود.
 func (s *server) listProducts(w http.ResponseWriter, r *http.Request) {
 	pg := parsePage(r)
 	u := userOf(r.Context())
+	excludeInv := toInt64(r.URL.Query().Get("exclude_invoice"))
 
 	where := "p.is_deleted = 0 AND p.organization_id = ?"
 	args := []any{u.OrgID}
@@ -60,15 +68,34 @@ func (s *server) listProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rsvWhere := "ii.product_id IS NOT NULL AND iv.status <> 'cancelled' AND NOT (iv.doc_type = 'official' AND iv.status = 'approved')"
+	var rsvArgs []any
+	if excludeInv > 0 {
+		rsvWhere += " AND ii.invoice_id <> ?"
+		rsvArgs = append(rsvArgs, excludeInv)
+	}
+
+	qArgs := []any{s.officialWarehouseID}
+	qArgs = append(qArgs, rsvArgs...)
+	qArgs = append(qArgs, args...)
+	qArgs = append(qArgs, pg.Limit, pg.Offset)
+
 	rows, err := s.db.Query(`
 		SELECT p.id, p.code, p.name, p.unit, p.unit_price, p.is_service, p.is_tax_exempt,
-		       COALESCE(st.qty, 0)
+		       COALESCE(st.qty, 0)  AS on_hand,
+		       COALESCE(rsv.qty, 0) AS reserved
 		FROM inv_products p
 		LEFT JOIN inv_stock st ON st.product_id = p.id AND st.warehouse_id = ?
+		LEFT JOIN (
+			SELECT ii.product_id, SUM(ii.qty) AS qty
+			FROM inv_invoice_items ii
+			JOIN inv_invoices iv ON iv.id = ii.invoice_id
+			WHERE `+rsvWhere+`
+			GROUP BY ii.product_id
+		) rsv ON rsv.product_id = p.id
 		WHERE `+where+`
 		ORDER BY p.name
-		LIMIT ? OFFSET ?`,
-		append([]any{s.officialWarehouseID}, append(args, pg.Limit, pg.Offset)...)...)
+		LIMIT ? OFFSET ?`, qArgs...)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
@@ -79,11 +106,12 @@ func (s *server) listProducts(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var it productOut
 		var code sql.NullString
-		if err := rows.Scan(&it.ID, &code, &it.Name, &it.Unit, &it.UnitPrice, &it.IsService, &it.IsTaxExempt, &it.Stock); err != nil {
+		if err := rows.Scan(&it.ID, &code, &it.Name, &it.Unit, &it.UnitPrice, &it.IsService, &it.IsTaxExempt, &it.Stock, &it.Reserved); err != nil {
 			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 			return
 		}
 		it.Code = code.String
+		it.Available = it.Stock - it.Reserved
 		items = append(items, it)
 	}
 

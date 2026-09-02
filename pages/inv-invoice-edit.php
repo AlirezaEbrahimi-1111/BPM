@@ -203,7 +203,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         <th class="col-price">قیمت واحد</th>
                         <th class="col-disc">تخفیف</th>
                         <th class="col-exempt">معاف</th>
-                        <th class="col-stock">موجودی</th>
+                        <th class="col-stock">قابل‌فروش</th>
                         <th class="col-total">جمع ردیف (با مالیات)</th>
                         <th class="col-del"></th>
                     </tr>
@@ -374,18 +374,20 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const cell = tr.querySelector('.it-stock');
             const pid = tr.dataset.productId ? +tr.dataset.productId : 0;
             if (!pid) {
-                cell.textContent = '';
+                const typed = tr.querySelector('.it-prod').value.trim();
+                cell.innerHTML = typed ?
+                    '<span style="color:#d97706">خارج از کاتالوگ</span>' : '';
                 tr.classList.remove('row-lowstock');
                 return;
             }
             const p = products.find(x => x.id === pid);
             const qty = num(tr.querySelector('.it-qty').value);
-            const stock = p ? Number(p.stock || 0) : 0;
-            if (qty > stock) {
-                cell.innerHTML = `<span class="stock-warn">${faDigits(stock)} (کمبود)</span>`;
+            const avail = p ? Number(p.available != null ? p.available : (p.stock || 0)) : 0;
+            if (qty > avail) {
+                cell.innerHTML = `<span class="stock-warn">${faDigits(avail)} (کمبود)</span>`;
                 tr.classList.add('row-lowstock');
             } else {
-                cell.textContent = faDigits(stock);
+                cell.textContent = faDigits(avail);
                 tr.classList.remove('row-lowstock');
             }
         }
@@ -516,12 +518,13 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 cl.appendChild(o);
             });
 
-            // کالاها
+            // کالاها — در حالتِ ویرایش، خودِ این فاکتور از محاسبه‌ی رزرو کنار می‌رود.
+            const exParam = INV_ID ? '&exclude_invoice=' + INV_ID : '';
             try {
                 let page = 1,
                     total = Infinity;
                 while (products.length < total) {
-                    const d = await apiGet('/inv/products?per=200&page=' + page);
+                    const d = await apiGet('/inv/products?per=200&page=' + page + exParam);
                     products = products.concat(d.items || []);
                     total = d.total || 0;
                     if (!d.items || !d.items.length) break;
@@ -533,7 +536,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 prodByName.set(p.name, p);
                 const o = document.createElement('option');
                 o.value = p.name;
-                o.label = (p.code ? p.code + ' — ' : '') + 'موجودی ' + faDigits(p.stock);
+                const av = (p.available != null ? p.available : p.stock);
+                o.label = (p.code ? p.code + ' — ' : '') + 'قابل‌فروش ' + faDigits(av);
                 pl.appendChild(o);
             });
 

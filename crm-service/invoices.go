@@ -403,10 +403,10 @@ func (s *server) approveInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	var status, issueDate string
+	var status, issueDate, docType string
 	if err := tx.QueryRow(
-		"SELECT status, COALESCE(issue_date,'') FROM inv_invoices WHERE id = ? AND organization_id = ? FOR UPDATE",
-		id, u.OrgID).Scan(&status, &issueDate); err == sql.ErrNoRows {
+		"SELECT status, COALESCE(issue_date,''), doc_type FROM inv_invoices WHERE id = ? AND organization_id = ? FOR UPDATE",
+		id, u.OrgID).Scan(&status, &issueDate, &docType); err == sql.ErrNoRows {
 		writeErr(w, http.StatusNotFound, "فاکتور یافت نشد")
 		return
 	} else if err != nil {
@@ -450,33 +450,36 @@ func (s *server) approveInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// کسرِ موجودی از انبارِ رسمی برای ردیف‌هایِ دارایِ کالا (سرویس هم موجودی دارد).
-	// کمبود بلاک نمی‌کند.
-	rows, err := tx.Query(
-		"SELECT product_id, qty FROM inv_invoice_items WHERE invoice_id = ? AND product_id IS NOT NULL", id)
-	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
-		return
-	}
-	type mv struct {
-		pid int64
-		qty float64
-	}
-	var moves []mv
-	for rows.Next() {
-		var m mv
-		if err := rows.Scan(&m.pid, &m.qty); err != nil {
-			rows.Close()
+	// کسرِ موجودی فقط برای «فاکتورِ رسمی». پیش‌فاکتور فقط رزرو می‌کند (که در
+	// listProducts محاسبه می‌شود) و با تأیید هم موجودیِ فیزیکی را کم نمی‌کند.
+	// کمبودِ موجودی هرگز بلاک نمی‌کند.
+	if docType == "official" {
+		rows, err := tx.Query(
+			"SELECT product_id, qty FROM inv_invoice_items WHERE invoice_id = ? AND product_id IS NOT NULL", id)
+		if err != nil {
 			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 			return
 		}
-		moves = append(moves, m)
-	}
-	rows.Close()
-	for _, m := range moves {
-		if err := addStock(tx, m.pid, s.officialWarehouseID, -m.qty, "invoice", "invoice", id, u.ID); err != nil {
-			writeErr(w, http.StatusInternalServerError, "ثبتِ حرکتِ انبار ناموفق بود")
-			return
+		type mv struct {
+			pid int64
+			qty float64
+		}
+		var moves []mv
+		for rows.Next() {
+			var m mv
+			if err := rows.Scan(&m.pid, &m.qty); err != nil {
+				rows.Close()
+				writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+				return
+			}
+			moves = append(moves, m)
+		}
+		rows.Close()
+		for _, m := range moves {
+			if err := addStock(tx, m.pid, s.officialWarehouseID, -m.qty, "invoice", "invoice", id, u.ID); err != nil {
+				writeErr(w, http.StatusInternalServerError, "ثبتِ حرکتِ انبار ناموفق بود")
+				return
+			}
 		}
 	}
 
