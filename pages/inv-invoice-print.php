@@ -137,9 +137,14 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             text-align: right;
         }
 
-        table.items td.num {
+        table.items td.num,
+        .tots .r span:last-child {
             text-align: left;
             white-space: nowrap;
+            font-family: Tahoma, Arial, sans-serif;
+            letter-spacing: 0;
+            direction: ltr;
+            unicode-bidi: isolate;
         }
 
         table.items tr.sum td {

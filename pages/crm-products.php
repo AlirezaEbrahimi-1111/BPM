@@ -357,7 +357,7 @@ try {
                 field: 'unit_price',
                 width: 160,
                 type: 'rightAligned',
-                cellRenderer: p => `<span class="num-ltr">${money(p.value)}</span>`
+                cellRenderer: p => `<span style="direction:ltr;display:inline-block;font-family:Tahoma,Arial,sans-serif;letter-spacing:0;unicode-bidi:isolate">${money(p.value)}</span>`
             },
             {
                 headerName: 'موجودی انبار',

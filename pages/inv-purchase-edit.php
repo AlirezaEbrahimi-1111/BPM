@@ -48,6 +48,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
     <script src="<?= asset('../../assets/js/entity-picker.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
 
     <style>
         .inv-wrap {
@@ -140,6 +141,15 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             font-weight: 700;
             font-size: 1.05rem;
             border-bottom: 0;
+        }
+
+        .totals-box .tl > span:last-child,
+        td.it-linetotal {
+            font-family: Tahoma, Arial, sans-serif;
+            letter-spacing: 0;
+            direction: ltr;
+            unicode-bidi: isolate;
+            display: inline-block;
         }
 
         .inv-actions {
@@ -343,10 +353,14 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 items: prodItems,
                 placeholder: 'کد یا نامِ کالا…',
                 addTitle: 'افزودن کالای جدید',
-                onAdd: () => {
-                    window.open('/pages/crm-products.php', '_blank');
-                    showToast('بعد از افزودنِ کالا، به همین صفحه برگرد؛ فهرست خودکار تازه می‌شود.', 'info');
-                },
+                onAdd: () => QuickAdd.product(p => {
+                    products.push(p);
+                    buildProdItems();
+                    document.querySelectorAll('#itemsBody tr').forEach(r => {
+                        if (r._picker) r._picker.updateItems(prodItems);
+                    });
+                    tr._picker.setValue(p.id);
+                }),
                 onSelect: it => onRowProduct(tr, it),
             });
             tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => {
@@ -533,10 +547,11 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 items: supItems(),
                 placeholder: 'کد/نام تأمین‌کننده…',
                 addTitle: 'افزودن تأمین‌کننده‌ی جدید',
-                onAdd: () => {
-                    window.open('/pages/inv-suppliers.php', '_blank');
-                    showToast('بعد از افزودن، به همین صفحه برگرد؛ فهرست خودکار تازه می‌شود.', 'info');
-                },
+                onAdd: () => QuickAdd.supplier(s => {
+                    suppliers.push(s);
+                    supplierPicker.updateItems(supItems());
+                    supplierPicker.setValue(s.id);
+                }),
             });
             try {
                 products = await loadPaged('/inv/products');
