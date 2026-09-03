@@ -146,6 +146,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             display: flex;
             gap: 10px;
             margin-top: 1.5rem;
+            justify-content: flex-end;
         }
     </style>
 </head>
@@ -228,7 +229,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             </div>
 
             <div class="inv-actions">
-                <button type="button" class="btn btn-primary" id="btnSaveBack">ذخیره و بازگشت</button>
+                <button type="button" class="btn btn-primary btn-lg px-4" id="btnSaveBack">ذخیره و بازگشت</button>
                 <button type="button" class="btn btn-outline-primary" id="btnSave">ذخیره‌ی پیش‌نویس</button>
             </div>
         </div>

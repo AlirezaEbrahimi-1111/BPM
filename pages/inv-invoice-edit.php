@@ -165,6 +165,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             display: flex;
             gap: 10px;
             margin-top: 1.5rem;
+            justify-content: flex-end;
         }
     </style>
 </head>
@@ -259,7 +260,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             </div>
 
             <div class="inv-actions">
-                <button type="button" class="btn btn-primary" id="btnSaveBack">ذخیره و بازگشت</button>
+                <button type="button" class="btn btn-primary btn-lg px-4" id="btnSaveBack">ذخیره و بازگشت</button>
                 <button type="button" class="btn btn-outline-primary" id="btnSave">ذخیره‌ی پیش‌نویس</button>
             </div>
         </div>
@@ -298,7 +299,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         function money(n) {
-            return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US'))).replace(/,/g, '٬');
+            return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US')));
         }
 
         async function apiGet(path) {

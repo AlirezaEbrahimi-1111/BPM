@@ -133,10 +133,8 @@ try {
         .num-ltr {
             direction: ltr;
             display: inline-block;
-            unicode-bidi: isolate;
-            letter-spacing: normal !important;
-            word-spacing: normal !important;
-            font-feature-settings: "tnum";
+            font-family: Tahoma, Arial, 'Vazirmatn', sans-serif;
+            letter-spacing: 0;
         }
 
         #prodModal .form-check.form-switch.switch-inline {
@@ -164,6 +162,13 @@ try {
         #importResult {
             font-size: .8rem;
             margin-top: .5rem;
+        }
+
+        .modal-header-custom {
+            background: #8e57fe;
+            color: #fff;
+            border-radius: .4rem .4rem 0 0;
+            padding: .9rem 1.1rem;
         }
     </style>
 </head>
@@ -293,7 +298,7 @@ try {
         }
 
         function money(n) {
-            return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US'))).replace(/,/g, '٬');
+            return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US')));
         }
 
         async function apiGet(path) {
@@ -467,10 +472,10 @@ try {
             const r = allRows.find(x => x.id === id);
             if (!r) return;
             document.getElementById('f_id').value = r.id;
-            document.getElementById('f_code').value = r.code || '';
+            document.getElementById('f_code').value = faDigits(r.code || '');
             document.getElementById('f_name').value = r.name || '';
             document.getElementById('f_unit').value = r.unit || '';
-            document.getElementById('f_unit_price').value = r.unit_price || 0;
+            document.getElementById('f_unit_price').value = faDigits(r.unit_price || 0);
             document.getElementById('f_opening').value = '';
             document.getElementById('f_is_service').checked = !!r.is_service;
             document.getElementById('f_is_tax_exempt').checked = !!r.is_tax_exempt;
@@ -597,6 +602,13 @@ try {
             }
             gridApi = agGrid.createGrid(document.getElementById('crmGrid'), gridOptions);
             prodModal = new bootstrap.Modal(document.getElementById('prodModal'));
+
+            // اعدادِ فیلدها هنگام خروج از فوکوس فارسی شوند
+            ['f_code', 'f_unit_price', 'f_opening'].forEach(id => {
+                document.getElementById(id).addEventListener('blur', e => {
+                    e.target.value = faDigits(toEnDigits(e.target.value));
+                });
+            });
 
             document.getElementById('crmSearch').addEventListener('input', () => {
                 clearTimeout(searchTimer);

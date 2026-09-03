@@ -109,6 +109,13 @@ try {
         :root[data-theme="dark"] .ag-action-btn:hover {
             background: rgba(142, 87, 254, .18);
         }
+
+        .modal-header-custom {
+            background: #8e57fe;
+            color: #fff;
+            border-radius: .4rem .4rem 0 0;
+            padding: .9rem 1.1rem;
+        }
     </style>
 </head>
 
@@ -205,6 +212,12 @@ try {
 
         function faDigits(s) {
             return String(s == null ? '' : s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+        }
+
+        function toEn(s) {
+            return String(s == null ? '' : s)
+                .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+                .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
         }
 
         async function apiGet(path) {
@@ -345,10 +358,10 @@ try {
             if (!r) return;
             document.getElementById('f_id').value = r.id;
             document.getElementById('f_name').value = r.name || '';
-            document.getElementById('f_phone').value = r.phone || '';
-            document.getElementById('f_mobile').value = r.mobile || '';
-            document.getElementById('f_national_id').value = r.national_id || '';
-            document.getElementById('f_economic_code').value = r.economic_code || '';
+            document.getElementById('f_phone').value = faDigits(r.phone || '');
+            document.getElementById('f_mobile').value = faDigits(r.mobile || '');
+            document.getElementById('f_national_id').value = faDigits(r.national_id || '');
+            document.getElementById('f_economic_code').value = faDigits(r.economic_code || '');
             document.getElementById('f_address').value = r.address || '';
             document.getElementById('f_note').value = r.note || '';
             document.getElementById('supModalTitle').textContent = 'ویرایش تأمین‌کننده';
@@ -360,10 +373,10 @@ try {
             const id = document.getElementById('f_id').value;
             const body = {
                 name: document.getElementById('f_name').value.trim(),
-                phone: document.getElementById('f_phone').value.trim(),
-                mobile: document.getElementById('f_mobile').value.trim(),
-                national_id: document.getElementById('f_national_id').value.trim(),
-                economic_code: document.getElementById('f_economic_code').value.trim(),
+                phone: toEn(document.getElementById('f_phone').value.trim()),
+                mobile: toEn(document.getElementById('f_mobile').value.trim()),
+                national_id: toEn(document.getElementById('f_national_id').value.trim()),
+                economic_code: toEn(document.getElementById('f_economic_code').value.trim()),
                 address: document.getElementById('f_address').value.trim(),
                 note: document.getElementById('f_note').value.trim(),
             };

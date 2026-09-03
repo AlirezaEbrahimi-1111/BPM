@@ -169,7 +169,9 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 </div>
             </div>
 
-            <button type="button" class="btn btn-primary" id="btnSave"><i class="bi bi-check2 ms-1"></i> ذخیره‌ی تنظیمات</button>
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-primary btn-lg px-4" id="btnSave"><i class="bi bi-check2 ms-1"></i> ذخیره‌ی تنظیمات</button>
+            </div>
         </div>
     </div>
 

@@ -127,10 +127,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         .num-ltr {
             direction: ltr;
             display: inline-block;
-            unicode-bidi: isolate;
-            letter-spacing: normal !important;
-            word-spacing: normal !important;
-            font-feature-settings: "tnum";
+            font-family: Tahoma, Arial, 'Vazirmatn', sans-serif;
+            letter-spacing: 0;
         }
 
         .st-badge.draft {
@@ -214,7 +212,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         }
 
         function money(n) {
-            return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US'))).replace(/,/g, '٬');
+            return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US')));
         }
 
         async function apiGet(path) {

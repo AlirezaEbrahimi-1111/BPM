@@ -146,6 +146,13 @@ try {
             font-size: .8rem;
             margin-top: .5rem;
         }
+
+        .modal-header-custom {
+            background: #8e57fe;
+            color: #fff;
+            border-radius: .4rem .4rem 0 0;
+            padding: .9rem 1.1rem;
+        }
     </style>
 </head>
 
