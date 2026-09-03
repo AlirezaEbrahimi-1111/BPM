@@ -7432,7 +7432,6 @@ body.login-page::after {
     padding: 0 16px;
     border-right: 1px solid #dee2e6;
     direction: rtl;
-    font-family: Tahoma, 'Vazirmatn', sans-serif;
 }
 
 .ag-paging-page-size {
@@ -7453,7 +7452,7 @@ body.login-page::after {
 
 .ag-paging-page-size::before {
     content: 'تعداد در صفحه: ';
-    font-family: Tahoma, 'Vazirmatn', sans-serif;
+    font-family: 'Vazirmatn', sans-serif;
     font-size: 13px;
 }
 
