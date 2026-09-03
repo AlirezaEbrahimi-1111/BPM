@@ -117,8 +117,8 @@ try {
 
         .tag-pill {
             display: inline-block;
-            padding: 0 10px;
-            line-height: 1.25;
+            padding: 5px 14px;
+            line-height: 1;
             border-radius: 999px;
             font-size: .72rem;
             font-weight: 600;
@@ -170,6 +170,15 @@ try {
             border-radius: .4rem .4rem 0 0;
             padding: .9rem 1.1rem;
         }
+
+        .ag-theme-alpine,
+        .ag-theme-alpine .ag-cell,
+        .ag-theme-alpine .ag-header-cell,
+        .ag-theme-alpine .ag-paging-panel {
+            font-family: Tahoma, 'Vazirmatn', Arial, sans-serif !important;
+            letter-spacing: 0 !important;
+            word-spacing: 0 !important;
+        }
     </style>
 </head>
 
@@ -197,7 +206,7 @@ try {
         </div>
         <div id="importResult"></div>
 
-        <div id="crmGrid" class="ag-theme-alpine" style="height:600px; width:100%;"></div>
+        <div id="crmGrid" class="ag-theme-alpine" style="width:100%;"></div>
     </div>
 
     <div class="modal fade" id="prodModal" tabindex="-1">
@@ -419,6 +428,7 @@ try {
             rowData: [],
             enableRtl: true,
             animateRows: true,
+            domLayout: 'autoHeight',
             pagination: true,
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],

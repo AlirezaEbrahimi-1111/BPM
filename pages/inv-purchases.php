@@ -112,8 +112,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         .st-badge {
             display: inline-block;
-            padding: 0 10px;
-            line-height: 1.25;
+            padding: 5px 14px;
+            line-height: 1;
             border-radius: 999px;
             font-size: .72rem;
             font-weight: 600;
@@ -144,6 +144,15 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         :root[data-theme="dark"] .st-badge.draft {
             color: #cbd5e1;
         }
+
+        .ag-theme-alpine,
+        .ag-theme-alpine .ag-cell,
+        .ag-theme-alpine .ag-header-cell,
+        .ag-theme-alpine .ag-paging-panel {
+            font-family: Tahoma, 'Vazirmatn', Arial, sans-serif !important;
+            letter-spacing: 0 !important;
+            word-spacing: 0 !important;
+        }
     </style>
 </head>
 
@@ -171,7 +180,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             <a class="btn btn-primary" href="/pages/inv-purchase-edit.php"><i class="bi bi-plus-lg ms-1"></i> فاکتور خرید جدید</a>
         </div>
 
-        <div id="invGrid" class="ag-theme-alpine" style="height:600px; width:100%;"></div>
+        <div id="invGrid" class="ag-theme-alpine" style="width:100%;"></div>
     </div>
 
     <?php include 'footer.php'; ?>
@@ -302,6 +311,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             rowData: [],
             enableRtl: true,
             animateRows: true,
+            domLayout: 'autoHeight',
             pagination: true,
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],

@@ -19,21 +19,23 @@
         var s = document.createElement('style');
         s.id = 'sb-style';
         s.textContent = [
-            '.sb-wrap{position:relative;display:block;width:100%}',
+            '.sb-wrap{position:relative;display:inline-block;vertical-align:middle}',
             '.sb-native{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important}',
             '.sb-trigger{',
             '  display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;',
-            '  padding:.375rem .75rem;font-size:1rem;line-height:1.5;font-family:inherit;',
+            '  padding:.375rem .75rem;font-size:13px;line-height:1.5;font-family:inherit;',
             '  color:var(--bs-body-color,#212529);background:var(--bs-body-bg,#fff);',
-            '  border:1px solid var(--bs-border-color,#dee2e6);border-radius:.375rem;',
+            '  border:1px solid var(--bs-border-color,#dee2e6);border-radius:6px;',
             '  cursor:pointer;text-align:start;transition:border-color .12s,box-shadow .12s;user-select:none}',
             '.sb-trigger:focus,.sb-wrap.sb-open .sb-trigger{outline:0;border-color:#8e57fe;box-shadow:0 0 0 .2rem rgba(142,87,254,.18)}',
             '.sb-trigger .sb-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}',
-            '.sb-trigger .sb-label.sb-placeholder{color:var(--bs-secondary-color,#6c757d)}',
-            '.sb-trigger .sb-caret{flex-shrink:0;width:.7em;height:.7em;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);margin-bottom:3px;opacity:.55;transition:transform .15s}',
-            '.sb-wrap.sb-open .sb-trigger .sb-caret{transform:rotate(-135deg);margin-bottom:-3px}',
-            '.sb-sm .sb-trigger{padding:.25rem .5rem;font-size:.875rem;border-radius:.25rem}',
-            '.sb-lg .sb-trigger{padding:.5rem 1rem;font-size:1.25rem;border-radius:.5rem}',
+            '.sb-trigger .sb-label.sb-placeholder{color:var(--bs-secondary-color,#9ca3af)}',
+            '.sb-caret{flex-shrink:0;width:14px;height:14px;color:#9ca3af;background:currentColor;opacity:.75;transition:transform .15s;' +
+            "-webkit-mask:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 6l4.5 4.5L12.5 6' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\") center/contain no-repeat;" +
+            "mask:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 6l4.5 4.5L12.5 6' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\") center/contain no-repeat}",
+            '.sb-wrap.sb-open .sb-caret{transform:rotate(180deg)}',
+            '.sb-sm .sb-trigger{padding:.25rem .5rem;font-size:12px;border-radius:5px}',
+            '.sb-lg .sb-trigger{padding:.5rem 1rem;font-size:15px;border-radius:8px}',
             '.sb-menu{',
             '  position:absolute;z-index:1060;top:calc(100% + 4px);left:0;right:0;min-width:100%;',
             '  max-height:260px;overflow-y:auto;display:none;',
@@ -41,7 +43,7 @@
             '  border-radius:.5rem;box-shadow:0 6px 24px rgba(0,0,0,.13);padding:4px}',
             '.sb-wrap.sb-open .sb-menu{display:block}',
             '.sb-wrap.sb-drop-up .sb-menu{top:auto;bottom:calc(100% + 4px)}',
-            '.sb-opt{padding:7px 12px;font-size:.9rem;border-radius:6px;cursor:pointer;white-space:nowrap;color:var(--bs-body-color,#212529)}',
+            '.sb-opt{padding:7px 12px;font-size:13px;border-radius:6px;cursor:pointer;white-space:nowrap;color:var(--bs-body-color,#212529)}',
             '.sb-opt:hover,.sb-opt.sb-active{background:rgba(142,87,254,.12)}',
             '.sb-opt.sb-selected{background:rgba(142,87,254,.16);font-weight:600}',
             '.sb-opt.sb-disabled{opacity:.45;cursor:not-allowed;background:none}',
@@ -95,10 +97,26 @@
         injectStyle();
         select.dataset.sbDone = '1';
 
+        // اندازه/چیدمانِ طبیعیِ selectِ اصلی را قبل از پنهان‌کردن می‌گیریم تا
+        // فیلد دقیقاً همان‌قدر جا بگیرد که قبلاً می‌گرفت.
+        var cs = window.getComputedStyle(select);
+        var natW = select.offsetWidth;
+        var parentW = select.parentElement ? select.parentElement.clientWidth : 0;
+        var blockish = cs.display === 'block' ||
+            /\bform-select\b|\bform-control\b/.test(select.className) ||
+            (parentW && Math.abs(parentW - natW) <= 6);
+
         var wrap = document.createElement('div');
         wrap.className = 'sb-wrap';
         if (/\bform-select-sm\b|\bform-control-sm\b/.test(select.className)) wrap.classList.add('sb-sm');
         if (/\bform-select-lg\b|\bform-control-lg\b/.test(select.className)) wrap.classList.add('sb-lg');
+        if (blockish) {
+            wrap.style.display = 'block';
+            wrap.style.width = '100%';
+        } else {
+            wrap.style.display = 'inline-block';
+            if (natW) wrap.style.width = natW + 'px';
+        }
 
         select.parentNode.insertBefore(wrap, select);
         wrap.appendChild(select);

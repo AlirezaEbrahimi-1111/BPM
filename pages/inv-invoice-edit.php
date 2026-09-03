@@ -63,6 +63,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             margin-bottom: 1rem;
         }
 
+        .inv-head-grid > div {
+            min-width: 0;
+        }
+
         table.inv-items {
             width: 100%;
             border-collapse: collapse;
