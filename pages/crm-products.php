@@ -117,9 +117,9 @@ try {
 
         .tag-pill {
             display: inline-block;
-            padding: 2px 9px;
+            padding: 1px 6px;
             border-radius: 999px;
-            font-size: .72rem;
+            font-size: .68rem;
             font-weight: 600;
             background: rgba(142, 87, 254, .12);
             color: #6d3ed6;
@@ -127,6 +127,12 @@ try {
 
         :root[data-theme="dark"] .tag-pill {
             color: #b79bff;
+        }
+
+        .num-ltr {
+            direction: ltr;
+            display: inline-block;
+            unicode-bidi: isolate;
         }
 
         .stock-low {
@@ -202,11 +208,11 @@ try {
                                 <div class="form-text">فقط هنگام ساخت. انبارِ «فاکتور رسمی».</div>
                             </div>
                             <div class="col-12 d-flex gap-4 pt-1">
-                                <div class="form-check form-switch">
+                                <div class="form-check form-switch form-check-reverse">
                                     <input class="form-check-input" type="checkbox" id="f_is_service">
                                     <label class="form-check-label" for="f_is_service">خدمت است (نه کالای فیزیکی)</label>
                                 </div>
-                                <div class="form-check form-switch">
+                                <div class="form-check form-switch form-check-reverse">
                                     <input class="form-check-input" type="checkbox" id="f_is_tax_exempt">
                                     <label class="form-check-label" for="f_is_tax_exempt">معاف از مالیات</label>
                                 </div>
@@ -216,7 +222,7 @@ try {
                 </div>
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                    <button type="button" class="btn btn-primary" id="btnSave">ذخیره</button>
+                    <button type="button" class="btn btn-primary btn-lg px-5" id="btnSave">ذخیره</button>
                 </div>
             </div>
         </div>
@@ -325,7 +331,7 @@ try {
                 field: 'unit_price',
                 width: 160,
                 type: 'rightAligned',
-                cellRenderer: p => money(p.value)
+                cellRenderer: p => `<span class="num-ltr">${money(p.value)}</span>`
             },
             {
                 headerName: 'موجودی انبار',

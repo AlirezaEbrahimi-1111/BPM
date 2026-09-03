@@ -220,8 +220,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <div>
                     <label class="form-label">نحوه‌ی فروش</label>
                     <select class="form-select" id="f_payment_type">
-                        <option value="">—</option>
-                        <option value="cash">نقدی</option>
+                        <option value="cash" selected>نقدی</option>
                         <option value="credit">غیرنقدی</option>
                     </select>
                 </div>
@@ -358,8 +357,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             return customers.map(c => ({
                 id: c.id,
                 label: c.name,
-                meta: [c.mobile, c.phone].filter(Boolean).map(faDigits).join(' • '),
-                search: c.name + ' ' + (c.mobile || '') + ' ' + (c.phone || '') + ' ' + (c.national_id || ''),
+                meta: c.national_id ? ('شناسه ملی: ' + faDigits(c.national_id)) :
+                    (c.mobile ? faDigits(c.mobile) : ''),
+                search: c.name + ' ' + (c.national_id || '') + ' ' + (c.mobile || '') + ' ' + (c.phone || ''),
             }));
         }
 
@@ -369,9 +369,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <td class="idx text-center"></td>
                 <td><div class="it-prod-pick"></div></td>
                 <td><input class="it-title" placeholder="شرح ردیف"></td>
-                <td class="col-qty"><input class="it-qty" inputmode="decimal" value="1"></td>
-                <td class="col-price"><input class="it-price" inputmode="numeric" value="0"></td>
-                <td class="col-disc"><input class="it-disc" inputmode="numeric" value="0"></td>
+                <td class="col-qty"><input class="it-qty" inputmode="decimal" value="۱"></td>
+                <td class="col-price"><input class="it-price" inputmode="numeric" value="۰"></td>
+                <td class="col-disc"><input class="it-disc" inputmode="numeric" value="۰"></td>
                 <td class="col-exempt"><input type="checkbox" class="it-exempt"></td>
                 <td class="col-stock it-stock small text-muted"></td>
                 <td class="col-total it-linetotal">۰</td>
@@ -382,7 +382,12 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 placeholder: 'کد یا نامِ کالا…',
                 onSelect: it => onRowProduct(tr, it),
             });
-            tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => el.addEventListener('input', recalc));
+            tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => {
+                el.addEventListener('input', recalc);
+                el.addEventListener('blur', () => {
+                    el.value = faDigits(toEn(el.value));
+                });
+            });
             tr.querySelector('.it-exempt').addEventListener('change', recalc);
             tr.querySelector('.it-del').addEventListener('click', () => {
                 tr.remove();
@@ -399,9 +404,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 if (data.product_id) tr._picker.setValue(data.product_id); // onSelect پرِ فیلدها را می‌کند
                 // مقادیرِ ذخیره‌شده روی پیش‌فرضِ کالا اولویت دارند
                 tr.querySelector('.it-title').value = data.title || '';
-                tr.querySelector('.it-qty').value = data.qty ?? 1;
-                tr.querySelector('.it-price').value = data.unit_price ?? 0;
-                tr.querySelector('.it-disc').value = data.discount ?? 0;
+                tr.querySelector('.it-qty').value = faDigits(data.qty ?? 1);
+                tr.querySelector('.it-price').value = faDigits(data.unit_price ?? 0);
+                tr.querySelector('.it-disc').value = faDigits(data.discount ?? 0);
                 tr.querySelector('.it-exempt').checked = !!data.is_tax_exempt;
             }
             renumber();
@@ -423,7 +428,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 if (p) {
                     const t = tr.querySelector('.it-title');
                     if (!t.value.trim()) t.value = p.name;
-                    tr.querySelector('.it-price').value = p.unit_price;
+                    tr.querySelector('.it-price').value = faDigits(p.unit_price);
                     tr.querySelector('.it-exempt').checked = !!p.is_tax_exempt;
                 }
             } else {
@@ -520,6 +525,16 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             if (!cust) {
                 alertBox('یک مشتری از فهرست انتخاب کنید. اگر نیست، با دکمه‌ی + بسازیدش.');
                 return;
+            }
+            if (body.doc_type === 'official' && cust.type === 'legal') {
+                const miss = [];
+                if (!(cust.national_id || '').trim()) miss.push('شناسه ملی');
+                if (!(cust.postal_code || '').trim()) miss.push('کد پستی');
+                if (!(cust.address || '').trim()) miss.push('آدرس');
+                if (miss.length) {
+                    alertBox('برای فاکتور رسمیِ این شرکت، ابتدا این اطلاعاتِ مشتری را در صفحه‌ی «مشتریان» کامل کنید: ' + miss.join('، '));
+                    return;
+                }
             }
             if (!body.items.length) {
                 alertBox('حداقل یک ردیف با «شرح» لازم است.');

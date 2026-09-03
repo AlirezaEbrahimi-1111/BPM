@@ -322,6 +322,37 @@ func (in *invoiceIn) validate() string {
 	return ""
 }
 
+// برای «فاکتور رسمی» به یک مشتریِ حقوقی (شرکت)، شناسه‌ی ملی و کد پستی و آدرس الزامی است.
+func (s *server) officialCustomerErr(customerID int64, docType string) string {
+	if docType != "official" {
+		return ""
+	}
+	var ctype, nid, pcode, addr string
+	err := s.db.QueryRow(`
+		SELECT type, COALESCE(national_id,''), COALESCE(postal_code,''), COALESCE(address,'')
+		FROM crm_customers WHERE id = ?`, customerID).Scan(&ctype, &nid, &pcode, &addr)
+	if err != nil {
+		return ""
+	}
+	if ctype != "legal" {
+		return ""
+	}
+	var missing []string
+	if strings.TrimSpace(nid) == "" {
+		missing = append(missing, "شناسه ملی")
+	}
+	if strings.TrimSpace(pcode) == "" {
+		missing = append(missing, "کد پستی")
+	}
+	if strings.TrimSpace(addr) == "" {
+		missing = append(missing, "آدرس")
+	}
+	if len(missing) > 0 {
+		return "برای فاکتور رسمیِ این شرکت، ابتدا این اطلاعاتِ مشتری را کامل کنید: " + strings.Join(missing, "، ")
+	}
+	return ""
+}
+
 // POST /crm/api/inv/invoices  — همیشه پیش‌نویس
 func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 	var in invoiceIn
@@ -341,6 +372,10 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 
 	issueNS, _ := parseIssueDate(in.IssueDate)
 	docType := normalizeDocType(in.DocType)
+	if msg := s.officialCustomerErr(in.CustomerID, docType); msg != "" {
+		writeErr(w, http.StatusUnprocessableEntity, msg)
+		return
+	}
 	items := keepFilledItems(in.Items)
 	lines, sub, disc, tax, total := computeInvoice(items, st.VatRate)
 
@@ -406,6 +441,10 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 	st, _ := s.getSettings()
 	issueNS, _ := parseIssueDate(in.IssueDate)
 	docType := normalizeDocType(in.DocType)
+	if msg := s.officialCustomerErr(in.CustomerID, docType); msg != "" {
+		writeErr(w, http.StatusUnprocessableEntity, msg)
+		return
+	}
 	items := keepFilledItems(in.Items)
 	lines, sub, disc, tax, total := computeInvoice(items, st.VatRate)
 
@@ -694,6 +733,10 @@ func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 	}
 	if convertedTo.Valid {
 		writeErr(w, http.StatusConflict, "این پیش‌فاکتور قبلاً به فاکتور رسمی تبدیل شده")
+		return
+	}
+	if msg := s.officialCustomerErr(customerID, "official"); msg != "" {
+		writeErr(w, http.StatusUnprocessableEntity, msg)
 		return
 	}
 

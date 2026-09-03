@@ -117,10 +117,16 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         .st-badge {
             display: inline-block;
-            padding: 2px 10px;
+            padding: 1px 6px;
             border-radius: 999px;
-            font-size: .74rem;
+            font-size: .7rem;
             font-weight: 600;
+        }
+
+        .num-ltr {
+            direction: ltr;
+            display: inline-block;
+            unicode-bidi: isolate;
         }
 
         .st-badge.draft {
@@ -291,7 +297,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 field: 'total_amount',
                 width: 150,
                 type: 'rightAligned',
-                cellRenderer: p => money(p.value)
+                cellRenderer: p => `<span class="num-ltr">${money(p.value)}</span>`
             },
             {
                 headerName: 'وضعیت',
