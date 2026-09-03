@@ -186,7 +186,7 @@ try {
         </div>
         <div id="importResult"></div>
 
-        <div id="crmGrid" class="ag-theme-alpine" style="height:600px; width:100%;"></div>
+        <div id="crmGrid" class="ag-theme-alpine" style="width:100%; padding-top:1rem;"></div>
     </div>
 
     <!-- مودالِ افزودن/ویرایش -->
@@ -378,6 +378,7 @@ try {
             rowData: [],
             enableRtl: true,
             animateRows: true,
+            domLayout: 'autoHeight',
             pagination: true,
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],
