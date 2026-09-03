@@ -42,6 +42,7 @@ $status   = trim($_GET['status']   ?? '');
 $priority = trim($_GET['priority'] ?? '');
 $category = trim($_GET['category'] ?? '');
 $search   = trim($_GET['search']   ?? '');
+$scope    = trim($_GET['scope']    ?? ''); // 'mine' = فقط تیکت‌هایی که کاربر طرفِ آن‌هاست
 $offset   = ($page - 1) * $limit;
 
 try {
@@ -93,6 +94,15 @@ try {
         $where[]  = '(t.subject LIKE ? OR t.ticket_number LIKE ?)';
         $params[] = "%{$search}%";
         $params[] = "%{$search}%";
+    }
+
+    // scope=mine — فقط تیکت‌هایی که کاربر سازنده یا متصدیِ آن‌هاست. برایِ زنگِ
+    // هدر: یک سرپرست کلِ تیکت‌های سازمان را می‌بیند، ولی بجِ «دیده‌نشده» فقط
+    // باید رشته‌های خودش را بشمارد، نه کلِ جریانِ سازمان.
+    if ($scope === 'mine') {
+        $where[]  = '(t.created_by = ? OR t.assigned_to = ?)';
+        $params[] = $user_id;
+        $params[] = $user_id;
     }
 
     $whereSQL = 'WHERE ' . implode(' AND ', $where);
