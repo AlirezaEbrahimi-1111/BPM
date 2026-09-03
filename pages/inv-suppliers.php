@@ -134,6 +134,10 @@ try {
         .crm-toolbar .sb-trigger {
             height: 38px !important;
         }
+    /* جدول تمامِ ارتفاعِ باقی‌ماندهٔ صفحه را پر می‌کند تا نه فاصلهٔ خالی
+       با فوترْ بماند و نه صفحه اسکرول بخورد؛ فوتر همیشه ته می‌چسبد. */
+    .overview-container { display: flex; flex-direction: column; min-height: calc(100vh - 120px); }
+    .grid-fill { flex: 1 1 auto; min-height: 300px; padding-top: 1rem; }
     </style>
 </head>
 
@@ -157,7 +161,7 @@ try {
             <?php endif; ?>
         </div>
 
-        <div id="crmGrid" class="ag-theme-alpine" style="width:100%; padding-top:1rem;"></div>
+        <div id="crmGrid" class="ag-theme-alpine grid-fill" style="width:100%;"></div>
     </div>
 
     <div class="modal fade" id="supModal" tabindex="-1">
@@ -322,7 +326,6 @@ try {
             rowData: [],
             enableRtl: true,
             animateRows: true,
-            domLayout: 'autoHeight',
             pagination: true,
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],

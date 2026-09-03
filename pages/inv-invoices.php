@@ -160,6 +160,10 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         .crm-toolbar .sb-trigger {
             height: 38px !important;
         }
+    /* جدول تمامِ ارتفاعِ باقی‌ماندهٔ صفحه را پر می‌کند تا نه فاصلهٔ خالی
+       با فوترْ بماند و نه صفحه اسکرول بخورد؛ فوتر همیشه ته می‌چسبد. */
+    .overview-container { display: flex; flex-direction: column; min-height: calc(100vh - 120px); }
+    .grid-fill { flex: 1 1 auto; min-height: 300px; padding-top: 1rem; }
     </style>
 </head>
 
@@ -187,7 +191,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             <a class="btn btn-primary" href="/pages/inv-invoice-edit.php"><i class="bi bi-plus-lg ms-1"></i> فاکتور جدید</a>
         </div>
 
-        <div id="invGrid" class="ag-theme-alpine" style="width:100%; padding-top:1rem;"></div>
+        <div id="invGrid" class="ag-theme-alpine grid-fill" style="width:100%;"></div>
     </div>
 
     <?php include 'footer.php'; ?>
@@ -340,7 +344,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             rowData: [],
             enableRtl: true,
             animateRows: true,
-            domLayout: 'autoHeight',
             pagination: true,
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],
