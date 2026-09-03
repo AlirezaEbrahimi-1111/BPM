@@ -1065,6 +1065,7 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
 </script>
 <script src="<?= asset('/assets/js/time-sync.js') ?>"></script>
 <script src="<?= asset('/assets/js/common-bundle.js') ?>"></script>
+<script src="<?= asset('/assets/js/select-box.js') ?>"></script>
 
 
 <script>
