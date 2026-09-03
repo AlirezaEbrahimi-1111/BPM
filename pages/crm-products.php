@@ -117,9 +117,10 @@ try {
 
         .tag-pill {
             display: inline-block;
-            padding: 1px 6px;
+            padding: 0 10px;
+            line-height: 1.55;
             border-radius: 999px;
-            font-size: .68rem;
+            font-size: .72rem;
             font-weight: 600;
             background: rgba(142, 87, 254, .12);
             color: #6d3ed6;
@@ -133,6 +134,26 @@ try {
             direction: ltr;
             display: inline-block;
             unicode-bidi: isolate;
+            letter-spacing: normal !important;
+            word-spacing: normal !important;
+            font-feature-settings: "tnum";
+        }
+
+        #prodModal .form-check.form-switch.switch-inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0;
+            margin: 0;
+        }
+
+        #prodModal .switch-inline .form-check-input {
+            margin: 0;
+            float: none;
+        }
+
+        #prodModal .switch-inline .form-check-label {
+            order: -1;
         }
 
         .stock-low {
@@ -208,11 +229,11 @@ try {
                                 <div class="form-text">فقط هنگام ساخت. انبارِ «فاکتور رسمی».</div>
                             </div>
                             <div class="col-12 d-flex gap-4 pt-1">
-                                <div class="form-check form-switch form-check-reverse">
+                                <div class="form-check form-switch switch-inline">
                                     <input class="form-check-input" type="checkbox" id="f_is_service">
                                     <label class="form-check-label" for="f_is_service">خدمت است (نه کالای فیزیکی)</label>
                                 </div>
-                                <div class="form-check form-switch form-check-reverse">
+                                <div class="form-check form-switch switch-inline">
                                     <input class="form-check-input" type="checkbox" id="f_is_tax_exempt">
                                     <label class="form-check-label" for="f_is_tax_exempt">معاف از مالیات</label>
                                 </div>
@@ -272,7 +293,7 @@ try {
         }
 
         function money(n) {
-            return faDigits(Number(n || 0).toLocaleString('en-US'));
+            return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US'))).replace(/,/g, '٬');
         }
 
         async function apiGet(path) {

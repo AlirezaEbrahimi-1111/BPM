@@ -264,6 +264,12 @@ try {
             return String(s == null ? '' : s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
         }
 
+        function toEn(s) {
+            return String(s == null ? '' : s)
+                .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+                .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+        }
+
         async function apiGet(path) {
             const r = await fetch(API + path, {
                 headers: {
@@ -414,13 +420,13 @@ try {
             document.getElementById('f_id').value = r.id;
             document.getElementById('f_type').value = r.type || 'legal';
             document.getElementById('f_name').value = r.name || '';
-            document.getElementById('f_phone').value = r.phone || '';
-            document.getElementById('f_mobile').value = r.mobile || '';
-            document.getElementById('f_national_id').value = r.national_id || '';
-            document.getElementById('f_economic_code').value = r.economic_code || '';
+            document.getElementById('f_phone').value = faDigits(r.phone || '');
+            document.getElementById('f_mobile').value = faDigits(r.mobile || '');
+            document.getElementById('f_national_id').value = faDigits(r.national_id || '');
+            document.getElementById('f_economic_code').value = faDigits(r.economic_code || '');
             document.getElementById('f_province').value = r.province || '';
             document.getElementById('f_city').value = r.city || '';
-            document.getElementById('f_postal_code').value = r.postal_code || '';
+            document.getElementById('f_postal_code').value = faDigits(r.postal_code || '');
             document.getElementById('f_address').value = r.address || '';
             document.getElementById('custModalTitle').textContent = 'ویرایش مشتری';
             document.getElementById('custModalAlert').innerHTML = '';
@@ -432,13 +438,13 @@ try {
             const body = {
                 type: document.getElementById('f_type').value,
                 name: document.getElementById('f_name').value.trim(),
-                phone: document.getElementById('f_phone').value.trim(),
-                mobile: document.getElementById('f_mobile').value.trim(),
-                national_id: document.getElementById('f_national_id').value.trim(),
-                economic_code: document.getElementById('f_economic_code').value.trim(),
+                phone: toEn(document.getElementById('f_phone').value.trim()),
+                mobile: toEn(document.getElementById('f_mobile').value.trim()),
+                national_id: toEn(document.getElementById('f_national_id').value.trim()),
+                economic_code: toEn(document.getElementById('f_economic_code').value.trim()),
                 province: document.getElementById('f_province').value.trim(),
                 city: document.getElementById('f_city').value.trim(),
-                postal_code: document.getElementById('f_postal_code').value.trim(),
+                postal_code: toEn(document.getElementById('f_postal_code').value.trim()),
                 address: document.getElementById('f_address').value.trim(),
             };
             if (!body.name) {

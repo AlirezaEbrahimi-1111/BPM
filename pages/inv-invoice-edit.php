@@ -298,7 +298,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         function money(n) {
-            return faDigits(Math.round(n || 0).toLocaleString('en-US'));
+            return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US'))).replace(/,/g, '٬');
         }
 
         async function apiGet(path) {
@@ -380,6 +380,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 container: tr.querySelector('.it-prod-pick'),
                 items: prodItems,
                 placeholder: 'کد یا نامِ کالا…',
+                addTitle: 'افزودن کالای جدید',
+                onAdd: () => {
+                    window.open('/pages/crm-products.php', '_blank');
+                    showToast('بعد از افزودنِ کالا، به همین صفحه برگرد؛ فهرست خودکار تازه می‌شود.', 'info');
+                },
                 onSelect: it => onRowProduct(tr, it),
             });
             tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => {
@@ -431,6 +436,12 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     tr.querySelector('.it-price').value = faDigits(p.unit_price);
                     tr.querySelector('.it-exempt').checked = !!p.is_tax_exempt;
                 }
+                // فوکوس روی «تعداد» تا کاربر مستقیم عدد بزند
+                const q = tr.querySelector('.it-qty');
+                setTimeout(() => {
+                    q.focus();
+                    q.select();
+                }, 0);
             } else {
                 delete tr.dataset.productId;
             }
@@ -572,6 +583,22 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             } catch (e) {}
         }
 
+        async function reloadProducts(exParam) {
+            const out = [];
+            try {
+                let page = 1,
+                    total = Infinity;
+                while (out.length < total) {
+                    const d = await apiGet('/inv/products?per=200&page=' + page + (exParam || ''));
+                    out.push(...(d.items || []));
+                    total = d.total || 0;
+                    if (!d.items || !d.items.length) break;
+                    page++;
+                }
+                products = out;
+            } catch (e) {}
+        }
+
         async function init() {
             if (!tok()) {
                 location.href = '../index.php';
@@ -597,26 +624,21 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     showToast('بعد از افزودنِ مشتری، به همین صفحه برگرد؛ فهرست خودکار تازه می‌شود.', 'info');
                 },
             });
-            // وقتی از تبِ «مشتریان» برگشتی، فهرست را تازه کن
+            // کالاها — در حالتِ ویرایش، خودِ این فاکتور از محاسبه‌ی رزرو کنار می‌رود.
+            const exParam = INV_ID ? '&exclude_invoice=' + INV_ID : '';
+            await reloadProducts(exParam);
+            buildProdItems();
+
+            // وقتی از تبِ «مشتریان» یا «کاتالوگ کالا» برگشتی، هر دو فهرست تازه شوند
             window.addEventListener('focus', async () => {
                 await reloadCustomers();
                 if (customerPicker) customerPicker.updateItems(custItems());
+                await reloadProducts(exParam);
+                buildProdItems();
+                document.querySelectorAll('#itemsBody tr').forEach(tr => {
+                    if (tr._picker) tr._picker.updateItems(prodItems);
+                });
             });
-
-            // کالاها — در حالتِ ویرایش، خودِ این فاکتور از محاسبه‌ی رزرو کنار می‌رود.
-            const exParam = INV_ID ? '&exclude_invoice=' + INV_ID : '';
-            try {
-                let page = 1,
-                    total = Infinity;
-                while (products.length < total) {
-                    const d = await apiGet('/inv/products?per=200&page=' + page + exParam);
-                    products = products.concat(d.items || []);
-                    total = d.total || 0;
-                    if (!d.items || !d.items.length) break;
-                    page++;
-                }
-            } catch (e) {}
-            buildProdItems();
 
             if (INV_ID) {
                 try {
@@ -642,10 +664,20 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             }
             if (!document.querySelectorAll('#itemsBody tr').length) {
                 addRow();
-                addRow();
             }
             recalc();
             if (typeof window.reinitPersianDatepickers === 'function') window.reinitPersianDatepickers();
+
+            // فاکتورِ جدید: تاریخِ صدور پیش‌فرض = امروز
+            if (!INV_ID) {
+                const di = document.getElementById('f_issue_date');
+                if (di && !di.getAttribute('data-date')) {
+                    const t = new Date();
+                    const g = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+                    di.setAttribute('data-date', g);
+                    di.value = (typeof convertToJalali === 'function') ? convertToJalali(g) : g;
+                }
+            }
 
             document.getElementById('btnAddRow').addEventListener('click', () => addRow());
             document.getElementById('btnSave').addEventListener('click', () => save(false));

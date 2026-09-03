@@ -331,9 +331,9 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             tr.innerHTML = `
                 <td class="idx text-center"></td>
                 <td><div class="it-prod-pick"></div></td>
-                <td class="col-qty"><input class="it-qty" inputmode="decimal" value="1"></td>
-                <td class="col-price"><input class="it-price" inputmode="numeric" value="0"></td>
-                <td class="col-disc"><input class="it-disc" inputmode="numeric" value="0"></td>
+                <td class="col-qty"><input class="it-qty" inputmode="decimal" value="۱"></td>
+                <td class="col-price"><input class="it-price" inputmode="numeric" value="۰"></td>
+                <td class="col-disc"><input class="it-disc" inputmode="numeric" value="۰"></td>
                 <td class="col-stock it-stock small text-muted"></td>
                 <td class="col-total it-linetotal">۰</td>
                 <td class="col-del"><button type="button" class="btn btn-sm btn-link text-danger p-0 it-del">✕</button></td>`;
@@ -341,9 +341,19 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 container: tr.querySelector('.it-prod-pick'),
                 items: prodItems,
                 placeholder: 'کد یا نامِ کالا…',
+                addTitle: 'افزودن کالای جدید',
+                onAdd: () => {
+                    window.open('/pages/crm-products.php', '_blank');
+                    showToast('بعد از افزودنِ کالا، به همین صفحه برگرد؛ فهرست خودکار تازه می‌شود.', 'info');
+                },
                 onSelect: it => onRowProduct(tr, it),
             });
-            tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => el.addEventListener('input', recalc));
+            tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => {
+                el.addEventListener('input', recalc);
+                el.addEventListener('blur', () => {
+                    el.value = faDigits(toEn(el.value));
+                });
+            });
             tr.querySelector('.it-del').addEventListener('click', () => {
                 tr.remove();
                 renumber();
@@ -377,7 +387,12 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 const p = products.find(x => x.id === item.id);
                 tr.dataset.productId = item.id;
                 const price = tr.querySelector('.it-price');
-                if (p && num(price.value) === 0) price.value = p.unit_price;
+                if (p && num(price.value) === 0) price.value = faDigits(p.unit_price);
+                const q = tr.querySelector('.it-qty');
+                setTimeout(() => {
+                    q.focus();
+                    q.select();
+                }, 0);
             } else {
                 delete tr.dataset.productId;
             }
@@ -522,15 +537,22 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     showToast('بعد از افزودن، به همین صفحه برگرد؛ فهرست خودکار تازه می‌شود.', 'info');
                 },
             });
-            window.addEventListener('focus', async () => {
-                await reloadSuppliers();
-                if (supplierPicker) supplierPicker.updateItems(supItems());
-            });
-
             try {
                 products = await loadPaged('/inv/products');
             } catch (e) {}
             buildProdItems();
+
+            window.addEventListener('focus', async () => {
+                await reloadSuppliers();
+                if (supplierPicker) supplierPicker.updateItems(supItems());
+                try {
+                    products = await loadPaged('/inv/products');
+                } catch (e) {}
+                buildProdItems();
+                document.querySelectorAll('#itemsBody tr').forEach(tr => {
+                    if (tr._picker) tr._picker.updateItems(prodItems);
+                });
+            });
 
             if (PUR_ID) {
                 try {
@@ -554,7 +576,6 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 }
             }
             if (!document.querySelectorAll('#itemsBody tr').length) {
-                addRow();
                 addRow();
             }
             recalc();

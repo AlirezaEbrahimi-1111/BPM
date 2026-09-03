@@ -117,9 +117,10 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         .st-badge {
             display: inline-block;
-            padding: 1px 6px;
+            padding: 0 10px;
+            line-height: 1.55;
             border-radius: 999px;
-            font-size: .7rem;
+            font-size: .72rem;
             font-weight: 600;
         }
 
@@ -127,6 +128,9 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             direction: ltr;
             display: inline-block;
             unicode-bidi: isolate;
+            letter-spacing: normal !important;
+            word-spacing: normal !important;
+            font-feature-settings: "tnum";
         }
 
         .st-badge.draft {
@@ -210,7 +214,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         }
 
         function money(n) {
-            return faDigits(Number(n || 0).toLocaleString('en-US'));
+            return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US'))).replace(/,/g, '٬');
         }
 
         async function apiGet(path) {
@@ -284,7 +288,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 headerName: 'تاریخ صدور',
                 field: 'issue_date',
                 width: 120,
-                cellRenderer: p => jDate(p.value)
+                cellRenderer: p => jDate(p.value || (p.data.created_at || '').split(' ')[0])
             },
             {
                 headerName: 'مشتری',

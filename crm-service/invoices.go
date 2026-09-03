@@ -370,6 +370,9 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if strings.TrimSpace(in.IssueDate) == "" {
+		in.IssueDate = time.Now().Format("2006-01-02") // پیش‌فرض: امروز
+	}
 	issueNS, _ := parseIssueDate(in.IssueDate)
 	docType := normalizeDocType(in.DocType)
 	if msg := s.officialCustomerErr(in.CustomerID, docType); msg != "" {
@@ -439,6 +442,9 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	st, _ := s.getSettings()
+	if strings.TrimSpace(in.IssueDate) == "" {
+		in.IssueDate = time.Now().Format("2006-01-02") // پیش‌فرض: امروز
+	}
 	issueNS, _ := parseIssueDate(in.IssueDate)
 	docType := normalizeDocType(in.DocType)
 	if msg := s.officialCustomerErr(in.CustomerID, docType); msg != "" {
