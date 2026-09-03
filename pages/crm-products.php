@@ -217,7 +217,7 @@ try {
         </div>
         <div id="importResult"></div>
 
-        <div id="crmGrid" class="ag-theme-alpine" style="height: 620px; width: 100%; padding-top: 1rem;"></div>
+        <div id="crmGrid" class="ag-theme-alpine" style="width:100%; padding-top:1rem;"></div>
     </div>
 
     <div class="modal fade" id="prodModal" tabindex="-1">
@@ -439,6 +439,7 @@ try {
             rowData: [],
             enableRtl: true,
             animateRows: true,
+            domLayout: 'autoHeight',
             pagination: true,
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],

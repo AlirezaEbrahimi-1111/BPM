@@ -186,7 +186,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             <a class="btn btn-primary" href="/pages/inv-purchase-edit.php"><i class="bi bi-plus-lg ms-1"></i> فاکتور خرید جدید</a>
         </div>
 
-        <div id="invGrid" class="ag-theme-alpine" style="height: 620px; width: 100%; padding-top: 1rem;"></div>
+        <div id="invGrid" class="ag-theme-alpine" style="width:100%; padding-top:1rem;"></div>
     </div>
 
     <?php include 'footer.php'; ?>
@@ -317,6 +317,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             rowData: [],
             enableRtl: true,
             animateRows: true,
+            domLayout: 'autoHeight',
             pagination: true,
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],

@@ -66,7 +66,6 @@ if (!$__me || !hasPermission($__me, 'manage_activity_sections')) {
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: 'Segoe UI', Tahoma, sans-serif;
             min-height: 100vh;
         }
 

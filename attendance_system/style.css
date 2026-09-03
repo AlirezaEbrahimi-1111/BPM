@@ -28,7 +28,6 @@ html {
 }
 
 body {
-    font-family: 'Segoe UI', 'Tahoma', sans-serif;
     background: #f1f5f9;
     color: var(--dark);
     line-height: 1.6;

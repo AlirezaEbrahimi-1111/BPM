@@ -120,7 +120,6 @@ if ($isCli) {
     <title>مهاجرت پایگاه داده</title>
     <style>
         body {
-            font-family: Tahoma, sans-serif;
             background: #f8fafc;
             padding: 32px;
             color: #1f2937;

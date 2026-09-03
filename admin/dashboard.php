@@ -33,7 +33,6 @@ if (!$current_user) {
         }
 
         body {
-            font-family: 'Tahoma', sans-serif;
             background: #f5f5f5;
         }
 

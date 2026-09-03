@@ -101,7 +101,7 @@ if ($isCli) {
     <meta charset="utf-8">
     <title>تست‌های خودکار</title>
     <style>
-        body { font-family: Tahoma, sans-serif; background: #f8fafc; padding: 28px; color: #1f2937; }
+        body { background: #f8fafc; padding: 28px; color: #1f2937; }
         .wrap { max-width: 900px; margin: 0 auto; }
 
         .summary {
