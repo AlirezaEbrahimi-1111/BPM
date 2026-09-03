@@ -42,10 +42,9 @@ $status   = trim($_GET['status']   ?? '');
 $priority = trim($_GET['priority'] ?? '');
 $category = trim($_GET['category'] ?? '');
 $search   = trim($_GET['search']   ?? '');
-// awaiting=1 → فقط تیکت‌هایی که «توپ در زمینِ کاربرِ جاری است»: آخرین پیام از
-// طرفِ مقابل بوده. برای کاربرِ عادی = آخرین پیام از پشتیبان (id ۱ یا ۱۹)؛
-// برای خودِ پشتیبان = آخرین پیام از کاربری غیرِ پشتیبان.
-$awaitingOnly = ($_GET['awaiting'] ?? '') === '1';
+// mine=1 → محدوده‌ی پنلِ تیکتِ هدر (بقیه = فقط تیکتِ خودِ کاربر). لیست همیشه
+// برمی‌گردد؛ ستونِ awaiting_you روی هر ردیف می‌گوید که در بج شمرده شود یا نه.
+$mineScope = ($_GET['mine'] ?? '') === '1';
 $offset   = ($page - 1) * $limit;
 
 try {
@@ -116,29 +115,31 @@ try {
     } catch (Throwable $e) {
     }
 
-    if ($awaitingOnly) {
-        // ۱) توپ در زمینِ کاربرِ جاری است (آخرین پیام از طرفِ مقابل)
-        if ($iAmSupport) {
-            $where[] = "$lastAuthorSub IS NOT NULL AND $lastAuthorSub NOT IN ($supportList)";
-        } else {
-            $where[]  = '(t.created_by = ? OR t.assigned_to = ?)';
-            $params[] = $user_id;
-            $params[] = $user_id;
-            $where[]  = "$lastAuthorSub IN ($supportList)";
-        }
-        // ۲) و آن پیام را هنوز ندیده‌ای (بعد از آخرین بازدیدت ثبت شده) —
-        //    «خواندنِ همه» همین را صفر می‌کند و از تیکتِ بعدی درست کار می‌کند.
-        if ($hasReads) {
-            $where[]  = "(SELECT MAX(tm4.created_at) FROM ticket_messages tm4
-                            WHERE tm4.ticket_id = t.id AND tm4.deleted_at IS NULL)
-                         > COALESCE((SELECT tmr2.last_read_at FROM ticket_message_reads tmr2
-                                       WHERE tmr2.ticket_id = t.id AND tmr2.user_id = ?),
-                                    '1000-01-01 00:00:00')";
-            $params[] = $user_id;
-        }
+    // mine=1 — محدوده‌ی پنلِ هدر: پشتیبان همه‌ی تیکت‌ها، بقیه فقط تیکتِ خودشان.
+    // لیست همیشه نمایش داده می‌شود؛ فقط «خوانده‌نشده‌ها» در بج شمرده می‌شوند.
+    if ($mineScope && !$iAmSupport) {
+        $where[]  = '(t.created_by = ? OR t.assigned_to = ?)';
+        $params[] = $user_id;
+        $params[] = $user_id;
     }
 
     $whereSQL = 'WHERE ' . implode(' AND ', $where);
+
+    // awaiting_you — «توپ در زمینِ کاربرِ جاری است و آن پیام را هنوز ندیده‌ای؟»
+    //   ۱) نویسنده‌ی آخرین پیام از طرفِ مقابل باشد
+    //   ۲) و newest message از آخرین بازدیدِ کاربر تازه‌تر باشد
+    // ($iAmSupport یک بولِ سروری است، نه ورودیِ کاربر — درجش در SQL امن است.)
+    $ballExpr = $iAmSupport
+        ? "($lastAuthorSub IS NOT NULL AND $lastAuthorSub NOT IN ($supportList))"
+        : "($lastAuthorSub IN ($supportList))";
+    $unseenExpr = $hasReads
+        ? "((SELECT MAX(tm4.created_at) FROM ticket_messages tm4
+               WHERE tm4.ticket_id = t.id AND tm4.deleted_at IS NULL)
+             > COALESCE((SELECT tmr2.last_read_at FROM ticket_message_reads tmr2
+                           WHERE tmr2.ticket_id = t.id AND tmr2.user_id = ?),
+                        '1000-01-01 00:00:00'))"
+        : "1";
+    $awaitingExpr = "(CASE WHEN $ballExpr AND $unseenExpr THEN 1 ELSE 0 END) as awaiting_you";
 
     // ── آمار (بر اساسِ فیلترِ پایه، نه فیلترِ فعلی) ──
     $statsSQL = "
@@ -199,6 +200,7 @@ try {
             (SELECT COUNT(*) FROM ticket_messages tm WHERE tm.ticket_id = t.id) as message_count,
             (SELECT COUNT(*) FROM ticket_attachments ta WHERE ta.ticket_id = t.id) as attachment_count,
             {$unseenSelect},
+            {$awaitingExpr},
             {$lastAuthorSub} as last_msg_user_id
         FROM tickets t
         LEFT JOIN ticket_statuses ts ON t.status_id = ts.id
@@ -209,29 +211,16 @@ try {
         ORDER BY t.created_at DESC
         LIMIT {$limit} OFFSET {$offset}
     ";
-    // دو placeholderِ subqueryِ unseen در متنِ SQL قبل از شرط‌های WHERE هستند،
-    // پس باید ابتدایِ آرایهٔ پارامترها بیایند.
-    $listParams = $hasReads ? array_merge([$user_id, $user_id], $params) : $params;
+    // placeholderهای SELECT (قبل از WHERE): unseen_count دو تا، awaiting_you یکی.
+    $listParams = $hasReads
+        ? array_merge([$user_id, $user_id, $user_id], $params)
+        : $params;
     $stmtList = $db->prepare($listSQL);
     $stmtList->execute($listParams);
     $tickets = $stmtList->fetchAll(PDO::FETCH_ASSOC);
-
-    // awaiting_you — «توپ در زمینِ کاربرِ جاری است و آن پیام را ندیده‌ای؟»
-    // با awaiting=1 خودِ کوئری فیلتر کرده، پس همه‌ی ردیف‌ها ۱ هستند؛ در غیرِ
-    // این صورت فقط بر اساسِ نویسنده‌ی آخرین پیام تخمین می‌زنیم.
+    // awaiting_you از خودِ SQL می‌آید (ستونِ CASE). عددی‌اش می‌کنیم.
     foreach ($tickets as &$tk) {
-        if ($awaitingOnly) {
-            $tk['awaiting_you'] = 1;
-            continue;
-        }
-        $lu = ($tk['last_msg_user_id'] ?? null) !== null ? (int) $tk['last_msg_user_id'] : null;
-        if ($lu === null) {
-            $tk['awaiting_you'] = 0;
-        } elseif ($iAmSupport) {
-            $tk['awaiting_you'] = in_array($lu, $supportIds, true) ? 0 : 1;
-        } else {
-            $tk['awaiting_you'] = in_array($lu, $supportIds, true) ? 1 : 0;
-        }
+        $tk['awaiting_you'] = (int) ($tk['awaiting_you'] ?? 0);
     }
     unset($tk);
 

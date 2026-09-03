@@ -1636,7 +1636,7 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
         if (!authToken || !box) return;
         box.innerHTML = '<div class="notification-loading"><div class="spinner-border" role="status"></div></div>';
         try {
-            var r = await fetch('/api/tickets/list.php?limit=50&awaiting=1', { headers: { 'Authorization': 'Bearer ' + authToken } });
+            var r = await fetch('/api/tickets/list.php?limit=50&mine=1', { headers: { 'Authorization': 'Bearer ' + authToken } });
             var data = await r.json();
             if (!data.success) throw new Error(data.message || 'error');
             hdrTicketsAll = data.tickets || [];
