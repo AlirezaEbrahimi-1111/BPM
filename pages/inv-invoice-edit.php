@@ -47,6 +47,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/entity-picker.js') ?>"></script>
 
     <style>
         .inv-wrap {
@@ -80,7 +81,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             white-space: nowrap;
         }
 
-        table.inv-items input {
+        table.inv-items input:not(.ep-input) {
             width: 100%;
             border: 0;
             background: transparent;
@@ -88,9 +89,18 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             color: inherit;
         }
 
-        table.inv-items input:focus {
+        table.inv-items input:not(.ep-input):focus {
             outline: 2px solid rgba(142, 87, 254, .35);
             border-radius: 4px;
+        }
+
+        /* انتخابگرِ کالا داخلِ سلولِ جدول */
+        table.inv-items .it-prod-pick {
+            min-width: 210px;
+        }
+
+        table.inv-items .ep-dropdown {
+            font-size: 12px;
         }
 
         .col-qty {
@@ -181,9 +191,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 </div>
                 <div>
                     <label class="form-label">مشتری <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="f_customer" list="custList" placeholder="نامِ مشتری را تایپ کنید">
-                    <datalist id="custList"></datalist>
-                    <div class="form-text"><a href="/pages/crm-customers.php" target="_blank">افزودن مشتری جدید</a></div>
+                    <div id="customerPicker"></div>
                 </div>
                 <div>
                     <label class="form-label">تاریخِ صدور</label>
@@ -223,7 +231,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <thead>
                     <tr>
                         <th style="width:34px">#</th>
-                        <th>کالا / خدمت</th>
+                        <th style="min-width:220px">کالا (کد / نام)</th>
                         <th>شرح</th>
                         <th class="col-qty">تعداد</th>
                         <th class="col-price">قیمت واحد</th>
@@ -236,7 +244,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 </thead>
                 <tbody id="itemsBody"></tbody>
             </table>
-            <datalist id="prodList"></datalist>
 
             <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnAddRow"><i class="bi bi-plus-lg ms-1"></i> افزودن ردیف</button>
 
@@ -319,20 +326,48 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         let VAT = 0;
         let products = [],
-            prodByName = new Map();
-        let customers = [],
-            custByName = new Map();
+            customers = [];
+        let customerPicker = null,
+            prodItems = [];
 
         function alertBox(msg, kind = 'danger') {
             document.getElementById('formAlert').innerHTML =
                 msg ? `<div class="alert alert-${kind} py-2">${msg}</div>` : '';
         }
 
+        function firstWords(s, n) {
+            const w = String(s || '').trim().split(/\s+/);
+            return w.slice(0, n).join(' ') + (w.length > n ? '…' : '');
+        }
+
+        // هر کالا → یک موردِ انتخابگر: برچسب «کد — چند کلمه‌ی اولِ نام»
+        function buildProdItems() {
+            prodItems = products.map(p => {
+                const av = (p.available != null ? p.available : p.stock);
+                const shortName = firstWords(p.name, 5);
+                return {
+                    id: p.id,
+                    label: p.code ? (faDigits(p.code) + ' — ' + shortName) : shortName,
+                    meta: 'قابل‌فروش ' + faDigits(av) + (p.unit ? ' • ' + p.unit : ''),
+                    search: (p.code || '') + ' ' + p.name,
+                };
+            });
+        }
+
+        function custItems() {
+            return customers.map(c => ({
+                id: c.id,
+                label: c.name,
+                meta: [c.mobile, c.phone].filter(Boolean).map(faDigits).join(' • '),
+                search: c.name + ' ' + (c.mobile || '') + ' ' + (c.phone || '') + ' ' + (c.national_id || ''),
+            }));
+        }
+
         function rowTemplate() {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="idx text-center"></td>
-                <td><input class="it-prod" list="prodList" placeholder="—"></td>
+                <td><div class="it-prod-pick"></div></td>
                 <td><input class="it-title" placeholder="شرح ردیف"></td>
                 <td class="col-qty"><input class="it-qty" inputmode="decimal" value="1"></td>
                 <td class="col-price"><input class="it-price" inputmode="numeric" value="0"></td>
@@ -341,7 +376,12 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <td class="col-stock it-stock small text-muted"></td>
                 <td class="col-total it-linetotal">۰</td>
                 <td class="col-del"><button type="button" class="btn btn-sm btn-link text-danger p-0 it-del">✕</button></td>`;
-            tr.querySelector('.it-prod').addEventListener('input', () => onProdPick(tr));
+            tr._picker = EntityPicker.create({
+                container: tr.querySelector('.it-prod-pick'),
+                items: prodItems,
+                placeholder: 'کد یا نامِ کالا…',
+                onSelect: it => onRowProduct(tr, it),
+            });
             tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => el.addEventListener('input', recalc));
             tr.querySelector('.it-exempt').addEventListener('change', recalc);
             tr.querySelector('.it-del').addEventListener('click', () => {
@@ -356,18 +396,13 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const tr = rowTemplate();
             document.getElementById('itemsBody').appendChild(tr);
             if (data) {
+                if (data.product_id) tr._picker.setValue(data.product_id); // onSelect پرِ فیلدها را می‌کند
+                // مقادیرِ ذخیره‌شده روی پیش‌فرضِ کالا اولویت دارند
                 tr.querySelector('.it-title').value = data.title || '';
                 tr.querySelector('.it-qty').value = data.qty ?? 1;
                 tr.querySelector('.it-price').value = data.unit_price ?? 0;
                 tr.querySelector('.it-disc').value = data.discount ?? 0;
                 tr.querySelector('.it-exempt').checked = !!data.is_tax_exempt;
-                if (data.product_id) {
-                    const p = products.find(x => x.id === data.product_id);
-                    if (p) {
-                        tr.querySelector('.it-prod').value = p.name;
-                        tr.dataset.productId = p.id;
-                    }
-                }
             }
             renumber();
             updateStockHint(tr);
@@ -380,15 +415,17 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             });
         }
 
-        function onProdPick(tr) {
-            const name = tr.querySelector('.it-prod').value.trim();
-            const p = prodByName.get(name);
-            if (p) {
-                tr.dataset.productId = p.id;
-                const t = tr.querySelector('.it-title');
-                if (!t.value.trim()) t.value = p.name;
-                tr.querySelector('.it-price').value = p.unit_price;
-                tr.querySelector('.it-exempt').checked = !!p.is_tax_exempt;
+        // انتخابِ کالا از انتخابگر: کد/قیمت/معاف/شرح را پر می‌کند.
+        function onRowProduct(tr, item) {
+            if (item) {
+                const p = products.find(x => x.id === item.id);
+                tr.dataset.productId = item.id;
+                if (p) {
+                    const t = tr.querySelector('.it-title');
+                    if (!t.value.trim()) t.value = p.name;
+                    tr.querySelector('.it-price').value = p.unit_price;
+                    tr.querySelector('.it-exempt').checked = !!p.is_tax_exempt;
+                }
             } else {
                 delete tr.dataset.productId;
             }
@@ -400,9 +437,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const cell = tr.querySelector('.it-stock');
             const pid = tr.dataset.productId ? +tr.dataset.productId : 0;
             if (!pid) {
-                const typed = tr.querySelector('.it-prod').value.trim();
-                cell.innerHTML = typed ?
-                    '<span style="color:#d97706">خارج از کاتالوگ</span>' : '';
+                cell.textContent = '';
                 tr.classList.remove('row-lowstock');
                 return;
             }
@@ -444,8 +479,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         function collect() {
-            const custName = document.getElementById('f_customer').value.trim();
-            const cust = custByName.get(custName);
+            const picked = customerPicker ? customerPicker.getValue() : null;
+            const cust = picked ? customers.find(c => c.id === picked.id) : null;
             const items = [];
             document.querySelectorAll('#itemsBody tr').forEach(tr => {
                 const title = tr.querySelector('.it-title').value.trim();
@@ -466,7 +501,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             }
             return {
                 cust,
-                custName,
                 body: {
                     doc_type: document.getElementById('f_doc_type').value,
                     customer_id: cust ? cust.id : 0,
@@ -481,15 +515,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         async function save(goBack) {
             const {
                 cust,
-                custName,
                 body
             } = collect();
-            if (!custName) {
-                alertBox('نامِ مشتری را وارد کنید.');
-                return;
-            }
             if (!cust) {
-                alertBox('مشتری «' + custName + '» در فهرست نیست. از لینکِ «افزودن مشتری جدید» ثبتش کنید و دوباره انتخاب کنید.');
+                alertBox('یک مشتری از فهرست انتخاب کنید. اگر نیست، با دکمه‌ی + بسازیدش.');
                 return;
             }
             if (!body.items.length) {
@@ -512,6 +541,22 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             }
         }
 
+        async function reloadCustomers() {
+            const out = [];
+            try {
+                let page = 1,
+                    total = Infinity;
+                while (out.length < total) {
+                    const d = await apiGet('/customers?per=200&page=' + page);
+                    out.push(...(d.items || []));
+                    total = d.total || 0;
+                    if (!d.items || !d.items.length) break;
+                    page++;
+                }
+                customers = out;
+            } catch (e) {}
+        }
+
         async function init() {
             if (!tok()) {
                 location.href = '../index.php';
@@ -526,23 +571,21 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             }
 
             // مشتری‌ها
-            try {
-                let page = 1,
-                    total = Infinity;
-                while (customers.length < total) {
-                    const d = await apiGet('/customers?per=200&page=' + page);
-                    customers = customers.concat(d.items || []);
-                    total = d.total || 0;
-                    if (!d.items || !d.items.length) break;
-                    page++;
-                }
-            } catch (e) {}
-            const cl = document.getElementById('custList');
-            customers.forEach(c => {
-                custByName.set(c.name, c);
-                const o = document.createElement('option');
-                o.value = c.name;
-                cl.appendChild(o);
+            await reloadCustomers();
+            customerPicker = EntityPicker.create({
+                container: '#customerPicker',
+                items: custItems(),
+                placeholder: 'کد/نام مشتری…',
+                addTitle: 'افزودن مشتری جدید',
+                onAdd: () => {
+                    window.open('/pages/crm-customers.php', '_blank');
+                    showToast('بعد از افزودنِ مشتری، به همین صفحه برگرد؛ فهرست خودکار تازه می‌شود.', 'info');
+                },
+            });
+            // وقتی از تبِ «مشتریان» برگشتی، فهرست را تازه کن
+            window.addEventListener('focus', async () => {
+                await reloadCustomers();
+                if (customerPicker) customerPicker.updateItems(custItems());
             });
 
             // کالاها — در حالتِ ویرایش، خودِ این فاکتور از محاسبه‌ی رزرو کنار می‌رود.
@@ -558,15 +601,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     page++;
                 }
             } catch (e) {}
-            const pl = document.getElementById('prodList');
-            products.forEach(p => {
-                prodByName.set(p.name, p);
-                const o = document.createElement('option');
-                o.value = p.name;
-                const av = (p.available != null ? p.available : p.stock);
-                o.label = (p.code ? p.code + ' — ' : '') + 'قابل‌فروش ' + faDigits(av);
-                pl.appendChild(o);
-            });
+            buildProdItems();
 
             if (INV_ID) {
                 try {
@@ -578,8 +613,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     }
                     document.getElementById('f_doc_type').value = inv.doc_type;
                     document.getElementById('f_payment_type').value = inv.payment_type || '';
-                    const c = customers.find(x => x.id === inv.customer_id);
-                    document.getElementById('f_customer').value = c ? c.name : ('#' + inv.customer_id);
+                    if (customerPicker) customerPicker.setValue(inv.customer_id);
                     document.getElementById('f_note').value = inv.note || '';
                     if (inv.issue_date) {
                         const di = document.getElementById('f_issue_date');

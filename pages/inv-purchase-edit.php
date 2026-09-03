@@ -47,6 +47,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/entity-picker.js') ?>"></script>
 
     <style>
         .inv-wrap {
@@ -80,7 +81,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             white-space: nowrap;
         }
 
-        table.inv-items input {
+        table.inv-items input:not(.ep-input) {
             width: 100%;
             border: 0;
             background: transparent;
@@ -88,9 +89,13 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             color: inherit;
         }
 
-        table.inv-items input:focus {
+        table.inv-items input:not(.ep-input):focus {
             outline: 2px solid rgba(142, 87, 254, .35);
             border-radius: 4px;
+        }
+
+        table.inv-items .it-prod-pick {
+            min-width: 230px;
         }
 
         .col-qty {
@@ -160,9 +165,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             <div class="inv-head-grid">
                 <div>
                     <label class="form-label">تأمین‌کننده <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="f_supplier" list="supList" placeholder="نامِ تأمین‌کننده">
-                    <datalist id="supList"></datalist>
-                    <div class="form-text"><a href="/pages/inv-suppliers.php" target="_blank">افزودن تأمین‌کننده‌ی جدید</a></div>
+                    <div id="supplierPicker"></div>
                 </div>
                 <div>
                     <label class="form-label">شماره‌ی فاکتورِ فروشنده</label>
@@ -209,7 +212,6 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 </thead>
                 <tbody id="itemsBody"></tbody>
             </table>
-            <datalist id="prodList"></datalist>
 
             <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnAddRow"><i class="bi bi-plus-lg ms-1"></i> افزودن ردیف</button>
 
@@ -292,27 +294,55 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         let VAT = 0;
         let products = [],
-            prodByName = new Map();
-        let suppliers = [],
-            supByName = new Map();
+            suppliers = [];
+        let supplierPicker = null,
+            prodItems = [];
 
         function alertBox(msg, kind = 'danger') {
             document.getElementById('formAlert').innerHTML =
                 msg ? `<div class="alert alert-${kind} py-2">${msg}</div>` : '';
         }
 
+        function firstWords(s, n) {
+            const w = String(s || '').trim().split(/\s+/);
+            return w.slice(0, n).join(' ') + (w.length > n ? '…' : '');
+        }
+
+        function buildProdItems() {
+            prodItems = products.map(p => ({
+                id: p.id,
+                label: p.code ? (faDigits(p.code) + ' — ' + firstWords(p.name, 5)) : firstWords(p.name, 5),
+                meta: 'موجودی ' + faDigits(Number(p.stock || 0)) + (p.unit ? ' • ' + p.unit : ''),
+                search: (p.code || '') + ' ' + p.name,
+            }));
+        }
+
+        function supItems() {
+            return suppliers.map(sp => ({
+                id: sp.id,
+                label: sp.name,
+                meta: [sp.mobile, sp.phone].filter(Boolean).map(faDigits).join(' • '),
+                search: sp.name + ' ' + (sp.mobile || '') + ' ' + (sp.phone || '') + ' ' + (sp.national_id || ''),
+            }));
+        }
+
         function rowTemplate() {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="idx text-center"></td>
-                <td><input class="it-prod" list="prodList" placeholder="انتخاب کالا"></td>
+                <td><div class="it-prod-pick"></div></td>
                 <td class="col-qty"><input class="it-qty" inputmode="decimal" value="1"></td>
                 <td class="col-price"><input class="it-price" inputmode="numeric" value="0"></td>
                 <td class="col-disc"><input class="it-disc" inputmode="numeric" value="0"></td>
                 <td class="col-stock it-stock small text-muted"></td>
                 <td class="col-total it-linetotal">۰</td>
                 <td class="col-del"><button type="button" class="btn btn-sm btn-link text-danger p-0 it-del">✕</button></td>`;
-            tr.querySelector('.it-prod').addEventListener('input', () => onProdPick(tr));
+            tr._picker = EntityPicker.create({
+                container: tr.querySelector('.it-prod-pick'),
+                items: prodItems,
+                placeholder: 'کد یا نامِ کالا…',
+                onSelect: it => onRowProduct(tr, it),
+            });
             tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => el.addEventListener('input', recalc));
             tr.querySelector('.it-del').addEventListener('click', () => {
                 tr.remove();
@@ -326,16 +356,10 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const tr = rowTemplate();
             document.getElementById('itemsBody').appendChild(tr);
             if (data) {
+                if (data.product_id) tr._picker.setValue(data.product_id);
                 tr.querySelector('.it-qty').value = data.qty ?? 1;
                 tr.querySelector('.it-price').value = data.unit_price ?? 0;
                 tr.querySelector('.it-disc').value = data.discount ?? 0;
-                if (data.product_id) {
-                    const p = products.find(x => x.id === data.product_id);
-                    if (p) {
-                        tr.querySelector('.it-prod').value = p.name;
-                        tr.dataset.productId = p.id;
-                    }
-                }
             }
             renumber();
             updateStockHint(tr);
@@ -348,12 +372,12 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             });
         }
 
-        function onProdPick(tr) {
-            const p = prodByName.get(tr.querySelector('.it-prod').value.trim());
-            if (p) {
-                tr.dataset.productId = p.id;
+        function onRowProduct(tr, item) {
+            if (item) {
+                const p = products.find(x => x.id === item.id);
+                tr.dataset.productId = item.id;
                 const price = tr.querySelector('.it-price');
-                if (num(price.value) === 0) price.value = p.unit_price;
+                if (p && num(price.value) === 0) price.value = p.unit_price;
             } else {
                 delete tr.dataset.productId;
             }
@@ -398,22 +422,13 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         function collect() {
-            const supName = document.getElementById('f_supplier').value.trim();
-            const sup = supByName.get(supName);
+            const picked = supplierPicker ? supplierPicker.getValue() : null;
+            const sup = picked ? suppliers.find(s => s.id === picked.id) : null;
             const items = [];
-            const unresolved = [];
-            document.querySelectorAll('#itemsBody tr').forEach((tr, i) => {
+            document.querySelectorAll('#itemsBody tr').forEach(tr => {
                 const pid = tr.dataset.productId ? +tr.dataset.productId : 0;
-                const typed = tr.querySelector('.it-prod').value.trim();
                 const qty = num(tr.querySelector('.it-qty').value);
-                if (!pid) {
-                    if (typed) unresolved.push({
-                        row: i + 1,
-                        name: typed
-                    });
-                    return;
-                }
-                if (qty <= 0) return;
+                if (!pid || qty <= 0) return;
                 items.push({
                     product_id: pid,
                     qty,
@@ -426,8 +441,6 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             if (!issue && di.value && typeof convertToGregorian === 'function') issue = convertToGregorian(di.value) || '';
             return {
                 sup,
-                supName,
-                unresolved,
                 body: {
                     supplier_id: sup ? sup.id : 0,
                     supplier_ref_number: document.getElementById('f_ref').value.trim(),
@@ -441,22 +454,10 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         async function save(goBack) {
             const {
                 sup,
-                supName,
-                unresolved,
                 body
             } = collect();
-            if (!supName) {
-                alertBox('نامِ تأمین‌کننده را وارد کنید.');
-                return;
-            }
             if (!sup) {
-                alertBox('تأمین‌کننده «' + supName + '» در فهرست نیست. از لینکِ بالا ثبتش کنید و دوباره انتخاب کنید.');
-                return;
-            }
-            if (unresolved.length) {
-                alertBox('این کالاها در «کاتالوگ کالا» نیستند و باید اول آن‌جا ثبت شوند: ' +
-                    unresolved.map(u => 'ردیف ' + faDigits(u.row) + ' («' + u.name + '»)').join('، ') +
-                    '. در فاکتورِ خرید فقط کالای موجود در کاتالوگ قابل انتخاب است.');
+                alertBox('یک تأمین‌کننده از فهرست انتخاب کنید. اگر نیست، با دکمه‌ی + بسازیدش.');
                 return;
             }
             if (!body.items.length) {
@@ -479,16 +480,24 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             }
         }
 
-        async function loadPaged(path, into) {
+        async function loadPaged(path) {
+            const out = [];
             let page = 1,
                 total = Infinity;
-            while (into.length < total) {
+            while (out.length < total) {
                 const d = await apiGet(path + '?per=200&page=' + page);
-                into.push(...(d.items || []));
+                out.push(...(d.items || []));
                 total = d.total || 0;
                 if (!d.items || !d.items.length) break;
                 page++;
             }
+            return out;
+        }
+
+        async function reloadSuppliers() {
+            try {
+                suppliers = await loadPaged('/inv/suppliers');
+            } catch (e) {}
         }
 
         async function init() {
@@ -502,28 +511,26 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 document.getElementById('t_vatrate').textContent = faDigits(VAT);
             } catch (e) {}
 
-            try {
-                await loadPaged('/inv/suppliers', suppliers);
-            } catch (e) {}
-            const sl = document.getElementById('supList');
-            suppliers.forEach(sp => {
-                supByName.set(sp.name, sp);
-                const o = document.createElement('option');
-                o.value = sp.name;
-                sl.appendChild(o);
+            await reloadSuppliers();
+            supplierPicker = EntityPicker.create({
+                container: '#supplierPicker',
+                items: supItems(),
+                placeholder: 'کد/نام تأمین‌کننده…',
+                addTitle: 'افزودن تأمین‌کننده‌ی جدید',
+                onAdd: () => {
+                    window.open('/pages/inv-suppliers.php', '_blank');
+                    showToast('بعد از افزودن، به همین صفحه برگرد؛ فهرست خودکار تازه می‌شود.', 'info');
+                },
+            });
+            window.addEventListener('focus', async () => {
+                await reloadSuppliers();
+                if (supplierPicker) supplierPicker.updateItems(supItems());
             });
 
             try {
-                await loadPaged('/inv/products', products);
+                products = await loadPaged('/inv/products');
             } catch (e) {}
-            const pl = document.getElementById('prodList');
-            products.forEach(p => {
-                prodByName.set(p.name, p);
-                const o = document.createElement('option');
-                o.value = p.name;
-                o.label = (p.code ? p.code + ' — ' : '') + 'موجودی ' + faDigits(p.stock);
-                pl.appendChild(o);
-            });
+            buildProdItems();
 
             if (PUR_ID) {
                 try {
@@ -533,8 +540,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         location.href = '/pages/inv-purchases.php';
                         return;
                     }
-                    const sp = suppliers.find(x => x.id === pur.supplier_id);
-                    document.getElementById('f_supplier').value = sp ? sp.name : ('#' + pur.supplier_id);
+                    if (supplierPicker) supplierPicker.setValue(pur.supplier_id);
                     document.getElementById('f_ref').value = pur.supplier_ref_number || '';
                     document.getElementById('f_note').value = pur.note || '';
                     if (pur.issue_date) {
