@@ -310,7 +310,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 field: 'total_amount',
                 width: 150,
                 type: 'rightAligned',
-                cellRenderer: p => `<span style="direction:ltr;display:inline-block;letter-spacing:0;unicode-bidi:isolate">${money(p.value)}</span>`
+                cellRenderer: p => money(p.value)
             },
             {
                 headerName: 'وضعیت',

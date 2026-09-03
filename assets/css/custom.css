@@ -1645,6 +1645,24 @@ s-normal {
     --ag-row-hover-color: rgba(142, 87, 254, 0.12);
 }
 
+/* ریشهٔ «فاصلهٔ زیادِ ارقام» در ستون‌هایِ عددی (مثلِ «مبلغ کل»):
+   تمِ Quartzِ AG Grid رویِ هر سلولِ راست‌چین این را ست می‌کند:
+       .ag-right-aligned-cell { font-variant-numeric: tabular-nums }
+   ارقامِ tabularِ فونتِ وزیر عرضِ زیادی دارند → بینِ رقم‌ها فاصله می‌افتد.
+   این‌جا برایِ همهٔ جدول‌هایِ پروژه به حالتِ عادی (متناسب) برمی‌گردانیم —
+   دقیقاً مثلِ ستون‌هایِ غیرِراست‌چین که سالم رندر می‌شوند. */
+.ag-theme-alpine .ag-cell,
+.ag-theme-alpine .ag-cell-value,
+.ag-theme-alpine .ag-right-aligned-cell,
+.ag-theme-alpine .ag-right-aligned-cell .ag-cell-value,
+.ag-theme-quartz .ag-cell,
+.ag-theme-quartz .ag-cell-value,
+.ag-theme-quartz .ag-right-aligned-cell,
+.ag-theme-quartz .ag-right-aligned-cell .ag-cell-value {
+    font-variant-numeric: normal !important;
+    font-feature-settings: normal !important;
+}
+
 .ag-theme-alpine .ag-cell-focus:not(.ag-cell-range-selected),
 .ag-theme-quartz .ag-cell-focus:not(.ag-cell-range-selected) {
     border-color: #8e57fe !important;
