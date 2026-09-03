@@ -42,7 +42,10 @@ $status   = trim($_GET['status']   ?? '');
 $priority = trim($_GET['priority'] ?? '');
 $category = trim($_GET['category'] ?? '');
 $search   = trim($_GET['search']   ?? '');
-$scope    = trim($_GET['scope']    ?? ''); // 'mine' = فقط تیکت‌هایی که کاربر طرفِ آن‌هاست
+// awaiting=1 → فقط تیکت‌هایی که «توپ در زمینِ کاربرِ جاری است»: آخرین پیام از
+// طرفِ مقابل بوده. برای کاربرِ عادی = آخرین پیام از پشتیبان (id ۱ یا ۱۹)؛
+// برای خودِ پشتیبان = آخرین پیام از کاربری غیرِ پشتیبان.
+$awaitingOnly = ($_GET['awaiting'] ?? '') === '1';
 $offset   = ($page - 1) * $limit;
 
 try {
@@ -96,13 +99,28 @@ try {
         $params[] = "%{$search}%";
     }
 
-    // scope=mine — فقط تیکت‌هایی که کاربر سازنده یا متصدیِ آن‌هاست. برایِ زنگِ
-    // هدر: یک سرپرست کلِ تیکت‌های سازمان را می‌بیند، ولی بجِ «دیده‌نشده» فقط
-    // باید رشته‌های خودش را بشمارد، نه کلِ جریانِ سازمان.
-    if ($scope === 'mine') {
-        $where[]  = '(t.created_by = ? OR t.assigned_to = ?)';
-        $params[] = $user_id;
-        $params[] = $user_id;
+    // «پشتیبان» = دو کاربرِ سیستمی (getSuperAdminIds). مبنایِ منطقِ «توپ در
+    // زمینِ کیست».
+    $supportIds  = getSuperAdminIds();                              // [1, 19]
+    $supportList = implode(',', array_map('intval', $supportIds));  // "1,19"
+    $iAmSupport  = in_array((int) $user_id, $supportIds, true);
+
+    // زیرکوئریِ «نویسنده‌ی آخرین پیامِ (حذف‌نشده‌ی) این تیکت»
+    $lastAuthorSub = "(SELECT tm2.user_id FROM ticket_messages tm2
+                        WHERE tm2.ticket_id = t.id AND tm2.deleted_at IS NULL
+                        ORDER BY tm2.created_at DESC, tm2.id DESC LIMIT 1)";
+
+    if ($awaitingOnly) {
+        if ($iAmSupport) {
+            // پشتیبان: هر تیکتی در سیستم که آخرین پیامش از یک کاربرِ غیرِپشتیبان است
+            $where[] = "$lastAuthorSub IS NOT NULL AND $lastAuthorSub NOT IN ($supportList)";
+        } else {
+            // بقیه (کاربرِ عادی/سرپرست): فقط تیکت‌های خودِ کاربر که آخرین پیامشان از پشتیبان است
+            $where[]  = '(t.created_by = ? OR t.assigned_to = ?)';
+            $params[] = $user_id;
+            $params[] = $user_id;
+            $where[]  = "$lastAuthorSub IN ($supportList)";
+        }
     }
 
     $whereSQL = 'WHERE ' . implode(' AND ', $where);
@@ -171,7 +189,8 @@ try {
             CONCAT(COALESCE(u.first_name,''), ' ', COALESCE(u.last_name,'')) as creator_name,
             (SELECT COUNT(*) FROM ticket_messages tm WHERE tm.ticket_id = t.id) as message_count,
             (SELECT COUNT(*) FROM ticket_attachments ta WHERE ta.ticket_id = t.id) as attachment_count,
-            {$unseenSelect}
+            {$unseenSelect},
+            {$lastAuthorSub} as last_msg_user_id
         FROM tickets t
         LEFT JOIN ticket_statuses ts ON t.status_id = ts.id
         LEFT JOIN ticket_priorities tp ON t.priority_id = tp.id
@@ -187,6 +206,20 @@ try {
     $stmtList = $db->prepare($listSQL);
     $stmtList->execute($listParams);
     $tickets = $stmtList->fetchAll(PDO::FETCH_ASSOC);
+
+    // awaiting_you — «توپ در زمینِ کاربرِ جاری است؟» (بدونِ وابستگی به
+    // ticket_message_reads؛ فقط بر اساسِ نویسنده‌ی آخرین پیام)
+    foreach ($tickets as &$tk) {
+        $lu = ($tk['last_msg_user_id'] ?? null) !== null ? (int) $tk['last_msg_user_id'] : null;
+        if ($lu === null) {
+            $tk['awaiting_you'] = 0;
+        } elseif ($iAmSupport) {
+            $tk['awaiting_you'] = in_array($lu, $supportIds, true) ? 0 : 1;
+        } else {
+            $tk['awaiting_you'] = in_array($lu, $supportIds, true) ? 1 : 0;
+        }
+    }
+    unset($tk);
 
     echo json_encode([
         'success'    => true,

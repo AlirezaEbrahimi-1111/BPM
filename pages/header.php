@@ -1633,11 +1633,11 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
         if (!authToken || !box) return;
         box.innerHTML = '<div class="notification-loading"><div class="spinner-border" role="status"></div></div>';
         try {
-            var r = await fetch('/api/tickets/list.php?limit=50&scope=mine', { headers: { 'Authorization': 'Bearer ' + authToken } });
+            var r = await fetch('/api/tickets/list.php?limit=50&awaiting=1', { headers: { 'Authorization': 'Bearer ' + authToken } });
             var data = await r.json();
             if (!data.success) throw new Error(data.message || 'error');
             hdrTicketsAll = data.tickets || [];
-            hdrTicketsUnseen = hdrTicketsAll.filter(function(t) { return Number(t.unseen_count) > 0; }).length;
+            hdrTicketsUnseen = hdrTicketsAll.filter(function(t) { return Number(t.awaiting_you) > 0; }).length;
             hdrRefreshBellBadge();
             renderHdrTickets();
         } catch (e) {
@@ -1654,10 +1654,10 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
             if (!q) return true;
             return ((t.subject || '') + ' ' + (t.ticket_number || '')).toLowerCase().indexOf(q) > -1;
         });
-        // تیکت‌هایِ دارایِ پیامِ دیده‌نشده تا وقتی read نشده‌اند، بالایِ لیست
+        // تیکت‌هایی که «توپ در زمینِ کاربر است» بالایِ لیست
         items.sort(function(a, b) {
-            var ua = Number(a.unseen_count) > 0 ? 1 : 0;
-            var ub = Number(b.unseen_count) > 0 ? 1 : 0;
+            var ua = Number(a.awaiting_you) > 0 ? 1 : 0;
+            var ub = Number(b.awaiting_you) > 0 ? 1 : 0;
             if (ua !== ub) return ub - ua;
             return String(b.created_at || '').localeCompare(String(a.created_at || '')); // جدیدتر بالاتر
         });
@@ -1669,8 +1669,8 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
             var raw = (t.created_at || '');
             var dateOnly = (window.TimeSync && TimeSync.formatJalali) ? TimeSync.formatJalali(raw) : raw.split(' ')[0];
             var c = t.status_color || '#8e57fe';
-            var unseen = Number(t.unseen_count) > 0;
-            var dot = unseen ? '<span class="hdr-ticket-dot" title="پیامِ دیده‌نشده"></span>' : '';
+            var unseen = Number(t.awaiting_you) > 0;
+            var dot = unseen ? '<span class="hdr-ticket-dot" title="در انتظارِ پاسخِ شما"></span>' : '';
             return '<a class="hdr-ticket-item' + (unseen ? ' unseen' : '') + '" href="/pages/ticket-detail.php?id=' + encodeURIComponent(t.id) + '">' +
                 '<div class="hdr-ticket-row1">' +
                 '<span class="hdr-ticket-num">' + dot + '#' + toFa(esc(String(t.ticket_number || ''))) + '</span>' +
