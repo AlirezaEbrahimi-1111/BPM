@@ -550,6 +550,10 @@ try {
             }
             gridApi = agGrid.createGrid(document.getElementById('crmGrid'), gridOptions);
             custModal = new bootstrap.Modal(document.getElementById('custModal'));
+            document.getElementById('custModal').addEventListener('shown.bs.modal', () => {
+                const el = document.querySelector('#custModal .modal-body input:not([type=hidden]), #custModal .modal-body select, #custModal .modal-body textarea');
+                if (el) el.focus();
+            });
 
             document.getElementById('crmSearch').addEventListener('input', () => {
                 clearTimeout(searchTimer);

@@ -295,7 +295,7 @@ try {
 
         const gridOptions = {
             theme: agGrid.themeQuartz.withParams({
-                fontFamily: "'Vazirmatn', Tahoma, sans-serif",
+                fontFamily: 'Tahoma, Vazirmatn, sans-serif',
                 fontSize: 13,
                 headerBackgroundColor: '#e9e9e9',
             }),
@@ -308,8 +308,7 @@ try {
             paginationPageSizeSelector: [20, 50, 100],
             defaultColDef: {
                 resizable: true,
-                sortable: true,
-                filter: true
+                sortable: true
             },
             overlayNoRowsTemplate: '<span class="text-muted">تأمین‌کننده‌ای یافت نشد</span>',
         };
@@ -416,6 +415,10 @@ try {
             }
             gridApi = agGrid.createGrid(document.getElementById('crmGrid'), gridOptions);
             supModal = new bootstrap.Modal(document.getElementById('supModal'));
+            document.getElementById('supModal').addEventListener('shown.bs.modal', () => {
+                const el = document.querySelector('#supModal .modal-body input:not([type=hidden]), #supModal .modal-body select, #supModal .modal-body textarea');
+                if (el) el.focus();
+            });
             document.getElementById('crmSearch').addEventListener('input', () => {
                 clearTimeout(searchTimer);
                 searchTimer = setTimeout(applyFilter, 200);

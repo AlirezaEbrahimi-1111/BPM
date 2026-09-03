@@ -113,7 +113,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         .st-badge {
             display: inline-block;
             padding: 0 10px;
-            line-height: 1.55;
+            line-height: 1.25;
             border-radius: 999px;
             font-size: .72rem;
             font-weight: 600;
@@ -294,7 +294,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         const gridOptions = {
             theme: agGrid.themeQuartz.withParams({
-                fontFamily: "'Vazirmatn', Tahoma, sans-serif",
+                fontFamily: 'Tahoma, Vazirmatn, sans-serif',
                 fontSize: 13,
                 headerBackgroundColor: '#e9e9e9',
             }),
@@ -307,8 +307,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             paginationPageSizeSelector: [20, 50, 100],
             defaultColDef: {
                 resizable: true,
-                sortable: true,
-                filter: true
+                sortable: true
             },
             overlayNoRowsTemplate: '<span class="text-muted">فاکتوری یافت نشد</span>',
         };

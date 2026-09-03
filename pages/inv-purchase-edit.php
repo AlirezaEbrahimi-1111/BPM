@@ -143,13 +143,35 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             border-bottom: 0;
         }
 
-        .totals-box .tl > span:last-child,
-        td.it-linetotal {
+        .totals-box .tl > span:last-child {
             font-family: Tahoma, Arial, sans-serif;
             letter-spacing: 0;
             direction: ltr;
             unicode-bidi: isolate;
             display: inline-block;
+        }
+
+        table.inv-items td.it-linetotal {
+            font-family: Tahoma, Arial, sans-serif;
+            letter-spacing: 0;
+        }
+
+        table.inv-items td.col-qty,
+        table.inv-items td.col-price,
+        table.inv-items td.col-disc,
+        table.inv-items td.col-stock,
+        table.inv-items td.col-total {
+            text-align: center;
+        }
+
+        table.inv-items td.col-qty input,
+        table.inv-items td.col-price input,
+        table.inv-items td.col-disc input {
+            text-align: center;
+        }
+
+        table.inv-items .it-del {
+            text-decoration: none !important;
         }
 
         .inv-actions {
@@ -239,8 +261,8 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             </div>
 
             <div class="inv-actions">
-                <button type="button" class="btn btn-primary btn-lg px-4" id="btnSaveBack">ذخیره و بازگشت</button>
                 <button type="button" class="btn btn-outline-primary" id="btnSave">ذخیره‌ی پیش‌نویس</button>
+                <button type="button" class="btn btn-primary btn-lg px-4" id="btnSaveBack">ذخیره و بازگشت</button>
             </div>
         </div>
     </div>
@@ -278,7 +300,12 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         function money(n) {
-            return faDigits(Math.round(n || 0).toLocaleString('en-US'));
+            return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US')));
+        }
+
+        function faMoney(v) {
+            const n = parseInt(toEn(String(v == null ? '' : v)).replace(/[^\d-]/g, ''), 10);
+            return isNaN(n) ? '' : faDigits(n.toLocaleString('en-US'));
         }
 
         async function apiGet(path) {
@@ -366,7 +393,8 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => {
                 el.addEventListener('input', recalc);
                 el.addEventListener('blur', () => {
-                    el.value = faDigits(toEn(el.value));
+                    el.value = el.classList.contains('it-qty') ?
+                        faDigits(toEn(el.value)) : faMoney(el.value);
                 });
             });
             tr.querySelector('.it-del').addEventListener('click', () => {
@@ -382,9 +410,9 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             document.getElementById('itemsBody').appendChild(tr);
             if (data) {
                 if (data.product_id) tr._picker.setValue(data.product_id);
-                tr.querySelector('.it-qty').value = data.qty ?? 1;
-                tr.querySelector('.it-price').value = data.unit_price ?? 0;
-                tr.querySelector('.it-disc').value = data.discount ?? 0;
+                tr.querySelector('.it-qty').value = faDigits(data.qty ?? 1);
+                tr.querySelector('.it-price').value = faMoney(data.unit_price ?? 0);
+                tr.querySelector('.it-disc').value = faMoney(data.discount ?? 0);
             }
             renumber();
             updateStockHint(tr);
@@ -597,7 +625,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             recalc();
             if (typeof window.reinitPersianDatepickers === 'function') window.reinitPersianDatepickers();
 
-            document.getElementById('btnAddRow').addEventListener('click', () => addRow());
+            document.getElementById('btnAddRow').addEventListener('click', () => { const tr = addRow(); if (tr && tr._picker) tr._picker.focus(); });
             document.getElementById('btnSave').addEventListener('click', () => save(false));
             document.getElementById('btnSaveBack').addEventListener('click', () => save(true));
         }

@@ -95,8 +95,8 @@ const QuickAdd = (() => {
       <div class="row g-2">${rows}</div>
     </div>
     <div class="modal-footer border-0 d-flex justify-content-end">
-      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">انصراف</button>
-      <button type="button" class="btn btn-primary btn-lg px-4 qa-save">ذخیره</button>
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+      <button type="button" class="btn btn-primary px-5 qa-save">ذخیره</button>
     </div>
   </div>
 </div>`;

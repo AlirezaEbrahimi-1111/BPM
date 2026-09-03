@@ -118,7 +118,7 @@ try {
         .tag-pill {
             display: inline-block;
             padding: 0 10px;
-            line-height: 1.55;
+            line-height: 1.25;
             border-radius: 999px;
             font-size: .72rem;
             font-weight: 600;
@@ -411,7 +411,7 @@ try {
 
         const gridOptions = {
             theme: agGrid.themeQuartz.withParams({
-                fontFamily: "'Vazirmatn', Tahoma, sans-serif",
+                fontFamily: 'Tahoma, Vazirmatn, sans-serif',
                 fontSize: 13,
                 headerBackgroundColor: '#e9e9e9',
             }),
@@ -424,8 +424,7 @@ try {
             paginationPageSizeSelector: [20, 50, 100],
             defaultColDef: {
                 resizable: true,
-                sortable: true,
-                filter: true
+                sortable: true
             },
             overlayNoRowsTemplate: '<span class="text-muted">کالایی یافت نشد</span>',
         };
@@ -602,6 +601,10 @@ try {
             }
             gridApi = agGrid.createGrid(document.getElementById('crmGrid'), gridOptions);
             prodModal = new bootstrap.Modal(document.getElementById('prodModal'));
+            document.getElementById('prodModal').addEventListener('shown.bs.modal', () => {
+                const el = document.querySelector('#prodModal .modal-body input:not([type=hidden]), #prodModal .modal-body select, #prodModal .modal-body textarea');
+                if (el) el.focus();
+            });
 
             // اعدادِ فیلدها هنگام خروج از فوکوس فارسی شوند
             ['f_code', 'f_unit_price', 'f_opening'].forEach(id => {
