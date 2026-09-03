@@ -981,6 +981,9 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
                 <div class="hdr-pane" id="hdrTicketsPane">
                     <div class="notification-header">
                         <span>تیکت‌ها</span>
+                        <button type="button" class="mark-all-link" id="hdrTicketMarkAllBtn" onclick="hdrTicketsMarkAllRead()" disabled>
+                            خواندن همه
+                        </button>
                     </div>
                     <div class="notif-toolbar">
                         <div class="notif-search">
@@ -1638,11 +1641,30 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
             if (!data.success) throw new Error(data.message || 'error');
             hdrTicketsAll = data.tickets || [];
             hdrTicketsUnseen = hdrTicketsAll.filter(function(t) { return Number(t.awaiting_you) > 0; }).length;
+            var mab = document.getElementById('hdrTicketMarkAllBtn');
+            if (mab) mab.disabled = hdrTicketsUnseen === 0;
             hdrRefreshBellBadge();
             renderHdrTickets();
         } catch (e) {
             console.error('❌ خطا در بارگذاری تیکت‌ها:', e);
             box.innerHTML = '<div class="ann-empty"><i class="bi bi-wifi-off"></i><p>خطا در بارگذاری</p></div>';
+        }
+    }
+
+    async function hdrTicketsMarkAllRead() {
+        var btn = document.getElementById('hdrTicketMarkAllBtn');
+        if (btn) btn.disabled = true;
+        try {
+            var r = await fetch('/api/tickets/mark-all-read.php', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + authToken }
+            });
+            var d = await r.json();
+            if (!d.success) throw new Error(d.message || 'error');
+            await loadHdrTickets();
+        } catch (e) {
+            console.error('❌ خطا در «خواندن همه» تیکت‌ها:', e);
+            if (btn) btn.disabled = false;
         }
     }
 

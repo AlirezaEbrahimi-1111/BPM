@@ -110,16 +110,31 @@ try {
                         WHERE tm2.ticket_id = t.id AND tm2.deleted_at IS NULL
                         ORDER BY tm2.created_at DESC, tm2.id DESC LIMIT 1)";
 
+    $hasReads = false;
+    try {
+        $hasReads = (bool) $db->query("SHOW TABLES LIKE 'ticket_message_reads'")->fetchColumn();
+    } catch (Throwable $e) {
+    }
+
     if ($awaitingOnly) {
+        // ۱) توپ در زمینِ کاربرِ جاری است (آخرین پیام از طرفِ مقابل)
         if ($iAmSupport) {
-            // پشتیبان: هر تیکتی در سیستم که آخرین پیامش از یک کاربرِ غیرِپشتیبان است
             $where[] = "$lastAuthorSub IS NOT NULL AND $lastAuthorSub NOT IN ($supportList)";
         } else {
-            // بقیه (کاربرِ عادی/سرپرست): فقط تیکت‌های خودِ کاربر که آخرین پیامشان از پشتیبان است
             $where[]  = '(t.created_by = ? OR t.assigned_to = ?)';
             $params[] = $user_id;
             $params[] = $user_id;
             $where[]  = "$lastAuthorSub IN ($supportList)";
+        }
+        // ۲) و آن پیام را هنوز ندیده‌ای (بعد از آخرین بازدیدت ثبت شده) —
+        //    «خواندنِ همه» همین را صفر می‌کند و از تیکتِ بعدی درست کار می‌کند.
+        if ($hasReads) {
+            $where[]  = "(SELECT MAX(tm4.created_at) FROM ticket_messages tm4
+                            WHERE tm4.ticket_id = t.id AND tm4.deleted_at IS NULL)
+                         > COALESCE((SELECT tmr2.last_read_at FROM ticket_message_reads tmr2
+                                       WHERE tmr2.ticket_id = t.id AND tmr2.user_id = ?),
+                                    '1000-01-01 00:00:00')";
+            $params[] = $user_id;
         }
     }
 
@@ -147,13 +162,7 @@ try {
     $total = intval($stats['total'] ?? 0);
 
     // «پیامِ دیده‌نشده»: تعدادِ پیام‌هایِ کاربرِ دیگر که بعد از آخرین‌باری که
-    // کاربرِ جاری این تیکت را دید ثبت شده‌اند. اگر جدولِ ردیابی هنوز مایگریت
-    // نشده باشد، ستون صفر برمی‌گردد (بدونِ شکستنِ لیست).
-    $hasReads = false;
-    try {
-        $hasReads = (bool) $db->query("SHOW TABLES LIKE 'ticket_message_reads'")->fetchColumn();
-    } catch (Throwable $e) {
-    }
+    // کاربرِ جاری این تیکت را دید ثبت شده‌اند. ($hasReads بالاتر تشخیص داده شده)
     $unseenSelect = $hasReads
         ? "(SELECT COUNT(*) FROM ticket_messages tmu
               WHERE tmu.ticket_id = t.id
@@ -207,9 +216,14 @@ try {
     $stmtList->execute($listParams);
     $tickets = $stmtList->fetchAll(PDO::FETCH_ASSOC);
 
-    // awaiting_you — «توپ در زمینِ کاربرِ جاری است؟» (بدونِ وابستگی به
-    // ticket_message_reads؛ فقط بر اساسِ نویسنده‌ی آخرین پیام)
+    // awaiting_you — «توپ در زمینِ کاربرِ جاری است و آن پیام را ندیده‌ای؟»
+    // با awaiting=1 خودِ کوئری فیلتر کرده، پس همه‌ی ردیف‌ها ۱ هستند؛ در غیرِ
+    // این صورت فقط بر اساسِ نویسنده‌ی آخرین پیام تخمین می‌زنیم.
     foreach ($tickets as &$tk) {
+        if ($awaitingOnly) {
+            $tk['awaiting_you'] = 1;
+            continue;
+        }
         $lu = ($tk['last_msg_user_id'] ?? null) !== null ? (int) $tk['last_msg_user_id'] : null;
         if ($lu === null) {
             $tk['awaiting_you'] = 0;
