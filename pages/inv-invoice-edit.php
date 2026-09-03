@@ -168,8 +168,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         .totals-box .tl > span:last-child {
             letter-spacing: 0;
-            font-variant-numeric: proportional-nums;
-            font-feature-settings: "pnum" 1, "tnum" 0;
             direction: ltr;
             unicode-bidi: isolate;
             display: inline-block;
@@ -177,8 +175,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         table.inv-items td.it-linetotal {
             letter-spacing: 0;
-            font-variant-numeric: proportional-nums;
-            font-feature-settings: "pnum" 1, "tnum" 0;
         }
 
         /* از ستونِ «تعداد» به بعد، وسط‌چین */

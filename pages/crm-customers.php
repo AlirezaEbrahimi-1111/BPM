@@ -371,7 +371,8 @@ try {
             theme: agGrid.themeQuartz.withParams({
                 fontFamily: "'Vazirmatn', sans-serif",
                 fontSize: 13,
-                headerBackgroundColor: '#e9e9e9',
+                headerBackgroundColor: '#f8f9fa',
+                rowHoverColor: 'rgba(142, 87, 254, 0.12)',
             }),
             columnDefs: colDefs,
             rowData: [],
@@ -380,6 +381,7 @@ try {
             pagination: true,
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],
+            onPaginationChanged: () => AgGridFa.persianizePaging(),
             defaultColDef: {
                 resizable: true,
                 sortable: true,
