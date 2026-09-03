@@ -57,6 +57,10 @@ class TaskManager
                 'related_type' => 'task',
                 'related_id'   => $task['id'] ?? null,
                 'is_read'      => 0,
+                // گیرنده اینجا حتماً غیرِ اقدام‌کننده است (بالاتر چک شد)؛ ولی چون
+                // تکمیل/فاینالایز ممکن است assignee_id را روی همین گیرنده گذاشته
+                // باشد، self-check نوتیفیکیشن آن را اشتباهاً بلاک می‌کند.
+                'skip_self_check' => true,
                 'sms_pattern'  => $pattern,
                 'sms_args'     => $args,
             ]);
@@ -422,6 +426,10 @@ class TaskManager
                         'related_type' => 'task',
                         'related_id' => $task_id,
                         'is_read' => 0,
+                        // درست بالاتر assignee_id را روی $previousPerson گذاشتیم؛ اگر او
+                        // همان creator باشد (حالتِ رایج)، self-check نوتیفیکیشن را
+                        // بلاک می‌کند. گیرنده قطعاً غیرِ اقدام‌کننده است، پس امن است.
+                        'skip_self_check' => true,
                         'sms_pattern' => 'completion_request',
                         'sms_args' => [($task['title'] ?? 'نامشخص'), $performerName],
                     ]);
