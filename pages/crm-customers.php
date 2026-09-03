@@ -147,11 +147,17 @@ try {
             margin-top: .5rem;
         }
 
-        .modal-header-custom {
-            background: #8e57fe;
-            color: #fff;
+        .modal .modal-header.modal-header-custom {
+            background: #8e57fe !important;
+            color: #fff !important;
             border-radius: .4rem .4rem 0 0;
             padding: .9rem 1.1rem;
+            border-bottom: 0;
+        }
+
+        .modal .modal-header-custom .modal-title,
+        .modal .modal-header-custom .modal-title * {
+            color: #fff !important;
         }
     </style>
 </head>

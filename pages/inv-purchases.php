@@ -112,7 +112,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         .st-badge {
             display: inline-block;
-            padding: 6px 10px;
+            padding: 0 10px;
+            line-height: 1.7;
             border-radius: 20px;
             font-size: 10px;
             font-weight: 500;

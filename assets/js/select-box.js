@@ -100,8 +100,10 @@
         // اندازه/چیدمانِ طبیعیِ selectِ اصلی را قبل از پنهان‌کردن اسنپ‌شات می‌گیریم
         // (getComputedStyle زنده است و بعدِ افزودنِ .sb-native مقدارها ۱px می‌شوند).
         var live = window.getComputedStyle(select);
-        var geom = ['paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight',
-            'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
+        // پدینگِ افقی را عمداً کپی نمی‌کنیم — .form-select برای فلشِ خودش
+        // padding-left بزرگ دارد که فاصله‌ی فلشِ ما را زیاد می‌کرد؛ padding
+        // خودِ .sb-trigger کافی است.
+        var geom = ['borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
             'borderStyle', 'borderRadius', 'fontSize', 'fontFamily', 'fontWeight',
             'height', 'minHeight', 'lineHeight', 'maxWidth', 'minWidth', 'display'];
         var cs = {};

@@ -164,11 +164,17 @@ try {
             margin-top: .5rem;
         }
 
-        .modal-header-custom {
-            background: #8e57fe;
-            color: #fff;
+        .modal .modal-header.modal-header-custom {
+            background: #8e57fe !important;
+            color: #fff !important;
             border-radius: .4rem .4rem 0 0;
             padding: .9rem 1.1rem;
+            border-bottom: 0;
+        }
+
+        .modal .modal-header-custom .modal-title,
+        .modal .modal-header-custom .modal-title * {
+            color: #fff !important;
         }
 
         .ag-theme-alpine,
@@ -488,7 +494,7 @@ try {
             document.getElementById('f_code').value = faDigits(r.code || '');
             document.getElementById('f_name').value = r.name || '';
             document.getElementById('f_unit').value = r.unit || '';
-            document.getElementById('f_unit_price').value = faDigits(r.unit_price || 0);
+            document.getElementById('f_unit_price').value = money(r.unit_price || 0);
             document.getElementById('f_opening').value = '';
             document.getElementById('f_is_service').checked = !!r.is_service;
             document.getElementById('f_is_tax_exempt').checked = !!r.is_tax_exempt;
@@ -621,10 +627,15 @@ try {
             });
 
             // اعدادِ فیلدها هنگام خروج از فوکوس فارسی شوند
-            ['f_code', 'f_unit_price', 'f_opening'].forEach(id => {
+            ['f_code', 'f_opening'].forEach(id => {
                 document.getElementById(id).addEventListener('blur', e => {
                     e.target.value = faDigits(toEnDigits(e.target.value));
                 });
+            });
+            // قیمت واحد: فارسی + جداکننده‌ی هزارگان
+            document.getElementById('f_unit_price').addEventListener('blur', e => {
+                const n = parseIntFa(e.target.value);
+                e.target.value = n ? money(n) : '';
             });
 
             document.getElementById('crmSearch').addEventListener('input', () => {
