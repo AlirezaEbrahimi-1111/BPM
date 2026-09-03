@@ -97,9 +97,15 @@
         injectStyle();
         select.dataset.sbDone = '1';
 
-        // اندازه/چیدمانِ طبیعیِ selectِ اصلی را قبل از پنهان‌کردن می‌گیریم تا
-        // فیلد دقیقاً همان‌قدر جا بگیرد که قبلاً می‌گرفت.
-        var cs = window.getComputedStyle(select);
+        // اندازه/چیدمانِ طبیعیِ selectِ اصلی را قبل از پنهان‌کردن اسنپ‌شات می‌گیریم
+        // (getComputedStyle زنده است و بعدِ افزودنِ .sb-native مقدارها ۱px می‌شوند).
+        var live = window.getComputedStyle(select);
+        var geom = ['paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight',
+            'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
+            'borderStyle', 'borderRadius', 'fontSize', 'fontFamily', 'fontWeight',
+            'height', 'minHeight', 'lineHeight', 'maxWidth', 'minWidth', 'display'];
+        var cs = {};
+        geom.forEach(function (p) { cs[p] = live[p]; });
         var natW = select.offsetWidth;
         var parentW = select.parentElement ? select.parentElement.clientWidth : 0;
         var blockish = cs.display === 'block' ||
@@ -117,6 +123,17 @@
             wrap.style.display = 'inline-block';
             if (natW) wrap.style.width = natW + 'px';
         }
+        // قیدهای عرض که روی خودِ select بودند باید روی wrapper بیایند
+        ['maxWidth', 'minWidth'].forEach(function (p) {
+            var v = cs[p];
+            if (v && v !== 'none' && v !== '0px') wrap.style[p] = v;
+        });
+        if (select.style.flex) wrap.style.flex = select.style.flex;
+
+        // آرشیوِ «▼»ی که صفحه خودش با ::after می‌کشد (مثلِ .filter-item) —
+        // وگرنه دو فلش دیده می‌شود.
+        var fi = select.closest('.filter-item');
+        if (fi) fi.classList.add('no-arrow');
 
         select.parentNode.insertBefore(wrap, select);
         wrap.appendChild(select);
@@ -131,6 +148,19 @@
         trigger.setAttribute('aria-haspopup', 'listbox');
         trigger.setAttribute('aria-expanded', 'false');
         trigger.innerHTML = '<span class="sb-label"></span><span class="sb-caret"></span>';
+
+        // هندسه‌ی selectِ اصلی را می‌گیریم تا تریگر دقیقاً هم‌اندازه/هم‌شکلِ
+        // همان چیزی باشد که صفحه استایل کرده بود (رنگ‌ها را نمی‌بریم تا
+        // تمِ تاریک همچنان کار کند).
+        ['paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight',
+            'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
+            'borderStyle', 'borderRadius', 'fontSize', 'fontFamily', 'fontWeight',
+            'height', 'minHeight', 'lineHeight'
+        ].forEach(function (p) {
+            var v = cs[p];
+            if (v && v !== 'auto' && v !== 'normal' && v !== '0px') trigger.style[p] = v;
+        });
+        trigger.style.boxSizing = 'border-box';
 
         var menu = document.createElement('div');
         menu.className = 'sb-menu';

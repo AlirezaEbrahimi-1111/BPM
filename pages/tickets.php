@@ -457,7 +457,7 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
         const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
         const gridOptions = {
             theme: agGrid.themeQuartz.withParams(isDarkTheme ? {
-                fontFamily: 'Tahoma, Vazirmatn, sans-serif',
+                fontFamily: "'Vazirmatn', sans-serif",
                 fontSize: 13,
                 backgroundColor: '#1b2130',
                 foregroundColor: '#e8eaed',
@@ -466,7 +466,7 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
                 borderColor: '#2b3242',
                 oddRowBackgroundColor: '#1b2130',
             } : {
-                fontFamily: 'Tahoma, Vazirmatn, sans-serif',
+                fontFamily: "'Vazirmatn', sans-serif",
                 fontSize: 13,
                 rowHoverColor: '#faf5ff',
                 headerBackgroundColor: '#f8f9fa',

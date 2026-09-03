@@ -63,7 +63,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
         }
 
         * {
-            font-family: 'Vazirmatn', Tahoma, sans-serif !important;
+            font-family: 'Vazirmatn', sans-serif !important;
             box-sizing: border-box;
         }
 

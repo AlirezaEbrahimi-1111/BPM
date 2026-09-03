@@ -112,18 +112,18 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         .st-badge {
             display: inline-block;
-            padding: 5px 14px;
-            line-height: 1;
-            border-radius: 999px;
-            font-size: .72rem;
-            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 500;
         }
 
         .num-ltr {
             direction: ltr;
             display: inline-block;
-            font-family: Tahoma, Arial, 'Vazirmatn', sans-serif;
             letter-spacing: 0;
+            font-variant-numeric: proportional-nums;
+            font-feature-settings: "pnum" 1, "tnum" 0;
         }
 
         .st-badge.draft {
@@ -149,9 +149,14 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         .ag-theme-alpine .ag-cell,
         .ag-theme-alpine .ag-header-cell,
         .ag-theme-alpine .ag-paging-panel {
-            font-family: Tahoma, 'Vazirmatn', Arial, sans-serif !important;
             letter-spacing: 0 !important;
+            font-variant-numeric: proportional-nums;
+            font-feature-settings: "pnum" 1, "tnum" 0;
             word-spacing: 0 !important;
+        }
+
+        .crm-toolbar .sb-trigger {
+            height: 38px !important;
         }
     </style>
 </head>
@@ -180,7 +185,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             <a class="btn btn-primary" href="/pages/inv-purchase-edit.php"><i class="bi bi-plus-lg ms-1"></i> فاکتور خرید جدید</a>
         </div>
 
-        <div id="invGrid" class="ag-theme-alpine" style="width:100%;"></div>
+        <div id="invGrid" class="ag-theme-alpine" style="height: 620px; width: 100%; padding-top: 1rem;"></div>
     </div>
 
     <?php include 'footer.php'; ?>
@@ -284,7 +289,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 field: 'total_amount',
                 width: 150,
                 type: 'rightAligned',
-                cellRenderer: p => `<span style="direction:ltr;display:inline-block;font-family:Tahoma,Arial,sans-serif;letter-spacing:0;unicode-bidi:isolate">${money(p.value)}</span>`
+                cellRenderer: p => `<span style="direction:ltr;display:inline-block;letter-spacing:0;unicode-bidi:isolate;font-variant-numeric:proportional-nums;font-feature-settings:'pnum' 1,'tnum' 0">${money(p.value)}</span>`
             },
             {
                 headerName: 'وضعیت',
@@ -303,7 +308,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         const gridOptions = {
             theme: agGrid.themeQuartz.withParams({
-                fontFamily: 'Tahoma, Vazirmatn, sans-serif',
+                fontFamily: "'Vazirmatn', sans-serif",
                 fontSize: 13,
                 headerBackgroundColor: '#e9e9e9',
             }),
@@ -311,7 +316,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             rowData: [],
             enableRtl: true,
             animateRows: true,
-            domLayout: 'autoHeight',
             pagination: true,
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],

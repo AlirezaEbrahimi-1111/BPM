@@ -141,8 +141,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         .tots .r span:last-child {
             text-align: left;
             white-space: nowrap;
-            font-family: Tahoma, Arial, sans-serif;
             letter-spacing: 0;
+            font-variant-numeric: proportional-nums;
+            font-feature-settings: "pnum" 1, "tnum" 0;
             direction: ltr;
             unicode-bidi: isolate;
         }

@@ -1220,7 +1220,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
 
             const opts = {
                 theme: agGrid.themeQuartz.withParams({
-                    fontFamily: "'Vazirmatn', Tahoma, sans-serif",
+                    fontFamily: "'Vazirmatn', sans-serif",
                     fontSize: 13,
                     rowHoverColor: 'rgba(142, 87, 254, 0.06)',
                     headerBackgroundColor: '#e9e9e9',

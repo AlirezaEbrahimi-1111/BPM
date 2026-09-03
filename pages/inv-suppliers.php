@@ -121,9 +121,14 @@ try {
         .ag-theme-alpine .ag-cell,
         .ag-theme-alpine .ag-header-cell,
         .ag-theme-alpine .ag-paging-panel {
-            font-family: Tahoma, 'Vazirmatn', Arial, sans-serif !important;
             letter-spacing: 0 !important;
+            font-variant-numeric: proportional-nums;
+            font-feature-settings: "pnum" 1, "tnum" 0;
             word-spacing: 0 !important;
+        }
+
+        .crm-toolbar .sb-trigger {
+            height: 38px !important;
         }
     </style>
 </head>
@@ -148,7 +153,7 @@ try {
             <?php endif; ?>
         </div>
 
-        <div id="crmGrid" class="ag-theme-alpine" style="width:100%;"></div>
+        <div id="crmGrid" class="ag-theme-alpine" style="height: 620px; width: 100%; padding-top: 1rem;"></div>
     </div>
 
     <div class="modal fade" id="supModal" tabindex="-1">
@@ -304,7 +309,7 @@ try {
 
         const gridOptions = {
             theme: agGrid.themeQuartz.withParams({
-                fontFamily: 'Tahoma, Vazirmatn, sans-serif',
+                fontFamily: "'Vazirmatn', sans-serif",
                 fontSize: 13,
                 headerBackgroundColor: '#e9e9e9',
             }),
@@ -312,7 +317,6 @@ try {
             rowData: [],
             enableRtl: true,
             animateRows: true,
-            domLayout: 'autoHeight',
             pagination: true,
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],

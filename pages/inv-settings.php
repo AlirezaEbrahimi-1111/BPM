@@ -73,6 +73,24 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 14px;
         }
+
+        /* همه‌ی فیلدهای سربرگ یک ارتفاع مشترک داشته باشند */
+        .inv-head-grid .form-control,
+        .inv-head-grid .ep-input,
+        .inv-head-grid .sb-trigger,
+        .set-grid .form-control,
+        .set-grid .sb-trigger {
+            height: 38px !important;
+            min-height: 38px !important;
+            font-size: 13px !important;
+            box-sizing: border-box;
+        }
+
+        .inv-head-grid textarea.form-control,
+        .set-grid textarea.form-control {
+            height: auto !important;
+            min-height: 0 !important;
+        }
     </style>
 </head>
 

@@ -363,7 +363,7 @@ try {
 
         const gridOptions = {
             theme: agGrid.themeQuartz.withParams({
-                fontFamily: "'Vazirmatn', Tahoma, sans-serif",
+                fontFamily: "'Vazirmatn', sans-serif",
                 fontSize: 13,
                 headerBackgroundColor: '#e9e9e9',
             }),

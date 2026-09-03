@@ -148,16 +148,20 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         .totals-box .tl > span:last-child {
-            font-family: Tahoma, Arial, sans-serif;
+
             letter-spacing: 0;
+            font-variant-numeric: proportional-nums;
+            font-feature-settings: "pnum" 1, "tnum" 0;
             direction: ltr;
             unicode-bidi: isolate;
             display: inline-block;
         }
 
         table.inv-items td.it-linetotal {
-            font-family: Tahoma, Arial, sans-serif;
+
             letter-spacing: 0;
+            font-variant-numeric: proportional-nums;
+            font-feature-settings: "pnum" 1, "tnum" 0;
         }
 
         table.inv-items td.col-qty,
@@ -183,6 +187,24 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             gap: 10px;
             margin-top: 1.5rem;
             justify-content: flex-end;
+        }
+
+        /* همه‌ی فیلدهای سربرگ یک ارتفاع مشترک داشته باشند */
+        .inv-head-grid .form-control,
+        .inv-head-grid .ep-input,
+        .inv-head-grid .sb-trigger,
+        .set-grid .form-control,
+        .set-grid .sb-trigger {
+            height: 38px !important;
+            min-height: 38px !important;
+            font-size: 13px !important;
+            box-sizing: border-box;
+        }
+
+        .inv-head-grid textarea.form-control,
+        .set-grid textarea.form-control {
+            height: auto !important;
+            min-height: 0 !important;
         }
     </style>
 </head>

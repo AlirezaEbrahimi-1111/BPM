@@ -315,7 +315,7 @@ if (!$__me) {
 
         const gridOptions = {
             theme: agGrid.themeQuartz.withParams({
-                fontFamily: 'Tahoma, Vazirmatn, sans-serif',
+                fontFamily: "'Vazirmatn', sans-serif",
                 fontSize: 13,
                 rowHoverColor: '#f0f7ff',
                 headerBackgroundColor: '#f8f9fa',

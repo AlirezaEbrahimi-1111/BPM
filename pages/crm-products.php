@@ -117,11 +117,10 @@ try {
 
         .tag-pill {
             display: inline-block;
-            padding: 5px 14px;
-            line-height: 1;
-            border-radius: 999px;
-            font-size: .72rem;
-            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 500;
             background: rgba(142, 87, 254, .12);
             color: #6d3ed6;
         }
@@ -133,8 +132,9 @@ try {
         .num-ltr {
             direction: ltr;
             display: inline-block;
-            font-family: Tahoma, Arial, 'Vazirmatn', sans-serif;
             letter-spacing: 0;
+            font-variant-numeric: proportional-nums;
+            font-feature-settings: "pnum" 1, "tnum" 0;
         }
 
         #prodModal .form-check.form-switch.switch-inline {
@@ -175,9 +175,14 @@ try {
         .ag-theme-alpine .ag-cell,
         .ag-theme-alpine .ag-header-cell,
         .ag-theme-alpine .ag-paging-panel {
-            font-family: Tahoma, 'Vazirmatn', Arial, sans-serif !important;
             letter-spacing: 0 !important;
+            font-variant-numeric: proportional-nums;
+            font-feature-settings: "pnum" 1, "tnum" 0;
             word-spacing: 0 !important;
+        }
+
+        .crm-toolbar .sb-trigger {
+            height: 38px !important;
         }
     </style>
 </head>
@@ -206,7 +211,7 @@ try {
         </div>
         <div id="importResult"></div>
 
-        <div id="crmGrid" class="ag-theme-alpine" style="width:100%;"></div>
+        <div id="crmGrid" class="ag-theme-alpine" style="height: 620px; width: 100%; padding-top: 1rem;"></div>
     </div>
 
     <div class="modal fade" id="prodModal" tabindex="-1">
@@ -366,7 +371,7 @@ try {
                 field: 'unit_price',
                 width: 160,
                 type: 'rightAligned',
-                cellRenderer: p => `<span style="direction:ltr;display:inline-block;font-family:Tahoma,Arial,sans-serif;letter-spacing:0;unicode-bidi:isolate">${money(p.value)}</span>`
+                cellRenderer: p => `<span style="direction:ltr;display:inline-block;font-family: 'Vazirmatn', sans-serif;letter-spacing:0;unicode-bidi:isolate">${money(p.value)}</span>`
             },
             {
                 headerName: 'موجودی انبار',
@@ -420,7 +425,7 @@ try {
 
         const gridOptions = {
             theme: agGrid.themeQuartz.withParams({
-                fontFamily: 'Tahoma, Vazirmatn, sans-serif',
+                fontFamily: "'Vazirmatn', sans-serif",
                 fontSize: 13,
                 headerBackgroundColor: '#e9e9e9',
             }),
@@ -428,7 +433,6 @@ try {
             rowData: [],
             enableRtl: true,
             animateRows: true,
-            domLayout: 'autoHeight',
             pagination: true,
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],
