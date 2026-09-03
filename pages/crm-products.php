@@ -186,10 +186,10 @@ try {
         .crm-toolbar .sb-trigger {
             height: 38px !important;
         }
-    /* جدول تمامِ ارتفاعِ باقی‌ماندهٔ صفحه را پر می‌کند تا نه فاصلهٔ خالی
-       با فوترْ بماند و نه صفحه اسکرول بخورد؛ فوتر همیشه ته می‌چسبد. */
-    .overview-container { display: flex; flex-direction: column; min-height: calc(100vh - 120px); }
-    .grid-fill { flex: 1 1 auto; min-height: 300px; padding-top: 1rem; }
+        /* ارتفاعِ ثابت نسبت به ویوپورت: جدول تا نزدیکِ فوتر کشیده می‌شود،
+           بدونِ گپ و بدونِ اسکرولِ صفحه. AG Grid برای رندر به ارتفاعِ
+           مشخص (نه min-height) نیاز دارد، وگرنه بدنه‌اش صفر می‌شود. */
+        .grid-fill { height: calc(100vh - 300px); min-height: 320px; padding-top: 1rem; }
     </style>
 </head>
 
