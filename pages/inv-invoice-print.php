@@ -190,12 +190,12 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         table.items { table-layout: fixed; }
         table.items td.desc { word-break: break-word; }
         /* عرض‌ها یک‌بار از پایهٔ اصلی کوچک شده‌اند (نه دو بار انباشته) */
-        table.items col.w-row  { width: 16px; }   /* ردیف ~۴۰٪ کوچک‌تر */
-        table.items col.w-code { width: 26px; }   /* کد کالا ~۴۰٪ کوچک‌تر */
-        table.items col.w-qty  { width: 36px; }   /* تعداد/مقدار ~۴۰٪ کوچک‌تر */
+        table.items col.w-row  { width: 40px; }   /* ردیف ~۴۰٪ کوچک‌تر */
+        table.items col.w-code { width: 70px; }   /* کد کالا ~۴۰٪ کوچک‌تر */
+        table.items col.w-qty  { width: 60px; }   /* تعداد/مقدار ~۴۰٪ کوچک‌تر */
         table.items col.w-unit { width: 78px; }   /* مبلغ واحد */
-        table.items col.w-tot  { width: 48px; }   /* مبلغ کل ~۴۰٪ کوچک‌تر */
-        table.items col.w-num  { width: 53px; }   /* مبلغ تخفیف ~۳۰٪ کوچک‌تر */
+        table.items col.w-tot  { width: 80px; }   /* مبلغ کل ~۴۰٪ کوچک‌تر */
+        table.items col.w-num  { width: 60px; }   /* مبلغ تخفیف ~۳۰٪ کوچک‌تر */
         table.items col.w-num2 { width: 90px; }
         table.items col.w-num3 { width: 124px; }  /* جمع کل بعلاوه مالیات و عوارض */
         table.items tr.blank td { height: 21px; }
