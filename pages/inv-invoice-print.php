@@ -189,15 +189,14 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         /* عرض ستون‌های جدول اقلام مطابق فرم رسمی */
         table.items { table-layout: fixed; }
         table.items td.desc { word-break: break-word; }
-        table.items th.w-row  { width: 16px; }   /* ردیف ~۴۰٪ کوچک‌تر */
-        /* شرح کالا: بدونِ عرضِ ثابت — همهٔ فضای باقی‌مانده را می‌گیرد (چند برابر پهن‌تر) */
-        table.items th.w-code { width: 8px; }    /* کد کالا ~۴۰٪ کوچک‌تر */
-        table.items th.w-qty  { width: 25px; }   /* تعداد/مقدار ~۴۰٪ کوچک‌تر */
-        table.items th.w-unit { width: 74px; }   /* مبلغ واحد ~۲۰٪ کوچک‌تر */
-        table.items th.w-tot  { width: 37px; }   /* مبلغ کل ~۲۰٪ کوچک‌تر */
-        table.items th.w-num  { width: 43px; }   /* مبلغ تخفیف ~۳۰٪ کوچک‌تر */
-        table.items th.w-num2 { width: 90px; }
-        table.items th.w-num3 { width: 124px; }  /* جمع کل بعلاوه مالیات و عوارض + فضای آزادشده */
+        table.items col.w-row  { width: 16px; }   /* ردیف ~۴۰٪ کوچک‌تر */
+        table.items col.w-code { width: 8px; }    /* کد کالا ~۴۰٪ کوچک‌تر */
+        table.items col.w-qty  { width: 25px; }   /* تعداد/مقدار ~۴۰٪ کوچک‌تر */
+        table.items col.w-unit { width: 74px; }   /* مبلغ واحد ~۲۰٪ کوچک‌تر */
+        table.items col.w-tot  { width: 37px; }   /* مبلغ کل ~۲۰٪ کوچک‌تر */
+        table.items col.w-num  { width: 43px; }   /* مبلغ تخفیف ~۳۰٪ کوچک‌تر */
+        table.items col.w-num2 { width: 90px; }
+        table.items col.w-num3 { width: 124px; }  /* جمع کل بعلاوه مالیات و عوارض + فضای آزادشده */
         table.items tr.blank td { height: 21px; }
 
         .pay-terms .pt-h { font-weight: 700; margin-inline-end: 16px; }
@@ -434,6 +433,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             </table>
 
             <table class="items">
+                <colgroup>
+                    <col class="w-row"><col class="w-code"><col class="w-desc"><col class="w-qty">
+                    <col class="w-unit"><col class="w-tot"><col class="w-num"><col class="w-num2">
+                    <col class="w-num2"><col class="w-num3">
+                </colgroup>
                 <tr><td colspan="10" class="band">مشخصات کالا یا خدمات مورد معامله</td></tr>
                 <tr>
                     <th class="w-row">ردیف</th>
