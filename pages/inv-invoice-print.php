@@ -148,10 +148,17 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         table.items td.desc {
-            text-align: right;
+            text-align: center;
         }
 
-        table.items td.num,
+        table.items td.num {
+            text-align: center;
+            white-space: nowrap;
+            letter-spacing: 0;
+            direction: ltr;
+            unicode-bidi: isolate;
+        }
+
         .tots .r span:last-child {
             text-align: left;
             white-space: nowrap;
@@ -182,15 +189,15 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         /* عرض ستون‌های جدول اقلام مطابق فرم رسمی */
         table.items { table-layout: fixed; }
         table.items td.desc { word-break: break-word; }
-        table.items th.w-row  { width: 26px; }
+        table.items th.w-row  { width: 16px; }   /* ردیف ~۴۰٪ کوچک‌تر */
         /* شرح کالا: بدونِ عرضِ ثابت — همهٔ فضای باقی‌مانده را می‌گیرد (چند برابر پهن‌تر) */
-        table.items th.w-code { width: 13px; }   /* کد کالا ~۳۰٪ کوچک‌تر */
-        table.items th.w-qty  { width: 42px; }   /* تعداد/مقدار ~۳۰٪ کوچک‌تر */
+        table.items th.w-code { width: 8px; }    /* کد کالا ~۴۰٪ کوچک‌تر */
+        table.items th.w-qty  { width: 25px; }   /* تعداد/مقدار ~۴۰٪ کوچک‌تر */
         table.items th.w-unit { width: 74px; }   /* مبلغ واحد ~۲۰٪ کوچک‌تر */
         table.items th.w-tot  { width: 37px; }   /* مبلغ کل ~۲۰٪ کوچک‌تر */
-        table.items th.w-num  { width: 61px; }   /* تخفیف ~۲۰٪ کوچک‌تر */
+        table.items th.w-num  { width: 43px; }   /* مبلغ تخفیف ~۳۰٪ کوچک‌تر */
         table.items th.w-num2 { width: 90px; }
-        table.items th.w-num3 { width: 106px; }
+        table.items th.w-num3 { width: 124px; }  /* جمع کل بعلاوه مالیات و عوارض + فضای آزادشده */
         table.items tr.blank td { height: 21px; }
 
         .pay-terms .pt-h { font-weight: 700; margin-inline-end: 16px; }
@@ -218,12 +225,14 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         .seller-pay {
             font-size: 11px;
             line-height: 1.9;
+            text-align: center;
         }
 
         .sign td {
             height: 54px;
             vertical-align: top;
             font-weight: 600;
+            text-align: center;
         }
 
         .muted {
@@ -364,17 +373,21 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
             const afterDiscTotal = (Number(inv.subtotal_amount) || 0) - (Number(inv.discount_amount) || 0);
 
+            const isProforma = inv.doc_type === 'proforma';
+            const numLabel = isProforma ? 'شماره پیش‌فاکتور' : 'شماره فاکتور';
+            const invDate = inv.issue_date || (inv.created_at || '').slice(0, 10);
+
             document.getElementById('sheet').innerHTML = `
             <table class="inv-top">
                 <tr>
                     <td class="hc-empty" rowspan="2"></td>
                     <td class="inv-title" rowspan="2">${DT[inv.doc_type] || 'صورتحساب فروش کالا و خدمات'}</td>
-                    <td class="lbl mlbl">شماره فاکتور</td>
+                    <td class="lbl mlbl">${numLabel}</td>
                     <td class="mval">${inv.number ? faDigits(inv.number) : ''}</td>
                 </tr>
                 <tr>
                     <td class="lbl mlbl">تاریخ</td>
-                    <td class="mval">${inv.issue_date ? jDate(inv.issue_date) : ''}</td>
+                    <td class="mval">${invDate ? jDate(invDate) : ''}</td>
                 </tr>
             </table>
 
