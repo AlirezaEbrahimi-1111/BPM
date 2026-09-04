@@ -189,14 +189,15 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         /* عرض ستون‌های جدول اقلام مطابق فرم رسمی */
         table.items { table-layout: fixed; }
         table.items td.desc { word-break: break-word; }
+        /* عرض‌ها یک‌بار از پایهٔ اصلی کوچک شده‌اند (نه دو بار انباشته) */
         table.items col.w-row  { width: 16px; }   /* ردیف ~۴۰٪ کوچک‌تر */
-        table.items col.w-code { width: 8px; }    /* کد کالا ~۴۰٪ کوچک‌تر */
-        table.items col.w-qty  { width: 25px; }   /* تعداد/مقدار ~۴۰٪ کوچک‌تر */
-        table.items col.w-unit { width: 74px; }   /* مبلغ واحد ~۲۰٪ کوچک‌تر */
-        table.items col.w-tot  { width: 37px; }   /* مبلغ کل ~۲۰٪ کوچک‌تر */
-        table.items col.w-num  { width: 43px; }   /* مبلغ تخفیف ~۳۰٪ کوچک‌تر */
+        table.items col.w-code { width: 26px; }   /* کد کالا ~۴۰٪ کوچک‌تر */
+        table.items col.w-qty  { width: 36px; }   /* تعداد/مقدار ~۴۰٪ کوچک‌تر */
+        table.items col.w-unit { width: 78px; }   /* مبلغ واحد */
+        table.items col.w-tot  { width: 48px; }   /* مبلغ کل ~۴۰٪ کوچک‌تر */
+        table.items col.w-num  { width: 53px; }   /* مبلغ تخفیف ~۳۰٪ کوچک‌تر */
         table.items col.w-num2 { width: 90px; }
-        table.items col.w-num3 { width: 124px; }  /* جمع کل بعلاوه مالیات و عوارض + فضای آزادشده */
+        table.items col.w-num3 { width: 124px; }  /* جمع کل بعلاوه مالیات و عوارض */
         table.items tr.blank td { height: 21px; }
 
         .pay-terms .pt-h { font-weight: 700; margin-inline-end: 16px; }
