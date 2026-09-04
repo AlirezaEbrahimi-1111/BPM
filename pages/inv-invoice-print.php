@@ -42,19 +42,23 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <style>
+        /* کاغذِ چاپ: A4 افقی */
+        @page { size: A4 landscape; margin: 8mm; }
+
         body {
             background: #eef0f3;
         }
 
         .toolbar {
-            max-width: 900px;
+            max-width: 1140px;
             margin: 14px auto 0;
             display: flex;
             gap: 10px;
+            justify-content: space-between;
         }
 
         .sheet {
-            max-width: 900px;
+            max-width: 1140px;
             margin: 14px auto 40px;
             background: #fff;
             color: #000;
@@ -167,18 +171,19 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         .grid6 { table-layout: fixed; }
         .grid6 col.c-lbl  { width: 124px; }
         .grid6 col.c-nlbl { width: 150px; }  /* برچسبِ «نام شخص حقیقی و حقوقی» ~۲۰٪ بزرگ‌تر */
-        .grid6 col.c-code { width: 99px; }    /* محلِ نوشتنِ کد اقتصادی/شناسه ملی ~۴۰٪ کوچک‌تر */
+        .grid6 col.c-nval { width: 204px; }  /* فضای مقابلِ نام ~۲۵٪ کوچک‌تر */
+        .grid6 col.c-code { width: 133px; }  /* آزادشده به کد اقتصادی/شناسه ملی/کد پستی/شهر/تلفن اضافه شد */
 
         /* عرض ستون‌های جدول اقلام مطابق فرم رسمی */
         table.items { table-layout: fixed; }
         table.items td.desc { word-break: break-word; }
         table.items th.w-row  { width: 26px; }
-        table.items th.w-desc { width: 46%; }    /* شرح کالا چند برابر پهن‌تر */
-        table.items th.w-code { width: 18px; }   /* کد کالا ۶۰٪ کوچک‌تر */
-        table.items th.w-qty  { width: 60px; }
-        table.items th.w-unit { width: 92px; }   /* مبلغ واحد ۲۰٪ بزرگ‌تر */
-        table.items th.w-tot  { width: 46px; }   /* مبلغ کل ۴۰٪ کوچک‌تر */
-        table.items th.w-num  { width: 76px; }
+        /* شرح کالا: بدونِ عرضِ ثابت — همهٔ فضای باقی‌مانده را می‌گیرد (چند برابر پهن‌تر) */
+        table.items th.w-code { width: 13px; }   /* کد کالا ~۳۰٪ کوچک‌تر */
+        table.items th.w-qty  { width: 42px; }   /* تعداد/مقدار ~۳۰٪ کوچک‌تر */
+        table.items th.w-unit { width: 74px; }   /* مبلغ واحد ~۲۰٪ کوچک‌تر */
+        table.items th.w-tot  { width: 37px; }   /* مبلغ کل ~۲۰٪ کوچک‌تر */
+        table.items th.w-num  { width: 61px; }   /* تخفیف ~۲۰٪ کوچک‌تر */
         table.items th.w-num2 { width: 90px; }
         table.items th.w-num3 { width: 106px; }
         table.items tr.blank td { height: 21px; }
