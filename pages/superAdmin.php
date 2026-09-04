@@ -72,6 +72,22 @@ foreach ($orgs as $org) {
             : 'هرگز',
     ];
 }
+
+// ── کاربرانِ فعالِ هر سازمان، برای نمایشِ درختیِ زیرردیف ──
+$ustmt = $db->query("
+    SELECT organization_id, first_name, last_name, phone
+    FROM users
+    WHERE is_active = 1
+    ORDER BY first_name, last_name
+");
+$usersByOrg = [];
+foreach ($ustmt->fetchAll(PDO::FETCH_ASSOC) as $u) {
+    $oid = (int)$u['organization_id'];
+    $usersByOrg[$oid][] = [
+        'name'  => trim(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '')) ?: '—',
+        'phone' => $u['phone'] ?: '',
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -180,6 +196,61 @@ foreach ($orgs as $org) {
       .admin-wrap { margin-top: 84px; }
       .admin-search input { width: 100%; }
     }
+
+    /* دکمهٔ باز/بستنِ زیرردیفِ کاربران */
+    .og .exp {
+      width: 26px; height: 26px; border-radius: 8px;
+      border: 1px solid #e9e9e9; background: #fff; color: #8e57fe;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+      transition: transform .18s ease, background .15s;
+    }
+    .og .exp:hover { background: rgba(142, 87, 254, .12); }
+    .og .exp.open { transform: rotate(-90deg); background: rgba(142, 87, 254, .14); }
+
+    /* زیرردیفِ درختیِ کاربرانِ سازمان (full-width row) */
+    .ut-wrap {
+      padding: 11px 24px 15px;
+      background: linear-gradient(180deg, #faf9ff, #f4f0ff);
+      border-right: 3px solid #8e57fe;
+      height: 100%; overflow-y: auto;
+    }
+    .ut-head {
+      font-size: 12.5px; font-weight: 800; color: #6d3ed6;
+      display: flex; align-items: center; gap: 7px; margin-bottom: 9px;
+    }
+    .ut-count {
+      font-weight: 700; color: #8e57fe; background: rgba(142, 87, 254, .12);
+      padding: 1px 9px; border-radius: 20px; font-size: 11px;
+    }
+    .ut-list { list-style: none; margin: 0; padding: 0 12px 0 0; }
+    .ut-item {
+      position: relative; display: flex; align-items: center; gap: 9px;
+      padding: 7px 24px 7px 10px; font-size: 12.5px; border-radius: 8px;
+    }
+    .ut-item:hover { background: rgba(142, 87, 254, .10); }
+    .ut-item + .ut-item { border-top: 1px dashed #e7e0fb; }
+    /* خطوطِ درختی */
+    .ut-branch { position: absolute; right: 0; top: 0; bottom: 0; width: 15px; border-right: 2px solid #d8ccf7; }
+    .ut-item:last-child .ut-branch { bottom: calc(50% - 1px); }
+    .ut-branch::after {
+      content: ''; position: absolute; right: 0; top: 50%;
+      width: 13px; border-top: 2px solid #d8ccf7;
+    }
+    .ut-name { font-weight: 700; color: #2D3748; }
+    .ut-sep { color: #cbd5e1; }
+    .ut-phone { color: #475569; letter-spacing: .3px; direction: ltr; }
+    .ut-nophone { color: #A0AEC0; font-style: normal; font-size: 11px; }
+    .ut-empty { font-size: 12px; color: #A0AEC0; padding: 8px 4px; }
+
+    :root[data-theme="dark"] .ut-wrap { background: rgba(142, 87, 254, .06); }
+    :root[data-theme="dark"] .ut-head { color: #b79bff; }
+    :root[data-theme="dark"] .ut-name { color: var(--text-strong); }
+    :root[data-theme="dark"] .ut-phone { color: var(--text-muted); }
+    :root[data-theme="dark"] .ut-item + .ut-item { border-top-color: rgba(255, 255, 255, .08); }
+    :root[data-theme="dark"] .ut-branch,
+    :root[data-theme="dark"] .ut-branch::after { border-color: rgba(255, 255, 255, .16); }
+    :root[data-theme="dark"] .og .exp { background: var(--surface); border-color: var(--border-soft); }
   </style>
 </head>
 <body>
@@ -259,8 +330,26 @@ foreach ($orgs as $org) {
 
 <script>
 const ORGS = <?= json_encode($gridData, JSON_UNESCAPED_UNICODE) ?>;
+const USERS_BY_ORG = <?= json_encode($usersByOrg, JSON_UNESCAPED_UNICODE) ?>;
 const byId = {};
 ORGS.forEach(o => byId[o.id] = o);
+
+/* سازمان‌هایی که زیرردیفِ کاربرانشان باز است */
+const expanded = new Set();
+
+/* rowDataِ گرید = سازمان‌ها + بعد از هر سازمانِ باز، یک ردیفِ full-widthِ «detail» */
+function buildRows() {
+  const out = [];
+  ORGS.forEach(o => {
+    out.push(o);
+    if (expanded.has(o.id)) out.push({ __detail: true, orgId: o.id, id: 'd' + o.id });
+  });
+  return out;
+}
+function toggleExp(id) {
+  if (expanded.has(id)) expanded.delete(id); else expanded.add(id);
+  gridApi.setGridOption('rowData', buildRows());
+}
 
 const faNum = s => String(s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
 function esc(s) {
@@ -272,12 +361,42 @@ let curId = null;
 
 function cOrg(p) {
   const d = p.data;
+  const isOpen = expanded.has(d.id);
+  const n = (USERS_BY_ORG[d.id] || []).length;
   return `<div class="og">
+      <button class="exp ${isOpen ? 'open' : ''}" title="کاربران سازمان"
+              onclick="event.stopPropagation();toggleExp(${d.id})">
+        <i class="bi bi-chevron-left"></i>
+      </button>
       <div class="ava">${esc(d.id)}</div>
       <div>
         <div class="nm">${esc(d.name)}</div>
-        <div class="mt"></div>
+        <div class="mt">${n ? faNum(n) + ' کاربر' : 'بدون کاربر'}</div>
       </div>
+    </div>`;
+}
+
+/* رندرِ زیرردیفِ درختیِ کاربرانِ یک سازمان */
+function cDetail(p) {
+  const oid = p.data.orgId;
+  const org = byId[oid];
+  const list = USERS_BY_ORG[oid] || [];
+  const items = list.map(u => `
+      <li class="ut-item">
+        <span class="ut-branch"></span>
+        <span class="ut-name">${esc(u.name)}</span>
+        <span class="ut-sep">—</span>
+        <span class="ut-phone">${u.phone ? faNum(esc(u.phone)) : '<span class="ut-nophone">بدون شماره</span>'}</span>
+      </li>`).join('');
+  return `<div class="ut-wrap">
+      <div class="ut-head">
+        <i class="bi bi-diagram-3"></i>
+        کاربران «${esc(org ? org.name : '')}»
+        <span class="ut-count">${faNum(list.length)} نفر</span>
+      </div>
+      ${list.length
+        ? `<ul class="ut-list">${items}</ul>`
+        : `<div class="ut-empty">کاربری برای این سازمان ثبت نشده است</div>`}
     </div>`;
 }
 function cUsers(p) {
@@ -319,9 +438,18 @@ function cActions(p) {
 const gridApi = agGrid.createGrid(document.getElementById('orgGrid'), {
   enableRtl: true,
   rowHeight: 48,
+  animateRows: true,
+  getRowId: p => p.data.__detail ? ('d' + p.data.orgId) : String(p.data.id),
+  isFullWidthRow: p => !!(p.rowNode && p.rowNode.data && p.rowNode.data.__detail),
+  fullWidthCellRenderer: cDetail,
+  getRowHeight: p => {
+    if (!p.data.__detail) return 48;
+    const n = Math.max((USERS_BY_ORG[p.data.orgId] || []).length, 1);
+    return Math.min(52 + n * 37 + 16, 430);
+  },
   defaultColDef: { sortable: true, resizable: true, filter: false },
   columnDefs: [
-    { headerName: 'سازمان', flex: 2, minWidth: 220, cellRenderer: cOrg, valueGetter: p => p.data.name, getQuickFilterText: p => p.data.name + ' ' + p.data.id },
+    { headerName: 'سازمان', flex: 2, minWidth: 220, cellRenderer: cOrg, valueGetter: p => p.data.name, getQuickFilterText: p => p.data.__detail ? '' : (p.data.name + ' ' + p.data.id) },
     { headerName: 'کاربران', width: 140, cellRenderer: cUsers, valueGetter: p => p.data.user_count, getQuickFilterText: () => '' },
     { headerName: 'پلن', width: 110, cellRenderer: cPlan, valueGetter: p => p.data.plan_label, getQuickFilterText: () => '' },
     { headerName: 'انقضا', width: 150, cellRenderer: cExpiry, valueGetter: p => (p.data.is_expired ? -1 : p.data.days_left), getQuickFilterText: () => '' },
@@ -329,11 +457,15 @@ const gridApi = agGrid.createGrid(document.getElementById('orgGrid'), {
     { headerName: 'آخرین ورود کاربر', width: 185, cellRenderer: cLastLogin, valueGetter: p => p.data.last_login, getQuickFilterText: () => '' },
     { headerName: 'عملیات', width: 160, cellRenderer: cActions, sortable: false, getQuickFilterText: () => '' },
   ],
-  rowData: ORGS,
-  overlayNoRowsTemplate: '<div style="padding:2rem;color:#718096;font-weight:600;">سازمانی یافت نشد</div>'
+  rowData: buildRows(),
+  overlayNoRowsTemplate: '<div style="padding:2rem;color:#718096;font-weight:600;">سازمانی یافت نشد</div>',
+  // با تغییرِ مرتب‌سازی، زیرردیف‌ها جمع می‌شوند تا از سازمانِ خود جدا نیفتند
+  onSortChanged: () => { if (expanded.size) { expanded.clear(); gridApi.setGridOption('rowData', buildRows()); } }
 });
 
 document.getElementById('orgSearch').addEventListener('input', function () {
+  // هنگام جستجو زیرردیف‌های باز جمع می‌شوند تا ردیفِ detailِ بی‌صاحب نماند
+  if (expanded.size) { expanded.clear(); gridApi.setGridOption('rowData', buildRows()); }
   gridApi.setGridOption('quickFilterText', this.value);
 });
 
