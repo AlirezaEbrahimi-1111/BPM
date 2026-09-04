@@ -156,10 +156,17 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             background: #f6f6f6;
         }
 
-        /* سربرگ: خانه‌های خالی گوشه + شماره/تاریخ */
-        .inv-top .hcorner { width: 92px; }
-        .inv-top .hlbl { width: 82px; }
-        .inv-top .hval { width: 120px; }
+        /* سربرگ: ستون خالی | عنوان | جدولِ ۲×۲ شماره/تاریخ */
+        .inv-top { table-layout: fixed; }
+        .inv-top .hc-empty { width: 210px; }
+        .inv-top .hc-meta { width: 210px; padding: 0; vertical-align: top; }
+        .inv-top .meta2 { width: 100%; border-collapse: collapse; }
+        .inv-top .meta2 td { border: 1px solid #000; padding: 4px 6px; }
+        .inv-top .meta2 td.lbl { width: 86px; }
+
+        /* شبکهٔ ۶ ستونیِ یکسان برای «مشخصات فروشنده» و «مشخصات خریدار» */
+        .grid6 { table-layout: fixed; }
+        .grid6 col.c-lbl { width: 124px; }
 
         /* عرض ستون‌های جدول اقلام مطابق فرم رسمی */
         table.items th.w-row  { width: 26px; }
@@ -337,30 +344,29 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             document.getElementById('sheet').innerHTML = `
             <table class="inv-top">
                 <tr>
-                    <td class="hcorner" rowspan="2"></td>
-                    <td class="lbl hlbl">شماره فاکتور</td>
-                    <td class="hval">${inv.number ? faDigits(inv.number) : ''}</td>
-                    <td class="inv-title" rowspan="2">${DT[inv.doc_type] || 'صورتحساب فروش کالا و خدمات'}</td>
-                    <td class="hcorner" rowspan="2"></td>
-                </tr>
-                <tr>
-                    <td class="lbl hlbl">تاریخ</td>
-                    <td class="hval">${inv.issue_date ? jDate(inv.issue_date) : ''}</td>
+                    <td class="hc-empty"></td>
+                    <td class="inv-title">${DT[inv.doc_type] || 'صورتحساب فروش کالا و خدمات'}</td>
+                    <td class="hc-meta">
+                        <table class="meta2">
+                            <tr><td class="lbl">شماره فاکتور</td><td>${inv.number ? faDigits(inv.number) : ''}</td></tr>
+                            <tr><td class="lbl">تاریخ</td><td>${inv.issue_date ? jDate(inv.issue_date) : ''}</td></tr>
+                        </table>
+                    </td>
                 </tr>
             </table>
 
-            <table class="blk">
+            <table class="blk grid6">
+                <colgroup><col class="c-lbl"><col><col class="c-lbl"><col><col class="c-lbl"><col></colgroup>
                 <tr><td colspan="6" class="band">مشخصات فروشنده</td></tr>
                 <tr>
                     <td class="lbl">نام شخص حقیقی و حقوقی</td><td>${esc(seller.company_name)}</td>
                     <td class="lbl">کد اقتصادی</td><td>${boxed(seller.economic_code)}</td>
-                    <td class="lbl">شناسه ملی</td><td>${boxed(seller.national_id)}</td>
+                    <td class="lbl">شناسه ملی</td><td>${faDigits(esc(seller.national_id))}</td>
                 </tr>
                 <tr>
-                    <td colspan="2">استان : ${esc(seller.province)}</td>
-                    <td>شهرستان : ${esc(seller.shahrestan)}</td>
-                    <td class="lbl">کد پستی ۱۰ رقمی</td><td>${boxed(seller.postal_code)}</td>
-                    <td>شهر : ${esc(seller.city)}</td>
+                    <td colspan="2">استان : ${esc(seller.province)}&nbsp;&nbsp;&nbsp;شهرستان : ${esc(seller.shahrestan)}</td>
+                    <td colspan="2">کد پستی ۱۰ رقمی : ${boxed(seller.postal_code)}</td>
+                    <td colspan="2">شهر : ${esc(seller.city)}</td>
                 </tr>
                 <tr>
                     <td colspan="4">نشانی کامل : ${esc(seller.address)}</td>
@@ -368,18 +374,18 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 </tr>
             </table>
 
-            <table class="blk">
+            <table class="blk grid6">
+                <colgroup><col class="c-lbl"><col><col class="c-lbl"><col><col class="c-lbl"><col></colgroup>
                 <tr><td colspan="6" class="band">مشخصات خریدار</td></tr>
                 <tr>
                     <td class="lbl">نام شخص حقیقی و حقوقی</td><td>${esc(buyer.name)}</td>
                     <td class="lbl">شماره اقتصادی</td><td>${boxed(buyer.economic_code)}</td>
-                    <td class="lbl">شناسه ملی</td><td>${boxed(buyer.national_id)}</td>
+                    <td class="lbl">شناسه ملی</td><td>${faDigits(esc(buyer.national_id))}</td>
                 </tr>
                 <tr>
-                    <td colspan="2">استان : ${esc(buyer.province)}</td>
-                    <td>شهر : ${esc(buyer.city)}</td>
-                    <td class="lbl">کد پستی ۱۰ رقمی</td><td>${boxed(buyer.postal_code)}</td>
-                    <td>شهرستان : ${esc(buyer.shahrestan)}</td>
+                    <td colspan="2">استان : ${esc(buyer.province)}&nbsp;&nbsp;&nbsp;شهرستان : ${esc(buyer.shahrestan)}</td>
+                    <td colspan="2">کد پستی ۱۰ رقمی : ${boxed(buyer.postal_code)}</td>
+                    <td colspan="2">شهر : ${esc(buyer.city)}</td>
                 </tr>
                 <tr>
                     <td colspan="4">آدرس : ${esc(buyer.address)}</td>
