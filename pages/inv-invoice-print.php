@@ -50,15 +50,19 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         .toolbar {
-            max-width: 1140px;
+            width: 1123px;
+            max-width: 100%;
             margin: 14px auto 0;
             display: flex;
             gap: 10px;
             justify-content: space-between;
         }
 
+        /* پیش‌نمایشِ برگه با نسبتِ ۳:۲٫۱ (A4 افقی) */
         .sheet {
-            max-width: 1140px;
+            width: 1123px;
+            max-width: 100%;
+            aspect-ratio: 3 / 2.1;
             margin: 14px auto 40px;
             background: #fff;
             color: #000;
@@ -66,6 +70,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             box-shadow: 0 2px 14px rgba(0, 0, 0, .12);
             font-size: 12px;
             line-height: 1.7;
+            overflow: auto;
         }
 
         .sheet table {
@@ -237,7 +242,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             .sheet {
                 box-shadow: none;
                 margin: 0;
+                width: auto;
                 max-width: none;
+                aspect-ratio: auto;
+                overflow: visible;
                 padding: 0;
             }
         }
