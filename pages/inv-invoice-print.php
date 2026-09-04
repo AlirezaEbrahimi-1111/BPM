@@ -94,6 +94,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             padding: 2px 6px;
         }
 
+        /* چسباندن جدول‌های پیاپی (ادغام خط مرزی) */
+        .blk {
+            margin-top: -1px;
+        }
+
         .band {
             text-align: center;
             font-weight: 700;
@@ -151,7 +156,24 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             background: #f6f6f6;
         }
 
-        .pay label {
+        /* سربرگ: خانه‌های خالی گوشه + شماره/تاریخ */
+        .inv-top .hcorner { width: 92px; }
+        .inv-top .hlbl { width: 82px; }
+        .inv-top .hval { width: 120px; }
+
+        /* عرض ستون‌های جدول اقلام مطابق فرم رسمی */
+        table.items th.w-row  { width: 26px; }
+        table.items th.w-code { width: 44px; }
+        table.items th.w-qty  { width: 60px; }
+        table.items th.w-num  { width: 76px; }
+        table.items th.w-num2 { width: 90px; }
+        table.items th.w-num3 { width: 106px; }
+        table.items tr.blank td { height: 21px; }
+
+        .pay-terms .pt-h { font-weight: 700; margin-inline-end: 16px; }
+        .pay-note { font-size: 11px; }
+
+        .pay-terms label {
             margin-inline-end: 14px;
             font-weight: 600;
         }
@@ -283,12 +305,14 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const cash = inv.payment_type === 'cash';
             const credit = inv.payment_type === 'credit';
 
-            const itemRows = (inv.items || []).map((it, i) => {
+            const items = inv.items || [];
+            const rows = [];
+            items.forEach((it, i) => {
                 const gross = Math.round((Number(it.qty) || 0) * (Number(it.unit_price) || 0));
                 const afterDisc = gross - (Number(it.discount) || 0);
-                return `<tr>
+                rows.push(`<tr>
                     <td>${faDigits(i + 1)}</td>
-                    <td>${faDigits(esc(it.code)) || '—'}</td>
+                    <td>${it.code ? faDigits(esc(it.code)) : '—'}</td>
                     <td class="desc">${esc(it.title)}</td>
                     <td>${faDigits(it.qty)}</td>
                     <td class="num">${money(it.unit_price)}</td>
@@ -297,27 +321,35 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     <td class="num">${money(afterDisc)}</td>
                     <td class="num">${it.is_tax_exempt ? '—' : money(it.tax_amount)}</td>
                     <td class="num">${money(it.line_total)}</td>
-                </tr>`;
-            }).join('');
+                </tr>`);
+            });
+            // پر کردن تا حداقل ۵ ردیف مثل فرم رسمی
+            for (let k = items.length; k < 5; k++) {
+                rows.push(`<tr class="blank">
+                    <td>${faDigits(k + 1)}</td><td></td><td></td><td></td>
+                    <td class="num">—</td><td class="num">—</td><td class="num">—</td>
+                    <td class="num">—</td><td class="num">—</td><td class="num">—</td>
+                </tr>`);
+            }
 
             const afterDiscTotal = (Number(inv.subtotal_amount) || 0) - (Number(inv.discount_amount) || 0);
 
             document.getElementById('sheet').innerHTML = `
             <table class="inv-top">
                 <tr>
-                    <td style="width:150px" class="inv-nobox">
-                        <table style="border:0">
-                            <tr><td class="lbl" style="border:1px solid #000">شماره فاکتور</td>
-                                <td style="border:1px solid #000">${inv.number ? faDigits(inv.number) : '—'}</td></tr>
-                            <tr><td class="lbl" style="border:1px solid #000">تاریخ</td>
-                                <td style="border:1px solid #000">${jDate(inv.issue_date)}</td></tr>
-                        </table>
-                    </td>
-                    <td class="inv-title">${DT[inv.doc_type] || 'صورتحساب فروش کالا و خدمات'}</td>
+                    <td class="hcorner" rowspan="2"></td>
+                    <td class="lbl hlbl">شماره فاکتور</td>
+                    <td class="hval">${inv.number ? faDigits(inv.number) : ''}</td>
+                    <td class="inv-title" rowspan="2">${DT[inv.doc_type] || 'صورتحساب فروش کالا و خدمات'}</td>
+                    <td class="hcorner" rowspan="2"></td>
+                </tr>
+                <tr>
+                    <td class="lbl hlbl">تاریخ</td>
+                    <td class="hval">${inv.issue_date ? jDate(inv.issue_date) : ''}</td>
                 </tr>
             </table>
 
-            <table style="margin-top:-1px">
+            <table class="blk">
                 <tr><td colspan="6" class="band">مشخصات فروشنده</td></tr>
                 <tr>
                     <td class="lbl">نام شخص حقیقی و حقوقی</td><td>${esc(seller.company_name)}</td>
@@ -325,20 +357,18 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     <td class="lbl">شناسه ملی</td><td>${boxed(seller.national_id)}</td>
                 </tr>
                 <tr>
-                    <td class="lbl">استان</td><td>${esc(seller.province)}</td>
-                    <td class="lbl">شهرستان</td><td>${esc(seller.shahrestan)}</td>
-                    <td class="lbl">شهر</td><td>${esc(seller.city)}</td>
-                </tr>
-                <tr>
+                    <td colspan="2">استان : ${esc(seller.province)}</td>
+                    <td>شهرستان : ${esc(seller.shahrestan)}</td>
                     <td class="lbl">کد پستی ۱۰ رقمی</td><td>${boxed(seller.postal_code)}</td>
-                    <td class="lbl">شماره تلفن / نمابر</td><td colspan="3">${faDigits(esc(seller.phone))}</td>
+                    <td>شهر : ${esc(seller.city)}</td>
                 </tr>
                 <tr>
-                    <td class="lbl">نشانی کامل</td><td colspan="5">${esc(seller.address)}</td>
+                    <td colspan="4">نشانی کامل : ${esc(seller.address)}</td>
+                    <td colspan="2">شماره تلفن / نمابر : ${faDigits(esc(seller.phone))}</td>
                 </tr>
             </table>
 
-            <table style="margin-top:-1px">
+            <table class="blk">
                 <tr><td colspan="6" class="band">مشخصات خریدار</td></tr>
                 <tr>
                     <td class="lbl">نام شخص حقیقی و حقوقی</td><td>${esc(buyer.name)}</td>
@@ -346,33 +376,34 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     <td class="lbl">شناسه ملی</td><td>${boxed(buyer.national_id)}</td>
                 </tr>
                 <tr>
-                    <td class="lbl">استان</td><td>${esc(buyer.province)}</td>
-                    <td class="lbl">شهر</td><td>${esc(buyer.city)}</td>
+                    <td colspan="2">استان : ${esc(buyer.province)}</td>
+                    <td>شهر : ${esc(buyer.city)}</td>
                     <td class="lbl">کد پستی ۱۰ رقمی</td><td>${boxed(buyer.postal_code)}</td>
+                    <td>شهرستان : ${esc(buyer.shahrestan)}</td>
                 </tr>
                 <tr>
-                    <td class="lbl">آدرس</td><td colspan="3">${esc(buyer.address)}</td>
-                    <td class="lbl">شماره تلفن</td><td>${faDigits(esc(buyer.phone || buyer.mobile))}</td>
+                    <td colspan="4">آدرس : ${esc(buyer.address)}</td>
+                    <td colspan="2">شماره تلفن : ${faDigits(esc(buyer.phone || buyer.mobile))}</td>
                 </tr>
             </table>
 
-            <table class="items" style="margin-top:-1px">
+            <table class="items">
                 <tr><td colspan="10" class="band">مشخصات کالا یا خدمات مورد معامله</td></tr>
                 <tr>
-                    <th style="width:26px">ردیف</th>
-                    <th style="width:60px">کد کالا</th>
+                    <th class="w-row">ردیف</th>
+                    <th class="w-code">کد کالا</th>
                     <th>شرح کالا یا خدمات</th>
-                    <th style="width:64px">تعداد / مقدار</th>
-                    <th style="width:78px">مبلغ واحد (ریال)</th>
-                    <th style="width:88px">مبلغ کل (ریال)</th>
-                    <th style="width:78px">مبلغ تخفیف (ریال)</th>
-                    <th style="width:92px">مبلغ کل پس از تخفیف (ریال)</th>
-                    <th style="width:86px">جمع مالیات و عوارض (ریال)</th>
-                    <th style="width:100px">جمع مبلغ کل بعلاوه جمع مالیات و عوارض (ریال)</th>
+                    <th class="w-qty">تعداد / مقدار</th>
+                    <th class="w-num">مبلغ واحد (ریال)</th>
+                    <th class="w-num">مبلغ کل (ریال)</th>
+                    <th class="w-num">مبلغ تخفیف</th>
+                    <th class="w-num2">مبلغ کل پس از تخفیف (ریال)</th>
+                    <th class="w-num2">جمع مالیات و عوارض (ریال)</th>
+                    <th class="w-num3">جمع مبلغ کل بعلاوه جمع مالیات و عوارض (ریال)</th>
                 </tr>
-                ${itemRows}
+                ${rows.join('')}
                 <tr class="sum">
-                    <td colspan="5">جمع کـل</td>
+                    <td colspan="5">جـمع کـل</td>
                     <td class="num">${money(inv.subtotal_amount)}</td>
                     <td class="num">${money(inv.discount_amount)}</td>
                     <td class="num">${money(afterDiscTotal)}</td>
@@ -381,25 +412,25 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 </tr>
             </table>
 
-            <table style="margin-top:-1px">
+            <table class="blk pay-blk">
                 <tr>
-                    <td style="width:50%" class="pay">
-                        <div>شرایط و نحوه فروش:
-                            <label>نقدی <span class="chk">${cash ? '✕' : ''}</span></label>
-                            <label>غیر نقدی <span class="chk">${credit ? '✕' : ''}</span></label>
-                        </div>
-                        <div style="margin-top:6px">توضیحات: ${esc(inv.note)}</div>
-                        ${footer ? `<div style="margin-top:6px" class="muted">${esc(footer)}</div>` : ''}
+                    <td class="pay-terms">
+                        <span class="pt-h">شرایط و نحوه فروش</span>
+                        <label>نقدی <span class="chk">${cash ? '✕' : ''}</span></label>
+                        <label>غیر نقدی <span class="chk">${credit ? '✕' : ''}</span></label>
                     </td>
-                    <td class="seller-pay">
+                    <td class="seller-pay" rowspan="2">
                         <div><b>${esc(seller.company_name)}</b></div>
-                        ${seller.iban ? `<div>شماره شبا: ${faDigits(esc(seller.iban))}</div>` : ''}
-                        ${seller.card_number ? `<div>شماره کارت: ${faDigits(esc(seller.card_number))}${seller.bank_name ? ' (' + esc(seller.bank_name) + ')' : ''}</div>` : ''}
+                        ${seller.iban ? `<div>شماره شبا : ${faDigits(esc(seller.iban))}</div>` : ''}
+                        ${seller.card_number ? `<div>شماره کارت : ${faDigits(esc(seller.card_number))}${seller.bank_name ? ' (' + esc(seller.bank_name) + ')' : ''}</div>` : ''}
                     </td>
                 </tr>
+                <tr>
+                    <td class="pay-note">توضیحات : ${esc(inv.note)}${footer ? ` <span class="muted">— ${esc(footer)}</span>` : ''}</td>
+                </tr>
                 <tr class="sign">
-                    <td>مهر و امضا فروشنده</td>
-                    <td>مهر و امضا خریدار</td>
+                    <td>مهر و امضاء فروشنده</td>
+                    <td>مهر و امضاء خریدار</td>
                 </tr>
             </table>`;
         }
