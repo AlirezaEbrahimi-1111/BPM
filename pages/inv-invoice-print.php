@@ -156,22 +156,28 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             background: #f6f6f6;
         }
 
-        /* سربرگ: ستون خالی | عنوان | جدولِ ۲×۲ شماره/تاریخ */
+        /* سربرگ: ستون خالی | عنوان | (برچسب | مقدار) در دو ردیف — همه در همین جدول
+           تا حاشیه‌ها هم‌تراز بمانند (جدولِ تودرتو خط‌های اضافه می‌ساخت). */
         .inv-top { table-layout: fixed; }
         .inv-top .hc-empty { width: 210px; }
-        .inv-top .hc-meta { width: 210px; padding: 0; vertical-align: top; }
-        .inv-top .meta2 { width: 100%; border-collapse: collapse; }
-        .inv-top .meta2 td { border: 1px solid #000; padding: 4px 6px; }
-        .inv-top .meta2 td.lbl { width: 86px; }
+        .inv-top .mlbl { width: 86px; }
+        .inv-top .mval { width: 124px; }
 
         /* شبکهٔ ۶ ستونیِ یکسان برای «مشخصات فروشنده» و «مشخصات خریدار» */
         .grid6 { table-layout: fixed; }
-        .grid6 col.c-lbl { width: 124px; }
+        .grid6 col.c-lbl  { width: 124px; }
+        .grid6 col.c-nlbl { width: 150px; }  /* برچسبِ «نام شخص حقیقی و حقوقی» ~۲۰٪ بزرگ‌تر */
+        .grid6 col.c-code { width: 99px; }    /* محلِ نوشتنِ کد اقتصادی/شناسه ملی ~۴۰٪ کوچک‌تر */
 
         /* عرض ستون‌های جدول اقلام مطابق فرم رسمی */
+        table.items { table-layout: fixed; }
+        table.items td.desc { word-break: break-word; }
         table.items th.w-row  { width: 26px; }
-        table.items th.w-code { width: 44px; }
+        table.items th.w-desc { width: 46%; }    /* شرح کالا چند برابر پهن‌تر */
+        table.items th.w-code { width: 18px; }   /* کد کالا ۶۰٪ کوچک‌تر */
         table.items th.w-qty  { width: 60px; }
+        table.items th.w-unit { width: 92px; }   /* مبلغ واحد ۲۰٪ بزرگ‌تر */
+        table.items th.w-tot  { width: 46px; }   /* مبلغ کل ۴۰٪ کوچک‌تر */
         table.items th.w-num  { width: 76px; }
         table.items th.w-num2 { width: 90px; }
         table.items th.w-num3 { width: 106px; }
@@ -179,6 +185,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         .pay-terms .pt-h { font-weight: 700; margin-inline-end: 16px; }
         .pay-note { font-size: 11px; }
+
+        /* بخش پایین: دو ستونِ «شرایط و نحوه فروش» و «نام شرکت» هم‌اندازه */
+        .pay-blk { table-layout: fixed; }
+        .pay-blk td { width: 50%; }
 
         .pay-terms label {
             margin-inline-end: 14px;
@@ -344,52 +354,56 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             document.getElementById('sheet').innerHTML = `
             <table class="inv-top">
                 <tr>
-                    <td class="hc-empty"></td>
-                    <td class="inv-title">${DT[inv.doc_type] || 'صورتحساب فروش کالا و خدمات'}</td>
-                    <td class="hc-meta">
-                        <table class="meta2">
-                            <tr><td class="lbl">شماره فاکتور</td><td>${inv.number ? faDigits(inv.number) : ''}</td></tr>
-                            <tr><td class="lbl">تاریخ</td><td>${inv.issue_date ? jDate(inv.issue_date) : ''}</td></tr>
-                        </table>
-                    </td>
+                    <td class="hc-empty" rowspan="2"></td>
+                    <td class="inv-title" rowspan="2">${DT[inv.doc_type] || 'صورتحساب فروش کالا و خدمات'}</td>
+                    <td class="lbl mlbl">شماره فاکتور</td>
+                    <td class="mval">${inv.number ? faDigits(inv.number) : ''}</td>
+                </tr>
+                <tr>
+                    <td class="lbl mlbl">تاریخ</td>
+                    <td class="mval">${inv.issue_date ? jDate(inv.issue_date) : ''}</td>
                 </tr>
             </table>
 
             <table class="blk grid6">
-                <colgroup><col class="c-lbl"><col><col class="c-lbl"><col><col class="c-lbl"><col></colgroup>
+                <colgroup><col class="c-nlbl"><col class="c-nval"><col class="c-lbl"><col class="c-code"><col class="c-lbl"><col class="c-code"></colgroup>
                 <tr><td colspan="6" class="band">مشخصات فروشنده</td></tr>
                 <tr>
                     <td class="lbl">نام شخص حقیقی و حقوقی</td><td>${esc(seller.company_name)}</td>
-                    <td class="lbl">کد اقتصادی</td><td>${boxed(seller.economic_code)}</td>
+                    <td class="lbl">کد اقتصادی</td><td>${faDigits(esc(seller.economic_code))}</td>
                     <td class="lbl">شناسه ملی</td><td>${faDigits(esc(seller.national_id))}</td>
                 </tr>
                 <tr>
-                    <td colspan="2">استان : ${esc(seller.province)}&nbsp;&nbsp;&nbsp;شهرستان : ${esc(seller.shahrestan)}</td>
-                    <td colspan="2">کد پستی ۱۰ رقمی : ${boxed(seller.postal_code)}</td>
-                    <td colspan="2">شهر : ${esc(seller.city)}</td>
+                    <td class="lbl">استان/شهرستان</td>
+                    <td>${esc(seller.province)}${seller.shahrestan ? ' / ' + esc(seller.shahrestan) : ''}</td>
+                    <td class="lbl">کد پستی ۱۰ رقمی</td><td>${faDigits(esc(seller.postal_code))}</td>
+                    <td class="lbl">شهر</td><td>${esc(seller.city)}</td>
                 </tr>
                 <tr>
-                    <td colspan="4">نشانی کامل : ${esc(seller.address)}</td>
-                    <td colspan="2">شماره تلفن / نمابر : ${faDigits(esc(seller.phone))}</td>
+                    <td class="lbl">نشانی کامل</td>
+                    <td colspan="3">${esc(seller.address)}</td>
+                    <td class="lbl">شماره تلفن / نمابر</td><td>${faDigits(esc(seller.phone))}</td>
                 </tr>
             </table>
 
             <table class="blk grid6">
-                <colgroup><col class="c-lbl"><col><col class="c-lbl"><col><col class="c-lbl"><col></colgroup>
+                <colgroup><col class="c-nlbl"><col class="c-nval"><col class="c-lbl"><col class="c-code"><col class="c-lbl"><col class="c-code"></colgroup>
                 <tr><td colspan="6" class="band">مشخصات خریدار</td></tr>
                 <tr>
                     <td class="lbl">نام شخص حقیقی و حقوقی</td><td>${esc(buyer.name)}</td>
-                    <td class="lbl">شماره اقتصادی</td><td>${boxed(buyer.economic_code)}</td>
+                    <td class="lbl">شماره اقتصادی</td><td>${faDigits(esc(buyer.economic_code))}</td>
                     <td class="lbl">شناسه ملی</td><td>${faDigits(esc(buyer.national_id))}</td>
                 </tr>
                 <tr>
-                    <td colspan="2">استان : ${esc(buyer.province)}&nbsp;&nbsp;&nbsp;شهرستان : ${esc(buyer.shahrestan)}</td>
-                    <td colspan="2">کد پستی ۱۰ رقمی : ${boxed(buyer.postal_code)}</td>
-                    <td colspan="2">شهر : ${esc(buyer.city)}</td>
+                    <td class="lbl">استان/شهرستان</td>
+                    <td>${esc(buyer.province)}${buyer.shahrestan ? ' / ' + esc(buyer.shahrestan) : ''}</td>
+                    <td class="lbl">کد پستی ۱۰ رقمی</td><td>${faDigits(esc(buyer.postal_code))}</td>
+                    <td class="lbl">شهر</td><td>${esc(buyer.city)}</td>
                 </tr>
                 <tr>
-                    <td colspan="4">آدرس : ${esc(buyer.address)}</td>
-                    <td colspan="2">شماره تلفن : ${faDigits(esc(buyer.phone || buyer.mobile))}</td>
+                    <td class="lbl">آدرس</td>
+                    <td colspan="3">${esc(buyer.address)}</td>
+                    <td class="lbl">شماره تلفن</td><td>${faDigits(esc(buyer.phone || buyer.mobile))}</td>
                 </tr>
             </table>
 
@@ -400,8 +414,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     <th class="w-code">کد کالا</th>
                     <th>شرح کالا یا خدمات</th>
                     <th class="w-qty">تعداد / مقدار</th>
-                    <th class="w-num">مبلغ واحد (ریال)</th>
-                    <th class="w-num">مبلغ کل (ریال)</th>
+                    <th class="w-unit">مبلغ واحد (ریال)</th>
+                    <th class="w-tot">مبلغ کل (ریال)</th>
                     <th class="w-num">مبلغ تخفیف</th>
                     <th class="w-num2">مبلغ کل پس از تخفیف (ریال)</th>
                     <th class="w-num2">جمع مالیات و عوارض (ریال)</th>
