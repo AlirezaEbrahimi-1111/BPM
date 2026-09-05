@@ -1,0 +1,1064 @@
+<?php require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
+require_once '../config/config.php';
+require_once '../includes/version.php';
+
+require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+
+if (!isset($db)) {
+    $database = new Database();
+    $db = $database->getConnection();
+}
+$auth = new Auth($db);
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) $user_id = $auth->getUserFromToken();
+if (!$user_id && isset($_COOKIE['auth_token'])) $user_id = $auth->validateToken($_COOKIE['auth_token']);
+
+if (!$user_id) {
+    header('Location: ../index.php');
+    exit;
+}
+$__me = loadUserForPermissions($db, (int) $user_id);
+if (!$__me) {
+    header('Location: ../index.php');
+    exit;
+}
+// فعلاً فقط کاربر id=1 — ماژولِ فاکتور در حالِ ساخت است.
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
+if (!crmModuleAllowed($db, (int) $user_id)) {
+    header('Location: ../pages/dashboard.php');
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>گزارشات فاکتور - سامانه مدیریت فرآیندها</title>
+
+    <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
+    <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
+    <link rel="stylesheet" href="<?= asset('../assets/js/cdn/persian-datepicker.min.css') ?>">
+    <script src="<?= asset('../assets/js/config.js') ?>"></script>
+    <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
+    <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
+    <script src="<?= asset('../assets/js/cdn/chart.js') ?>"></script>
+
+    <style>
+        .rpt-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin: 1rem 0 1.25rem;
+        }
+
+        .rpt-toolbar .rpt-dates {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rpt-toolbar input.persian-date {
+            width: 130px;
+            border: 1px solid rgba(142, 87, 254, .2);
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-family: inherit;
+            background: #fff;
+            color: #2D3748;
+        }
+
+        .rpt-toolbar input.persian-date:focus {
+            outline: none;
+            border-color: #8e57fe;
+        }
+
+        .rpt-presets {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .rpt-pill {
+            border: 1px solid #e9e9e9;
+            background: #fff;
+            color: #718096;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+        }
+
+        .rpt-pill:hover {
+            border-color: #8e57fe;
+            color: #8e57fe;
+        }
+
+        .rpt-pill.active {
+            background: #8e57fe;
+            border-color: #8e57fe;
+            color: #fff;
+        }
+
+        .rpt-spacer {
+            flex: 1;
+        }
+
+        /* کارت‌های KPI */
+        .rpt-kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .rpt-kpi {
+            background: #fff;
+            border-radius: 14px;
+            padding: 16px 18px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .04);
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .rpt-kpi .ic {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+        }
+
+        .rpt-kpi .lbl {
+            font-size: 12px;
+            color: #718096;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .rpt-kpi .val {
+            font-size: 19px;
+            font-weight: 800;
+            line-height: 1.25;
+            color: #2D3748;
+            direction: ltr;
+            unicode-bidi: isolate;
+            text-align: right;
+        }
+
+        .rpt-kpi .unit {
+            font-size: 11px;
+            font-weight: 600;
+            color: #A0AEC0;
+            margin-inline-start: 3px;
+        }
+
+        /* شبکهٔ نمودارها */
+        .rpt-charts {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 16px;
+        }
+
+        .rpt-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 18px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .04);
+            min-width: 0;
+        }
+
+        .rpt-card h6 {
+            margin: 0 0 14px;
+            font-weight: 700;
+            color: #2D3748;
+            font-size: 13.5px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .rpt-card h6 i {
+            color: #8e57fe;
+        }
+
+        .rpt-card .chart-wrap {
+            position: relative;
+            height: 260px;
+        }
+
+        .span-12 {
+            grid-column: span 12;
+        }
+
+        .span-8 {
+            grid-column: span 8;
+        }
+
+        .span-6 {
+            grid-column: span 6;
+        }
+
+        .span-4 {
+            grid-column: span 4;
+        }
+
+        @media (max-width: 992px) {
+            .rpt-charts>div {
+                grid-column: span 12 !important;
+            }
+        }
+
+        .rpt-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #A0AEC0;
+            font-size: 12.5px;
+        }
+
+        /* جدولِ ساده‌ی کالاهای رو به اتمام */
+        .rpt-lowstock {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .rpt-lowstock li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 4px;
+            font-size: 12.5px;
+            border-top: 1px dashed #eef0f2;
+        }
+
+        .rpt-lowstock li:first-child {
+            border-top: 0;
+        }
+
+        .rpt-lowstock .pname {
+            font-weight: 700;
+            color: #2D3748;
+        }
+
+        .rpt-lowstock .pcode {
+            color: #A0AEC0;
+            font-size: 11px;
+            margin-inline-start: 6px;
+        }
+
+        .rpt-lowstock .pqty {
+            font-weight: 700;
+            direction: ltr;
+            unicode-bidi: isolate;
+        }
+
+        .rpt-lowstock .pqty.neg {
+            color: #dc2626;
+        }
+
+        .rpt-lowstock .pqty.zero {
+            color: #F79009;
+        }
+
+        :root[data-theme="dark"] .rpt-toolbar input.persian-date {
+            background: var(--surface);
+            color: var(--text-strong);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .rpt-pill {
+            background: var(--surface);
+            border-color: var(--border-soft);
+            color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .rpt-pill.active {
+            background: #8e57fe;
+            border-color: #8e57fe;
+            color: #fff;
+        }
+
+        :root[data-theme="dark"] .rpt-kpi,
+        :root[data-theme="dark"] .rpt-card {
+            background: var(--surface);
+            box-shadow: none;
+            border: 1px solid var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .rpt-kpi .val,
+        :root[data-theme="dark"] .rpt-card h6 {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .rpt-lowstock li {
+            border-top-color: rgba(255, 255, 255, .08);
+        }
+
+        :root[data-theme="dark"] .rpt-lowstock .pname {
+            color: var(--text-strong);
+        }
+
+        @media (max-width: 768px) {
+            .rpt-toolbar input.persian-date {
+                width: 110px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <?php include 'header.php'; ?>
+
+    <div class="overview-container" style="margin-top:70px">
+
+        <div class="filters-wrapper two-col">
+            <div class="filters-title-col">
+                <h1><i class="bi bi-bar-chart-line"></i> گزارشات فاکتور</h1>
+                <p>روندِ فروش و خرید، مشتریان و تأمین‌کنندگانِ برتر، وضعیتِ موجودی — سازمانِ ۱</p>
+            </div>
+        </div>
+
+        <div class="rpt-toolbar">
+            <div class="rpt-dates">
+                <input type="text" id="dateFrom" class="form-control persian-date" placeholder="از تاریخ">
+                <span class="text-muted">تا</span>
+                <input type="text" id="dateTo" class="form-control persian-date" placeholder="تا تاریخ">
+            </div>
+            <div class="rpt-presets" id="presets">
+                <button class="rpt-pill active" data-preset="all">همه</button>
+                <button class="rpt-pill" data-preset="year">امسال</button>
+                <button class="rpt-pill" data-preset="q">۳ ماه اخیر</button>
+                <button class="rpt-pill" data-preset="m">۳۰ روز اخیر</button>
+            </div>
+            <div class="rpt-spacer"></div>
+            <button class="btn btn-outline-secondary btn-sm" id="btnRefresh"><i class="bi bi-arrow-clockwise ms-1"></i> به‌روزرسانی</button>
+        </div>
+
+        <div class="rpt-kpis" id="kpis">
+            <p class="text-muted">در حال بارگذاری…</p>
+        </div>
+
+        <div class="rpt-charts">
+            <div class="rpt-card span-8">
+                <h6><i class="bi bi-graph-up-arrow"></i> روند ماهانهٔ فروش و خرید (ریال)</h6>
+                <div class="chart-wrap"><canvas id="chTrend"></canvas></div>
+            </div>
+            <div class="rpt-card span-4">
+                <h6><i class="bi bi-pie-chart"></i> وضعیتِ فاکتورهای فروش</h6>
+                <div class="chart-wrap"><canvas id="chStatus"></canvas></div>
+            </div>
+
+            <div class="rpt-card span-4">
+                <h6><i class="bi bi-cash-coin"></i> نحوهٔ فروش</h6>
+                <div class="chart-wrap"><canvas id="chPayment"></canvas></div>
+            </div>
+            <div class="rpt-card span-4">
+                <h6><i class="bi bi-people"></i> پرمعامله‌ترین مشتریان</h6>
+                <div class="chart-wrap"><canvas id="chCustomers"></canvas></div>
+            </div>
+            <div class="rpt-card span-4">
+                <h6><i class="bi bi-truck"></i> پرمعامله‌ترین تأمین‌کنندگان</h6>
+                <div class="chart-wrap"><canvas id="chSuppliers"></canvas></div>
+            </div>
+
+            <div class="rpt-card span-4">
+                <h6><i class="bi bi-box-seam"></i> ترکیبِ کاتالوگِ کالا</h6>
+                <div class="chart-wrap"><canvas id="chCatalog"></canvas></div>
+            </div>
+            <div class="rpt-card span-8">
+                <h6><i class="bi bi-exclamation-triangle"></i> کالاهای رو به اتمام</h6>
+                <ul class="rpt-lowstock" id="lowStockList"></ul>
+            </div>
+        </div>
+
+    </div>
+
+    <?php include 'footer.php'; ?>
+
+    <script src="<?= asset('../assets/js/cdn/jquery.min.js') ?>"></script>
+    <script src="<?= asset('../assets/js/cdn/persian-date.min.js') ?>"></script>
+    <script src="<?= asset('../assets/js/cdn/persian-datepicker.min.js') ?>"></script>
+    <script>
+        const API = '/crm/api';
+
+        // پالتِ اعتبارسنجی‌شده (dataviz skill): جفتِ فروش/خرید و جفتِ وضعیت،
+        // هر دو با اسکریپتِ validate_palette.js چک شدند (ΔE کافی برای کوررنگی).
+        const COLOR = {
+            sales: '#8e57fe',
+            purchase: '#f59e0b',
+            draft: '#94a3b8',
+            approved: '#2563eb',
+            cancelled: '#dc2626',
+            cash: '#8e57fe',
+            credit: '#f59e0b',
+        };
+
+        function tok() {
+            return localStorage.getItem('auth_token');
+        }
+
+        function faDigits(s) {
+            return String(s == null ? '' : s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+        }
+
+        function money(n) {
+            return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US')));
+        }
+
+        function shortMoney(n) {
+            n = Number(n) || 0;
+            const abs = Math.abs(n);
+            if (abs >= 1e9) return faDigits((n / 1e9).toFixed(1)) + ' میلیارد';
+            if (abs >= 1e6) return faDigits((n / 1e6).toFixed(1)) + ' میلیون';
+            if (abs >= 1e3) return faDigits((n / 1e3).toFixed(0)) + ' هزار';
+            return faDigits(n);
+        }
+
+        function isDark() {
+            return document.documentElement.getAttribute('data-theme') === 'dark';
+        }
+
+        function textColor() {
+            return isDark() ? '#cbd5e1' : '#475569';
+        }
+
+        function gridColor() {
+            return isDark() ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.06)';
+        }
+
+        function surfaceColor() {
+            return isDark() ? (getComputedStyle(document.documentElement).getPropertyValue('--surface').trim() || '#1e2230') : '#ffffff';
+        }
+
+        async function apiGet(path) {
+            const r = await fetch(API + path, {
+                headers: {
+                    'Authorization': 'Bearer ' + tok()
+                }
+            });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d.message || ('خطای ' + r.status));
+            return d;
+        }
+
+        async function fetchAll(path) {
+            let page = 1,
+                out = [],
+                total = Infinity;
+            while (out.length < total) {
+                const sep = path.includes('?') ? '&' : '?';
+                const d = await apiGet(path + sep + 'per=200&page=' + page);
+                out = out.concat(d.items || []);
+                total = d.total || 0;
+                if (!d.items || !d.items.length) break;
+                page++;
+            }
+            return out;
+        }
+
+        let invoices = [],
+            purchases = [],
+            products = [];
+        let charts = {};
+        let range = {
+            from: null,
+            to: null
+        }; // میلادیِ YYYY-MM-DD یا null = بدونِ محدودیت
+
+        function inRange(dateStr) {
+            if (!dateStr) return false;
+            if (range.from && dateStr < range.from) return false;
+            if (range.to && dateStr > range.to) return false;
+            return true;
+        }
+
+        function jKey(dateStr) {
+            if (!dateStr) return null;
+            try {
+                const pd = new persianDate(new Date(dateStr + 'T00:00:00'));
+                return pd.year() + '-' + String(pd.month()).padStart(2, '0');
+            } catch (e) {
+                return null;
+            }
+        }
+
+        const J_MONTHS = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+
+        function jLabel(key) {
+            const [y, m] = key.split('-');
+            return J_MONTHS[parseInt(m, 10) - 1] + ' ' + faDigits(y);
+        }
+
+        function destroyCharts() {
+            Object.values(charts).forEach(c => c && c.destroy());
+            charts = {};
+        }
+
+        function baseOptions(extra) {
+            return Object.assign({
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: textColor(),
+                            font: {
+                                family: 'Vazirmatn',
+                                size: 11.5
+                            },
+                            usePointStyle: true,
+                            padding: 14
+                        }
+                    },
+                    tooltip: {
+                        rtl: true,
+                        titleFont: {
+                            family: 'Vazirmatn'
+                        },
+                        bodyFont: {
+                            family: 'Vazirmatn'
+                        }
+                    }
+                }
+            }, extra || {});
+        }
+
+        function render() {
+            const inv = invoices.filter(i => i.doc_type === 'official' && inRange(i.issue_date));
+            const invApproved = inv.filter(i => i.status === 'approved');
+            const pur = purchases.filter(p => inRange(p.issue_date));
+            const purConfirmed = pur.filter(p => p.status === 'confirmed');
+
+            renderKpis(inv, invApproved, pur, purConfirmed);
+            destroyCharts();
+            renderTrend(invApproved, purConfirmed);
+            renderStatus(inv);
+            renderPayment(invApproved);
+            renderTopEntities('chCustomers', invApproved, 'customer_name', COLOR.sales);
+            renderTopEntities('chSuppliers', purConfirmed, 'supplier_name', COLOR.purchase);
+            renderCatalog();
+            renderLowStock();
+        }
+
+        function renderKpis(inv, invApproved, pur, purConfirmed) {
+            const sumSales = invApproved.reduce((s, i) => s + (Number(i.total_amount) || 0), 0);
+            const sumPurchase = purConfirmed.reduce((s, p) => s + (Number(p.total_amount) || 0), 0);
+            const balance = sumSales - sumPurchase;
+            const avg = invApproved.length ? Math.round(sumSales / invApproved.length) : 0;
+
+            const cards = [{
+                    ic: 'bi-graph-up-arrow',
+                    bg: 'rgba(142,87,254,.12)',
+                    fg: '#8e57fe',
+                    lbl: 'کل فروش (تأییدشده)',
+                    val: money(sumSales)
+                },
+                {
+                    ic: 'bi-cart-check',
+                    bg: 'rgba(245,158,11,.14)',
+                    fg: '#b45309',
+                    lbl: 'کل خرید (تأییدشده)',
+                    val: money(sumPurchase)
+                },
+                {
+                    ic: balance >= 0 ? 'bi-arrow-up-circle' : 'bi-arrow-down-circle',
+                    bg: balance >= 0 ? 'rgba(27,123,57,.12)' : 'rgba(220,38,38,.12)',
+                    fg: balance >= 0 ? '#1b7b39' : '#dc2626',
+                    lbl: 'تراز فروش / خرید',
+                    val: money(balance)
+                },
+                {
+                    ic: 'bi-receipt',
+                    bg: 'rgba(37,99,235,.12)',
+                    fg: '#2563eb',
+                    lbl: 'تعدادِ فاکتورِ فروش',
+                    val: faDigits(inv.length),
+                    unit: ''
+                },
+                {
+                    ic: 'bi-cart-plus',
+                    bg: 'rgba(245,158,11,.14)',
+                    fg: '#b45309',
+                    lbl: 'تعدادِ خریدِ تأییدشده',
+                    val: faDigits(purConfirmed.length),
+                    unit: ''
+                },
+                {
+                    ic: 'bi-calculator',
+                    bg: 'rgba(142,87,254,.12)',
+                    fg: '#8e57fe',
+                    lbl: 'میانگینِ فاکتورِ فروش',
+                    val: money(avg)
+                },
+            ];
+
+            document.getElementById('kpis').innerHTML = cards.map(c => `
+                <div class="rpt-kpi">
+                    <div class="ic" style="background:${c.bg};color:${c.fg}"><i class="bi ${c.ic}"></i></div>
+                    <div>
+                        <div class="lbl">${c.lbl}</div>
+                        <div class="val">${c.val}${c.unit === '' ? '' : '<span class="unit">ریال</span>'}</div>
+                    </div>
+                </div>`).join('');
+        }
+
+        function renderTrend(invApproved, purConfirmed) {
+            const map = {};
+            invApproved.forEach(i => {
+                const k = jKey(i.issue_date);
+                if (!k) return;
+                (map[k] = map[k] || {
+                    sales: 0,
+                    purchase: 0
+                }).sales += Number(i.total_amount) || 0;
+            });
+            purConfirmed.forEach(p => {
+                const k = jKey(p.issue_date);
+                if (!k) return;
+                (map[k] = map[k] || {
+                    sales: 0,
+                    purchase: 0
+                }).purchase += Number(p.total_amount) || 0;
+            });
+            const keys = Object.keys(map).sort();
+            const labels = keys.map(jLabel);
+            const salesData = keys.map(k => map[k].sales);
+            const purchaseData = keys.map(k => map[k].purchase);
+
+            charts.trend = new Chart(document.getElementById('chTrend'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                            label: 'فروش',
+                            data: salesData,
+                            borderColor: COLOR.sales,
+                            backgroundColor: COLOR.sales,
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                        },
+                        {
+                            label: 'خرید',
+                            data: purchaseData,
+                            borderColor: COLOR.purchase,
+                            backgroundColor: COLOR.purchase,
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                        }
+                    ]
+                },
+                options: baseOptions({
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor(),
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: 11.5
+                                },
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            rtl: true,
+                            callbacks: {
+                                label: ctx => ctx.dataset.label + ': ' + money(ctx.parsed.y) + ' ریال'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: textColor(),
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: gridColor()
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: textColor(),
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: 11
+                                },
+                                callback: v => shortMoney(v)
+                            },
+                            grid: {
+                                color: gridColor()
+                            }
+                        }
+                    }
+                })
+            });
+        }
+
+        function renderStatus(inv) {
+            const labels = {
+                draft: 'پیش‌نویس',
+                approved: 'تأییدشده',
+                cancelled: 'باطل'
+            };
+            const counts = {
+                draft: 0,
+                approved: 0,
+                cancelled: 0
+            };
+            inv.forEach(i => {
+                if (counts[i.status] != null) counts[i.status]++;
+            });
+
+            charts.status = new Chart(document.getElementById('chStatus'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(counts).map(k => labels[k]),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: [COLOR.draft, COLOR.approved, COLOR.cancelled],
+                        borderColor: surfaceColor(),
+                        borderWidth: 2,
+                    }]
+                },
+                options: baseOptions({
+                    cutout: '62%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: textColor(),
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: 11.5
+                                },
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            rtl: true,
+                            callbacks: {
+                                label: ctx => ctx.label + ': ' + faDigits(ctx.parsed) + ' فاکتور'
+                            }
+                        }
+                    }
+                })
+            });
+        }
+
+        function renderPayment(invApproved) {
+            let cash = 0,
+                credit = 0;
+            invApproved.forEach(i => {
+                if (i.payment_type === 'cash') cash++;
+                else if (i.payment_type === 'credit') credit++;
+            });
+
+            charts.payment = new Chart(document.getElementById('chPayment'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['نقدی', 'غیر نقدی'],
+                    datasets: [{
+                        data: [cash, credit],
+                        backgroundColor: [COLOR.cash, COLOR.credit],
+                        borderColor: surfaceColor(),
+                        borderWidth: 2,
+                    }]
+                },
+                options: baseOptions({
+                    cutout: '62%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: textColor(),
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: 11.5
+                                },
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            rtl: true,
+                            callbacks: {
+                                label: ctx => ctx.label + ': ' + faDigits(ctx.parsed) + ' فاکتور'
+                            }
+                        }
+                    }
+                })
+            });
+        }
+
+        function renderTopEntities(canvasId, list, field, color) {
+            const map = {};
+            list.forEach(x => {
+                const name = x[field] || '—';
+                map[name] = (map[name] || 0) + (Number(x.total_amount) || 0);
+            });
+            const sorted = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 6);
+            const el = document.getElementById(canvasId);
+            const wrap = el.closest('.chart-wrap');
+
+            if (!sorted.length) {
+                el.style.display = 'none';
+                if (!wrap.querySelector('.rpt-empty')) {
+                    const d = document.createElement('div');
+                    d.className = 'rpt-empty';
+                    d.textContent = 'داده‌ای در این بازه نیست';
+                    wrap.appendChild(d);
+                }
+                return;
+            }
+            el.style.display = '';
+            const emptyEl = wrap.querySelector('.rpt-empty');
+            if (emptyEl) emptyEl.remove();
+
+            charts[canvasId] = new Chart(el, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(x => x[0]),
+                    datasets: [{
+                        data: sorted.map(x => x[1]),
+                        backgroundColor: color,
+                        borderRadius: 4,
+                        maxBarThickness: 22,
+                    }]
+                },
+                options: baseOptions({
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            rtl: true,
+                            callbacks: {
+                                label: ctx => money(ctx.parsed.x) + ' ریال'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: textColor(),
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: 10.5
+                                },
+                                callback: v => shortMoney(v)
+                            },
+                            grid: {
+                                color: gridColor()
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: textColor(),
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: 11.5
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                })
+            });
+        }
+
+        function renderCatalog() {
+            const physical = products.filter(p => !p.is_service).length;
+            const service = products.filter(p => p.is_service).length;
+
+            charts.catalog = new Chart(document.getElementById('chCatalog'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['کالای فیزیکی', 'خدمات'],
+                    datasets: [{
+                        data: [physical, service],
+                        backgroundColor: [COLOR.sales, COLOR.purchase],
+                        borderColor: surfaceColor(),
+                        borderWidth: 2,
+                    }]
+                },
+                options: baseOptions({
+                    cutout: '62%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: textColor(),
+                                font: {
+                                    family: 'Vazirmatn',
+                                    size: 11.5
+                                },
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            rtl: true,
+                            callbacks: {
+                                label: ctx => ctx.label + ': ' + faDigits(ctx.parsed) + ' قلم'
+                            }
+                        }
+                    }
+                })
+            });
+        }
+
+        function renderLowStock() {
+            const low = products
+                .filter(p => !p.is_service && (Number(p.available) || 0) <= 0)
+                .sort((a, b) => (Number(a.available) || 0) - (Number(b.available) || 0))
+                .slice(0, 30);
+
+            const list = document.getElementById('lowStockList');
+            if (!low.length) {
+                list.innerHTML = '<li style="justify-content:center;color:#A0AEC0">موردی برای نمایش نیست — موجودیِ همهٔ کالاها مثبت است</li>';
+                return;
+            }
+            list.innerHTML = low.map(p => {
+                const av = Number(p.available) || 0;
+                const cls = av < 0 ? 'neg' : 'zero';
+                return `<li>
+                    <span><span class="pname">${esc(p.name)}</span><span class="pcode">${p.code ? faDigits(esc(p.code)) : ''}</span></span>
+                    <span class="pqty ${cls}">${faDigits(av)}</span>
+                </li>`;
+            }).join('');
+        }
+
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;'
+            } [c]));
+        }
+
+        /* ── بازهٔ تاریخ ── */
+        function setPreset(name) {
+            document.querySelectorAll('#presets .rpt-pill').forEach(b => b.classList.toggle('active', b.dataset.preset === name));
+            const today = new persianDate();
+            if (name === 'all') {
+                range = {
+                    from: null,
+                    to: null
+                };
+            } else if (name === 'year') {
+                const y = today.year();
+                range.from = new persianDate(y + '/01/01').toDate().toISOString().slice(0, 10);
+                range.to = new persianDate((y + 1) + '/01/01').toDate().toISOString().slice(0, 10);
+            } else if (name === 'q') {
+                const d = new Date();
+                d.setDate(d.getDate() - 90);
+                range.from = d.toISOString().slice(0, 10);
+                range.to = null;
+            } else if (name === 'm') {
+                const d = new Date();
+                d.setDate(d.getDate() - 30);
+                range.from = d.toISOString().slice(0, 10);
+                range.to = null;
+            }
+            document.getElementById('dateFrom').value = range.from ? faDigits(new persianDate(new Date(range.from + 'T00:00:00')).format('YYYY/MM/DD')) : '';
+            document.getElementById('dateTo').value = range.to ? faDigits(new persianDate(new Date(range.to + 'T00:00:00')).format('YYYY/MM/DD')) : '';
+            render();
+        }
+
+        function convertPersianToGregorian(persianDateStr) {
+            try {
+                const pd = new persianDate(persianDateStr);
+                return pd.toDate().toISOString().split('T')[0];
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function setupDateInputs() {
+            $('.persian-date').pDatepicker({
+                format: 'YYYY/MM/DD',
+                initialValue: false,
+                observer: true,
+                calendar: {
+                    persian: {
+                        locale: 'fa'
+                    }
+                },
+                onSelect: () => {
+                    document.querySelectorAll('#presets .rpt-pill').forEach(b => b.classList.remove('active'));
+                    const fv = document.getElementById('dateFrom').value.trim();
+                    const tv = document.getElementById('dateTo').value.trim();
+                    range.from = fv ? convertPersianToGregorian(fv) : null;
+                    range.to = tv ? convertPersianToGregorian(tv) : null;
+                    render();
+                }
+            });
+        }
+
+        document.getElementById('presets').addEventListener('click', e => {
+            const btn = e.target.closest('.rpt-pill');
+            if (btn) setPreset(btn.dataset.preset);
+        });
+        document.getElementById('btnRefresh').addEventListener('click', boot);
+
+        /* هماهنگیِ نمودارها با تغییرِ حالتِ روشن/تاریک، بدونِ رفرشِ صفحه */
+        new MutationObserver(() => render()).observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-theme']
+        });
+
+        async function boot() {
+            if (!tok()) {
+                location.href = '../index.php';
+                return;
+            }
+            document.getElementById('kpis').innerHTML = '<p class="text-muted">در حال بارگذاری…</p>';
+            try {
+                [invoices, purchases, products] = await Promise.all([
+                    fetchAll('/inv/invoices'),
+                    fetchAll('/inv/purchases'),
+                    fetchAll('/inv/products'),
+                ]);
+                render();
+            } catch (e) {
+                document.getElementById('kpis').innerHTML = '<p class="text-danger">' + (e.message || 'خطا در بارگذاری') + '</p>';
+            }
+        }
+
+        setupDateInputs();
+        boot();
+    </script>
+</body>
+
+</html>

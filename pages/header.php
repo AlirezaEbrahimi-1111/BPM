@@ -835,6 +835,11 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item" href="/pages/inv-reports.php">
+                                    <i class="bi bi-bar-chart-line ms-2"></i>گزارشات
+                                </a>
+                            </li>
+                            <li>
                                 <hr class="dropdown-divider">
                             </li>
                             <li>
