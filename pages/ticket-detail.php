@@ -751,6 +751,9 @@ if (!$__me) {
                     },
                     body: JSON.stringify({ ticket_id: parseInt(ticketId) })
                 });
+                // پنلِ زنگوله را تازه کن تا اعلانِ همین تیکت از حالتِ خوانده‌نشده
+                // خارج شود (شمارنده و نمایِ «خوانده‌نشده» بلافاصله به‌روز شوند)
+                if (typeof loadNotifications === 'function') loadNotifications();
             } catch (e) {
                 // خطا مهم نیست، فقط لاگ کن
                 console.error('خطا در mark-read نوتیفیکیشن:', e);

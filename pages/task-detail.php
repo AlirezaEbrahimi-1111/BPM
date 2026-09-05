@@ -4432,7 +4432,11 @@ ${task.overdue_periods > 0 ? `
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ task_id: taskId })
-                }).catch(() => {});
+                })
+                    .then(function () {
+                        if (typeof loadNotifications === 'function') loadNotifications();
+                    })
+                    .catch(() => {});
             }
 
             // ─── ستاره‌دار کردن (منتخب) — همان تنظیمِ روزانه‌یِ داشبورد،

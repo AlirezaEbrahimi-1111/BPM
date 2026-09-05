@@ -5141,7 +5141,11 @@ function formatDateJalali($gregorianDate)
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ related_types: ['leave', 'mission', 'pass', 'forget', 'technical'] })
-                }).catch(function () {});
+                })
+                    .then(function () {
+                        if (typeof loadNotifications === 'function') loadNotifications();
+                    })
+                    .catch(function () {});
             }, 100);
 
         });

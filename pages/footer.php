@@ -7,21 +7,21 @@ require_once '../includes/version.php';
      باعث می‌شد قواعد قدیمی/بدون تم‌تاریکِ custom.css روی override محلیِ هر صفحه غالب شود. -->
 
 <style>
-    /* الگویِ sticky-footer بدونِ دست‌زدن به layoutِ body: body حداقل به‌اندازهٔ
-       ارتفاعِ صفحه بلند می‌شود و فوتر با position:sticky + top:100vh همیشه به
-       کفِ پنجره می‌چسبد — حتی وقتی محتوا کم است (قبلاً وسطِ صفحه می‌ماند). روی
-       صفحاتِ بلند، طبیعی ته صفحه قرار می‌گیرد. */
+    /* فوترِ ثابت (فریز) در همهٔ صفحات: همیشه چسبیده به کفِ پنجره، با اسکرول
+       جابه‌جا نمی‌شود. body یک padding-bottom می‌گیرد تا آخرین بخشِ محتوا
+       زیرِ فوتر پنهان نشود. */
     body {
         min-height: calc(100vh - 3.5rem);
+        padding-bottom: 40px;
     }
 
-    /* sticky نه fixed — هیچ‌وقت رویِ اکشن‌بارهایِ fixed دیگه (مثلِ نوارِ
-       عملیاتِ پایینِ task-detail.php) نمی‌افته. */
     .site-footer {
-        position: sticky;
-        top: 100vh;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
         width: 100%;
-        margin-top: 24px;
+        z-index: 80;
         padding: 7px 0;
         display: flex;
         align-items: center;
@@ -30,6 +30,21 @@ require_once '../includes/version.php';
         font-size: 12px;
         background: var(--surface, #fff);
         border-top: 1px solid var(--border-soft, #eef0f2);
+        box-shadow: 0 -3px 14px rgba(0, 0, 0, .12);
+    }
+
+    :root[data-theme="dark"] .site-footer {
+        box-shadow: 0 -3px 14px rgba(0, 0, 0, .5);
+    }
+
+    /* صفحاتی که خودشان یک نوارِ عملیاتِ ثابتِ پایین دارند (مثلِ task-detail.php):
+       فوتر بالایِ آن نوار بنشیند، نه رویش. */
+    body:has(.TDaction-buttons) .site-footer {
+        bottom: 58px;
+    }
+
+    body:has(.TDaction-buttons) {
+        padding-bottom: 100px;
     }
 
     .site-footer .company {
@@ -47,38 +62,6 @@ require_once '../includes/version.php';
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.2); }
     }
-
-    /* موبایل: فوتر همیشه دیده شود — چسبیده به کفِ صفحه با سایهٔ نرم تا از
-       محتوای پشتش جدا و مشخص باشد. (روی دسکتاپ همان sticky می‌ماند.) */
-    @media (max-width: 768px) {
-        .site-footer {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            top: auto;
-            margin-top: 0;
-            z-index: 80;
-            box-shadow: 0 -3px 14px rgba(0, 0, 0, .14);
-        }
-
-        :root[data-theme="dark"] .site-footer {
-            box-shadow: 0 -3px 14px rgba(0, 0, 0, .5);
-        }
-
-        body {
-            padding-bottom: 36px;
-        }
-
-        /* صفحاتی که نوارِ عملیاتِ ثابتِ پایین دارند (task-detail): فوتر بالای آن بنشیند */
-        body:has(.TDaction-buttons) .site-footer {
-            bottom: 58px;
-        }
-
-        body:has(.TDaction-buttons) {
-            padding-bottom: 96px;
-        }
-    }
 </style>
 <div class="site-footer">
     <span>تهیه شده با</span>
@@ -86,7 +69,7 @@ require_once '../includes/version.php';
     <span>در شرکت</span>
     <span class="company">آوای شرق ملک</span>
         <span> | </span>
-        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۳ - ۲۲:۳۰">
-            نسخه: ۶.۸۳
+        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۴ - ۰۹:۳۰">
+            نسخه: ۶.۸۴
         </span>
 </div>
