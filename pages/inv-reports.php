@@ -41,7 +41,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
-    <link rel="stylesheet" href="<?= asset('../assets/js/cdn/persian-datepicker.min.css') ?>">
+    <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
     <script src="<?= asset('../assets/js/config.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
@@ -62,20 +62,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             gap: 8px;
         }
 
-        .rpt-toolbar input.persian-date {
-            width: 130px;
-            border: 1px solid rgba(142, 87, 254, .2);
-            border-radius: 10px;
-            padding: 8px 12px;
-            font-size: 13px;
-            font-family: inherit;
-            background: #fff;
-            color: #2D3748;
-        }
-
-        .rpt-toolbar input.persian-date:focus {
-            outline: none;
-            border-color: #8e57fe;
+        .rpt-dates .persian-datepicker-wrapper {
+            width: 140px;
         }
 
         .rpt-presets {
@@ -277,12 +265,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             color: #F79009;
         }
 
-        :root[data-theme="dark"] .rpt-toolbar input.persian-date {
-            background: var(--surface);
-            color: var(--text-strong);
-            border-color: var(--border-soft);
-        }
-
         :root[data-theme="dark"] .rpt-pill {
             background: var(--surface);
             border-color: var(--border-soft);
@@ -316,7 +298,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         }
 
         @media (max-width: 768px) {
-            .rpt-toolbar input.persian-date {
+            .rpt-dates .persian-datepicker-wrapper {
                 width: 110px;
             }
         }
@@ -338,9 +320,49 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         <div class="rpt-toolbar">
             <div class="rpt-dates">
-                <input type="text" id="dateFrom" class="form-control persian-date" placeholder="از تاریخ">
+                <div class="persian-datepicker-wrapper" id="dateFromWrap">
+                    <input type="text" class="persian-datepicker-input form-control" id="dateFrom" placeholder="از تاریخ" readonly>
+                    <div class="persian-datepicker">
+                        <div class="datepicker-header">
+                            <button type="button" class="datepicker-nav" data-action="prev">►</button>
+                            <span class="datepicker-current"></span>
+                            <button type="button" class="datepicker-nav" data-action="next">◄</button>
+                        </div>
+                        <div class="datepicker-weekdays">
+                            <div class="datepicker-weekday">ش</div>
+                            <div class="datepicker-weekday">ی</div>
+                            <div class="datepicker-weekday">د</div>
+                            <div class="datepicker-weekday">س</div>
+                            <div class="datepicker-weekday">چ</div>
+                            <div class="datepicker-weekday">پ</div>
+                            <div class="datepicker-weekday">ج</div>
+                        </div>
+                        <div class="datepicker-days"></div>
+                        <button type="button" class="datepicker-today-btn">امروز</button>
+                    </div>
+                </div>
                 <span class="text-muted">تا</span>
-                <input type="text" id="dateTo" class="form-control persian-date" placeholder="تا تاریخ">
+                <div class="persian-datepicker-wrapper" id="dateToWrap">
+                    <input type="text" class="persian-datepicker-input form-control" id="dateTo" placeholder="تا تاریخ" readonly>
+                    <div class="persian-datepicker">
+                        <div class="datepicker-header">
+                            <button type="button" class="datepicker-nav" data-action="prev">►</button>
+                            <span class="datepicker-current"></span>
+                            <button type="button" class="datepicker-nav" data-action="next">◄</button>
+                        </div>
+                        <div class="datepicker-weekdays">
+                            <div class="datepicker-weekday">ش</div>
+                            <div class="datepicker-weekday">ی</div>
+                            <div class="datepicker-weekday">د</div>
+                            <div class="datepicker-weekday">س</div>
+                            <div class="datepicker-weekday">چ</div>
+                            <div class="datepicker-weekday">پ</div>
+                            <div class="datepicker-weekday">ج</div>
+                        </div>
+                        <div class="datepicker-days"></div>
+                        <button type="button" class="datepicker-today-btn">امروز</button>
+                    </div>
+                </div>
             </div>
             <div class="rpt-presets" id="presets">
                 <button class="rpt-pill active" data-preset="all">همه</button>
@@ -393,9 +415,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
     <?php include 'footer.php'; ?>
 
-    <script src="<?= asset('../assets/js/cdn/jquery.min.js') ?>"></script>
-    <script src="<?= asset('../assets/js/cdn/persian-date.min.js') ?>"></script>
-    <script src="<?= asset('../assets/js/cdn/persian-datepicker.min.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
     <script>
         const API = '/crm/api';
 
@@ -490,11 +510,20 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             return true;
         }
 
+        // یک نمونه از تقویمِ شمسیِ خودِ سایت (assets/js/persian-datepicker.js) برایِ
+        // تبدیل‌های میلادی↔شمسی؛ متدهایش نسبت به وضعیتِ آن ورودیِ خاص مستقل‌اند.
+        function getDP() {
+            const wrap = document.getElementById('dateFromWrap');
+            return wrap && wrap.datepickerInstance;
+        }
+
         function jKey(dateStr) {
             if (!dateStr) return null;
+            const dp = getDP();
+            if (!dp) return null;
             try {
-                const pd = new persianDate(new Date(dateStr + 'T00:00:00'));
-                return pd.year() + '-' + String(pd.month()).padStart(2, '0');
+                const j = dp.gregorianToJalali(new Date(dateStr + 'T00:00:00'));
+                return j.year + '-' + String(j.month).padStart(2, '0');
             } catch (e) {
                 return null;
             }
@@ -544,10 +573,12 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         function render() {
             const inv = invoices.filter(i => i.doc_type === 'official' && inRange(i.issue_date));
             const invApproved = inv.filter(i => i.status === 'approved');
+            const invDraft = inv.filter(i => i.status === 'draft');
+            const proforma = invoices.filter(i => i.doc_type === 'proforma' && inRange(i.issue_date));
             const pur = purchases.filter(p => inRange(p.issue_date));
             const purConfirmed = pur.filter(p => p.status === 'confirmed');
 
-            renderKpis(inv, invApproved, pur, purConfirmed);
+            renderKpis(inv, invApproved, invDraft, proforma, pur, purConfirmed);
             destroyCharts();
             renderTrend(invApproved, purConfirmed);
             renderStatus(inv);
@@ -558,7 +589,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             renderLowStock();
         }
 
-        function renderKpis(inv, invApproved, pur, purConfirmed) {
+        function renderKpis(inv, invApproved, invDraft, proforma, pur, purConfirmed) {
             const sumSales = invApproved.reduce((s, i) => s + (Number(i.total_amount) || 0), 0);
             const sumPurchase = purConfirmed.reduce((s, p) => s + (Number(p.total_amount) || 0), 0);
             const balance = sumSales - sumPurchase;
@@ -607,6 +638,22 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     fg: '#8e57fe',
                     lbl: 'میانگینِ فاکتورِ فروش',
                     val: money(avg)
+                },
+                {
+                    ic: 'bi-pencil-square',
+                    bg: 'rgba(148,163,184,.18)',
+                    fg: '#64748b',
+                    lbl: 'پیش‌نویسِ فروش (خارج از جمع)',
+                    val: faDigits(invDraft.length),
+                    unit: ''
+                },
+                {
+                    ic: 'bi-file-earmark-text',
+                    bg: 'rgba(148,163,184,.18)',
+                    fg: '#64748b',
+                    lbl: 'پیش‌فاکتور (خارج از این گزارش)',
+                    val: faDigits(proforma.length),
+                    unit: ''
                 },
             ];
 
@@ -967,63 +1014,67 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             } [c]));
         }
 
-        /* ── بازهٔ تاریخ ── */
+        /* ── بازهٔ تاریخ — همان انتخابگرِ شمسیِ استانداردِ سایت ── */
+        function fmtISO(o) {
+            return o.year + '-' + String(o.month).padStart(2, '0') + '-' + String(o.day).padStart(2, '0');
+        }
+
+        // مقدارِ یک فیلدِ تاریخ را برنامه‌ای تنظیم می‌کند — با فراخوانیِ خودِ
+        // selectDate روی نمونهٔ همان ویجت، دقیقاً مثلِ کلیکِ کاربر روی یک روز
+        // (skipConfirm=true تا تأییدیهٔ «جمعه/تعطیل» را نپرسد).
+        function setDateField(inputId, wrapId, gregStr) {
+            const input = document.getElementById(inputId);
+            const wrap = document.getElementById(wrapId);
+            const dp = wrap && wrap.datepickerInstance;
+            if (!gregStr) {
+                input.value = '';
+                input.removeAttribute('data-date');
+                return;
+            }
+            if (dp) {
+                const j = dp.gregorianToJalali(new Date(gregStr + 'T00:00:00'));
+                dp.selectDate(j.year, j.month, j.day, true);
+            } else {
+                input.value = gregStr;
+                input.setAttribute('data-date', gregStr);
+            }
+        }
+
         function setPreset(name) {
             document.querySelectorAll('#presets .rpt-pill').forEach(b => b.classList.toggle('active', b.dataset.preset === name));
-            const today = new persianDate();
+            const dp = getDP();
+            if (!dp) return;
             if (name === 'all') {
                 range = {
                     from: null,
                     to: null
                 };
             } else if (name === 'year') {
-                const y = today.year();
-                range.from = new persianDate(y + '/01/01').toDate().toISOString().slice(0, 10);
-                range.to = new persianDate((y + 1) + '/01/01').toDate().toISOString().slice(0, 10);
+                const y = dp.gregorianToJalali(new Date()).year;
+                range.from = fmtISO(dp.jalaliToGregorian(y, 1, 1));
+                range.to = fmtISO(dp.jalaliToGregorian(y + 1, 1, 1));
             } else if (name === 'q') {
                 const d = new Date();
                 d.setDate(d.getDate() - 90);
-                range.from = d.toISOString().slice(0, 10);
+                range.from = fmtISO({
+                    year: d.getFullYear(),
+                    month: d.getMonth() + 1,
+                    day: d.getDate()
+                });
                 range.to = null;
             } else if (name === 'm') {
                 const d = new Date();
                 d.setDate(d.getDate() - 30);
-                range.from = d.toISOString().slice(0, 10);
+                range.from = fmtISO({
+                    year: d.getFullYear(),
+                    month: d.getMonth() + 1,
+                    day: d.getDate()
+                });
                 range.to = null;
             }
-            document.getElementById('dateFrom').value = range.from ? faDigits(new persianDate(new Date(range.from + 'T00:00:00')).format('YYYY/MM/DD')) : '';
-            document.getElementById('dateTo').value = range.to ? faDigits(new persianDate(new Date(range.to + 'T00:00:00')).format('YYYY/MM/DD')) : '';
+            setDateField('dateFrom', 'dateFromWrap', range.from);
+            setDateField('dateTo', 'dateToWrap', range.to);
             render();
-        }
-
-        function convertPersianToGregorian(persianDateStr) {
-            try {
-                const pd = new persianDate(persianDateStr);
-                return pd.toDate().toISOString().split('T')[0];
-            } catch (e) {
-                return null;
-            }
-        }
-
-        function setupDateInputs() {
-            $('.persian-date').pDatepicker({
-                format: 'YYYY/MM/DD',
-                initialValue: false,
-                observer: true,
-                calendar: {
-                    persian: {
-                        locale: 'fa'
-                    }
-                },
-                onSelect: () => {
-                    document.querySelectorAll('#presets .rpt-pill').forEach(b => b.classList.remove('active'));
-                    const fv = document.getElementById('dateFrom').value.trim();
-                    const tv = document.getElementById('dateTo').value.trim();
-                    range.from = fv ? convertPersianToGregorian(fv) : null;
-                    range.to = tv ? convertPersianToGregorian(tv) : null;
-                    render();
-                }
-            });
         }
 
         document.getElementById('presets').addEventListener('click', e => {
@@ -1031,6 +1082,19 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             if (btn) setPreset(btn.dataset.preset);
         });
         document.getElementById('btnRefresh').addEventListener('click', boot);
+
+        // انتخابِ دستیِ روز از تقویم: خودِ ویجت رویداد change را با data-date
+        // (میلادیِ YYYY-MM-DD) روی ورودی می‌فرستد.
+        document.getElementById('dateFrom').addEventListener('change', function () {
+            document.querySelectorAll('#presets .rpt-pill').forEach(b => b.classList.remove('active'));
+            range.from = this.dataset.date || null;
+            render();
+        });
+        document.getElementById('dateTo').addEventListener('change', function () {
+            document.querySelectorAll('#presets .rpt-pill').forEach(b => b.classList.remove('active'));
+            range.to = this.dataset.date || null;
+            render();
+        });
 
         /* هماهنگیِ نمودارها با تغییرِ حالتِ روشن/تاریک، بدونِ رفرشِ صفحه */
         new MutationObserver(() => render()).observe(document.documentElement, {
@@ -1056,7 +1120,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             }
         }
 
-        setupDateInputs();
         boot();
     </script>
 </body>
