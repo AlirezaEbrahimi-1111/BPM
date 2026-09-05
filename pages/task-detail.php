@@ -2196,6 +2196,7 @@ if (!$__me) {
                         showToast('فایل پیوست نشد: ' + (data.message || 'خطا'), 'warning');
                     } else {
                         if (typeof loadAttachments === 'function') loadAttachments();
+                        if (typeof refreshHistory === 'function') refreshHistory();
                     }
                 } catch (e) {
                     showToast('خطا در آپلودِ فایلِ پیوست', 'warning');
@@ -5663,6 +5664,7 @@ ${task.overdue_periods > 0 ? `
                                 if (data.success) {
                                     showAlert('فایل با موفقیت آپلود شد', 'success');
                                     loadAttachments(); // بارگذاری مجدد لیست
+                                    if (typeof refreshHistory === 'function') refreshHistory();
                                     // باز کردن آکاردئون پیوست‌ها بعد از آپلود
                                     const attachmentsBody = document.getElementById('attachmentsBody');
                                     const attachmentsChevron = document.getElementById('attachmentsChevron');
@@ -5739,6 +5741,7 @@ ${task.overdue_periods > 0 ? `
                                     if (data.success) {
                                         showAlert('فایل با موفقیت حذف شد', 'success');
                                         loadAttachments();
+                                        if (typeof refreshHistory === 'function') refreshHistory();
                                     } else {
                                         showAlert(data.message || 'خطا در حذف فایل', 'danger');
                                     }

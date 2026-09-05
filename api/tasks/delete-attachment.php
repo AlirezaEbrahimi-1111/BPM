@@ -89,6 +89,14 @@ try {
     $stmt = $db->prepare("DELETE FROM task_attachments WHERE id = ?");
     $stmt->execute([$attachment_id]);
 
+    // ثبت در تاریخچهٔ کار
+    try {
+        $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes) VALUES (?, ?, NULL, 'attachment_removed', ?)")
+            ->execute([$attachment['task_id'], $user_id, $attachment['file_original_name']]);
+    } catch (Exception $e) {
+        error_log("delete-attachment history insert failed | attachment_id={$attachment_id} | " . $e->getMessage());
+    }
+
     echo json_encode([
         'success' => true,
         'message' => 'فایل با موفقیت حذف شد'

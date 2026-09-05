@@ -222,6 +222,14 @@ try {
 
     $attachmentId = $db->lastInsertId();
 
+    // ثبت در تاریخچهٔ کار
+    try {
+        $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes) VALUES (?, ?, NULL, 'attachment_added', ?)")
+            ->execute([$task_id, $user_id, $file['name']]);
+    } catch (Exception $e) {
+        error_log("upload-attachment history insert failed | task_id={$task_id} | " . $e->getMessage());
+    }
+
     // گرفتن اطلاعات کاربر
     $stmt = $db->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
