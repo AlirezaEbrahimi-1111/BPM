@@ -45,6 +45,17 @@ $database = new Database();
         ");
         $result = $stmt->execute([$user_id, (int)$input['ticket_id']]);
     }
+    // حالت ۴: mark read همه‌ی نوتیفیکیشن‌هایِ یک related_type/related_id
+    // دلخواه — برایِ مواردی مثلِ درخواستِ مرخصی/مأموریت/پاس که related_type
+    // خودشون رشته‌ی نوعِ درخواسته، نه یک کلیدِ ثابتِ task/ticket
+    elseif (!empty($input['related_type']) && !empty($input['related_id'])) {
+        $stmt = $db->prepare("
+            UPDATE notifications
+            SET is_read = 1, read_at = NOW()
+            WHERE user_id = ? AND related_id = ? AND related_type = ? AND is_read = 0
+        ");
+        $result = $stmt->execute([$user_id, (int)$input['related_id'], (string)$input['related_type']]);
+    }
     else {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'شناسه اعلان یا تسک الزامی است']);

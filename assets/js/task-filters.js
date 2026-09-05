@@ -281,6 +281,12 @@ window.TF = (function () {
         if (t.status === 'pending_approval') {
             return `<span class="status-badge ${statusClass(t.status)}">${statusLabel(t.status)}</span>`;
         }
+        // مثلِ pending_approval بالا: وقتی کاربرِ جاری تأییدکننده‌ی یک
+        // درخواستِ تمدیدِ موعد است، این چیزیه که واقعاً باید ببینه —
+        // نه وضعیتِ خامِ کار (که ممکنه «عقب افتاده» یا هرچیزِ دیگه باشه)
+        if (isWaitingMyDeadline(t, user)) {
+            return '<span class="status-badge status-pending_approval">درخواست تمدید موعد</span>';
+        }
         if (isOverdue(t, user)) {
             return '<span class="status-badge status-overdue">عقب افتاده</span>';
         }

@@ -1660,6 +1660,7 @@ if (!$__me) {
                 });
                 loadUsers();
                 initTaskStar();
+                markTaskNotificationsRead();
 
                 // ✅ نوتیفیکیشن‌های این تسک را خوانده‌شده کن
                 markTaskNotificationsRead(taskId);
@@ -4337,6 +4338,20 @@ ${task.overdue_periods > 0 ? `
 
                 document.getElementById('taskHistory').innerHTML =
                     `<div class="minimal-list">${html}</div>`;
+            }
+
+            // اگر کاربر مستقیماً (نه از طریقِ کلیک روی خودِ اعلان) وارد این کار
+            // شده، اعلانِ مربوط به همین کار هم باید خوانده‌شده حساب شود.
+            function markTaskNotificationsRead() {
+                if (!taskId) return;
+                fetch('../api/notifications/mark-read.php', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ task_id: taskId })
+                }).catch(() => {});
             }
 
             // ─── ستاره‌دار کردن (منتخب) — همان تنظیمِ روزانه‌یِ داشبورد،

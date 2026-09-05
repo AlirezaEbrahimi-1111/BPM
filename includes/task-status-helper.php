@@ -163,6 +163,11 @@ function taskStatusInfo(array $t, int $userId, string $today): array
         $label = 'نیازمند تمدید';
     } elseif ($t['status'] === 'pending_approval') {
         $label = TASK_STATUS_LABELS['pending_approval'];
+    } elseif (taskIsWaitingMyDeadline($t, $userId)) {
+        // مثلِ pending_approval بالا: وقتی کاربرِ جاری تأییدکننده‌ی یک
+        // درخواستِ تمدیدِ موعد است، این چیزیه که واقعاً باید ببینه —
+        // نه وضعیتِ خامِ کار یا صرفاً «عقب افتاده»
+        $label = 'درخواست تمدید موعد';
     } elseif ($isOverdue) {
         $label = 'عقب افتاده';
     } else {
