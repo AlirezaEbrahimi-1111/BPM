@@ -2951,6 +2951,13 @@ if (!$__me) {
                             onclick="sendTaskReminder()">
                             <i class="bi bi-bell"></i>
                         </span>
+                        <span id="clearDueDateBtn"
+                            class="deadline-request-icon"
+                            title="حذف موعد انجام (این کار بدون ددلاین می‌ماند)"
+                            style="display:none; color:#dc2626;"
+                            onclick="clearTaskDueDate()">
+                            <i class="bi bi-calendar-x"></i>
+                        </span>
                         <span id="pendingRequestBadge"
                             class="badge badge-info"
                             style="display:none; cursor:pointer; margin-left: 10px;">
@@ -3155,9 +3162,41 @@ ${task.overdue_periods > 0 ? `
                     }
                 }
 
+                // 🗑 آیکنِ «حذفِ موعد» — فقط برایِ کارِ مقطعیِ خودی (تعریف‌کننده و
+                // مسئولِ انجام یک نفر) که فعلاً موعد دارد و هنوز تمام نشده.
+                const clearBtn = document.getElementById('clearDueDateBtn');
+                if (clearBtn) {
+                    const sameOwner = task.creator_id && task.assignee_id && task.creator_id === task.assignee_id;
+                    const openStatus = !['completed', 'approved', 'rejected'].includes(task.status);
+                    if (task.task_type === 'periodic' && sameOwner && isCreator && isAssignee && task.deadline && openStatus) {
+                        clearBtn.style.display = 'inline-block';
+                    } else {
+                        clearBtn.style.setProperty('display', 'none', 'important');
+                    }
+                }
+
                 // بارگذاری درخواست‌های منتظر
                 loadPendingDeadlineRequests();
                 loadPendingOverdueClearRequests();
+            }
+
+            function clearTaskDueDate() {
+                uiConfirm('موعدِ این کار حذف شود؟ کار بدونِ ددلاین می‌ماند.', function () {
+                    fetch('../api/tasks/clear-due-date.php', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ task_id: taskId })
+                    })
+                        .then(function (r) { return r.json(); })
+                        .then(function (d) {
+                            showToast(d.message || (d.success ? 'موعد حذف شد' : 'خطا'), d.success ? 'success' : 'error');
+                            if (d.success) loadTaskDetails();
+                        })
+                        .catch(function () { showToast('خطا در ارتباط با سرور', 'error'); });
+                }, { danger: true, yesText: 'بله، حذف کن', noText: 'انصراف' });
             }
 
             async function sendTaskReminder() {

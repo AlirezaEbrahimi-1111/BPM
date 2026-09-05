@@ -5131,6 +5131,17 @@ function formatDateJalali($gregorianDate)
                 if (urlParams.get('tab') === 'pending-approvals') {
                     switchSection('pending-approvals');
                 }
+
+                // بازکردنِ این صفحه = دیدنِ درخواست‌های حضور و غیاب؛ پس اعلان‌هایِ
+                // مربوط به مرخصی/مأموریت/پاس/فراموشی/مشکل فنی خوانده‌شده حساب شوند.
+                fetch('/api/notifications/mark-read.php', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + (localStorage.getItem('auth_token') || ''),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ related_types: ['leave', 'mission', 'pass', 'forget', 'technical'] })
+                }).catch(function () {});
             }, 100);
 
         });

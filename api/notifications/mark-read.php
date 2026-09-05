@@ -56,6 +56,23 @@ $database = new Database();
         ");
         $result = $stmt->execute([$user_id, (int)$input['related_id'], (string)$input['related_type']]);
     }
+    // حالت ۵: mark read همه‌ی نوتیفیکیشن‌هایِ چند related_type (بدونِ id مشخص)
+    // — وقتی کاربر صفحه‌ی مرکزیِ آن نوع درخواست‌ها را باز می‌کند (مثلِ صفحه‌ی
+    // درخواست‌هایِ حضور و غیاب که خودش صفحه‌ی تکیِ یک درخواست ندارد).
+    elseif (!empty($input['related_types']) && is_array($input['related_types'])) {
+        $types = array_values(array_filter(array_map('strval', $input['related_types'])));
+        if ($types) {
+            $ph = implode(',', array_fill(0, count($types), '?'));
+            $stmt = $db->prepare("
+                UPDATE notifications
+                SET is_read = 1, read_at = NOW()
+                WHERE user_id = ? AND related_type IN ($ph) AND is_read = 0
+            ");
+            $result = $stmt->execute(array_merge([$user_id], $types));
+        } else {
+            $result = false;
+        }
+    }
     else {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'شناسه اعلان یا تسک الزامی است']);
