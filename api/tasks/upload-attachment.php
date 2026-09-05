@@ -225,7 +225,7 @@ try {
     // ثبت در تاریخچهٔ کار
     try {
         $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes) VALUES (?, ?, NULL, 'attachment_added', ?)")
-            ->execute([$task_id, $user_id, $file['name']]);
+            ->execute([$task_id, $user_id, 'فایل «' . $file['name'] . '» را بارگذاری کرد']);
     } catch (Exception $e) {
         error_log("upload-attachment history insert failed | task_id={$task_id} | " . $e->getMessage());
     }

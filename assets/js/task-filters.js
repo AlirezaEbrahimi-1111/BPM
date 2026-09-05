@@ -347,8 +347,8 @@ window.TF = (function () {
         renewal_step_approved:  { label: 'تأیید تمدید دوره',             verb: 'تمدید دوره تأیید شد',               cls: 'ab-approved' },
         renewal_rejected:       { label: 'رد تمدید دوره',                verb: 'درخواست تمدید دوره رد شد',          cls: 'ab-rejected' },
         deleted:                { label: 'حذف',                          verb: 'حذف شد',                            cls: 'ab-rejected' },
-        attachment_added:       { label: 'پیوستِ فایل',                  verb: 'فایل پیوست شد',                     cls: 'ab-updated' },
-        attachment_removed:     { label: 'حذفِ پیوست',                   verb: 'فایل پیوست حذف شد',                 cls: 'ab-rejected' },
+        attachment_added:       { label: 'بارگذاری فایل',                verb: 'یک فایل بارگذاری کرد',              cls: 'ab-updated' },
+        attachment_removed:     { label: 'حذف فایل',                     verb: 'یک فایل حذف کرد',                   cls: 'ab-rejected' },
         in_progress:            { label: 'شروع',                         verb: 'شروع شد',                           cls: 'ab-updated' },
         not_started:            { label: 'شروع نشده',                    verb: 'به حالتِ شروع‌نشده بازگشت',          cls: 'ab-pending' }
     };
