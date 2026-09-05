@@ -320,7 +320,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         <div class="rpt-toolbar">
             <div class="rpt-dates">
-                <div class="persian-datepicker-wrapper" id="dateFromWrap">
+                <div class="persian-datepicker-wrapper" id="dateFromWrap" data-restrict-past="-1">
                     <input type="text" class="persian-datepicker-input form-control" id="dateFrom" placeholder="از تاریخ" readonly>
                     <div class="persian-datepicker">
                         <div class="datepicker-header">
@@ -342,7 +342,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     </div>
                 </div>
                 <span class="text-muted">تا</span>
-                <div class="persian-datepicker-wrapper" id="dateToWrap">
+                <div class="persian-datepicker-wrapper" id="dateToWrap" data-restrict-past="-1">
                     <input type="text" class="persian-datepicker-input form-control" id="dateTo" placeholder="تا تاریخ" readonly>
                     <div class="persian-datepicker">
                         <div class="datepicker-header">
@@ -571,11 +571,11 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         }
 
         function render() {
-            const inv = invoices.filter(i => i.doc_type === 'official' && inRange(i.issue_date));
+            const inv = invoices.filter(i => i.doc_type === 'official' && inRange(i._effDate));
             const invApproved = inv.filter(i => i.status === 'approved');
             const invDraft = inv.filter(i => i.status === 'draft');
-            const proforma = invoices.filter(i => i.doc_type === 'proforma' && inRange(i.issue_date));
-            const pur = purchases.filter(p => inRange(p.issue_date));
+            const proforma = invoices.filter(i => i.doc_type === 'proforma' && inRange(i._effDate));
+            const pur = purchases.filter(p => inRange(p._effDate));
             const purConfirmed = pur.filter(p => p.status === 'confirmed');
 
             renderKpis(inv, invApproved, invDraft, proforma, pur, purConfirmed);
@@ -670,7 +670,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         function renderTrend(invApproved, purConfirmed) {
             const map = {};
             invApproved.forEach(i => {
-                const k = jKey(i.issue_date);
+                const k = jKey(i._effDate);
                 if (!k) return;
                 (map[k] = map[k] || {
                     sales: 0,
@@ -678,7 +678,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 }).sales += Number(i.total_amount) || 0;
             });
             purConfirmed.forEach(p => {
-                const k = jKey(p.issue_date);
+                const k = jKey(p._effDate);
                 if (!k) return;
                 (map[k] = map[k] || {
                     sales: 0,
@@ -1114,6 +1114,16 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     fetchAll('/inv/purchases'),
                     fetchAll('/inv/products'),
                 ]);
+                // برخی سندها (مثلاً فاکتورِ رسمیِ ساخته‌شده از تبدیلِ پیش‌فاکتوری که
+                // خودش تاریخِ صدور نداشته) issue_date خالی دارند. اگر این را نادیده
+                // می‌گرفتیم، آن سند از همهٔ گزارش‌ها به‌طور کامل ناپدید می‌شد. به‌جایش
+                // تاریخِ ثبتِ سند (created_at) را جایگزین می‌کنیم.
+                invoices.forEach(i => {
+                    i._effDate = i.issue_date || (i.created_at || '').slice(0, 10);
+                });
+                purchases.forEach(p => {
+                    p._effDate = p.issue_date || (p.created_at || '').slice(0, 10);
+                });
                 render();
             } catch (e) {
                 document.getElementById('kpis').innerHTML = '<p class="text-danger">' + (e.message || 'خطا در بارگذاری') + '</p>';
