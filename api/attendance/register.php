@@ -132,13 +132,28 @@ if (!$organization_id) {
     $device = $dStmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$device) {
-        // دستگاه ناشناخته → ثبت به‌صورت «در انتظار تأیید»
+        // شناسهٔ دستگاه یک توکنِ تصادفیِ داخلِ localStorage/کوکی است؛ «کلیر کشِ»
+        // مرورگر هر دو را پاک می‌کند و کاربر با شناسهٔ نو دوباره «در انتظار تأیید»
+        // می‌شود. اگر همین کاربر قبلاً در همین سازمان حضور ثبت کرده (یعنی یک بار
+        // تأیید شده) و الان هم از IP مجاز آمده (بالاتر چک شد)، شناسهٔ جدیدش
+        // خودکار تأیید می‌شود و درخواستِ تازه‌ای برای سرپرست نمی‌رود.
+        $prevStmt = $db->prepare("SELECT COUNT(*) FROM attendance_records WHERE user_id = ? AND organization_id = ?");
+        $prevStmt->execute([$user_id, $organization_id]);
+        $autoApprove = ((int) $prevStmt->fetchColumn() > 0);
+
         $ins = $db->prepare("
             INSERT IGNORE INTO attendance_devices
                 (organization_id, fingerprint_hash, status, first_seen_ip, first_seen_user_id, created_at)
-            VALUES (?, ?, 'pending', ?, ?, NOW())
+            VALUES (?, ?, ?, ?, ?, NOW())
         ");
-        $ins->execute([$organization_id, $fp_hash, $client_ip, $user_id]);
+        $ins->execute([$organization_id, $fp_hash, $autoApprove ? 'approved' : 'pending', $client_ip, $user_id]);
+
+        if ($autoApprove) {
+            $db->prepare("UPDATE attendance_devices SET last_used_at = NOW() WHERE organization_id = ? AND fingerprint_hash = ?")
+                ->execute([$organization_id, $fp_hash]);
+            return; // از گاردِ IIFE خارج شو — اجازهٔ ثبتِ ورود/خروج بده
+        }
+
         if ($ins->rowCount() > 0) {
             // فقط وقتی دستگاه واقعاً «جدید» ثبت شد → اطلاع به مدیران
             attendance_notify_managers_new_device($db, $organization_id, $user_id, $client_ip);
