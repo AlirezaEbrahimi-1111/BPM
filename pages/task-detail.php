@@ -3143,14 +3143,18 @@ ${task.overdue_periods > 0 ? `
                 isCreator = (task.creator_id === userId);
                 isAssignee = (task.assignee_id === userId);
 
+                // #deadlineValue فقط برای کارِ «مقطعی» رندر می‌شود؛ برای کارِ
+                // «دوره‌ای» اصلاً وجود ندارد — پس حتماً null-check.
                 const deadlineElement = document.getElementById('deadlineValue');
-                if (task.deadline) {
-                    deadlineElement.textContent = (task.is_workflow_task == 1) ?
-                        formatDateTime(task.deadline) :
-                        formatDateTime(task.deadline).split(' - ')[0];
-                } else {
-                    // موعد حذف/تعیین‌نشده — نباید متنِ قبلی باقی بماند
-                    deadlineElement.textContent = 'بدون موعد';
+                if (deadlineElement) {
+                    if (task.deadline) {
+                        deadlineElement.textContent = (task.is_workflow_task == 1) ?
+                            formatDateTime(task.deadline) :
+                            formatDateTime(task.deadline).split(' - ')[0];
+                    } else {
+                        // موعد حذف/تعیین‌نشده — نباید متنِ قبلی باقی بماند
+                        deadlineElement.textContent = 'بدون موعد';
+                    }
                 }
 
                 // ✅ کار روتین: آیکن تمدید ساعتی برای مسئولِ مرحله (کاربرِ مشخص یا اعضای واحد)
