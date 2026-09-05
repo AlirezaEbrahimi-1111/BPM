@@ -92,9 +92,10 @@ WHERE t.id = ? AND t.deleted_at IS NULL
     $stmt->execute([$ticketId, $user_id, $ticket['old_status_label'], $newStatus['label']]);
 
     // نوتیفیکیشن به creator
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ticket_notify.php';
     if ((int)$ticket['created_by'] !== $user_id) {
         $notifyId = (int)$ticket['created_by'];
-        if ($notifyId && $notifyId !== $user_id) {
+        if ($notifyId && $notifyId !== $user_id && shouldNotifyTicketUser($notifyId, $ticket)) {
             $notif = new Notification($db);
             $notif->create([
                 'to_user_id'   => $notifyId,

@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ticket_notify.php';
 
 // ✅ بعد
 $database = new Database();
@@ -219,8 +220,17 @@ try {
     $stmtList->execute($listParams);
     $tickets = $stmtList->fetchAll(PDO::FETCH_ASSOC);
     // awaiting_you از خودِ SQL می‌آید (ستونِ CASE). عددی‌اش می‌کنیم.
+    // کاربرِ نظاره‌گر (id=19): «توپ در زمینِ تو»/بجِ هدر فقط برایِ تیکتِ خودش —
+    // برایِ بقیه صفر، تا هیچ آلارمی از تیکت‌های دیگران نبیند. (لیست را همچنان
+    // کامل می‌بیند.)
+    $viewerIsObserver = isTicketObserver($user_id);
     foreach ($tickets as &$tk) {
         $tk['awaiting_you'] = (int) ($tk['awaiting_you'] ?? 0);
+        if ($viewerIsObserver
+            && (int) ($tk['created_by'] ?? 0) !== (int) $user_id
+            && (int) ($tk['assigned_to'] ?? 0) !== (int) $user_id) {
+            $tk['awaiting_you'] = 0;
+        }
     }
     unset($tk);
 

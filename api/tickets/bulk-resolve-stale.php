@@ -56,7 +56,7 @@ try {
     // تیکت‌هایِ واجدِ شرایط: وضعیت = waiting_reply و آخرین فعالیت (آخرین پیام،
     // یا اگر پیامی نبود تاریخِ ساختِ تیکت) دستِ‌کم ۲۱ روزِ پیش بوده.
     $sql = "
-        SELECT t.id, t.ticket_number, t.subject, t.created_by
+        SELECT t.id, t.ticket_number, t.subject, t.created_by, t.assigned_to
         FROM tickets t
         JOIN ticket_statuses ts ON t.status_id = ts.id
         LEFT JOIN (
@@ -84,6 +84,7 @@ try {
         INSERT INTO ticket_history (ticket_id, user_id, action, old_value, new_value)
         VALUES (?, ?, 'status_changed', ?, ?)
     ");
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ticket_notify.php';
     $notif = new Notification($db);
     $updated = 0;
 
@@ -99,7 +100,8 @@ try {
             $statuses['waiting_reply']['label'], $resolvedLabel,
         ]);
 
-        if ((int) $t['created_by'] && (int) $t['created_by'] !== (int) $user_id) {
+        if ((int) $t['created_by'] && (int) $t['created_by'] !== (int) $user_id
+            && shouldNotifyTicketUser($t['created_by'], $t)) {
             try {
                 $notif->create([
                     'to_user_id'   => (int) $t['created_by'],

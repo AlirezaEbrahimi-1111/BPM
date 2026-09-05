@@ -164,16 +164,15 @@ try {
     // ─── نوتیفیکیشن ───
     // اگر پاسخ‌دهنده = assigned → نوتیف به creator
     // اگر پاسخ‌دهنده = creator → نوتیف به assigned
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ticket_notify.php';
     $replierIsAssignee = ($user_id === (int) $ticket['assigned_to']);
     $notifyUserId = $replierIsAssignee
         ? (int) $ticket['created_by']
         : (int) $ticket['assigned_to'];
 
-    // کاربرِ نظاره‌گر (id=19): وقتی صرفاً به‌عنوانِ «متصدیِ تیکت» باید خبردار شود
-    // نوتیف نگیرد — می‌خواهد فقط تیکت‌ها را ببیند. اگر خودش سازنده‌ی تیکت باشد
-    // (پاسخ‌دهنده = متصدی، گیرنده = سازنده) همچنان خبر می‌گیرد.
-    $TICKET_OBSERVERS = [19];
-    if (!$replierIsAssignee && in_array($notifyUserId, $TICKET_OBSERVERS, true)) {
+    // کاربرِ نظاره‌گر (مثل id=19): فقط تیکتِ خودش را دنبال می‌کند؛ برای بقیه
+    // هیچ اعلان/پیامکی نباید بگیرد.
+    if (!shouldNotifyTicketUser($notifyUserId, $ticket)) {
         $notifyUserId = 0;
     }
 
