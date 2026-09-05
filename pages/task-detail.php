@@ -346,6 +346,37 @@ if (!$__me) {
         .td-star-btn.on {
             color: var(--warning);
         }
+
+        /* آیکن‌های کنارِ «موعد انجام» (تمدید موعد / حذفِ موعد / یادآوری):
+           پیش‌فرض طوسیِ روشن، هاور = رنگِ معناییِ خودشان. بدونِ margin تا
+           فاصله‌ی بینشان فقط از gap-2ِ ظرف بیاید و spanِ مخفی جا نگیرد. */
+        #requestDeadlineBtn.deadline-request-icon,
+        #clearDueDateBtn.deadline-request-icon,
+        #remindAssigneeBtn.deadline-request-icon {
+            background: #e9e9e9 !important;
+            color: #9ca3af !important;
+            animation: none !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
+
+        #requestDeadlineBtn.deadline-request-icon:hover {
+            background: #1b7b39 !important;
+            color: #fff !important;
+            box-shadow: none !important;
+        }
+
+        #clearDueDateBtn.deadline-request-icon:hover {
+            background: #dc2626 !important;
+            color: #fff !important;
+            box-shadow: none !important;
+        }
+
+        #remindAssigneeBtn.deadline-request-icon:hover {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+            color: #fff !important;
+            box-shadow: none !important;
+        }
     </style>
 
 </head>
@@ -2954,9 +2985,9 @@ if (!$__me) {
                         <span id="clearDueDateBtn"
                             class="deadline-request-icon"
                             title="حذف موعد انجام (این کار بدون ددلاین می‌ماند)"
-                            style="display:none; color:#dc2626;"
+                            style="display:none;"
                             onclick="clearTaskDueDate()">
-                            <i class="bi bi-calendar-x"></i>
+                            <i class="bi bi-x"></i>
                         </span>
                         <span id="pendingRequestBadge"
                             class="badge badge-info"
@@ -3107,6 +3138,9 @@ ${task.overdue_periods > 0 ? `
                     deadlineElement.textContent = (task.is_workflow_task == 1) ?
                         formatDateTime(task.deadline) :
                         formatDateTime(task.deadline).split(' - ')[0];
+                } else {
+                    // موعد حذف/تعیین‌نشده — نباید متنِ قبلی باقی بماند
+                    deadlineElement.textContent = 'بدون موعد';
                 }
 
                 // ✅ کار روتین: آیکن تمدید ساعتی برای مسئولِ مرحله (کاربرِ مشخص یا اعضای واحد)
@@ -3193,7 +3227,15 @@ ${task.overdue_periods > 0 ? `
                         .then(function (r) { return r.json(); })
                         .then(function (d) {
                             showToast(d.message || (d.success ? 'موعد حذف شد' : 'خطا'), d.success ? 'success' : 'error');
-                            if (d.success) loadTaskDetails();
+                            if (d.success) {
+                                // به‌روزرسانیِ فوریِ UI (منتظرِ رفت‌وبرگشتِ کاملِ صفحه نمی‌مانیم)
+                                var dv = document.getElementById('deadlineValue');
+                                if (dv) dv.textContent = 'بدون موعد';
+                                var cb = document.getElementById('clearDueDateBtn');
+                                if (cb) cb.style.setProperty('display', 'none', 'important');
+                                if (taskData) { taskData.deadline = null; taskData.due_date = null; taskData.original_deadline = null; }
+                                loadTaskDetails();
+                            }
                         })
                         .catch(function () { showToast('خطا در ارتباط با سرور', 'error'); });
                 }, { danger: true, yesText: 'بله، حذف کن', noText: 'انصراف' });

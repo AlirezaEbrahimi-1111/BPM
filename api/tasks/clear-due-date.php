@@ -30,7 +30,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    $stmt = $db->prepare("SELECT creator_id, assignee_id, task_type, due_date, status FROM tasks WHERE id = ?");
+    $stmt = $db->prepare("SELECT creator_id, assignee_id, task_type, due_date, deadline, original_deadline, status FROM tasks WHERE id = ?");
     $stmt->execute([$task_id]);
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -59,12 +59,14 @@ try {
         exit;
     }
 
-    if (empty($task['due_date'])) {
+    if (empty($task['due_date']) && empty($task['deadline']) && empty($task['original_deadline'])) {
         echo json_encode(['success' => true, 'message' => 'این کار از قبل موعدی نداشت']);
         exit;
     }
 
-    $db->prepare("UPDATE tasks SET due_date = NULL, updated_at = NOW() WHERE id = ?")->execute([$task_id]);
+    // هر سه ستونِ تاریخِ موعد پاک می‌شوند — enrichTaskDates() بیشینه‌ی این سه
+    // را به‌عنوان موعد می‌گیرد، پس اگر یکی باقی بماند موعد همچنان نمایش داده می‌شود.
+    $db->prepare("UPDATE tasks SET due_date = NULL, deadline = NULL, original_deadline = NULL, updated_at = NOW() WHERE id = ?")->execute([$task_id]);
     $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes) VALUES (?, ?, NULL, 'updated', 'موعد انجام حذف شد')")
         ->execute([$task_id, $user_id]);
 
