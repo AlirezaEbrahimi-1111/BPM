@@ -388,7 +388,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
                     <!-- متن پیام -->
                     <div class="mb-3">
                         <label class="form-label">شرح مشکل <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="ticketMessage"
+                        <textarea class="form-control" id="ticketMessage" enterkeyhint="enter"
                                   placeholder="جزئیات مشکل یا درخواست خود را بنویسید..."></textarea>
                     </div>
 
@@ -466,7 +466,25 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             initUpload();
             initTaskSearch();
             initPasteUpload();
+            initMessageEnterKey();
         });
+
+        // برخی کیبوردهای موبایل، کلیدِ Enter را به‌جایِ خطِ جدید، به‌عنوانِ
+        // اقدامِ «ارسال» تفسیر می‌کنند. این‌جا صراحتاً خطِ جدید را خودمان درج
+        // می‌کنیم تا رفتار روی همهٔ کیبوردها یکسان و قابل‌پیش‌بینی باشد.
+        function initMessageEnterKey() {
+            var ta = document.getElementById('ticketMessage');
+            if (!ta) return;
+            ta.addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.metaKey || e.isComposing) return;
+                e.preventDefault();
+                e.stopPropagation();
+                var start = this.selectionStart, end = this.selectionEnd;
+                this.value = this.value.slice(0, start) + '\n' + this.value.slice(end);
+                this.selectionStart = this.selectionEnd = start + 1;
+                this.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+        }
 
         // ─── بارگذاری دسته‌بندی‌ها ───
         async function loadCategories() {

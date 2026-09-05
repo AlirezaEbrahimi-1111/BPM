@@ -821,7 +821,7 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
                         <ul class="dropdown-menu dropdown-menu-end admin-submenu" aria-labelledby="salesInvoiceDropdown">
                             <li>
                                 <a class="dropdown-item" href="/pages/inv-invoices.php">
-                                    <i class="bi bi-receipt ms-2"></i>فاکتورهای رسمی
+                                    <i class="bi bi-receipt ms-2"></i>فاکتورهای فروش
                                 </a>
                             </li>
                             <li>
@@ -844,7 +844,7 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
                             </li>
                             <li>
                                 <a class="dropdown-item" href="/pages/crm-products.php">
-                                    <i class="bi bi-box-seam ms-2"></i>کاتالوگ کالا
+                                    <i class="bi bi-box-seam ms-2"></i>کالاها
                                 </a>
                             </li>
                             <li>

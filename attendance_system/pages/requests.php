@@ -1346,7 +1346,7 @@ function formatDateJalali($gregorianDate)
         }
 
         tbody tr:hover {
-            background: rgba(142, 87, 254, 0.02);
+            background: rgba(142, 87, 254, 0.12);
         }
 
         td {
@@ -1639,7 +1639,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .attendance-table tbody tr:hover:not(.holiday-row) {
-            background: linear-gradient(135deg, rgba(142, 87, 254, 0.04) 0%, rgba(142, 87, 254, 0.04) 100%);
+            background: rgba(142, 87, 254, 0.12);
         }
 
         .attendance-table tbody td {
@@ -2343,6 +2343,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .section-tab:hover {
+            background: rgba(142, 87, 254, 0.12);
             color: var(--text-strong);
         }
 
@@ -2710,7 +2711,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .attendance-table tbody tr:not(.holiday-row):hover {
-            background-color: rgba(142, 87, 254, 0.08) !important;
+            background-color: rgba(142, 87, 254, 0.12) !important;
         }
 
         /* مودال ویرایش */
@@ -2795,7 +2796,7 @@ function formatDateJalali($gregorianDate)
         }
 
         .btn-close-modal:hover {
-            background: var(--border-soft);
+            background: rgba(142, 87, 254, 0.12);
         }
 
         /* فرمت ۲۴ ساعته برای input time */
@@ -2847,7 +2848,7 @@ function formatDateJalali($gregorianDate)
         }
 
         #attendanceGrid .att-clickable:hover {
-            background: rgba(205, 184, 255, 0.08) !important;
+            background: rgba(142, 87, 254, 0.12) !important;
         }
 
         #attendanceGrid .att-holiday {

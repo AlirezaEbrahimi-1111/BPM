@@ -48,7 +48,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>کاتالوگ کالا - سامانه مدیریت فرآیندها</title>
+    <title>کالاها - سامانه مدیریت فرآیندها</title>
 
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
@@ -202,7 +202,7 @@ try {
 
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
-                <h1><i class="bi bi-box-seam"></i> کاتالوگ کالا</h1>
+                <h1><i class="bi bi-box-seam"></i> کالاها</h1>
                 <p>کالاها و خدماتِ قابل درج در فاکتور — به‌همراه موجودیِ انبارِ فاکتور رسمی</p>
             </div>
         </div>

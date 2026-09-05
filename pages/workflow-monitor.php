@@ -655,7 +655,7 @@ if (!$__me) {
         }
 
         .filter-dropdown-item:hover {
-            background: var(--gray-50);
+            background: rgba(142, 87, 254, .12);
         }
 
         .filter-dropdown-item.selected {

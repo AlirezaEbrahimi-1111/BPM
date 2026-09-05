@@ -37,7 +37,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فاکتورهای رسمی - سامانه مدیریت فرآیندها</title>
+    <title>فاکتورهای فروش - سامانه مدیریت فرآیندها</title>
 
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
@@ -176,7 +176,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
-                <h1><i class="bi bi-receipt"></i> فاکتورهای رسمی</h1>
+                <h1><i class="bi bi-receipt"></i> فاکتورهای فروش</h1>
                 <p>صدور، تأیید و چاپِ فاکتورِ فروش — سازمانِ ۱</p>
             </div>
         </div>
