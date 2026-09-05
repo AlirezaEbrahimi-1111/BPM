@@ -475,14 +475,31 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
         function initMessageEnterKey() {
             var ta = document.getElementById('ticketMessage');
             if (!ta) return;
+
+            function insertNewline(el) {
+                var start = el.selectionStart, end = el.selectionEnd;
+                el.value = el.value.slice(0, start) + '\n' + el.value.slice(end);
+                el.selectionStart = el.selectionEnd = start + 1;
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
+            // beforeinput پوششِ اصلی است: کیبوردهایِ موبایل/IME همیشه یک
+            // keydownِ معمولیِ Enter نمی‌فرستند، ولی این رویداد صرف‌نظر از
+            // روشِ ورودی، نوعِ عمل را با insertType='insertLineBreak' گزارش
+            // می‌دهد — پس مستقل از مدل/برندِ کیبورد کار می‌کند.
+            ta.addEventListener('beforeinput', function (e) {
+                if (e.inputType === 'insertLineBreak' || e.inputType === 'insertParagraph') {
+                    e.preventDefault();
+                    insertNewline(this);
+                }
+            });
+
+            // keydown هم برایِ کیبوردِ فیزیکی/دسکتاپ به‌عنوانِ پشتیبان می‌ماند.
             ta.addEventListener('keydown', function (e) {
                 if (e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.metaKey || e.isComposing) return;
                 e.preventDefault();
                 e.stopPropagation();
-                var start = this.selectionStart, end = this.selectionEnd;
-                this.value = this.value.slice(0, start) + '\n' + this.value.slice(end);
-                this.selectionStart = this.selectionEnd = start + 1;
-                this.dispatchEvent(new Event('input', { bubbles: true }));
+                insertNewline(this);
             });
         }
 

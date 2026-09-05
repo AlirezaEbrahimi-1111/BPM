@@ -319,6 +319,33 @@ if (!$__me) {
                 border-bottom-color: var(--border-soft);
             }
         }
+
+        .td-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .td-star-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px;
+            font-size: 1.05rem;
+            line-height: 1;
+            color: #fff;
+            flex-shrink: 0;
+            transition: color .15s, transform .12s;
+        }
+
+        .td-star-btn:hover {
+            color: var(--warning);
+            transform: scale(1.15);
+        }
+
+        .td-star-btn.on {
+            color: var(--warning);
+        }
     </style>
 
 </head>
@@ -330,7 +357,12 @@ if (!$__me) {
     <div class="task-detail-container">
         <!-- هدر کار -->
         <div class="taskDetail-header">
-            <div class="taskDetail-title" id="taskTitle"></div>
+            <div class="taskDetail-title td-title-row">
+                <button type="button" class="td-star-btn" id="tdStarBtn" title="افزودن به منتخب" onclick="toggleTaskStar(event)">
+                    <i class="bi bi-star"></i>
+                </button>
+                <span id="taskTitle"></span>
+            </div>
             <div class="taskDetail-title" id="taskDescription"
                 style="font-size: .8rem; font-weight:400;margin-top:5px;color:#d8cbf7 ;"></div>
             <div class="taskDetail-meta" id="taskMeta"></div>
@@ -1200,6 +1232,7 @@ if (!$__me) {
             let currentUserId;
             let taskData = null;
             let taskId = null;
+            let starredTasksList = [];
             let allTasks = [];
             let viewingArchive = false; // آیا الان بایگانی نمایش داده می‌شود؟
             let currentDeadlineRequestId = null;
@@ -1626,6 +1659,7 @@ if (!$__me) {
                     loadTaskDetails(); // 🆕 بعد از آماده‌شدن برچسب‌های فارسی
                 });
                 loadUsers();
+                initTaskStar();
 
                 // ✅ نوتیفیکیشن‌های این تسک را خوانده‌شده کن
                 markTaskNotificationsRead(taskId);
@@ -4303,6 +4337,48 @@ ${task.overdue_periods > 0 ? `
 
                 document.getElementById('taskHistory').innerHTML =
                     `<div class="minimal-list">${html}</div>`;
+            }
+
+            // ─── ستاره‌دار کردن (منتخب) — همان تنظیمِ روزانه‌یِ داشبورد،
+            // فقط این‌جا هم قابلِ تغییر است. کلید: هم‌فرمت با dashboard-manager.php ───
+            async function initTaskStar() {
+                try {
+                    const res = await fetch('../api/dashboard/prefs-get.php', {
+                        headers: { 'Authorization': 'Bearer ' + authToken }
+                    });
+                    const d = await res.json();
+                    starredTasksList = (d.success && d.prefs && Array.isArray(d.prefs.starred_tasks)) ? d.prefs.starred_tasks : [];
+                } catch (e) {
+                    starredTasksList = [];
+                }
+                renderTaskStarBtn();
+            }
+
+            function renderTaskStarBtn() {
+                const btn = document.getElementById('tdStarBtn');
+                if (!btn || !taskId) return;
+                const on = starredTasksList.includes('task:' + taskId);
+                btn.classList.toggle('on', on);
+                btn.querySelector('i').className = 'bi bi-star' + (on ? '-fill' : '');
+                btn.title = on ? 'حذف از منتخب' : 'افزودن به منتخب';
+            }
+
+            function toggleTaskStar(ev) {
+                if (ev) ev.stopPropagation();
+                if (!taskId) return;
+                const key = 'task:' + taskId;
+                const idx = starredTasksList.indexOf(key);
+                if (idx >= 0) starredTasksList.splice(idx, 1);
+                else starredTasksList.push(key);
+                renderTaskStarBtn();
+                fetch('../api/dashboard/prefs-set.php', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ pref_key: 'starred_tasks', pref_value: JSON.stringify(starredTasksList) })
+                }).catch(() => {});
             }
 
             async function loadUsers() {

@@ -806,7 +806,12 @@ if (!$__me) {
             });
 
             // ── کادرِ پیام: رشدِ خودکارِ ارتفاع + ارسال با Enter (Shift+Enter یا Alt+Enter = خط جدید) ──
+            // این رفتار فقط رویِ دستگاهِ با ورودیِ اصلیِ ماوس/تراک‌پد (دسکتاپ) است؛
+            // رویِ گوشی/تبلت (pointer: coarse) نگه‌داشتنِ Shift هنگامِ تایپ عملاً
+            // ناممکن است، پس آن‌جا Enter همیشه فقط خطِ جدید درج می‌کند و ارسال
+            // منحصراً با دکمه انجام می‌شود.
             var replyMsgEl = document.getElementById('replyMsg');
+            var isTouchPrimary = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
             replyMsgEl.addEventListener('input', function() { autoGrowComposer(this); });
             replyMsgEl.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && e.altKey) {
@@ -819,6 +824,7 @@ if (!$__me) {
                     autoGrowComposer(this);
                     return;
                 }
+                if (isTouchPrimary) return; // گوشی/تبلت: Enter = خطِ جدید (رفتارِ پیش‌فرض)
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     sendReply();

@@ -400,7 +400,7 @@ function toPersianNumber($num)
         }
 
         .nav-links a:hover {
-            background: #e9e9e9;
+            background: rgba(142, 87, 254, .12);
             color: #334155;
         }
 
@@ -554,7 +554,7 @@ function toPersianNumber($num)
         }
 
         .group-header:hover {
-            background: #e9e9e9;
+            background: rgba(142, 87, 254, .12);
         }
 
         .group-icon {
@@ -620,7 +620,7 @@ function toPersianNumber($num)
         }
 
         .setting-item:hover {
-            background: #e9e9e9;
+            background: rgba(142, 87, 254, .12);
         }
 
         .setting-info {
@@ -836,10 +836,13 @@ function toPersianNumber($num)
             border-bottom-color: var(--border-soft);
         }
 
-        :root[data-theme="dark"] .group-header:hover,
-        :root[data-theme="dark"] .setting-item:hover,
         :root[data-theme="dark"] .group-count {
             background: var(--bg-page);
+        }
+
+        :root[data-theme="dark"] .group-header:hover,
+        :root[data-theme="dark"] .setting-item:hover {
+            background: rgba(142, 87, 254, .18);
         }
 
         :root[data-theme="dark"] .group-title,
