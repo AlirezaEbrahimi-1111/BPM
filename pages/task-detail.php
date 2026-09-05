@@ -49,10 +49,6 @@ if (!$__me) {
     <script src="<?= asset('../assets/js/cdn/jquery.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/deadline-toast.css') ?>">
     <style>
-        /* فاصلهٔ یکسان از هدر مثل بقیهٔ صفحات (جا برای فلشِ سرچِ سراسری) */
-        .task-detail-container {
-            padding-top: 2rem;
-        }
 
         /* دو ستون اطلاعات تسک */
         #taskInfo .row {
@@ -376,6 +372,20 @@ if (!$__me) {
             background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
             color: #fff !important;
             box-shadow: none !important;
+        }
+
+        /* در این صفحه فوتر ثابت نباشد — بعد از «تاریخچه» در جریانِ عادیِ
+           صفحه بنشیند. فقط به‌اندازهٔ نوارِ عملیاتِ ثابتِ پایین (.TDaction-buttons)
+           فاصله می‌گذاریم تا فوتر زیرِ آن نیفتد. */
+        .site-footer {
+            position: static !important;
+            z-index: auto !important;
+            box-shadow: none !important;
+        }
+
+        body,
+        body:has(.TDaction-buttons) {
+            padding-bottom: 84px !important;
         }
     </style>
 
