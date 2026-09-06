@@ -1676,21 +1676,18 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             min-width: 0;
         }
 
+        /* .wk-col فقط یک ستونِ شفاف است — سرستون و جعبهٔ کارت‌ها هرکدام
+           کادر و رنگِ خودشان را دارند (مثلِ مودالِ ماه). */
         .wk-col {
-            background: #fafafa;
-            border: 1px solid #f0f0f3;
-            border-radius: 12px;
-            padding: 8px;
+            background: transparent;
+            border: none;
+            padding: 0;
             display: flex;
             flex-direction: column;
+            gap: 8px;
             min-width: 0;
             flex: 1 1 0;
             transition: flex-grow .25s ease;
-        }
-
-        :root[data-theme="dark"] .wk-col {
-            background: var(--info-box-bg);
-            border-color: var(--border-soft);
         }
 
         .wk-grid:hover .wk-col {
@@ -1703,50 +1700,39 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             opacity: 1;
         }
 
-        /* تراکمِ کار — همان رنگ‌های مودالِ ماه */
-        .wk-col.wk-d1 { background: #ECE3FF; border-color: #ddd0f7; }
-        .wk-col.wk-d2 { background: #CCB4FF; border-color: #bda2f2; }
-        .wk-col.wk-d3 { background: #8E57FE; border-color: #7d47ec; }
-        .wk-col.wk-d3 .wk-day,
-        .wk-col.wk-d3 .wk-date { color: #fff; }
-        .wk-col.wk-today { border: 2px solid #8e57fe; }
-
-        :root[data-theme="dark"] .wk-col.wk-d1 { background: rgba(142,87,254,.20); }
-        :root[data-theme="dark"] .wk-col.wk-d2 { background: rgba(142,87,254,.42); }
-        :root[data-theme="dark"] .wk-col.wk-d3 { background: #8E57FE; }
-
+        /* سرستونِ روز/تاریخ — بیرون از کارتِ تسک‌ها، با همان بنفشِ کم‌رنگِ
+           مودالِ ماه (.mo-weekday). کادرِ بنفش فقط برایِ روزِ جاری. */
         .wk-col-head {
             text-align: center;
-            margin-bottom: 8px;
-            padding: 6px 4px;
-            border: 1px solid #e9e9ef;
-            border-radius: 10px;
-            background: #fff;
+            padding: 7px 4px;
+            border: 1px solid transparent;
+            border-radius: 7px;
+            background: #F3EEFF;
         }
 
-        .wk-col.wk-today .wk-col-head { border-color: #8e57fe; }
+        .wk-col.wk-today .wk-col-head {
+            border-color: #8e57fe;
+            border-width: 2px;
+        }
 
         :root[data-theme="dark"] .wk-col-head {
-            border-color: var(--border-soft);
-            background: transparent;
+            background: rgba(142, 87, 254, .16);
         }
 
         .wk-day {
             font-size: .738rem;
             font-weight: 700;
-            color: var(--du-ink);
+            color: #8E57FE;
         }
 
         .wk-date {
             font-size: .612rem;
-            color: #9ca3af;
+            color: #8E57FE;
+            opacity: .85;
             margin-top: 2px;
         }
 
-        :root[data-theme="dark"] .wk-date {
-            color: var(--text-muted);
-        }
-
+        /* جعبهٔ کارت‌های تسک — رنگش بر اساسِ تراکمِ کار (مثلِ مودالِ ماه) */
         .wk-cards {
             display: flex;
             flex-direction: column;
@@ -1755,7 +1741,26 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             max-height: 46vh;
             direction: ltr;
             text-align: right;
+            background: #fafafa;
+            border: 1px solid #f0f0f3;
+            border-radius: 12px;
+            padding: 8px;
+            flex: 1 1 auto;
         }
+
+        :root[data-theme="dark"] .wk-cards {
+            background: var(--info-box-bg);
+            border-color: var(--border-soft);
+        }
+
+        .wk-col.wk-d1 .wk-cards { background: #ECE3FF; border-color: #ddd0f7; }
+        .wk-col.wk-d2 .wk-cards { background: #CCB4FF; border-color: #bda2f2; }
+        .wk-col.wk-d3 .wk-cards { background: #8E57FE; border-color: #7d47ec; }
+        .wk-col.wk-d3 .wk-col-empty { color: rgba(255, 255, 255, .8); }
+
+        :root[data-theme="dark"] .wk-col.wk-d1 .wk-cards { background: rgba(142,87,254,.20); }
+        :root[data-theme="dark"] .wk-col.wk-d2 .wk-cards { background: rgba(142,87,254,.42); }
+        :root[data-theme="dark"] .wk-col.wk-d3 .wk-cards { background: #8E57FE; }
 
         .wk-card {
             background: var(--du-surface);
