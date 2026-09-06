@@ -48,14 +48,38 @@ try {
     $c->execute([$id, $org]);
     if (!$c->fetch()) dev_out(['success' => false, 'message' => 'دستگاه یافت نشد'], 404);
 
+    // کاربرِ صاحبِ این دستگاه (برای تأیید/لغوِ سطحِ کاربر)
+    $ownerStmt = $db->prepare("SELECT first_seen_user_id FROM attendance_devices WHERE id = ?");
+    $ownerStmt->execute([$id]);
+    $deviceUserId = (int) ($ownerStmt->fetchColumn() ?: 0);
+
     if ($action === 'approve') {
         $db->prepare("UPDATE attendance_devices SET status='approved', approved_by=?, approved_at=NOW() WHERE id=?")
            ->execute([$user_id, $id]);
+        // ✅ تأییدِ سطحِ کاربر → از این پس هر دستگاهِ جدیدِ همین کاربر (حتی بعد از کلیر کش)
+        //    خودکار مجاز است و درخواستِ تازه‌ای نمی‌فرستد.
+        if ($deviceUserId > 0) {
+            $db->prepare("INSERT IGNORE INTO attendance_approved_users (organization_id, user_id, approved_by, approved_at)
+                          VALUES (?, ?, ?, NOW())")
+               ->execute([$org, $deviceUserId, $user_id]);
+        }
         attendance_notify_requester_review($db, $org, $id, true);   // اطلاع به درخواست‌دهنده
         dev_out(['success' => true, 'message' => 'دستگاه تأیید شد']);
     } elseif ($action === 'reject') {
         $db->prepare("UPDATE attendance_devices SET status='rejected', approved_by=?, approved_at=NOW() WHERE id=?")
            ->execute([$user_id, $id]);
+        // لغوِ تأییدِ سطحِ کاربر — فقط اگر این کاربر هیچ دستگاهِ approvedِ دیگری ندارد
+        if ($deviceUserId > 0) {
+            $db->prepare("
+                DELETE FROM attendance_approved_users
+                WHERE organization_id = ? AND user_id = ?
+                  AND NOT EXISTS (
+                      SELECT 1 FROM attendance_devices
+                      WHERE organization_id = ? AND first_seen_user_id = ?
+                        AND status = 'approved' AND id <> ?
+                  )
+            ")->execute([$org, $deviceUserId, $org, $deviceUserId, $id]);
+        }
         attendance_notify_requester_review($db, $org, $id, false);  // اطلاع به درخواست‌دهنده
         dev_out(['success' => true, 'message' => 'دستگاه رد شد']);
     } elseif ($action === 'delete') {

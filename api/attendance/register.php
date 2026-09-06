@@ -137,9 +137,19 @@ if (!$organization_id) {
         // می‌شود. اگر همین کاربر قبلاً در همین سازمان حضور ثبت کرده (یعنی یک بار
         // تأیید شده) و الان هم از IP مجاز آمده (بالاتر چک شد)، شناسهٔ جدیدش
         // خودکار تأیید می‌شود و درخواستِ تازه‌ای برای سرپرست نمی‌رود.
-        $prevStmt = $db->prepare("SELECT COUNT(*) FROM attendance_records WHERE user_id = ? AND organization_id = ?");
-        $prevStmt->execute([$user_id, $organization_id]);
-        $autoApprove = ((int) $prevStmt->fetchColumn() > 0);
+        // ✅ تأییدِ سطحِ «کاربر» (جدولِ attendance_approved_users) — مقاوم به کلیر کش.
+        //    بعد از یک‌بار تأیید، هر شناسهٔ دستگاهِ جدیدِ همین کاربر خودکار approved
+        //    می‌شود و درخواستِ تازه‌ای برای سرپرست نمی‌رود.
+        $apprStmt = $db->prepare("SELECT 1 FROM attendance_approved_users WHERE organization_id = ? AND user_id = ? LIMIT 1");
+        $apprStmt->execute([$organization_id, $user_id]);
+        $autoApprove = (bool) $apprStmt->fetchColumn();
+
+        // سازگاری: کاربری که قبلاً حضور ثبت کرده ولی هنوز در جدولِ جدید نیست
+        if (!$autoApprove) {
+            $prevStmt = $db->prepare("SELECT COUNT(*) FROM attendance_records WHERE user_id = ? AND organization_id = ?");
+            $prevStmt->execute([$user_id, $organization_id]);
+            $autoApprove = ((int) $prevStmt->fetchColumn() > 0);
+        }
 
         $ins = $db->prepare("
             INSERT IGNORE INTO attendance_devices
@@ -151,6 +161,11 @@ if (!$organization_id) {
         if ($autoApprove) {
             $db->prepare("UPDATE attendance_devices SET last_used_at = NOW() WHERE organization_id = ? AND fingerprint_hash = ?")
                 ->execute([$organization_id, $fp_hash]);
+            // self-heal: کاربر را در جدولِ تأییدِ سطحِ کاربر ثبت کن (اگر از مسیرِ سازگاری آمده)
+            try {
+                $db->prepare("INSERT IGNORE INTO attendance_approved_users (organization_id, user_id, approved_at) VALUES (?, ?, NOW())")
+                    ->execute([$organization_id, $user_id]);
+            } catch (Exception $e) { /* بی‌صدا */ }
             return; // از گاردِ IIFE خارج شو — اجازهٔ ثبتِ ورود/خروج بده
         }
 
