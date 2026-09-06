@@ -1720,7 +1720,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .wk-day {
-            font-size: .738rem;
+            font-size: .72rem;
             font-weight: 700;
             color: #8E57FE;
         }
@@ -2254,7 +2254,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .pm-form-title {
-            font-size: .738rem;
+            font-size: .72rem;
             font-weight: 600;
             color: #4b5563;
             margin-bottom: 8px;
@@ -2289,7 +2289,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             border-radius: 9px;
             cursor: pointer;
             padding: 7px 16px;
-            font-size: .738rem;
+            font-size: .72rem;
             font-weight: 600;
             transition: opacity .12s;
         }
@@ -2451,7 +2451,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         .ra-user-empty {
             text-align: center;
             color: #9ca3af;
-            font-size: .738rem;
+            font-size: .72rem;
             padding: 14px;
         }
 
