@@ -1583,12 +1583,28 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             opacity: 1;
         }
 
+        /* تراکمِ کار — همان رنگ‌های مودالِ ماه */
+        .wk-col.wk-d1 { background: #ECE3FF; border-color: #ddd0f7; }
+        .wk-col.wk-d2 { background: #CCB4FF; border-color: #bda2f2; }
+        .wk-col.wk-d3 { background: #8E57FE; border-color: #7d47ec; }
+        .wk-col.wk-d3 .wk-day,
+        .wk-col.wk-d3 .wk-date { color: #fff; }
+        .wk-col.wk-today { border: 2px solid #8e57fe; }
+
+        :root[data-theme="dark"] .wk-col.wk-d1 { background: rgba(142,87,254,.20); }
+        :root[data-theme="dark"] .wk-col.wk-d2 { background: rgba(142,87,254,.42); }
+        :root[data-theme="dark"] .wk-col.wk-d3 { background: #8E57FE; }
+
         .wk-col-head {
             text-align: center;
             margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
+            padding: 6px 4px;
+            border: 1px solid #e9e9ef;
+            border-radius: 10px;
+            background: #fff;
         }
+
+        .wk-col.wk-today .wk-col-head { border-color: #8e57fe; }
 
         .wk-day {
             font-size: .738rem;
@@ -2695,7 +2711,13 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 <div class="modal-body">
                     <div class="wk-grid" id="wkGrid"></div>
                 </div>
-                <div class="modal-footer" style="padding:12px 12px 0 12px;">
+                <div class="modal-footer" style="padding:8px 20px 6px;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div class="mo-legend">
+                        <span class="mo-lg"><i style="background:#FFFFFF;border:1px solid #e2e2ea;"></i>بدون وظیفه</span>
+                        <span class="mo-lg"><i style="background:#ECE3FF;"></i>کم‌کار</span>
+                        <span class="mo-lg"><i style="background:#CCB4FF;"></i>متوسط</span>
+                        <span class="mo-lg"><i style="background:#8E57FE;"></i>پرکار</span>
+                    </div>
                     <a href="my-tasks.php?filter=week" class="btn btn-sm" style="background:#8e57fe;color:#fff;">مشاهده همه کارها</a>
                 </div>
             </div>
@@ -4799,6 +4821,9 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
             const months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
 
             let html = '';
+            const wkToday = todayLocal();
+            wkToday.setHours(0, 0, 0, 0);
+            const wkTodayTime = wkToday.getTime();
 
             for (let i = 0; i < 6; i++) { // شنبه تا پنج‌شنبه (جمعه حذف)
                 const day = new Date(sat);
@@ -4836,9 +4861,15 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
                 } else {
                     cards = `<div class="wk-col-empty">—</div>`;
                 }
- 
+
+                // تراکمِ کار — دقیقاً مثلِ مودالِ ماه: ۰ سفید، ۱–۵ کم‌کار،
+                // ۶–۱۰ متوسط، ۱۱+ پرکار
+                const n = dayTasks.length;
+                const densCls = n === 0 ? '' : (n <= 5 ? 'wk-d1' : (n <= 10 ? 'wk-d2' : 'wk-d3'));
+                const isToday = day.getTime() === wkTodayTime;
+
                 html += `
-                <div class="wk-col">
+                <div class="wk-col ${densCls} ${isToday ? 'wk-today' : ''}">
                     <div class="wk-col-head">
                         <div class="wk-day">${dayNames[i]}</div>
                         <div class="wk-date">${toFa(jd)} ${months[jm - 1]}</div>
