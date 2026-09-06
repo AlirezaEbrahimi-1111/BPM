@@ -293,10 +293,6 @@ try {
             };
         }
 
-        function faDigits(s) {
-            return String(s == null ? '' : s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
-        }
-
         function toEnDigits(s) {
             return String(s == null ? '' : s)
                 .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
@@ -432,12 +428,7 @@ try {
         ];
 
         const gridOptions = {
-            theme: agGrid.themeQuartz.withParams({
-                fontFamily: "'Vazirmatn', sans-serif",
-                fontSize: 13,
-                headerBackgroundColor: '#f8f9fa',
-                rowHoverColor: 'rgba(142, 87, 254, 0.12)',
-            }),
+            theme: AgGridFa.theme(), // پایهٔ مشترک در assets/js/ag-grid-fa.js
             columnDefs: colDefs,
             rowData: [],
             enableRtl: true,

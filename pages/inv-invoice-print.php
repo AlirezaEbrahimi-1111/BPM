@@ -279,10 +279,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             return localStorage.getItem('auth_token');
         }
 
-        function faDigits(s) {
-            return String(s == null ? '' : s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹' [+d]);
-        }
-
         function money(n) {
             return faDigits(Math.round(Number(n) || 0).toLocaleString('en-US'));
         }

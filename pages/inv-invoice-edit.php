@@ -343,10 +343,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
         }
 
-        function faDigits(s) {
-            return String(s == null ? '' : s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹' [+d]);
-        }
-
         function num(v) {
             const n = parseFloat(toEn(v).replace(/[,٬\s]/g, '').replace(/[^\d.-]/g, ''));
             return isNaN(n) ? 0 : n;

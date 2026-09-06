@@ -1336,10 +1336,6 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
                 .catch(() => showToast('خطا در دریافتِ موجودی', 'error'));
         }
 
-        function toFaDigits(n) {
-            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
-        }
-
         let __bonusRequestsCache = [];
 
         function loadLeaveBonusRequests() {

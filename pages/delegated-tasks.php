@@ -681,10 +681,6 @@ if (!$__me) {
             return window.TimeSync ? TimeSync.timeAgo(d) : '';
         }
 
-        function toPersian(n) {
-            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
-        }
-
         function viewTask(id) {
             window.location.href = `task-detail.php?id=${id}`;
         }

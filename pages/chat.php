@@ -3153,10 +3153,6 @@ if (!$__me) {
             });
         }
 
-        function toFaDigits(s) {
-            return String(s).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
-        }
-
         // 'YYYY-MM-DD' میلادی → 'YYYY/MM/DD' شمسی با اعدادِ فارسی
         function toJalaliDateStr(gregorianDate) {
             if (!gregorianDate || !window.jalaali) return '';

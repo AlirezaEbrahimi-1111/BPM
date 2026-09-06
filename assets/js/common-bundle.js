@@ -24,6 +24,23 @@ function toFa(n) {
     return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
 }
 
+// نام‌های تاریخیِ همین «تبدیلِ رقمِ لاتین ← فارسی» که به‌صورتِ کپیِ محلی در
+// ۲۰+ صفحه با اسم‌های مختلف تعریف شده بودند. این‌جا بدنه‌شان *دقیقاً* برابرِ
+// همان نسخه‌های محلی است (نه delegate به toFa) تا حذفِ کپیِ محلیِ صفحات
+// اثباتاً بدونِ تغییرِ رفتار باشد — از جمله رفتارِ لبه: X(null) → 'null'.
+// بررسی شد: هیچ‌کدام در پروژه با const/let تعریف نشده‌اند → redeclareِ محلی
+// سالم است. (faNum عمداً این‌جا نیست: چند صفحه «const faNum = ...» دارند.)
+function toPersian(n)    { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
+function faDigits(s)     { return String(s == null ? '' : s).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
+function toFaDigits(n)   { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
+function toFaNum(n)      { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
+function enTofaNumber(n) { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
+
+// نامِ ماه‌های شمسی — مرجعِ یگانه (به‌جای ~۱۷ کپیِ محلی: months / persianMonths / J_MONTHS).
+// صفحات: «const months = FA_MONTHS;» — بدونِ تغییرِ محلِ استفاده. (TimeSync.jMonthName(m)
+// هم همین را می‌دهد ولی این آرایه برای index مستقیم مثلِ months[jm-1] دم‌دست‌تر است.)
+var FA_MONTHS = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+
 // escape کردنِ رشته قبل از تزریق در innerHTML — جلوگیری از XSS
 // بررسی شد: هرجا در پروژه از قبل «esc» تعریف شده، یا خودش function است
 // (redeclare سالم، override می‌شه) یا داخلِ scope محلی/IIFE است (تداخلی

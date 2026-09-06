@@ -435,10 +435,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             return localStorage.getItem('auth_token');
         }
 
-        function faDigits(s) {
-            return String(s == null ? '' : s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
-        }
-
         function money(n) {
             return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US')));
         }
@@ -529,7 +525,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             }
         }
 
-        const J_MONTHS = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+        const J_MONTHS = FA_MONTHS; // مرجعِ یگانه در common-bundle.js
 
         function jLabel(key) {
             const [y, m] = key.split('-');

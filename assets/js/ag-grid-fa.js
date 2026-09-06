@@ -49,5 +49,20 @@
         }, 100);
     }
 
-    w.AgGridFa = { persianizePaging: persianizePaging, toFaDigits: toFaDigits };
+    /*
+     * تمِ مشترکِ AG Grid — به‌جای کپیِ بلوکِ themeQuartz.withParams({...}) در هر صفحهٔ لیستی.
+     * پایه: فونتِ Vazirmatn 13، هدرِ #f8f9fa، هاورِ rgba(142,87,254,.12) (استانداردِ هاورِ سایت).
+     * overrides مقادیرِ خاصِ صفحه را جایگزین می‌کند.  استفاده:  theme: AgGridFa.theme()
+     * توجه: agGrid فقط هنگامِ فراخوانی لازم است (نه هنگامِ لودِ این فایل).
+     */
+    function theme(overrides) {
+        return agGrid.themeQuartz.withParams(Object.assign({
+            fontFamily: "'Vazirmatn', sans-serif",
+            fontSize: 13,
+            headerBackgroundColor: '#f8f9fa',
+            rowHoverColor: 'rgba(142, 87, 254, 0.12)'
+        }, overrides || {}));
+    }
+
+    w.AgGridFa = { persianizePaging: persianizePaging, toFaDigits: toFaDigits, theme: theme };
 })(window);

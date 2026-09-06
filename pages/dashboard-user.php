@@ -4602,7 +4602,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             document.getElementById('wkLabel').textContent = label;
 
             const dayNames = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'];
-            const months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+            const months = FA_MONTHS; // مرجعِ یگانه در common-bundle.js
 
             let html = '';
             const wkToday = todayLocal();
@@ -4913,7 +4913,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             const monthStart = moMonthStartOf(moOffset);
             const [jy, jm] = jalaliOf(monthStart);
             const daysCount = moDaysInMonth(monthStart);
-            const months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+            const months = FA_MONTHS; // مرجعِ یگانه در common-bundle.js
             document.getElementById('moLabel').textContent = moOffset === 0 ? 'این ماه' : (months[jm - 1] + ' ' + toFa(jy));
             document.getElementById('moSeeAllBtn').href = 'my-tasks.php?filter=month&jy=' + jy + '&jm=' + jm;
 

@@ -203,7 +203,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         // ============================================
         let currentYear, currentMonth; // شمسی
         let holidays = {}; // dateStr -> {id, title, type, is_global, can_delete, day_of_week}
-        const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+        const persianMonths = FA_MONTHS; // مرجعِ یگانه در common-bundle.js
         const persianWeekdayNames = { 0: 'یکشنبه', 1: 'دوشنبه', 2: 'سه‌شنبه', 3: 'چهارشنبه', 4: 'پنج‌شنبه', 5: 'جمعه', 6: 'شنبه' };
 
         // toFa از assets/js/common.js میاد (لود شده در header.php)

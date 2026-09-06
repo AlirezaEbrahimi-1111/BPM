@@ -207,10 +207,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             };
         }
 
-        function faDigits(s) {
-            return String(s == null ? '' : s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
-        }
-
         function jDate(g) {
             if (!g) return '—';
             try {
@@ -310,12 +306,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         ];
 
         const gridOptions = {
-            theme: agGrid.themeQuartz.withParams({
-                fontFamily: "'Vazirmatn', sans-serif",
-                fontSize: 13,
-                headerBackgroundColor: '#f8f9fa',
-                rowHoverColor: 'rgba(142, 87, 254, 0.12)',
-            }),
+            theme: AgGridFa.theme(), // پایهٔ مشترک در assets/js/ag-grid-fa.js
             columnDefs: colDefs,
             rowData: [],
             enableRtl: true,

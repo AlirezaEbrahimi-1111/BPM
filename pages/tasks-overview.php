@@ -263,12 +263,7 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
         ];
 
         const gridOptions = {
-            theme: agGrid.themeQuartz.withParams({
-                fontFamily: "'Vazirmatn', sans-serif",
-                fontSize: 13,
-                rowHoverColor: '#f0f7ff',
-                headerBackgroundColor: '#f8f9fa',
-            }),
+            theme: AgGridFa.theme({ rowHoverColor: '#f0f7ff' }), // پایهٔ مشترک؛ هاورِ فعلیِ همین صفحه حفظ شد
             columnDefs,
             rowData: [],
             enableRtl: true,
@@ -773,10 +768,6 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
         function relTime(d) {
             // زمانِ نسبی از منبعِ یگانه (ساعتِ سرور، نه دستگاه) — time-sync.js
             return window.TimeSync ? TimeSync.timeAgo(d) : '';
-        }
-
-        function toPersian(n) {
-            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
         }
 
         function updatePaginationInfo(f, t, total) {

@@ -314,12 +314,7 @@ if (!$__me) {
         ];
 
         const gridOptions = {
-            theme: agGrid.themeQuartz.withParams({
-                fontFamily: "'Vazirmatn', sans-serif",
-                fontSize: 13,
-                rowHoverColor: '#f0f7ff',
-                headerBackgroundColor: '#f8f9fa',
-            }),
+            theme: AgGridFa.theme({ rowHoverColor: '#f0f7ff' }), // پایهٔ مشترک؛ هاورِ فعلیِ همین صفحه حفظ شد
             columnDefs: columnDefs,
             rowData: [],
             enableRtl: true,
@@ -513,7 +508,7 @@ if (!$__me) {
 
             const banner = document.getElementById('dashFilterBanner');
             const bannerText = document.getElementById('dashFilterBannerText');
-            const months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+            const months = FA_MONTHS; // مرجعِ یگانه در common-bundle.js
 
             if (dashFilter === 'week') {
                 bannerText.textContent = 'نمایش فقط کارهای این هفته';
@@ -840,10 +835,6 @@ if (!$__me) {
         function relTime(d) {
             // زمانِ نسبی از منبعِ یگانه (ساعتِ سرور، نه دستگاه) — time-sync.js
             return window.TimeSync ? TimeSync.timeAgo(d) : '';
-        }
-
-        function toPersian(n) {
-            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
         }
 
         function viewTask(id) {

@@ -206,12 +206,7 @@ if (!$__me || !hasPermission($__me, 'manage_task_groups')) {
         ];
 
         const gridOptions = {
-            theme: agGrid.themeQuartz.withParams({
-                fontFamily: "'Vazirmatn', sans-serif",
-                fontSize: 13,
-                rowHoverColor: '#f0f7ff',
-                headerBackgroundColor: '#f8f9fa',
-            }),
+            theme: AgGridFa.theme({ rowHoverColor: '#f0f7ff' }), // پایهٔ مشترک؛ هاورِ فعلیِ همین صفحه حفظ شد
             columnDefs: columnDefs,
             rowData: [],
             enableRtl: true,

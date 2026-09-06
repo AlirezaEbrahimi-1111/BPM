@@ -401,10 +401,6 @@ function fillForm() {
     document.getElementById('dailyWorkHours').value = u.daily_work_hours ? (toFaDigits(u.daily_work_hours) + ' ساعت') : '—';
 }
 
-function toFaDigits(n) {
-    return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
-}
-
 async function saveProfile(e) {
     e.preventDefault();
     const fn = document.getElementById('firstName').value.trim();

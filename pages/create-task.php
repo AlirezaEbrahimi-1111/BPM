@@ -780,11 +780,6 @@ if (!$__me) {
             }
         });
 
-        function enTofaNumber(numb) {
-            const persianNumbers = "۰۱۲۳۴۵۶۷۸۹";
-            const englishNumbers = "0123456789";
-            return String(numb).replace(/[0-9]/g, d => persianNumbers[englishNumbers.indexOf(d)]);
-        }
 
         // نمایش پیش‌نمایش مراحل
         function showWorkflowPreview(template) {

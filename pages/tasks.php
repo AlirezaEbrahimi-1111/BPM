@@ -290,12 +290,7 @@ if (!$__me) {
         ];
 
         const gridOptions = {
-            theme: agGrid.themeQuartz.withParams({
-                fontFamily: "'Vazirmatn', sans-serif",
-                fontSize: 13,
-                rowHoverColor: '#f0f7ff',
-                headerBackgroundColor: '#f8f9fa',
-            }),
+            theme: AgGridFa.theme({ rowHoverColor: '#f0f7ff' }), // پایهٔ مشترک؛ هاورِ فعلیِ همین صفحه حفظ شد
             columnDefs: columnDefs,
             rowData: [],
             enableRtl: true,
@@ -741,9 +736,7 @@ if (!$__me) {
             return window.TimeSync ? TimeSync.timeAgo(d) : '';
         }
 
-        function toPersian(n) {
-            return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
-        }
+        // toPersian: از assets/js/common-bundle.js (سراسری)
         // ستون عملیات — حذف فقط برای کارهای غیرروتین و تکمیل/تأییدنشده
         function buildActionButtons(t) {
             if (!t) return '';

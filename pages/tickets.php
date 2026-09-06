@@ -705,8 +705,6 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
             // زمانِ نسبی از منبعِ یگانه (ساعتِ سرور، نه دستگاه) — time-sync.js
             return window.TimeSync ? TimeSync.timeAgo(d) : '';
         }
-        function toPersian(n) { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
-
         function esc(str){
             if (!str) return '';
             var d = document.createElement('div');

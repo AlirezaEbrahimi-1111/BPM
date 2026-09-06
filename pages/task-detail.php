@@ -1356,10 +1356,6 @@ if (!$__me) {
                     }
                 }
 
-                function toPersian(num) {
-                    const persianNumbers = '۰۱۲۳۴۵۶۷۸۹';
-                    return String(num).replace(/\d/g, d => persianNumbers[d]);
-                }
 
                 function toEnglish(str) {
                     const pNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
@@ -4963,11 +4959,6 @@ ${task.overdue_periods > 0 ? `
                 }
             }
 
-            function enTofaNumber(numb) {
-                const persianNumbers = "۰۱۲۳۴۵۶۷۸۹";
-                const englishNumbers = "0123456789";
-                return String(numb).replace(/[0-9]/g, d => persianNumbers[englishNumbers.indexOf(d)]);
-            }
 
             function showAlert(message, type = 'info') {
                 const map = {
