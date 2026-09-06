@@ -2,12 +2,19 @@
 /**
  * دسترسیِ موقتِ ماژولِ «فروش / فاکتور».
  *
- * تا وقتی این ماژول در حالِ ساخت است، فقط کاربر id=1 و چند شماره‌ی مشخص
- * صفحه‌ها و منو را می‌بینند. این «دیدن» است، نه «نوشتن» — نوشتن هنوز به
- * مجوزِ users.is_create_official_invoice / is_sales_manager وابسته است
+ * تا وقتی این ماژول در حالِ ساخت است، فقط افرادِ زیر منو و صفحه‌ها را می‌بینند:
+ *   - کاربر id = 1
+ *   - کاربر id = 19 (رضا فضایلی)
+ *   - کلِ تیمِ حسابداری  →  هر کاربرِ فعالی که واحدِ فعالیتش 'AC' باشد
+ *     (هم جدولِ چندواحدیِ user_activity_units، هم فیلدِ قدیمیِ users.activity_unit)
+ *   - شماره‌موبایل‌هایِ موقتِ فهرستِ $EXTRA_PHONES
+ *
+ * این «دیدن» است، نه «نوشتن» — نوشتن هنوز به مجوزِ
+ * users.is_create_official_invoice / is_sales_manager وابسته است
  * (هم در PHP هم در سرویسِ Go).
  *
- * برای افزودن/حذفِ یک نفر: فقط آرایه‌ی $EXTRA_PHONES را عوض کن.
+ * برای افزودن/حذفِ یک نفرِ خاص: id را در آرایه‌ی $ids یا موبایل را در
+ * $EXTRA_PHONES عوض کن.
  */
 
 /** @return int[] شناسه‌ی کاربرانی که به ماژول دسترسی دارند */
@@ -16,7 +23,8 @@ function crmModuleUserIds(PDO $db): array
     static $cache = null;
     if ($cache !== null) return $cache;
 
-    $ids = [1];
+    $ids = [1, 19]; // id=1 + رضا فضایلی (id=19)
+
     $EXTRA_PHONES = [
         '09927949376', // خانم بادپر — موقت (موبایل)
     ];
@@ -30,8 +38,29 @@ function crmModuleUserIds(PDO $db): array
                 $ids[] = (int) $pid;
             }
         } catch (Throwable $e) {
-            // اگر جدول/ستون در دسترس نبود، فقط id=1 می‌ماند.
+            // اگر جدول/ستون در دسترس نبود، فقط id‌هایِ ثابت می‌مانند.
         }
+    }
+
+    // کلِ تیمِ حسابداری (واحدِ فعالیتِ AC)
+    try {
+        $st = $db->query("
+            SELECT u.id
+            FROM users u
+            WHERE u.is_active = 1
+              AND (
+                    u.activity_unit = 'AC'
+                    OR EXISTS (
+                        SELECT 1 FROM user_activity_units uau
+                        WHERE uau.user_id = u.id AND uau.activity_unit = 'AC'
+                    )
+                  )
+        ");
+        foreach ($st->fetchAll(PDO::FETCH_COLUMN) as $pid) {
+            $ids[] = (int) $pid;
+        }
+    } catch (Throwable $e) {
+        // اگر جدول/ستون در دسترس نبود، بی‌صدا رد شو.
     }
 
     $cache = array_values(array_unique($ids));
