@@ -4230,13 +4230,17 @@ ${task.overdue_periods > 0 ? `
                     return false;
                 }
 
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
+                // ⚠️ «امروز» باید از ساعتِ سرور (تهران) بیاید، نه new Date() که ساعت/
+                //    تایم‌زونِ دستگاهِ کاربر است. اگر ساعتِ کاربر عقب باشد و روی همان
+                //    روزِ last_approved_date بیفتد، این گارد اشتباهاً دکمهٔ «تکمیل» را
+                //    مخفی می‌کرد (کارِ #۱۰۵۵). اگر TimeSync در دسترس نبود، مخفی نکن —
+                //    سرور خودش با can_complete گارد دارد (api/tasks/complete-recurring.php).
+                if (!(window.TimeSync && TimeSync.serverToday)) {
+                    return false;
+                }
 
-                const lastApprovedDate = new Date(task.last_approved_date);
-                lastApprovedDate.setHours(0, 0, 0, 0);
-
-                return today.getTime() === lastApprovedDate.getTime();
+                const approved = String(task.last_approved_date).slice(0, 10); // 'YYYY-MM-DD'
+                return approved === TimeSync.serverToday();
             }
 
             function calculateOverduePeriods(task) {
