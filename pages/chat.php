@@ -3759,10 +3759,15 @@ if (!$__me) {
         }
 
         function cancelEditMessage() {
+            var wasEditing = editingMessageId !== null;
             editingMessageId = null;
             var input = document.getElementById('chatComposerInput');
-            input.value = '';
-            input.style.height = 'auto';
+            // فقط وقتی واقعاً در حالِ ویرایش بودیم کادر را خالی کن؛ وگرنه متنی که
+            // کاربر تازه تایپ کرده (و هنوز نفرستاده) با شروعِ «پاسخ» پاک می‌شد.
+            if (wasEditing) {
+                input.value = '';
+                input.style.height = 'auto';
+            }
             document.getElementById('chatEditBanner').classList.remove('show');
             document.getElementById('chatAttachBtn').style.display = '';
         }
