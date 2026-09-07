@@ -64,51 +64,59 @@ if (!function_exists('gregorianToJalali')) {
  * @return array [سال میلادی, ماه میلادی, روز میلادی]
  */
 if (!function_exists('jalaliToGregorian')) {
+    /**
+     * ⚠️ نسخهٔ قبلیِ این تابع خراب بود: در ساختِ $days هیچ ترمی برای «سال»
+     *    نداشت (فقط ماه و روزِ داخلِ سال را می‌شمرد) و مبدأ را ثابت روی ۱۶۰۰
+     *    می‌گذاشت، پس خروجی همیشه در حدودِ سالِ ۱۶۰۰ میلادی می‌افتاد.
+     *    این باعث می‌شد $end_of_month در requests.php و بازهٔ سقفِ ماهانهٔ پاس
+     *    در create.php به تاریخِ ۱۶۰۰ برود و کوئری‌های «بین دو تاریخ» صفر
+     *    ردیف برگردانند.
+     *
+     *    اکنون همان الگوریتمِ استانداردِ jdf (هم‌سان با jalaliToGregorianCalc
+     *    و api/reports/team-summary.php) استفاده می‌شود.
+     */
     function jalaliToGregorian($jy, $jm, $jd)
     {
         $jy = (int) $jy;
         $jm = (int) $jm;
         $jd = (int) $jd;
 
-        $gy = ($jy <= 979) ? 621 : 1600;
-        $jy -= ($jy <= 979) ? 0 : 979;
+        $gy = ($jy < 979) ? 621 : 1600;
+        if ($jy >= 979) {
+            $jy -= 979;
+        }
 
+        $days = (365 * $jy) + ((int) ($jy / 33) * 8) + (int) ((($jy % 33) + 3) / 4) + 78 + $jd;
         if ($jm < 7) {
-            $days = ($jm - 1) * 31;
+            $days += ($jm - 1) * 31;
         } else {
-            $days = (($jm - 7) * 30) + 186;
-        }
-        $days += $jd;
-
-        $gy += 33 * ((int) ($days / 12053));
-        $days %= 12053;
-
-        $leap = 1;
-        if ($days >= 366) {
-            $leap = 0;
-            $days--;
-            $gy += 4 * ((int) ($days / 1461));
-            $days %= 1461;
+            $days += (($jm - 7) * 30) + 186;
         }
 
-        if ($days >= 366) {
-            $leap = 0;
-            $days--;
-            $gy += (int) ($days / 365);
-            $days = $days % 365;
+        $gy += 400 * (int) ($days / 146097);
+        $days %= 146097;
+        if ($days > 36524) {
+            $gy += 100 * (int) (--$days / 36524);
+            $days %= 36524;
+            if ($days >= 365) {
+                $days++;
+            }
         }
-
-        $g_d_m = [0, 31, ($leap ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-
-        $gm = 0;
-        foreach ($g_d_m as $v) {
-            $gm++;
-            if ($days < $v)
-                break;
-            $days -= $v;
+        $gy += 4 * (int) ($days / 1461);
+        $days %= 1461;
+        if ($days > 365) {
+            $gy += (int) (($days - 1) / 365);
+            $days = ($days - 1) % 365;
         }
 
         $gd = $days + 1;
+        $sal_a = [0, 31, (($gy % 4 == 0 && $gy % 100 != 0) || ($gy % 400 == 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        for ($gm = 0; $gm < 13; $gm++) {
+            if ($gd <= $sal_a[$gm]) {
+                break;
+            }
+            $gd -= $sal_a[$gm];
+        }
 
         return [(int) $gy, (int) $gm, (int) $gd];
     }
