@@ -697,7 +697,7 @@ body .mobile-menu-btn .hamburger-line {
 .days-badge {
     /* inline-flex لازم است: عنصرِ inline با padding عمودی داخلِ سلولِ AG Grid
        (overflow:hidden) از بالا/پایین بریده می‌شد و گوشه‌های گِرد قیچی می‌شدند. */
-    display: inline-flex;
+    /* display: inline-flex; */
     align-items: center;
     font-size: 0.68rem;
     font-weight: var(--badge-font-weight);
@@ -1676,6 +1676,18 @@ s-normal {
 .ag-theme-alpine .ag-cell-focus:not(.ag-cell-range-selected),
 .ag-theme-quartz .ag-cell-focus:not(.ag-cell-range-selected) {
     border-color: #8e57fe !important;
+}
+
+/* ستونِ «مهلت»: بجِ .days-badge طولانی است و تقریباً هم‌عرضِ سلول می‌شود؛
+   overflow:hidden پیش‌فرضِ AG Grid لبه‌های گِردِ آن را می‌بُرد. فقط سلول‌هایی
+   که این بج را دارند از قیچی‌شدن معاف می‌شوند (بقیهٔ ستون‌ها دست‌نخورده). */
+.ag-theme-alpine .ag-cell:has(.days-badge),
+.ag-theme-alpine .ag-cell:has(.days-badge) .ag-cell-value,
+.ag-theme-alpine .ag-cell:has(.days-badge) .ag-cell-wrapper,
+.ag-theme-quartz .ag-cell:has(.days-badge),
+.ag-theme-quartz .ag-cell:has(.days-badge) .ag-cell-value,
+.ag-theme-quartz .ag-cell:has(.days-badge) .ag-cell-wrapper {
+    overflow: visible;
 }
 
 :root[data-theme="dark"] .ag-theme-alpine,
