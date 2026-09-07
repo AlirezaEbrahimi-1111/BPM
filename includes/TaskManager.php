@@ -1264,7 +1264,7 @@ class TaskManager
                     // بیفتد؛ اگر اینجا هم completed بزنیم، موتور دوره آن را با تاریخ تأیید
                     // می‌بیند و اشتباهاً دورهٔ همان روز را هم «انجام‌شده» حساب می‌کند.
                     $this->addTaskHistory($task_id, $user_id, $performerId, 'approved', 'آخرین دوره تأیید شد: ' . $notes);
-                    $this->notifyCompletion($task, $performerId, 'completion_approved', $user_id);  // 🆕
+                    /* حذف‌شده (درخواستِ کاربر): تأییدِ آخرین دوره → به انجام‌دهنده نوتیف/پیامکِ 'completion_approved' نمی‌رود. */
                     return [
                         'success' => true,
                         'message' => 'تمام دوره‌ها تأیید شد. کار به حالت عادی بازگشت',
@@ -1314,7 +1314,9 @@ class TaskManager
                         $stmt = $this->db->prepare($sql);
                         $stmt->execute([$task_id]);
                         $this->addTaskHistory($task_id, $user_id, null, 'completed', 'تأیید نهایی' . $notes);
-                        $this->notifyCompletion($task, $this->getLastPerformer($task_id), 'completion_approved', $user_id);  // 🆕
+                        /* حذف‌شده (درخواستِ کاربر): در تأییدِ نهایی، به انجام‌دهندهٔ کار نوتیف/پیامکِ
+   'completion_approved' فرستاده نمی‌شود. رد شدن (completion_rejected) و اتمام
+   توسطِ مدیر (completion_by_manager) دست‌نخورده‌اند. */
                         return ['success' => true, 'message' => 'کار با موفقیت تکمیل شد', 'final_approval' => true];
                     }
 
@@ -1329,7 +1331,9 @@ class TaskManager
                         $stmt = $this->db->prepare($sql);
                         $stmt->execute([$task_id]);
                         $this->addTaskHistory($task_id, $user_id, null, 'completed', 'تأیید خودکار نهایی: ' . $notes);
-                        $this->notifyCompletion($task, $this->getLastPerformer($task_id), 'completion_approved', $user_id);  // 🆕
+                        /* حذف‌شده (درخواستِ کاربر): در تأییدِ نهایی، به انجام‌دهندهٔ کار نوتیف/پیامکِ
+   'completion_approved' فرستاده نمی‌شود. رد شدن (completion_rejected) و اتمام
+   توسطِ مدیر (completion_by_manager) دست‌نخورده‌اند. */
                         return ['success' => true, 'message' => 'کار با موفقیت تکمیل شد', 'final_approval' => true];
                     }
 
@@ -1386,7 +1390,9 @@ class TaskManager
                     $stmt = $this->db->prepare($sql);
                     $stmt->execute([$task_id]);
                     $this->addTaskHistory($task_id, $user_id, null, 'completed', 'تأیید نهایی' . $notes);
-                    $this->notifyCompletion($task, $this->getLastPerformer($task_id), 'completion_approved', $user_id);  // 🆕
+                    /* حذف‌شده (درخواستِ کاربر): در تأییدِ نهایی، به انجام‌دهندهٔ کار نوتیف/پیامکِ
+   'completion_approved' فرستاده نمی‌شود. رد شدن (completion_rejected) و اتمام
+   توسطِ مدیر (completion_by_manager) دست‌نخورده‌اند. */
                     return ['success' => true, 'message' => 'کار با موفقیت تکمیل نهایی شد', 'final_approval' => true];
                 }
 
@@ -1400,7 +1406,9 @@ class TaskManager
                     $stmt = $this->db->prepare($sql);
                     $stmt->execute([$task_id]);
                     $this->addTaskHistory($task_id, $user_id, null, 'completed', 'تأیید خودکار نهایی: ' . $notes);
-                    $this->notifyCompletion($task, $this->getLastPerformer($task_id), 'completion_approved', $user_id);  // 🆕
+                    /* حذف‌شده (درخواستِ کاربر): در تأییدِ نهایی، به انجام‌دهندهٔ کار نوتیف/پیامکِ
+   'completion_approved' فرستاده نمی‌شود. رد شدن (completion_rejected) و اتمام
+   توسطِ مدیر (completion_by_manager) دست‌نخورده‌اند. */
                     return ['success' => true, 'message' => 'کار با موفقیت تکمیل نهایی شد', 'final_approval' => true];
                 }
 
