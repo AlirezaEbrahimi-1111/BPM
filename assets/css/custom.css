@@ -767,11 +767,10 @@ s-normal {
 }
 
 /* --- Request Badge (نوع درخواست) --- */
-.request-badge {
+/* .request-badge {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    padding: 7px 10px;
     border-radius: var(--badge-radius, 7px);
     font-size: 9px;
     font-weight: var(--badge-font-weight, 500);
@@ -804,7 +803,7 @@ s-normal {
 .request-badge.technical {
     background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
     color: white;
-}
+} */
 
 /* --- Pending Badge --- */
 .pending-badge {
