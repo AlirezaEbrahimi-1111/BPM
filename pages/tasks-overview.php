@@ -725,7 +725,7 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
         // نه از محاسبه‌ی خامِ new Date() سمتِ مرورگر
         function daysLeft(d, status, task) {
             if (status === 'completed' || status === 'approved')
-                return '<span class="days-badge days-normal">تکمیل</span>';
+                return '<span class="badge days-badge days-normal">تکمیل</span>';
 
             // 🔒 کارِ دوره‌ای: تأخیرِ واقعی یعنی دوره‌هایِ معوقه، نه اختلافِ
             // تقویمیِ next_due_date — چون next_due_date همیشه نزدیکِ امروزه
@@ -734,30 +734,30 @@ if (!$__me || (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__
             if (task && task.task_type === 'continuous') {
                 const op = task.overdue_periods || 0;
                 if (op > 0) {
-                    return `<span class="days-badge days-overdue">${toPersian(op)} دوره معوقه</span>`;
+                    return `<span class="badge days-badge days-overdue">${toPersian(op)} دوره معوقه</span>`;
                 }
             }
 
-            if (!d) return '<span class="days-badge">-</span>';
+            if (!d) return '<span class="badge days-badge">-</span>';
 
             if (task && task.is_workflow_task == 1) {
                 const hd = (task.hours_delayed) || 0;
-                if (hd > 0) return `<span class="days-badge days-overdue">${toPersian(hd)} ساعت تاخیر</span>`;
+                if (hd > 0) return `<span class="badge days-badge days-overdue">${toPersian(hd)} ساعت تاخیر</span>`;
                 const hr = task.hours_remaining;
-                if (hr == null) return '<span class="days-badge">-</span>';
-                if (hr === 0) return `<span class="days-badge days-today">اکنون</span>`;
+                if (hr == null) return '<span class="badge days-badge">-</span>';
+                if (hr === 0) return `<span class="badge days-badge days-today">اکنون</span>`;
                 const cls = hr <= 24 ? 'days-soon' : 'days-normal';
-                return `<span class="days-badge ${cls}">${toPersian(hr)} ساعت مانده</span>`;
+                return `<span class="badge days-badge ${cls}">${toPersian(hr)} ساعت مانده</span>`;
             }
 
             const diff = Math.ceil((new Date(d).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5);
             if (diff < 0) {
                 const wd = Math.max(1, (task && task.working_days_delayed) || 0);
-                return `<span class="days-badge days-overdue">${toPersian(wd)} روز کاری تاخیر</span>`;
+                return `<span class="badge days-badge days-overdue">${toPersian(wd)} روز کاری تاخیر</span>`;
             }
-            if (diff === 0) return `<span class="days-badge days-today">امروز</span>`;
-            if (diff <= 3) return `<span class="days-badge days-soon">${toPersian(diff)} روز دیگر</span>`;
-            return `<span class="days-badge days-normal">${toPersian(diff)} روز</span>`;
+            if (diff === 0) return `<span class="badge days-badge days-today">امروز</span>`;
+            if (diff <= 3) return `<span class="badge days-badge days-soon">${toPersian(diff)} روز دیگر</span>`;
+            return `<span class="badge days-badge days-normal">${toPersian(diff)} روز</span>`;
         }
 
         function fmtDate(d) {
