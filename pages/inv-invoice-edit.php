@@ -223,7 +223,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 </div>
                 <div>
                     <label class="form-label">مشتری <span class="text-danger">*</span></label>
-                    <div id="customerPicker"></div>
+                    <input type="text" class="form-control" id="f_customer_name" list="custNameList"
+                        autocomplete="off" placeholder="نامِ مشتری را تایپ کنید">
+                    <datalist id="custNameList"></datalist>
+                    <div class="form-text">نیازی به ثبتِ قبلیِ مشتری نیست؛ بعد از ذخیره، همین نام در فهرستِ مشتریان ثبت می‌شود.</div>
                 </div>
                 <div>
                     <label class="form-label">تاریخِ صدور</label>
@@ -276,6 +279,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <tbody id="itemsBody"></tbody>
             </table>
 
+            <datalist id="prodNameList"></datalist>
             <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnAddRow"><i class="bi bi-plus-lg ms-1"></i> افزودن ردیف</button>
 
             <div class="totals-box">
@@ -360,8 +364,20 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         let VAT = 0;
         let products = [],
             customers = [];
-        let customerPicker = null,
-            prodItems = [];
+        let prodItems = [];
+        let loadedCustomerId = 0; // در حالتِ ویرایش: مشتریِ فعلیِ همین فاکتور
+
+        function fillCustDatalist() {
+            const dl = document.getElementById('custNameList');
+            if (dl) dl.innerHTML = customers.map(c =>
+                `<option value="${String(c.name || '').replace(/"/g, '&quot;')}">`).join('');
+        }
+
+        function fillProdDatalist() {
+            const dl = document.getElementById('prodNameList');
+            if (dl) dl.innerHTML = products.map(p =>
+                `<option value="${String(p.name || '').replace(/"/g, '&quot;')}">`).join('');
+        }
 
         function alertBox(msg, kind = 'danger') {
             document.getElementById('formAlert').innerHTML =
@@ -402,7 +418,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             tr.innerHTML = `
                 <td class="idx text-center"></td>
                 <td><div class="it-prod-pick"></div></td>
-                <td><input class="it-title" placeholder="شرح ردیف"></td>
+                <td><input class="it-title" list="prodNameList" placeholder="نام یا شرحِ کالا را تایپ کنید"></td>
                 <td class="col-qty"><input class="it-qty" inputmode="decimal" value="۱"></td>
                 <td class="col-price"><input class="it-price" inputmode="numeric" value="۰"></td>
                 <td class="col-disc"><input class="it-disc" inputmode="numeric" value="۰"></td>
@@ -534,8 +550,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         function collect() {
-            const picked = customerPicker ? customerPicker.getValue() : null;
-            const cust = picked ? customers.find(c => c.id === picked.id) : null;
+            const customerName = document.getElementById('f_customer_name').value.trim();
             const items = [];
             document.querySelectorAll('#itemsBody tr').forEach(tr => {
                 const title = tr.querySelector('.it-title').value.trim();
@@ -555,10 +570,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 issue = convertToGregorian(dateInput.value) || '';
             }
             return {
-                cust,
+                customerName,
                 body: {
                     doc_type: document.getElementById('f_doc_type').value,
-                    customer_id: cust ? cust.id : 0,
+                    customer_id: loadedCustomerId || 0,
+                    customer_name: customerName,
                     issue_date: issue,
                     payment_type: document.getElementById('f_payment_type').value,
                     note: document.getElementById('f_note').value.trim(),
@@ -569,22 +585,12 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         async function save(goBack) {
             const {
-                cust,
+                customerName,
                 body
             } = collect();
-            if (!cust) {
-                alertBox('یک مشتری از فهرست انتخاب کنید. اگر نیست، با دکمه‌ی + بسازیدش.');
+            if (!customerName) {
+                alertBox('نامِ مشتری را وارد کنید.');
                 return;
-            }
-            if (body.doc_type === 'official' && cust.type === 'legal') {
-                const miss = [];
-                if (!(cust.national_id || '').trim()) miss.push('شناسه ملی');
-                if (!(cust.postal_code || '').trim()) miss.push('کد پستی');
-                if (!(cust.address || '').trim()) miss.push('آدرس');
-                if (miss.length) {
-                    alertBox('برای فاکتور رسمیِ این شرکت، ابتدا این اطلاعاتِ مشتری را در صفحه‌ی «مشتریان» کامل کنید: ' + miss.join('، '));
-                    return;
-                }
             }
             if (!body.items.length) {
                 alertBox('حداقل یک ردیف با «شرح» لازم است.');
@@ -651,30 +657,22 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 /* ادامه با VAT=0 */
             }
 
-            // مشتری‌ها
+            // مشتری‌ها — فقط برای پیشنهادِ خودکارِ نام (datalist)؛ ثبتِ قبلی لازم نیست.
             await reloadCustomers();
-            customerPicker = EntityPicker.create({
-                container: '#customerPicker',
-                items: custItems(),
-                placeholder: 'کد/نام مشتری…',
-                addTitle: 'افزودن مشتری جدید',
-                onAdd: () => QuickAdd.customer(c => {
-                    customers.push(c);
-                    customerPicker.updateItems(custItems());
-                    customerPicker.setValue(c.id);
-                }),
-            });
+            fillCustDatalist();
             // کالاها — در حالتِ ویرایش، خودِ این فاکتور از محاسبه‌ی رزرو کنار می‌رود.
             const exParam = INV_ID ? '&exclude_invoice=' + INV_ID : '';
             await reloadProducts(exParam);
             buildProdItems();
+            fillProdDatalist();
 
             // وقتی از تبِ «مشتریان» یا «کاتالوگ کالا» برگشتی، هر دو فهرست تازه شوند
             window.addEventListener('focus', async () => {
                 await reloadCustomers();
-                if (customerPicker) customerPicker.updateItems(custItems());
+                fillCustDatalist();
                 await reloadProducts(exParam);
                 buildProdItems();
+                fillProdDatalist();
                 document.querySelectorAll('#itemsBody tr').forEach(tr => {
                     if (tr._picker) tr._picker.updateItems(prodItems);
                 });
@@ -690,7 +688,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     }
                     document.getElementById('f_doc_type').value = inv.doc_type;
                     document.getElementById('f_payment_type').value = inv.payment_type || '';
-                    if (customerPicker) customerPicker.setValue(inv.customer_id);
+                    loadedCustomerId = inv.customer_id || 0;
+                    document.getElementById('f_customer_name').value =
+                        (inv.customer_name && inv.customer_name !== '—') ? inv.customer_name : '';
                     document.getElementById('f_note').value = inv.note || '';
                     if (inv.issue_date) {
                         const di = document.getElementById('f_issue_date');

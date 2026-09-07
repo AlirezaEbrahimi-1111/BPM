@@ -22,12 +22,13 @@ type invoiceItemIn struct {
 }
 
 type invoiceIn struct {
-	DocType     string          `json:"doc_type"`
-	CustomerID  int64           `json:"customer_id"`
-	IssueDate   string          `json:"issue_date"`   // "YYYY-MM-DD" یا ""
-	PaymentType string          `json:"payment_type"` // "cash" | "credit" | ""
-	Note        string          `json:"note"`
-	Items       []invoiceItemIn `json:"items"`
+	DocType      string          `json:"doc_type"`
+	CustomerID   int64           `json:"customer_id"`
+	CustomerName string          `json:"customer_name"` // اگر شناسه نبود، از این نام یک مشتریِ «حقیقی» ساخته می‌شود
+	IssueDate    string          `json:"issue_date"`    // "YYYY-MM-DD" یا ""
+	PaymentType  string          `json:"payment_type"`  // "cash" | "credit" | ""
+	Note         string          `json:"note"`
+	Items        []invoiceItemIn `json:"items"`
 }
 
 func normalizePaymentType(t string) any {
@@ -303,8 +304,8 @@ func normalizeDocType(t string) string {
 }
 
 func (in *invoiceIn) validate() string {
-	if in.CustomerID == 0 {
-		return "انتخابِ مشتری الزامی است"
+	if in.CustomerID == 0 && strings.TrimSpace(in.CustomerName) == "" {
+		return "نامِ مشتری را وارد کنید"
 	}
 	valid := 0
 	for _, it := range in.Items {
@@ -375,10 +376,6 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	issueNS, _ := parseIssueDate(in.IssueDate)
 	docType := normalizeDocType(in.DocType)
-	if msg := s.officialCustomerErr(in.CustomerID, docType); msg != "" {
-		writeErr(w, http.StatusUnprocessableEntity, msg)
-		return
-	}
 	items := keepFilledItems(in.Items)
 	lines, sub, disc, tax, total := computeInvoice(items, st.VatRate)
 
@@ -389,12 +386,26 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
+	// مشتری: اگر شناسه نداشتیم، از نامِ تایپ‌شده یک مشتریِ «حقیقی» تازه می‌سازیم
+	// (بدونِ حذفِ تکراری، بدونِ اجبارِ کامل‌بودنِ اطلاعات).
+	custID, createdCust, err := resolveCustomer(tx, u.OrgID, u.ID, in.CustomerID, in.CustomerName)
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "ثبتِ مشتری ناموفق بود")
+		return
+	}
+	if !createdCust {
+		if msg := s.officialCustomerErr(custID, docType); msg != "" {
+			writeErr(w, http.StatusUnprocessableEntity, msg)
+			return
+		}
+	}
+
 	res, err := tx.Exec(`
 		INSERT INTO inv_invoices
 		  (organization_id, doc_type, customer_id, warehouse_id, issue_date, status, source,
 		   payment_type, subtotal_amount, discount_amount, tax_amount, total_amount, note, created_by)
 		VALUES (?, ?, ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?, ?)`,
-		u.OrgID, docType, in.CustomerID, s.officialWarehouseID, issueNS,
+		u.OrgID, docType, custID, s.officialWarehouseID, issueNS,
 		normalizePaymentType(in.PaymentType), sub, disc, tax, total, nullIfEmpty(in.Note), u.ID)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "درجِ فاکتور ناموفق بود")
@@ -402,7 +413,7 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	invID, _ := res.LastInsertId()
 
-	if err := insertItems(tx, invID, lines); err != nil {
+	if err := insertItems(tx, u.OrgID, u.ID, invID, lines); err != nil {
 		writeErr(w, http.StatusInternalServerError, "درجِ ردیف‌ها ناموفق بود")
 		return
 	}
@@ -447,10 +458,6 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	issueNS, _ := parseIssueDate(in.IssueDate)
 	docType := normalizeDocType(in.DocType)
-	if msg := s.officialCustomerErr(in.CustomerID, docType); msg != "" {
-		writeErr(w, http.StatusUnprocessableEntity, msg)
-		return
-	}
 	items := keepFilledItems(in.Items)
 	lines, sub, disc, tax, total := computeInvoice(items, st.VatRate)
 
@@ -461,12 +468,26 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
+	// مشتری: اگر نامِ تازه‌ای تایپ شده (یا شناسه‌ای نبود) یک مشتریِ «حقیقی» نو
+	// می‌سازیم؛ اگر نام تغییری نکرده، همان مشتریِ فعلی می‌مانَد.
+	custID, createdCust, err := resolveCustomer(tx, u.OrgID, u.ID, in.CustomerID, in.CustomerName)
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "ثبتِ مشتری ناموفق بود")
+		return
+	}
+	if !createdCust {
+		if msg := s.officialCustomerErr(custID, docType); msg != "" {
+			writeErr(w, http.StatusUnprocessableEntity, msg)
+			return
+		}
+	}
+
 	if _, err := tx.Exec(`
 		UPDATE inv_invoices
 		SET doc_type = ?, customer_id = ?, issue_date = ?, payment_type = ?, note = ?,
 		    subtotal_amount = ?, discount_amount = ?, tax_amount = ?, total_amount = ?
 		WHERE id = ?`,
-		docType, in.CustomerID, issueNS, normalizePaymentType(in.PaymentType), nullIfEmpty(in.Note),
+		docType, custID, issueNS, normalizePaymentType(in.PaymentType), nullIfEmpty(in.Note),
 		sub, disc, tax, total, id); err != nil {
 		writeErr(w, http.StatusInternalServerError, "به‌روزرسانی ناموفق بود")
 		return
@@ -475,7 +496,7 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
 	}
-	if err := insertItems(tx, id, lines); err != nil {
+	if err := insertItems(tx, u.OrgID, u.ID, id, lines); err != nil {
 		writeErr(w, http.StatusInternalServerError, "درجِ ردیف‌ها ناموفق بود")
 		return
 	}
@@ -809,7 +830,43 @@ func keepFilledItems(items []invoiceItemIn) []invoiceItemIn {
 	return out
 }
 
-func insertItems(tx *sql.Tx, invID int64, lines []computedLine) error {
+// resolveCustomer شناسه‌ی مشتریِ فاکتور را برمی‌گرداند.
+//   - اگر customerID داده شده و نامِ تایپ‌شده خالی یا برابرِ نامِ فعلیِ همان
+//     مشتری باشد → همان customerID (بدونِ ساختِ رکوردِ تازه).
+//   - در غیرِ این صورت (نامِ تازه، یا مشتریِ ناموجود) → یک مشتریِ «حقیقی» نو
+//     با همان نام ساخته می‌شود؛ عمداً بدونِ حذفِ تکراری و بدونِ اجبارِ
+//     کامل‌بودنِ اطلاعات (شناسه‌ی ملی/تلفن/آدرس بعداً در صفحه‌ی مشتریان).
+//
+// بولِ دوم یعنی «همین حالا ساخته شد».
+func resolveCustomer(tx *sql.Tx, orgID, userID, customerID int64, customerName string) (int64, bool, error) {
+	name := strings.TrimSpace(customerName)
+	if customerID > 0 {
+		var cur string
+		err := tx.QueryRow("SELECT name FROM crm_customers WHERE id = ? AND organization_id = ?",
+			customerID, orgID).Scan(&cur)
+		if err == nil {
+			if name == "" || strings.TrimSpace(cur) == name {
+				return customerID, false, nil
+			}
+			// نام عوض شده → پایین یک مشتریِ تازه می‌سازیم
+		} else if err != sql.ErrNoRows {
+			return 0, false, err
+		}
+	}
+	if name == "" {
+		return 0, false, fmt.Errorf("نامِ مشتری خالی است")
+	}
+	res, err := tx.Exec(
+		"INSERT INTO crm_customers (organization_id, type, name, created_by) VALUES (?, 'individual', ?, ?)",
+		orgID, name, userID)
+	if err != nil {
+		return 0, false, err
+	}
+	id, _ := res.LastInsertId()
+	return id, true, nil
+}
+
+func insertItems(tx *sql.Tx, orgID, userID, invID int64, lines []computedLine) error {
 	stmt, err := tx.Prepare(`
 		INSERT INTO inv_invoice_items
 		  (invoice_id, product_id, title, qty, unit_price, discount, is_tax_exempt, tax_rate, tax_amount, line_total, sort_order)
@@ -819,11 +876,24 @@ func insertItems(tx *sql.Tx, invID int64, lines []computedLine) error {
 	}
 	defer stmt.Close()
 	for i, ln := range lines {
+		title := strings.TrimSpace(ln.in.Title)
 		var pid any
 		if ln.in.ProductID != nil && *ln.in.ProductID != 0 {
 			pid = *ln.in.ProductID
+		} else if title != "" {
+			// قلمِ متنیِ آزاد → یک کالای تازه در کاتالوگ ثبت کن و همین ردیف را
+			// به آن گره بزن (بدونِ حذفِ تکراری).
+			pr, e := tx.Exec(
+				"INSERT INTO inv_products (organization_id, name, unit_price, is_tax_exempt, created_by) VALUES (?, ?, ?, ?, ?)",
+				orgID, title, ln.in.UnitPrice, ln.in.IsTaxExempt, userID)
+			if e != nil {
+				return e
+			}
+			if npid, e2 := pr.LastInsertId(); e2 == nil && npid > 0 {
+				pid = npid
+			}
 		}
-		if _, err := stmt.Exec(invID, pid, strings.TrimSpace(ln.in.Title), ln.in.Qty, ln.in.UnitPrice,
+		if _, err := stmt.Exec(invID, pid, title, ln.in.Qty, ln.in.UnitPrice,
 			ln.in.Discount, ln.in.IsTaxExempt, ln.taxRate, ln.taxAmount, ln.lineTotal, i); err != nil {
 			return err
 		}
