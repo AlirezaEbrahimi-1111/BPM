@@ -1680,14 +1680,13 @@ s-normal {
 
 /* ستونِ «مهلت»: بجِ .days-badge طولانی است و تقریباً هم‌عرضِ سلول می‌شود؛
    overflow:hidden پیش‌فرضِ AG Grid لبه‌های گِردِ آن را می‌بُرد. فقط سلول‌هایی
-   که این بج را دارند از قیچی‌شدن معاف می‌شوند (بقیهٔ ستون‌ها دست‌نخورده). */
-.ag-theme-alpine .ag-cell:has(.days-badge),
-.ag-theme-alpine .ag-cell:has(.days-badge) .ag-cell-value,
-.ag-theme-alpine .ag-cell:has(.days-badge) .ag-cell-wrapper,
-.ag-theme-quartz .ag-cell:has(.days-badge),
-.ag-theme-quartz .ag-cell:has(.days-badge) .ag-cell-value,
-.ag-theme-quartz .ag-cell:has(.days-badge) .ag-cell-wrapper {
-    overflow: visible;
+   که این بج را دارند از قیچی‌شدن معاف می‌شوند (بقیهٔ ستون‌ها دست‌نخورده).
+   بدونِ پیشوندِ .ag-theme-* — چون گرید از API جدیدِ تم استفاده می‌کند و آن
+   کلاس روی DOM نیست؛ .ag-cell و .ag-cell-value در هر دو حالت وجود دارند. */
+.ag-cell:has(.days-badge),
+.ag-cell:has(.days-badge) .ag-cell-value,
+.ag-cell:has(.days-badge) .ag-cell-wrapper {
+    overflow: visible !important;
 }
 
 :root[data-theme="dark"] .ag-theme-alpine,
