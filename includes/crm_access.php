@@ -5,8 +5,12 @@
  * تا وقتی این ماژول در حالِ ساخت است، فقط افرادِ زیر منو و صفحه‌ها را می‌بینند:
  *   - کاربر id = 1
  *   - کاربر id = 19 (رضا فضایلی)
- *   - کلِ تیمِ حسابداری  →  هر کاربرِ فعالی که واحدِ فعالیتش 'AC' باشد
- *     (هم جدولِ چندواحدیِ user_activity_units، هم فیلدِ قدیمیِ users.activity_unit)
+ *   - کلِ تیمِ حسابداریِ سازمانِ ۱  →  هر کاربرِ فعالی که «بخشِ فعالیتش»
+ *     حسابداری باشد: users.activity_section = 'accounting' یا یک ردیف در
+ *     user_activity_sections با section_key = 'accounting'.
+ *     (توجه: در این سیستم حسابداری با «بخش/section» مشخص می‌شود نه
+ *      «واحد/unit»؛ ستونِ users.activity_unit عملاً برای همه 'all' است.
+ *      چکِ قدیمیِ 'AC' هم نگه داشته شده تا اگر جایی از آن استفاده شد نشکند.)
  *   - شماره‌موبایل‌هایِ موقتِ فهرستِ $EXTRA_PHONES
  *
  * این «دیدن» است، نه «نوشتن» — نوشتن هنوز به مجوزِ
@@ -42,14 +46,20 @@ function crmModuleUserIds(PDO $db): array
         }
     }
 
-    // کلِ تیمِ حسابداری (واحدِ فعالیتِ AC)
+    // کلِ تیمِ حسابداریِ سازمانِ ۱ — بر پایهٔ «بخشِ فعالیت» (نه واحد).
     try {
         $st = $db->query("
             SELECT u.id
             FROM users u
             WHERE u.is_active = 1
+              AND u.organization_id = 1
               AND (
-                    u.activity_unit = 'AC'
+                    u.activity_section = 'accounting'
+                    OR EXISTS (
+                        SELECT 1 FROM user_activity_sections uas
+                        WHERE uas.user_id = u.id AND uas.section_key = 'accounting'
+                    )
+                    OR u.activity_unit = 'AC'
                     OR EXISTS (
                         SELECT 1 FROM user_activity_units uau
                         WHERE uau.user_id = u.id AND uau.activity_unit = 'AC'
