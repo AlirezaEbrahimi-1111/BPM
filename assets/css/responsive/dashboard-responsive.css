@@ -610,7 +610,7 @@ body.drawer-body-open {
     width: auto;
     min-width: 0;
     max-width: 100%;
-    padding: 3px 6px;
+    padding: 3px 10px;
     font-size: 0.62rem;
     white-space: nowrap;
     overflow: hidden;

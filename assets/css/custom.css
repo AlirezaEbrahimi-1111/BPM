@@ -463,8 +463,9 @@ body .mobile-menu-btn .hamburger-line {
 
 /* --- Badge پایه --- */
 .badge {
-    padding: 3px 10px;
-    /* استانداردِ سراسری — هم‌اندازهٔ بجِ اولویتِ tickets.php */
+    padding: 3px 10px !important;
+    /* استانداردِ سراسری، بدونِ راهِ گریز — هم‌اندازهٔ بجِ اولویتِ tickets.php.
+       !important تا هیچ override محلی/مدیا-کوئری/inline بدونِ‌!important از آن فرار نکند. */
     font-size: 0.75rem;
     font-weight: 600;
     /* بود: 500 — متن پررنگ‌تر */
@@ -693,7 +694,8 @@ body .mobile-menu-btn .hamburger-line {
 .days-badge {
     font-size: 0.68rem;
     font-weight: 500;
-    padding: 0.15rem 0.35rem;
+    padding: 3px 10px !important;
+    /* هم‌اندازهٔ .badge — ستونِ «مهلت» در tasks.php از این کلاس استفاده می‌کند */
     border-radius: 3px;
 }
 
@@ -736,7 +738,7 @@ s-normal {
 /* --- Status Badge (درخواست‌ها) --- */
 .status-badge {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 3px 10px !important;
     border-radius: 20px;
     font-size: 10px;
     font-weight: 500;
@@ -802,7 +804,7 @@ s-normal {
     background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
     color: white;
     font-size: 11px;
-    padding: 2px 8px;
+    padding: 3px 10px;
     border-radius: 10px;
     font-weight: 700;
 }
@@ -896,7 +898,7 @@ s-normal {
 .step-badge {
     background: var(--primary-gradient);
     color: white;
-    padding: 5px 12px;
+    padding: 3px 10px;
     border-radius: 20px;
     font-size: 0.85rem;
     margin: 2px;
@@ -5227,7 +5229,7 @@ body.drawer-body-open {
     display: inline-block;
     font-size: 0.7rem;
     font-weight: 700;
-    padding: 2px 7px;
+    padding: 3px 10px;
     border-radius: 3px;
     margin-top: 5px;
 }
