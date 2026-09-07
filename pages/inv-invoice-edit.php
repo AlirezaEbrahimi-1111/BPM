@@ -24,8 +24,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
-    <script src="<?= asset('../../assets/js/entity-picker.js') ?>"></script>
-    <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
 
     <style>
         .inv-wrap {
@@ -76,13 +74,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             border-radius: 4px;
         }
 
-        /* انتخابگرِ کالا داخلِ سلولِ جدول */
-        table.inv-items .it-prod-pick {
-            min-width: 210px;
-        }
-
-        table.inv-items .ep-dropdown {
-            font-size: 12px;
+        table.inv-items td:nth-child(2) input {
+            min-width: 200px;
         }
 
         .col-qty {
@@ -279,6 +272,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <tbody id="itemsBody"></tbody>
             </table>
 
+            <datalist id="prodNameList"></datalist>
             <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnAddRow"><i class="bi bi-plus-lg ms-1"></i> افزودن ردیف</button>
 
             <div class="totals-box">
@@ -363,7 +357,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         let VAT = 0;
         let products = [],
             customers = [];
-        let prodItems = [];
         let loadedCustomerId = 0; // در حالتِ ویرایش: مشتریِ فعلیِ همین فاکتور
 
         function fillCustDatalist() {
@@ -372,46 +365,23 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 `<option value="${String(c.name || '').replace(/"/g, '&quot;')}">`).join('');
         }
 
+        function fillProdDatalist() {
+            const dl = document.getElementById('prodNameList');
+            if (dl) dl.innerHTML = products.map(p =>
+                `<option value="${String(p.name || '').replace(/"/g, '&quot;')}">`).join('');
+        }
+
 
         function alertBox(msg, kind = 'danger') {
             document.getElementById('formAlert').innerHTML =
                 msg ? `<div class="alert alert-${kind} py-2">${msg}</div>` : '';
         }
 
-        function firstWords(s, n) {
-            const w = String(s || '').trim().split(/\s+/);
-            return w.slice(0, n).join(' ') + (w.length > n ? '…' : '');
-        }
-
-        // هر کالا → یک موردِ انتخابگر: برچسب «کد — چند کلمه‌ی اولِ نام»
-        function buildProdItems() {
-            prodItems = products.map(p => {
-                const av = (p.available != null ? p.available : p.stock);
-                const shortName = firstWords(p.name, 5);
-                return {
-                    id: p.id,
-                    label: p.code ? (faDigits(p.code) + ' — ' + shortName) : shortName,
-                    meta: 'قابل‌فروش ' + faDigits(av) + (p.unit ? ' • ' + p.unit : ''),
-                    search: (p.code || '') + ' ' + p.name,
-                };
-            });
-        }
-
-        function custItems() {
-            return customers.map(c => ({
-                id: c.id,
-                label: c.name,
-                meta: c.national_id ? ('شناسه ملی: ' + faDigits(c.national_id)) :
-                    (c.mobile ? faDigits(c.mobile) : ''),
-                search: c.name + ' ' + (c.national_id || '') + ' ' + (c.mobile || '') + ' ' + (c.phone || ''),
-            }));
-        }
-
         function rowTemplate() {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="idx text-center"></td>
-                <td><div class="it-prod-pick"></div></td>
+                <td><input class="it-prod-name" list="prodNameList" autocomplete="off" placeholder="نام کالا را تایپ کنید"></td>
                 <td><input class="it-title" placeholder="شرحِ اختیاری"></td>
                 <td class="col-qty"><input class="it-qty" inputmode="decimal" value="۱"></td>
                 <td class="col-price"><input class="it-price" inputmode="numeric" value="۰"></td>
@@ -420,22 +390,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <td class="col-stock it-stock small text-muted"></td>
                 <td class="col-total it-linetotal">۰</td>
                 <td class="col-del"><button type="button" class="btn btn-sm btn-link text-danger p-0 it-del">✕</button></td>`;
-            tr._picker = EntityPicker.create({
-                container: tr.querySelector('.it-prod-pick'),
-                items: prodItems,
-                placeholder: 'نام کالا را انتخاب یا تایپ کنید…',
-                freeText: true, // اگر نامِ تایپ‌شده در کاتالوگ نبود هم مجاز است
-                addTitle: 'افزودن کالای جدید',
-                onAdd: () => QuickAdd.product(p => {
-                    products.push(p);
-                    buildProdItems();
-                    document.querySelectorAll('#itemsBody tr').forEach(r => {
-                        if (r._picker) r._picker.updateItems(prodItems);
-                    });
-                    tr._picker.setValue(p.id);
-                }),
-                onSelect: it => onRowProduct(tr, it),
-            });
+            // نامِ کالا: فیلدِ متنِ آزاد (مثلِ نامِ مشتری). اگر متنِ تایپ‌شده دقیقاً
+            // با یک کالای کاتالوگ یکی بود، قیمت/معافیت خودکار پر می‌شود و ردیف به
+            // آن کالا گره می‌خورد؛ وگرنه هنگامِ ذخیره یک کالای تازه ساخته می‌شود.
+            tr.querySelector('.it-prod-name').addEventListener('change', () => syncProdName(tr));
             tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => {
                 el.addEventListener('input', recalc);
                 el.addEventListener('blur', () => {
@@ -449,22 +407,56 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 renumber();
                 recalc();
             });
+            // پیمایش با Enter: نام کالا → تعداد → قیمت واحد
+            focusOnEnter(tr.querySelector('.it-prod-name'), () => tr.querySelector('.it-qty'));
+            focusOnEnter(tr.querySelector('.it-qty'), () => tr.querySelector('.it-price'));
             return tr;
+        }
+
+        // فوکوسِ فیلدِ بعدی با زدنِ Enter
+        function focusOnEnter(el, nextFn) {
+            if (!el) return;
+            el.addEventListener('keydown', e => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                const n = (typeof nextFn === 'function') ? nextFn() : nextFn;
+                if (n && typeof n.focus === 'function') {
+                    n.focus();
+                    if (typeof n.select === 'function') n.select();
+                }
+            });
+        }
+
+        // متنِ نامِ کالا با کاتالوگ هماهنگ شود (تطبیقِ دقیقِ نام).
+        function syncProdName(tr) {
+            const v = tr.querySelector('.it-prod-name').value.trim();
+            const p = v ? products.find(x => String(x.name || '').trim() === v) : null;
+            if (p) {
+                tr.dataset.productId = p.id;
+                const priceEl = tr.querySelector('.it-price');
+                if (!num(priceEl.value)) priceEl.value = faMoney(p.unit_price);
+                if (!tr.querySelector('.it-exempt').checked) tr.querySelector('.it-exempt').checked = !!p.is_tax_exempt;
+            } else {
+                delete tr.dataset.productId;
+            }
+            updateStockHint(tr);
+            recalc();
         }
 
         function addRow(data) {
             const tr = rowTemplate();
             document.getElementById('itemsBody').appendChild(tr);
             if (data) {
+                const p = data.product_id ? products.find(x => x.id === +data.product_id) : null;
                 if (data.product_id) {
-                    tr._picker.setValue(data.product_id); // onSelect قیمت/معاف را هم پر می‌کند
-                    // اگر «شرح» با نامِ کالا فرق داشت، یعنی توضیحِ سفارشیِ ردیف است
-                    const p = products.find(x => x.id === +data.product_id);
+                    tr.dataset.productId = data.product_id;
+                    tr.querySelector('.it-prod-name').value = p ? (p.name || '') : (data.title || '');
+                    // «شرح» فقط اگر با نامِ کالا فرق داشت (توضیحِ سفارشیِ ردیف)
                     tr.querySelector('.it-title').value =
                         (data.title && (!p || data.title.trim() !== (p.name || '').trim())) ? data.title : '';
                 } else {
-                    // قلمِ متنیِ آزاد → نامِ تایپ‌شده در خودِ انتخابگر
-                    tr._picker.setText(data.title || '');
+                    // قلمِ متنیِ آزاد → نام در فیلدِ نامِ کالا
+                    tr.querySelector('.it-prod-name').value = data.title || '';
                 }
                 tr.querySelector('.it-qty').value = faDigits(data.qty ?? 1);
                 tr.querySelector('.it-price').value = faMoney(data.unit_price ?? 0);
@@ -481,29 +473,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             document.querySelectorAll('#itemsBody tr').forEach((tr, i) => {
                 tr.querySelector('.idx').textContent = faDigits(i + 1);
             });
-        }
-
-        // انتخابِ کالا از انتخابگر: کد/قیمت/معاف را پر می‌کند. («شرح» دست‌نخورده
-        // می‌مانَد — نامِ کالا خودش در انتخابگر نمایش داده می‌شود.)
-        function onRowProduct(tr, item) {
-            if (item) {
-                const p = products.find(x => x.id === item.id);
-                tr.dataset.productId = item.id;
-                if (p) {
-                    tr.querySelector('.it-price').value = faMoney(p.unit_price);
-                    tr.querySelector('.it-exempt').checked = !!p.is_tax_exempt;
-                }
-                // فوکوس روی «تعداد» تا کاربر مستقیم عدد بزند
-                const q = tr.querySelector('.it-qty');
-                setTimeout(() => {
-                    q.focus();
-                    q.select();
-                }, 0);
-            } else {
-                delete tr.dataset.productId;
-            }
-            updateStockHint(tr);
-            recalc();
         }
 
         function updateStockHint(tr) {
@@ -555,15 +524,13 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const customerName = document.getElementById('f_customer_name').value.trim();
             const items = [];
             document.querySelectorAll('#itemsBody tr').forEach(tr => {
-                const sel = tr._picker ? tr._picker.getValue() : null;
-                const typed = tr._picker ? tr._picker.getText().trim() : '';
+                const name = tr.querySelector('.it-prod-name').value.trim();
                 const desc = tr.querySelector('.it-title').value.trim();
-                // نامِ کالا: انتخاب‌شده یا تایپ‌شده در انتخابگر. «شرح» اگر پر باشد جای آن می‌نشیند.
-                const name = sel ? sel.label : typed;
+                // عنوانِ ردیف: «شرح» اگر پر باشد، وگرنه نامِ کالا.
                 const title = desc || name;
                 if (!title) return;
                 items.push({
-                    product_id: sel ? sel.id : (tr.dataset.productId ? +tr.dataset.productId : null),
+                    product_id: tr.dataset.productId ? +tr.dataset.productId : null,
                     title,
                     qty: num(tr.querySelector('.it-qty').value),
                     unit_price: Math.round(num(tr.querySelector('.it-price').value)),
@@ -670,17 +637,14 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             // کالاها — در حالتِ ویرایش، خودِ این فاکتور از محاسبه‌ی رزرو کنار می‌رود.
             const exParam = INV_ID ? '&exclude_invoice=' + INV_ID : '';
             await reloadProducts(exParam);
-            buildProdItems();
+            fillProdDatalist();
 
             // وقتی از تبِ «مشتریان» یا «کاتالوگ کالا» برگشتی، هر دو فهرست تازه شوند
             window.addEventListener('focus', async () => {
                 await reloadCustomers();
                 fillCustDatalist();
                 await reloadProducts(exParam);
-                buildProdItems();
-                document.querySelectorAll('#itemsBody tr').forEach(tr => {
-                    if (tr._picker) tr._picker.updateItems(prodItems);
-                });
+                fillProdDatalist();
             });
 
             if (INV_ID) {
@@ -724,9 +688,19 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 }
             }
 
-            document.getElementById('btnAddRow').addEventListener('click', () => { const tr = addRow(); if (tr && tr._picker) tr._picker.focus(); });
+            document.getElementById('btnAddRow').addEventListener('click', () => {
+                const tr = addRow();
+                if (tr) tr.querySelector('.it-prod-name').focus();
+            });
             document.getElementById('btnSave').addEventListener('click', () => save(false));
             document.getElementById('btnSaveBack').addEventListener('click', () => save(true));
+
+            // پیمایش با Enter در سربرگ: نام مشتری → تاریخ صدور → نام کالای ردیفِ اول
+            focusOnEnter(document.getElementById('f_customer_name'), () => document.getElementById('f_issue_date'));
+            focusOnEnter(document.getElementById('f_issue_date'), () => document.querySelector('#itemsBody .it-prod-name'));
+
+            // هنگامِ لود، فوکوس روی نامِ مشتری
+            document.getElementById('f_customer_name').focus();
         }
 
         document.addEventListener('DOMContentLoaded', init);
