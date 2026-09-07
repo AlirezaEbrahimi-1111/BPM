@@ -2397,6 +2397,10 @@ if (!$__me) {
         var activeConversationTitle = '';
         var activeConversationType = 'direct';
         var lastMessageId = 0;
+        // ── بارگذاریِ پیام‌های قدیمی‌تر با اسکرول به بالا ──
+        var oldestMessageId = 0;   // کوچک‌ترین idِ نمایش‌داده‌شده
+        var hasMoreOlder = false;  // آیا در دیتابیس پیامِ قدیمی‌ترِ نمایش‌داده‌نشده هست؟
+        var loadingOlder = false;  // گاردِ همزمانی — جلوی درخواستِ تکراری حینِ اسکرول
         var pendingFiles = [];
         var pollTimer = null;
         var readReceipts = {}; // user_id -> آخرین پیامِ‌خوانده‌شده‌یِ او، فقط برایِ گفتگویِ فعال
@@ -2546,6 +2550,8 @@ if (!$__me) {
                 var el = this;
                 var distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
                 document.getElementById('chatScrollBottomBtn').classList.toggle('show', distanceFromBottom > 200);
+                // نزدیکِ بالای لیست → پیام‌های قدیمی‌ترِ بعدی را بیاور
+                if (el.scrollTop < 120) prependOlderMessages();
             });
 
             document.getElementById('chatMsgSearchInput').addEventListener('keydown', function (e) {
@@ -2956,6 +2962,9 @@ if (!$__me) {
             restoreComposerDraft(id);
             document.getElementById('chatComposerInput').focus();
             lastMessageId = 0;
+            oldestMessageId = 0;
+            hasMoreOlder = false;
+            loadingOlder = false;
             readReceipts = {};
             pinnedMessage = null;
             pinnedCanManage = false;
@@ -2979,6 +2988,7 @@ if (!$__me) {
                         // ✅ در حالتِ پرش، اسکرولِ خودکار به پایین نمی‌خواهیم — به‌جایش
                         // بعد از رندر، دقیقاً به همون پیامِ موردنظر اسکرول و هایلایت می‌شود
                         appendMessages(data.messages, !jumpToMessageId);
+                        hasMoreOlder = !!data.has_more;   // اگر ۴۰ پیام کامل آمد، یعنی قدیمی‌ترها هم هست
                         loadConversations();
                         pollReadReceipts();
                         loadPinnedMessage();
@@ -3369,10 +3379,13 @@ if (!$__me) {
                 .catch(function() {});
         }
 
-        function appendMessages(msgs, scrollBottom) {
+        function appendMessages(msgs, scrollBottom, prepend) {
             var el = document.getElementById('chatMessages');
+            var frag = prepend ? document.createDocumentFragment() : null;
+            var prependLinkRefs = [];
             msgs.forEach(m => {
                 lastMessageId = Math.max(lastMessageId, m.id);
+                if (!oldestMessageId || m.id < oldestMessageId) oldestMessageId = m.id;
                 var row = document.createElement('div');
                 row.className = 'chat-bubble-row ' + (m.is_own ? 'own' : 'other');
                 row.setAttribute('data-message-id', m.id);
@@ -3453,10 +3466,45 @@ if (!$__me) {
                     openChatCtxMenu(e.clientX, e.clientY, row);
                 });
 
-                el.appendChild(row);
-                if (linkRefs.length) loadLinkRefPreviews(row, linkRefs);
+                if (prepend) {
+                    frag.appendChild(row);
+                    if (linkRefs.length) prependLinkRefs.push([row, linkRefs]);
+                } else {
+                    el.appendChild(row);
+                    if (linkRefs.length) loadLinkRefPreviews(row, linkRefs);
+                }
             });
+            if (prepend) {
+                if (frag.childNodes.length) el.insertBefore(frag, el.firstChild);
+                prependLinkRefs.forEach(function (x) { loadLinkRefPreviews(x[0], x[1]); });
+            }
             if (scrollBottom) el.scrollTop = el.scrollHeight;
+        }
+
+        // درخواستِ ۴۰ پیامِ قدیمی‌ترِ بعدی و افزودنِ آن‌ها به ابتدای لیست،
+        // با حفظِ موقعیتِ اسکرول (کاربر همان‌جا که بود می‌ماند).
+        function prependOlderMessages() {
+            if (loadingOlder || !hasMoreOlder || !activeConversationId || !oldestMessageId) return;
+            loadingOlder = true;
+            var el = document.getElementById('chatMessages');
+            var prevH = el.scrollHeight, prevTop = el.scrollTop;
+            fetch('../api/chat/messages.php?conversation_id=' + activeConversationId +
+                    '&before_id=' + oldestMessageId + '&limit=40', {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.messages && data.messages.length) {
+                        appendMessages(data.messages, false, true);   // prepend
+                        hasMoreOlder = !!data.has_more;
+                        // لنگرِ اسکرول: به همان پیامی که کاربر می‌دید برگرد
+                        el.scrollTop = prevTop + (el.scrollHeight - prevH);
+                    } else {
+                        hasMoreOlder = false;
+                    }
+                })
+                .catch(function () { /* شبکه — دفعهٔ بعد دوباره تلاش می‌شود */ })
+                .finally(function () { loadingOlder = false; });
         }
 
         function scrollToOriginalMessage(messageId) {
