@@ -881,12 +881,22 @@ foreach ($all_requests as $req) {
             // مرخصیِ همین ماهِ شمسیِ خودِ کاربر: حتی بعد از تأییدِ نهایی هم قابلِ «حذف» است
             // (نه ویرایش). در این حالت سهمیهٔ کسرشده برنمی‌گردد و «می‌سوزد»؛ فرانت پیامِ
             // تأییدِ جداگانه نشان می‌دهد. هم‌راستا با api/requests/delete.php
+            //
+            // ⚠️ «ماهِ جاری» را با سال+ماهِ شمسی می‌سنجیم، نه با بازهٔ میلادیِ
+            //    [$start_of_month..$end_of_month]. چون jalaliToGregorian() در
+            //    date_helper.php برای سال‌های شمسیِ > ۹۷۹ خراب است و
+            //    $end_of_month را به تاریخی در سالِ ۱۶۰۰ می‌برد. اما
+            //    gregorianToJalaliCalc() درست است و $j_y/$j_m همان ماهِ شمسیِ
+            //    امروز هستند (بالای همین فایل حساب شده‌اند).
             if ($type === 'leave' && $is_own && !$can_delete
                 && $status !== 'rejected' && $status !== 'cancelled') {
-                $__leave_date = substr($req['request_date'] ?? '', 0, 10);
-                if ($__leave_date !== '' && $__leave_date >= $start_of_month && $__leave_date <= $end_of_month) {
-                    $can_delete = true;
-                    $delete_burns_quota = true;
+                $__ld = substr($req['request_date'] ?? '', 0, 10);
+                if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $__ld, $__m)) {
+                    list($__ljy, $__ljm) = gregorianToJalaliCalc((int) $__m[1], (int) $__m[2], (int) $__m[3]);
+                    if ($__ljy == $j_y && $__ljm == $j_m) {
+                        $can_delete = true;
+                        $delete_burns_quota = true;
+                    }
                 }
             }
         }
@@ -2106,7 +2116,7 @@ function formatDateJalali($gregorianDate)
             display: inline-flex;
             align-items: center;
             gap: 3px;
-            padding: 2px 6px;
+            padding: 2px 6px !important;
             border-radius: 10px;
             font-size: 12px !important;
             font-weight: 600;
