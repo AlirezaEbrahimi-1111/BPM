@@ -463,7 +463,8 @@ body .mobile-menu-btn .hamburger-line {
 
 /* --- Badge پایه --- */
 .badge {
-    padding: 0.375rem 0.75rem;
+    padding: 3px 10px;
+    /* استانداردِ سراسری — هم‌اندازهٔ بجِ اولویتِ tickets.php */
     font-size: 0.75rem;
     font-weight: 600;
     /* بود: 500 — متن پررنگ‌تر */
@@ -735,7 +736,7 @@ s-normal {
 /* --- Status Badge (درخواست‌ها) --- */
 .status-badge {
     display: inline-block;
-    padding: 6px 10px;
+    padding: 3px 10px;
     border-radius: 20px;
     font-size: 10px;
     font-weight: 500;

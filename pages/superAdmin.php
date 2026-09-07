@@ -156,7 +156,7 @@ foreach ($ustmt->fetchAll(PDO::FETCH_ASSOC) as $u) {
     .og .nm { font-weight: 700; font-size: 13.5px; line-height: 1.3; color: #2D3748; }
     .og .mt { font-size: 11px; color: #A0AEC0; line-height: 1.2; margin-top: 1px; }
 
-    .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 700; }
+    .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; }
     .pill.ok   { background: #ffffff; color: #1b7b39; }
     .pill.no   { background: #ffffff; color: #B42318; }
     .pill.plan { background: #ffffff; color: #8e57fe; }

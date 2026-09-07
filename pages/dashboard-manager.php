@@ -198,7 +198,7 @@ if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], 
         }
 .status-badge{
     border-radius:5px;
-        padding: 4px 9px 4px 9px;
+        padding: 3px 10px;
         font-size: 11px;
         width: 130px;
         text-align: center;

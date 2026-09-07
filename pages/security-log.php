@@ -155,7 +155,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     table.log-table tr:last-child td { border-bottom: none; }
     table.log-table tr:hover td { background: #e9e9e9; }
 
-    .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+    .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
     .pill.ok   { background: rgba(27, 123, 57, 0.12); color: #1b7b39; }
     .pill.bad  { background: #FEE4E2; color: #B42318; }
     .pill.info { background: rgba(142, 87, 254, 0.12); color: #8e57fe; }

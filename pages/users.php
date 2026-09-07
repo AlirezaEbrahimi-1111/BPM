@@ -185,7 +185,7 @@ if (!$__me || !hasPermission($__me, 'manage_users')) {
         .status-badge {
             display: inline-block;
             font-size: .7rem;
-            padding: .18em .55em;
+            padding: 3px 10px;
             border-radius: 20px;
             font-weight: 600;
         }
