@@ -1746,7 +1746,7 @@ function formatDateJalali($gregorianDate)
             display: inline-block;
 
             color: var(--text-muted);
-            padding: 3px 10px;
+            padding: 7px 10px;
             border-radius: 10px;
             font-size: 10px;
             font-weight: 600;

@@ -226,7 +226,7 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
         gap: 4px;
         border: 1px solid rgba(142, 87, 254, .3);
         border-radius: 9px;
-        padding: 3px 10px;
+        padding: 7px 10px;
         font-size: .72rem;
         font-weight: 600;
         color: #6b5a8a;

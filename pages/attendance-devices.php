@@ -196,7 +196,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
         .ad-badge {
             font-size: .72rem;
             font-weight: 700;
-            padding: 3px 10px;
+            padding: 7px 10px;
             border-radius: var(--badge-radius);
             display: inline-flex;
             align-items: center;

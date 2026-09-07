@@ -580,7 +580,7 @@ function toPersianNumber($num)
             font-size: 12px;
             color: #94A3B8;
             background: #e9e9e9;
-            padding: 3px 10px;
+            padding: 7px 10px;
             border-radius: 20px;
         }
 

@@ -193,7 +193,7 @@ if (!$__me || (!hasPermission($__me, 'create_routine_template') && !hasPermissio
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 3px 10px;
+            padding: 7px 10px;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;

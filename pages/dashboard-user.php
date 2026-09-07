@@ -401,7 +401,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         .status-badge {
             border-radius: 5px;
-            padding: 3px 10px;
+            padding: 7px 10px;
             font-size: 11px;
             width: 130px;
             text-align: center;
@@ -809,7 +809,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         .st-badge {
             display: inline-block;
-            padding: 3px 10px;
+            padding: 7px 10px;
             border-radius: 999px;
             font-size: .666rem;
             font-weight: 600;
@@ -997,7 +997,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             background: #fee2e2;
             color: #b91c1c;
             border-radius: 8px;
-            padding: 3px 10px 0px 10px;
+            padding: 7px 10px 0px 10px;
             font-size: .666rem;
             font-weight: 600;
             white-space: nowrap;

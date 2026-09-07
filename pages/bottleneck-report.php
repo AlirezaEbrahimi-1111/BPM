@@ -311,7 +311,7 @@ if (!$__me || !hasPermission($__me, 'view_reports')) {
             font-weight: 600;
             color: var(--bn-red);
             background: var(--bn-red-soft);
-            padding: 3px 10px;
+            padding: 7px 10px;
             border-radius: 6px;
             flex-shrink: 0;
         }

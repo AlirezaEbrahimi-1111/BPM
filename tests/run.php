@@ -121,7 +121,7 @@ if ($isCli) {
             display: flex; justify-content: space-between; align-items: center;
         }
         .badge {
-            font-size: .78rem; padding: 3px 10px; border-radius: 999px; font-weight: 600;
+            font-size: .78rem; padding: 7px 10px; border-radius: 999px; font-weight: 600;
         }
         .badge.ok   { background: rgba(27, 123, 57, 0.12); color: #1b7b39; }
         .badge.fail { background: #fee2e2; color: #b91c1c; }
