@@ -762,7 +762,7 @@ s-normal {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    padding: 2px 6px;
+    padding: 3px 10px;
     border-radius: 10px;
     font-size: 9px;
     font-weight: 600;
@@ -809,7 +809,7 @@ s-normal {
 
 /* --- Role Badge (نقش‌ها) --- */
 .role-badge {
-    padding: 4px 10px;
+    padding: 3px 10px;
     border-radius: var(--radius-xs);
     font-size: 12px;
     font-weight: 600;
@@ -838,7 +838,7 @@ s-normal {
 /* --- Shift Badge (شیفت) --- */
 .shift-badge {
     display: inline-block;
-    padding: 4px 10px;
+    padding: 3px 10px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
@@ -857,7 +857,7 @@ s-normal {
 /* --- Unit Badge (واحد فعالیت) --- */
 .unit-badge {
     font-size: 0.75rem;
-    padding: 5px 10px;
+    padding: 3px 10px;
     border-radius: 20px;
     font-weight: 500;
 }
@@ -904,7 +904,7 @@ s-normal {
 
 /* --- Time Badge (حضور و غیاب) --- */
 .time-badge {
-    padding: 0.25rem 0.5rem;
+    padding: 3px 10px;
     border-radius: 4px;
     font-size: 0.75rem;
     font-weight: 600;
