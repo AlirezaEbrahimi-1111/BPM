@@ -853,6 +853,7 @@ foreach ($all_requests as $req) {
     // can_edit / can_delete (همان منطق جدول فعلی)
     $can_edit = false;
     $can_delete = false;
+    $delete_burns_quota = false; // مرخصیِ ماهِ جاری که با حذفش سهمیه برنمی‌گردد
     $is_own = (($req['user_id'] ?? null) == $user_id);
     if (!($is_admin_role ?? false) || $is_own) {
         if ($type === 'pass') {
@@ -876,6 +877,18 @@ foreach ($all_requests as $req) {
                 }
             }
             $can_edit = $can_delete = !$has_action;
+
+            // مرخصیِ همین ماهِ شمسیِ خودِ کاربر: حتی بعد از تأییدِ نهایی هم قابلِ «حذف» است
+            // (نه ویرایش). در این حالت سهمیهٔ کسرشده برنمی‌گردد و «می‌سوزد»؛ فرانت پیامِ
+            // تأییدِ جداگانه نشان می‌دهد. هم‌راستا با api/requests/delete.php
+            if ($type === 'leave' && $is_own && !$can_delete
+                && $status !== 'rejected' && $status !== 'cancelled') {
+                $__leave_date = substr($req['request_date'] ?? '', 0, 10);
+                if ($__leave_date !== '' && $__leave_date >= $start_of_month && $__leave_date <= $end_of_month) {
+                    $can_delete = true;
+                    $delete_burns_quota = true;
+                }
+            }
         }
     }
 
@@ -935,6 +948,7 @@ foreach ($all_requests as $req) {
         'created_at'     => $req['created_at'] ?? '',
         'can_edit'       => (bool) $can_edit,
         'can_delete'     => (bool) $can_delete,
+        'delete_burns_quota' => (bool) $delete_burns_quota,
         '_debug'         => "type={$type} status={$status} sub=" . ($req['substitute_approval'] ?? 'NULL') . " mgr=" . ($req['manager_approval'] ?? 'NULL') . " sup=" . ($req['supervisor_approval'] ?? 'NULL') . " can_del=" . ($can_delete ? '1' : '0'),
     ];
 }
@@ -3523,7 +3537,7 @@ function formatDateJalali($gregorianDate)
             function actionsCell(d) {
                 let h = '';
                 if (d.can_edit) h += `<button class="action-icon-btn edit-btn" onclick="editRequest(${d.id}, '${d.type}')" title="ویرایش"><i class="bi bi-pencil"></i></button>`;
-                if (d.can_delete) h += `<button class="action-icon-btn delete-btn" onclick="deleteRequest(${d.id}, '${d.type}')" title="حذف"><i class="bi bi-trash"></i></button>`;
+                if (d.can_delete) h += `<button class="action-icon-btn delete-btn" onclick="deleteRequest(${d.id}, '${d.type}', ${d.delete_burns_quota ? 'true' : 'false'})" title="حذف"><i class="bi bi-trash"></i></button>`;
                 if (!d.can_edit && !d.can_delete) return '<span class="no-action">—</span>';
                 return `<div style="display:flex;gap:6px;justify-content:center;align-items:center;height:100%;">${h}</div>`;
             }
@@ -5528,8 +5542,11 @@ function formatDateJalali($gregorianDate)
         }
 
         // حذف درخواست
-        async function deleteRequest(id, type) {
-            showToast('آیا از حذف این درخواست مطمئن هستید؟', 'warning', {
+        async function deleteRequest(id, type, burnsQuota) {
+            const confirmMsg = burnsQuota ?
+                'اگر این درخواستِ مرخصی را حذف کنید، درخواست لغو می‌شود اما سهمیهٔ مرخصیِ آن برنمی‌گردد و «می‌سوزد». مثلاً اگر ۳ ساعت مرخصی گرفته باشید، بعد از حذف هم آن ۳ ساعت از سهمیه‌تان کم می‌ماند. مطمئن هستید؟' :
+                'آیا از حذف این درخواست مطمئن هستید؟';
+            showToast(confirmMsg, 'warning', {
                 duration: 1500000,
                 buttons: [{
                         label: 'بله، حذف شود',
