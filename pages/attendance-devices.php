@@ -197,7 +197,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
             font-size: .72rem;
             font-weight: 700;
             padding: 3px 10px;
-            border-radius: 999px;
+            border-radius: var(--badge-radius);
             display: inline-flex;
             align-items: center;
             gap: .3rem;

@@ -72,7 +72,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     .co-sub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px; }
     .co-sub-item .l { font-size: 12px; color: #718096; }
     .co-sub-item .v { font-size: 15px; font-weight: 700; margin-top: 3px; color: #2D3748; }
-    .co-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; }
+    .co-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: var(--badge-radius); font-size: 11.5px; font-weight: 700; }
     .co-badge.ok { background: rgba(27, 123, 57, 0.12); color: #1b7b39; }
     .co-badge.no { background: #FEE4E2; color: #B42318; }
     .co-badge.gray { background: #e9e9e9; color: #718096; }

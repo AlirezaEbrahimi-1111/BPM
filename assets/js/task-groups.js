@@ -149,7 +149,7 @@
           .gm-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:1px solid #ddd;border-radius:6px;cursor:pointer}
           .gm-icon.active{background:rgba(142,87,254,0.12);border-color:#8e57fe}
           .gm-row{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid #f0f0f0}
-          .gm-row .gm-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:.8rem}
+          .gm-row .gm-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--badge-radius);font-size:.8rem}
         </style>`;
 
         document.body.insertAdjacentHTML('beforeend', style + modalHtml);

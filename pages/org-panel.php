@@ -85,7 +85,7 @@ if (!$__me || !hasPermission($__me, 'view_org_settings')) {
     .alert-expire.crit{background:var(--danger-light);color:#B42318}
 
     /* Badges */
-    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600}
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--badge-radius);font-size:11.5px;font-weight:600}
     .badge-success{background:var(--success-light);color:#1b7b39}
     .badge-danger{background:var(--danger-light);color:#B42318}
     .badge-gray{background:#F2F4F7;color:var(--text-sub)}

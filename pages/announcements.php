@@ -68,7 +68,7 @@ if (!$__me) {
     .ann-grid-title { font-weight: 700; color: #1e2233; }
     .ann-chev { color: #9097a6; transition: transform .15s; }
     .ann-tag { font-size: .72rem; font-weight: 700; padding: .12rem .55rem; border-radius: 999px; }
-    .ann-scope-badge { font-size: .72rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgba(142, 87, 254, 0.12); color: #8e57fe; }
+    .ann-scope-badge { font-size: .72rem; font-weight: 600; padding: 3px 10px; border-radius: var(--badge-radius); background: rgba(142, 87, 254, 0.12); color: #8e57fe; }
     .ann-readstat { font-size: .82rem; color: #6b7280; }
     .ann-icon-btn { border: 1px solid #e9e9e9; background: #fff; color: #6b7280; width: 30px; height: 30px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s ease; }
     .ann-icon-btn:hover { background: rgba(142, 87, 254, 0.08); color: var(--primary, #8e57fe); border-color: var(--primary, #8e57fe); }
