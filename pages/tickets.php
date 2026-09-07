@@ -421,14 +421,14 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
                 field: 'status_label', headerName: 'وضعیت', width: 130, resizable: true,
                 cellRenderer: p => {
                     const c = p.data.status_color || '#888';
-                    return '<span style="padding:3px 10px;border-radius:var(--badge-radius);font-size:.74rem;font-weight:600;background:' + c + '18;color:' + c + ';border:1px solid ' + c + '35;">' + esc(p.value) + '</span>';
+                    return '<span style="padding:3px 10px;border-radius:var(--badge-radius);font-size:.74rem;font-weight:var(--badge-font-weight);background:' + c + '18;color:' + c + ';border:1px solid ' + c + '35;">' + esc(p.value) + '</span>';
                 }
             },
             {
                 field: 'priority_label', headerName: 'اولویت', width: 100, resizable: true,
                 cellRenderer: p => {
                     const c = p.data.priority_color || '#888';
-                    return '<span style="padding:3px 10px;border-radius:var(--badge-radius);font-size:.74rem;font-weight:600;background:' + c + '18;color:' + c + ';border:1px solid ' + c + '35;">' + esc(p.value) + '</span>';
+                    return '<span style="padding:3px 10px;border-radius:var(--badge-radius);font-size:.74rem;font-weight:var(--badge-font-weight);background:' + c + '18;color:' + c + ';border:1px solid ' + c + '35;">' + esc(p.value) + '</span>';
                 }
             },
             { field: 'category_name', headerName: 'دسته‌بندی', flex: 1, sortable: true, resizable: true, cellRenderer: p => esc(p.value || '–') },

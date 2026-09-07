@@ -408,7 +408,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         .td-status .status-badge {
-            font-weight: bold;
+            font-weight: var(--badge-font-weight);
         }
 
         .td-status .status-completed {
@@ -810,9 +810,9 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         .st-badge {
             display: inline-block;
             padding: 7px 10px;
-            border-radius: 999px;
+            border-radius: var(--badge-radius);
             font-size: .666rem;
-            font-weight: 600;
+            font-weight: var(--badge-font-weight);
             white-space: nowrap;
         }
 
@@ -996,10 +996,10 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         .dlg-days {
             background: #fee2e2;
             color: #b91c1c;
-            border-radius: 8px;
+            border-radius: var(--badge-radius);
             padding: 7px 10px 0px 10px;
             font-size: .666rem;
-            font-weight: 600;
+            font-weight: var(--badge-font-weight);
             white-space: nowrap;
             flex-shrink: 0;
             height: 28px;
