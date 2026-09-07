@@ -279,7 +279,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <tbody id="itemsBody"></tbody>
             </table>
 
-            <datalist id="prodNameList"></datalist>
             <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnAddRow"><i class="bi bi-plus-lg ms-1"></i> افزودن ردیف</button>
 
             <div class="totals-box">
@@ -373,11 +372,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 `<option value="${String(c.name || '').replace(/"/g, '&quot;')}">`).join('');
         }
 
-        function fillProdDatalist() {
-            const dl = document.getElementById('prodNameList');
-            if (dl) dl.innerHTML = products.map(p =>
-                `<option value="${String(p.name || '').replace(/"/g, '&quot;')}">`).join('');
-        }
 
         function alertBox(msg, kind = 'danger') {
             document.getElementById('formAlert').innerHTML =
@@ -418,7 +412,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             tr.innerHTML = `
                 <td class="idx text-center"></td>
                 <td><div class="it-prod-pick"></div></td>
-                <td><input class="it-title" list="prodNameList" placeholder="نام یا شرحِ کالا را تایپ کنید"></td>
+                <td><input class="it-title" placeholder="شرحِ اختیاری"></td>
                 <td class="col-qty"><input class="it-qty" inputmode="decimal" value="۱"></td>
                 <td class="col-price"><input class="it-price" inputmode="numeric" value="۰"></td>
                 <td class="col-disc"><input class="it-disc" inputmode="numeric" value="۰"></td>
@@ -429,7 +423,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             tr._picker = EntityPicker.create({
                 container: tr.querySelector('.it-prod-pick'),
                 items: prodItems,
-                placeholder: 'کد یا نامِ کالا…',
+                placeholder: 'نام کالا را انتخاب یا تایپ کنید…',
+                freeText: true, // اگر نامِ تایپ‌شده در کاتالوگ نبود هم مجاز است
                 addTitle: 'افزودن کالای جدید',
                 onAdd: () => QuickAdd.product(p => {
                     products.push(p);
@@ -461,9 +456,16 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const tr = rowTemplate();
             document.getElementById('itemsBody').appendChild(tr);
             if (data) {
-                if (data.product_id) tr._picker.setValue(data.product_id); // onSelect پرِ فیلدها را می‌کند
-                // مقادیرِ ذخیره‌شده روی پیش‌فرضِ کالا اولویت دارند
-                tr.querySelector('.it-title').value = data.title || '';
+                if (data.product_id) {
+                    tr._picker.setValue(data.product_id); // onSelect قیمت/معاف را هم پر می‌کند
+                    // اگر «شرح» با نامِ کالا فرق داشت، یعنی توضیحِ سفارشیِ ردیف است
+                    const p = products.find(x => x.id === +data.product_id);
+                    tr.querySelector('.it-title').value =
+                        (data.title && (!p || data.title.trim() !== (p.name || '').trim())) ? data.title : '';
+                } else {
+                    // قلمِ متنیِ آزاد → نامِ تایپ‌شده در خودِ انتخابگر
+                    tr._picker.setText(data.title || '');
+                }
                 tr.querySelector('.it-qty').value = faDigits(data.qty ?? 1);
                 tr.querySelector('.it-price').value = faMoney(data.unit_price ?? 0);
                 tr.querySelector('.it-disc').value = faMoney(data.discount ?? 0);
@@ -472,6 +474,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             renumber();
             updateStockHint(tr);
             recalc();
+            return tr;
         }
 
         function renumber() {
@@ -480,14 +483,13 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             });
         }
 
-        // انتخابِ کالا از انتخابگر: کد/قیمت/معاف/شرح را پر می‌کند.
+        // انتخابِ کالا از انتخابگر: کد/قیمت/معاف را پر می‌کند. («شرح» دست‌نخورده
+        // می‌مانَد — نامِ کالا خودش در انتخابگر نمایش داده می‌شود.)
         function onRowProduct(tr, item) {
             if (item) {
                 const p = products.find(x => x.id === item.id);
                 tr.dataset.productId = item.id;
                 if (p) {
-                    const t = tr.querySelector('.it-title');
-                    if (!t.value.trim()) t.value = p.name;
                     tr.querySelector('.it-price').value = faMoney(p.unit_price);
                     tr.querySelector('.it-exempt').checked = !!p.is_tax_exempt;
                 }
@@ -553,10 +555,15 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const customerName = document.getElementById('f_customer_name').value.trim();
             const items = [];
             document.querySelectorAll('#itemsBody tr').forEach(tr => {
-                const title = tr.querySelector('.it-title').value.trim();
+                const sel = tr._picker ? tr._picker.getValue() : null;
+                const typed = tr._picker ? tr._picker.getText().trim() : '';
+                const desc = tr.querySelector('.it-title').value.trim();
+                // نامِ کالا: انتخاب‌شده یا تایپ‌شده در انتخابگر. «شرح» اگر پر باشد جای آن می‌نشیند.
+                const name = sel ? sel.label : typed;
+                const title = desc || name;
                 if (!title) return;
                 items.push({
-                    product_id: tr.dataset.productId ? +tr.dataset.productId : null,
+                    product_id: sel ? sel.id : (tr.dataset.productId ? +tr.dataset.productId : null),
                     title,
                     qty: num(tr.querySelector('.it-qty').value),
                     unit_price: Math.round(num(tr.querySelector('.it-price').value)),
@@ -593,7 +600,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 return;
             }
             if (!body.items.length) {
-                alertBox('حداقل یک ردیف با «شرح» لازم است.');
+                alertBox('حداقل یک ردیف با نامِ کالا لازم است.');
                 return;
             }
             alertBox('');
@@ -664,7 +671,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const exParam = INV_ID ? '&exclude_invoice=' + INV_ID : '';
             await reloadProducts(exParam);
             buildProdItems();
-            fillProdDatalist();
 
             // وقتی از تبِ «مشتریان» یا «کاتالوگ کالا» برگشتی، هر دو فهرست تازه شوند
             window.addEventListener('focus', async () => {
@@ -672,7 +678,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 fillCustDatalist();
                 await reloadProducts(exParam);
                 buildProdItems();
-                fillProdDatalist();
                 document.querySelectorAll('#itemsBody tr').forEach(tr => {
                     if (tr._picker) tr._picker.updateItems(prodItems);
                 });

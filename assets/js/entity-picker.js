@@ -11,10 +11,14 @@
  *     addTitle:    'افزودن مورد جدید',    // اگر ست شود، دکمه‌ی + کنارِ فیلد می‌آید
  *     onAdd:       () => {},              // کلیکِ +
  *     onSelect:    (item | null) => {},   // انتخاب یا پاک‌کردن
+ *     freeText:    false,                 // اگر true: متنِ تایپ‌شده که با هیچ موردی
+ *                                         //   نمی‌خواند هم مجاز است و در فیلد می‌مانَد
  *   });
  *
  *   p.getValue()        → { id, label, meta } | null
+ *   p.getText()         → متنِ کنونیِ فیلد (برای حالتِ freeText)
  *   p.setValue(id)      → انتخابِ برنامه‌ای (اگر id در items باشد)
+ *   p.setText(str)      → قراردادنِ متنِ آزاد بدونِ انتخاب (حالتِ freeText)
  *   p.reset()
  *   p.updateItems(arr)  → جایگزینیِ داده؛ انتخابِ فعلی اگر هنوز معتبر باشد می‌ماند
  *   p.focus()
@@ -108,14 +112,24 @@ const EntityPicker = (() => {
 </div>`;
         _input = _root.querySelector('.ep-input');
         _dd = _root.querySelector('.ep-dropdown');
+        const freeText = !!cfg.freeText;
+        if (freeText) _input.removeAttribute('readonly');
 
         _input.addEventListener('click', () => {
             _input.removeAttribute('readonly');
-            _input.value = '';
-            _render('');
+            if (!freeText) _input.value = '';
+            _render(freeText ? _input.value : '');
             _openDd();
         });
         _input.addEventListener('input', e => {
+            if (freeText) {
+                // ویرایشِ دستی → انتخابِ قبلی (اگر بود) دیگر معتبر نیست
+                if (_selected && e.target.value !== _selected.label) {
+                    _selected = null;
+                    if (typeof cfg.onSelect === 'function') cfg.onSelect(null);
+                }
+                _root.querySelector('.ep-clear').classList.toggle('visible', !!e.target.value);
+            }
             _render(e.target.value);
             if (!_open) _openDd();
         });
@@ -186,7 +200,7 @@ const EntityPicker = (() => {
         function _pick(it) {
             _selected = it;
             _input.value = it.label;
-            _input.setAttribute('readonly', true);
+            if (!freeText) _input.setAttribute('readonly', true);
             _root.querySelector('.ep-clear').classList.add('visible');
             _closeDd();
             if (typeof cfg.onSelect === 'function') cfg.onSelect(it);
@@ -196,14 +210,19 @@ const EntityPicker = (() => {
         function _closeDd() {
             _dd.classList.remove('open');
             _open = false;
-            _input.value = _selected ? _selected.label : '';
-            _input.setAttribute('readonly', true);
+            if (freeText) {
+                // متنِ تایپ‌شده حفظ می‌شود؛ اگر موردی انتخاب شده، برچسبش.
+                if (_selected) _input.value = _selected.label;
+            } else {
+                _input.value = _selected ? _selected.label : '';
+                _input.setAttribute('readonly', true);
+            }
         }
 
         function _reset(fire) {
             _selected = null;
             _input.value = '';
-            _input.setAttribute('readonly', true);
+            if (!freeText) _input.setAttribute('readonly', true);
             _root.querySelector('.ep-clear').classList.remove('visible');
             _closeDd();
             if (fire && typeof cfg.onSelect === 'function') cfg.onSelect(null);
@@ -220,10 +239,19 @@ const EntityPicker = (() => {
 
         return {
             getValue() { return _selected; },
+            getText() { return _input.value; },
             setValue(id) {
                 const it = _items.find(x => String(x.id) === String(id));
                 if (it) _pick(it);
                 else _reset(false);
+            },
+            setText(str) {
+                _selected = null;
+                _input.value = (str == null ? '' : String(str));
+                if (freeText) {
+                    _input.removeAttribute('readonly');
+                    _root.querySelector('.ep-clear').classList.toggle('visible', !!_input.value);
+                }
             },
             reset() { _reset(false); },
             updateItems(arr) {
@@ -239,8 +267,8 @@ const EntityPicker = (() => {
             },
             focus() {
                 _input.removeAttribute('readonly');
-                _input.value = '';
-                _render('');
+                if (!freeText) _input.value = '';
+                _render(freeText ? _input.value : '');
                 _openDd();
                 _input.focus();
             }
