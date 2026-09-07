@@ -465,7 +465,7 @@ body .mobile-menu-btn .hamburger-line {
 
 /* --- Badge پایه --- */
 .badge {
-    padding: 3px 10px !important;
+    padding: 7px 10px !important;
     /* استانداردِ سراسری، بدونِ راهِ گریز — هم‌اندازهٔ بجِ اولویتِ tickets.php.
        !important تا هیچ override محلی/مدیا-کوئری/inline بدونِ‌!important از آن فرار نکند. */
     font-size: 0.75rem;
@@ -696,7 +696,7 @@ body .mobile-menu-btn .hamburger-line {
 .days-badge {
     font-size: 0.68rem;
     font-weight: 500;
-    padding: 3px 10px !important;
+    padding: 7px 10px !important;
     /* هم‌اندازهٔ .badge — ستونِ «مهلت» در tasks.php از این کلاس استفاده می‌کند */
     border-radius: var(--badge-radius);
 }
@@ -740,7 +740,7 @@ s-normal {
 /* --- Status Badge (درخواست‌ها) --- */
 .status-badge {
     display: inline-block;
-    padding: 3px 10px !important;
+    padding: 7px 10px !important;
     border-radius: var(--badge-radius);
     font-size: 10px;
     font-weight: 500;
@@ -766,7 +766,7 @@ s-normal {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    padding: 3px 10px;
+    padding: 7px 10px;
     border-radius: var(--badge-radius);
     font-size: 9px;
     font-weight: 600;
@@ -806,14 +806,14 @@ s-normal {
     background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
     color: white;
     font-size: 11px;
-    padding: 3px 10px;
+    padding: 7px 10px;
     border-radius: var(--badge-radius);
     font-weight: 700;
 }
 
 /* --- Role Badge (نقش‌ها) --- */
 .role-badge {
-    padding: 3px 10px;
+    padding: 7px 10px;
     border-radius: var(--badge-radius);
     font-size: 12px;
     font-weight: 600;
@@ -842,7 +842,7 @@ s-normal {
 /* --- Shift Badge (شیفت) --- */
 .shift-badge {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 7px 10px;
     border-radius: var(--badge-radius);
     font-size: 12px;
     font-weight: 600;
@@ -861,7 +861,7 @@ s-normal {
 /* --- Unit Badge (واحد فعالیت) --- */
 .unit-badge {
     font-size: 0.75rem;
-    padding: 3px 10px;
+    padding: 7px 10px;
     border-radius: var(--badge-radius);
     font-weight: 500;
 }
@@ -900,7 +900,7 @@ s-normal {
 .step-badge {
     background: var(--primary-gradient);
     color: white;
-    padding: 3px 10px;
+    padding: 7px 10px;
     border-radius: var(--badge-radius);
     font-size: 0.85rem;
     margin: 2px;
@@ -908,7 +908,7 @@ s-normal {
 
 /* --- Time Badge (حضور و غیاب) --- */
 .time-badge {
-    padding: 3px 10px;
+    padding: 7px 10px;
     border-radius: var(--badge-radius);
     font-size: 0.75rem;
     font-weight: 600;
@@ -5231,7 +5231,7 @@ body.drawer-body-open {
     display: inline-block;
     font-size: 0.7rem;
     font-weight: 700;
-    padding: 3px 10px;
+    padding: 7px 10px;
     border-radius: var(--badge-radius);
     margin-top: 5px;
 }
