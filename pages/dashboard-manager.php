@@ -1,32 +1,10 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
-require_once '../config/config.php';
-require_once '../includes/version.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
-
-$database = new Database();
-$db = $database->getConnection();
-$auth = new Auth($db);
-$user_id = $_SESSION['user_id'] ?? null;
-if (!$user_id) $user_id = $auth->getUserFromToken();
-if (!$user_id && isset($_COOKIE['auth_token'])) $user_id = $auth->validateToken($_COOKIE['auth_token']);
-
-if (!$user_id) {
-    header('Location: ../index.php');
-    exit;
-}
-
-// داشبوردِ مدیریت فقط برایِ manager/supervisor است، نه employee (نقشِ واقعیِ
-// دیتابیس؛ چکِ سمتِ کلاینتِ toggleManagerMenu() در header.php با
-// role==='management' مقایسه می‌کند که هیچ‌وقت در دیتابیس رخ نمی‌دهد — اینجا
-// از مقادیرِ واقعیِ ستونِ role استفاده می‌شود)
-$__me = loadUserForPermissions($db, (int) $user_id);
-if (!$__me || !in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
+require_once __DIR__ . '/../includes/page-bootstrap.php';
+if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
     header('Location: dashboard-user.php');
     exit;
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">

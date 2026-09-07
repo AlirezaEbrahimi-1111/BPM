@@ -1,31 +1,6 @@
-<?php require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
-require_once '../includes/version.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+<?php
+require_once __DIR__ . '/../includes/page-bootstrap.php';
 
-$database = new Database();
-$db = $database->getConnection();
-$auth = new Auth($db);
-$user_id = $_SESSION['user_id'] ?? null;
-if (!$user_id) $user_id = $auth->getUserFromToken();
-if (!$user_id && isset($_COOKIE['auth_token'])) $user_id = $auth->validateToken($_COOKIE['auth_token']);
-
-if (!$user_id) {
-    header('Location: ../index.php');
-    exit;
-}
-
-// این صفحه دسترسیِ مشروط داره، نه صرفاً سوپروایزری: طبقِ منطقِ همین حالا
-// در api/workflows/list.php، مدیر/سوپروایزر همهٔ روتین‌ها رو می‌بینه، ولی
-// کارمندِ عادی هم دسترسی داره و فقط چیزی که خودش ایجاد کرده یا مرحلهٔ فعالش
-// مالِ واحدِ خودشه رو می‌بینه (فیلتر در همون API انجام می‌شه، نه اینجا) —
-// پس گیتِ این صفحه فقط باید «کاربرِ فعال» باشه، نه یک اجازهٔ خاص
-$__me = loadUserForPermissions($db, (int) $user_id);
-if (!$__me) {
-    header('Location: ../index.php');
-    exit;
-}
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
