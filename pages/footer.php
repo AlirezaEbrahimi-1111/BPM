@@ -7,9 +7,11 @@ require_once '../includes/version.php';
      باعث می‌شد قواعد قدیمی/بدون تم‌تاریکِ custom.css روی override محلیِ هر صفحه غالب شود. -->
 
 <style>
-    /* فوترِ ثابت (فریز) در همهٔ صفحات: همیشه چسبیده به کفِ پنجره، با اسکرول
-       جابه‌جا نمی‌شود. body یک padding-bottom می‌گیرد تا آخرین بخشِ محتوا
-       زیرِ فوتر پنهان نشود. */
+    /* فوترِ ثابت (فریز) در همهٔ صفحات — حالا به شکلِ «زبانه» (rounded tab):
+       وسط‌چین، چسبیده به کفِ پنجره، عرضش دقیقاً به‌اندازهٔ متنِ داخلش
+       (width:fit-content). رنگِ پس‌زمینه همان رنگِ قبلی (var(--surface)) است؛
+       فقط فُرم تغییر کرده. تکنیک: border-radius بیضوی + ماسکِ radial-gradient
+       برای «گوشِ» مقعرِ پایین‌چپ/پایین‌راست. */
     body {
         min-height: calc(100vh - 3.5rem);
         padding-bottom: 40px;
@@ -20,25 +22,39 @@ require_once '../includes/version.php';
         left: 0;
         right: 0;
         bottom: 0;
-        width: 100%;
+        width: fit-content;
+        margin-inline: auto;
         z-index: 80;
-        padding: 7px 0;
+
+        --r: 16px;              /* شعاعِ انحنا */
+        line-height: 2.4;       /* ارتفاع را کنترل می‌کند */
+        padding-inline: 1.1em;
+        border-inline: var(--r) solid transparent;
+        border-radius: calc(2 * var(--r)) calc(2 * var(--r)) 0 0 / var(--r);
+        -webkit-mask:
+            radial-gradient(var(--r) at var(--r) 0, #0000 98%, #000 101%)
+                calc(-1 * var(--r)) 100% / 100% var(--r) repeat-x,
+            conic-gradient(#000 0 0) padding-box;
+        mask:
+            radial-gradient(var(--r) at var(--r) 0, #0000 98%, #000 101%)
+                calc(-1 * var(--r)) 100% / 100% var(--r) repeat-x,
+            conic-gradient(#000 0 0) padding-box;
+        background: var(--surface, #fff) border-box;
+        filter: drop-shadow(0 -2px 8px rgba(0, 0, 0, .14));
+
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 5px;
         font-size: 12px;
-        background: var(--surface, #fff);
-        border-top: 1px solid var(--border-soft, #eef0f2);
-        box-shadow: 0 -3px 14px rgba(0, 0, 0, .12);
     }
 
     :root[data-theme="dark"] .site-footer {
-        box-shadow: 0 -3px 14px rgba(0, 0, 0, .5);
+        filter: drop-shadow(0 -2px 10px rgba(0, 0, 0, .5));
     }
 
     /* صفحاتی که خودشان یک نوارِ عملیاتِ ثابتِ پایین دارند (مثلِ task-detail.php):
-       فوتر بالایِ آن نوار بنشیند، نه رویش. */
+       زبانه بالایِ آن نوار بنشیند، نه رویش. */
     body:has(.TDaction-buttons) .site-footer {
         bottom: 58px;
     }
@@ -69,7 +85,7 @@ require_once '../includes/version.php';
     <span>در شرکت</span>
     <span class="company">آوای شرق ملک</span>
         <span> | </span>
-        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۶ - ۱۸:۳۰">
-            نسخه: ۷.۰۳
+        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۶ - ۱۹:۰۰">
+            نسخه: ۷.۰۴
         </span>
 </div>
