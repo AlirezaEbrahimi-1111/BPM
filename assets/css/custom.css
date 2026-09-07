@@ -695,6 +695,10 @@ body .mobile-menu-btn .hamburger-line {
 
 /* --- Badge روزها (مهلت) --- */
 .days-badge {
+    /* inline-flex لازم است: عنصرِ inline با padding عمودی داخلِ سلولِ AG Grid
+       (overflow:hidden) از بالا/پایین بریده می‌شد و گوشه‌های گِرد قیچی می‌شدند. */
+    display: inline-flex;
+    align-items: center;
     font-size: 0.68rem;
     font-weight: var(--badge-font-weight);
     padding: 7px 10px !important;
