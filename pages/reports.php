@@ -708,9 +708,13 @@ if (!hasPermission($__me, 'view_reports')) {
         }
 
         // بارگذاری آمار
+        // سرو توسطِ go-api (پورتِ api/reports/stats.php). خروجی بایت‌به‌بایت
+        // برابر است و parity روی پروداکشن تأیید شده. فایلِ PHP دست‌نخورده
+        // می‌مانَد به‌عنوانِ fallback؛ برگشت = همین URL را به
+        // '../api/reports/stats.php' برگردان.
         async function loadStats() {
             try {
-                const response = await fetch('../api/reports/stats.php', {
+                const response = await fetch('/go/api/reports/stats', {
                     headers: {
                         'Authorization': 'Bearer ' + authToken
                     }
