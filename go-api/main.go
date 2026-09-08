@@ -1,9 +1,14 @@
 // go-api — بازنویسیِ تدریجیِ لایهٔ api/ اپِ PHP به Go (الگوی Strangler Fig).
 //
-// فاز ۱ (همین): فقط کِرنِل + دو endpointِ اثباتِ کار:
+// endpointها تا این‌جا:
 //
-//	GET /go/api/health   → بدونِ احراز هویت؛ سلامتِ سرویس و دیتابیس
-//	GET /go/api/me        → با همان JWTِ اپِ PHP؛ کاربر + اجازه‌هایش
+//	GET /go/api/health         → بدونِ احراز هویت؛ سلامتِ سرویس و دیتابیس
+//	GET /go/api/me             → با همان JWTِ اپِ PHP؛ کاربر + اجازه‌هایش
+//	GET /go/api/reports/stats  → پورتِ api/reports/stats.php (تعدادِ گزارش‌ها)
+//
+// روالِ افزودنِ endpoint: پورت در internal/<module>/، ثبت در main.go، سپس
+// «تستِ سایه‌ای» (SHADOW-TEST.md) — خروجیِ Go و PHP روی یک دیتابیس مقایسه شود —
+// و تنها بعد از تأیید، یک خطِ ProxyPass در Apache اضافه می‌شود.
 //
 // این سرویس:
 //   - همان MariaDBِ اپِ اصلی را می‌خواند (فعلاً فقط SELECT روی users).
@@ -22,6 +27,7 @@ import (
 	"time"
 
 	"bmp/go-api/internal/core"
+	"bmp/go-api/internal/reports"
 )
 
 type server struct {
@@ -96,6 +102,9 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /go/api/health", s.handleHealth)
 	mux.HandleFunc("GET /go/api/me", s.auth(s.handleMe))
+
+	// ── ماژولِ گزارش‌ها (پورتِ api/reports/*) ──
+	mux.HandleFunc("GET /go/api/reports/stats", s.auth(reports.Stats(s.db)))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{
