@@ -58,12 +58,30 @@ sudo systemctl reload apache2     # reload — نه restart
 curl -s https://itmalek.com/go/api/health
 ```
 
-## ۶) (بعداً) اتصال به CI
+## ۶) اتصال به CI (بعد از این‌که مراحلِ ۱–۵ کار کردند)
 
-وقتی این کار کرد، در `.github/workflows/deploy.yml` یک مرحلهٔ build+scp+apply
-برای `go-api` هم مثلِ `crm-service` اضافه کن (باینری → `/opt/bpm-go-api/incoming/`
-→ اسکریپتِ `apply` که نصب و `systemctl restart bpm-go-api` می‌کند). تا آن موقع،
-هر تغییرِ Go را دستی با مرحلهٔ ۲ روی سرور rebuild کن.
+### ۶الف) نصبِ یک‌بارهٔ ابزارِ استقرارِ خودکار روی سرور
+
+```
+sudo install -o root -g root -m 0755 /var/www/itmalek/go-api/deploy/apply-go-api.sh /opt/bpm-go-api/apply-go-api.sh
+sudo install -o deploy -g deploy -d /opt/bpm-go-api/incoming
+sudo install -m 0440 /var/www/itmalek/go-api/deploy/sudoers-bpm-go-api /etc/sudoers.d/bpm-go-api
+sudo visudo -c
+```
+`visudo -c` باید «parsed OK» بدهد.
+
+### ۶ب) افزودن به `.github/workflows/deploy.yml`
+
+سه چیز اضافه می‌شود، دقیقاً مثلِ `crm-service`:
+1. مرحلهٔ `Build go-api (linux/amd64)` — `GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ... -o go-api-linux .` در `working-directory: go-api`
+2. مرحلهٔ `scp-action` — `source: go-api/go-api-linux` → `target: /opt/bpm-go-api/incoming` با `strip_components: 1`
+3. در مرحلهٔ آخرِ ssh، یک خط: `sudo /opt/bpm-go-api/apply-go-api.sh`
+
+> تا وقتی ۶الف انجام نشده، **این خط را به deploy.yml اضافه نکن** — وگرنه دیپلویِ بعدی
+> روی مرحلهٔ scp یا apply شکست می‌خورد.
+
+بعد از هر دو: یک‌بار «Deploy to VPS» را بزن و مطمئن شو `apply-go-api` در لاگ
+«go-api به‌روزرسانی و ری‌استارت شد» می‌دهد.
 
 ---
 
