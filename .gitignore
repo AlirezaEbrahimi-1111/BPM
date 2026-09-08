@@ -13,5 +13,9 @@ crm-service/config.json
 crm-service/crm-service
 crm-service/crm-service.exe
 crm-service/crm-service-linux
+go-api/config.json
+go-api/go-api
+go-api/go-api.exe
+go-api/go-api-linux
 find.php
 uploads/
