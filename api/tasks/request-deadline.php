@@ -327,17 +327,31 @@ try {
         ");
         $approve_stmt->execute([$request_id]);
 
-        // کار روتین: original_deadline دست‌نخورده می‌ماند
-        $update_task = $db->prepare("
-            UPDATE tasks 
-            SET deadline = ?, has_pending_deadline_request = 0, updated_at = NOW() 
-            WHERE id = ?
-        ");
-        $update_task->execute([$new_deadline, $task_id]);
-
+        // original_deadline دست‌نخورده می‌ماند تا تأخیرِ اولیه محفوظ بماند.
         if ($is_workflow) {
+            // کارِ روتین: موعد ساعتی است و فقط در ستونِ deadline نگهداری می‌شود؛
+            // due_date برای این‌ها خالی می‌ماند و نباید دست بخورد.
+            $update_task = $db->prepare("
+                UPDATE tasks
+                SET deadline = ?, has_pending_deadline_request = 0, updated_at = NOW()
+                WHERE id = ?
+            ");
+            $update_task->execute([$new_deadline, $task_id]);
+
             $sync = $db->prepare("UPDATE workflow_instance_steps SET deadline = ? WHERE task_id = ?");
             $sync->execute([$new_deadline, $task_id]);
+        } else {
+            // کارِ مقطعی: due_date و deadline باید هم‌راستا بمانند (مثلِ زمانِ ساخت).
+            // چند مصرف‌کننده (گیتِ ارجاع در TaskManager::delegateTask، و فیلتر/
+            // مرتب‌سازیِ تاریخ در my-tasks/all-tasks) مستقیم due_date را می‌خوانند،
+            // نه بیشینهٔ سه ستون؛ اگر due_date عقب بماند، موعدِ تمدیدشده آن‌جا
+            // نادیده گرفته می‌شود.
+            $update_task = $db->prepare("
+                UPDATE tasks
+                SET deadline = ?, due_date = ?, has_pending_deadline_request = 0, updated_at = NOW()
+                WHERE id = ?
+            ");
+            $update_task->execute([$new_deadline, $new_deadline, $task_id]);
         }
         // ثبت تاریخچه
         $history_stmt = $db->prepare("

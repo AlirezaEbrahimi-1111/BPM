@@ -644,9 +644,35 @@ class TaskManager
             }
 
             // 🆕 کارِ مقطعیِ بدونِ موعد (خودی) وقتی به کسِ دیگه‌ای ارجاع داده
-            // می‌شه، باید همین حالا یک موعد براش تعیین بشه
-            if ($task['task_type'] === 'periodic' && empty($task['due_date']) && empty($due_date)) {
+            // می‌شه، باید همین حالا یک موعد براش تعیین بشه.
+            //
+            // ⚠️ باگِ قبلی: این گیت فقط ستونِ due_date را می‌دید. اما «تمدید موعد»
+            // (request-deadline.php / approve-deadline.php) فقط ستونِ deadline
+            // (و گاهی original_deadline) را جلو می‌برد و due_date را دست‌نخورده
+            // می‌گذارد. پس کاری که موعدش تازه با «تمدید موعد» تعیین شده بود،
+            // این‌جا هنوز «بدونِ موعد» شمرده می‌شد و ارجاعش را می‌بست.
+            // موعدِ مؤثر = بزرگ‌ترینِ سه ستونِ تاریخ — دقیقاً همان منطقِ
+            // enrichTaskDates() در includes/task-dates-helper.php.
+            $effective_due = null;
+            foreach (['due_date', 'deadline', 'original_deadline'] as $f) {
+                if (!empty($task[$f])) {
+                    $d = substr($task[$f], 0, 10);
+                    if ($effective_due === null || $d > $effective_due) {
+                        $effective_due = $d;
+                    }
+                }
+            }
+
+            if ($task['task_type'] === 'periodic' && empty($effective_due) && empty($due_date)) {
                 return ['success' => false, 'message' => 'این کار موعد ندارد — برایِ ارجاع، ابتدا یک موعد تعیین کنید'];
+            }
+
+            // اگر ارجاع‌دهنده موعدِ جدیدی نداده ولی کار از قبل موعدِ مؤثر دارد،
+            // همان را به‌عنوان due_date تثبیت کن تا بعد از ارجاع، جدول‌ها /
+            // فیلترهای تاریخ / مرتب‌سازی‌هایی که مستقیم due_date را می‌خوانند
+            // هم موعد را ببینند و سه ستون دوباره هم‌راستا شوند.
+            if (empty($due_date) && !empty($effective_due)) {
+                $due_date = $effective_due;
             }
 
             // بررسی مجوز

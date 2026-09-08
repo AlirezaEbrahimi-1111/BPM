@@ -233,17 +233,21 @@ try {
         // ===== تأیید نهایی: آخرین approver است =====
         error_log("✅ Final approval - updating task deadline");
 
-        // آپدیت deadline کار
+        // آپدیت deadline کار — این شاخه فقط کارِ مقطعی است (کارِ روتین بالاتر
+        // return شده). due_date را هم هم‌راستا با deadline می‌کنیم چون گیتِ ارجاع
+        // (TaskManager::delegateTask) و فیلتر/مرتب‌سازیِ تاریخ در my-tasks/all-tasks
+        // مستقیم due_date را می‌خوانند، نه بیشینهٔ سه ستون را.
         $update_stmt = $db->prepare("
-            UPDATE tasks 
-            SET 
+            UPDATE tasks
+            SET
                 deadline = ?,
                 original_deadline = ?,
+                due_date = ?,
                 has_pending_deadline_request = 0,
                 updated_at = NOW()
             WHERE id = ?
         ");
-        $result = $update_stmt->execute([$new_deadline, $new_deadline, $task_id]);
+        $result = $update_stmt->execute([$new_deadline, $new_deadline, $new_deadline, $task_id]);
 
         if (!$result) {
             error_log("❌ Failed to update task deadline");

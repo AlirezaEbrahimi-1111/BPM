@@ -4634,9 +4634,14 @@ ${task.overdue_periods > 0 ? `
                 if (wrap) wrap.style.display = isCreator ? 'block' : 'none';
                 if (chk && t) chk.checked = (parseInt(t.share_history) !== 0);
 
-                // ✅ اگه کارِ مقطعیِ خودی (بدونِ موعد) داره ارجاع می‌شه، تعیینِ موعد الزامیه
+                // ✅ اگه کارِ مقطعیِ خودی (بدونِ موعد) داره ارجاع می‌شه، تعیینِ موعد الزامیه.
+                // ⚠️ باگِ قبلی: فقط t.due_date چک می‌شد؛ اما «تمدید موعد» موعد را در
+                // ستونِ deadline می‌گذارد، نه due_date. t.next_due_date از سمتِ سرور
+                // (enrichTaskDates) بیشینهٔ هر سه ستون است — اگر آن پر باشد یعنی کار
+                // موعد دارد و دیگر نباید موقعِ ارجاع دوباره موعد بخواهیم.
                 const dueContainer = document.getElementById('delegateDueDateContainer');
-                const needsDueDate = !!(t && t.task_type === 'periodic' && !t.due_date);
+                const hasAnyDeadline = !!(t && (t.next_due_date || t.due_date || t.deadline || t.original_deadline));
+                const needsDueDate = !!(t && t.task_type === 'periodic' && !hasAnyDeadline);
                 if (dueContainer) dueContainer.style.display = needsDueDate ? 'block' : 'none';
                 if (needsDueDate) {
                     document.getElementById('delegateDueDate').removeAttribute('data-date');
