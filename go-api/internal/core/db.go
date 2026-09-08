@@ -10,10 +10,14 @@ import (
 )
 
 // OpenDB یک استخرِ اتصالِ MariaDB باز می‌کند (همان دیتابیسِ اپِ اصلی).
-// parseTime + loc=Local تا time.Time درست از/به DATETIME نگاشت شود.
+//
+// عمداً parseTime نداریم: ستون‌های DATE/DATETIME/TIMESTAMP به‌صورتِ رشتهٔ خامِ
+// MySQL ("2026-09-08" / "2026-09-08 12:38:47") خوانده می‌شوند — دقیقاً همان
+// چیزی که PDOِ اپِ PHP برمی‌گرداند (STRINGIFY_FETCHES=false، ولی زمان‌ها باز
+// هم رشته‌اند). این برای «parity» با endpointهای PHP لازم است.
 func OpenDB(c Config) *sql.DB {
 	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?parseTime=true&charset=utf8mb4&loc=Local",
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&loc=Local",
 		c.DBUser, c.DBPass, c.DBHost, c.DBPort, c.DBName,
 	)
 	db, err := sql.Open("mysql", dsn)

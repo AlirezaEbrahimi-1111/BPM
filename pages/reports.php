@@ -733,14 +733,15 @@ if (!hasPermission($__me, 'view_reports')) {
         }
 
         // بارگذاری گزارش‌ها
+        // سرو توسطِ go-api (پورتِ api/reports/list.php). خروجی برابر است و parity
+        // تأیید شده. فایلِ PHP دست‌نخورده و fallback است؛ برگشت = URL را به
+        // '../api/reports/list.php' برگردان.
         async function loadReports() {
             try {
                 console.log('=== شروع بارگذاری گزارش‌ها ===');
-                console.log('Token:', authToken);
-                console.log('URL:', window.location.origin + '/../api/reports/list.php');
 
                 showLoading();
-                const response = await fetch('../api/reports/list.php', {
+                const response = await fetch('/go/api/reports/list', {
                     headers: {
                         'Authorization': 'Bearer ' + authToken
                     }

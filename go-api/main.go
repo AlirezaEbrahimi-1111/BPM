@@ -105,6 +105,9 @@ func main() {
 
 	// ── ماژولِ گزارش‌ها (پورتِ api/reports/*) ──
 	mux.HandleFunc("GET /go/api/reports/stats", s.auth(reports.Stats(s.db)))
+	mux.HandleFunc("GET /go/api/reports/today", s.auth(reports.Today(s.db)))
+	mux.HandleFunc("GET /go/api/reports/history", s.auth(reports.History(s.db)))
+	mux.HandleFunc("GET /go/api/reports/list", s.auth(reports.List(s.db)))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{
