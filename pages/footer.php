@@ -31,9 +31,9 @@ require_once '../includes/version.php';
         justify-content: center;
         pointer-events: none;   /* نوارِ نامرئیِ تمام‌عرض جلوی کلیکِ محتوای صفحه را نگیرد */
         filter:
-            drop-shadow(0 -6px 18px rgba(0, 0, 0, .16))
-            drop-shadow(0 -2px 6px rgba(0, 0, 0, .10))
-            drop-shadow(0 -1px 2px rgba(0, 0, 0, .05));
+            drop-shadow(0 -1px 2px rgba(0, 0, 0, .05))
+            drop-shadow(0 -1px 30px rgba(0, 0, 0, .1))
+            drop-shadow(0 -1px 30px rgba(0, 0, 0, .1));
     }
 
     :root[data-theme="dark"] .site-footer-shadow {
@@ -107,8 +107,8 @@ require_once '../includes/version.php';
         <span>در شرکت</span>
         <span class="company">آوای شرق ملک</span>
         <span> | </span>
-        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۸ - ۱۱:۵۰">
-            نسخه: ۷.۳۳
+        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۸ - ۱۲:۰۰">
+            نسخه: ۷.۳۴
         </span>
     </div>
 </div>
