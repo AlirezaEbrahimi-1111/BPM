@@ -17,14 +17,35 @@ require_once '../includes/version.php';
         padding-bottom: 40px;
     }
 
-    .site-footer {
+    /* لایهٔ بیرونی فقط برای «سایه»: چون خودِ .site-footer ماسک دارد و ماسک هر
+       چیزی بیرونِ padding-box (از جمله drop-shadow) را می‌بُرد، سایه باید روی یک
+       عنصرِ بی‌ماسک باشد. drop-shadow روی این والدِ بی‌ماسک، سایه را دقیقاً به
+       شکلِ زبانهٔ ماسک‌شدهٔ فرزند (با گوش‌های مقعر) می‌اندازد. */
+    .site-footer-shadow {
         position: fixed;
         left: 0;
         right: 0;
         bottom: 0;
+        z-index: 80;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;   /* نوارِ نامرئیِ تمام‌عرض جلوی کلیکِ محتوای صفحه را نگیرد */
+        filter:
+            drop-shadow(0 -6px 18px rgba(0, 0, 0, .16))
+            drop-shadow(0 -2px 6px rgba(0, 0, 0, .10))
+            drop-shadow(0 -1px 2px rgba(0, 0, 0, .05));
+    }
+
+    :root[data-theme="dark"] .site-footer-shadow {
+        filter:
+            drop-shadow(0 -6px 20px rgba(0, 0, 0, .5))
+            drop-shadow(0 -2px 6px rgba(0, 0, 0, .34));
+    }
+
+    .site-footer {
+        pointer-events: auto;
         width: fit-content;
         margin-inline: auto;
-        z-index: 80;
 
         --r: 16px;              /* شعاعِ انحنا */
         line-height: 2.4;       /* ارتفاع را کنترل می‌کند */
@@ -41,12 +62,6 @@ require_once '../includes/version.php';
             conic-gradient(#000 0 0) padding-box;
         /* ته‌رنگِ فیلیِ خیلی ملایم تا از پس‌زمینهٔ سفیدِ صفحه متمایز بماند */
         background: color-mix(in srgb, var(--surface, #fff) 94%, #6b6472) border-box;
-        /* سایهٔ نرم اما دیده‌شدنی؛ چون ماسک داریم، drop-shadow (نه box-shadow) شکلِ زبانه را دنبال می‌کند.
-           بلورِ بزرگ‌تر + شفافیتِ کمتر = پخش و نرم، نه یک لبهٔ تیز. */
-        filter:
-            drop-shadow(0 -8px 24px rgba(0, 0, 0, .14))
-            drop-shadow(0 -3px 8px rgba(0, 0, 0, .10))
-            drop-shadow(0 -1px 2px rgba(0, 0, 0, .06));
 
         display: flex;
         align-items: center;
@@ -57,14 +72,11 @@ require_once '../includes/version.php';
 
     :root[data-theme="dark"] .site-footer {
         background: color-mix(in srgb, var(--surface, #1b2130) 90%, #ffffff) border-box;
-        filter:
-            drop-shadow(0 -8px 26px rgba(0, 0, 0, .45))
-            drop-shadow(0 -3px 8px rgba(0, 0, 0, .30));
     }
 
     /* صفحاتی که خودشان یک نوارِ عملیاتِ ثابتِ پایین دارند (مثلِ task-detail.php):
        زبانه بالایِ آن نوار بنشیند، نه رویش. */
-    body:has(.TDaction-buttons) .site-footer {
+    body:has(.TDaction-buttons) .site-footer-shadow {
         bottom: 58px;
     }
 
@@ -88,13 +100,15 @@ require_once '../includes/version.php';
         50% { transform: scale(1.2); }
     }
 </style>
-<div class="site-footer">
-    <span>تهیه شده با</span>
-    <span class="heart" style="color:red;">♥</span>
-    <span>در شرکت</span>
-    <span class="company">آوای شرق ملک</span>
+<div class="site-footer-shadow">
+    <div class="site-footer">
+        <span>تهیه شده با</span>
+        <span class="heart" style="color:red;">♥</span>
+        <span>در شرکت</span>
+        <span class="company">آوای شرق ملک</span>
         <span> | </span>
-        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۸ - ۱۱:۳۴">
-            نسخه: ۷.۳۲
+        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۸ - ۱۱:۵۰">
+            نسخه: ۷.۳۳
         </span>
+    </div>
 </div>
