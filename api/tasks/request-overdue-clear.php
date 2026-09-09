@@ -172,10 +172,13 @@ try {
 
     // ✅ تأیید خودکار اگر درخواست‌دهنده خودِ تعریف‌کننده باشد
     if ($isCreator) {
+        // ⚠️ last_approved_date این‌جا ست نمی‌شود — رفعِ معوقه = بخششِ دوره‌های
+        //    گذشته، نه تأییدِ دورهٔ امروز. نوشتنِ CURDATE() این‌جا باعث می‌شد
+        //    گاردِ فرانت (isLastApprovedDateToday) دکمهٔ «تکمیل» را تا آخرِ روز
+        //    مخفی کند، حتی وقتی دورهٔ امروز باز بود.
         $db->prepare("UPDATE tasks
                       SET overdue_forgiven_credit = overdue_forgiven_credit + ?,
                           has_pending_overdue_request = 0,
-                          last_approved_date = CURDATE(),
                           updated_at = NOW()
                       WHERE id = ?")
             ->execute([$remaining, $task_id]);

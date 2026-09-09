@@ -222,6 +222,23 @@ class TaskManager
                 }
             }
 
+            // ✅ ویرایشِ «موعد انجام» کارِ مقطعی: چون «موعدِ مؤثر» در کلِ سیستم
+            // max(due_date, deadline, original_deadline) است، اگر فقط due_date
+            // عوض شود و کوتاه‌تر باشد، deadline/original_deadlineِ قدیمیِ بزرگ‌تر
+            // در max() برنده می‌شوند و موعدِ اشتباه نمایش داده می‌شود. پس هر سه
+            // را هم‌راستا می‌کنیم. (فرم ویرایش فقط قبل از شروعِ کار باز است، پس
+            // این‌جا هنوز تاریخچهٔ تأخیری نداریم که original_deadline لازم باشد.)
+            if (isset($data['due_date']) && $data['due_date'] !== '' && $data['due_date'] !== null) {
+                $ttStmt = $this->db->prepare("SELECT task_type FROM tasks WHERE id = ?");
+                $ttStmt->execute([$task_id]);
+                if ($ttStmt->fetchColumn() === 'periodic') {
+                    $update_fields[] = "deadline = ?";
+                    $update_values[] = $data['due_date'];
+                    $update_fields[] = "original_deadline = ?";
+                    $update_values[] = $data['due_date'];
+                }
+            }
+
             if (!empty($update_fields)) {
                 $update_values[] = $task_id;
                 $sql = "UPDATE tasks SET " . implode(', ', $update_fields) . ", updated_at = NOW() WHERE id = ?";

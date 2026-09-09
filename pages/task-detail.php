@@ -353,16 +353,36 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
         /* در این صفحه فوتر ثابت نباشد — بعد از «تاریخچه» در جریانِ عادیِ
            صفحه بنشیند. فقط به‌اندازهٔ نوارِ عملیاتِ ثابتِ پایین (.TDaction-buttons)
-           فاصله می‌گذاریم تا فوتر زیرِ آن نیفتد. */
+           فاصله می‌گذاریم تا فوتر زیرِ آن نیفتد.
+           .site-footer-shadow لایهٔ بیرونیِ سایه است (footer.php) که پیش‌فرض
+           position:fixed دارد — این‌جا آن را هم غیرِثابت و بی‌سایه می‌کنیم. */
+        .site-footer-shadow,
         .site-footer {
             position: static !important;
             z-index: auto !important;
             box-shadow: none !important;
+            filter: none !important;
         }
 
         body,
         body:has(.TDaction-buttons) {
             padding-bottom: 84px !important;
+        }
+
+        /* دکمهٔ «بازگشت» — هاورِ بنفشِ استانداردِ سایت به‌جای خاکستریِ بوت‌استرپ
+           (rgba(142,87,254,.12) روشن / .18 تیره، مثلِ هاورِ منوها و ردیف‌ها) */
+        .TDaction-buttons .td-back-btn:hover,
+        .TDaction-buttons .td-back-btn:focus-visible {
+            background: rgba(142, 87, 254, .12);
+            border-color: #8e57fe;
+            color: #8e57fe;
+        }
+
+        :root[data-theme="dark"] .TDaction-buttons .td-back-btn:hover,
+        :root[data-theme="dark"] .TDaction-buttons .td-back-btn:focus-visible {
+            background: rgba(142, 87, 254, .18);
+            border-color: #8e57fe;
+            color: #b28bff;
         }
     </style>
 
@@ -490,7 +510,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
             <!-- دکمه‌های عمل -->
             <div class="TDaction-buttons">
-                <button type="button" class="btn btn-outline-secondary" onclick="goBackSmart();">
+                <button type="button" class="btn btn-outline-secondary td-back-btn" onclick="goBackSmart();">
                     <i class="bi bi-arrow-right ms-2"></i>بازگشت
                 </button>
                 <button type="button" class="btn btn-primary" id="startBtn" onclick="startThisTask()"
@@ -3121,13 +3141,21 @@ ${task.overdue_periods > 0 ? `
                 // «دوره‌ای» اصلاً وجود ندارد — پس حتماً null-check.
                 const deadlineElement = document.getElementById('deadlineValue');
                 if (deadlineElement) {
-                    if (task.deadline) {
-                        deadlineElement.textContent = (task.is_workflow_task == 1) ?
-                            formatDateTime(task.deadline) :
-                            formatDateTime(task.deadline).split(' - ')[0];
+                    if (task.is_workflow_task == 1) {
+                        // کارِ روتین: موعد ساعتی، مستقیم از ستونِ deadline
+                        deadlineElement.textContent = task.deadline
+                            ? formatDateTime(task.deadline)
+                            : 'بدون موعد';
                     } else {
-                        // موعد حذف/تعیین‌نشده — نباید متنِ قبلی باقی بماند
-                        deadlineElement.textContent = 'بدون موعد';
+                        // کارِ مقطعی: «موعد انجام» = جدیدترین از میان
+                        // due_date / deadline / original_deadline. تمدیدِ موعد ممکن
+                        // است فقط یکی از این سه را جلو ببرد؛ سرور بیشینه را در
+                        // next_due_date می‌دهد (enrichTaskDates) — همان ملاکِ
+                        // «مهلتِ باقی‌مانده/تأخیر» هم هست.
+                        const eff = task.next_due_date || task.deadline;
+                        deadlineElement.textContent = eff
+                            ? formatDateTime(eff).split(' - ')[0]
+                            : 'بدون موعد';
                     }
                 }
 

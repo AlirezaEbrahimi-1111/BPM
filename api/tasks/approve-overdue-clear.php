@@ -76,10 +76,15 @@ try {
     $db->beginTransaction();
 
     // اعمال بخشش: اعتبار += باقی‌مانده
+    // ⚠️ last_approved_date این‌جا ست نمی‌شود: رفعِ دوره‌های معوقه یعنی «بخششِ
+    //    دوره‌های گذشته»، نه «تأییدِ دورهٔ امروز». قبلاً این‌جا CURDATE() نوشته
+    //    می‌شد و باعث می‌شد گاردِ فرانت (isLastApprovedDateToday در
+    //    task-detail.php) دکمهٔ «تکمیل» را تا آخرِ همان روز مخفی کند — حتی اگر
+    //    دورهٔ امروز هنوز باز بود. صاحبِ واقعیِ این ستون فقط جریانِ تأییدِ
+    //    تکمیلِ دوره است (TaskManager::approveOrRejectTask).
     $db->prepare("UPDATE tasks
                   SET overdue_forgiven_credit = overdue_forgiven_credit + ?,
                       has_pending_overdue_request = 0,
-                      last_approved_date = CURDATE(),
                       updated_at = NOW()
                   WHERE id = ?")
        ->execute([$remaining, $task_id]);

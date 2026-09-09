@@ -327,10 +327,9 @@ try {
         ");
         $approve_stmt->execute([$request_id]);
 
-        // original_deadline دست‌نخورده می‌ماند تا تأخیرِ اولیه محفوظ بماند.
         if ($is_workflow) {
             // کارِ روتین: موعد ساعتی است و فقط در ستونِ deadline نگهداری می‌شود؛
-            // due_date برای این‌ها خالی می‌ماند و نباید دست بخورد.
+            // due_date/original_deadline برای این‌ها خالی می‌ماند و نباید دست بخورد.
             $update_task = $db->prepare("
                 UPDATE tasks
                 SET deadline = ?, has_pending_deadline_request = 0, updated_at = NOW()
@@ -341,28 +340,33 @@ try {
             $sync = $db->prepare("UPDATE workflow_instance_steps SET deadline = ? WHERE task_id = ?");
             $sync->execute([$new_deadline, $task_id]);
         } else {
-            // کارِ مقطعی: due_date و deadline باید هم‌راستا بمانند (مثلِ زمانِ ساخت).
-            // چند مصرف‌کننده (گیتِ ارجاع در TaskManager::delegateTask، و فیلتر/
-            // مرتب‌سازیِ تاریخ در my-tasks/all-tasks) مستقیم due_date را می‌خوانند،
-            // نه بیشینهٔ سه ستون؛ اگر due_date عقب بماند، موعدِ تمدیدشده آن‌جا
-            // نادیده گرفته می‌شود.
-            //
-            // ⚠️ ولی فقط اگر تاریخِ جدید گذشته نباشد — تریگرِ
+            // کارِ مقطعی: هر سه ستونِ تاریخ به موعدِ جدید می‌آیند.
+            // «موعدِ مؤثرِ» کار در کلِ سیستم = max(due_date, deadline,
+            // original_deadline) است (enrichTaskDates، my-tasks، گزارش‌ها،
+            // overview). اگر «تمدید موعد» فقط deadline را عوض کند، وقتی موعد
+            // را کوتاه‌تر/اصلاح کرده باشیم (کارِ ۲۳۵۱: از ۲۷/۰۹ به ۲۷/۰۸)،
+            // due_date/original_deadlineِ قدیمیِ بزرگ‌تر در max() برنده می‌شوند و
+            // «۳۷۵ روز» اشتباه نمایش داده می‌شود. با هم‌راستا کردنِ هر سه، max
+            // دقیقاً همان موعدِ توافق‌شده می‌شود — چه جلوتر رفته باشد چه عقب‌تر.
+            // (این دقیقاً همان کاری است که approve-deadline.php در تأییدِ نهایی
+            // می‌کند.) due_date فقط اگر گذشته نباشد — تریگرِ
             // check_task_date_before_update تغییرِ due_date به گذشته را رد می‌کند.
             if (substr((string) $new_deadline, 0, 10) >= date('Y-m-d')) {
                 $update_task = $db->prepare("
                     UPDATE tasks
-                    SET deadline = ?, due_date = ?, has_pending_deadline_request = 0, updated_at = NOW()
+                    SET deadline = ?, original_deadline = ?, due_date = ?,
+                        has_pending_deadline_request = 0, updated_at = NOW()
                     WHERE id = ?
                 ");
-                $update_task->execute([$new_deadline, $new_deadline, $task_id]);
+                $update_task->execute([$new_deadline, $new_deadline, $new_deadline, $task_id]);
             } else {
                 $update_task = $db->prepare("
                     UPDATE tasks
-                    SET deadline = ?, has_pending_deadline_request = 0, updated_at = NOW()
+                    SET deadline = ?, original_deadline = ?,
+                        has_pending_deadline_request = 0, updated_at = NOW()
                     WHERE id = ?
                 ");
-                $update_task->execute([$new_deadline, $task_id]);
+                $update_task->execute([$new_deadline, $new_deadline, $task_id]);
             }
         }
         // ثبت تاریخچه

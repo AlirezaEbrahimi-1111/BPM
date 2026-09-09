@@ -101,6 +101,13 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,.12);
         }
+        /* کارتِ آماریِ متناظر با فیلترِ وضعیتِ فعلی */
+        .stat-card.active {
+            outline: 3px solid rgba(255,255,255,.92);
+            outline-offset: -3px;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 22px rgba(0,0,0,.22);
+        }
         .stat-card .num { font-size: 1.45rem; font-weight: 700; line-height: 1.2; }
         .stat-card .lbl { font-size: .74rem; opacity: .92; margin-top: 2px; }
 
@@ -286,22 +293,22 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
         <div class="filters-wrapper">
                 <!-- آمار — 6 ستون -->
                 <div class="stats-row" id="statsRow">
-                    <div class="stat-card" style="background:#8e57fe;" onclick="filterByStatus('')">
+                    <div class="stat-card" data-status="" style="background:#8e57fe;" onclick="filterByStatus('')">
                         <div class="num" id="sTotal">–</div><div class="lbl">کل</div>
                     </div>
-                    <div class="stat-card" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);" onclick="filterByStatus('open')">
+                    <div class="stat-card" data-status="open" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);" onclick="filterByStatus('open')">
                         <div class="num" id="sOpen">–</div><div class="lbl">در انتظار پاسخ پشتیبان</div>
                     </div>
-                    <div class="stat-card" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);" onclick="filterByStatus('in_progress')">
+                    <div class="stat-card" data-status="in_progress" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);" onclick="filterByStatus('in_progress')">
                         <div class="num" id="sProgress">–</div><div class="lbl">در حال بررسی</div>
                     </div>
-                    <div class="stat-card" style="background:#8e57fe;" onclick="filterByStatus('waiting_reply')">
+                    <div class="stat-card" data-status="waiting_reply" style="background:#8e57fe;" onclick="filterByStatus('waiting_reply')">
                         <div class="num" id="sWaiting">–</div><div class="lbl">در انتظار پاسخ کاربر</div>
                     </div>
-                    <div class="stat-card" style="background:#1b7b39;" onclick="filterByStatus('resolved')">
+                    <div class="stat-card" data-status="resolved" style="background:#1b7b39;" onclick="filterByStatus('resolved')">
                         <div class="num" id="sResolved">–</div><div class="lbl">حل شده</div>
                     </div>
-                    <div class="stat-card" style="background:linear-gradient(135deg,#6b7280,#9ca3af);" onclick="filterByStatus('closed')">
+                    <div class="stat-card" data-status="closed" style="background:linear-gradient(135deg,#6b7280,#9ca3af);" onclick="filterByStatus('closed')">
                         <div class="num" id="sClosed">–</div><div class="lbl">بسته شده</div>
                     </div>
                 </div>
@@ -487,9 +494,56 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
         gridApi = agGrid.createGrid(document.getElementById('myGrid'), gridOptions);
         gridApi.showLoadingOverlay();
 
-        document.addEventListener('DOMContentLoaded', function(){
+        /* ── ذخیره/بازگردانیِ فیلترها و کارتِ آماریِ انتخاب‌شده (localStorage) ──
+           تا با رفتن به فرمِ دیگر و برگشت، آخرین فیلتر/جستجو/دسته‌بندی و وضعیتِ
+           انتخاب‌شده دوباره اعمال شود. */
+        var TICKETS_FILTER_KEY = 'tickets_filters_v1';
+
+        function saveTicketFilters(){
+            try {
+                localStorage.setItem(TICKETS_FILTER_KEY, JSON.stringify({
+                    status:   document.getElementById('fStatus').value,
+                    priority: document.getElementById('fPriority').value,
+                    category: document.getElementById('fCategory').value,
+                    search:   document.getElementById('fSearch').value
+                }));
+            } catch(e){}
+        }
+
+        function restoreTicketFilters(){
+            var f;
+            try { f = JSON.parse(localStorage.getItem(TICKETS_FILTER_KEY) || '{}'); }
+            catch(e){ f = {}; }
+            if (!f || typeof f !== 'object') return;
+
+            var st = document.getElementById('fStatus');
+            var pr = document.getElementById('fPriority');
+            var ca = document.getElementById('fCategory');
+            var se = document.getElementById('fSearch');
+
+            function setIfOption(sel, val){
+                if (val == null) return;
+                for (var i = 0; i < sel.options.length; i++){
+                    if (sel.options[i].value === String(val)) { sel.value = String(val); return; }
+                }
+            }
+            setIfOption(st, f.status);
+            setIfOption(pr, f.priority);
+            setIfOption(ca, f.category);   // فقط اگر آن دسته‌بندی هنوز موجود باشد
+            if (typeof f.search === 'string') se.value = f.search;
+        }
+
+        function syncActiveStatCard(){
+            var cur = document.getElementById('fStatus').value;
+            document.querySelectorAll('#statsRow .stat-card').forEach(function(c){
+                c.classList.toggle('active', (c.getAttribute('data-status') || '') === cur);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async function(){
             if (!authToken) { window.location.href = '../index.php'; return; }
-            loadCategories();
+            await loadCategories();   // اول گزینه‌های دسته‌بندی پر شود، بعد بازگردانی
+            restoreTicketFilters();
             loadTickets();
 
             // دکمهٔ «حل‌شده کردنِ تیکت‌های بی‌پاسخِ ۲۱ روزه» — فقط مدیرِ اصلی
@@ -543,6 +597,9 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
         /* ── بارگذاری تیکت‌ها ── */
         window.loadTickets = async function(page){
             if (page) curPage = page;
+
+            saveTicketFilters();
+            syncActiveStatCard();
 
             var qs = new URLSearchParams({
                 page: curPage,
