@@ -41,10 +41,12 @@ require_once '../includes/version.php';
             conic-gradient(#000 0 0) padding-box;
         /* ته‌رنگِ فیلیِ خیلی ملایم تا از پس‌زمینهٔ سفیدِ صفحه متمایز بماند */
         background: color-mix(in srgb, var(--surface, #fff) 94%, #6b6472) border-box;
-        /* سایهٔ نرم اما دیده‌شدنی؛ چون ماسک داریم، drop-shadow (نه box-shadow) شکلِ زبانه را دنبال می‌کند */
+        /* سایهٔ نرم اما دیده‌شدنی؛ چون ماسک داریم، drop-shadow (نه box-shadow) شکلِ زبانه را دنبال می‌کند.
+           بلورِ بزرگ‌تر + شفافیتِ کمتر = پخش و نرم، نه یک لبهٔ تیز. */
         filter:
-            drop-shadow(0 -4px 14px rgba(0, 0, 0, .20))
-            drop-shadow(0 -1px 3px rgba(0, 0, 0, .12));
+            drop-shadow(0 -8px 24px rgba(0, 0, 0, .14))
+            drop-shadow(0 -3px 8px rgba(0, 0, 0, .10))
+            drop-shadow(0 -1px 2px rgba(0, 0, 0, .06));
 
         display: flex;
         align-items: center;
@@ -55,7 +57,9 @@ require_once '../includes/version.php';
 
     :root[data-theme="dark"] .site-footer {
         background: color-mix(in srgb, var(--surface, #1b2130) 90%, #ffffff) border-box;
-        filter: drop-shadow(0 -4px 16px rgba(0, 0, 0, .55));
+        filter:
+            drop-shadow(0 -8px 26px rgba(0, 0, 0, .45))
+            drop-shadow(0 -3px 8px rgba(0, 0, 0, .30));
     }
 
     /* صفحاتی که خودشان یک نوارِ عملیاتِ ثابتِ پایین دارند (مثلِ task-detail.php):
@@ -90,7 +94,7 @@ require_once '../includes/version.php';
     <span>در شرکت</span>
     <span class="company">آوای شرق ملک</span>
         <span> | </span>
-        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۷ - ۱۸:۱۹">
-            نسخه: ۷.۳۱
+        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۸ - ۱۱:۳۴">
+            نسخه: ۷.۳۲
         </span>
 </div>
