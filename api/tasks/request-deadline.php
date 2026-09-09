@@ -346,12 +346,24 @@ try {
             // مرتب‌سازیِ تاریخ در my-tasks/all-tasks) مستقیم due_date را می‌خوانند،
             // نه بیشینهٔ سه ستون؛ اگر due_date عقب بماند، موعدِ تمدیدشده آن‌جا
             // نادیده گرفته می‌شود.
-            $update_task = $db->prepare("
-                UPDATE tasks
-                SET deadline = ?, due_date = ?, has_pending_deadline_request = 0, updated_at = NOW()
-                WHERE id = ?
-            ");
-            $update_task->execute([$new_deadline, $new_deadline, $task_id]);
+            //
+            // ⚠️ ولی فقط اگر تاریخِ جدید گذشته نباشد — تریگرِ
+            // check_task_date_before_update تغییرِ due_date به گذشته را رد می‌کند.
+            if (substr((string) $new_deadline, 0, 10) >= date('Y-m-d')) {
+                $update_task = $db->prepare("
+                    UPDATE tasks
+                    SET deadline = ?, due_date = ?, has_pending_deadline_request = 0, updated_at = NOW()
+                    WHERE id = ?
+                ");
+                $update_task->execute([$new_deadline, $new_deadline, $task_id]);
+            } else {
+                $update_task = $db->prepare("
+                    UPDATE tasks
+                    SET deadline = ?, has_pending_deadline_request = 0, updated_at = NOW()
+                    WHERE id = ?
+                ");
+                $update_task->execute([$new_deadline, $task_id]);
+            }
         }
         // ثبت تاریخچه
         $history_stmt = $db->prepare("

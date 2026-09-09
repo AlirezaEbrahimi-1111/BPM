@@ -671,7 +671,12 @@ class TaskManager
             // همان را به‌عنوان due_date تثبیت کن تا بعد از ارجاع، جدول‌ها /
             // فیلترهای تاریخ / مرتب‌سازی‌هایی که مستقیم due_date را می‌خوانند
             // هم موعد را ببینند و سه ستون دوباره هم‌راستا شوند.
-            if (empty($due_date) && !empty($effective_due)) {
+            //
+            // ⚠️ فقط اگر موعدِ مؤثر گذشته نباشد: تریگرِ check_task_date_before_update
+            // روی جدولِ tasks هر تغییرِ due_date به تاریخِ گذشته را رد می‌کند و
+            // کلِ ارجاع fail می‌شود. اگر گذشته بود، due_date دست‌نخورده می‌ماند
+            // (deadline/original_deadline خودشان موعدِ مؤثر را نگه می‌دارند).
+            if (empty($due_date) && !empty($effective_due) && $effective_due >= date('Y-m-d')) {
                 $due_date = $effective_due;
             }
 

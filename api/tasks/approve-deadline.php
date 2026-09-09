@@ -237,17 +237,30 @@ try {
         // return شده). due_date را هم هم‌راستا با deadline می‌کنیم چون گیتِ ارجاع
         // (TaskManager::delegateTask) و فیلتر/مرتب‌سازیِ تاریخ در my-tasks/all-tasks
         // مستقیم due_date را می‌خوانند، نه بیشینهٔ سه ستون را.
-        $update_stmt = $db->prepare("
-            UPDATE tasks
-            SET
-                deadline = ?,
-                original_deadline = ?,
-                due_date = ?,
-                has_pending_deadline_request = 0,
-                updated_at = NOW()
-            WHERE id = ?
-        ");
-        $result = $update_stmt->execute([$new_deadline, $new_deadline, $new_deadline, $task_id]);
+        //
+        // ⚠️ ولی فقط وقتی تاریخِ جدید گذشته نباشد: تریگرِ
+        // check_task_date_before_update روی جدولِ tasks، هر تغییرِ due_date به
+        // تاریخِ گذشته را با SQLSTATE 45000 رد می‌کند (deadline/original_deadline
+        // را کاری ندارد). درخواستِ تمدیدی که دیر تأیید شده و تاریخش گذشته →
+        // due_date دست‌نخورده می‌ماند تا کلِ تأیید fail نشود.
+        $syncDue = substr((string) $new_deadline, 0, 10) >= date('Y-m-d');
+        if ($syncDue) {
+            $update_stmt = $db->prepare("
+                UPDATE tasks
+                SET deadline = ?, original_deadline = ?, due_date = ?,
+                    has_pending_deadline_request = 0, updated_at = NOW()
+                WHERE id = ?
+            ");
+            $result = $update_stmt->execute([$new_deadline, $new_deadline, $new_deadline, $task_id]);
+        } else {
+            $update_stmt = $db->prepare("
+                UPDATE tasks
+                SET deadline = ?, original_deadline = ?,
+                    has_pending_deadline_request = 0, updated_at = NOW()
+                WHERE id = ?
+            ");
+            $result = $update_stmt->execute([$new_deadline, $new_deadline, $task_id]);
+        }
 
         if (!$result) {
             error_log("❌ Failed to update task deadline");
