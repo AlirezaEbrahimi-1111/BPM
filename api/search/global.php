@@ -119,14 +119,15 @@ try {
 
         $params = $accessParams;
         $wordSql = gs_word_conditions(['t.title', 't.description'], $words, $params);
-        $params[] = $idMatch;
+        $params[] = $idMatch;   // t.id
+        $params[] = $idMatch;   // t.workflow_instance_id — جستجوی همهٔ کارهای یک روتین با شناسهٔ روتین
         $stmt = $db->prepare("
             SELECT t.id, t.title, t.description
             FROM tasks t
             WHERE t.is_deleted = 0
               AND t.status NOT IN ('completed', 'approved', 'stopped', 'rejected')
               AND $accessSql
-              AND ($wordSql OR t.id = ?)
+              AND ($wordSql OR t.id = ? OR t.workflow_instance_id = ?)
             ORDER BY t.created_at DESC
             LIMIT $perType
         ");

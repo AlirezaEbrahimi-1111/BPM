@@ -1481,7 +1481,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 currentTemplateId = null;
                 redefineSourceId = null;
 
-                document.getElementById('modalTitle').innerHTML = '<i class="bi bi-eye"></i> مشاهدهٔ کار روتین';
+                document.getElementById('modalTitle').innerHTML = '<i class="bi bi-eye"></i> مشاهدهٔ کار روتین #' + templateId;
                 document.getElementById('templateId').value = '';
                 document.getElementById('templateName').value = t.name || '';
                 document.getElementById('templateDescription').value = t.description || '';

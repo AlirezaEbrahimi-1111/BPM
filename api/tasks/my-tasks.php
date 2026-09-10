@@ -130,6 +130,7 @@ SELECT DISTINCT
     t.is_pending_approval,
     t.has_pending_renewal_request,
     t.is_workflow_task,
+    t.workflow_instance_id,
     t.deadline,
     t.original_deadline,
     t.activity_section,

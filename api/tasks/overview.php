@@ -223,7 +223,7 @@ try {
             SELECT
                 t.id, t.title, t.description, t.task_type, t.priority, t.status,
                 t.due_date, t.created_at, t.creator_id, t.assignee_id, t.deadline,
-                t.is_workflow_task, t.activity_section,
+                t.is_workflow_task, t.workflow_instance_id, t.activity_section,
                 t.group_id, t.period_type, t.start_date, t.end_date, t.overdue_forgiven_credit,
                 tg.name as group_name, tg.color as group_color,
                 CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
@@ -347,7 +347,7 @@ try {
         SELECT
             t.id, t.title, t.description, t.task_type, t.priority, t.status,
             t.due_date, t.created_at, t.creator_id, t.assignee_id, t.deadline,
-            t.is_workflow_task, t.activity_section,
+            t.is_workflow_task, t.workflow_instance_id, t.activity_section,
             t.group_id, t.period_type, t.start_date, t.end_date, t.overdue_forgiven_credit,
             tg.name as group_name, tg.color as group_color,
             CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,

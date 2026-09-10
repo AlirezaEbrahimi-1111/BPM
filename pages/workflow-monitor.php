@@ -1592,6 +1592,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                          onclick="selectRoutine(${r.id}, '${escJsAttr(r.name)}')">
                         <i class="bi bi-diagram-3" style="font-size:0.85rem;color:var(--primary);"></i>
                         ${esc(r.name)}
+                        <span style="color:var(--text-muted);font-size:0.78rem;margin-inline-start:4px;">#${r.id}</span>
                         <i class="bi bi-check check-icon"></i>
                     </div>
                 `).join('');
@@ -1869,7 +1870,14 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
         function renderDetailModal(wf, steps) {
             const modeLabel = wf.execution_mode === 'parallel' ? 'موازی' : 'آبشاری';
-            document.getElementById('modalTitle').textContent = wf.title + ' — ' + modeLabel;
+            // شناسهٔ روتین پیش از عنوان + گاردِ عنوانِ خالی (روتین‌های قدیمی گاهی title ندارند)
+            document.getElementById('modalTitle').textContent =
+                '#' + wf.id + ' — ' + (wf.title || 'بدون عنوان') + ' — ' + modeLabel;
+
+            // روتین‌های ساخته‌شده پیش از قالب‌های مرحله‌ای (چارت/فلوچارت) مرحله‌ای با
+            // step_name/step_order ندارند؛ برای آن‌ها نمودار رسم نمی‌شود (قبلاً «undefined» می‌زد).
+            const hasFlow = Array.isArray(steps) && steps.length > 0 &&
+                steps.every(s => s.step_name != null && s.stage_sequence != null);
             const progress = parseInt(wf.progress) || 0;
             const barCls = wf.status === 'delayed' ? 'bar-danger' : wf.status === 'completed' ? 'bar-success' : '';
 
@@ -1939,6 +1947,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         <div class="progress-bar ${barCls}" style="width:${progress}%;border-radius:999px;"></div>
                     </div>
                 </div>
+                ${hasFlow ? `
                 <div class="wfm-chart-wrap">
                     <div class="wfm-chart-head">
                         <span><i class="bi bi-diagram-2"></i> مسیرِ روتین</span>
@@ -1948,13 +1957,13 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         <span class="lg"><span class="dot" style="background:#cbd5e1"></span>خفته/کنسل</span>
                     </div>
                     <div id="wfmChart"></div>
-                </div>
+                </div>` : ''}
                 <p class="fw-600 mb-3" style="font-weight:600;">مراحل (${toFa(steps.length)})</p>
                 ${stepsHtml}
             `;
 
             new bootstrap.Modal(document.getElementById('detailModal')).show();
-            setTimeout(function () { wfmRenderFlow(steps); }, 120);
+            if (hasFlow) setTimeout(function () { wfmRenderFlow(steps); }, 120);
         }
 
         /* ─── نمودارِ فقط‌خواندنیِ مسیرِ روتین (فاز ۴) ─── */

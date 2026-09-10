@@ -77,7 +77,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             <div style="flex: 1;">
                 <div class="search-box">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="searchInput" placeholder="جستجو در عنوان، توضیحات یا شناسه...">
+                    <input type="text" id="searchInput" placeholder="جستجو در عنوان، توضیحات، شناسه یا شناسهٔ روتین...">
                 </div>
 
                 <div class="filters-row">
@@ -540,7 +540,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             const today = new Date().toISOString().slice(0, 10);
 
             filteredTasks = allTasks.filter(t => {
-                const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + (t.assignee_name || '') + ' ' + t.id + ' ' + (t.history_text || '');
+                const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + (t.assignee_name || '') + ' ' + t.id + ' ' + (t.workflow_instance_id || '') + ' ' + (t.history_text || '');
                 t._checklistOnlyMatch = isChecklistOnlyMatch(otherText, t.checklist_titles || '', s);
                 if (s && !matchesAllWords(otherText + ' ' + (t.checklist_titles || ''), s)) return false;
                 if (as && t.assignee_id != as) return false;

@@ -42,7 +42,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
             <div style="flex: 1;">
                 <div class="search-box">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="searchInput" placeholder="جستجو در عنوان یا توضیحات...">
+                    <input type="text" id="searchInput" placeholder="جستجو در عنوان، توضیحات، شناسه یا شناسهٔ روتین...">
                 </div>
 
                 <div class="filters-row">
@@ -621,7 +621,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
             const today = new Date().toISOString().slice(0, 10);
 
             filteredTasks = allTasks.filter(t => {
-                const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + t.id + ' ' + (t.history_text || '');
+                const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + t.id + ' ' + (t.workflow_instance_id || '') + ' ' + (t.history_text || '');
                 t._checklistOnlyMatch = isChecklistOnlyMatch(otherText, t.checklist_titles || '', s);
                 if (s && !matchesAllWords(otherText + ' ' + (t.checklist_titles || ''), s)) return false;
                 if (cr && t.creator_id != cr) return false;

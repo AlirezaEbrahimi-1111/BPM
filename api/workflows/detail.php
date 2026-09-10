@@ -65,9 +65,10 @@ try {
     // زمان پیش‌بینی: بر اساس بیشترین تاریخ از (deadline, original_deadline, due_date) در جدول tasks
     // زمان واقعی: تا زمان تکمیل یا الان
     // تأخیر: بر اساس بیشترین تاریخ از tasks
-    $sql = "SELECT 
+    $sql = "SELECT
                 wis.id,
                 wis.step_order as stage_sequence,
+                wis.step_order,
                 ws.step_name,
                 wis.status,
                 ws.time_limit_hours,

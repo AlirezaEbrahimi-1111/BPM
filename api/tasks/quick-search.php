@@ -52,12 +52,12 @@ try {
                     AND th.action IS NOT NULL
               )
           )
-          AND (t.title LIKE ? OR t.id = ?)
+          AND (t.title LIKE ? OR t.id = ? OR t.workflow_instance_id = ?)
         ORDER BY t.created_at DESC
         LIMIT 15
     ");
     $idMatch = ctype_digit($q) ? (int)$q : 0;
-    $stmt->execute([$user_id, $user_id, $user_id, $user_id, '%' . $q . '%', $idMatch]);
+    $stmt->execute([$user_id, $user_id, $user_id, $user_id, '%' . $q . '%', $idMatch, $idMatch]);
     $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode(['success' => true, 'tasks' => $tasks], JSON_UNESCAPED_UNICODE);
