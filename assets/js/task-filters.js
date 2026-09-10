@@ -472,6 +472,12 @@ window.TF = (function () {
      * @param {HTMLSelectElement} selectEl
      * @param {object} opts  { list:'task'|'instance', selected:'all' }
      */
+    // عنوانِ گروه‌ها و گزینهٔ «همه» با خط‌تیره از دو طرف متمایز می‌شوند
+    var STATUS_FILTER_SEP = '─────'; // ─────
+    function _decorateFilterLabel(txt) {
+        return STATUS_FILTER_SEP + ' ' + txt + ' ' + STATUS_FILTER_SEP;
+    }
+
     function renderStatusFilter(selectEl, opts) {
         if (!selectEl) return;
         opts = opts || {};
@@ -484,10 +490,11 @@ window.TF = (function () {
             var g = f.group || null;
             if (g !== curGroup) {
                 if (groupOpen) { html += '</optgroup>'; groupOpen = false; }
-                if (g) { html += '<optgroup label="' + g + '">'; groupOpen = true; }
+                if (g) { html += '<optgroup label="' + _decorateFilterLabel(g) + '">'; groupOpen = true; }
                 curGroup = g;
             }
-            html += '<option value="' + f.key + '"' + (f.key === sel ? ' selected' : '') + '>' + f.label + '</option>';
+            var label = (f.key === 'all') ? _decorateFilterLabel(f.label) : f.label;
+            html += '<option value="' + f.key + '"' + (f.key === sel ? ' selected' : '') + '>' + label + '</option>';
         });
         if (groupOpen) html += '</optgroup>';
         selectEl.innerHTML = html;
