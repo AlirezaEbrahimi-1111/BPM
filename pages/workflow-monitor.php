@@ -1362,6 +1362,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
                     // 🆕 اگر با ?template=ID آمده‌ایم، همان روتین را فیلتر کن (یک‌بار)
                     applyTemplateFromUrl();
+                    // 🆕 اگر با ?search=... آمده‌ایم (از سرچ سراسری)، در کادر جستجو بگذار
+                    applySearchFromUrl();
 
                     applyFilter(); // ← render با فیلتر فعلی، نه reset
 
@@ -1404,6 +1406,20 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             updateResetBtn();
             applyFilter();
         }
+        /* 🆕 خواندن ?search=... از URL (مثلاً کلیک روی یک روتین در سرچ سراسری) —
+           همان عبارت را در کادر جستجو می‌گذارد و فیلتر می‌کند. فقط یک‌بار. */
+        let _searchUrlApplied = false;
+
+        function applySearchFromUrl() {
+            if (_searchUrlApplied) return;
+            const q = new URLSearchParams(location.search).get('search');
+            if (!q) return;
+            _searchUrlApplied = true;
+            const inp = document.getElementById('searchInput');
+            if (inp) inp.value = q;
+            handleSearch(q); // خودش applyFilter را صدا می‌زند
+        }
+
         /* 🆕 خواندن ?template=ID از URL و اعمال فیلتر روتین */
         let _templateUrlApplied = false;
 

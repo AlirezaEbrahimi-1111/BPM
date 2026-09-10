@@ -291,15 +291,17 @@ try {
         }
     }
 
-    // ───── فرآیندهای در حال اجرا (workflow instances) ─────
+    // ───── فرآیندهای در حال اجرا (workflow instances / روتین‌ها) ─────
     if (isset($want['workflow'])) {
         $params = [$orgId];
-        $wordSql = gs_word_conditions(['wt.name'], $words, $params);
+        $wordSql = gs_word_conditions(['wt.name', 'wi.title'], $words, $params);
+        $params[] = $idMatch;   // wi.id — جستجوی روتین با شناسهٔ آن
         $stmt = $db->prepare("
-            SELECT wi.id, wt.name
+            SELECT wi.id, COALESCE(NULLIF(wi.title, ''), wt.name) AS name
             FROM workflow_instances wi
-            JOIN workflow_templates wt ON wt.id = wi.template_id
-            WHERE wi.organization_id = ? AND ($wordSql)
+            LEFT JOIN workflow_templates wt ON wt.id = wi.template_id
+            WHERE wi.organization_id = ? AND wi.is_deleted = 0
+              AND ($wordSql OR wi.id = ?)
             ORDER BY wi.started_at DESC
             LIMIT $perType
         ");
@@ -307,12 +309,13 @@ try {
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             $results[] = [
                 'type' => 'workflow',
-                'type_label' => 'فرآیند در حال اجرا',
+                'type_label' => 'روتین',
                 'icon' => 'bi-diagram-3',
                 'id' => (int) $row['id'],
-                'title' => $row['name'],
+                'title' => '#' . $row['id'] . ' — ' . ($row['name'] ?? 'روتین'),
                 'snippet' => '',
-                'link' => 'workflow-monitor.php?instance=' . $row['id'],
+                // به صفحهٔ مانیتورینگ برو و همان شناسه را در کادر جستجو فیلتر کن
+                'link' => 'workflow-monitor.php?search=' . $row['id'],
             ];
         }
     }
