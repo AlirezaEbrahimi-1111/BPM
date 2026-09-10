@@ -76,6 +76,42 @@ func (s *server) requireFlags(cols []string, next http.HandlerFunc) http.Handler
 	}
 }
 
+// requireCRMAccess: نوشتن در ماژولِ فاکتور برای هر کسی که «دیدنِ ماژول» را دارد.
+// معادلِ includes/crm_access.php: سوپرادمین (id 1/19)، یا فلگِ
+// is_create_official_invoice / is_sales_manager، یا عضوِ فعالِ تیمِ حسابداریِ
+// سازمانِ ۱ (بخش/واحد). با این، «دسترسیِ دیدن = دسترسیِ نوشتن/ابطال/ویرایش».
+func (s *server) requireCRMAccess(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		u := userOf(r.Context())
+		if u.ID == 1 || u.ID == 19 {
+			next(w, r)
+			return
+		}
+		var ok int
+		err := s.db.QueryRow(`
+			SELECT 1 FROM users u
+			WHERE u.id = ? AND u.is_active = 1
+			  AND (
+			        u.is_create_official_invoice = 1
+			     OR u.is_sales_manager = 1
+			     OR (u.organization_id = 1 AND (
+			            u.activity_section = 'accounting'
+			         OR u.activity_unit = 'AC'
+			         OR EXISTS (SELECT 1 FROM user_activity_sections uas
+			                    WHERE uas.user_id = u.id AND uas.section_key = 'accounting')
+			         OR EXISTS (SELECT 1 FROM user_activity_units uau
+			                    WHERE uau.user_id = u.id AND uau.activity_unit = 'AC')
+			        ))
+			  )
+			LIMIT 1`, u.ID).Scan(&ok)
+		if err == nil && ok == 1 {
+			next(w, r)
+			return
+		}
+		writeErr(w, http.StatusForbidden, "برای این کار مجوز ندارید")
+	}
+}
+
 // ──────────────── ابزارِ کوچک ────────────────
 
 func idParam(r *http.Request) int64 {

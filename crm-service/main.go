@@ -259,10 +259,10 @@ func main() {
 		log.Fatalf("انبارِ official یافت نشد — آیا مهاجرتِ inv_* اجرا شده؟ (%v)", err)
 	}
 
-	// دسترسیِ نوشتنِ کاتالوگ: کاربر باید یکی از این مجوزها را داشته باشد.
-	writeFlags := []string{"is_create_official_invoice", "is_sales_manager"}
+	// نوشتن در ماژولِ فاکتور: هر کسی که «دیدنِ ماژول» را دارد (معادلِ
+	// includes/crm_access.php) — یعنی دسترسیِ دیدن = دسترسیِ نوشتن.
 	auth := s.authMiddleware
-	write := func(h http.HandlerFunc) http.HandlerFunc { return auth(s.requireFlags(writeFlags, h)) }
+	write := func(h http.HandlerFunc) http.HandlerFunc { return auth(s.requireCRMAccess(h)) }
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /crm/api/health", s.handleHealth)
