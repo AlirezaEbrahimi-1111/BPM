@@ -472,7 +472,7 @@ window.TF = (function () {
      * @param {HTMLSelectElement} selectEl
      * @param {object} opts  { list:'task'|'instance', selected:'all' }
      */
-    // عنوانِ گروه‌ها و گزینهٔ «همه» با خط‌تیره از دو طرف متمایز می‌شوند
+    // فقط عنوانِ گروه‌ها (عمومی/کارِ عادی/روتین) با خط‌تیرهٔ قرینه از دو طرف — وسط‌چین دیده می‌شوند
     var STATUS_FILTER_SEP = '─────'; // ─────
     function _decorateFilterLabel(txt) {
         return STATUS_FILTER_SEP + ' ' + txt + ' ' + STATUS_FILTER_SEP;
@@ -493,7 +493,7 @@ window.TF = (function () {
                 if (g) { html += '<optgroup label="' + _decorateFilterLabel(g) + '">'; groupOpen = true; }
                 curGroup = g;
             }
-            var label = (f.key === 'all') ? _decorateFilterLabel(f.label) : f.label;
+            var label = f.label; // «همه» بدونِ خط‌تیره؛ فقط optgroupها متمایز می‌شوند
             html += '<option value="' + f.key + '"' + (f.key === sel ? ' selected' : '') + '>' + label + '</option>';
         });
         if (groupOpen) html += '</optgroup>';
