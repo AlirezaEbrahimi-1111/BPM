@@ -618,6 +618,102 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
         background: rgba(255, 255, 255, 0.3);
         color: #fff;
     }
+
+    /* ── کادرِ کلیکیِ حضوروغیاب (رفتار مشابهِ کادرِ نوتیفیکیشن) ── */
+    #attendanceContainer {
+        position: relative;
+    }
+
+    .attendance-panel {
+        position: absolute;
+        top: calc(100% + 10px);
+        inset-inline-end: 0;
+        z-index: 1100;
+        width: min(300px, 92vw);
+        background: var(--surface, #fff);
+        color: var(--text-strong, #1f2937);
+        border: 1px solid var(--border-soft, #ece7f6);
+        border-radius: 14px;
+        box-shadow: 0 12px 34px rgba(20, 12, 40, .18), 0 3px 10px rgba(20, 12, 40, .10);
+        padding: 12px;
+        text-align: right;
+        direction: rtl;
+        animation: attPanelIn .14s ease-out;
+    }
+
+    @keyframes attPanelIn {
+        from { opacity: 0; transform: translateY(-6px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    :root[data-theme="dark"] .attendance-panel {
+        background: var(--surface, #1b2130);
+        color: var(--text-strong, #e5e7eb);
+        border-color: rgba(255, 255, 255, .08);
+        box-shadow: 0 14px 38px rgba(0, 0, 0, .55);
+    }
+
+    .att-panel-mytime {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12.5px;
+        padding: 6px 8px 10px;
+        border-bottom: 1px dashed var(--border-soft, #e6e0f2);
+        margin-bottom: 8px;
+    }
+    .att-panel-mytime i { color: #16a34a; font-size: 14px; }
+    .att-panel-mytime b { font-weight: 700; letter-spacing: .3px; direction: ltr; unicode-bidi: isolate; }
+    :root[data-theme="dark"] .att-panel-mytime { border-bottom-color: rgba(255,255,255,.10); }
+
+    .att-panel-abs-head {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted, #6b7280);
+        padding: 2px 6px 8px;
+    }
+    .att-panel-abs-head i { font-size: 13px; }
+
+    .att-panel-list { max-height: 260px; overflow-y: auto; }
+
+    .att-abs-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 7px 8px;
+        border-radius: 9px;
+        font-size: 13px;
+    }
+    .att-abs-row + .att-abs-row { margin-top: 2px; }
+    .att-abs-row:hover { background: rgba(142, 87, 254, .12); }
+    :root[data-theme="dark"] .att-abs-row:hover { background: rgba(142, 87, 254, .18); }
+    .att-abs-row .name { font-weight: 600; }
+
+    .att-abs-badge {
+        flex-shrink: 0;
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 999px;
+        white-space: nowrap;
+    }
+    .att-abs-badge.absent { background: #fee2e2; color: #b91c1c; }
+    .att-abs-badge.leave  { background: #ffe4e6; color: #be123c; }
+    .att-abs-badge.pass   { background: #fef3c7; color: #92400e; }
+    :root[data-theme="dark"] .att-abs-badge.absent { background: rgba(239,68,68,.18); color: #fca5a5; }
+    :root[data-theme="dark"] .att-abs-badge.leave  { background: rgba(244,63,94,.18); color: #fda4af; }
+    :root[data-theme="dark"] .att-abs-badge.pass   { background: rgba(245,158,11,.18); color: #fcd34d; }
+
+    .att-panel-empty {
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-muted, #9ca3af);
+        padding: 14px 8px;
+    }
 </style>
 <!-- بستن فوری drawer قبل از render — جلوگیری از flash -->
 <script>
@@ -1967,8 +2063,6 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
                 throw new Error(data.message || 'API Error');
             }
 
-            const tooltipContent = buildTooltipContent(data);
-
             container.innerHTML = '';
             container.style.display = 'flex';
 
@@ -2002,23 +2096,125 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
                 container.appendChild(complete);
             }
 
-            if (tooltipContent) {
-                const infoBtn = document.createElement('button');
-                infoBtn.className = 'attendance-info-btn';
-                infoBtn.type = 'button';
-                infoBtn.title = 'ساعت ورود و خروج امروز';
-                infoBtn.innerHTML = `
-                <i class="bi bi-clock-history"></i>
-                <div class="attendance-tooltip">${tooltipContent}</div>
-            `;
-                container.appendChild(infoBtn);
-            }
+            // آیکنِ اطلاعات → کادرِ کلیکیِ حضوروغیاب: ساعتِ خلاصهٔ خودت +
+            // لیستِ غایبینِ امروزِ سازمان. برای همهٔ کاربران، نه فقط مدیر.
+            _attTodayData = data;
+            const infoBtn = document.createElement('button');
+            infoBtn.className = 'attendance-info-btn';
+            infoBtn.type = 'button';
+            infoBtn.id = 'attInfoBtn';
+            infoBtn.title = 'ساعتِ ورودِ شما و غایبینِ امروز';
+            infoBtn.innerHTML = '<i class="bi bi-clock-history"></i>';
+            infoBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                toggleAttendancePanel();
+            });
+            container.appendChild(infoBtn);
+
+            const panel = document.createElement('div');
+            panel.className = 'attendance-panel';
+            panel.id = 'attPanel';
+            panel.hidden = !_attPanelOpen;
+            panel.addEventListener('click', function (e) { e.stopPropagation(); });
+            container.appendChild(panel);
+            renderAttendancePanel();
+
+            // تازه‌سازیِ لیستِ غایبین در هر بارگذاری/رفرشِ صفحه
+            loadAbsentToday();
 
         } catch (error) {
             console.error('❌ Error loading attendance:', error);
             if (container) container.style.display = 'none';
         }
     }
+
+    // ============================================
+    //  کادرِ کلیکیِ حضوروغیاب (رفتار مشابهِ کادرِ نوتیفیکیشن)
+    // ============================================
+    let _attTodayData = null;   // آخرین پاسخِ today-status.php
+    let _attAbsData   = null;   // آخرین پاسخِ absent-today.php
+    let _attPanelOpen = false;
+
+    function _attFa(v) { return (typeof toFa === 'function' ? toFa(v) : String(v == null ? '' : v)); }
+
+    // ساعتِ خلاصه: ورود۱ | خروج۱ | ورود۲ | خروج۲ — nullها حذف، تعدادِ فرد = هنوز داخلی
+    function buildMyTimeCompact(data) {
+        if (!data) return null;
+        const parts = [
+            data.shift1 && data.shift1.check_in,
+            data.shift1 && data.shift1.check_out,
+            data.shift2 && data.shift2.check_in,
+            data.shift2 && data.shift2.check_out
+        ].filter(Boolean).map(_attFa);
+        return parts.length ? parts.join(' | ') : null;
+    }
+
+    async function loadAbsentToday() {
+        if (!authToken) return;
+        try {
+            const res = await fetch(getApiUrl('attendance/absent-today.php'), {
+                headers: { 'Authorization': 'Bearer ' + authToken },
+                cache: 'no-store',
+                signal: AbortSignal.timeout(8000)
+            });
+            const d = await res.json();
+            if (d && d.success) { _attAbsData = d; renderAttendancePanel(); }
+        } catch (e) { /* بی‌صدا؛ کادر با «در حال بارگذاری» می‌ماند */ }
+    }
+
+    function renderAttendancePanel() {
+        const panel = document.getElementById('attPanel');
+        if (!panel) return;
+
+        const myTime = buildMyTimeCompact(_attTodayData);
+        let html =
+            '<div class="att-panel-mytime">' +
+                '<i class="bi bi-check-circle-fill"></i>' +
+                '<span>ساعتِ ورودِ شما: <b>' + (myTime ? myTime : 'ثبت نشده') + '</b></span>' +
+            '</div>';
+
+        const abs = _attAbsData;
+        if (abs && abs.holiday) {
+            html += '<div class="att-panel-empty">امروز تعطیل است.</div>';
+        } else if (!abs) {
+            html += '<div class="att-panel-empty">در حال بارگذاری…</div>';
+        } else {
+            const list = abs.absent || [];
+            html += '<div class="att-panel-abs-head"><i class="bi bi-people"></i>' +
+                    ' پرسنلِ غایب / ثبت‌نشدهٔ امروز (' + _attFa(list.length) + ' نفر)</div>';
+            if (!list.length) {
+                html += '<div class="att-panel-empty">همهٔ پرسنل امروز حاضرند.</div>';
+            } else {
+                const badge = t => t === 'leave' ? '<span class="att-abs-badge leave">مرخصی</span>'
+                                 : t === 'pass'  ? '<span class="att-abs-badge pass">پاس</span>'
+                                 : '<span class="att-abs-badge absent">غایب</span>';
+                html += '<div class="att-panel-list">' + list.map(p =>
+                    '<div class="att-abs-row"><span class="name">' + esc(p.name) + '</span>' + badge(p.type) + '</div>'
+                ).join('') + '</div>';
+            }
+        }
+        panel.innerHTML = html;
+    }
+
+    function toggleAttendancePanel() {
+        const panel = document.getElementById('attPanel');
+        if (!panel) return;
+        _attPanelOpen = panel.hidden;      // اگر مخفی بود → باز کن
+        panel.hidden = !_attPanelOpen;
+        if (_attPanelOpen) {
+            renderAttendancePanel();
+            loadAbsentToday();             // تازه‌سازی هنگامِ باز شدن
+        }
+    }
+
+    // کلیک بیرون از کادر → بستن
+    document.addEventListener('click', function (e) {
+        const panel = document.getElementById('attPanel');
+        if (panel && !panel.hidden && (!e.target.closest || !e.target.closest('#attendanceContainer'))) {
+            _attPanelOpen = false;
+            panel.hidden = true;
+        }
+    });
     // ============================================
     // ✅ ساخت محتوای Tooltip
     // ============================================
