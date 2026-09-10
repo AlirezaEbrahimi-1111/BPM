@@ -25,6 +25,7 @@ type invoiceIn struct {
 	DocType      string          `json:"doc_type"`
 	CustomerID   int64           `json:"customer_id"`
 	CustomerName string          `json:"customer_name"` // اگر شناسه نبود، از این نام یک مشتریِ «حقیقی» ساخته می‌شود
+	PartnerID    int64           `json:"partner_id"`    // همکار — ۰ یعنی «فاکتورِ خودِ شرکت»
 	IssueDate    string          `json:"issue_date"`    // "YYYY-MM-DD" یا ""
 	PaymentType  string          `json:"payment_type"`  // "cash" | "credit" | ""
 	Note         string          `json:"note"`
@@ -77,7 +78,18 @@ type invoiceOut struct {
 	CreatedAt      string           `json:"created_at"`
 	ApprovedAt     string           `json:"approved_at"`
 	ConvertedToID  *int64           `json:"converted_to_id"`
-	Items          []invoiceItemOut `json:"items,omitempty"`
+
+	// همکار (اگر فاکتور به‌درخواستِ یک همکار صادر شده)
+	PartnerID             *int64  `json:"partner_id"`
+	PartnerName           string  `json:"partner_name"`
+	PartnerPercent        float64 `json:"partner_percent"`         // درصدِ سهمِ ماهِ صدور (زنده)
+	PartnerProfitAmount   int64   `json:"partner_profit_amount"`   // percent × (subtotal - discount)
+	PartnerProfitRecorded bool    `json:"partner_profit_recorded"`
+	SettlementStatus      string  `json:"settlement_status"`
+	MoadianStatus         string  `json:"moadian_status"`
+	MoadianCode           string  `json:"moadian_code"`
+
+	Items []invoiceItemOut `json:"items,omitempty"`
 }
 
 // ───────────────────────── محاسبه ─────────────────────────
@@ -207,7 +219,9 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 	u := userOf(r.Context())
 
 	var o invoiceOut
-	var sy, sn, conv sql.NullInt64
+	var sy, sn, conv, pid sql.NullInt64
+	var partnerName, settlement, moadian, mcode string
+	var recordedInt int
 	err := s.db.QueryRow(`
 		SELECT i.id, i.doc_type, COALESCE(i.number,''), i.seq_year, i.seq_no,
 		       i.customer_id, COALESCE(c.name,'—'), COALESCE(i.issue_date,''),
@@ -215,13 +229,17 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 		       i.tax_amount, i.total_amount, COALESCE(i.note,''),
 		       DATE_FORMAT(i.created_at,'%Y-%m-%d %H:%i'),
 		       COALESCE(DATE_FORMAT(i.approved_at,'%Y-%m-%d %H:%i'),''),
-		       i.converted_to_id
+		       i.converted_to_id,
+		       i.partner_id, COALESCE(p.name,''), i.partner_profit_recorded,
+		       i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,'')
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
+		LEFT JOIN inv_partners  p ON p.id = i.partner_id
 		WHERE i.id = ? AND i.organization_id = ?`, id, u.OrgID).
 		Scan(&o.ID, &o.DocType, &o.Number, &sy, &sn, &o.CustomerID, &o.CustomerName,
 			&o.IssueDate, &o.Status, &o.Source, &o.PaymentType, &o.Subtotal, &o.DiscountAmount, &o.TaxAmount,
-			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv)
+			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv,
+			&pid, &partnerName, &recordedInt, &settlement, &moadian, &mcode)
 	if err == sql.ErrNoRows {
 		writeErr(w, http.StatusNotFound, "فاکتور یافت نشد")
 		return
@@ -241,6 +259,27 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 	if conv.Valid {
 		v := conv.Int64
 		o.ConvertedToID = &v
+	}
+
+	o.SettlementStatus, o.MoadianStatus, o.MoadianCode = settlement, moadian, mcode
+	if pid.Valid && pid.Int64 > 0 {
+		v := pid.Int64
+		o.PartnerID = &v
+		o.PartnerName = partnerName
+		o.PartnerProfitRecorded = recordedInt == 1
+
+		var jy, jm int
+		if _, t := parseIssueDate(o.IssueDate); !t.IsZero() {
+			jy, jm = jalaliYMOf(t)
+		} else {
+			jy, jm = jalaliYMOf(time.Time{})
+		}
+		o.PartnerPercent = s.partnerPercent(v, jy, jm)
+		preTax := o.Subtotal - o.DiscountAmount
+		if preTax < 0 {
+			preTax = 0
+		}
+		o.PartnerProfitAmount = int64(math.Round(float64(preTax) * o.PartnerPercent / 100))
 	}
 
 	rows, err := s.db.Query(`
@@ -399,13 +438,17 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if in.PartnerID > 0 && !s.ownsPartner(in.PartnerID, u.OrgID) {
+		writeErr(w, http.StatusBadRequest, "همکارِ انتخاب‌شده معتبر نیست")
+		return
+	}
 
 	res, err := tx.Exec(`
 		INSERT INTO inv_invoices
-		  (organization_id, doc_type, customer_id, warehouse_id, issue_date, status, source,
+		  (organization_id, doc_type, customer_id, partner_id, warehouse_id, issue_date, status, source,
 		   payment_type, subtotal_amount, discount_amount, tax_amount, total_amount, note, created_by)
-		VALUES (?, ?, ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?, ?)`,
-		u.OrgID, docType, custID, s.officialWarehouseID, issueNS,
+		VALUES (?, ?, ?, ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?, ?)`,
+		u.OrgID, docType, custID, nullableID(in.PartnerID), s.officialWarehouseID, issueNS,
 		normalizePaymentType(in.PaymentType), sub, disc, tax, total, nullIfEmpty(in.Note), u.ID)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "درجِ فاکتور ناموفق بود")
@@ -481,13 +524,17 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if in.PartnerID > 0 && !s.ownsPartner(in.PartnerID, u.OrgID) {
+		writeErr(w, http.StatusBadRequest, "همکارِ انتخاب‌شده معتبر نیست")
+		return
+	}
 
 	if _, err := tx.Exec(`
 		UPDATE inv_invoices
-		SET doc_type = ?, customer_id = ?, issue_date = ?, payment_type = ?, note = ?,
+		SET doc_type = ?, customer_id = ?, partner_id = ?, issue_date = ?, payment_type = ?, note = ?,
 		    subtotal_amount = ?, discount_amount = ?, tax_amount = ?, total_amount = ?
 		WHERE id = ?`,
-		docType, custID, issueNS, normalizePaymentType(in.PaymentType), nullIfEmpty(in.Note),
+		docType, custID, nullableID(in.PartnerID), issueNS, normalizePaymentType(in.PaymentType), nullIfEmpty(in.Note),
 		sub, disc, tax, total, id); err != nil {
 		writeErr(w, http.StatusInternalServerError, "به‌روزرسانی ناموفق بود")
 		return
@@ -732,16 +779,16 @@ func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback()
 
 	var docType, status, issueDate, note, number, paymentType string
-	var convertedTo sql.NullInt64
+	var convertedTo, partnerID sql.NullInt64
 	var customerID, warehouseID int64
 	var subtotal, discount, tax, total int64
 	err = tx.QueryRow(`
 		SELECT doc_type, status, COALESCE(issue_date,''), COALESCE(note,''), COALESCE(number,''),
 		       COALESCE(payment_type,''), customer_id, warehouse_id,
-		       subtotal_amount, discount_amount, tax_amount, total_amount, converted_to_id
+		       subtotal_amount, discount_amount, tax_amount, total_amount, converted_to_id, partner_id
 		FROM inv_invoices WHERE id = ? AND organization_id = ? FOR UPDATE`, id, u.OrgID).
 		Scan(&docType, &status, &issueDate, &note, &number, &paymentType, &customerID, &warehouseID,
-			&subtotal, &discount, &tax, &total, &convertedTo)
+			&subtotal, &discount, &tax, &total, &convertedTo, &partnerID)
 	if err == sql.ErrNoRows {
 		writeErr(w, http.StatusNotFound, "پیش‌فاکتور یافت نشد")
 		return
@@ -777,12 +824,16 @@ func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 		newNote += "\n" + note
 	}
 
+	var partnerVal any
+	if partnerID.Valid && partnerID.Int64 > 0 {
+		partnerVal = partnerID.Int64
+	}
 	res, err := tx.Exec(`
 		INSERT INTO inv_invoices
-		  (organization_id, doc_type, customer_id, warehouse_id, issue_date, status, source,
+		  (organization_id, doc_type, customer_id, partner_id, warehouse_id, issue_date, status, source,
 		   payment_type, subtotal_amount, discount_amount, tax_amount, total_amount, note, created_by)
-		VALUES (?, 'official', ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?, ?)`,
-		u.OrgID, customerID, warehouseID, nullIfEmpty(issueDate),
+		VALUES (?, 'official', ?, ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?, ?)`,
+		u.OrgID, customerID, partnerVal, warehouseID, nullIfEmpty(issueDate),
 		normalizePaymentType(paymentType), subtotal, discount, tax, total, newNote, u.ID)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "ساختِ فاکتورِ رسمی ناموفق بود")

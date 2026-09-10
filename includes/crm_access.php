@@ -81,3 +81,31 @@ function crmModuleAllowed(PDO $db, int $userId): bool
 {
     return $userId > 0 && in_array($userId, crmModuleUserIds($db), true);
 }
+
+/**
+ * دسترسیِ «گزارشِ همکاران» (pages/inv-partner-report.php).
+ *
+ * علاوه بر همه‌ی کسانی که ماژول را می‌بینند (crmModuleAllowed)، مدیران و
+ * سوپروایزرها هم این گزارش را می‌بینند — حتی اگر منوی فروش/فاکتور برایشان
+ * ظاهر نشود (به آن با لینکِ مستقیم می‌رسند). معادلِ requireReportAccess در
+ * crm-service/helpers.go.
+ */
+function crmReportAllowed(PDO $db, int $userId): bool
+{
+    if ($userId <= 0) return false;
+    if (crmModuleAllowed($db, $userId)) return true;
+
+    try {
+        $st = $db->prepare("
+            SELECT 1 FROM users
+            WHERE id = ? AND is_active = 1
+              AND ( role IN ('supervisor','admin','manager','management')
+                 OR COALESCE(is_supervisor, 0) = 1 )
+            LIMIT 1
+        ");
+        $st->execute([$userId]);
+        return (bool) $st->fetchColumn();
+    } catch (Throwable $e) {
+        return false;
+    }
+}

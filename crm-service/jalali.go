@@ -50,3 +50,12 @@ func jalaliYearOf(t time.Time) int {
 	jy, _, _ := gregorianToJalali(t.Year(), int(t.Month()), t.Day())
 	return jy
 }
+
+// jalaliYMOf سال و ماهِ شمسیِ یک تاریخِ میلادی را می‌دهد؛ اگر t صفر باشد، «حالا».
+func jalaliYMOf(t time.Time) (jy, jm int) {
+	if t.IsZero() {
+		t = time.Now()
+	}
+	jy, jm, _ = gregorianToJalali(t.Year(), int(t.Month()), t.Day())
+	return
+}

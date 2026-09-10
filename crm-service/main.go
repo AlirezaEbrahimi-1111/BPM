@@ -296,6 +296,19 @@ func main() {
 	mux.HandleFunc("POST /crm/api/inv/invoices/{id}/to-official", write(s.convertToOfficial))
 	mux.HandleFunc("DELETE /crm/api/inv/invoices/{id}", write(s.deleteInvoice))
 
+	// ── همکار + سهمِ سودِ ماهانه (شمسی) + گزارشِ همکاران ──
+	// گزارش و ویرایشِ وضعیت‌ها: مدیران/سوپروایزر/حسابداری (requireReportAccess).
+	report := func(h http.HandlerFunc) http.HandlerFunc { return auth(s.requireReportAccess(h)) }
+	mux.HandleFunc("GET /crm/api/inv/partners", auth(s.listPartners))
+	mux.HandleFunc("POST /crm/api/inv/partners", report(s.createPartner))
+	mux.HandleFunc("PUT /crm/api/inv/partners/{id}", report(s.updatePartner))
+	mux.HandleFunc("DELETE /crm/api/inv/partners/{id}", report(s.deletePartner))
+	mux.HandleFunc("GET /crm/api/inv/partners/{id}/shares", report(s.listPartnerShares))
+	mux.HandleFunc("PUT /crm/api/inv/partners/{id}/shares", report(s.setPartnerShare))
+	mux.HandleFunc("GET /crm/api/inv/partner-share", write(s.getPartnerShare))
+	mux.HandleFunc("GET /crm/api/inv/partner-report", report(s.partnerReport))
+	mux.HandleFunc("PATCH /crm/api/inv/invoices/{id}/partner-status", report(s.setInvoicePartnerStatus))
+
 	// ── تأمین‌کننده ──
 	mux.HandleFunc("GET /crm/api/inv/suppliers", auth(s.listSuppliers))
 	mux.HandleFunc("POST /crm/api/inv/suppliers", write(s.createSupplier))

@@ -112,7 +112,52 @@ func (s *server) requireCRMAccess(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// requireReportAccess: دیدنِ «گزارشِ همکاران» برای مدیران، سوپروایزرها و تیمِ
+// حسابداری. یعنی هر کسی که requireCRMAccess را دارد، به‌علاوهٔ نقش‌های
+// سازمانی (supervisor/admin/manager/management) و is_supervisor = 1.
+func (s *server) requireReportAccess(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		u := userOf(r.Context())
+		if u.ID == 1 || u.ID == 19 {
+			next(w, r)
+			return
+		}
+		var ok int
+		err := s.db.QueryRow(`
+			SELECT 1 FROM users u
+			WHERE u.id = ? AND u.is_active = 1
+			  AND (
+			        u.role IN ('supervisor','admin','manager','management')
+			     OR COALESCE(u.is_supervisor, 0) = 1
+			     OR u.is_create_official_invoice = 1
+			     OR u.is_sales_manager = 1
+			     OR (u.organization_id = 1 AND (
+			            u.activity_section = 'accounting'
+			         OR u.activity_unit = 'AC'
+			         OR EXISTS (SELECT 1 FROM user_activity_sections uas
+			                    WHERE uas.user_id = u.id AND uas.section_key = 'accounting')
+			         OR EXISTS (SELECT 1 FROM user_activity_units uau
+			                    WHERE uau.user_id = u.id AND uau.activity_unit = 'AC')
+			        ))
+			  )
+			LIMIT 1`, u.ID).Scan(&ok)
+		if err == nil && ok == 1 {
+			next(w, r)
+			return
+		}
+		writeErr(w, http.StatusForbidden, "دسترسی به این گزارش ندارید")
+	}
+}
+
 // ──────────────── ابزارِ کوچک ────────────────
+
+// nullableID: شناسه‌ی مثبت را همان‌طور برمی‌گرداند، ۰ و منفی را NULL می‌کند.
+func nullableID(v int64) any {
+	if v > 0 {
+		return v
+	}
+	return nil
+}
 
 func idParam(r *http.Request) int64 {
 	i, _ := strconv.ParseInt(r.PathValue("id"), 10, 64)

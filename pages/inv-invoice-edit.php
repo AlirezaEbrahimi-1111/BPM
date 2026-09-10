@@ -248,6 +248,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         <option value="credit">غیرنقدی</option>
                     </select>
                 </div>
+                <div>
+                    <label class="form-label">همکار <span class="text-muted" style="font-weight:400">(اختیاری)</span></label>
+                    <div id="partnerPicker"></div>
+                </div>
             </div>
 
             <table class="inv-items">
@@ -276,6 +280,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <div class="tl"><span>جمعِ کل</span><span id="t_subtotal">۰</span></div>
                 <div class="tl"><span>تخفیف</span><span id="t_discount">۰</span></div>
                 <div class="tl"><span>مالیات بر ارزش افزوده (<span id="t_vatrate">۰</span>٪)</span><span id="t_tax">۰</span></div>
+                <div class="tl" id="row_partner_pct" hidden><span>سهمِ همکار (ماهِ صدور)</span><span id="t_partner_pct">۰٪</span></div>
+                <div class="tl" id="row_partner_profit" hidden><span>مبلغِ سودِ همکار</span><span id="t_partner_profit">۰</span></div>
                 <div class="tl grand"><span>مبلغِ قابل پرداخت</span><span id="t_total">۰</span></div>
             </div>
 
@@ -355,6 +361,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         let products = [],
             customers = [];
         let customerPicker = null;
+        let partnerPicker = null;
+        let partners = [];
+        let partnerPercent = 0; // درصدِ سهمِ همکار در ماهِ صدور (زنده — از سرور)
+        let hasPartner = false;
 
         // آیتم‌های EntityPicker از فهرستِ مشتریانِ ثبت‌شده (انتخاب اجباری از لیست)
         function custItems() {
@@ -365,6 +375,91 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     (c.mobile ? faDigits(c.mobile) : ''),
                 search: c.name + ' ' + (c.national_id || '') + ' ' + (c.mobile || '') + ' ' + (c.phone || ''),
             }));
+        }
+
+        // ── همکار ──
+        function partnerItems() {
+            return partners.map(p => ({
+                id: p.id,
+                label: p.name,
+                meta: p.phone ? faDigits(p.phone) : '',
+                search: p.name + ' ' + (p.phone || ''),
+            }));
+        }
+
+        async function reloadPartners() {
+            const out = [];
+            try {
+                let page = 1,
+                    total = Infinity;
+                while (out.length < total) {
+                    const d = await apiGet('/inv/partners?active=1&per=200&page=' + page);
+                    out.push(...(d.items || []));
+                    total = d.total || 0;
+                    if (!d.items || !d.items.length) break;
+                    page++;
+                }
+                partners = out;
+            } catch (e) {}
+        }
+
+        // ماهِ شمسیِ تاریخِ صدور (یا امروز اگر خالی) → {jy, jm}
+        function issueJalaliMonth() {
+            const di = document.getElementById('f_issue_date');
+            let g = di ? (di.getAttribute('data-date') || '') : '';
+            if (!g) {
+                const t = new Date();
+                g = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(t.getDate()).padStart(2, '0');
+            }
+            let j = (typeof convertToJalali === 'function') ? (convertToJalali(g) || '') : '';
+            const parts = toEn(j).split(/[\/\-]/).map(x => parseInt(x, 10));
+            if (parts.length >= 2 && parts[0] > 1300 && parts[1] >= 1 && parts[1] <= 12) {
+                return {
+                    jy: parts[0],
+                    jm: parts[1]
+                };
+            }
+            return null;
+        }
+
+        // درصدِ سهمِ همکار برای ماهِ صدور را از سرور بگیر، بعد جمع‌ها را بازکش
+        async function refreshPartnerProfit() {
+            const p = partnerPicker ? partnerPicker.getValue() : null;
+            hasPartner = !!(p && p.id);
+            partnerPercent = 0;
+            if (hasPartner) {
+                const jm = issueJalaliMonth();
+                if (jm) {
+                    try {
+                        const d = await apiGet(`/inv/partner-share?partner_id=${p.id}&jy=${jm.jy}&jm=${jm.jm}`);
+                        partnerPercent = Number(d.percent || 0);
+                    } catch (e) {
+                        /* درصدی برای این ماه ثبت نشده → صفر */
+                    }
+                }
+            }
+            recalc();
+        }
+
+        async function quickAddPartner() {
+            const name = (window.prompt('نامِ همکارِ جدید:') || '').trim();
+            if (!name) return;
+            try {
+                const d = await apiSend('POST', '/inv/partners', {
+                    name
+                });
+                partners.push({
+                    id: d.id,
+                    name,
+                    phone: '',
+                    is_active: true
+                });
+                partnerPicker.updateItems(partnerItems());
+                partnerPicker.setValue(d.id); // onSelect → refreshPartnerProfit
+            } catch (e) {
+                alertBox(e.message || 'افزودنِ همکار ناموفق بود');
+            }
         }
 
         function fillProdDatalist() {
@@ -531,6 +626,21 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             document.getElementById('t_discount').textContent = money(discount);
             document.getElementById('t_tax').textContent = money(tax);
             document.getElementById('t_total').textContent = money(subtotal - discount + tax);
+
+            // سهمِ همکار = درصد × (جمعِ کل منهای تخفیف، پیش از مالیات)
+            const rowPct = document.getElementById('row_partner_pct');
+            const rowProfit = document.getElementById('row_partner_profit');
+            if (hasPartner) {
+                const preTax = Math.max(0, subtotal - discount);
+                const profit = Math.round(preTax * partnerPercent / 100);
+                document.getElementById('t_partner_pct').textContent = faDigits(partnerPercent) + '٪';
+                document.getElementById('t_partner_profit').textContent = money(profit);
+                rowPct.hidden = false;
+                rowProfit.hidden = false;
+            } else {
+                rowPct.hidden = true;
+                rowProfit.hidden = true;
+            }
         }
 
         function collect() {
@@ -563,6 +673,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     doc_type: document.getElementById('f_doc_type').value,
                     customer_id: cust ? cust.id : 0,
                     customer_name: '',
+                    partner_id: (partnerPicker && partnerPicker.getValue()) ? partnerPicker.getValue().id : 0,
                     issue_date: issue,
                     payment_type: document.getElementById('f_payment_type').value,
                     note: document.getElementById('f_note').value.trim(),
@@ -658,15 +769,28 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     customerPicker.setValue(c.id);
                 }),
             });
+            // همکار — اختیاری. انتخاب از فهرست، با دکمهٔ + برای افزودنِ سریع.
+            await reloadPartners();
+            partnerPicker = EntityPicker.create({
+                container: '#partnerPicker',
+                items: partnerItems(),
+                placeholder: 'بدونِ همکار…',
+                addTitle: 'افزودن همکار جدید',
+                onAdd: quickAddPartner,
+                onSelect: () => refreshPartnerProfit(),
+            });
+
             // کالاها — در حالتِ ویرایش، خودِ این فاکتور از محاسبه‌ی رزرو کنار می‌رود.
             const exParam = INV_ID ? '&exclude_invoice=' + INV_ID : '';
             await reloadProducts(exParam);
             fillProdDatalist();
 
-            // وقتی از تبِ «مشتریان» یا «کاتالوگ کالا» برگشتی، هر دو فهرست تازه شوند
+            // وقتی از تبِ «مشتریان» یا «کاتالوگ کالا» برگشتی، هر سه فهرست تازه شوند
             window.addEventListener('focus', async () => {
                 await reloadCustomers();
                 if (customerPicker) customerPicker.updateItems(custItems());
+                await reloadPartners();
+                if (partnerPicker) partnerPicker.updateItems(partnerItems());
                 await reloadProducts(exParam);
                 fillProdDatalist();
             });
@@ -688,6 +812,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         di.setAttribute('data-date', inv.issue_date);
                         di.value = (typeof convertToJalali === 'function') ? convertToJalali(inv.issue_date) : inv.issue_date;
                     }
+                    // همکار — بعد از ستِ تاریخِ صدور تا درصدِ ماهِ درست خوانده شود
+                    if (partnerPicker && inv.partner_id) partnerPicker.setValue(inv.partner_id);
                     (inv.items || []).forEach(addRow);
                 } catch (e) {
                     alertBox('بارگذاریِ فاکتور ناموفق بود: ' + (e.message || ''));
@@ -709,6 +835,17 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     di.value = (typeof convertToJalali === 'function') ? convertToJalali(g) : g;
                 }
             }
+
+            // تغییرِ تاریخِ صدور → درصدِ سهمِ همکارِ ماهِ صدور دوباره خوانده شود
+            {
+                const di = document.getElementById('f_issue_date');
+                if (di) {
+                    di.addEventListener('change', refreshPartnerProfit);
+                    new MutationObserver(() => refreshPartnerProfit())
+                        .observe(di, { attributes: true, attributeFilter: ['data-date', 'value'] });
+                }
+            }
+            refreshPartnerProfit();
 
             document.getElementById('btnAddRow').addEventListener('click', () => {
                 const tr = addRow();

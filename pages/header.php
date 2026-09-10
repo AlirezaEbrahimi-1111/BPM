@@ -3,8 +3,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
 // آیا این کاربر منوی «فروش / فاکتور» را ببیند؟ (ماژول در حالِ ساخت، دسترسیِ محدود)
-$__crmMenu = isset($db) && ($db instanceof PDO)
-    && crmModuleAllowed($db, (int) ($_SESSION['user_id'] ?? $user_id ?? 0));
+$__crmUid  = (int) ($_SESSION['user_id'] ?? $user_id ?? 0);
+$__crmMenu = isset($db) && ($db instanceof PDO) && crmModuleAllowed($db, $__crmUid);
+// «گزارشِ همکاران» را مدیران و سوپروایزرها هم می‌بینند (حتی بدونِ منوی فاکتور).
+$__crmReportMenu = isset($db) && ($db instanceof PDO)
+    && function_exists('crmReportAllowed') && crmReportAllowed($db, $__crmUid);
 ?>
 <!-- 🌗 تم روشن/تاریک — اعمال فوری از localStorage، پیش از رندرِ هدر (جلوگیریِ فلاش) -->
 <script>
@@ -936,6 +939,11 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item" href="/pages/inv-partner-report.php">
+                                    <i class="bi bi-people ms-2"></i>گزارشِ همکاران
+                                </a>
+                            </li>
+                            <li>
                                 <hr class="dropdown-divider">
                             </li>
                             <li>
@@ -954,6 +962,14 @@ $__crmMenu = isset($db) && ($db instanceof PDO)
                                 </a>
                             </li>
                         </ul>
+                    </li>
+                <?php endif; ?>
+                <?php if (!empty($__crmReportMenu) && empty($__crmMenu)): ?>
+                    <!-- مدیر/سوپروایزر بدونِ دسترسیِ کاملِ ماژول — فقط گزارشِ همکاران -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pages/inv-partner-report.php">
+                            <i class="bi bi-people me-2"></i>گزارشِ همکاران
+                        </a>
                     </li>
                 <?php endif; ?>
                 <li class="nav-item" id="drawerLogoutDivider">
