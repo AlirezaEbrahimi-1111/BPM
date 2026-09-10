@@ -152,6 +152,13 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             flex: 1;
         }
 
+        /* ردیفِ «همکار / + / سالِ شمسی» در مودالِ مدیریت — سه کنترل هم‌ارتفاع */
+        #pmSelPartner,
+        #pmAddBtn,
+        #pmSelYear {
+            height: 38px;
+        }
+
         :root[data-theme="dark"] .pm-sel,
         :root[data-theme="dark"] .pm-mo-code {
             background: var(--surface);
