@@ -24,6 +24,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/entity-picker.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
 
     <style>
         .inv-wrap {
@@ -92,13 +94,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             text-align: center;
         }
 
-        .col-stock {
-            width: 120px;
-        }
 
         .col-total {
-            width: 130px;
-            text-align: left;
+            width: 108px;
+            text-align: center;
             white-space: nowrap;
         }
 
@@ -152,7 +151,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         table.inv-items td.col-price,
         table.inv-items td.col-disc,
         table.inv-items td.col-exempt,
-        table.inv-items td.col-stock,
         table.inv-items td.col-total {
             text-align: center;
         }
@@ -216,15 +214,13 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 </div>
                 <div>
                     <label class="form-label">مشتری <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="f_customer_name" list="custNameList"
-                        autocomplete="off" placeholder="نامِ مشتری را تایپ کنید">
-                    <datalist id="custNameList"></datalist>
-                    <div class="form-text">نیازی به ثبتِ قبلیِ مشتری نیست؛ بعد از ذخیره، همین نام در فهرستِ مشتریان ثبت می‌شود.</div>
+                    <div id="customerPicker"></div>
                 </div>
                 <div>
                     <label class="form-label">تاریخِ صدور</label>
                     <div class="persian-datepicker-wrapper">
-                        <input type="text" class="persian-datepicker-input form-control" id="f_issue_date" placeholder="۱۴۰۵/۰۶/۱۱" readonly>
+                        <!-- data-restrict-past="-1" → فقط همین فاکتور می‌تواند تاریخِ گذشته انتخاب کند (بقیهٔ صفحات دست‌نخورده) -->
+                        <input type="text" class="persian-datepicker-input form-control" id="f_issue_date" data-restrict-past="-1" placeholder="۱۴۰۵/۰۶/۱۱" readonly>
                         <div class="persian-datepicker">
                             <div class="datepicker-header">
                                 <button type="button" class="datepicker-nav" data-action="prev">►</button>
@@ -264,8 +260,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         <th class="col-price">قیمت واحد</th>
                         <th class="col-disc">تخفیف</th>
                         <th class="col-exempt">معاف</th>
-                        <th class="col-stock">قابل‌فروش</th>
-                        <th class="col-total">جمع ردیف (با مالیات)</th>
+                        <th class="col-total">جمع بدون مالیات</th>
+                        <th class="col-total">مالیات</th>
+                        <th class="col-total">جمع کل با مالیات</th>
                         <th class="col-del"></th>
                     </tr>
                 </thead>
@@ -357,12 +354,17 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         let VAT = 0;
         let products = [],
             customers = [];
-        let loadedCustomerId = 0; // در حالتِ ویرایش: مشتریِ فعلیِ همین فاکتور
+        let customerPicker = null;
 
-        function fillCustDatalist() {
-            const dl = document.getElementById('custNameList');
-            if (dl) dl.innerHTML = customers.map(c =>
-                `<option value="${String(c.name || '').replace(/"/g, '&quot;')}">`).join('');
+        // آیتم‌های EntityPicker از فهرستِ مشتریانِ ثبت‌شده (انتخاب اجباری از لیست)
+        function custItems() {
+            return customers.map(c => ({
+                id: c.id,
+                label: c.name,
+                meta: c.national_id ? ('شناسه ملی: ' + faDigits(c.national_id)) :
+                    (c.mobile ? faDigits(c.mobile) : ''),
+                search: c.name + ' ' + (c.national_id || '') + ' ' + (c.mobile || '') + ' ' + (c.phone || ''),
+            }));
         }
 
         function fillProdDatalist() {
@@ -387,7 +389,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <td class="col-price"><input class="it-price" inputmode="numeric" value="۰"></td>
                 <td class="col-disc"><input class="it-disc" inputmode="numeric" value="۰"></td>
                 <td class="col-exempt"><input type="checkbox" class="it-exempt"></td>
-                <td class="col-stock it-stock small text-muted"></td>
+                <td class="col-total it-linenotax">۰</td>
+                <td class="col-total it-linetax">۰</td>
                 <td class="col-total it-linetotal">۰</td>
                 <td class="col-del"><button type="button" class="btn btn-sm btn-link text-danger p-0 it-del">✕</button></td>`;
             // نامِ کالا: فیلدِ متنِ آزاد (مثلِ نامِ مشتری). اگر متنِ تایپ‌شده دقیقاً
@@ -400,6 +403,13 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     el.value = el.classList.contains('it-qty') ?
                         faDigits(toEn(el.value)) : faMoney(el.value);
                 });
+                // قیمت واحد و تخفیف: با فوکوس/کلیک، اگر مقدار صفر بود پاک شود
+                if (el.classList.contains('it-price') || el.classList.contains('it-disc')) {
+                    el.addEventListener('focus', () => {
+                        if (num(el.value) === 0) el.value = '';
+                        if (typeof el.select === 'function') el.select();
+                    });
+                }
             });
             tr.querySelector('.it-exempt').addEventListener('change', recalc);
             tr.querySelector('.it-del').addEventListener('click', () => {
@@ -477,6 +487,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         function updateStockHint(tr) {
             const cell = tr.querySelector('.it-stock');
+            if (!cell) { tr.classList.remove('row-lowstock'); return; } // ستونِ «قابل‌فروش» حذف شده
             const pid = tr.dataset.productId ? +tr.dataset.productId : 0;
             if (!pid) {
                 cell.textContent = '';
@@ -508,6 +519,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 let after = gross - disc;
                 if (after < 0) after = 0;
                 const t = exempt ? 0 : Math.round(after * VAT / 100);
+                tr.querySelector('.it-linenotax').textContent = money(after);
+                tr.querySelector('.it-linetax').textContent = money(t);
                 tr.querySelector('.it-linetotal').textContent = money(after + t);
                 subtotal += gross;
                 discount += disc;
@@ -521,7 +534,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         function collect() {
-            const customerName = document.getElementById('f_customer_name').value.trim();
+            const picked = customerPicker ? customerPicker.getValue() : null;
+            const cust = picked ? customers.find(c => c.id === picked.id) : null;
             const items = [];
             document.querySelectorAll('#itemsBody tr').forEach(tr => {
                 const name = tr.querySelector('.it-prod-name').value.trim();
@@ -544,11 +558,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 issue = convertToGregorian(dateInput.value) || '';
             }
             return {
-                customerName,
+                cust,
                 body: {
                     doc_type: document.getElementById('f_doc_type').value,
-                    customer_id: loadedCustomerId || 0,
-                    customer_name: customerName,
+                    customer_id: cust ? cust.id : 0,
+                    customer_name: '',
                     issue_date: issue,
                     payment_type: document.getElementById('f_payment_type').value,
                     note: document.getElementById('f_note').value.trim(),
@@ -559,11 +573,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         async function save(goBack) {
             const {
-                customerName,
+                cust,
                 body
             } = collect();
-            if (!customerName) {
-                alertBox('نامِ مشتری را وارد کنید.');
+            if (!cust) {
+                alertBox('یک مشتری از فهرست انتخاب کنید. اگر نیست، با دکمهٔ + بسازیدش.');
                 return;
             }
             if (!body.items.length) {
@@ -631,9 +645,19 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 /* ادامه با VAT=0 */
             }
 
-            // مشتری‌ها — فقط برای پیشنهادِ خودکارِ نام (datalist)؛ ثبتِ قبلی لازم نیست.
+            // مشتری‌ها — انتخاب اجباری از فهرستِ ثبت‌شده، با دکمهٔ + برای افزودنِ سریع
             await reloadCustomers();
-            fillCustDatalist();
+            customerPicker = EntityPicker.create({
+                container: '#customerPicker',
+                items: custItems(),
+                placeholder: 'کد/نام مشتری…',
+                addTitle: 'افزودن مشتری جدید',
+                onAdd: () => QuickAdd.customer(c => {
+                    customers.push(c);
+                    customerPicker.updateItems(custItems());
+                    customerPicker.setValue(c.id);
+                }),
+            });
             // کالاها — در حالتِ ویرایش، خودِ این فاکتور از محاسبه‌ی رزرو کنار می‌رود.
             const exParam = INV_ID ? '&exclude_invoice=' + INV_ID : '';
             await reloadProducts(exParam);
@@ -642,7 +666,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             // وقتی از تبِ «مشتریان» یا «کاتالوگ کالا» برگشتی، هر دو فهرست تازه شوند
             window.addEventListener('focus', async () => {
                 await reloadCustomers();
-                fillCustDatalist();
+                if (customerPicker) customerPicker.updateItems(custItems());
                 await reloadProducts(exParam);
                 fillProdDatalist();
             });
@@ -657,9 +681,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     }
                     document.getElementById('f_doc_type').value = inv.doc_type;
                     document.getElementById('f_payment_type').value = inv.payment_type || '';
-                    loadedCustomerId = inv.customer_id || 0;
-                    document.getElementById('f_customer_name').value =
-                        (inv.customer_name && inv.customer_name !== '—') ? inv.customer_name : '';
+                    if (customerPicker) customerPicker.setValue(inv.customer_id);
                     document.getElementById('f_note').value = inv.note || '';
                     if (inv.issue_date) {
                         const di = document.getElementById('f_issue_date');
@@ -695,12 +717,12 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             document.getElementById('btnSave').addEventListener('click', () => save(false));
             document.getElementById('btnSaveBack').addEventListener('click', () => save(true));
 
-            // پیمایش با Enter در سربرگ: نام مشتری → تاریخ صدور → نام کالای ردیفِ اول
-            focusOnEnter(document.getElementById('f_customer_name'), () => document.getElementById('f_issue_date'));
+            // پیمایش با Enter در سربرگ: تاریخ صدور → نام کالای ردیفِ اول
+            // (فیلدِ مشتری اکنون EntityPicker است و کیبوردِ خودش را دارد)
             focusOnEnter(document.getElementById('f_issue_date'), () => document.querySelector('#itemsBody .it-prod-name'));
 
-            // هنگامِ لود، فوکوس روی نامِ مشتری
-            document.getElementById('f_customer_name').focus();
+            // هنگامِ لود، فوکوس روی انتخابگرِ مشتری
+            if (customerPicker) customerPicker.focus();
         }
 
         document.addEventListener('DOMContentLoaded', init);
