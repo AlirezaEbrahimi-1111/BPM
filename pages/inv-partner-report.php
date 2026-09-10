@@ -238,7 +238,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
 
     <!-- ── مودالِ مدیریتِ همکاران و درصدهای ماهانه ── -->
     <div class="modal fade" id="pmModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">مدیریت همکاران و درصدِ سودِ ماهانه</h5>
@@ -247,15 +247,14 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 <div class="modal-body">
                     <div id="pmAlert"></div>
 
-                    <div class="row g-2 align-items-end mb-3">
-                        <div class="col"><label class="form-label">نامِ همکارِ جدید</label><input id="pmNewName" class="form-control"></div>
-                        <div class="col-4"><label class="form-label">تلفن (اختیاری)</label><input id="pmNewPhone" class="form-control"></div>
-                        <div class="col-auto"><button id="pmAddBtn" class="btn btn-primary">افزودن</button></div>
-                    </div>
-                    <hr>
-
                     <div class="row g-2 align-items-end mb-2">
-                        <div class="col"><label class="form-label">همکار</label><select id="pmSelPartner" class="form-select"></select></div>
+                        <div class="col">
+                            <label class="form-label">همکار</label>
+                            <div class="d-flex gap-2">
+                                <select id="pmSelPartner" class="form-select"></select>
+                                <button id="pmAddBtn" class="btn btn-outline-primary flex-shrink-0" title="افزودن همکارِ جدید"><i class="bi bi-plus-lg"></i></button>
+                            </div>
+                        </div>
                         <div class="col-auto"><label class="form-label">سالِ شمسی</label><select id="pmSelYear" class="form-select"></select></div>
                     </div>
 
@@ -642,21 +641,15 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 msg ? `<div class="alert alert-${kind} py-2">${msg}</div>` : '';
         }
 
+        // افزودنِ همکارِ جدید = فقط نام؛ تلفن/فعال‌بودن را بعد از انتخاب پایین ویرایش می‌کنی.
         async function pmAddPartner() {
-            const name = document.getElementById('pmNewName').value.trim();
-            const phone = document.getElementById('pmNewPhone').value.trim();
-            if (!name) {
-                pmAlert('نامِ همکار را وارد کنید.');
-                return;
-            }
+            const name = (window.prompt('نامِ همکارِ جدید:') || '').trim();
+            if (!name) return;
             try {
                 const d = await apiSend('POST', '/inv/partners', {
-                    name,
-                    phone
+                    name
                 });
-                document.getElementById('pmNewName').value = '';
-                document.getElementById('pmNewPhone').value = '';
-                pmAlert('همکار افزوده شد.', 'success');
+                pmAlert('همکار افزوده شد — تلفن و درصدها را پایین تنظیم کن.', 'success');
                 await loadPartners();
                 document.getElementById('pmSelPartner').value = d.id;
                 pmOnSelectPartner();
@@ -759,7 +752,8 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             }
 
             yearOptions(document.getElementById('fYear'), CUR_JY - 3, CUR_JY + 1, CUR_JY);
-            yearOptions(document.getElementById('pmSelYear'), CUR_JY - 3, CUR_JY + 1, CUR_JY);
+            // مودال: سالِ جاری پیش‌فرض، فقط سالِ قبل تا سالِ بعد
+            yearOptions(document.getElementById('pmSelYear'), CUR_JY - 1, CUR_JY + 1, CUR_JY);
             const fm = document.getElementById('fMonth');
             for (let m = 1; m <= 12; m++) {
                 const o = document.createElement('option');

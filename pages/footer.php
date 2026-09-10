@@ -107,8 +107,8 @@ require_once '../includes/version.php';
         <span>در شرکت</span>
         <span class="company">آوای شرق ملک</span>
         <span> | </span>
-        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۲۰ - ۱۴:۱۵">
-            نسخه: ۷.۴۷
+        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۲۰ - ۱۵:۰۰">
+            نسخه: ۷.۴۸
         </span>
     </div>
 </div>

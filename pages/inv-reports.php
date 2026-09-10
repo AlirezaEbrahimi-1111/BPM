@@ -566,7 +566,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             const sumSales = invApproved.reduce((s, i) => s + (Number(i.total_amount) || 0), 0);
             const sumPurchase = purConfirmed.reduce((s, p) => s + (Number(p.total_amount) || 0), 0);
             const balance = sumSales - sumPurchase;
-            const avg = invApproved.length ? Math.round(sumSales / invApproved.length) : 0;
 
             const cards = [{
                     ic: 'bi-graph-up-arrow',
@@ -603,21 +602,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     fg: '#b45309',
                     lbl: 'تعدادِ خریدِ تأییدشده',
                     val: faDigits(purConfirmed.length),
-                    unit: ''
-                },
-                {
-                    ic: 'bi-calculator',
-                    bg: 'rgba(142,87,254,.12)',
-                    fg: '#8e57fe',
-                    lbl: 'میانگینِ فاکتورِ فروش',
-                    val: money(avg)
-                },
-                {
-                    ic: 'bi-pencil-square',
-                    bg: 'rgba(148,163,184,.18)',
-                    fg: '#64748b',
-                    lbl: 'پیش‌نویسِ فروش (خارج از جمع)',
-                    val: faDigits(invDraft.length),
                     unit: ''
                 },
                 {
