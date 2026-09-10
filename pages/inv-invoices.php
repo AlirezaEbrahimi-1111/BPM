@@ -82,6 +82,15 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             color: #2563eb;
         }
 
+        .ag-action-btn.view {
+            color: #0f7a57;
+        }
+
+        /* هر ردیفِ فاکتور با کلیک باز می‌شود (به‌جز کلیک روی دکمه‌های عملیات) */
+        .ag-theme-alpine .ag-row {
+            cursor: pointer;
+        }
+
         :root[data-theme="dark"] .ag-action-btn {
             background: var(--surface);
             border-color: var(--border-soft);
@@ -242,7 +251,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         function actionCell(p) {
             const d = p.data;
-            let h = `<button class="ag-action-btn print" title="مشاهده / چاپ" onclick="location.href='/pages/inv-invoice-print.php?id=${d.id}'"><i class="bi bi-printer"></i></button>`;
+            let h = `<button class="ag-action-btn view" title="مشاهدهٔ فاکتور" onclick="location.href='/pages/inv-invoice-print.php?id=${d.id}'"><i class="bi bi-eye"></i></button>`;
+            h += `<button class="ag-action-btn print" title="چاپ" onclick="location.href='/pages/inv-invoice-print.php?id=${d.id}&print=1'"><i class="bi bi-printer"></i></button>`;
             if (d.status === 'draft') {
                 h += `<button class="ag-action-btn edit" title="ویرایش" onclick="location.href='/pages/inv-invoice-edit.php?id=${d.id}'"><i class="bi bi-pencil"></i></button>`;
                 h += `<button class="ag-action-btn approve" title="تأیید و صدور" onclick="approveInv(${d.id})"><i class="bi bi-check2-circle"></i></button>`;
@@ -301,7 +311,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             },
             {
                 headerName: 'عملیات',
-                width: 210,
+                width: 244,
                 sortable: false,
                 filter: false,
                 cellRenderer: actionCell
@@ -318,6 +328,13 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],
             onPaginationChanged: () => AgGridFa.persianizePaging(),
+            onRowClicked: (e) => {
+                // کلیک روی دکمه‌های ستونِ «عملیات» نباید صفحه را عوض کند
+                if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn')) return;
+                // اگر کاربر متنی را انتخاب کرده، رهایش کن
+                if (window.getSelection && String(window.getSelection()).length > 0) return;
+                location.href = '/pages/inv-invoice-print.php?id=' + e.data.id;
+            },
             defaultColDef: {
                 resizable: true,
                 sortable: true

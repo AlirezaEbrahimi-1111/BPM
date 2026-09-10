@@ -251,6 +251,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <script>
         const API = '/crm/api';
         const INV_ID = <?= $invId ?>;
+        // ?print=1 → بعد از نمایشِ فاکتور، پنجرهٔ چاپ خودکار باز شود (دکمهٔ پرینترِ فهرست).
+        const AUTO_PRINT = new URLSearchParams(location.search).get('print') === '1';
 
         function tok() {
             return localStorage.getItem('auth_token');
@@ -294,23 +296,42 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             proforma: 'پیش‌فاکتور فروش کالا و خدمات'
         };
 
+        function sheetMsg(txt, danger) {
+            document.getElementById('sheet').innerHTML =
+                '<p class="text-center ' + (danger ? 'text-danger' : 'muted') + '">' + esc(txt) + '</p>';
+        }
+
         async function load() {
             if (!tok()) {
                 location.href = '../index.php';
                 return;
             }
-            const r = await fetch(API + '/inv/invoices/' + INV_ID, {
-                headers: {
-                    'Authorization': 'Bearer ' + tok()
-                }
-            });
-            const d = await r.json().catch(() => ({}));
+            if (!INV_ID || INV_ID < 1) {
+                sheetMsg('شناسهٔ فاکتور نامعتبر است.', true);
+                return;
+            }
+            let r, d;
+            try {
+                r = await fetch(API + '/inv/invoices/' + INV_ID, {
+                    headers: {
+                        'Authorization': 'Bearer ' + tok()
+                    }
+                });
+                d = await r.json().catch(() => ({}));
+            } catch (e) {
+                sheetMsg('ارتباط با سرور برقرار نشد.', true);
+                return;
+            }
             if (!r.ok) {
-                document.getElementById('sheet').innerHTML =
-                    '<p class="text-danger text-center">' + (d.message || 'خطا') + '</p>';
+                sheetMsg(d.message || ('خطای ' + r.status), true);
+                return;
+            }
+            if (!d.invoice) {
+                sheetMsg('این فاکتور یافت نشد یا به سازمانِ شما تعلق ندارد.', true);
                 return;
             }
             render(d.invoice, d.customer || {}, d.seller || {}, d.footer_note || '');
+            if (AUTO_PRINT) setTimeout(() => window.print(), 400);
         }
 
         function render(inv, buyer, seller, footer) {
