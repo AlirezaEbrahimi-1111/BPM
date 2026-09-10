@@ -18,6 +18,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
     <link rel="stylesheet" href="<?= asset('../../assets/css/drawflow.min.css') ?>">
     <script src="<?= asset('../../assets/js/cdn/drawflow.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/sections-helper.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/task-filters.js') ?>"></script>
 
     <style>
         /* ── Layout ── */
@@ -1154,6 +1155,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             <button class="filter-pill" data-filter="completed" onclick="setStatusFilter('completed', this)">
                 <i class="bi bi-check-lg"></i>تکمیل شده
             </button>
+            <button class="filter-pill" data-filter="cancelled" onclick="setStatusFilter('cancelled', this)">
+                <i class="bi bi-x-lg"></i>لغوشده
+            </button>
 
             <!-- فیلتر روتین -->
             <div class="filter-dropdown-wrap" id="routineDropdownWrap">
@@ -1445,9 +1449,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         function applyFilter() {
             let list = allWorkflows;
 
-            // فیلتر وضعیت
-            if (currentFilter !== 'all') {
-                list = list.filter(w => w.status === currentFilter);
+            // فیلتر وضعیت — تنها مرجعِ لیست/منطق: TF.ROUTINE_INSTANCE_FILTERS در assets/js/task-filters.js
+            if (currentFilter && currentFilter !== 'all') {
+                list = list.filter(w => TF.matchesStatusFilter(w, currentFilter, null, 'instance'));
             }
 
             // فیلتر روتین (AND)

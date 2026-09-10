@@ -370,7 +370,132 @@ window.TF = (function () {
 
 
     /* ═══════════════════════════════════════════════════
-       ۸) خروجی عمومی
+       ۸) فیلترِ وضعیت — لیستِ مشترکِ همهٔ صفحات
+       ───────────────────────────────────────────────────
+       تنها مرجعِ «چه گزینه‌هایی در dropdownِ فیلترِ وضعیت باشد» و
+       «هر ردیف از یک فیلترِ خاص رد می‌شود؟». برای تغییرِ لیست فقط
+       همین دو آرایه ویرایش می‌شوند و همهٔ صفحات به‌روز می‌شوند.
+
+       نکته: بعضی گزینه‌ها «مشتق»‌اند (overdue / renewal_needed / …) و
+       مقدارِ متناظری در دیتابیس ندارند — منطقشان در match() است.
+       کلیدهای خامِ قدیمی (in_progress، completed، delegated، …) و
+       پارامترهای URLِ داشبورد در matchesStatusFilter() سازگار می‌مانند.
+       ═══════════════════════════════════════════════════ */
+
+    var _wf = function (t) { return Number(t.is_workflow_task) === 1; };
+    var _nwf = function (t) { return Number(t.is_workflow_task) !== 1; };
+    var _isMe = function (id, u) { return !!u && Number(id) === Number(u.id); };
+    var _periodOpenToday = function (t) {
+        return t.task_type === 'continuous' && t.status === 'period_done' &&
+               t.is_today_done === false && !isDone(t);
+    };
+
+    /**
+     * «کلیدِ وضعیتِ نمایشی» یک کار — همان اولویتِ statusBadge()، ولی
+     * به‌شکلِ کلید (نه HTML). فیلتر و بج همیشه هم‌خوان می‌مانند.
+     */
+    function effectiveStatus(t, user) {
+        if (needsRenewalDecision(t)) return 'renewal_needed';
+        if (t.status === 'pending_approval') return 'pending_approval';
+        if (isWaitingMyDeadline(t, user)) return 'deadline_request';
+        if (isOverdue(t, user)) return 'overdue';
+        if (t.status === 'delegated' && _isMe(t.assignee_id, user)) return 'not_started';
+        if (_periodOpenToday(t)) return 'not_started';
+        return t.status || 'not_started';
+    }
+
+    // ── لیستِ صفحاتِ کار (روی ردیفِ tasks) ──
+    var STATUS_FILTERS = [
+        { key: 'all',     label: 'همه',        group: null,     match: function () { return true; } },
+        { key: 'open',     label: 'باز',        group: 'عمومی',  match: function (t) { return ['completed', 'approved', 'rejected', 'stopped'].indexOf(t.status) === -1; } },
+        { key: 'overdue',  label: 'عقب‌افتاده', group: 'عمومی',  match: function (t, u) { return isOverdue(t, u); } },
+        { key: 'done',     label: 'تمام‌شده',   group: 'عمومی',  match: function (t) { return t.status === 'completed' || t.status === 'approved'; } },
+
+        { key: 't_not_started',  label: 'شروع نشده',              group: 'کارِ عادی', match: function (t) { return _nwf(t) && (t.status === 'not_started' || _periodOpenToday(t)); } },
+        { key: 't_in_progress',  label: 'در حال انجام',           group: 'کارِ عادی', match: function (t) { return _nwf(t) && t.status === 'in_progress'; } },
+        { key: 't_deleg_by_me',  label: 'واگذار کرده‌ام',          group: 'کارِ عادی', match: function (t, u) { return _nwf(t) && t.status === 'delegated' && !_isMe(t.assignee_id, u); } },
+        { key: 't_deleg_to_me',  label: 'به من واگذار شده',        group: 'کارِ عادی', match: function (t, u) { return _nwf(t) && t.status === 'delegated' && _isMe(t.assignee_id, u); } },
+        { key: 't_pending',      label: 'در انتظار تأیید',         group: 'کارِ عادی', match: function (t) { return _nwf(t) && t.status === 'pending_approval'; } },
+        { key: 't_termination',  label: 'در انتظار اتمام',         group: 'کارِ عادی', match: function (t) { return _nwf(t) && t.status === 'termination_requested'; } },
+        { key: 't_renewal',      label: 'نیازمندِ تمدیدِ دوره',      group: 'کارِ عادی', match: function (t) { return _nwf(t) && needsRenewalDecision(t); } },
+        { key: 't_period_today', label: 'دورهٔ امروز انجام شد',     group: 'کارِ عادی', match: function (t) { return _nwf(t) && t.status === 'period_done' && t.is_today_done === true; } },
+        { key: 't_completed',    label: 'تکمیل‌شده (منتظرِ تأیید)', group: 'کارِ عادی', match: function (t) { return _nwf(t) && t.status === 'completed'; } },
+        { key: 't_approved',     label: 'تأییدشده',                group: 'کارِ عادی', match: function (t) { return _nwf(t) && t.status === 'approved'; } },
+        { key: 't_rejected',     label: 'متوقف‌شده',               group: 'کارِ عادی', match: function (t) { return _nwf(t) && t.status === 'rejected'; } },
+
+        { key: 'wf_not_started', label: 'مرحلهٔ شروع‌نشده',              group: 'روتین', match: function (t) { return _wf(t) && (t.status === 'not_started' || t.status === 'delegated'); } },
+        { key: 'wf_active',      label: 'مرحلهٔ در حال انجام',           group: 'روتین', match: function (t) { return _wf(t) && t.status === 'in_progress'; } },
+        { key: 'wf_pending',     label: 'مرحلهٔ در انتظار تأیید',        group: 'روتین', match: function (t) { return _wf(t) && t.status === 'pending_approval'; } },
+        { key: 'wf_delayed',     label: 'مرحلهٔ دارای تأخیر (گلوگاه)',   group: 'روتین', match: function (t, u) { return _wf(t) && isOverdue(t, u); } },
+        { key: 'wf_completed',   label: 'مرحلهٔ تکمیل‌شده (منتظرِ تأیید)', group: 'روتین', match: function (t) { return _wf(t) && t.status === 'completed'; } },
+        { key: 'wf_approved',    label: 'مرحلهٔ تأییدشده',               group: 'روتین', match: function (t) { return _wf(t) && t.status === 'approved'; } },
+        { key: 'wf_stopped',     label: 'فرآیند متوقف‌شده',              group: 'روتین', match: function (t) { return _wf(t) && t.status === 'stopped'; } }
+    ];
+
+    // ── لیستِ صفحهٔ مانیتورینگِ روتین‌ها (روی ردیفِ workflow_instances) ──
+    var ROUTINE_INSTANCE_FILTERS = [
+        { key: 'all',         label: 'همه',         match: function () { return true; } },
+        { key: 'in_progress', label: 'در حال اجرا', match: function (w) { return w.status === 'in_progress'; } },
+        { key: 'delayed',     label: 'دارای تأخیر', match: function (w) { return w.status === 'delayed'; } },
+        { key: 'completed',   label: 'تکمیل‌شده',   match: function (w) { return w.status === 'completed'; } },
+        { key: 'cancelled',   label: 'لغوشده',      match: function (w) { return w.status === 'cancelled'; } }
+    ];
+
+    function _byKey(list, key) {
+        for (var i = 0; i < list.length; i++) if (list[i].key === key) return list[i];
+        return null;
+    }
+
+    /**
+     * آیا این ردیف از فیلترِ انتخاب‌شده رد می‌شود؟
+     * @param {object} row   ردیفِ کار — یا نمونهٔ روتین وقتی list='instance'
+     * @param {string} key   کلیدِ فیلترِ انتخاب‌شده (نو یا قدیمی)
+     * @param {object} user  کاربرِ جاری
+     * @param {string} list  'task' (پیش‌فرض) | 'instance'
+     */
+    function matchesStatusFilter(row, key, user, list) {
+        if (!key || key === 'all' || key === '') return true;
+        var arr = list === 'instance' ? ROUTINE_INSTANCE_FILTERS : STATUS_FILTERS;
+        var f = _byKey(arr, key);
+        if (f) { try { return !!f.match(row, user); } catch (e) { return true; } }
+        // ── سازگاریِ عقب‌رو: کلیدهای قدیمی / پارامترهای داشبورد ──
+        if (key === 'today') return isDueToday(row, user);
+        if (key === 'open') return ['completed', 'approved', 'rejected', 'stopped'].indexOf(row.status) === -1;
+        if (key === 'overdue' || key === 'delayed') return isOverdue(row, user);
+        if (key === 'done') return row.status === 'completed' || row.status === 'approved';
+        if (key === 'renewal' || key === 'renewal_needed') return needsRenewalDecision(row);
+        return row.status === key; // کلیدِ خامِ enum، هر نوع کار
+    }
+
+    /**
+     * پر کردنِ یک <select> با گزینه‌های فیلترِ وضعیت (با <optgroup>).
+     * @param {HTMLSelectElement} selectEl
+     * @param {object} opts  { list:'task'|'instance', selected:'all' }
+     */
+    function renderStatusFilter(selectEl, opts) {
+        if (!selectEl) return;
+        opts = opts || {};
+        var arr = opts.list === 'instance' ? ROUTINE_INSTANCE_FILTERS : STATUS_FILTERS;
+        var sel = opts.selected || 'all';
+        var html = '';
+        var curGroup = '__init__';
+        var groupOpen = false;
+        arr.forEach(function (f) {
+            var g = f.group || null;
+            if (g !== curGroup) {
+                if (groupOpen) { html += '</optgroup>'; groupOpen = false; }
+                if (g) { html += '<optgroup label="' + g + '">'; groupOpen = true; }
+                curGroup = g;
+            }
+            html += '<option value="' + f.key + '"' + (f.key === sel ? ' selected' : '') + '>' + f.label + '</option>';
+        });
+        if (groupOpen) html += '</optgroup>';
+        selectEl.innerHTML = html;
+    }
+
+
+    /* ═══════════════════════════════════════════════════
+       ۹) خروجی عمومی
        ═══════════════════════════════════════════════════ */
     return {
         // تاریخ
@@ -401,6 +526,13 @@ window.TF = (function () {
         actionCfg,
         actionLabel,
         actionVerb,
-        actionClass
+        actionClass,
+
+        // فیلترِ وضعیتِ مشترک
+        STATUS_FILTERS,
+        ROUTINE_INSTANCE_FILTERS,
+        effectiveStatus,
+        matchesStatusFilter,
+        renderStatusFilter
     };
 })();

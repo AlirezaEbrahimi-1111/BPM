@@ -53,20 +53,8 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                         <div id="filterAssigneePicker"></div>
                     </div>
                     <div class="filter-item">
-                        <select id="filterStatus">
-                            <option value="">همه وضعیت‌ها</option>
-                            <option value="open">کارهای باز</option>
-                            <option value="not_started">شروع نشده</option>
-                            <option value="in_progress">در حال انجام</option>
-                            <option value="delegated">ارجاع شده</option>
-                            <option value="pending_approval">منتظر تأیید</option>
-                            <option value="termination_requested">در انتظار اتمام</option>
-                            <option value="period_done">دوره انجام شد</option>
-                            <option value="completed">تکمیل شده</option>
-                            <option value="approved">تأیید شده</option>
-                            <option value="rejected">متوقف شده(کارهای عادی)</option>
-                            <option value="stopped">متوقف شده(فرآیندها)</option>
-                        </select>
+                        <!-- گزینه‌های وضعیت از assets/js/task-filters.js پر می‌شوند (TF.renderStatusFilter) -->
+                        <select id="filterStatus"><option value="all">همه</option></select>
                     </div>
                     <div class="filter-item" style="display: none;">
                         <select id="filterPriority">
@@ -310,6 +298,8 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                 window.location.href = '../index.php';
                 return;
             }
+            // گزینه‌های فیلترِ وضعیت از فایلِ مشترک (assets/js/task-filters.js)
+            TF.renderStatusFilter(document.getElementById('filterStatus'), { selected: 'open' });
             loadFiltersFromURL();
             checkManagerRole();
             document.getElementById('filterStatus').value = 'open';
@@ -628,14 +618,8 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                 if (as && t.assignee_id != as) return false;
                 if (pr && t.priority !== pr) return false;
                 if (ty && t.task_type !== ty) return false;
-                if (st) {
-                    // فیلترِ «باز» همیشه اعمال می‌شه، چه جستجویی در جریان باشه چه نه —
-                    // قبلاً با تایپ‌کردن در کادر جستجو، کارهای تکمیل‌شده/تأییدشده/متوقف‌شده
-                    // هم توی نتیجه‌ی «کارهای باز» ظاهر می‌شدن
-                    if (st === 'open') {
-                        if (['completed', 'approved', 'rejected'].includes(t.status)) return false;
-                    } else if (t.status !== st) return false;
-                }
+                // فیلترِ وضعیت — تنها مرجع: assets/js/task-filters.js
+                if (st && st !== 'all' && !TF.matchesStatusFilter(t, st, { id: currentUserId })) return false;
 
                 // 🆕 فیلتر واحد (از داشبورد)
                 if (window._filterSection && t.activity_section !== window._filterSection) return false;

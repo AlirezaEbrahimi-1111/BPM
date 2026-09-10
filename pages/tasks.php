@@ -91,20 +91,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         <div id="filterAssigneePicker"></div>
                     </div>
                     <div class="filter-item">
-                        <select id="filterStatus">
-                            <option value="">همه وضعیت‌ها</option>
-                            <option value="open">کارهای باز</option>
-                            <option value="not_started">شروع نشده</option>
-                            <option value="in_progress">در حال انجام</option>
-                            <option value="delegated">ارجاع شده</option>
-                            <option value="pending_approval">منتظر تأیید</option>
-                            <option value="termination_requested">در انتظار اتمام</option>
-                            <option value="period_done">دوره انجام شد</option>
-                            <option value="completed">تکمیل شده</option>
-                            <option value="approved">تأیید شده</option>
-                            <option value="rejected">متوقف شده(کارهای عادی)</option>
-                            <option value="stopped">متوقف شده(فرآیندها)</option>
-                        </select>
+                        <!-- گزینه‌های وضعیت از assets/js/task-filters.js پر می‌شوند (TF.renderStatusFilter) -->
+                        <select id="filterStatus"><option value="all">همه</option></select>
                     </div>
                     <div class="filter-item">
                         <select id="filterPriority">
@@ -371,6 +359,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
             currentUser = JSON.parse(localStorage.getItem('user_info') || '{}');
 
+            // گزینه‌های فیلترِ وضعیت از فایلِ مشترک (assets/js/task-filters.js)
+            TF.renderStatusFilter(document.getElementById('filterStatus'), { selected: 'open' });
             document.getElementById('filterStatus').value = 'open';
 
             loadTasks();
@@ -538,7 +528,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             statFilter = statFilter === filter ? '' : filter;
             clearStatActive();
             if (statFilter) document.querySelector(`[data-filter="${filter}"]`)?.classList.add('active');
-            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterStatus').value = 'all';
             document.getElementById('filterPriority').value = '';
             document.getElementById('filterType').value = '';
             AssigneePicker.reset();
@@ -590,14 +580,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 // 🆕 فیلتر گروه
                 if (gr === '__none__' && t.group_id) return false;
                 else if (gr && gr !== '__none__' && t.group_id != gr) return false;
-                if (st) {
-                    // فیلترِ «باز» همیشه اعمال می‌شه، چه جستجویی در جریان باشه چه نه —
-                    // قبلاً با تایپ‌کردن در کادر جستجو، کارهای تکمیل‌شده/تأییدشده/متوقف‌شده
-                    // هم توی نتیجه‌ی «کارهای باز» ظاهر می‌شدن
-                    if (st === 'open') {
-                        if (['completed', 'approved', 'rejected'].includes(t.status)) return false;
-                    } else if (t.status !== st) return false;
-                }
+                // فیلترِ وضعیت — تنها مرجع: assets/js/task-filters.js
+                if (st && st !== 'all' && !TF.matchesStatusFilter(t, st, currentUser)) return false;
 
                 if (statFilter === 'today') {
                     if (t.task_type === 'periodic') {
