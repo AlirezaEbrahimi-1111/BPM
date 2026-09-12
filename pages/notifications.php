@@ -154,7 +154,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             if (n && !n.is_read) {
                 n.is_read = 1;
                 try {
-                    await fetch('/api/notifications/mark-read.php', {
+                    // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/notifications/mark-read.php' برگردان.
+                    await fetch('/go/api/notifications/mark-read', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ntToken },
                         body: JSON.stringify({ id: id })
@@ -168,7 +169,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             var btn = document.getElementById('ntMarkAll');
             btn.disabled = true;
             try {
-                var r = await fetch('/api/notifications/mark-all-read.php', {
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/notifications/mark-all-read.php' برگردان.
+                var r = await fetch('/go/api/notifications/mark-all-read', {
                     method: 'POST', headers: { 'Authorization': 'Bearer ' + ntToken }
                 });
                 var data = await r.json();

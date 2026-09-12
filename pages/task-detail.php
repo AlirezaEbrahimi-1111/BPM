@@ -2524,7 +2524,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             }
             async function markTaskNotificationsRead(taskId) {
                 try {
-                    await fetch('../api/notifications/mark-read.php', {
+                    await fetch('/go/api/notifications/mark-read', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -4449,7 +4449,7 @@ ${task.overdue_periods > 0 ? `
             // شده، اعلانِ مربوط به همین کار هم باید خوانده‌شده حساب شود.
             function markTaskNotificationsRead() {
                 if (!taskId) return;
-                fetch('../api/notifications/mark-read.php', {
+                fetch('/go/api/notifications/mark-read', {
                     method: 'POST',
                     headers: {
                         'Authorization': 'Bearer ' + authToken,

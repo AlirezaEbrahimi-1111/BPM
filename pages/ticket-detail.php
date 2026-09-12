@@ -720,7 +720,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
     <script>
         async function markTicketNotificationsRead(ticketId) {
             try {
-                await fetch('../api/notifications/mark-read.php', {
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به '../api/notifications/mark-read.php' برگردان.
+                await fetch('/go/api/notifications/mark-read', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

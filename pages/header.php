@@ -1385,7 +1385,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         if (btn && btn.disabled) return;
         if (btn) btn.disabled = true;
         try {
-            const response = await fetch('/api/notifications/mark-all-read.php', {
+            // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/notifications/mark-all-read.php' برگردان.
+            const response = await fetch('/go/api/notifications/mark-all-read', {
                 method: 'POST',
                 headers: { 'Authorization': 'Bearer ' + authToken }
             });
@@ -1779,7 +1780,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         var btn = document.getElementById('hdrTicketMarkAllBtn');
         if (btn) btn.disabled = true;
         try {
-            var r = await fetch('/api/tickets/mark-all-read.php', {
+            // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/tickets/mark-all-read.php' برگردان.
+            var r = await fetch('/go/api/tickets/mark-all-read', {
                 method: 'POST',
                 headers: { 'Authorization': 'Bearer ' + authToken }
             });
@@ -1925,7 +1927,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         if (!wasUnread) return; // از قبل خوانده بود — دوباره به سرور/شمارنده دست نزن
 
         try {
-            const response = await fetch('/api/notifications/mark-read.php', {
+            // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/notifications/mark-read.php' برگردان.
+            const response = await fetch('/go/api/notifications/mark-read', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2802,7 +2805,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
 
         if (r.type === 'notification') {
             ev.preventDefault();
-            fetch('/api/notifications/mark-read.php', {
+            // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/notifications/mark-read.php' برگردان.
+            fetch('/go/api/notifications/mark-read', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

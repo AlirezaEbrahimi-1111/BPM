@@ -5165,7 +5165,8 @@ function formatDateJalali($gregorianDate)
 
                 // بازکردنِ این صفحه = دیدنِ درخواست‌های حضور و غیاب؛ پس اعلان‌هایِ
                 // مربوط به مرخصی/مأموریت/پاس/فراموشی/مشکل فنی خوانده‌شده حساب شوند.
-                fetch('/api/notifications/mark-read.php', {
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/notifications/mark-read.php' برگردان.
+                fetch('/go/api/notifications/mark-read', {
                     method: 'POST',
                     headers: {
                         'Authorization': 'Bearer ' + (localStorage.getItem('auth_token') || ''),
