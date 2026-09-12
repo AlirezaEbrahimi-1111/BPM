@@ -368,14 +368,21 @@ if ($user_id) {
                     $shortage_slots[] = ['start' => $shift_start, 'end' => $shift1_in, 'minutes' => $delay];
                 }
                 // خروج زودهنگام
+                // 🔒 اگر خروج قبل از شروعِ شیفت باشد (کاربر زودتر از شیفت وارد و
+                // به‌اشتباه/زود خارج شده)، بازه نباید از خودِ خروج شروع شود — از
+                // شروعِ شیفت شروع می‌شود، وگرنه دقایقِ قبل از شیفت هم به‌غلط جزوِ
+                // کسری حساب می‌شوند (مثلاً ورودِ ۸:۵۵ + خروجِ ۸:۵۸ برایِ شیفتِ
+                // ۹:۰۰-۱۴:۰۰ نباید کسری را از ۸:۵۸ بلکه از ۹:۰۰ حساب کند)
                 if ($shift1_out && $shift1_out < $shift_end) {
-                    $early = timeToMinutes($shift_end) - timeToMinutes($shift1_out);
-                    $shortage_slots[] = ['start' => $shift1_out, 'end' => $shift_end, 'minutes' => $early];
+                    $early_start = max($shift1_out, $shift_start);
+                    $early = timeToMinutes($shift_end) - timeToMinutes($early_start);
+                    $shortage_slots[] = ['start' => $early_start, 'end' => $shift_end, 'minutes' => $early];
                 }
                 // عدم خروج
                 if ($shift1_in && !$shift1_out && $is_past_day) {
-                    $no_checkout = timeToMinutes($shift_end) - timeToMinutes($shift1_in);
-                    $shortage_slots[] = ['start' => $shift1_in, 'end' => $shift_end, 'minutes' => $no_checkout];
+                    $no_checkout_start = max($shift1_in, $shift_start);
+                    $no_checkout = timeToMinutes($shift_end) - timeToMinutes($no_checkout_start);
+                    $shortage_slots[] = ['start' => $no_checkout_start, 'end' => $shift_end, 'minutes' => $no_checkout];
                 }
             }
 

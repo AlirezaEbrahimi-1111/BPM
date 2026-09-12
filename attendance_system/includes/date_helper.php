@@ -537,11 +537,17 @@ if (!function_exists('getShiftShortageSlots')) {
         }
 
         // حالت ۳: خروج زودهنگام
+        // 🔒 اگر خروج قبل از شروعِ شیفت باشد (مثلاً کاربر زودتر از شیفت وارد و
+        // به‌اشتباه/زود خارج شده)، بازه نباید از خودِ خروج شروع شود — از
+        // شروعِ شیفت شروع می‌شود، وگرنه دقایقِ قبل از شیفت هم به‌غلط کسری
+        // حساب می‌شوند (مثلاً ورودِ ۸:۵۵ + خروجِ ۸:۵۸ برایِ شیفتِ ۹:۰۰-۱۴:۰۰
+        // نباید کسری را از ۸:۵۸ بلکه از ۹:۰۰ حساب کند)
         if ($check_out_time && $check_out_time < $shift_end) {
+            $early_start = max($check_out_time, $shift_start);
             $slots[] = [
-                'start' => $check_out_time,
+                'start' => $early_start,
                 'end' => $shift_end,
-                'minutes' => $timeToMinutes($shift_end) - $timeToMinutes($check_out_time),
+                'minutes' => $timeToMinutes($shift_end) - $timeToMinutes($early_start),
                 'type' => 'early_departure'
             ];
         }

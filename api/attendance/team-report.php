@@ -394,13 +394,18 @@ try {
                     $shortage_slots[] = ['start' => $shift1_start, 'end' => $shift1_in, 'minutes' => $delay];
                     $late_days++;
                 }
+                // 🔒 اگر خروج/ورودِ بدونِ خروج قبل از شروعِ شیفت باشد، بازه از
+                // شروعِ شیفت حساب شود نه از خودِ خروج (وگرنه دقایقِ قبل از شیفت
+                // هم به‌غلط کسری حساب می‌شوند)
                 if ($shift1_out && $shift1_out < $shift1_end) {
-                    $early = timeToMinutes($shift1_end) - timeToMinutes($shift1_out);
-                    $shortage_slots[] = ['start' => $shift1_out, 'end' => $shift1_end, 'minutes' => $early];
+                    $early_start = max($shift1_out, $shift1_start);
+                    $early = timeToMinutes($shift1_end) - timeToMinutes($early_start);
+                    $shortage_slots[] = ['start' => $early_start, 'end' => $shift1_end, 'minutes' => $early];
                 }
                 if ($shift1_in && !$shift1_out && $is_past_day) {
-                    $no_checkout = timeToMinutes($shift1_end) - timeToMinutes($shift1_in);
-                    $shortage_slots[] = ['start' => $shift1_in, 'end' => $shift1_end, 'minutes' => $no_checkout];
+                    $no_checkout_start = max($shift1_in, $shift1_start);
+                    $no_checkout = timeToMinutes($shift1_end) - timeToMinutes($no_checkout_start);
+                    $shortage_slots[] = ['start' => $no_checkout_start, 'end' => $shift1_end, 'minutes' => $no_checkout];
                 }
             }
             
@@ -418,12 +423,14 @@ try {
                         $shortage_slots[] = ['start' => $shift2_start, 'end' => $shift2_in, 'minutes' => $delay];
                     }
                     if ($shift2_out && $shift2_out < $shift2_end) {
-                        $early = timeToMinutes($shift2_end) - timeToMinutes($shift2_out);
-                        $shortage_slots[] = ['start' => $shift2_out, 'end' => $shift2_end, 'minutes' => $early];
+                        $early_start = max($shift2_out, $shift2_start);
+                        $early = timeToMinutes($shift2_end) - timeToMinutes($early_start);
+                        $shortage_slots[] = ['start' => $early_start, 'end' => $shift2_end, 'minutes' => $early];
                     }
                     if ($shift2_in && !$shift2_out && $is_past_day) {
-                        $no_checkout = timeToMinutes($shift2_end) - timeToMinutes($shift2_in);
-                        $shortage_slots[] = ['start' => $shift2_in, 'end' => $shift2_end, 'minutes' => $no_checkout];
+                        $no_checkout_start = max($shift2_in, $shift2_start);
+                        $no_checkout = timeToMinutes($shift2_end) - timeToMinutes($no_checkout_start);
+                        $shortage_slots[] = ['start' => $no_checkout_start, 'end' => $shift2_end, 'minutes' => $no_checkout];
                     }
                 }
             }

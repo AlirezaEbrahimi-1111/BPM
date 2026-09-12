@@ -187,10 +187,13 @@ if (!function_exists('sc_getShiftShortageSlots')) {
                 $slots[] = ['start' => $shift_start, 'end' => $late_end, 'minutes' => $delay, 'type' => 'late_arrival'];
         }
 
-        // خروج زودهنگام
+        // خروج زودهنگام — اگر قبل از شروعِ شیفت باشد، بازه از شروعِ شیفت
+        // حساب شود نه از خودِ خروج (وگرنه دقایقِ قبل از شیفت هم به‌غلط
+        // کسری حساب می‌شوند)
         if ($check_out_time && $check_out_time < $shift_end) {
-            $early = sc_timeToMinutes($shift_end) - sc_timeToMinutes($check_out_time);
-            $slots[] = ['start' => $check_out_time, 'end' => $shift_end, 'minutes' => $early, 'type' => 'early_departure'];
+            $early_start = max($check_out_time, $shift_start);
+            $early = sc_timeToMinutes($shift_end) - sc_timeToMinutes($early_start);
+            $slots[] = ['start' => $early_start, 'end' => $shift_end, 'minutes' => $early, 'type' => 'early_departure'];
         }
 
         return $slots;
