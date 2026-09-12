@@ -21,6 +21,7 @@
 //	POST   /go/api/notifications/mark-read → پورتِ api/notifications/mark-read.php
 //	POST   /go/api/notifications/mark-all-read → پورتِ api/notifications/mark-all-read.php
 //	POST   /go/api/notifications/delete    → پورتِ api/notifications/delete.php
+//	GET    /go/api/announcements/list      → پورتِ api/announcements/list.php
 //
 // عمداً پورت نشده: api/attendance/register.php (ثبتِ ورود/خروج) و هر منطقِ
 // محاسبه‌ی کسری/حقوق — ریسکِ مالی/عملیاتی‌شان بالاست؛ نیازمندِ تصمیمِ
@@ -46,6 +47,7 @@ import (
 	"strings"
 	"time"
 
+	"bmp/go-api/internal/announcements"
 	"bmp/go-api/internal/attendance"
 	"bmp/go-api/internal/core"
 	"bmp/go-api/internal/notifications"
@@ -148,6 +150,9 @@ func main() {
 	mux.HandleFunc("POST /go/api/notifications/mark-read", s.auth(notifications.MarkRead(s.db)))
 	mux.HandleFunc("POST /go/api/notifications/mark-all-read", s.auth(notifications.MarkAllRead(s.db)))
 	mux.HandleFunc("POST /go/api/notifications/delete", s.auth(notifications.Delete(s.db)))
+
+	// ── ماژولِ اطلاعیه‌ها — فقط بخشِ خواندنی (پورتِ api/announcements/list.php) ──
+	mux.HandleFunc("GET /go/api/announcements/list", s.auth(announcements.List(s.db)))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{
