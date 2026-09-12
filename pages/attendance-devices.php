@@ -647,7 +647,8 @@ if (!hasPermission($__me, 'view_org_settings')) {
 
         async function loadDevices() {
             try {
-                const d = await api('../api/attendance/devices.php');
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به '../api/attendance/devices.php' برگردان.
+                const d = await api('/go/api/attendance/devices');
                 if (d.success) {
                     const rows = d.devices || [];
                     devGridApi.setGridOption('rowData', rows);
@@ -664,6 +665,9 @@ if (!hasPermission($__me, 'view_org_settings')) {
         function devAction(id, action) {
             const run = async function () {
                 try {
+                    // 🔒 عمداً رویِ PHP می‌ماند: این تابع عمومی approve/reject/delete را
+                    // پوشش می‌دهد، ولی go-api فقط delete/relabel را پورت کرده (approve/
+                    // reject به ارسالِ پیامکِ Notification::create وابسته‌اند که پورت نشده).
                     const d = await api('../api/attendance/devices.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -683,7 +687,8 @@ if (!hasPermission($__me, 'view_org_settings')) {
         function relabel(id) {
             uiPrompt('برچسب جدید برای این دستگاه (مثلا: صندوق ۱ - فروشگاه مرکزی)', async function (label) {
                 try {
-                    const d = await api('../api/attendance/devices.php', {
+                    // ✅ از go-api سرو می‌شود؛ برگشت = این را به '../api/attendance/devices.php' برگردان.
+                    const d = await api('/go/api/attendance/devices', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'relabel', id, label })
@@ -701,7 +706,8 @@ if (!hasPermission($__me, 'view_org_settings')) {
             const box = document.getElementById('ipList');
             box.innerHTML = `<div class="ad-empty"><i class="bi bi-ethernet"></i><p>در حال بارگذاری...</p></div>`;
             try {
-                const d = await api('../api/attendance/allowed-ips.php');
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به '../api/attendance/allowed-ips.php' برگردان.
+                const d = await api('/go/api/attendance/allowed-ips');
                 if (!d.success) { notify(d.message || 'خطا', 'error'); return; }
                 const ips = d.ips || [];
                 updateStat('statIpCount', ips.length);
@@ -737,7 +743,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
             const label = document.getElementById('newIpLabel').value.trim();
             if (!ip) { notify('آدرس IP را وارد کنید', 'warning'); return; }
             try {
-                const d = await api('../api/attendance/allowed-ips.php', {
+                const d = await api('/go/api/attendance/allowed-ips', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'add', ip_address: ip, label })
@@ -753,7 +759,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
 
         async function toggleIp(id) {
             try {
-                const d = await api('../api/attendance/allowed-ips.php', {
+                const d = await api('/go/api/attendance/allowed-ips', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'toggle', id })
@@ -766,7 +772,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
         function deleteIp(id) {
             uiConfirm('این آی‌پی حذف شود؟', async function () {
                 try {
-                    const d = await api('../api/attendance/allowed-ips.php', {
+                    const d = await api('/go/api/attendance/allowed-ips', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'delete', id })
@@ -868,7 +874,8 @@ if (!hasPermission($__me, 'view_org_settings')) {
         async function loadLog() {
             const range = document.getElementById('logRange')?.value || 'all';
             try {
-                const d = await api('../api/attendance/denied-log.php?range=' + range);
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به '../api/attendance/denied-log.php' برگردان.
+                const d = await api('/go/api/attendance/denied-log?range=' + range);
                 if (d.success) {
                     const logs = d.logs || [];
                     logGridApi.setGridOption('rowData', logs);
@@ -880,7 +887,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
         function deleteLog(id) {
             uiConfirm('این مورد حذف شود؟', async function () {
                 try {
-                    const d = await api('../api/attendance/denied-log.php', {
+                    const d = await api('/go/api/attendance/denied-log', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'delete', id })
@@ -896,7 +903,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
             const lbl = { today: 'امروز', week: 'هفتهٔ اخیر', all: 'همه' }[range] || '';
             uiConfirm('همهٔ تلاش‌های ناموفق «' + lbl + '» پاک شوند؟', async function () {
                 try {
-                    const d = await api('../api/attendance/denied-log.php', {
+                    const d = await api('/go/api/attendance/denied-log', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'clear', range })

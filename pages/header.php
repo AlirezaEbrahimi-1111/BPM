@@ -1993,7 +1993,9 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
     async function checkNewNotifications() {
         if (!authToken) return;
         try {
-            const apiUrl = '/api/notifications/new.php' + '?since=' + lastNotificationId;
+            // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/notifications/new.php' برگردان.
+            // (تفاوتِ آگاهانه: اینجا bypass_self_filter را درست‌تر از PHP اعمال می‌کند)
+            const apiUrl = '/go/api/notifications/new' + '?since=' + lastNotificationId;
             const response = await fetch(apiUrl, {
                 headers: {
                     'Authorization': 'Bearer ' + authToken

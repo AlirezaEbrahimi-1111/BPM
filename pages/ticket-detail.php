@@ -874,7 +874,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         // ─── بارگذاری جزئیات ───
         async function loadDetail() {
             try {
-                var res = await fetch('../api/tickets/detail.php' + '?id=' + ticketId, {
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به '../api/tickets/detail.php' برگردان.
+                var res = await fetch('/go/api/tickets/detail' + '?id=' + ticketId, {
                     headers: { 'Authorization': 'Bearer ' + authToken }
                 });
                 var data = await res.json();
