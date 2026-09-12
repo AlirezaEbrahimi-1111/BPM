@@ -246,6 +246,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                 resizable: true
             },
             overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
+            overlayNoRowsTemplate: '<span class="text-muted">اطلاعاتی یافت نشد</span>',
             onRowClicked: params => viewTask(params.data.id),
             onGridReady: params => {
                 const saved = localStorage.getItem('allTasksGridState');

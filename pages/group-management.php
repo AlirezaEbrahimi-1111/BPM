@@ -200,6 +200,7 @@ if (!hasPermission($__me, 'manage_task_groups')) {
             paginationPageSizeSelector: [15, 30, 50],
             defaultColDef: { sortable: true, resizable: true },
             overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
+            overlayNoRowsTemplate: '<span class="text-muted">اطلاعاتی یافت نشد</span>',
             // کلیک روی دکمه‌های عملیات
             onCellClicked: params => {
                 const btn = params.event.target.closest('[data-action]');
