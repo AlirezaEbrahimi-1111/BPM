@@ -171,8 +171,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         }
 
         .pm-chk {
-            width: 17px;
-            height: 17px;
             cursor: pointer;
         }
 
@@ -352,7 +350,10 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         function chkCell(p) {
             if (!p.data.partner_id) return '—';
-            return `<input type="checkbox" class="pm-chk" ${p.value ? 'checked' : ''} onchange="toggleProfitRecorded(${p.data.id}, this.checked)">`;
+            return `<div class="form-check form-switch mb-0 d-flex justify-content-center">
+                <input class="form-check-input pm-chk" type="checkbox" role="switch"
+                    ${p.value ? 'checked' : ''} onchange="toggleProfitRecorded(${p.data.id}, this.checked)">
+            </div>`;
         }
 
         const SETTLE_LABEL = {
@@ -480,8 +481,9 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             paginationPageSizeSelector: [20, 50, 100],
             onPaginationChanged: () => AgGridFa.persianizePaging(),
             onRowClicked: (e) => {
-                // کلیک روی دکمه‌های ستونِ «عملیات» نباید صفحه را عوض کند
-                if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn')) return;
+                // کلیک روی دکمه‌های ستونِ «عملیات» یا هر کنترلِ فرمی (مثلِ سوئیچِ
+                // «ثبتِ سود») نباید صفحه را عوض کند — فقط خودِ همان کنترل کار کند
+                if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn, input, .form-check')) return;
                 // اگر کاربر متنی را انتخاب کرده، رهایش کن
                 if (window.getSelection && String(window.getSelection()).length > 0) return;
                 location.href = '/pages/inv-invoice-print.php?id=' + e.data.id;

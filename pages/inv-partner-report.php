@@ -107,8 +107,6 @@ if (!crmReportAllowed($db, (int) $user_id)) {
 
         /* کنترل‌های ویرایشِ درجا داخلِ جدول */
         .pm-chk {
-            width: 17px;
-            height: 17px;
             cursor: pointer;
         }
 
@@ -519,7 +517,10 @@ if (!crmReportAllowed($db, (int) $user_id)) {
 
         // ───────── ستون‌های ویرایش‌پذیرِ درجا ─────────
         function chkCell(p) {
-            return `<input type="checkbox" class="pm-chk" ${p.value ? 'checked' : ''} onchange="pmToggleProfit(${p.data.id}, this.checked)">`;
+            return `<div class="form-check form-switch mb-0 d-flex justify-content-center">
+                <input class="form-check-input pm-chk" type="checkbox" role="switch"
+                    ${p.value ? 'checked' : ''} onchange="pmToggleProfit(${p.data.id}, this.checked)">
+            </div>`;
         }
 
         const SETTLE_LABEL = {
