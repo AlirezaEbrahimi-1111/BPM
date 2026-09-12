@@ -2,9 +2,18 @@
 //
 // endpointها تا این‌جا:
 //
-//	GET /go/api/health         → بدونِ احراز هویت؛ سلامتِ سرویس و دیتابیس
-//	GET /go/api/me             → با همان JWTِ اپِ PHP؛ کاربر + اجازه‌هایش
-//	GET /go/api/reports/stats  → پورتِ api/reports/stats.php (تعدادِ گزارش‌ها)
+//	GET    /go/api/health           → بدونِ احراز هویت؛ سلامتِ سرویس و دیتابیس
+//	GET    /go/api/me               → با همان JWTِ اپِ PHP؛ کاربر + اجازه‌هایش
+//	GET    /go/api/reports/stats    → پورتِ api/reports/stats.php
+//	GET    /go/api/reports/today    → پورتِ api/reports/today.php
+//	GET    /go/api/reports/history  → پورتِ api/reports/history.php
+//	GET    /go/api/reports/list     → پورتِ api/reports/list.php
+//	GET    /go/api/reports/detail   → پورتِ api/reports/detail.php
+//	GET    /go/api/reports/search   → پورتِ api/reports/search.php
+//	POST   /go/api/reports/save     → پورتِ api/reports/save.php
+//	POST   /go/api/reports/submit   → پورتِ api/reports/submit.php
+//	DELETE|POST /go/api/reports/delete   → پورتِ api/reports/delete.php
+//	POST   /go/api/reports/generate → پورتِ api/reports/generate.php
 //
 // روالِ افزودنِ endpoint: پورت در internal/<module>/، ثبت در main.go، سپس
 // «تستِ سایه‌ای» (SHADOW-TEST.md) — خروجیِ Go و PHP روی یک دیتابیس مقایسه شود —
@@ -108,6 +117,13 @@ func main() {
 	mux.HandleFunc("GET /go/api/reports/today", s.auth(reports.Today(s.db)))
 	mux.HandleFunc("GET /go/api/reports/history", s.auth(reports.History(s.db)))
 	mux.HandleFunc("GET /go/api/reports/list", s.auth(reports.List(s.db)))
+	mux.HandleFunc("GET /go/api/reports/detail", s.auth(reports.Detail(s.db)))
+	mux.HandleFunc("GET /go/api/reports/search", s.auth(reports.Search(s.db)))
+	mux.HandleFunc("POST /go/api/reports/save", s.auth(reports.Save(s.db)))
+	mux.HandleFunc("POST /go/api/reports/submit", s.auth(reports.Submit(s.db)))
+	mux.HandleFunc("DELETE /go/api/reports/delete", s.auth(reports.Delete(s.db)))
+	mux.HandleFunc("POST /go/api/reports/delete", s.auth(reports.Delete(s.db)))
+	mux.HandleFunc("POST /go/api/reports/generate", s.auth(reports.Generate(s.db)))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{

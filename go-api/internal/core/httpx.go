@@ -7,6 +7,13 @@ import (
 	"time"
 )
 
+// ReadJSON بدنه‌ی JSONِ درخواست را در v می‌خواند — معادلِ
+// json_decode(file_get_contents('php://input'), true) در PHP.
+func ReadJSON(r *http.Request, v any) error {
+	defer r.Body.Close()
+	return json.NewDecoder(r.Body).Decode(v)
+}
+
 // WriteJSON پاسخِ JSON با هدر و status می‌نویسد.
 func WriteJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
