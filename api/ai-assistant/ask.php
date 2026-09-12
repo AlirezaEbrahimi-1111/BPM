@@ -59,7 +59,7 @@ try {
 
     if ($question === '') {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'متنِ سؤال الزامی است']);
+        echo json_encode(['success' => false, 'message' => 'متن سؤال الزامی است']);
         exit;
     }
 
@@ -68,7 +68,7 @@ try {
     $stmt->execute([$user_id]);
     if ((int) $stmt->fetchColumn() >= RATE_LIMIT_PER_MINUTE) {
         http_response_code(429);
-        echo json_encode(['success' => false, 'message' => 'تعدادِ درخواست‌ها بیش از حدِ مجاز است — کمی صبر کنید']);
+        echo json_encode(['success' => false, 'message' => 'تعداد درخواست‌ها بیش از حد مجاز است — کمی صبر کنید']);
         exit;
     }
 
@@ -145,7 +145,7 @@ try {
         http_response_code(502);
         echo json_encode([
             'success' => false,
-            'message' => 'دستیار در حالِ حاضر در دسترس نیست — لطفاً دوباره تلاش کنید',
+            'message' => 'دستیار در حال حاضر در دسترس نیست — لطفا دوباره تلاش کنید',
             'log_id'  => $logId,
         ], JSON_UNESCAPED_UNICODE);
         exit;

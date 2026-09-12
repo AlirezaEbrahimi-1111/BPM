@@ -281,7 +281,7 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                     <button type="button" id="btnResolveStale" class="btn-resolve-stale" style="display:none;" onclick="resolveStaleTickets()">
-                        <i class="bi bi-check2-all"></i>حل‌شده کردن تیکت‌های بی‌پاسخِ ۲۱ روزه
+                        <i class="bi bi-check2-all"></i>حل‌شده کردن تیکت‌های بی‌پاسخ ۲۱ روزه
                     </button>
                     <a href="create-ticket.php" class="btn-new-ticket">
                         <i class="bi bi-plus-circle"></i>تیکت جدید

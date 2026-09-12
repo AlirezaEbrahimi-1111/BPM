@@ -61,7 +61,7 @@ try {
     if ($conv['type'] !== 'direct' && (int) $conv['created_by'] !== $user_id) {
         http_response_code(403);
         error_log("Chat pin-message denied | user_id={$user_id} | conversation_id={$conversationId}");
-        echo json_encode(['success' => false, 'message' => 'فقط مدیرِ گروه می‌تواند پیام سنجاق کند']);
+        echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند پیام سنجاق کند']);
         exit;
     }
 

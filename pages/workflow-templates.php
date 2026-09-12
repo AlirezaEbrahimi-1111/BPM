@@ -1237,7 +1237,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                         </div>
 
                         <div class="exec-quick">
-                            <span class="eq-label"><i class="bi bi-lightning-charge"></i> تنظیم سریعِ همهٔ مراحل:</span>
+                            <span class="eq-label"><i class="bi bi-lightning-charge"></i> تنظیم سریع همهٔ مراحل:</span>
                             <button type="button" class="sm-btn" onclick="setAllModes('cascade')">⛓ همه آبشاری</button>
                             <button type="button" class="sm-btn" onclick="setAllModes('parallel')">⚡ همه موازی</button>
                         </div>
@@ -1249,8 +1249,8 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                         <!-- بومِ مسیر و انشعاب (فاز ۴) -->
                         <div class="wf-canvas-wrap" id="wfCanvasWrap">
                             <div class="wf-canvas-toolbar">
-                                <b><i class="bi bi-diagram-2"></i> مسیر و انشعابِ روتین</b>
-                                <button type="button" onclick="wfSyncFromForm()" title="بازچینش از روی فهرستِ مراحل"><i class="bi bi-arrow-repeat"></i> همگام‌سازی</button>
+                                <b><i class="bi bi-diagram-2"></i> مسیر و انشعاب روتین</b>
+                                <button type="button" onclick="wfSyncFromForm()" title="بازچینش از روی فهرست مراحل"><i class="bi bi-arrow-repeat"></i> همگام‌سازی</button>
                                 <button type="button" onclick="wfZoom(0.1)" title="بزرگ‌نمایی"><i class="bi bi-zoom-in"></i></button>
                                 <button type="button" onclick="wfZoom(-0.1)" title="کوچک‌نمایی"><i class="bi bi-zoom-out"></i></button>
                                 <button type="button" onclick="wfZoomReset()" title="بازنشانی بزرگ‌نمایی">۱:۱</button>
@@ -1268,9 +1268,9 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
 
                         <div class="steps-hint">
                             <i class="bi bi-info-circle"></i>
-                            جزئیاتِ هر مرحله (نام، مسئول، مهلت، چک‌لیست) در فهرستِ بالا؛ <b>ترتیب و انشعاب</b> را روی بومِ پایین مشخص کنید:
-                            گرهِ «نقطهٔ تصمیم» را تیک بزنید تا دو خروجیِ «تأیید» و «رد» بگیرد، بعد آن‌ها را به گرهِ مقصد (یا گرهِ «تعریف‌کننده») وصل کنید.
-                            جای عمودیِ گره‌ها ترتیبِ اجرا را تعیین می‌کند. <b>کلیک راست</b> روی یک خط آن را حذف می‌کند.
+                            جزئیات هر مرحله (نام، مسئول، مهلت، چک‌لیست) در فهرست بالا؛ <b>ترتیب و انشعاب</b> را روی بوم پایین مشخص کنید:
+                            گره «نقطهٔ تصمیم» را تیک بزنید تا دو خروجی «تأیید» و «رد» بگیرد، بعد آن‌ها را به گره مقصد (یا گره «تعریف‌کننده») وصل کنید.
+                            جای عمودی گره‌ها ترتیب اجرا را تعیین می‌کند. <b>کلیک راست</b> روی یک خط آن را حذف می‌کند.
                         </div>
                     </form>
                 </div>
@@ -1278,7 +1278,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 <div id="deactivateOldWrap" style="display:none; padding:0 1rem 0.5rem;">
                     <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer;">
                         <input type="checkbox" id="deactivateOldChk">
-                        قالبِ قبلی غیرفعال شود (دیگر در ساخت کار جدید نمایش داده نشود)
+                        قالب قبلی غیرفعال شود (دیگر در ساخت کار جدید نمایش داده نشود)
                     </label>
                 </div>
 
@@ -1461,7 +1461,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
         }
 
         function notifyLocked() {
-            showToast('این قالب یک کار روتینِ در حال اجرا دارد و تا تکمیل‌شدنِ آن قابل ویرایش یا حذف نیست.', 'warning');
+            showToast('این قالب یک کار روتین در حال اجرا دارد و تا تکمیل‌شدن آن قابل ویرایش یا حذف نیست.', 'warning');
         }
         // ─── مشاهدهٔ فقط‌خواندنی ──────────────────────────
         async function viewTemplate(templateId) {
@@ -1688,11 +1688,11 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                         <button type="button" class="sm-btn sm-parallel ${stepMode==='parallel'?'active':''}" onclick="setStepMode(this,'parallel')" title="موازی">⚡</button>
                     </div>
 
-                    <button type="button" class="sr-checklist-toggle" id="scl-toggle-${stepId}" onclick="toggleStepChecklist('${stepId}')" title="چک‌لیستِ این مرحله">
+                    <button type="button" class="sr-checklist-toggle" id="scl-toggle-${stepId}" onclick="toggleStepChecklist('${stepId}')" title="چک‌لیست این مرحله">
                         <i class="bi bi-check2-square"></i> <span id="scl-count-${stepId}">چک‌لیست</span>
                     </button>
 
-                    <button type="button" class="sr-decision-toggle" id="dec-toggle-${stepId}" onclick="toggleStepDecision('${stepId}')" title="انشعابِ شرطی (تأیید/رد)">
+                    <button type="button" class="sr-decision-toggle" id="dec-toggle-${stepId}" onclick="toggleStepDecision('${stepId}')" title="انشعاب شرطی (تأیید/رد)">
                         <i class="bi bi-signpost-split"></i> <span id="dec-label-${stepId}">انشعاب</span>
                     </button>
 
@@ -1733,10 +1733,10 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                                 </select>
                                 <select class="dec-reject-target" id="dec-reject-${stepId}"></select>
                             </div>
-                            <div class="dec-hint">مقصدِ رد می‌تواند هر مرحله‌ای باشد؛ حتی مراحلِ بعد از این مرحله.</div>
+                            <div class="dec-hint">مقصد رد می‌تواند هر مرحله‌ای باشد؛ حتی مراحل بعد از این مرحله.</div>
                         </div>
                         <div class="dec-hint" id="dec-parallel-hint-${stepId}" hidden>
-                            انشعاب فقط برای مراحلِ «آبشاری» است. این مرحله موازی است.
+                            انشعاب فقط برای مراحل «آبشاری» است. این مرحله موازی است.
                         </div>
                     </div>
                 </div>`;
@@ -1828,7 +1828,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             const lbl = document.getElementById('dec-label-' + stepId);
             if (!btn || !on) return;
             btn.classList.toggle('has-branch', on.checked);
-            if (lbl) lbl.textContent = on.checked ? 'انشعابِ فعال' : 'انشعاب';
+            if (lbl) lbl.textContent = on.checked ? 'انشعاب فعال' : 'انشعاب';
         }
 
         // گزینه‌های dropdownِ همهٔ مراحلِ تصمیم را از ترتیبِ فعلیِ مراحل بازمی‌سازد
@@ -2038,29 +2038,29 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             const startActive = [];
             if (cascade.length) startActive.push(nm(cascade[0]) + ' (آبشاری)');
             parallel.forEach(s => startActive.push(nm(s) + ' (موازی)'));
-            lines.push('شروعِ روتین: ' + (startActive.length > 1
+            lines.push('شروع روتین: ' + (startActive.length > 1
                 ? startActive.join(' و ') + ' هم‌زمان فعال می‌شوند.'
                 : (startActive[0] || '—') + ' فعال می‌شود.'));
 
             cascade.forEach((s, i) => {
                 const nextOrd = (i + 1 < cascade.length) ? cascade[i + 1].order : null;
                 if (s.isDecision) {
-                    const appr = s.onApprove ? ('مرحلهٔ ' + toFa(s.onApprove)) : (nextOrd ? ('مرحلهٔ ' + toFa(nextOrd)) : 'پایانِ روتین');
+                    const appr = s.onApprove ? ('مرحلهٔ ' + toFa(s.onApprove)) : (nextOrd ? ('مرحلهٔ ' + toFa(nextOrd)) : 'پایان روتین');
                     let rej;
                     if (s.rkind === 'creator') rej = 'کار برای اصلاح به تعریف‌کنندهٔ روتین برمی‌گردد';
                     else if (s.onReject) rej = 'به مرحلهٔ ' + toFa(s.onReject) + ' می‌رود';
                     else rej = 'کار به تعریف‌کننده برمی‌گردد';
                     lines.push(nm(s) + ' (آبشاری) یک «نقطهٔ تصمیم» است؛ تعریف‌کنندهٔ روتین بررسی می‌کند — اگر «تأیید» → ' + appr + '، اگر «رد» → ' + rej + '.');
                 } else {
-                    lines.push('پس از تکمیلِ ' + nm(s) + ' (آبشاری) → ' + (nextOrd ? ('مرحلهٔ ' + toFa(nextOrd)) : 'روتین به پایان می‌رسد') + '.');
+                    lines.push('پس از تکمیل ' + nm(s) + ' (آبشاری) → ' + (nextOrd ? ('مرحلهٔ ' + toFa(nextOrd)) : 'روتین به پایان می‌رسد') + '.');
                 }
             });
 
             parallel.forEach(s => {
-                lines.push(nm(s) + ' (موازی) مستقل انجام می‌شود و جریانِ اصلی را جلو نمی‌برد؛ فقط باید پیش از پایانِ روتین تکمیل شود.');
+                lines.push(nm(s) + ' (موازی) مستقل انجام می‌شود و جریان اصلی را جلو نمی‌برد؛ فقط باید پیش از پایان روتین تکمیل شود.');
             });
 
-            lines.push('پایانِ روتین: وقتی آخرین مرحلهٔ آبشاری و همهٔ مراحلِ موازی تکمیل شوند. مراحلی که به‌خاطرِ پرشِ تأیید/رد اجرا نشده‌اند، در پایان لغو می‌شوند.');
+            lines.push('پایان روتین: وقتی آخرین مرحلهٔ آبشاری و همهٔ مراحل موازی تکمیل شوند. مراحلی که به‌خاطر پرش تأیید/رد اجرا نشده‌اند، در پایان لغو می‌شوند.');
 
             box.innerHTML = lines.map((l, i) => `<div><b>${toFa(i + 1)}.</b> ${escHtml(l)}</div>`).join('');
         }
@@ -2535,7 +2535,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             });
 
             if (!valid) {
-                showToast('تمام فیلدها را تکمیل کنید — و برای مراحلِ «رد → برگرد به مرحلهٔ…»، مقصدِ رد را انتخاب کنید', 'warning');
+                showToast('تمام فیلدها را تکمیل کنید — و برای مراحل «رد → برگرد به مرحلهٔ…»، مقصد رد را انتخاب کنید', 'warning');
                 return;
             }
 

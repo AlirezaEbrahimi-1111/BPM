@@ -120,7 +120,7 @@ class RequestManager {
             }
             
             if ($request['status'] != self::STATUS_DRAFT) {
-                return ['success' => false, 'message' => 'درخواست قبلاً ارسال شده است'];
+                return ['success' => false, 'message' => 'درخواست قبلا ارسال شده است'];
             }
             
             // تعیین وضعیت بعدی

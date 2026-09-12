@@ -33,7 +33,7 @@ if (!$user_id && isset($_COOKIE['auth_token'])) $user_id = $auth->validateToken(
 
 if (!$user_id) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'لطفاً وارد شوید']);
+    echo json_encode(['success' => false, 'message' => 'لطفا وارد شوید']);
     exit;
 }
 
@@ -97,7 +97,7 @@ try {
         if ($now <= $deadline) {
             $can_delete = true;
         } else {
-            $error_message = "مهلتِ حذفِ درخواستِ پاس ({$pass_edit_hours} ساعتِ کاری) در تاریخِ " .
+            $error_message = "مهلت حذف درخواست پاس ({$pass_edit_hours} ساعت کاری) در تاریخ " .
                 $deadline->format('Y-m-d H:i') . ' به پایان رسیده است';
         }
     } else {
@@ -128,10 +128,10 @@ try {
                 $can_delete = true;
                 $burn_quota = true;
             } else {
-                $error_message = 'فقط مرخصیِ همین ماه قابلِ حذف است؛ این درخواست برای ماهِ دیگری ثبت شده است';
+                $error_message = 'فقط مرخصی همین ماه قابل حذف است؛ این درخواست برای ماه دیگری ثبت شده است';
             }
         } else {
-            $error_message = 'این درخواست قبلاً تأیید شده و قابل حذف نیست';
+            $error_message = 'این درخواست قبلا تأیید شده و قابل حذف نیست';
         }
     }
 
@@ -148,7 +148,7 @@ try {
         if ($ded_amount !== null) {
             $stmt = $db->prepare("
                 INSERT INTO leave_balance_transactions (user_id, type, amount, related_request_id, related_request_type, note)
-                VALUES (?, 'manual_adjustment', ?, ?, ?, 'بازگشتِ سهمیه به‌دلیلِ حذفِ درخواست')
+                VALUES (?, 'manual_adjustment', ?, ?, ?, 'بازگشت سهمیه به‌دلیل حذف درخواست')
             ");
             $stmt->execute([$user_id, -$ded_amount, $request_id, $request_type]);
         }
@@ -159,7 +159,7 @@ try {
     $stmt->execute([$request_id, $user_id]);
 
     $ok_message = $burn_quota
-        ? 'درخواستِ مرخصی حذف شد. توجه: سهمیهٔ این مرخصی بازنگشت و سوخت.'
+        ? 'درخواست مرخصی حذف شد. توجه: سهمیهٔ این مرخصی بازنگشت و سوخت.'
         : 'درخواست با موفقیت حذف شد';
     echo json_encode(['success' => true, 'message' => $ok_message]);
 

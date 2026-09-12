@@ -35,7 +35,7 @@ try {
 
     if ($title === '') {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'نامِ گروه الزامی است']);
+        echo json_encode(['success' => false, 'message' => 'نام گروه الزامی است']);
         exit;
     }
     if (!$memberIds) {
@@ -56,7 +56,7 @@ try {
 
     if (!$validMemberIds) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'هیچ‌کدام از اعضایِ انتخاب‌شده معتبر نیستند']);
+        echo json_encode(['success' => false, 'message' => 'هیچ‌کدام از اعضای انتخاب‌شده معتبر نیستند']);
         exit;
     }
 

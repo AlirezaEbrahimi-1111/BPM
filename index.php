@@ -999,7 +999,7 @@ if (!headers_sent()) {
             function tryGoStep2() {
                 const phone = toEnglishDigits(usernameInput.value.trim());
                 if (!/^09[0-9]{9}$/.test(phone)) {
-                    showAlert('لطفاً شماره موبایل معتبر (۱۱ رقمی، شروع با ۰۹) وارد کنید', 'danger');
+                    showAlert('لطفا شماره موبایل معتبر (۱۱ رقمی، شروع با ۰۹) وارد کنید', 'danger');
                     usernameInput.focus();
                     return;
                 }
@@ -1033,7 +1033,7 @@ if (!headers_sent()) {
             otpSendBtn.addEventListener('click', async function() {
                 const phone = usernameInput.value.trim();
                 if (!phone || !/^09[0-9]{9}$/.test(phone)) {
-                    showAlert('لطفاً شماره موبایل معتبر وارد کنید', 'danger');
+                    showAlert('لطفا شماره موبایل معتبر وارد کنید', 'danger');
                     return;
                 }
                 otpSendBtn.classList.add('loading');

@@ -87,7 +87,7 @@
             + '<i class="bi bi-x-circle-fill"></i> رد'
             + '</button>'
             + '<button class="deadline-toast-btn btn-later" onclick="handleDeadlineAction(\'later\', ' + request.id + ')">'
-            + '<i class="bi bi-clock"></i> بعداً یادآوری کن'
+            + '<i class="bi bi-clock"></i> بعدا یادآوری کن'
             + '</button>'
             + '</div>'
 
@@ -223,7 +223,7 @@
                 newBtn.onclick = function () {
                     var reason = document.getElementById('rejectionReasonInput').value.trim();
                     if (!reason) {
-                        showToast('لطفاً دلیل رد را وارد کنید', 'warning');
+                        showToast('لطفا دلیل رد را وارد کنید', 'warning');
                         return;
                     }
                     modal.style.display = 'none';

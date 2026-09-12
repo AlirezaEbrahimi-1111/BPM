@@ -106,7 +106,7 @@ if (!hasPermission($__me, 'manage_task_groups')) {
                     <div class="row align-items-center mb-3">
                         <label class="col-4 col-form-label">نام گروه</label>
                         <div class="col-8">
-                            <input type="text" class="form-control" id="gmName" placeholder="مثلاً: کاری">
+                            <input type="text" class="form-control" id="gmName" placeholder="مثلا: کاری">
                         </div>
                     </div>
 

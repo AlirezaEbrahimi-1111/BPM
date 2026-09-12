@@ -3271,12 +3271,12 @@ function formatDateJalali($gregorianDate)
                             <div class="form-group">
                                 <label class="required">ساعت شروع</label>
                                 <input type="text" id="missionStartTime" class="time-input-custom"
-                                    placeholder="مثلاً ۰۸:۳۰" maxlength="5" required />
+                                    placeholder="مثلا ۰۸:۳۰" maxlength="5" required />
                             </div>
                             <div class="form-group">
                                 <label class="required">ساعت پایان</label>
                                 <input type="text" id="missionEndTime" class="time-input-custom"
-                                    placeholder="مثلاً ۰۸:۳۰" maxlength="5" required />
+                                    placeholder="مثلا ۰۸:۳۰" maxlength="5" required />
                             </div>
                         </div>
                         <div class="form-group">
@@ -3291,7 +3291,7 @@ function formatDateJalali($gregorianDate)
                             <i class="bi bi-wallet2"></i>
                             <span>موجودی سهمیه مرخصی و پاس: <strong id="leaveBalanceValue">در حال بارگذاری...</strong> ساعت</span>
                             <button type="button" class="leave-balance-request-btn" onclick="requestLeaveBonus()">
-                                <i class="bi bi-hand-thumbs-up"></i> درخواستِ سهمیهٔ تشویقی
+                                <i class="bi bi-hand-thumbs-up"></i> درخواست سهمیهٔ تشویقی
                             </button>
                         </div>
                         <div class="form-row">
@@ -3352,11 +3352,11 @@ function formatDateJalali($gregorianDate)
                             <div class="form-group">
                                 <label class="required">ساعت شروع</label>
                                 <input type="text" id="leaveStartTime" class="time-input-custom"
-                                    placeholder="مثلاً ۰۸:۳۰" maxlength="5" required />
+                                    placeholder="مثلا ۰۸:۳۰" maxlength="5" required />
                             </div>
                             <div class="form-group">
                                 <label class="required">ساعت پایان</label>
-                                <input type="text" id="leaveEndTime" class="time-input-custom" placeholder="مثلاً ۰۸:۳۰"
+                                <input type="text" id="leaveEndTime" class="time-input-custom" placeholder="مثلا ۰۸:۳۰"
                                     maxlength="5" required />
                             </div>
                         </div>
@@ -3378,7 +3378,7 @@ function formatDateJalali($gregorianDate)
                             <i class="bi bi-wallet2"></i>
                             <span>موجودی سهمیه مرخصی و پاس: <strong id="passBalanceValue">در حال بارگذاری...</strong> ساعت</span>
                             <button type="button" class="leave-balance-request-btn" onclick="requestLeaveBonus()">
-                                <i class="bi bi-hand-thumbs-up"></i> درخواستِ سهمیهٔ تشویقی
+                                <i class="bi bi-hand-thumbs-up"></i> درخواست سهمیهٔ تشویقی
                             </button>
                         </div>
                         <div class="form-group">
@@ -3411,11 +3411,11 @@ function formatDateJalali($gregorianDate)
                             <div class="form-group">
                                 <label class="required">ساعت شروع</label>
                                 <input type="text" id="passStartTime" class="time-input-custom"
-                                    placeholder="مثلاً ۰۸:۳۰" maxlength="5" required />
+                                    placeholder="مثلا ۰۸:۳۰" maxlength="5" required />
                             </div>
                             <div class="form-group">
                                 <label class="required">ساعت پایان</label>
-                                <input type="text" id="passEndTime" class="time-input-custom" placeholder="مثلاً ۰۸:۳۰"
+                                <input type="text" id="passEndTime" class="time-input-custom" placeholder="مثلا ۰۸:۳۰"
                                     maxlength="5" required />
                             </div>
                         </div>
@@ -3457,12 +3457,12 @@ function formatDateJalali($gregorianDate)
                             <div class="form-group">
                                 <label class="required">ساعت شروع</label>
                                 <input type="text" id="forgetStartTime" class="time-input-custom"
-                                    placeholder="مثلاً ۰۸:۳۰" maxlength="5" required />
+                                    placeholder="مثلا ۰۸:۳۰" maxlength="5" required />
                             </div>
                             <div class="form-group">
                                 <label class="required">ساعت پایان</label>
                                 <input type="text" id="forgetEndTime" class="time-input-custom"
-                                    placeholder="مثلاً ۰۸:۳۰" maxlength="5" required />
+                                    placeholder="مثلا ۰۸:۳۰" maxlength="5" required />
                             </div>
                         </div>
                         <div class="form-group">
@@ -3504,12 +3504,12 @@ function formatDateJalali($gregorianDate)
                             <div class="form-group">
                                 <label class="required">ساعت شروع</label>
                                 <input type="text" id="technicalStartTime" class="time-input-custom"
-                                    placeholder="مثلاً ۰۸:۳۰" maxlength="5" required />
+                                    placeholder="مثلا ۰۸:۳۰" maxlength="5" required />
                             </div>
                             <div class="form-group">
                                 <label class="required">ساعت پایان</label>
                                 <input type="text" id="technicalEndTime" class="time-input-custom"
-                                    placeholder="مثلاً ۰۸:۳۰" maxlength="5" required />
+                                    placeholder="مثلا ۰۸:۳۰" maxlength="5" required />
                             </div>
                         </div>
                         <div class="form-group">
@@ -4129,7 +4129,7 @@ function formatDateJalali($gregorianDate)
 
                 if (!authToken) {
                     console.error('❌ No auth token found');
-                    container.innerHTML = '<div class="attendance-loading"><i class="bi bi-exclamation-triangle"></i><div class="mt-2">لطفاً مجدداً وارد شوید</div></div>';
+                    container.innerHTML = '<div class="attendance-loading"><i class="bi bi-exclamation-triangle"></i><div class="mt-2">لطفا مجددا وارد شوید</div></div>';
                     return;
                 }
 
@@ -4568,12 +4568,12 @@ function formatDateJalali($gregorianDate)
             overlay.innerHTML = `
                 <div style="background:var(--surface);color:var(--text-strong);border-radius:12px;padding:20px;width:90%;max-width:420px;box-shadow:0 10px 40px rgba(0,0,0,.2);direction:rtl;text-align:right;">
                     <p style="margin:0 0 8px;font-size:15px;line-height:1.8;">چند دقیقه سهمیهٔ تشویقی نیاز دارید؟</p>
-                    <input type="number" id="bonusReqAmount" style="width:100%;border:1px solid var(--border-soft);border-radius:8px;padding:10px;font-family:inherit;background:var(--surface);color:var(--text-strong);margin-bottom:14px;" placeholder="مثلاً 120">
+                    <input type="number" id="bonusReqAmount" style="width:100%;border:1px solid var(--border-soft);border-radius:8px;padding:10px;font-family:inherit;background:var(--surface);color:var(--text-strong);margin-bottom:14px;" placeholder="مثلا 120">
                     <p style="margin:0 0 8px;font-size:15px;line-height:1.8;">توضیحات (اختیاری):</p>
                     <textarea id="bonusReqNote" rows="3" style="width:100%;border:1px solid var(--border-soft);border-radius:8px;padding:10px;resize:vertical;font-family:inherit;background:var(--surface);color:var(--text-strong);"></textarea>
                     <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
                         <button id="bonusReqCancel" class="btn btn-secondary">انصراف</button>
-                        <button id="bonusReqSubmit" class="btn btn-primary">ارسالِ درخواست</button>
+                        <button id="bonusReqSubmit" class="btn btn-primary">ارسال درخواست</button>
                     </div>
                 </div>`;
             document.body.appendChild(overlay);
@@ -4584,7 +4584,7 @@ function formatDateJalali($gregorianDate)
 
             const submit = () => {
                 const amount = parseInt(amountInput.value, 10);
-                if (!amount || amount <= 0) { showToast('عددِ نامعتبر', 'error'); amountInput.focus(); return; }
+                if (!amount || amount <= 0) { showToast('عدد نامعتبر', 'error'); amountInput.focus(); return; }
                 const note = noteInput.value.trim();
                 close();
                 fetch('../../api/attendance/leave-balance-request.php', {
@@ -4785,7 +4785,7 @@ function formatDateJalali($gregorianDate)
                 }); // برای دیباگ                if (!startDate || !startTime || !endTime || !desc) {
 
                 if (!startDate || !startTime || !endTime || !desc) {
-                    showToast('❌ لطفاً تمام فیلدها را پر کنید', 'error');
+                    showToast('❌ لطفا تمام فیلدها را پر کنید', 'error');
                     resetSubmitBtn();
                     return;
                 }
@@ -4827,7 +4827,7 @@ function formatDateJalali($gregorianDate)
                 const reason = document.getElementById('leaveReason').value;
                 const substituteId = document.getElementById('leaveSubstitute').value;
                 if (!substituteId) {
-                    showToast('❌ لطفاً جانشین را انتخاب کنید', 'error');
+                    showToast('❌ لطفا جانشین را انتخاب کنید', 'error');
                     resetSubmitBtn();
                     return;
                 }
@@ -4844,7 +4844,7 @@ function formatDateJalali($gregorianDate)
                 }); // برای دیباگ
 
                 if (!startDate || !startTime || !endTime || !reason) {
-                    showToast('❌ لطفاً تمام فیلدها را پر کنید', 'error');
+                    showToast('❌ لطفا تمام فیلدها را پر کنید', 'error');
                     resetSubmitBtn();
                     return;
                 }
@@ -4883,7 +4883,7 @@ function formatDateJalali($gregorianDate)
                 const reason = document.getElementById('passReason').value;
 
                 if (!passDate || !startTime || !endTime || !reason) {
-                    showToast('❌ لطفاً تمام فیلدها را پر کنید', 'error');
+                    showToast('❌ لطفا تمام فیلدها را پر کنید', 'error');
                     resetSubmitBtn();
                     return;
                 }
@@ -4908,7 +4908,7 @@ function formatDateJalali($gregorianDate)
                         }
                         // اگر سرور پاسخی جز success داد
                         if (!checkData.success) {
-                            showToast('❌ خطایی در بررسی سقف رخ داد. لطفاً دوباره تلاش کنید.', 'error');
+                            showToast('❌ خطایی در بررسی سقف رخ داد. لطفا دوباره تلاش کنید.', 'error');
                             resetSubmitBtn();
                             return;
                         }
@@ -4946,7 +4946,7 @@ function formatDateJalali($gregorianDate)
                 const desc = document.getElementById('forgetPasswordDesc').value;
 
                 if (!date || !startTime || !endTime || !desc) {
-                    showToast('❌ لطفاً تمام فیلدها را پر کنید', 'error');
+                    showToast('❌ لطفا تمام فیلدها را پر کنید', 'error');
                     resetSubmitBtn();
                     return;
                 }
@@ -4986,7 +4986,7 @@ function formatDateJalali($gregorianDate)
                 const desc = document.getElementById('technicalIssueDesc').value;
 
                 if (!date || !startTime || !endTime || !desc) {
-                    showToast('❌ لطفاً تمام فیلدها را پر کنید', 'error');
+                    showToast('❌ لطفا تمام فیلدها را پر کنید', 'error');
                     resetSubmitBtn();
                     return;
                 }
@@ -5479,7 +5479,7 @@ function formatDateJalali($gregorianDate)
                     <h6 style="margin:0 0 12px;font-weight:700;">دلیل رد درخواست</h6>
                     <textarea id="rejectReasonInput" rows="4"
                         style="width:100%;border:1px solid var(--border-soft);border-radius:8px;padding:10px;resize:vertical;font-family:inherit;background:var(--surface);color:var(--text-strong);"
-                        placeholder="لطفاً دلیل رد را بنویسید..."></textarea>
+                        placeholder="لطفا دلیل رد را بنویسید..."></textarea>
                     <div style="display:flex;gap:8px;margin-top:14px;">
                         <button id="rejectConfirmBtn" class="btn btn-danger">رد درخواست</button>
                         <button id="rejectCancelBtn" class="btn btn-secondary">انصراف</button>
@@ -5497,7 +5497,7 @@ function formatDateJalali($gregorianDate)
             overlay.querySelector('#rejectConfirmBtn').onclick = async function() {
                 const notes = overlay.querySelector('#rejectReasonInput').value.trim();
                 if (!notes) {
-                    showToast('لطفاً دلیل رد را وارد کنید', 'warning');
+                    showToast('لطفا دلیل رد را وارد کنید', 'warning');
                     return;
                 }
                 close();
@@ -5561,7 +5561,7 @@ function formatDateJalali($gregorianDate)
         // حذف درخواست
         async function deleteRequest(id, type, burnsQuota) {
             const confirmMsg = burnsQuota ?
-                'این درخواستِ تأیید نهایی شده است و در صورت حذف، سهمیهٔ مرخصیِ آن باطل می‌شود. آیا مطمئن هستید؟' :
+                'این درخواست تأیید نهایی شده است و در صورت حذف، سهمیهٔ مرخصی آن باطل می‌شود. آیا مطمئن هستید؟' :
                 'آیا از حذف این درخواست مطمئن هستید؟';
             showToast(confirmMsg, 'warning', {
                 duration: 1500000,

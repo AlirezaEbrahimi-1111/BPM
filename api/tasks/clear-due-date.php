@@ -42,13 +42,13 @@ try {
 
     // فقط کارِ مقطعی موعد دارد که برداشتنش معنی داشته باشد
     if ($task['task_type'] !== 'periodic') {
-        echo json_encode(['success' => false, 'message' => 'حذفِ موعد فقط برای کارهای مقطعی امکان‌پذیر است']);
+        echo json_encode(['success' => false, 'message' => 'حذف موعد فقط برای کارهای مقطعی امکان‌پذیر است']);
         exit;
     }
 
     // شرطِ اصلی: مسئولِ انجام و تعریف‌کننده باید یک نفر باشند
     if ((int) $task['creator_id'] !== (int) $task['assignee_id']) {
-        echo json_encode(['success' => false, 'message' => 'این کار قابل انجام نیست — مسئولِ انجام و تعریف‌کننده‌ی کار یک نفر نیستند']);
+        echo json_encode(['success' => false, 'message' => 'این کار قابل انجام نیست — مسئول انجام و تعریف‌کننده‌ی کار یک نفر نیستند']);
         exit;
     }
 
@@ -70,7 +70,7 @@ try {
     $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes) VALUES (?, ?, NULL, 'updated', 'موعد انجام حذف شد')")
         ->execute([$task_id, $user_id]);
 
-    echo json_encode(['success' => true, 'message' => 'موعدِ کار حذف شد']);
+    echo json_encode(['success' => true, 'message' => 'موعد کار حذف شد']);
 } catch (Exception $e) {
     http_response_code(500);
     error_log("tasks/clear-due-date.php failed | user_id=" . ($user_id ?? 'null') . " | task_id=" . ($task_id ?? 'null') . " | " . $e->getMessage());

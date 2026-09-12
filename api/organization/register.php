@@ -60,7 +60,7 @@ if ($stmt->fetch()) {
     http_response_code(409);
     echo json_encode([
         'success' => false,
-        'message' => 'این شماره موبایل قبلاً ثبت شده است'
+        'message' => 'این شماره موبایل قبلا ثبت شده است'
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }

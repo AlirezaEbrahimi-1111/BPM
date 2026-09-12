@@ -621,7 +621,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                                     <button type="button" class="datepicker-today-btn">امروز</button>
                                 </div>
                             </div>
-                            <small class="form-text text-muted d-block">این کار تا الان موعد نداشته — چون به کسِ دیگه‌ای ارجاع می‌شه، تعیینِ موعد الزامیه.</small>
+                            <small class="form-text text-muted d-block">این کار تا الان موعد نداشته — چون به کس دیگه‌ای ارجاع می‌شه، تعیین موعد الزامیه.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">توضیحات ارجاع</label>
@@ -735,7 +735,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         <div class="mb-3">
                             <label class="form-label">دلیل رد کار *</label>
                             <textarea class="form-control" id="rejectNotes" rows="3"
-                                placeholder="لطفاً دلیل رد کار را شرح دهید..." required></textarea>
+                                placeholder="لطفا دلیل رد کار را شرح دهید..." required></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -897,7 +897,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 <div style="margin-bottom: 15px;">
                     <label class="form-label">دلیل درخواست:</label>
                     <textarea id="extensionReason" rows="4"
-                        placeholder="مثلاً: نیاز به وقت بیشتر برای تکمیل کار یا..."></textarea>
+                        placeholder="مثلا: نیاز به وقت بیشتر برای تکمیل کار یا..."></textarea>
                 </div>
 
                 <!-- دکمه‌های عمل -->
@@ -928,7 +928,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 <div style="margin-bottom:15px;">
                     <label class="form-label">چند ساعت به موعد اضافه شود؟</label>
                     <input type="number" id="wfExtendHours" min="1" step="1" class="form-control"
-                        placeholder="مثلاً: ۲۴" oninput="updateWfDeadlinePreview()">
+                        placeholder="مثلا: ۲۴" oninput="updateWfDeadlinePreview()">
                     <small class="text-muted">محدودیتی برای تعداد ساعت وجود ندارد.</small>
                 </div>
                 <div style="margin-bottom:15px; padding:12px; background:var(--warning-box-bg); border-radius:5px; border-right:4px solid #ffc107;">
@@ -1070,22 +1070,22 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                             <button type="button" class="datepicker-today-btn">امروز</button>
                         </div>
                     </div>
-                    <small class="text-muted">خالی بگذارید برای نامحدود (تا تمدیدِ بعدی)</small>
+                    <small class="text-muted">خالی بگذارید برای نامحدود (تا تمدید بعدی)</small>
                 </div>
 
                 <div style="margin-bottom: 15px; padding: 10px; background: var(--info-box-bg); border-radius: 5px;">
-                    <strong style="color: var(--text-strong);">سررسیدِ دورهٔ بعدی: <span id="renewalNextPeriodPreview">-</span></strong>
+                    <strong style="color: var(--text-strong);">سررسید دورهٔ بعدی: <span id="renewalNextPeriodPreview">-</span></strong>
                 </div>
 
                 <div style="margin-bottom: 15px;">
                     <label class="form-label">دلیل (<span id="renewalReasonRequiredHint">اجباری</span>):</label>
-                    <textarea id="renewalReason" rows="3" placeholder="مثلاً: ادامهٔ انجام دورهٔ کار..."></textarea>
+                    <textarea id="renewalReason" rows="3" placeholder="مثلا: ادامهٔ انجام دورهٔ کار..."></textarea>
                 </div>
 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                     <button onclick="submitRenewal()" id="renewalSubmitBtn"
                         style="flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; background: #8e57fe; color: white; font-weight: 600;">
-                        ارسالِ درخواست
+                        ارسال درخواست
                     </button>
                     <button onclick="closeModal('renewalModal')"
                         style="flex: 1; padding: 10px; border: 1px solid var(--border-soft); background: var(--surface); border-radius: 5px; cursor: pointer; font-weight: 600; color: var(--text-muted);">
@@ -1112,8 +1112,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 </div>
 
                 <div style="margin-bottom: 15px; padding: 12px; background: var(--warning-box-bg); border-radius: 5px; border-right: 4px solid #ffc107;">
-                    <strong style="color: var(--warning-box-text);">شروعِ پیشنهادی: <span id="renewalReqStartDisplay">-</span></strong><br>
-                    <strong style="color: var(--warning-box-text);">پایانِ پیشنهادی: <span id="renewalReqEndDisplay">-</span></strong>
+                    <strong style="color: var(--warning-box-text);">شروع پیشنهادی: <span id="renewalReqStartDisplay">-</span></strong><br>
+                    <strong style="color: var(--warning-box-text);">پایان پیشنهادی: <span id="renewalReqEndDisplay">-</span></strong>
                 </div>
 
                 <div style="margin-bottom: 15px;">
@@ -1152,7 +1152,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 <div style="margin-bottom: 15px;">
                     <label class="form-label">دلیل رد را بنویسید:</label>
                     <textarea id="rejectionReasonInput" rows="4"
-                        placeholder="مثلاً: کار در زمان مقرر تکمیل نشد یا..."></textarea>
+                        placeholder="مثلا: کار در زمان مقرر تکمیل نشد یا..."></textarea>
                 </div>
 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -1223,7 +1223,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         <div class="mb-3" id="terminationRejectionReasonWrapper" style="display:none;">
                             <label class="form-label">دلیل رد *</label>
                             <textarea class="form-control" id="terminationRejectionReason" rows="3"
-                                placeholder="لطفاً دلیل رد درخواست را بنویسید..."></textarea>
+                                placeholder="لطفا دلیل رد درخواست را بنویسید..."></textarea>
                         </div>
                     </div>
                     <div class="modal-footer justify-content-between">
@@ -1828,7 +1828,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     if (completeBtnEligible && incomplete) {
                         const remaining = checklistGateState.total - checklistGateState.done;
                         document.getElementById('checklistCompleteGateNoteText').textContent =
-                            `برای نمایشِ دکمه‌یِ «تکمیل کار»، ابتدا ${enTofaNumber(remaining)} آیتمِ باقی‌مانده‌یِ چک‌لیست را تیک بزنید.`;
+                            `برای نمایش دکمه‌ی «تکمیل کار»، ابتدا ${enTofaNumber(remaining)} آیتم باقی‌مانده‌ی چک‌لیست را تیک بزنید.`;
                         gateNote.style.display = 'block';
                     } else {
                         gateNote.style.display = 'none';
@@ -1998,10 +1998,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     <div class="chk-note-drawer">
                         <label for="chk-note-${item.id}">چه چیزی را ثبت می‌کنید؟ (اختیاری)</label>
                         <textarea id="chk-note-${item.id}" rows="2"
-                                  placeholder="مثلاً: فاکتور با شماره ۴۸۲۱ صادر شد"></textarea>
+                                  placeholder="مثلا: فاکتور با شماره ۴۸۲۱ صادر شد"></textarea>
                         <div class="chk-note-row">
                             <div class="chk-note-file">
-                                <label for="chk-file-${item.id}" title="پیوستِ فایل (اختیاری)"><i class="bi bi-paperclip"></i></label>
+                                <label for="chk-file-${item.id}" title="پیوست فایل (اختیاری)"><i class="bi bi-paperclip"></i></label>
                                 <input type="file" id="chk-file-${item.id}" class="form-control form-control-sm"
                                        accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg">
                             </div>
@@ -2192,7 +2192,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         if (typeof refreshHistory === 'function') refreshHistory();
                     }
                 } catch (e) {
-                    showToast('خطا در آپلودِ فایلِ پیوست', 'warning');
+                    showToast('خطا در آپلود فایل پیوست', 'warning');
                 }
             }
 
@@ -2731,8 +2731,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 let html = '';
 
                 if (canManage) {
-                    html += `<button class="btn btn-link btn-sm p-0 mb-1" id="addViewerBtn" title="افزودنِ دسترسی" style="display:flex; align-items:center; gap:4px;">
-                        <i class="bi bi-person-plus"></i> افزودنِ دسترسی
+                    html += `<button class="btn btn-link btn-sm p-0 mb-1" id="addViewerBtn" title="افزودن دسترسی" style="display:flex; align-items:center; gap:4px;">
+                        <i class="bi bi-person-plus"></i> افزودن دسترسی
                     </button>`;
                 }
 
@@ -2837,7 +2837,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         addViewerPickerInst = null; // نمونهٔ بعدی از نو با داده‌یِ تازه ساخته بشه
                         renderTaskViewers(taskData);
                     } else {
-                        showToast(data.message || 'خطا در افزودنِ دسترسی', 'error');
+                        showToast(data.message || 'خطا در افزودن دسترسی', 'error');
                     }
                 } catch {
                     showToast('خطا در ارتباط با سرور', 'error');
@@ -2866,7 +2866,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         showToast('تغییرات اعمال شد', 'success');
                         renderTaskViewers(taskData);
                     } else {
-                        showToast(data.message || 'خطا در اعمالِ تغییرات', 'error');
+                        showToast(data.message || 'خطا در اعمال تغییرات', 'error');
                     }
                 } catch {
                     showToast('خطا در ارتباط با سرور', 'error');
@@ -2884,7 +2884,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     if (data.success) {
                         renderTaskViewers(taskData);
                     } else {
-                        showToast(data.message || 'خطا در حذفِ دسترسی', 'error');
+                        showToast(data.message || 'خطا در حذف دسترسی', 'error');
                     }
                 } catch {
                     showToast('خطا در ارتباط با سرور', 'error');
@@ -3051,7 +3051,7 @@ ${task.overdue_periods > 0 ? `
                         statusMessage.innerHTML = `
                 <div class="alert alert-warning">
                     <h5 class="alert-heading"><i class="bi bi-clock-history me-2"></i>در انتظار تأیید شما</h5>
-                    <p class="mb-0">این کار توسط نفر قبلی تکمیل شده و منتظر تأیید شماست. لطفاً کار را بررسی کرده و تأیید یا رد کنید.</p>
+                    <p class="mb-0">این کار توسط نفر قبلی تکمیل شده و منتظر تأیید شماست. لطفا کار را بررسی کرده و تأیید یا رد کنید.</p>
                 </div>
             `;
                     } else {
@@ -3235,7 +3235,7 @@ ${task.overdue_periods > 0 ? `
             }
 
             function clearTaskDueDate() {
-                uiConfirm('موعدِ این کار حذف شود؟ کار بدونِ ددلاین می‌ماند.', function () {
+                uiConfirm('موعد این کار حذف شود؟ کار بدون ددلاین می‌ماند.', function () {
                     fetch('../api/tasks/clear-due-date.php', {
                         method: 'POST',
                         headers: {
@@ -3262,7 +3262,7 @@ ${task.overdue_periods > 0 ? `
             }
 
             async function sendTaskReminder() {
-                const msg = window.prompt('متن یادآوری برای مسئول انجام:', 'لطفاً وضعیت این کار را بررسی کنید.');
+                const msg = window.prompt('متن یادآوری برای مسئول انجام:', 'لطفا وضعیت این کار را بررسی کنید.');
                 if (msg === null) return;
                 try {
                     const res = await fetch('../api/tasks/send-reminder.php', {
@@ -3333,7 +3333,7 @@ ${task.overdue_periods > 0 ? `
                                             }
                                         },
                                         {
-                                            label: 'بعداً',
+                                            label: 'بعدا',
                                             style: 'ghost'
                                         }
                                     ]
@@ -3525,7 +3525,7 @@ ${task.overdue_periods > 0 ? `
                     return;
                 }
                 if (!reason) {
-                    showToast('لطفاً دلیل را وارد کنید', 'info');
+                    showToast('لطفا دلیل را وارد کنید', 'info');
                     return;
                 }
                 if (!taskData || !taskData.deadline) {
@@ -3572,12 +3572,12 @@ ${task.overdue_periods > 0 ? `
                 const reason = document.getElementById('extensionReason').value.trim();
 
                 if (!newDeadline) {
-                    showToast('لطفاً تاریخ جدید را انتخاب کنید', 'info');
+                    showToast('لطفا تاریخ جدید را انتخاب کنید', 'info');
                     return;
                 }
 
                 if (!reason) {
-                    showToast('لطفاً دلیل درخواست را وارد کنید', 'info');
+                    showToast('لطفا دلیل درخواست را وارد کنید', 'info');
                     // await doHeavyWork();
 
                     return;
@@ -4701,7 +4701,7 @@ ${task.overdue_periods > 0 ? `
                 if (dueContainer && dueContainer.style.display !== 'none') {
                     delegateDueDate = document.getElementById('delegateDueDate').getAttribute('data-date');
                     if (!delegateDueDate) {
-                        showToast('لطفاً موعدِ انجام را انتخاب کنید', 'warning');
+                        showToast('لطفا موعد انجام را انتخاب کنید', 'warning');
                         return;
                     }
                 }
@@ -4865,7 +4865,7 @@ ${task.overdue_periods > 0 ? `
                     if (task.hours_remaining != null && task.hours_remaining > 0) {
                         return `
                 <div class="info-item">
-                    <div class="info-label">مهلتِ باقی‌مانده:</div>
+                    <div class="info-label">مهلت باقی‌مانده:</div>
                     <div class="info-value"><span class="badge bg-info text-dark" style="color:white !important;"><i class="bi bi-clock me-1"></i>${enTofaNumber(task.hours_remaining)} ساعت مانده</span></div>
                 </div>`;
                     }
@@ -4882,7 +4882,7 @@ ${task.overdue_periods > 0 ? `
                 if (task.days_remaining != null && task.days_remaining > 0) {
                     return `
                 <div class="info-item">
-                    <div class="info-label">مهلتِ باقی‌مانده:</div>
+                    <div class="info-label">مهلت باقی‌مانده:</div>
                     <div class="info-value"><span class="badge bg-info text-dark" style="color:white !important;"><i class="bi bi-clock me-1"></i>${enTofaNumber(task.days_remaining)} روز مانده</span></div>
                 </div>`;
                 }
@@ -5334,7 +5334,7 @@ ${task.overdue_periods > 0 ? `
                 }
 
                 if (!assigneeId) {
-                    showAlert('لطفاً کاربر مقصد را انتخاب کنید', 'warning');
+                    showAlert('لطفا کاربر مقصد را انتخاب کنید', 'warning');
                     return;
                 }
 
@@ -5365,7 +5365,7 @@ ${task.overdue_periods > 0 ? `
                         const dueDate = dueDateInput.getAttribute('data-date');
 
                         if (!dueDate) {
-                            showAlert('لطفاً موعد انجام را انتخاب کنید', 'warning');
+                            showAlert('لطفا موعد انجام را انتخاب کنید', 'warning');
                             return;
                         }
 
@@ -5379,7 +5379,7 @@ ${task.overdue_periods > 0 ? `
                         const picked = document.getElementById('redefineDueDate').getAttribute('data-date');
                         const startDate = picked || redefineComputeNextStart();
                         if (!startDate) {
-                            showAlert('لطفاً تاریخ شروع دورهٔ جدید را انتخاب کنید', 'warning');
+                            showAlert('لطفا تاریخ شروع دورهٔ جدید را انتخاب کنید', 'warning');
                             return;
                         }
                         requestBody.start_date = startDate;
@@ -5910,7 +5910,7 @@ ${task.overdue_periods > 0 ? `
                 const notes = document.getElementById('addDiscNotes').value.trim();
 
                 if (!notes) {
-                    showAlert('لطفاً توضیحات را وارد کنید', 'warning');
+                    showAlert('لطفا توضیحات را وارد کنید', 'warning');
                     return;
                 }
 
@@ -6015,7 +6015,7 @@ ${task.overdue_periods > 0 ? `
                                         onClick: () => showTerminationReviewModal(request)
                                     },
                                     {
-                                        label: 'بعداً',
+                                        label: 'بعدا',
                                         style: 'ghost'
                                     }
                                 ]
@@ -6039,12 +6039,12 @@ ${task.overdue_periods > 0 ? `
                     'warning', {
                         duration: 150000,
                         buttons: [{
-                                label: isCreator ? 'تمدید دوره' : 'درخواستِ تمدید دوره',
+                                label: isCreator ? 'تمدید دوره' : 'درخواست تمدید دوره',
                                 style: 'primary',
                                 onClick: () => openRenewalModal(isCreator ? 'apply' : 'request')
                             },
                             {
-                                label: 'بعداً',
+                                label: 'بعدا',
                                 style: 'ghost'
                             }
                         ]
@@ -6062,7 +6062,7 @@ ${task.overdue_periods > 0 ? `
             async function submitTerminationRequest() {
                 const reason = document.getElementById('terminationReason').value.trim();
                 if (!reason) {
-                    showToast('لطفاً دلیل درخواست را وارد کنید', 'info');
+                    showToast('لطفا دلیل درخواست را وارد کنید', 'info');
                     return;
                 }
 
@@ -6221,7 +6221,7 @@ ${task.overdue_periods > 0 ? `
                                     }
                                 },
                                 {
-                                    label: 'بعداً',
+                                    label: 'بعدا',
                                     style: 'ghost'
                                 }
                             ]
@@ -6301,7 +6301,7 @@ ${task.overdue_periods > 0 ? `
 
                 const reason = document.getElementById('terminationRejectionReason').value.trim();
                 if (!reason) {
-                    showToast('لطفاً دلیل رد را وارد کنید', 'info');
+                    showToast('لطفا دلیل رد را وارد کنید', 'info');
                     return;
                 }
 
@@ -6380,7 +6380,7 @@ ${task.overdue_periods > 0 ? `
                 document.getElementById('renewalModalTitle').textContent =
                     mode === 'apply' ? 'تمدید دوره' : 'درخواست تمدید دوره';
                 document.getElementById('renewalSubmitBtn').textContent =
-                    mode === 'apply' ? 'اعمال تمدید' : 'ارسالِ درخواست';
+                    mode === 'apply' ? 'اعمال تمدید' : 'ارسال درخواست';
                 document.getElementById('renewalReasonRequiredHint').textContent =
                     mode === 'apply' ? 'اختیاری' : 'اجباری';
                 document.getElementById('renewalPeriodLabel').textContent = getPeriodLabel(taskData.period_type);
@@ -6550,7 +6550,7 @@ ${task.overdue_periods > 0 ? `
                 confirmBtn.onclick = function() {
                     const reason = document.getElementById('rejectionReasonInput').value.trim();
                     if (!reason) {
-                        const t = showToast('لطفاً دلیل را وارد کنید', 'warning');
+                        const t = showToast('لطفا دلیل را وارد کنید', 'warning');
                         return;
                     }
                     fetch('../api/tasks/reject-renewal.php', {

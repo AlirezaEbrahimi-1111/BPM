@@ -36,5 +36,5 @@ $available = $helper->isSubdomainAvailable($subdomain);
 
 echo json_encode([
     'available' => $available,
-    'message'   => $available ? 'این زیردامنه در دسترس است ✓' : 'این زیردامنه قبلاً ثبت شده است'
+    'message'   => $available ? 'این زیردامنه در دسترس است ✓' : 'این زیردامنه قبلا ثبت شده است'
 ], JSON_UNESCAPED_UNICODE);

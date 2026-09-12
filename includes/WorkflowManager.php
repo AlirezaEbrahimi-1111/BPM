@@ -311,7 +311,7 @@ class WorkflowManager
             return [
                 'success' => false,
                 'locked'  => true,
-                'message' => 'ویرایش یا جابه‌جایی مراحلِ قالب امکان‌پذیر نیست. برای تغییر، از «بازتعریف» یک نسخهٔ جدید بسازید.'
+                'message' => 'ویرایش یا جابه‌جایی مراحل قالب امکان‌پذیر نیست. برای تغییر، از «بازتعریف» یک نسخهٔ جدید بسازید.'
             ];
 
             // ⬇️ کدِ قدیمی غیرفعال شد (هرگز اجرا نمی‌شود)
@@ -368,7 +368,7 @@ class WorkflowManager
             return [
                 'success' => false,
                 'locked'  => true,
-                'message' => 'حذفِ قالب امکان‌پذیر نیست. برای کنار گذاشتنِ یک قالب، آن را «غیرفعال» کنید.'
+                'message' => 'حذف قالب امکان‌پذیر نیست. برای کنار گذاشتن یک قالب، آن را «غیرفعال» کنید.'
             ];
             // ↓↓↓ کدِ قدیمی دیگر اجرا نمی‌شود ↓↓↓
 
@@ -631,7 +631,7 @@ class WorkflowManager
             $clCheck = $this->db->prepare("SELECT COUNT(*) FROM task_checklist_items WHERE task_id = ? AND is_done = 0");
             $clCheck->execute([$task_id]);
             if ((int) $clCheck->fetchColumn() > 0) {
-                throw new Exception('ابتدا باید همهٔ آیتم‌های چک‌لیستِ این مرحله را تیک بزنید');
+                throw new Exception('ابتدا باید همهٔ آیتم‌های چک‌لیست این مرحله را تیک بزنید');
             }
 
             $notes = trim((string) $notes);
@@ -940,7 +940,7 @@ class WorkflowManager
                 throw new Exception('فقط تعریف‌کنندهٔ روتین می‌تواند این مرحله را تأیید یا رد کند');
             }
             if (!in_array($cur['status'], ['active', 'pending'])) {
-                throw new Exception('این مرحله در وضعیتِ قابلِ تصمیم نیست (' . $cur['status'] . ')');
+                throw new Exception('این مرحله در وضعیت قابل تصمیم نیست (' . $cur['status'] . ')');
             }
 
             // قفلِ چک‌لیست فقط برای «تأیید»
@@ -948,7 +948,7 @@ class WorkflowManager
                 $cl = $this->db->prepare("SELECT COUNT(*) FROM task_checklist_items WHERE task_id = ? AND is_done = 0");
                 $cl->execute([$task_id]);
                 if ((int) $cl->fetchColumn() > 0) {
-                    throw new Exception('ابتدا همهٔ آیتم‌های چک‌لیستِ این مرحله را تیک بزنید');
+                    throw new Exception('ابتدا همهٔ آیتم‌های چک‌لیست این مرحله را تیک بزنید');
                 }
             }
 
@@ -1018,11 +1018,11 @@ class WorkflowManager
                     $this->db->prepare("
                         INSERT INTO task_history (task_id, from_user_id, action, notes)
                         VALUES (?, ?, 'workflow_prev_note', ?)
-                    ")->execute([$task_id, $user_id, 'دلیلِ رد: ' . $notes]);
+                    ")->execute([$task_id, $user_id, 'دلیل رد: ' . $notes]);
                 }
                 $this->db->prepare("UPDATE workflow_instances SET current_step = ? WHERE id = ?")
                     ->execute([$curOrder, $instance_id]);
-                $this->createNotification($cur['created_by'], 'workflow_ready', 'اصلاحِ کار روتین',
+                $this->createNotification($cur['created_by'], 'workflow_ready', 'اصلاح کار روتین',
                     "مرحلهٔ «{$cur['step_name']}» رد شد و برای اصلاح به شما برگشت",
                     "/pages/task-detail.php?id={$task_id}", $instance_id);
                 $message = 'رد شد و برای اصلاح به تعریف‌کننده برگشت';
@@ -1031,7 +1031,7 @@ class WorkflowManager
                 $message = $decision === 'approve' ? 'تأیید شد؛ کار روتین تکمیل شد' : 'رد شد؛ کار روتین بسته شد';
             } else {
                 $target = $this->getInstanceStepByOrder($instance_id, $targetOrder);
-                if (!$target) throw new Exception('مرحلهٔ مقصدِ انشعاب یافت نشد (step_order=' . $targetOrder . ')');
+                if (!$target) throw new Exception('مرحلهٔ مقصد انشعاب یافت نشد (step_order=' . $targetOrder . ')');
 
                 if ($targetOrder > $curOrder) {
                     $this->markStepsDormant($instance_id, $curOrder, $targetOrder);
@@ -1050,7 +1050,7 @@ class WorkflowManager
         } catch (Exception $e) {
             if ($this->db->inTransaction()) $this->db->rollBack();
             error_log("resolveStepDecision error: " . $e->getMessage());
-            return ['success' => false, 'message' => 'خطا در ثبتِ تصمیم: ' . $e->getMessage()];
+            return ['success' => false, 'message' => 'خطا در ثبت تصمیم: ' . $e->getMessage()];
         }
     }
 

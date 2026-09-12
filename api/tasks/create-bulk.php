@@ -139,7 +139,7 @@ try {
     if (($base_task['task_type'] ?? '') === 'periodic' && empty($base_task['due_date']) && $hasOtherAssignee) {
         ob_end_clean();
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'تاریخ انجام برای کارهای مقطعیِ ارجاع‌داده‌شده الزامی است']);
+        echo json_encode(['success' => false, 'message' => 'تاریخ انجام برای کارهای مقطعی ارجاع‌داده‌شده الزامی است']);
         exit;
     }
 

@@ -30,7 +30,7 @@ if (!$user_id && isset($_COOKIE['auth_token']))
 
 if (!$user_id) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'لطفاً وارد شوید']);
+    echo json_encode(['success' => false, 'message' => 'لطفا وارد شوید']);
     exit;
 }
 
@@ -299,7 +299,7 @@ try {
                     if ($leave_owner_id) {
                         $stmt = $db->prepare("
                             INSERT INTO leave_balance_transactions (user_id, type, amount, related_request_id, related_request_type, note)
-                            VALUES (?, 'manual_adjustment', ?, ?, 'leave', 'بازگشتِ سهمیه به‌دلیلِ ردِ درخواست')
+                            VALUES (?, 'manual_adjustment', ?, ?, 'leave', 'بازگشت سهمیه به‌دلیل رد درخواست')
                         ");
                         $stmt->execute([$leave_owner_id, -$ded_amount, $request_id]);
                     }

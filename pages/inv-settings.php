@@ -99,7 +99,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             <div id="alertBox"></div>
 
             <div class="set-card">
-                <h2>سربرگِ فروشنده (روی چاپِ فاکتور)</h2>
+                <h2>سربرگ فروشنده (روی چاپ فاکتور)</h2>
                 <div class="set-grid">
                     <div>
                         <label class="form-label">نام شرکت</label>
@@ -118,7 +118,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                         <input type="text" class="form-control" id="s_reg_number">
                     </div>
                     <div>
-                        <label class="form-label">کد شعبه <span class="text-muted small">(سامانه مودیان — بعداً)</span></label>
+                        <label class="form-label">کد شعبه <span class="text-muted small">(سامانه مودیان — بعدا)</span></label>
                         <input type="text" class="form-control" id="s_branch_code">
                     </div>
                     <div>
@@ -164,16 +164,16 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 <h2>پارامترهای فاکتور</h2>
                 <div class="set-grid">
                     <div>
-                        <label class="form-label">نرخِ مالیات بر ارزش افزوده (٪)</label>
+                        <label class="form-label">نرخ مالیات بر ارزش افزوده (٪)</label>
                         <input type="number" step="0.01" min="0" max="100" class="form-control" id="s_vat_rate">
                     </div>
                     <div>
-                        <label class="form-label">پیشوندِ شماره‌ی فاکتور</label>
-                        <input type="text" class="form-control" id="s_number_prefix" placeholder="مثلاً F-">
-                        <div class="form-text">شماره = پیشوند + سالِ شمسی + «/» + شماره‌ی ترتیبی</div>
+                        <label class="form-label">پیشوند شماره‌ی فاکتور</label>
+                        <input type="text" class="form-control" id="s_number_prefix" placeholder="مثلا F-">
+                        <div class="form-text">شماره = پیشوند + سال شمسی + «/» + شماره‌ی ترتیبی</div>
                     </div>
                     <div style="grid-column:1/-1">
-                        <label class="form-label">یادداشتِ پاورقیِ فاکتور</label>
+                        <label class="form-label">یادداشت پاورقی فاکتور</label>
                         <textarea class="form-control" id="s_footer_note" rows="2"></textarea>
                     </div>
                 </div>
@@ -249,7 +249,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         async function save() {
             const rate = parseFloat(val('s_vat_rate'));
             if (isNaN(rate) || rate < 0 || rate > 100) {
-                alertBox('نرخِ مالیات باید عددی بینِ ۰ تا ۱۰۰ باشد.');
+                alertBox('نرخ مالیات باید عددی بین ۰ تا ۱۰۰ باشد.');
                 return;
             }
             const body = {

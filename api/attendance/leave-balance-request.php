@@ -24,7 +24,7 @@ try {
 
     if ($requestedMinutes <= 0) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'میزانِ سهمیهٔ درخواستی الزامی است']);
+        echo json_encode(['success' => false, 'message' => 'میزان سهمیهٔ درخواستی الزامی است']);
         exit;
     }
 
@@ -47,7 +47,7 @@ try {
     $recipients = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
 
     if (empty($recipients)) {
-        echo json_encode(['success' => false, 'message' => 'مدیر/سرپرستی برایِ ارسالِ درخواست یافت نشد']);
+        echo json_encode(['success' => false, 'message' => 'مدیر/سرپرستی برای ارسال درخواست یافت نشد']);
         exit;
     }
 
@@ -55,12 +55,12 @@ try {
     $stmt = $db->prepare("SELECT id FROM leave_bonus_requests WHERE user_id = ? AND status = 'pending'");
     $stmt->execute([$user_id]);
     if ($stmt->fetchColumn()) {
-        echo json_encode(['success' => false, 'message' => 'شما همین الان هم یک درخواستِ در‌انتظار دارید']);
+        echo json_encode(['success' => false, 'message' => 'شما همین الان هم یک درخواست در‌انتظار دارید']);
         exit;
     }
 
     $balanceMinutes = getLeaveBalance($db, $user_id);
-    $message = $myName . ' درخواستِ ' . formatMinutesHM($requestedMinutes) . ' ساعت سهمیهٔ تشویقیِ مرخصی/پاس دارد (موجودیِ فعلی: ' . formatMinutesHM($balanceMinutes) . ')';
+    $message = $myName . ' درخواست ' . formatMinutesHM($requestedMinutes) . ' ساعت سهمیهٔ تشویقی مرخصی/پاس دارد (موجودی فعلی: ' . formatMinutesHM($balanceMinutes) . ')';
     if ($note !== '') {
         $message .= ' — ' . $note;
     }
@@ -76,7 +76,7 @@ try {
     foreach ($recipients as $toUserId) {
         $notification->create([
             'to_user_id'   => $toUserId,
-            'title'        => 'درخواستِ سهمیهٔ تشویقی',
+            'title'        => 'درخواست سهمیهٔ تشویقی',
             'message'      => $message,
             'type'         => 'info',
             'link'         => '/pages/users.php',
@@ -86,7 +86,7 @@ try {
         ]);
     }
 
-    echo json_encode(['success' => true, 'message' => 'درخواستِ شما برایِ سرپرست ارسال شد و تا حل‌شدن در فهرستِ او باقی می‌ماند']);
+    echo json_encode(['success' => true, 'message' => 'درخواست شما برای سرپرست ارسال شد و تا حل‌شدن در فهرست او باقی می‌ماند']);
 
 } catch (Exception $e) {
     http_response_code(500);

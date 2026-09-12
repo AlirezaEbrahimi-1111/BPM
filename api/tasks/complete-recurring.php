@@ -50,7 +50,7 @@ try {
 
     if (!$state['can_complete']) {
         $msg = $state['is_today_done']
-            ? 'دورهٔ امروز قبلاً تکمیل شده است'
+            ? 'دورهٔ امروز قبلا تکمیل شده است'
             : 'این کار در وضعیت قابل تکمیل نیست';
         echo json_encode(['success' => false, 'message' => $msg], JSON_UNESCAPED_UNICODE);
         exit;

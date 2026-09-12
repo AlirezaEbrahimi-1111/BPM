@@ -103,7 +103,7 @@ try {
         } catch (PDOException $e) {
             if ($e->getCode() == 23000) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'این جانشین قبلاً اضافه شده است']);
+                echo json_encode(['success' => false, 'message' => 'این جانشین قبلا اضافه شده است']);
             } else {
                 throw $e;
             }

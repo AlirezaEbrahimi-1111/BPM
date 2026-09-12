@@ -123,7 +123,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
                         </div>
 
                         <div class="mb-3" id="holidayWeekdayField" style="display:none;">
-                            <label class="form-label">روزِ هفته</label>
+                            <label class="form-label">روز هفته</label>
                             <select class="form-select" id="holidayWeekday">
                                 <option value="6">شنبه</option>
                                 <option value="0">یکشنبه</option>
@@ -138,7 +138,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
                         <div class="mb-3">
                             <label class="form-label">دامنه</label>
                             <select class="form-select" id="holidayScope">
-                                <option value="org">فقط سازمانِ من</option>
+                                <option value="org">فقط سازمان من</option>
                                 <option value="global">سراسری (همهٔ سازمان‌ها)</option>
                             </select>
                         </div>
@@ -146,7 +146,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
                         <input type="hidden" id="holidayScope" value="org">
                         <div class="mb-3 text-muted" style="font-size:.85rem;">
                             <i class="bi bi-info-circle"></i>
-                            این تعطیلی فقط برایِ سازمانِ شما اعمال می‌شود.
+                            این تعطیلی فقط برای سازمان شما اعمال می‌شود.
                         </div>
                         <?php endif; ?>
 
@@ -370,7 +370,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
                         <span class="holiday-title">
                             ${esc(h.title)}
                             <span class="badge ${h.is_global ? 'bg-primary' : 'bg-secondary'}" style="font-size:.65rem;">
-                                ${h.is_global ? 'سراسری' : 'سازمانِ من'}
+                                ${h.is_global ? 'سراسری' : 'سازمان من'}
                             </span>
                         </span>
                     </div>
@@ -403,7 +403,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
         function handleDayClick(dateStr, jalaliStr, isFriday, existingHoliday) {
             if (existingHoliday) {
                 if (!existingHoliday.can_delete) {
-                    showToast('شما اجازهٔ حذفِ این تعطیلی را ندارید', 'info');
+                    showToast('شما اجازهٔ حذف این تعطیلی را ندارید', 'info');
                     return;
                 }
                 // حذف تعطیل (تأیید داخل خود deleteHoliday انجام می‌شود)
@@ -469,11 +469,11 @@ if (!hasPermission($__me, 'view_org_settings')) {
             const description = document.getElementById('holidayDescription').value.trim();
 
             if (!title) {
-                showToast('لطفاً عنوان تعطیلی را وارد کنید', 'warning');
+                showToast('لطفا عنوان تعطیلی را وارد کنید', 'warning');
                 return;
             }
             if (type === 'date' && !date) {
-                showToast('لطفاً یک تاریخ از روی تقویم انتخاب کنید', 'warning');
+                showToast('لطفا یک تاریخ از روی تقویم انتخاب کنید', 'warning');
                 return;
             }
 
@@ -522,7 +522,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
         // ============================================
         function deleteHoliday(id, isWeekly) {
             const confirmMsg = isWeekly
-                ? 'این یک تعطیلیِ هفتگیِ تکرارشونده است — با حذف، همهٔ روزهای آینده هم دیگر تعطیل حساب نمی‌شوند. آیا مطمئنید؟'
+                ? 'این یک تعطیلی هفتگی تکرارشونده است — با حذف، همهٔ روزهای آینده هم دیگر تعطیل حساب نمی‌شوند. آیا مطمئنید؟'
                 : 'آیا از حذف این روز تعطیل اطمینان دارید؟';
             uiConfirm(confirmMsg, async function () {
                 showLoading(true);

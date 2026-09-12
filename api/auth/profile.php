@@ -44,7 +44,7 @@ try {
         }
         if ($email !== null && $email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'ایمیلِ واردشده معتبر نیست']);
+            echo json_encode(['success' => false, 'message' => 'ایمیل واردشده معتبر نیست']);
             exit;
         }
 

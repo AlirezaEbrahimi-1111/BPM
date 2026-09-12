@@ -53,7 +53,7 @@ try {
     $stmt = $db->prepare("DELETE FROM task_viewers WHERE task_id = ? AND user_id = ?");
     $stmt->execute([$task_id, $viewer_id]);
 
-    echo json_encode(['success' => true, 'message' => 'دسترسیِ بیننده حذف شد'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => true, 'message' => 'دسترسی بیننده حذف شد'], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
     http_response_code(500);

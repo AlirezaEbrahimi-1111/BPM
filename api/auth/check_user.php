@@ -44,7 +44,7 @@ try {
     $rateStmt->execute([$ip]);
     if ((int) $rateStmt->fetchColumn() >= 20) {
         http_response_code(429);
-        echo json_encode(['success' => false, 'message' => 'تعداد درخواست‌ها زیاد است. لطفاً کمی بعد دوباره تلاش کنید.']);
+        echo json_encode(['success' => false, 'message' => 'تعداد درخواست‌ها زیاد است. لطفا کمی بعد دوباره تلاش کنید.']);
         exit;
     }
     $db->prepare("INSERT INTO check_user_attempts (ip, checked_at) VALUES (?, NOW())")->execute([$ip]);
@@ -61,7 +61,7 @@ try {
                 'success' => false,
                 'user_exists' => true,
                 'is_active' => false,
-                'message' => 'حساب کاربری شما غیرفعال شده است. لطفاً با مدیر سیستم تماس بگیرید.'
+                'message' => 'حساب کاربری شما غیرفعال شده است. لطفا با مدیر سیستم تماس بگیرید.'
             ]);
         } else {
             echo json_encode([

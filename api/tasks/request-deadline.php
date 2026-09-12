@@ -63,7 +63,7 @@ try {
     // کارِ حذف‌شده/کنسل‌شده/متوقف‌شده/تکمیل‌شده دیگه قابلِ تمدیدِ موعد نیست
     if ((int) $task['is_deleted'] === 1 || in_array($task['status'], ['completed', 'approved', 'stopped', 'rejected'], true)) {
         http_response_code(400);
-        throw new Exception('این کار در وضعیتِ پایانی است و موعدش قابلِ تمدید نیست');
+        throw new Exception('این کار در وضعیت پایانی است و موعدش قابل تمدید نیست');
     }
 
     error_log("Task info: creator=" . $task['creator_id'] . ", assignee=" . $task['assignee_id']);
@@ -158,7 +158,7 @@ try {
 
     if ($pending_request) {
         http_response_code(409);
-        throw new Exception('درخواست منتظری برای این کار وجود دارد. لطفاً برای پاسخ منتظر بمانید');
+        throw new Exception('درخواست منتظری برای این کار وجود دارد. لطفا برای پاسخ منتظر بمانید');
     }
 
     // ===== 🆕 پیدا کردن زنجیره تأیید (Approval Chain) =====

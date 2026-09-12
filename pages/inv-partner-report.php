@@ -14,7 +14,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>گزارشِ همکاران - سامانه مدیریت فرآیندها</title>
+    <title>گزارش همکاران - سامانه مدیریت فرآیندها</title>
 
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
@@ -257,14 +257,14 @@ if (!crmReportAllowed($db, (int) $user_id)) {
 
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
-                <h1><i class="bi bi-people"></i> گزارشِ همکاران</h1>
-                <p>فاکتورهایی که به‌درخواستِ همکاران صادر شده — درصد و مبلغِ سود، وضعیتِ ثبت/تسویه/مودیان</p>
+                <h1><i class="bi bi-people"></i> گزارش همکاران</h1>
+                <p>فاکتورهایی که به‌درخواست همکاران صادر شده — درصد و مبلغ سود، وضعیت ثبت/تسویه/مودیان</p>
             </div>
         </div>
 
         <div class="crm-toolbar">
             <div class="fld">
-                <label>سالِ شمسی</label>
+                <label>سال شمسی</label>
                 <select id="fYear" class="form-select"></select>
             </div>
             <div class="fld">
@@ -280,7 +280,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 </select>
             </div>
             <div class="fld">
-                <label>نوعِ سند</label>
+                <label>نوع سند</label>
                 <select id="fDocType" class="form-select">
                     <option value="">فاکتور و پیش‌فاکتور</option>
                     <option value="official">فقط فاکتور رسمی</option>
@@ -288,7 +288,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 </select>
             </div>
             <div class="fld">
-                <label>وضعیتِ فاکتور</label>
+                <label>وضعیت فاکتور</label>
                 <select id="fStatus" class="form-select">
                     <option value="">به‌جز باطل‌شده</option>
                     <option value="draft">پیش‌نویس</option>
@@ -301,8 +301,8 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         </div>
 
         <div class="report-summary" id="summary">
-            <span>مجموعِ مبلغِ فاکتور: <b id="sInvoice">۰</b></span>
-            <span>مجموعِ مبلغِ سود: <b id="sProfit">۰</b></span>
+            <span>مجموع مبلغ فاکتور: <b id="sInvoice">۰</b></span>
+            <span>مجموع مبلغ سود: <b id="sProfit">۰</b></span>
             <span>تعداد ردیف: <b id="sCount">۰</b></span>
         </div>
 
@@ -314,7 +314,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">مدیریت همکاران و درصدِ سودِ ماهانه</h5>
+                    <h5 class="modal-title">مدیریت همکاران و درصد سود ماهانه</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
                 </div>
                 <div class="modal-body">
@@ -325,10 +325,10 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                             <label class="form-label">همکار</label>
                             <div class="d-flex gap-2">
                                 <select id="pmSelPartner" class="form-select"></select>
-                                <button id="pmAddBtn" class="btn btn-outline-primary flex-shrink-0" title="افزودن همکارِ جدید"><i class="bi bi-plus-lg"></i></button>
+                                <button id="pmAddBtn" class="btn btn-outline-primary flex-shrink-0" title="افزودن همکار جدید"><i class="bi bi-plus-lg"></i></button>
                             </div>
                         </div>
-                        <div class="col-auto"><label class="form-label">سالِ شمسی</label><select id="pmSelYear" class="form-select"></select></div>
+                        <div class="col-auto"><label class="form-label">سال شمسی</label><select id="pmSelYear" class="form-select"></select></div>
                     </div>
 
                     <div id="pmPartnerEdit" hidden>
@@ -344,10 +344,10 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                             <div class="col-auto"><button id="pmSaveBtn" class="btn btn-outline-primary">ذخیرهٔ مشخصات</button></div>
                         </div>
 
-                        <label class="form-label">درصدِ سهمِ سود در هر ماه <span class="text-muted">(٪ از مبلغِ پیش از مالیات)</span></label>
+                        <label class="form-label">درصد سهم سود در هر ماه <span class="text-muted">(٪ از مبلغ پیش از مالیات)</span></label>
                         <div id="pmMonths" class="pm-months"></div>
                         <p class="text-muted mt-2" style="font-size:12px">
-                            درصدِ هر ماه روی همهٔ فاکتورهای همان ماه اثر می‌گذارد — صادرشده و بعدی. تغییر با از دست دادنِ فوکوس ذخیره می‌شود.
+                            درصد هر ماه روی همهٔ فاکتورهای همان ماه اثر می‌گذارد — صادرشده و بعدی. تغییر با از دست دادن فوکوس ذخیره می‌شود.
                         </p>
                     </div>
                 </div>
@@ -365,13 +365,13 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">ویرایشِ وضعیتِ فاکتور <span id="pmStIdLbl"></span></h5>
+                    <h5 class="modal-title">ویرایش وضعیت فاکتور <span id="pmStIdLbl"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
                 </div>
                 <div class="modal-body">
                     <div id="pmStAlert"></div>
                     <div class="mb-3">
-                        <label class="form-label">وضعیتِ تسویه</label>
+                        <label class="form-label">وضعیت تسویه</label>
                         <select id="pmStSettlement" class="form-select">
                             <option value="unsettled">تسویه نشده</option>
                             <option value="settled">تسویه شده</option>
@@ -379,15 +379,15 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">وضعیتِ مودیان</label>
+                        <label class="form-label">وضعیت مودیان</label>
                         <select id="pmStMoadian" class="form-select">
                             <option value="unregistered">ثبت نشده</option>
                             <option value="registered">ثبت شده</option>
                         </select>
                     </div>
                     <div class="mb-1" id="pmStCodeWrap">
-                        <label class="form-label">کدِ ثبت در سامانه</label>
-                        <input id="pmStCode" class="form-control" placeholder="کدِ ثبت در سامانهٔ مودیان">
+                        <label class="form-label">کد ثبت در سامانه</label>
+                        <input id="pmStCode" class="form-control" placeholder="کد ثبت در سامانهٔ مودیان">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -550,11 +550,11 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         }
 
         function statusActionCell(p) {
-            return `<button class="ag-action-btn" title="ویرایشِ وضعیتِ تسویه/مودیان" onclick="pmEditStatus(${p.data.id})"><i class="bi bi-pencil"></i></button>`;
+            return `<button class="ag-action-btn" title="ویرایش وضعیت تسویه/مودیان" onclick="pmEditStatus(${p.data.id})"><i class="bi bi-pencil"></i></button>`;
         }
 
         const colDefs = [{
-                headerName: 'نوعِ سند',
+                headerName: 'نوع سند',
                 field: 'doc_type',
                 width: 110,
                 cellRenderer: p => DOC_LABEL[p.value] || p.value
@@ -573,7 +573,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 minWidth: 140
             },
             {
-                headerName: 'تاریخِ صدور',
+                headerName: 'تاریخ صدور',
                 field: 'issue_date',
                 width: 115,
                 cellRenderer: p => jDate(p.value)
@@ -585,28 +585,28 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 minWidth: 130
             },
             {
-                headerName: 'درصدِ سود',
+                headerName: 'درصد سود',
                 field: 'percent',
                 width: 100,
                 type: 'rightAligned',
                 cellRenderer: p => faDigits(p.value || 0) + '٪'
             },
             {
-                headerName: 'مبلغِ فاکتور (ریال)',
+                headerName: 'مبلغ فاکتور (ریال)',
                 field: 'invoice_amount',
                 width: 150,
                 type: 'rightAligned',
                 cellRenderer: p => money(p.value)
             },
             {
-                headerName: 'مبلغِ سود (ریال)',
+                headerName: 'مبلغ سود (ریال)',
                 field: 'profit_amount',
                 width: 145,
                 type: 'rightAligned',
                 cellRenderer: p => money(p.value)
             },
             {
-                headerName: 'ثبتِ سود',
+                headerName: 'ثبت سود',
                 field: 'partner_profit_recorded',
                 width: 90,
                 sortable: false,
@@ -736,7 +736,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             const alertBox = msg => document.getElementById('pmStAlert').innerHTML =
                 msg ? `<div class="alert alert-danger py-2">${msg}</div>` : '';
             if (moadian === 'registered' && !code) {
-                alertBox('برایِ «مودیان ثبت‌شده» کدِ ثبت در سامانه لازم است.');
+                alertBox('برای «مودیان ثبت‌شده» کد ثبت در سامانه لازم است.');
                 return;
             }
             alertBox('');
@@ -781,7 +781,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
 
             const sp = document.getElementById('pmSelPartner');
             const keep2 = sp.value;
-            sp.innerHTML = '<option value="">— انتخابِ همکار —</option>' +
+            sp.innerHTML = '<option value="">— انتخاب همکار —</option>' +
                 partners.map(p => `<option value="${p.id}">${(p.name||'').replace(/</g,'&lt;')}${p.is_active?'':' (غیرفعال)'}</option>`).join('');
             sp.value = keep2;
         }
@@ -848,7 +848,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 const d = await apiGet('/inv/partners/' + p.id + '/shares?jy=' + jy);
                 months = d.months || [];
             } catch (e) {
-                pmAlert(e.message || 'خطا در خواندنِ درصدها');
+                pmAlert(e.message || 'خطا در خواندن درصدها');
             }
             const byM = {};
             months.forEach(m => byM[m.jm] = m.percent);
@@ -856,7 +856,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 const isCur = (jy === CUR_JY && m === CUR_JM);
                 const div = document.createElement('div');
                 div.className = 'm' + (isCur ? ' m-current' : '');
-                div.innerHTML = `<label>${MONTHS[m-1]}${isCur ? ' <span class="pm-cur-badge">ماهِ جاری</span>' : ''}</label>
+                div.innerHTML = `<label>${MONTHS[m-1]}${isCur ? ' <span class="pm-cur-badge">ماه جاری</span>' : ''}</label>
                     <input type="number" step="0.001" min="0" max="100" class="form-control form-control-sm pm-month-inp"
                         data-jm="${m}" value="${byM[m] != null ? byM[m] : ''}" placeholder="۰">`;
                 wrap.appendChild(div);
@@ -874,7 +874,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             let percent = parseFloat(String(inp.value).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)));
             if (isNaN(percent)) percent = 0;
             if (percent < 0 || percent > 100) {
-                pmAlert('درصد باید بینِ ۰ تا ۱۰۰ باشد.');
+                pmAlert('درصد باید بین ۰ تا ۱۰۰ باشد.');
                 return;
             }
             try {
@@ -883,7 +883,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                     jm,
                     percent
                 });
-                pmAlert('درصدِ ' + MONTHS[jm - 1] + ' ذخیره شد.', 'success');
+                pmAlert('درصد ' + MONTHS[jm - 1] + ' ذخیره شد.', 'success');
             } catch (e) {
                 pmAlert(e.message || 'خطا');
             }

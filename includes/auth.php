@@ -125,14 +125,14 @@ class Auth
             $checkUsername = $this->db->prepare("SELECT id FROM users WHERE username = ?");
             $checkUsername->execute([$username]);
             if ($checkUsername->fetch()) {
-                return ['success' => false, 'message' => 'این نام کاربری قبلاً استفاده شده است'];
+                return ['success' => false, 'message' => 'این نام کاربری قبلا استفاده شده است'];
             }
 
             // بررسی وجود شماره موبایل
             $checkPhone = $this->db->prepare("SELECT id FROM users WHERE phone = ?");
             $checkPhone->execute([$phone]);
             if ($checkPhone->fetch()) {
-                return ['success' => false, 'message' => 'این شماره موبایل قبلاً ثبت شده است'];
+                return ['success' => false, 'message' => 'این شماره موبایل قبلا ثبت شده است'];
             }
 
             // هش کردن رمز عبور
@@ -233,7 +233,7 @@ class Auth
             $stmt->execute([$user_id]);
             $tv = (int) ($stmt->fetchColumn() ?: 0);
         } catch (Exception $e) {
-            error_log("generateJWTToken: خواندنِ token_version ناموفق بود: " . $e->getMessage());
+            error_log("generateJWTToken: خواندن token_version ناموفق بود: " . $e->getMessage());
         }
 
         $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);

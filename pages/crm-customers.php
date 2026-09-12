@@ -150,7 +150,7 @@ try {
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
                 <h1><i class="bi bi-people"></i> مشتریان</h1>
-                <p>فهرست مشتریانِ حقیقی و حقوقی — مشترک بین CRM و فاکتور رسمی</p>
+                <p>فهرست مشتریان حقیقی و حقوقی — مشترک بین CRM و فاکتور رسمی</p>
             </div>
         </div>
 
@@ -504,7 +504,7 @@ try {
                         return o;
                     }).filter(o => o.name);
                     if (!rows.length) {
-                        box.innerHTML = '<span class="text-danger">هیچ ردیفِ معتبری پیدا نشد (ستونِ «نام» لازم است).</span>';
+                        box.innerHTML = '<span class="text-danger">هیچ ردیف معتبری پیدا نشد (ستون «نام» لازم است).</span>';
                         return;
                     }
                     box.innerHTML = 'در حال ارسال ' + faDigits(rows.length) + ' ردیف…';
@@ -520,7 +520,7 @@ try {
                     box.innerHTML = msg;
                     loadAll();
                 } catch (err) {
-                    box.innerHTML = '<span class="text-danger">' + (err.message || 'خطا در پردازشِ فایل') + '</span>';
+                    box.innerHTML = '<span class="text-danger">' + (err.message || 'خطا در پردازش فایل') + '</span>';
                 }
             };
             reader.readAsArrayBuffer(file);

@@ -365,7 +365,7 @@ function fillSubscription(sub) {
   else { badge.innerHTML = '<i class="bi bi-dot"></i> منقضی'; badge.className = 'co-badge no'; }
 
   if (sub.status !== 'expired' && days !== null && days <= 7 && days > 0) {
-    alertBox.innerHTML = '<div class="co-alert ' + (days <= 3 ? 'crit' : 'warn') + '"><i class="bi bi-exclamation-triangle"></i> اشتراک شما تا ' + faNum(days) + ' روز دیگر منقضی می‌شود. لطفاً تمدید کنید.</div>';
+    alertBox.innerHTML = '<div class="co-alert ' + (days <= 3 ? 'crit' : 'warn') + '"><i class="bi bi-exclamation-triangle"></i> اشتراک شما تا ' + faNum(days) + ' روز دیگر منقضی می‌شود. لطفا تمدید کنید.</div>';
   } else if (sub.status === 'expired') {
     alertBox.innerHTML = '<div class="co-alert crit"><i class="bi bi-x-octagon"></i> اشتراک شما منقضی شده است. برای ادامهٔ استفاده تمدید کنید.</div>';
   } else { alertBox.innerHTML = ''; }
@@ -483,7 +483,7 @@ async function confirmExtend() {
     success: ['پرداخت موفق بود و اشتراک تمدید شد', 'success'],
     cancel:  ['پرداخت لغو شد', 'warning'],
     failed:  ['پرداخت ناموفق بود', 'warning'],
-    already: ['این پرداخت قبلاً ثبت شده بود', 'warning'],
+    already: ['این پرداخت قبلا ثبت شده بود', 'warning'],
     error:   ['خطا در ثبت اشتراک', 'warning'],
     notfound:['پرداخت یافت نشد', 'warning'],
   };

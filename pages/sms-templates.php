@@ -279,7 +279,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
             const is_active = document.getElementById('templateActive').checked ? 1 : 0;
 
             if (!name || !title || !message) {
-                showAlert('لطفاً همه فیلدها را پر کنید', 'warning');
+                showAlert('لطفا همه فیلدها را پر کنید', 'warning');
                 return;
             }
 

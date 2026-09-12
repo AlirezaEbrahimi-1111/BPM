@@ -33,7 +33,7 @@ if (!$user_id && isset($_COOKIE['auth_token'])) $user_id = $auth->validateToken(
 
 if (!$user_id) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'لطفاً وارد شوید']);
+    echo json_encode(['success' => false, 'message' => 'لطفا وارد شوید']);
     exit;
 }
 
@@ -96,7 +96,7 @@ try {
         if ($now <= $deadline) {
             $can_edit = true;
         } else {
-            $error_message = "مهلتِ ویرایشِ درخواستِ پاس ({$pass_edit_hours} ساعتِ کاری) در تاریخِ " .
+            $error_message = "مهلت ویرایش درخواست پاس ({$pass_edit_hours} ساعت کاری) در تاریخ " .
                 $deadline->format('Y-m-d H:i') . ' به پایان رسیده است';
         }
     } else {
@@ -117,7 +117,7 @@ try {
         if (!$has_approval) {
             $can_edit = true;
         } else {
-            $error_message = 'این درخواست قبلاً تأیید شده و قابل ویرایش نیست';
+            $error_message = 'این درخواست قبلا تأیید شده و قابل ویرایش نیست';
         }
     }
 
@@ -161,7 +161,7 @@ try {
         if ($new_days > $leave_max_consecutive) {
             echo json_encode([
                 'success' => false,
-                'message' => "حداکثر {$leave_max_consecutive} روزِ متوالی مرخصی مجاز است (این درخواست {$new_days} روز است)"
+                'message' => "حداکثر {$leave_max_consecutive} روز متوالی مرخصی مجاز است (این درخواست {$new_days} روز است)"
             ]);
             exit;
         }
@@ -177,7 +177,7 @@ try {
         if ($new_minutes > $available_balance) {
             echo json_encode([
                 'success' => false,
-                'message' => "سهمیهٔ مرخصی/پاسِ شما کافی نیست (موجودی: " . formatMinutesHM($available_balance) . "، این درخواست: " . formatMinutesHM($new_minutes) . ")"
+                'message' => "سهمیهٔ مرخصی/پاس شما کافی نیست (موجودی: " . formatMinutesHM($available_balance) . "، این درخواست: " . formatMinutesHM($new_minutes) . ")"
             ]);
             exit;
         }
@@ -186,11 +186,11 @@ try {
             $adjustment = abs($old_deduction) - $new_minutes; // مثبت=بازگشتِ مازاد، منفی=کسرِ اضافه
             $stmt = $db->prepare("
                 INSERT INTO leave_balance_transactions (user_id, type, amount, related_request_id, related_request_type, note)
-                VALUES (?, 'manual_adjustment', ?, ?, 'leave', 'اصلاحِ سهمیه به‌دلیلِ ویرایشِ تاریخِ درخواست')
+                VALUES (?, 'manual_adjustment', ?, ?, 'leave', 'اصلاح سهمیه به‌دلیل ویرایش تاریخ درخواست')
             ");
             $stmt->execute([$user_id, $adjustment, $request_id]);
         } else {
-            deductLeaveBalance($db, $user_id, $new_minutes, 'leave', (int) $request_id, 'کسر بابتِ ویرایشِ درخواستِ مرخصی');
+            deductLeaveBalance($db, $user_id, $new_minutes, 'leave', (int) $request_id, 'کسر بابت ویرایش درخواست مرخصی');
         }
 
         $stmt = $db->prepare("UPDATE leave_requests SET start_date = ?, end_date = ?, start_time = ?, end_time = ?, reason = ?, updated_at = NOW() WHERE id = ?");
@@ -217,7 +217,7 @@ try {
         if ($new_minutes > $available_balance) {
             echo json_encode([
                 'success' => false,
-                'message' => "سهمیهٔ مرخصی/پاسِ شما کافی نیست (موجودی: " . formatMinutesHM($available_balance) . "، این درخواست: " . formatMinutesHM($new_minutes) . ")"
+                'message' => "سهمیهٔ مرخصی/پاس شما کافی نیست (موجودی: " . formatMinutesHM($available_balance) . "، این درخواست: " . formatMinutesHM($new_minutes) . ")"
             ]);
             exit;
         }
@@ -226,11 +226,11 @@ try {
             $adjustment = abs($old_deduction) - $new_minutes;
             $stmt = $db->prepare("
                 INSERT INTO leave_balance_transactions (user_id, type, amount, related_request_id, related_request_type, note)
-                VALUES (?, 'manual_adjustment', ?, ?, 'pass', 'اصلاحِ سهمیه به‌دلیلِ ویرایشِ درخواستِ پاس')
+                VALUES (?, 'manual_adjustment', ?, ?, 'pass', 'اصلاح سهمیه به‌دلیل ویرایش درخواست پاس')
             ");
             $stmt->execute([$user_id, $adjustment, $request_id]);
         } else {
-            deductLeaveBalance($db, $user_id, $new_minutes, 'pass', (int) $request_id, 'کسر بابتِ ویرایشِ درخواستِ پاس');
+            deductLeaveBalance($db, $user_id, $new_minutes, 'pass', (int) $request_id, 'کسر بابت ویرایش درخواست پاس');
         }
 
         $stmt = $db->prepare("UPDATE pass_requests SET pass_date = ?, start_time = ?, end_time = ?, reason = ?, updated_at = NOW() WHERE id = ?");

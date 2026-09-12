@@ -36,7 +36,7 @@ try {
     }
 
     if ($action === 'reject' && empty(trim($data['rejection_reason'] ?? ''))) {
-        echo json_encode(['success' => false, 'message' => 'لطفاً دلیل رد را وارد کنید']);
+        echo json_encode(['success' => false, 'message' => 'لطفا دلیل رد را وارد کنید']);
         exit;
     }
 
@@ -60,7 +60,7 @@ try {
     $request = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$request) {
-        echo json_encode(['success' => false, 'message' => 'درخواست یافت نشد یا قبلاً بررسی شده است']);
+        echo json_encode(['success' => false, 'message' => 'درخواست یافت نشد یا قبلا بررسی شده است']);
         exit;
     }
 
@@ -87,7 +87,7 @@ try {
     }
     if ($guard->rowCount() === 0) {
         $db->rollBack();
-        echo json_encode(['success' => false, 'message' => 'این درخواست قبلاً بررسی شده است']);
+        echo json_encode(['success' => false, 'message' => 'این درخواست قبلا بررسی شده است']);
         exit;
     }
 

@@ -128,7 +128,7 @@ try {
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
                 <h1><i class="bi bi-truck"></i> تأمین‌کنندگان</h1>
-                <p>فهرستِ تأمین‌کنندگانِ کالا — برای فاکتورِ خرید</p>
+                <p>فهرست تأمین‌کنندگان کالا — برای فاکتور خرید</p>
             </div>
         </div>
 

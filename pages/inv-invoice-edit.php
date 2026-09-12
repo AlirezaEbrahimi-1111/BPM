@@ -223,7 +223,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
             <div class="inv-head-grid">
                 <div>
-                    <label class="form-label">نوعِ سند</label>
+                    <label class="form-label">نوع سند</label>
                     <select class="form-select" id="f_doc_type">
                         <option value="official">فاکتور رسمی</option>
                         <option value="proforma">پیش‌فاکتور</option>
@@ -234,7 +234,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     <div id="customerPicker"></div>
                 </div>
                 <div>
-                    <label class="form-label">تاریخِ صدور</label>
+                    <label class="form-label">تاریخ صدور</label>
                     <!-- data-restrict-past روی خودِ wrapper باید باشه، نه روی input — PersianDatePicker
                          این مقدار را از element.dataset (یعنی wrapper) می‌خواند نه از فرزندش. -->
                     <div class="persian-datepicker-wrapper" data-restrict-past="-1">
@@ -295,12 +295,12 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnAddRow"><i class="bi bi-plus-lg ms-1"></i> افزودن ردیف</button>
 
             <div class="totals-box">
-                <div class="tl"><span>جمعِ کل</span><span id="t_subtotal">۰</span></div>
+                <div class="tl"><span>جمع کل</span><span id="t_subtotal">۰</span></div>
                 <div class="tl"><span>تخفیف</span><span id="t_discount">۰</span></div>
                 <div class="tl"><span>مالیات بر ارزش افزوده (<span id="t_vatrate">۰</span>٪)</span><span id="t_tax">۰</span></div>
-                <div class="tl" id="row_partner_pct" hidden><span>سهمِ همکار (ماهِ صدور)</span><span id="t_partner_pct">۰٪</span></div>
-                <div class="tl" id="row_partner_profit" hidden><span>مبلغِ سودِ همکار</span><span id="t_partner_profit">۰</span></div>
-                <div class="tl grand"><span>مبلغِ قابل پرداخت</span><span id="t_total">۰</span></div>
+                <div class="tl" id="row_partner_pct" hidden><span>سهم همکار (ماه صدور)</span><span id="t_partner_pct">۰٪</span></div>
+                <div class="tl" id="row_partner_profit" hidden><span>مبلغ سود همکار</span><span id="t_partner_profit">۰</span></div>
+                <div class="tl grand"><span>مبلغ قابل پرداخت</span><span id="t_total">۰</span></div>
             </div>
 
             <div class="mt-3">
@@ -494,7 +494,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             tr.innerHTML = `
                 <td class="idx text-center"></td>
                 <td><input class="it-prod-name" list="prodNameList" autocomplete="off" placeholder="نام کالا را تایپ کنید"></td>
-                <td><input class="it-title" placeholder="شرحِ اختیاری"></td>
+                <td><input class="it-title" placeholder="شرح اختیاری"></td>
                 <td class="col-qty"><input class="it-qty" inputmode="decimal" value="۱"></td>
                 <td class="col-price"><input class="it-price" inputmode="numeric" value="۰"></td>
                 <td class="col-disc"><input class="it-disc" inputmode="numeric" value="۰"></td>
@@ -707,7 +707,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 return;
             }
             if (!body.items.length) {
-                alertBox('حداقل یک ردیف با نامِ کالا لازم است.');
+                alertBox('حداقل یک ردیف با نام کالا لازم است.');
                 return;
             }
             alertBox('');
@@ -790,7 +790,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             partnerPicker = EntityPicker.create({
                 container: '#partnerPicker',
                 items: partnerItems(),
-                placeholder: 'بدونِ همکار…',
+                placeholder: 'بدون همکار…',
                 addTitle: 'افزودن همکار جدید',
                 onAdd: quickAddPartner,
                 onSelect: () => refreshPartnerProfit(),
@@ -832,7 +832,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     if (partnerPicker && inv.partner_id) partnerPicker.setValue(inv.partner_id);
                     (inv.items || []).forEach(addRow);
                 } catch (e) {
-                    alertBox('بارگذاریِ فاکتور ناموفق بود: ' + (e.message || ''));
+                    alertBox('بارگذاری فاکتور ناموفق بود: ' + (e.message || ''));
                 }
             }
             if (!document.querySelectorAll('#itemsBody tr').length) {

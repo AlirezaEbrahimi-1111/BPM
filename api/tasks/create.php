@@ -53,7 +53,7 @@ try {
     if ($input['task_type'] === 'periodic' && empty($input['due_date']) && !$__is_self_task) {
         ob_end_clean();
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'تاریخ انجام برای کارهای مقطعیِ ارجاع‌داده‌شده الزامی است']);
+        echo json_encode(['success' => false, 'message' => 'تاریخ انجام برای کارهای مقطعی ارجاع‌داده‌شده الزامی است']);
         exit;
     }
 
@@ -186,8 +186,8 @@ try {
                             $ins->execute([$newTaskId, $vid, $user_id, $r['att'], $r['hist'], $r['chk']]);
                             $vNotif->create([
                                 'to_user_id'   => $vid,
-                                'title'        => 'دسترسیِ مشاهدهٔ یک کار',
-                                'message'      => 'به شما دسترسیِ مشاهدهٔ کارِ «' . $taskTitle . '» داده شد',
+                                'title'        => 'دسترسی مشاهدهٔ یک کار',
+                                'message'      => 'به شما دسترسی مشاهدهٔ کار «' . $taskTitle . '» داده شد',
                                 'type'         => 'info',
                                 'link'         => '/pages/task-detail.php?id=' . $newTaskId,
                                 'related_type' => 'task',

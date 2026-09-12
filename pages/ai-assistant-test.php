@@ -13,7 +13,7 @@ if (empty($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>کنسولِ تستِ دستیارِ هوش‌مصنوعی</title>
+    <title>کنسول تست دستیار هوش‌مصنوعی</title>
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <script src="<?= asset('../assets/js/config.js') ?>"></script>
@@ -53,12 +53,12 @@ if (empty($_SESSION['user_id'])) {
 
 <body>
     <div class="console-wrap">
-        <h5 class="mt-2 mb-3">کنسولِ تستِ دستیارِ هوش‌مصنوعی</h5>
+        <h5 class="mt-2 mb-3">کنسول تست دستیار هوش‌مصنوعی</h5>
         <div class="console-warning">
-            این یک صفحه‌ی <strong>موقتِ توسعه/تست</strong> است — رابطِ کاربریِ نهایی نیست (طبقِ فازِ ۱ سندِ
-            <code>docs/ai-assistant/spec-v1.md</code>). فعلاً فقط سؤالاتِ مربوط به «کارها» پاسخِ واقعی می‌گیرند
-            (مثلاً «چند کار باز دارم؟») — سؤالاتِ سندی/آیین‌نامه‌ای هنوز «اطلاعات کافی یافت نشد» می‌دهند، چون
-            بازیابیِ سند (Qdrant) هنوز مستقر نشده.
+            این یک صفحه‌ی <strong>موقت توسعه/تست</strong> است — رابط کاربری نهایی نیست (طبق فاز ۱ سند
+            <code>docs/ai-assistant/spec-v1.md</code>). فعلا فقط سؤالات مربوط به «کارها» پاسخ واقعی می‌گیرند
+            (مثلا «چند کار باز دارم؟») — سؤالات سندی/آیین‌نامه‌ای هنوز «اطلاعات کافی یافت نشد» می‌دهند، چون
+            بازیابی سند (Qdrant) هنوز مستقر نشده.
         </div>
 
         <div id="msgList"></div>
@@ -70,7 +70,7 @@ if (empty($_SESSION['user_id'])) {
             </button>
         </div>
         <button class="btn btn-sm btn-outline-secondary mt-2" onclick="resetConversation()">
-            <i class="bi bi-arrow-counterclockwise"></i> شروعِ گفتگویِ تازه
+            <i class="bi bi-arrow-counterclockwise"></i> شروع گفتگوی تازه
         </button>
     </div>
 
@@ -154,7 +154,7 @@ if (empty($_SESSION['user_id'])) {
                     if (data.sources && data.sources.length) {
                         sourcesHtml = '<ul class="console-sources">' + data.sources.map(function(s) {
                             return '<li>' + (s.type === 'database'
-                                ? 'منبع: ماژولِ ' + esc(s.module) + ' (' + esc(s.as_of) + ')'
+                                ? 'منبع: ماژول ' + esc(s.module) + ' (' + esc(s.as_of) + ')'
                                 : 'سند: ' + esc(s.doc_name) + ' — صفحه‌ی ' + esc(s.page)) + '</li>';
                         }).join('') + '</ul>';
                     }
@@ -162,7 +162,7 @@ if (empty($_SESSION['user_id'])) {
                     appendMsg('assistant', data.answer, sourcesHtml + meta);
                 })
                 .catch(function(err) {
-                    appendMsg('error', 'خطایِ ارتباط با سرور: ' + err.message);
+                    appendMsg('error', 'خطای ارتباط با سرور: ' + err.message);
                 })
                 .finally(function() {
                     document.getElementById('sendBtn').disabled = false;

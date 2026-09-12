@@ -42,7 +42,7 @@ try {
     $query = trim((string) ($_GET['query'] ?? ''));
     if ($query === '') {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'پارامترِ query الزامی است']);
+        echo json_encode(['success' => false, 'message' => 'پارامتر query الزامی است']);
         exit;
     }
 

@@ -393,7 +393,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
 
                     <!-- تسکِ مرتبط (اختیاری) -->
                     <div class="mb-3">
-                        <label class="form-label">تسکِ مرتبط <small class="text-muted">(اختیاری — برای نمایش به پشتیبانی)</small></label>
+                        <label class="form-label">تسک مرتبط <small class="text-muted">(اختیاری — برای نمایش به پشتیبانی)</small></label>
                         <div class="task-search-row">
                             <div class="task-search-box">
                                 <input type="text" class="form-control" id="taskSearchInput"
@@ -406,7 +406,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
 
                     <!-- آپلود فایل -->
                     <div class="mb-4">
-                        <label class="form-label">فایل پیوست <small class="text-muted">(اختیاری — Ctrl+V هم برای چسباندنِ عکس کار می‌کند)</small></label>
+                        <label class="form-label">فایل پیوست <small class="text-muted">(اختیاری — Ctrl+V هم برای چسباندن عکس کار می‌کند)</small></label>
                         <div class="upload-zone" id="uploadZone">
                             <input type="file" id="fileInput" multiple style="display:none"
                                    accept=".jpg,.jpeg,.png,.pdf,.docx,.doc,.xls,.xlsx,.mp3,.m4a,.ogg">

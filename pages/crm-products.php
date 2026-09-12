@@ -179,7 +179,7 @@ try {
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
                 <h1><i class="bi bi-box-seam"></i> کالاها</h1>
-                <p>کالاها و خدماتِ قابل درج در فاکتور — به‌همراه موجودیِ انبارِ فاکتور رسمی</p>
+                <p>کالاها و خدمات قابل درج در فاکتور — به‌همراه موجودی انبار فاکتور رسمی</p>
             </div>
         </div>
 
@@ -229,7 +229,7 @@ try {
                             <div class="col-md-4" id="openingWrap">
                                 <label class="form-label">موجودی اولیه</label>
                                 <input type="text" class="form-control" id="f_opening" inputmode="decimal">
-                                <div class="form-text">فقط هنگام ساخت. انبارِ «فاکتور رسمی».</div>
+                                <div class="form-text">فقط هنگام ساخت. انبار «فاکتور رسمی».</div>
                             </div>
                             <div class="col-12 d-flex gap-4 pt-1">
                                 <div class="form-check form-switch switch-inline">
@@ -563,7 +563,7 @@ try {
                         return o;
                     }).filter(o => o.name);
                     if (!rows.length) {
-                        box.innerHTML = '<span class="text-danger">هیچ ردیفِ معتبری پیدا نشد (ستونِ «نام کالا» لازم است).</span>';
+                        box.innerHTML = '<span class="text-danger">هیچ ردیف معتبری پیدا نشد (ستون «نام کالا» لازم است).</span>';
                         return;
                     }
                     box.innerHTML = 'در حال ارسال ' + faDigits(rows.length) + ' ردیف…';
@@ -579,7 +579,7 @@ try {
                     box.innerHTML = msg;
                     loadAll();
                 } catch (err) {
-                    box.innerHTML = '<span class="text-danger">' + (err.message || 'خطا در پردازشِ فایل') + '</span>';
+                    box.innerHTML = '<span class="text-danger">' + (err.message || 'خطا در پردازش فایل') + '</span>';
                 }
             };
             reader.readAsArrayBuffer(file);

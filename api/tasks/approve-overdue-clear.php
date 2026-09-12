@@ -51,7 +51,7 @@ try {
 
     if (!$req) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'درخواست یافت نشد یا قبلاً پاسخ داده شده'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'درخواست یافت نشد یا قبلا پاسخ داده شده'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 

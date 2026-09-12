@@ -100,12 +100,12 @@ try {
         $isGlobal = ($row['organization_id'] === null);
         if ($isGlobal && (int) $user_id !== 1) {
             http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'فقط مدیرِ کلِ سامانه می‌تواند تعطیلیِ سراسری را حذف کند']);
+            echo json_encode(['success' => false, 'message' => 'فقط مدیر کل سامانه می‌تواند تعطیلی سراسری را حذف کند']);
             exit;
         }
         if (!$isGlobal && (int) $row['organization_id'] !== $userOrgId) {
             http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'این تعطیلی مربوط به سازمانِ شما نیست']);
+            echo json_encode(['success' => false, 'message' => 'این تعطیلی مربوط به سازمان شما نیست']);
             exit;
         }
     }

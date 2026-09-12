@@ -149,7 +149,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
                 <h1><i class="bi bi-cart-plus"></i> فاکتورهای خرید</h1>
-                <p>ثبتِ خریدِ کالا از تأمین‌کننده — «تأیید» موجودیِ انبار را زیاد می‌کند</p>
+                <p>ثبت خرید کالا از تأمین‌کننده — «تأیید» موجودی انبار را زیاد می‌کند</p>
             </div>
         </div>
 
@@ -332,7 +332,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         }
 
         function confirmP(id) {
-            uiConfirm('این فاکتورِ خرید تأیید شود؟ موجودیِ کالاها به انبارِ رسمی اضافه می‌شود (پس از تأیید قابلِ ویرایش نیست).', async () => {
+            uiConfirm('این فاکتور خرید تأیید شود؟ موجودی کالاها به انبار رسمی اضافه می‌شود (پس از تأیید قابل ویرایش نیست).', async () => {
                 try {
                     await apiSend('POST', '/inv/purchases/' + id + '/confirm');
                     showToast('تأیید شد؛ موجودی به‌روزرسانی شد', 'success');
@@ -344,7 +344,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         }
 
         function cancelP(id) {
-            uiConfirm('این فاکتورِ خرید باطل شود؟ موجودیِ اضافه‌شده از انبار کسر می‌شود.', async () => {
+            uiConfirm('این فاکتور خرید باطل شود؟ موجودی اضافه‌شده از انبار کسر می‌شود.', async () => {
                 try {
                     await apiSend('POST', '/inv/purchases/' + id + '/cancel');
                     showToast('باطل شد', 'success');

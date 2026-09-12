@@ -36,7 +36,7 @@ const TASK_STATUS_LABELS = [
     'rejected'                 => 'ردشده',
     'stopped'                  => 'متوقف شده',
     'delegated'                => 'ارجاع‌شده',
-    'termination_requested'    => 'درخواستِ توقف',
+    'termination_requested'    => 'درخواست توقف',
     'period_done'              => 'دورهٔ فعلی انجام شد',
 ];
 

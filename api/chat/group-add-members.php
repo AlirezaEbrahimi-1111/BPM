@@ -53,7 +53,7 @@ try {
     if ((int) $conv['created_by'] !== $user_id) {
         http_response_code(403);
         error_log("Chat group-add-members denied | user_id={$user_id} | conversation_id={$conversationId}");
-        echo json_encode(['success' => false, 'message' => 'فقط مدیرِ گروه می‌تواند عضو اضافه کند']);
+        echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند عضو اضافه کند']);
         exit;
     }
 
@@ -64,7 +64,7 @@ try {
 
     if (!$validMemberIds) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'هیچ‌کدام از اعضایِ انتخاب‌شده معتبر نیستند']);
+        echo json_encode(['success' => false, 'message' => 'هیچ‌کدام از اعضای انتخاب‌شده معتبر نیستند']);
         exit;
     }
 

@@ -34,7 +34,7 @@ try {
 
     $hasReads = (bool) $db->query("SHOW TABLES LIKE 'ticket_message_reads'")->fetchColumn();
     if (!$hasReads) {
-        echo json_encode(['success' => true, 'updated' => 0, 'message' => 'جدولِ ردیابی موجود نیست'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => true, 'updated' => 0, 'message' => 'جدول ردیابی موجود نیست'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 

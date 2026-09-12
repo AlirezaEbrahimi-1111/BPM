@@ -11,7 +11,7 @@
 
     document.getElementById('forgotBtn').addEventListener('click', function(e) {
         e.preventDefault();
-        showAlert('لطفاً جهت بازنشانی رمز عبور، با مدیر سیستم تماس بگیرید.', 'warning');
+        showAlert('لطفا جهت بازنشانی رمز عبور، با مدیر سیستم تماس بگیرید.', 'warning');
     });
 
     async function getClientInfo() {
@@ -39,7 +39,7 @@
         const rememberMe = document.getElementById('rememberMe').checked;
 
         if (!username || !password) {
-            showAlert('لطفاً نام کاربری و رمز عبور را وارد کنید', 'danger');
+            showAlert('لطفا نام کاربری و رمز عبور را وارد کنید', 'danger');
             return;
         }
 

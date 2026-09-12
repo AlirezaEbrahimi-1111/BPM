@@ -42,7 +42,7 @@ function checkRateLimit($ip, $db, $username = null)
         http_response_code(429);
         echo json_encode([
             'success' => false,
-            'message' => 'تعداد تلاش‌های ناموفق زیاد است. لطفاً ۱۵ دقیقه بعد دوباره تلاش کنید.'
+            'message' => 'تعداد تلاش‌های ناموفق زیاد است. لطفا ۱۵ دقیقه بعد دوباره تلاش کنید.'
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
@@ -173,7 +173,7 @@ try {
         }
         if ($otp['used']) {
             http_response_code(401);
-            echo json_encode(['success' => false, 'message' => 'این کد قبلاً استفاده شده است']);
+            echo json_encode(['success' => false, 'message' => 'این کد قبلا استفاده شده است']);
             exit;
         }
         if ($otp['code'] !== $code) {

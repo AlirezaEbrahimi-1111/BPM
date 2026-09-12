@@ -498,7 +498,7 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
             const note = '<div style="margin-top:10px;font-size:11px;color:#94A3B8;line-height:1.9;">' +
                 '• فقط روزهای کاری (غیرتعطیل) و «تا دیروز» در جمع لحاظ می‌شوند.<br>' +
                 '• «کسری مانده» = کسری اولیه منهای پوشش درخواست‌ها &nbsp;|&nbsp; «کسری نهایی» = کسری مانده × ضریب جریمه.<br>' +
-                '• نرخ هر ساعت: ' + fmtToman(s.hourly_rate) + ' (حقوق پایه ÷ ' + faNum(s.divisor_days) + ' روزِ کاری ÷ ساعت کاری روزانه).' +
+                '• نرخ هر ساعت: ' + fmtToman(s.hourly_rate) + ' (حقوق پایه ÷ ' + faNum(s.divisor_days) + ' روز کاری ÷ ساعت کاری روزانه).' +
                 '</div>';
 
             document.getElementById('udBody').innerHTML = cards + table + note;

@@ -51,13 +51,13 @@ try {
     if ((int) $conv['created_by'] !== $user_id) {
         http_response_code(403);
         error_log("Chat group-remove-member denied | user_id={$user_id} | conversation_id={$conversationId}");
-        echo json_encode(['success' => false, 'message' => 'فقط مدیرِ گروه می‌تواند عضو حذف کند']);
+        echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند عضو حذف کند']);
         exit;
     }
 
     if ($targetUserId === (int) $conv['created_by']) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'مدیرِ گروه نمی‌تواند خودش را حذف کند؛ برای خروج از «خروج از گروه» استفاده کنید']);
+        echo json_encode(['success' => false, 'message' => 'مدیر گروه نمی‌تواند خودش را حذف کند؛ برای خروج از «خروج از گروه» استفاده کنید']);
         exit;
     }
 

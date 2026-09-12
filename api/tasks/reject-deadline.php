@@ -43,7 +43,7 @@ try {
     $request = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$request) {
-        echo json_encode(['success' => false, 'message' => 'درخواست یافت نشد یا قبلاً پاسخ داده شده']);
+        echo json_encode(['success' => false, 'message' => 'درخواست یافت نشد یا قبلا پاسخ داده شده']);
         exit;
     }
 

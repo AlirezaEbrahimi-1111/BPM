@@ -115,7 +115,7 @@ if (!$organization_id) {
         http_response_code(400);
         echo json_encode([
             'success' => false,
-            'message' => 'شناسهٔ دستگاه ارسال نشد. لطفاً صفحه را تازه کنید.',
+            'message' => 'شناسهٔ دستگاه ارسال نشد. لطفا صفحه را تازه کنید.',
             'error_code' => 'NO_FINGERPRINT'
         ], JSON_UNESCAPED_UNICODE);
         exit;
@@ -278,7 +278,7 @@ try {
             http_response_code(400);
             echo json_encode([
                 'success' => false,
-                'message' => 'الان زمانِ ثبتِ ورود نیست (ورود شیفت ۲ از ساعت ' .
+                'message' => 'الان زمان ثبت ورود نیست (ورود شیفت ۲ از ساعت ' .
                     $allowed_time->format('H:i') . ' امکان‌پذیر است)',
                 'allowed_time' => $allowed_time->format('H:i:s'),
                 'shift_2_start' => $user['shift_2_start'],
@@ -298,7 +298,7 @@ try {
             http_response_code(400);
             echo json_encode([
                 'success' => false,
-                'message' => 'زمانِ ثبتِ ورودِ شیفت ۱ به پایان رسیده است',
+                'message' => 'زمان ثبت ورود شیفت ۱ به پایان رسیده است',
                 'error_code' => 'SHIFT_1_ENDED'
             ], JSON_UNESCAPED_UNICODE);
             exit;
@@ -333,7 +333,7 @@ try {
                 // شیفت باز است
                 echo json_encode([
                     'success' => false,
-                    'message' => 'شما قبلاً ورود شیفت ' . $shift . ' را ثبت کرده‌اید'
+                    'message' => 'شما قبلا ورود شیفت ' . $shift . ' را ثبت کرده‌اید'
                 ]);
                 exit;
             }
@@ -346,7 +346,7 @@ try {
             ");
             $stmt->execute([$now, $record['id']]);
 
-            $message = 'ورود شیفت ' . $shift . ' مجدداً ثبت شد';
+            $message = 'ورود شیفت ' . $shift . ' مجددا ثبت شد';
 
         } else {
             // ایجاد رکورد جدید
@@ -390,7 +390,7 @@ try {
         if ($record['check_out']) {
             echo json_encode([
                 'success' => false,
-                'message' => 'شما قبلاً خروج شیفت ' . $shift . ' را ثبت کرده‌اید'
+                'message' => 'شما قبلا خروج شیفت ' . $shift . ' را ثبت کرده‌اید'
             ]);
             exit;
         }

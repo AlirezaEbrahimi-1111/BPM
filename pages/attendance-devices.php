@@ -435,11 +435,11 @@ if (!hasPermission($__me, 'view_org_settings')) {
                 <div class="ip-add-inputs">
                     <div class="ip-field">
                         <label>آدرس IP</label>
-                        <input type="text" id="newIp" placeholder="مثلاً 192.168.1.1">
+                        <input type="text" id="newIp" placeholder="مثلا 192.168.1.1">
                     </div>
                     <div class="ip-field">
                         <label>برچسب (اختیاری)</label>
-                        <input type="text" id="newIpLabel" placeholder="مثلاً فروشگاه مرکزی">
+                        <input type="text" id="newIpLabel" placeholder="مثلا فروشگاه مرکزی">
                     </div>
                     <div style="padding-bottom:0">
                         <label style="opacity:0;display:block">‌</label>
@@ -681,7 +681,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
         }
 
         function relabel(id) {
-            uiPrompt('برچسب جدید برای این دستگاه (مثلاً: صندوق ۱ - فروشگاه مرکزی)', async function (label) {
+            uiPrompt('برچسب جدید برای این دستگاه (مثلا: صندوق ۱ - فروشگاه مرکزی)', async function (label) {
                 try {
                     const d = await api('../api/attendance/devices.php', {
                         method: 'POST',
@@ -894,7 +894,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
         function clearLog() {
             const range = document.getElementById('logRange').value;
             const lbl = { today: 'امروز', week: 'هفتهٔ اخیر', all: 'همه' }[range] || '';
-            uiConfirm('همهٔ تلاش‌های ناموفقِ «' + lbl + '» پاک شوند؟', async function () {
+            uiConfirm('همهٔ تلاش‌های ناموفق «' + lbl + '» پاک شوند؟', async function () {
                 try {
                     const d = await api('../api/attendance/denied-log.php', {
                         method: 'POST',

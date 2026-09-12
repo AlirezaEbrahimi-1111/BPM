@@ -104,7 +104,7 @@ try {
             http_response_code(400);
             echo json_encode([
                 'success' => false, 
-                'message' => 'این شماره موبایل قبلاً ثبت شده است. لطفاً وارد شوید.'
+                'message' => 'این شماره موبایل قبلا ثبت شده است. لطفا وارد شوید.'
             ]);
             exit;
         }
@@ -156,7 +156,7 @@ try {
     error_log("Register error: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'خطای سرور — لطفاً دوباره تلاش کنید'
+        'message' => 'خطای سرور — لطفا دوباره تلاش کنید'
     ]);
 }
 ?>

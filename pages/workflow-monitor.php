@@ -1970,7 +1970,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 ${hasFlow ? `
                 <div class="wfm-chart-wrap">
                     <div class="wfm-chart-head">
-                        <span><i class="bi bi-diagram-2"></i> مسیرِ روتین</span>
+                        <span><i class="bi bi-diagram-2"></i> مسیر روتین</span>
                         <span class="lg"><span class="dot" style="background:#16a34a"></span>انجام‌شده</span>
                         <span class="lg"><span class="dot" style="background:#2563eb"></span>فعال</span>
                         <span class="lg"><span class="dot" style="background:#dc2626"></span>ردشده</span>

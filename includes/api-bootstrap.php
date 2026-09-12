@@ -66,7 +66,7 @@ function api_require_method($methods): void
         http_response_code(405);
         header('Allow: ' . implode(', ', $methods));
         echo json_encode(
-            ['success' => false, 'message' => 'متدِ درخواست مجاز نیست'],
+            ['success' => false, 'message' => 'متد درخواست مجاز نیست'],
             JSON_UNESCAPED_UNICODE
         );
         exit;

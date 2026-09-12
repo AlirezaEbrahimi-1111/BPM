@@ -174,7 +174,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         <div class="right-col">
             <div class="s-card">
                 <div class="d-flex flex-column align-items-center text-center gap-2">
-                    <div class="avatar-ring" id="avatarInitials" onclick="document.getElementById('avatarFileInput').click()" style="cursor:pointer; position:relative;" title="تغییرِ عکسِ پروفایل">؟</div>
+                    <div class="avatar-ring" id="avatarInitials" onclick="document.getElementById('avatarFileInput').click()" style="cursor:pointer; position:relative;" title="تغییر عکس پروفایل">؟</div>
                     <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(this.files[0])">
                     <div class="fw-semibold" id="headerFullName" style="font-size:.95rem">در حال بارگذاری...</div>
                     <div class="user-meta" id="headerPhone">—</div>
@@ -226,9 +226,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                             <input type="text" class="form-control" id="activitySection" readonly>
                         </div>
                         <div class="col-sm-6">
-                            <label class="form-label">ساعتِ کاریِ روزانه</label>
+                            <label class="form-label">ساعت کاری روزانه</label>
                             <input type="text" class="form-control" id="dailyWorkHours" readonly>
-                            <div class="form-hint">مبنایِ محاسبهٔ سهمیهٔ مرخصی/پاس</div>
+                            <div class="form-hint">مبنای محاسبهٔ سهمیهٔ مرخصی/پاس</div>
                         </div>
                     </div>
 
@@ -331,9 +331,9 @@ async function uploadAvatar(file) {
             var info = JSON.parse(localStorage.getItem('user_info') || '{}');
             info.avatar_path = d.avatar_path;
             localStorage.setItem('user_info', JSON.stringify(info));
-            showToast('عکسِ پروفایل بروزرسانی شد', 'success');
+            showToast('عکس پروفایل بروزرسانی شد', 'success');
         } else {
-            showToast(d.message || 'خطا در آپلودِ عکس', 'error');
+            showToast(d.message || 'خطا در آپلود عکس', 'error');
         }
     } catch { showToast('خطا در ارتباط با سرور', 'error'); }
 }
@@ -421,7 +421,7 @@ async function changePassword(e) {
 
     if (!cur)        { showFormAlert('passwordAlert', 'رمز عبور فعلی را وارد کنید', 'danger'); return; }
     if (nw.length < 8) { showFormAlert('passwordAlert', 'رمز عبور جدید باید حداقل ۸ کاراکتر باشد', 'danger'); return; }
-    if (!/[A-Za-z]/.test(nw)) { showFormAlert('passwordAlert', 'رمز عبور جدید باید حداقل یک حرفِ انگلیسی داشته باشد', 'danger'); return; }
+    if (!/[A-Za-z]/.test(nw)) { showFormAlert('passwordAlert', 'رمز عبور جدید باید حداقل یک حرف انگلیسی داشته باشد', 'danger'); return; }
     if (!/[0-9]/.test(nw))    { showFormAlert('passwordAlert', 'رمز عبور جدید باید حداقل یک عدد داشته باشد', 'danger'); return; }
     if (nw !== conf)   { showFormAlert('passwordAlert', 'رمز عبور جدید و تکرار آن یکسان نیستند', 'danger'); return; }
 

@@ -44,9 +44,9 @@ $validActions = [
     'login_success'   => 'ورود موفق',
     'login_failed'    => 'ورود ناموفق',
     'logout'          => 'خروج',
-    'password_changed' => 'تغییرِ رمز عبور',
-    'user_activated'  => 'فعال‌سازیِ کاربر',
-    'user_deactivated' => 'غیرفعال‌سازیِ کاربر',
+    'password_changed' => 'تغییر رمز عبور',
+    'user_activated'  => 'فعال‌سازی کاربر',
+    'user_deactivated' => 'غیرفعال‌سازی کاربر',
 ];
 
 $where  = ["l.created_at > (NOW() - INTERVAL ? DAY)"];
@@ -101,7 +101,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>رصدِ امنیتی</title>
+  <title>رصد امنیتی</title>
   <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
   <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
   <link rel="stylesheet" href="<?= asset('../assets/css/custom.css') ?>">
@@ -185,39 +185,39 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="admin-wrap">
   <div class="admin-toolbar">
     <div>
-      <h4><i class="bi bi-shield-lock"></i> رصدِ امنیتی</h4>
-      <div class="sub">تاریخچه‌یِ ورود، خروج، و رویدادهایِ حساسِ سیستم</div>
+      <h4><i class="bi bi-shield-lock"></i> رصد امنیتی</h4>
+      <div class="sub">تاریخچه‌ی ورود، خروج، و رویدادهای حساس سیستم</div>
     </div>
   </div>
 
   <div class="admin-cards">
     <div class="pcard">
       <div class="ic" style="background:rgba(27, 123, 57, 0.12);color:#1b7b39;"><i class="bi bi-box-arrow-in-left"></i></div>
-      <div><div class="lbl">ورودِ موفق (۲۴ ساعتِ اخیر)</div><div class="val"><?= (int) ($stat['logins_ok'] ?? 0) ?></div></div>
+      <div><div class="lbl">ورود موفق (۲۴ ساعت اخیر)</div><div class="val"><?= (int) ($stat['logins_ok'] ?? 0) ?></div></div>
     </div>
     <div class="pcard">
       <div class="ic" style="background:#FEE4E2;color:#B42318;"><i class="bi bi-exclamation-octagon"></i></div>
-      <div><div class="lbl">ورودِ ناموفق (۲۴ ساعتِ اخیر)</div><div class="val"><?= (int) ($stat['logins_bad'] ?? 0) ?></div></div>
+      <div><div class="lbl">ورود ناموفق (۲۴ ساعت اخیر)</div><div class="val"><?= (int) ($stat['logins_bad'] ?? 0) ?></div></div>
     </div>
     <div class="pcard">
       <div class="ic" style="background:#FEF3E0;color:#B25E09;"><i class="bi bi-shield-x"></i></div>
-      <div><div class="lbl">آی‌پیِ مسدودِ لحظه‌ای</div><div class="val"><?= $blockedNow ?></div></div>
+      <div><div class="lbl">آی‌پی مسدود لحظه‌ای</div><div class="val"><?= $blockedNow ?></div></div>
     </div>
     <div class="pcard">
       <div class="ic" style="background:rgba(142, 87, 254, 0.12);color:#8e57fe;"><i class="bi bi-person-x"></i></div>
-      <div><div class="lbl">غیرفعال‌سازیِ کاربر (۲۴ ساعتِ اخیر)</div><div class="val"><?= (int) ($stat['deactivations'] ?? 0) ?></div></div>
+      <div><div class="lbl">غیرفعال‌سازی کاربر (۲۴ ساعت اخیر)</div><div class="val"><?= (int) ($stat['deactivations'] ?? 0) ?></div></div>
     </div>
   </div>
 
   <form class="filter-bar" method="get">
     <select name="action" onchange="this.form.submit()">
-      <option value="">همه‌یِ رویدادها</option>
+      <option value="">همه‌ی رویدادها</option>
       <?php foreach ($validActions as $key => $label): ?>
         <option value="<?= htmlspecialchars($key) ?>" <?= $actionFilter === $key ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
       <?php endforeach; ?>
     </select>
     <select name="days" onchange="this.form.submit()">
-      <?php foreach ([1 => 'امروز', 7 => '۷ روزِ اخیر', 30 => '۳۰ روزِ اخیر', 90 => '۹۰ روزِ اخیر'] as $d => $label): ?>
+      <?php foreach ([1 => 'امروز', 7 => '۷ روز اخیر', 30 => '۳۰ روز اخیر', 90 => '۹۰ روز اخیر'] as $d => $label): ?>
         <option value="<?= $d ?>" <?= $daysFilter === $d ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
       <?php endforeach; ?>
     </select>

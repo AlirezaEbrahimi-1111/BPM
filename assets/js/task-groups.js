@@ -115,7 +115,7 @@
                   <input type="hidden" id="gmEditId">
                   <div class="mb-2">
                     <label class="form-label">نام گروه</label>
-                    <input type="text" class="form-control form-control-sm" id="gmName" placeholder="مثلاً: کاری">
+                    <input type="text" class="form-control form-control-sm" id="gmName" placeholder="مثلا: کاری">
                   </div>
                   <div class="mb-2">
                     <label class="form-label d-block">رنگ</label>

@@ -89,25 +89,25 @@
         var message, icon, bgColor, borderColor, iconColor;
 
         if (status === 'expired' || status === 'no_subscription') {
-            message     = 'اشتراک سازمان شما منقضی شده است. لطفاً برای تمدید اشتراک با پشتیبانی تماس بگیرید.';
+            message     = 'اشتراک سازمان شما منقضی شده است. لطفا برای تمدید اشتراک با پشتیبانی تماس بگیرید.';
             icon        = 'bi-exclamation-octagon-fill';
             bgColor     = '#fef2f2';
             borderColor = '#ef4444';
             iconColor   = '#ef4444';
         } else if (daysRemaining <= 0) {
-            message     = 'اشتراک سازمان شما امروز منقضی می‌شود! لطفاً برای تمدید با پشتیبانی تماس بگیرید.';
+            message     = 'اشتراک سازمان شما امروز منقضی می‌شود! لطفا برای تمدید با پشتیبانی تماس بگیرید.';
             icon        = 'bi-exclamation-octagon-fill';
             bgColor     = '#fef2f2';
             borderColor = '#ef4444';
             iconColor   = '#ef4444';
         } else if (daysRemaining === 1) {
-            message     = 'اشتراک سازمان شما فردا منقضی می‌شود. لطفاً برای خرید یا تمدید اشتراک با پشتیبانی ارتباط بگیرید.';
+            message     = 'اشتراک سازمان شما فردا منقضی می‌شود. لطفا برای خرید یا تمدید اشتراک با پشتیبانی ارتباط بگیرید.';
             icon        = 'bi-exclamation-triangle-fill';
             bgColor     = '#fffbeb';
             borderColor = '#f59e0b';
             iconColor   = '#f59e0b';
         } else {
-            message     = 'اشتراک سازمان شما ' + toFa(daysRemaining) + ' روز دیگر منقضی می‌شود. لطفاً برای خرید یا تمدید اشتراک با پشتیبانی ارتباط بگیرید.';
+            message     = 'اشتراک سازمان شما ' + toFa(daysRemaining) + ' روز دیگر منقضی می‌شود. لطفا برای خرید یا تمدید اشتراک با پشتیبانی ارتباط بگیرید.';
             icon        = 'bi-exclamation-triangle-fill';
             bgColor     = '#fffbeb';
             borderColor = '#f59e0b';

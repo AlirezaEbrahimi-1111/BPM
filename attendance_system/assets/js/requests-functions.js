@@ -105,7 +105,7 @@ async function approveRequest(id, type, action) {
     );
     
     if (action === 'reject' && !notes) {
-        alert('لطفاً دلیل رد را وارد کنید');
+        alert('لطفا دلیل رد را وارد کنید');
         return;
     }
     

@@ -689,7 +689,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                             <i class="bi bi-paperclip"></i>
                         </label>
                         <textarea id="replyMsg" class="composer-textarea" rows="1"
-                                  placeholder="پیام خود را بنویسید... (Ctrl+V برای چسباندنِ عکس)"></textarea>
+                                  placeholder="پیام خود را بنویسید... (Ctrl+V برای چسباندن عکس)"></textarea>
                         <button class="composer-send-btn" id="btnReply" onclick="sendReply()" title="ارسال">
                             <i class="bi bi-send"></i>
                         </button>
@@ -988,7 +988,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
                 // 🔒 فقط کاربر id=1 — هم‌راستا با api/tickets/delete-message.php
                 var deleteBtn = (Number(currentUserId) === 1)
-                    ? '<button type="button" class="msg-delete-btn" title="حذفِ این پیام" onclick="deleteMessage(' + m.id + ')"><i class="bi bi-trash"></i></button>'
+                    ? '<button type="button" class="msg-delete-btn" title="حذف این پیام" onclick="deleteMessage(' + m.id + ')"><i class="bi bi-trash"></i></button>'
                     : '';
 
                 html += '<div class="msg-bubble ' + cls + '">';
@@ -1021,7 +1021,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                             showToast('پیام حذف شد', 'success');
                             loadDetail();
                         } else {
-                            showToast(data.message || 'خطا در حذفِ پیام', 'error');
+                            showToast(data.message || 'خطا در حذف پیام', 'error');
                         }
                     })
                     .catch(function () {

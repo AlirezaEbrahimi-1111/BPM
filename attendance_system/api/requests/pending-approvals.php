@@ -28,7 +28,7 @@ if (!$user_id && isset($_COOKIE['auth_token']))
 
 if (!$user_id) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'لطفاً وارد شوید'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => false, 'message' => 'لطفا وارد شوید'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

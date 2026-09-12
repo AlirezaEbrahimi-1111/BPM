@@ -385,7 +385,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             const opts = [];
             if (IS_SUPER) opts.push({ v: 'all_orgs', l: 'همهٔ سازمان‌ها (سراسری)' });
             opts.push({ v: 'organization', l: 'کل سازمان' });
-            opts.push({ v: 'specific', l: 'کاربر یا واحدِ خاص' });
+            opts.push({ v: 'specific', l: 'کاربر یا واحد خاص' });
             box.innerHTML = opts.map((o, i) => `
                 <div class="ann-scope-chip ${i === 0 ? 'active' : ''}" data-val="${o.v}" onclick="onScopeChange('${o.v}')">
                     <i class="bi ${i === 0 ? 'bi-check-circle-fill' : 'bi-circle'} chip-check"></i><span>${o.l}</span>

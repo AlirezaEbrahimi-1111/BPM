@@ -524,7 +524,7 @@ async function addSection() {
     if (!key || !label)                          return showAddErr('کلید انگلیسی و نام فارسی الزامی است');
     if (!/^[a-z0-9_]+$/.test(key))              return showAddErr('کلید باید فقط شامل حروف کوچک، عدد و _ باشد');
     if (['management','supervisor'].includes(key)) return showAddErr('این کلید رزرو شده است');
-    if (sections.find(s => s.section_key === key)) return showAddErr('این کلید قبلاً وجود دارد');
+    if (sections.find(s => s.section_key === key)) return showAddErr('این کلید قبلا وجود دارد');
 
     const data = await apiPost({ section_key: key, section_label: label, sort_order: sections.length });
 

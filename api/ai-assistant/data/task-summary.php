@@ -92,7 +92,7 @@ try {
         $targetOrgId = $stmt->fetchColumn();
         if (!$targetOrgId || (int) $targetOrgId !== (int) $requester['organization_id']) {
             http_response_code(404);
-            echo json_encode(['success' => false, 'message' => 'کاربرِ موردنظر یافت نشد']);
+            echo json_encode(['success' => false, 'message' => 'کاربر موردنظر یافت نشد']);
             exit;
         }
     }
@@ -196,10 +196,10 @@ try {
             $roles[] = 'تعریف‌کننده';
         }
         if ((int) $t['assignee_id'] === $targetUserId) {
-            $roles[] = 'مسئولِ انجام';
+            $roles[] = 'مسئول انجام';
         }
         if (isset($activeReferrerTaskIds[$t['id']])) {
-            $roles[] = 'ارجاع‌دهنده (در حالِ پیگیری)';
+            $roles[] = 'ارجاع‌دهنده (در حال پیگیری)';
         }
 
         // next_due_date/overdue_periods (برایِ کارِ دوره‌ای) از همین‌جا میان —

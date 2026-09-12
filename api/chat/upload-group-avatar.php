@@ -45,13 +45,13 @@ try {
     if ((int) $conv['created_by'] !== $user_id) {
         http_response_code(403);
         error_log("Chat upload-group-avatar denied | user_id={$user_id} | conversation_id={$conversationId}");
-        echo json_encode(['success' => false, 'message' => 'فقط مدیرِ گروه می‌تواند عکسِ گروه را تغییر دهد']);
+        echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند عکس گروه را تغییر دهد']);
         exit;
     }
 
     if (empty($_FILES['avatar']) || $_FILES['avatar']['error'] !== UPLOAD_ERR_OK) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'فایلِ تصویر ارسال نشد']);
+        echo json_encode(['success' => false, 'message' => 'فایل تصویر ارسال نشد']);
         exit;
     }
 
@@ -63,14 +63,14 @@ try {
 
     if ($file['size'] > $maxSize) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'حجمِ تصویر نباید بیش از ۳ مگابایت باشد']);
+        echo json_encode(['success' => false, 'message' => 'حجم تصویر نباید بیش از ۳ مگابایت باشد']);
         exit;
     }
 
     $imageInfo = @getimagesize($file['tmp_name']);
     if (!$imageInfo || !isset($allowedExtByType[$imageInfo[2]])) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'فقط تصویرِ JPG، PNG، WEBP یا GIF مجاز است']);
+        echo json_encode(['success' => false, 'message' => 'فقط تصویر JPG، PNG، WEBP یا GIF مجاز است']);
         exit;
     }
 
@@ -82,7 +82,7 @@ try {
 
     if (!move_uploaded_file($file['tmp_name'], $uploadDir . $storedName)) {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'خطا در ذخیره‌یِ فایل']);
+        echo json_encode(['success' => false, 'message' => 'خطا در ذخیره‌ی فایل']);
         exit;
     }
 

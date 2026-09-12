@@ -212,7 +212,7 @@ const QuickAdd = (() => {
     }
 
     function partner(onDone) {
-        open('همکارِ سریع', 'bi-people', [
+        open('همکار سریع', 'bi-people', [
             { name: 'name', label: 'نام', required: true },
             { name: 'phone', label: 'تلفن (اختیاری)', attr: 'inputmode="numeric"' },
         ], async d => {

@@ -306,7 +306,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
                 <h1><i class="bi bi-bar-chart-line"></i> گزارشات فاکتور</h1>
-                <p>روندِ فروش و خرید، مشتریان و تأمین‌کنندگانِ برتر، وضعیتِ موجودی — سازمانِ ۱</p>
+                <p>روند فروش و خرید، مشتریان و تأمین‌کنندگان برتر، وضعیت موجودی — سازمان ۱</p>
             </div>
         </div>
 
@@ -376,7 +376,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 <div class="chart-wrap"><canvas id="chTrend"></canvas></div>
             </div>
             <div class="rpt-card span-4">
-                <h6><i class="bi bi-pie-chart"></i> وضعیتِ فاکتورهای فروش</h6>
+                <h6><i class="bi bi-pie-chart"></i> وضعیت فاکتورهای فروش</h6>
                 <div class="chart-wrap"><canvas id="chStatus"></canvas></div>
             </div>
 
@@ -394,7 +394,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             </div>
 
             <div class="rpt-card span-4">
-                <h6><i class="bi bi-box-seam"></i> ترکیبِ کاتالوگِ کالا</h6>
+                <h6><i class="bi bi-box-seam"></i> ترکیب کاتالوگ کالا</h6>
                 <div class="chart-wrap"><canvas id="chCatalog"></canvas></div>
             </div>
             <div class="rpt-card span-8">
@@ -607,7 +607,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     ic: 'bi-receipt',
                     bg: 'rgba(37,99,235,.12)',
                     fg: '#2563eb',
-                    lbl: 'تعدادِ فاکتورِ فروش',
+                    lbl: 'تعداد فاکتور فروش',
                     val: faDigits(inv.length),
                     unit: ''
                 },
@@ -615,7 +615,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     ic: 'bi-cart-plus',
                     bg: 'rgba(245,158,11,.14)',
                     fg: '#b45309',
-                    lbl: 'تعدادِ خریدِ تأییدشده',
+                    lbl: 'تعداد خرید تأییدشده',
                     val: faDigits(purConfirmed.length),
                     unit: ''
                 },
@@ -964,7 +964,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
             const list = document.getElementById('lowStockList');
             if (!low.length) {
-                list.innerHTML = '<li style="justify-content:center;color:#A0AEC0">موردی برای نمایش نیست — موجودیِ همهٔ کالاها مثبت است</li>';
+                list.innerHTML = '<li style="justify-content:center;color:#A0AEC0">موردی برای نمایش نیست — موجودی همهٔ کالاها مثبت است</li>';
                 return;
             }
             list.innerHTML = low.map(p => {

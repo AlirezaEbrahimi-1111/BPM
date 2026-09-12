@@ -281,7 +281,7 @@ class TaskManager
                 return [
                     'success' => false,
                     'message' => $state['is_today_done']
-                        ? 'دورهٔ امروز قبلاً تکمیل شده است'
+                        ? 'دورهٔ امروز قبلا تکمیل شده است'
                         : 'این کار در وضعیت قابل تکمیل نیست'
                 ];
             }
@@ -401,7 +401,7 @@ class TaskManager
                         return [
                             'success' => false,
                             'message' => $state['is_today_done']
-                                ? 'دورهٔ امروز قبلاً تکمیل شده است'
+                                ? 'دورهٔ امروز قبلا تکمیل شده است'
                                 : 'این کار در وضعیت قابل تکمیل نیست'
                         ];
                     }
@@ -681,7 +681,7 @@ class TaskManager
             }
 
             if ($task['task_type'] === 'periodic' && empty($effective_due) && empty($due_date)) {
-                return ['success' => false, 'message' => 'این کار موعد ندارد — برایِ ارجاع، ابتدا یک موعد تعیین کنید'];
+                return ['success' => false, 'message' => 'این کار موعد ندارد — برای ارجاع، ابتدا یک موعد تعیین کنید'];
             }
 
             // اگر ارجاع‌دهنده موعدِ جدیدی نداده ولی کار از قبل موعدِ مؤثر دارد،
@@ -1927,7 +1927,7 @@ class TaskManager
             $req = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$req || $req['status'] !== 'pending') {
-                return ['success' => false, 'message' => 'درخواست یافت نشد یا قبلاً بررسی شده'];
+                return ['success' => false, 'message' => 'درخواست یافت نشد یا قبلا بررسی شده'];
             }
             if ((int)$req['current_approver_id'] !== (int)$user_id) {
                 return ['success' => false, 'message' => 'شما مجاز به تأیید این درخواست نیستید'];
@@ -2003,7 +2003,7 @@ class TaskManager
             $req = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$req || $req['status'] !== 'pending') {
-                return ['success' => false, 'message' => 'درخواست یافت نشد یا قبلاً بررسی شده'];
+                return ['success' => false, 'message' => 'درخواست یافت نشد یا قبلا بررسی شده'];
             }
             if ((int)$req['current_approver_id'] !== (int)$user_id) {
                 return ['success' => false, 'message' => 'شما مجاز به رد این درخواست نیستید'];

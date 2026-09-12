@@ -5,7 +5,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
 // آیا این کاربر منوی «فروش / فاکتور» را ببیند؟ (ماژول در حالِ ساخت، دسترسیِ محدود)
 $__crmUid  = (int) ($_SESSION['user_id'] ?? $user_id ?? 0);
 $__crmMenu = isset($db) && ($db instanceof PDO) && crmModuleAllowed($db, $__crmUid);
-// «گزارشِ همکاران» را مدیران و سوپروایزرها هم می‌بینند (حتی بدونِ منوی فاکتور).
+// «گزارش همکاران» را مدیران و سوپروایزرها هم می‌بینند (حتی بدونِ منوی فاکتور).
 $__crmReportMenu = isset($db) && ($db instanceof PDO)
     && function_exists('crmReportAllowed') && crmReportAllowed($db, $__crmUid);
 ?>
@@ -696,13 +696,15 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
     :root[data-theme="dark"] .att-abs-row:hover { background: rgba(142, 87, 254, .18); }
     .att-abs-row .name { font-weight: 600; }
 
+    /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) */
     .att-abs-badge {
         flex-shrink: 0;
-        font-size: 10.5px;
-        font-weight: 700;
-        padding: 3px 9px;
-        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: var(--badge-font-weight, 500);
+        padding: 7px 10px;
+        border-radius: var(--badge-radius, 7px);
         white-space: nowrap;
+        text-align: center;
     }
     .att-abs-badge.absent { background: #fee2e2; color: #b91c1c; }
     .att-abs-badge.leave  { background: #ffe4e6; color: #be123c; }
@@ -887,7 +889,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                         </li>
                         <li id="securityLogMenuItem" style="display:none;">
                             <a class="dropdown-item" href="../../pages/security-log.php">
-                                <i class="bi bi-shield-lock ms-2"></i>رصدِ امنیتی
+                                <i class="bi bi-shield-lock ms-2"></i>رصد امنیتی
                             </a>
                         </li>
                         <li id="holidaysMenuItem" style="display:none;">
@@ -940,7 +942,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                             </li>
                             <li>
                                 <a class="dropdown-item" href="/pages/inv-partner-report.php">
-                                    <i class="bi bi-people ms-2"></i>گزارشِ همکاران
+                                    <i class="bi bi-people ms-2"></i>گزارش همکاران
                                 </a>
                             </li>
                             <li>
@@ -965,10 +967,10 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                     </li>
                 <?php endif; ?>
                 <?php if (!empty($__crmReportMenu) && empty($__crmMenu)): ?>
-                    <!-- مدیر/سوپروایزر بدونِ دسترسیِ کاملِ ماژول — فقط گزارشِ همکاران -->
+                    <!-- مدیر/سوپروایزر بدونِ دسترسیِ کاملِ ماژول — فقط گزارش همکاران -->
                     <li class="nav-item">
                         <a class="nav-link" href="/pages/inv-partner-report.php">
-                            <i class="bi bi-people me-2"></i>گزارشِ همکاران
+                            <i class="bi bi-people me-2"></i>گزارش همکاران
                         </a>
                     </li>
                 <?php endif; ?>
@@ -1003,7 +1005,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
 
             <!-- آیکنِ دستیارِ هوش‌مصنوعی موقتاً مخفی — صفحه هنوز در حالِ توسعه/تسته -->
             <div class="nav-item" style="display:none;">
-                <a class="nav-link settings-btn" href="../../pages/ai-assistant-test.php" title="دستیارِ هوش‌مصنوعی">
+                <a class="nav-link settings-btn" href="../../pages/ai-assistant-test.php" title="دستیار هوش‌مصنوعی">
                     <i class="bi bi-stars" style="font-size:1.2rem;color:var(--icon-accent);"></i>
                 </a>
             </div>
@@ -1811,7 +1813,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             var dateOnly = (window.TimeSync && TimeSync.formatJalali) ? TimeSync.formatJalali(raw) : raw.split(' ')[0];
             var c = t.status_color || '#8e57fe';
             var unseen = Number(t.awaiting_you) > 0;
-            var dot = unseen ? '<span class="hdr-ticket-dot" title="در انتظارِ پاسخِ شما"></span>' : '';
+            var dot = unseen ? '<span class="hdr-ticket-dot" title="در انتظار پاسخ شما"></span>' : '';
             return '<a class="hdr-ticket-item' + (unseen ? ' unseen' : '') + '" href="/pages/ticket-detail.php?id=' + encodeURIComponent(t.id) + '">' +
                 '<div class="hdr-ticket-row1">' +
                 '<span class="hdr-ticket-num">' + dot + '#' + toFa(esc(String(t.ticket_number || ''))) + '</span>' +
@@ -2119,7 +2121,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             infoBtn.className = 'attendance-info-btn';
             infoBtn.type = 'button';
             infoBtn.id = 'attInfoBtn';
-            infoBtn.title = 'ساعتِ ورودِ شما و غایبینِ امروز';
+            infoBtn.title = 'ساعت ورود شما و غایبین امروز';
             infoBtn.innerHTML = '<i class="bi bi-clock-history"></i>';
             infoBtn.addEventListener('click', function (e) {
                 e.stopPropagation();
@@ -2186,7 +2188,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         let html =
             '<div class="att-panel-mytime">' +
                 '<i class="bi bi-check-circle-fill"></i>' +
-                '<span>ساعتِ ورودِ شما: <b>' + (myTime ? myTime : 'ثبت نشده') + '</b></span>' +
+                '<span>ساعت ورود شما: <b>' + (myTime ? myTime : 'ثبت نشده') + '</b></span>' +
             '</div>';
 
         const abs = _attAbsData;
@@ -2197,7 +2199,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         } else {
             const list = abs.absent || [];
             html += '<div class="att-panel-abs-head"><i class="bi bi-people"></i>' +
-                    ' پرسنلِ غایب / ثبت‌نشدهٔ امروز (' + _attFa(list.length) + ' نفر)</div>';
+                    ' پرسنل غایب / ثبت‌نشدهٔ امروز (' + _attFa(list.length) + ' نفر)</div>';
             if (!list.length) {
                 html += '<div class="att-panel-empty">همهٔ پرسنل امروز حاضرند.</div>';
             } else {
@@ -2458,7 +2460,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         overlay.querySelector('#uiPromptOk').onclick = () => {
             const val = input.value.trim();
             if (opts.required && !val) {
-                showToast('لطفاً مقدار را وارد کنید', 'warning');
+                showToast('لطفا مقدار را وارد کنید', 'warning');
                 return;
             }
             close();
@@ -2925,7 +2927,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                 loadAttendanceStatus(bundle.attendance);
                 updateChatUnreadBadge(bundle.conversations);
             } catch (error) {
-                console.error('❌ خطا در بارگذاریِ باندلِ هدر، fallback به فراخوانیِ جداگانه:', error);
+                console.error('❌ خطا در بارگذاری باندل هدر، fallback به فراخوانی جداگانه:', error);
                 loadAnnouncements();
                 loadNotifications();
                 loadAttendanceStatus();

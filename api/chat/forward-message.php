@@ -59,7 +59,7 @@ try {
     $stmt->execute([$targetConversationId, $user_id]);
     if (!$stmt->fetch()) {
         http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'به گفتگویِ مقصد دسترسی ندارید']);
+        echo json_encode(['success' => false, 'message' => 'به گفتگوی مقصد دسترسی ندارید']);
         exit;
     }
 
@@ -69,7 +69,7 @@ try {
 
     if ($original['message'] === null && !$attachments) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'پیامِ خالی قابلِ فوروارد نیست']);
+        echo json_encode(['success' => false, 'message' => 'پیام خالی قابل فوروارد نیست']);
         exit;
     }
 

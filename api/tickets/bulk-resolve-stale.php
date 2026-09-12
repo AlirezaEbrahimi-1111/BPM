@@ -106,7 +106,7 @@ try {
                 $notif->create([
                     'to_user_id'   => (int) $t['created_by'],
                     'title'        => 'تغییر وضعیت تیکت: ' . $t['ticket_number'],
-                    'message'      => 'تیکت «' . $t['subject'] . '» به دلیلِ بی‌پاسخ ماندن به مدت ۲۱ روز، «' . $resolvedLabel . '» شد.',
+                    'message'      => 'تیکت «' . $t['subject'] . '» به دلیل بی‌پاسخ ماندن به مدت ۲۱ روز، «' . $resolvedLabel . '» شد.',
                     'type'         => 'info',
                     'link'         => '/pages/ticket-detail.php?id=' . (int) $t['id'],
                     'related_type' => 'ticket',

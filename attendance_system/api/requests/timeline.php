@@ -32,7 +32,7 @@ if (!$user_id && isset($_COOKIE['auth_token'])) $user_id = $auth->validateToken(
 
 if (!$user_id) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'لطفاً وارد شوید']);
+    echo json_encode(['success' => false, 'message' => 'لطفا وارد شوید']);
     exit;
 }
 

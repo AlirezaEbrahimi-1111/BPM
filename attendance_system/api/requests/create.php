@@ -145,7 +145,7 @@ if ($request_target_date) {
             error_log("Attendance request create denied (clickable_days_limit passed) | user_id={$user_id} | type={$type} | target_date={$request_target_date} | working_days={$working_days_passed} | limit={$clickable_days_limit}");
             echo json_encode([
                 'success' => false,
-                'message' => "مهلتِ ثبتِ درخواست برایِ این تاریخ ({$clickable_days_limit} روزِ کاری) گذشته است."
+                'message' => "مهلت ثبت درخواست برای این تاریخ ({$clickable_days_limit} روز کاری) گذشته است."
             ], JSON_UNESCAPED_UNICODE);
             exit;
         }
@@ -334,7 +334,7 @@ if ($type === 'leave') {
 
     // ✅ اعتبارسنجی جانشین
     if (!$substitute_id) {
-        echo json_encode(['success' => false, 'message' => 'لطفاً جانشین خود را انتخاب کنید']);
+        echo json_encode(['success' => false, 'message' => 'لطفا جانشین خود را انتخاب کنید']);
         exit;
     }
 
@@ -373,7 +373,7 @@ if ($type === 'leave') {
     if ($consecutive_days > $leave_max_consecutive) {
         echo json_encode([
             'success' => false,
-            'message' => "حداکثر {$leave_max_consecutive} روزِ متوالی مرخصی مجاز است (این درخواست {$consecutive_days} روز است)"
+            'message' => "حداکثر {$leave_max_consecutive} روز متوالی مرخصی مجاز است (این درخواست {$consecutive_days} روز است)"
         ]);
         exit;
     }
@@ -387,7 +387,7 @@ if ($type === 'leave') {
     if ($requested_minutes > $leave_balance) {
         echo json_encode([
             'success' => false,
-            'message' => "سهمیهٔ مرخصی/پاسِ شما کافی نیست (موجودی: " . formatMinutesHM($leave_balance) . "، این درخواست: " . formatMinutesHM($requested_minutes) . ")"
+            'message' => "سهمیهٔ مرخصی/پاس شما کافی نیست (موجودی: " . formatMinutesHM($leave_balance) . "، این درخواست: " . formatMinutesHM($requested_minutes) . ")"
         ]);
         exit;
     }
@@ -402,7 +402,7 @@ if ($type === 'leave') {
 
     // ✅ کسرِ سهمیه همین حالا (نه فقط بعدِ تأیید) — اگه بعداً رد یا حذف بشه،
     // در approve.php/delete.php برگردونده می‌شه
-    deductLeaveBalance($db, $user_id, $requested_minutes, 'leave', (int) $leave_id, "کسر بابتِ درخواستِ مرخصیِ {$request_code}");
+    deductLeaveBalance($db, $user_id, $requested_minutes, 'leave', (int) $leave_id, "کسر بابت درخواست مرخصی {$request_code}");
 
     // ✅ ثبت/آپدیت جانشین در جدول substitutes
     // اول چک کن آیا قبلاً وجود دارد
@@ -466,7 +466,7 @@ if ($type === 'pass') {
         $duration_hours = ($end_min - $start_min) / 60;
 
         if ($duration_hours > $limit_hours_daily) {
-            echo json_encode(['success' => false, 'message' => 'مدت زمان هر درخواست پاس نهایتاً نمی‌تواند ' . $limit_hours_daily . ' ساعت باشد.']);
+            echo json_encode(['success' => false, 'message' => 'مدت زمان هر درخواست پاس نهایتا نمی‌تواند ' . $limit_hours_daily . ' ساعت باشد.']);
             exit;
         }
     }
@@ -509,7 +509,7 @@ if ($type === 'pass') {
     if ($requested_minutes > $leave_balance) {
         echo json_encode([
             'success' => false,
-            'message' => "سهمیهٔ مرخصی/پاسِ شما کافی نیست (موجودی: " . formatMinutesHM($leave_balance) . "، این درخواست: " . formatMinutesHM($requested_minutes) . ")"
+            'message' => "سهمیهٔ مرخصی/پاس شما کافی نیست (موجودی: " . formatMinutesHM($leave_balance) . "، این درخواست: " . formatMinutesHM($requested_minutes) . ")"
         ]);
         exit;
     }
@@ -526,7 +526,7 @@ if ($type === 'pass') {
     $stmt->execute([$user_id, $request_code, $pass_date_miladi, $start_time, $end_time, $reason]);
 
     $pass_id = $db->lastInsertId();
-    deductLeaveBalance($db, $user_id, $requested_minutes, 'pass', (int) $pass_id, "کسر بابتِ درخواستِ پاسِ {$request_code}");
+    deductLeaveBalance($db, $user_id, $requested_minutes, 'pass', (int) $pass_id, "کسر بابت درخواست پاس {$request_code}");
 
     echo json_encode(['success' => true, 'message' => 'درخواست پاس ثبت شد', 'code' => $request_code]);
     exit;

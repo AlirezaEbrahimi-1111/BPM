@@ -813,7 +813,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         function showError(msg) {
             console.error('خطا:', msg);
             if (gridApi) gridApi.setGridOption('rowData', []);
-            showToast(msg || 'خطا در بارگذاریِ کارها', 'error');
+            showToast(msg || 'خطا در بارگذاری کارها', 'error');
         }
     </script>
 </body>

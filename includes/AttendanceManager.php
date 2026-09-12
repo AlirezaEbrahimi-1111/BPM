@@ -43,7 +43,7 @@ class AttendanceManager
             $shift_number = $this->determineShiftNumber($user_id, $today, $user);
 
             if ($shift_number === false) {
-                return ['success' => false, 'message' => 'شما قبلاً ورود ثبت کرده‌اید'];
+                return ['success' => false, 'message' => 'شما قبلا ورود ثبت کرده‌اید'];
             }
 
             if ($shift_number === -1) {

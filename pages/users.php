@@ -1190,7 +1190,7 @@ if (!hasPermission($__me, 'manage_users')) {
             onclick="toggleStatus(${p.data.id},${p.data.is_active})">
         <i class="bi bi-${p.data.is_active==1?'pause':'play'}-circle"></i>
     </button>
-    <button class="ag-action-btn" title="سهمیهٔ تشویقیِ مرخصی" onclick="grantLeaveBonus(${p.data.id}, '${escJsAttr((p.data.first_name||'')+' '+(p.data.last_name||''))}')">
+    <button class="ag-action-btn" title="سهمیهٔ تشویقی مرخصی" onclick="grantLeaveBonus(${p.data.id}, '${escJsAttr((p.data.first_name||'')+' '+(p.data.last_name||''))}')">
         <i class="bi bi-wallet2"></i>
     </button>
     <button class="ag-action-btn" style="color:#dc2626" title="حذف کاربر"
@@ -1296,10 +1296,10 @@ if (!hasPermission($__me, 'manage_users')) {
                 .then(d => {
                     const current = d.success ? d.balance_formatted : '؟';
                     uiPrompt(
-                        `موجودیِ فعلیِ «${esc(name.trim())}» (مرخصی+پاس): ${current} ساعت<br>چند دقیقه سهمیهٔ تشویقی اضافه شود؟ (برایِ کسر، عددِ منفی وارد کنید — مثلاً برایِ ۲ ساعت بنویسید 120)`,
+                        `موجودی فعلی «${esc(name.trim())}» (مرخصی+پاس): ${current} ساعت<br>چند دقیقه سهمیهٔ تشویقی اضافه شود؟ (برای کسر، عدد منفی وارد کنید — مثلا برای ۲ ساعت بنویسید 120)`,
                         function(value) {
                             const amount = parseInt(value, 10);
-                            if (!amount) { showToast('عددِ نامعتبر', 'error'); return; }
+                            if (!amount) { showToast('عدد نامعتبر', 'error'); return; }
                             fetch('/api/attendance/leave-balance-grant.php', {
                                     method: 'POST',
                                     headers: ahj(),
@@ -1307,15 +1307,15 @@ if (!hasPermission($__me, 'manage_users')) {
                                 })
                                 .then(r => r.json())
                                 .then(res => {
-                                    if (res.success) showToast('سهمیه ثبت شد — موجودیِ جدید: ' + res.balance_formatted + ' ساعت', 'success');
+                                    if (res.success) showToast('سهمیه ثبت شد — موجودی جدید: ' + res.balance_formatted + ' ساعت', 'success');
                                     else showToast(res.message || 'خطا', 'error');
                                 })
                                 .catch(() => showToast('خطا در ارتباط با سرور', 'error'));
                         },
-                        { placeholder: 'مثلاً 120 یا 120-', okText: 'ثبت' }
+                        { placeholder: 'مثلا 120 یا 120-', okText: 'ثبت' }
                     );
                 })
-                .catch(() => showToast('خطا در دریافتِ موجودی', 'error'));
+                .catch(() => showToast('خطا در دریافت موجودی', 'error'));
         }
 
         let __bonusRequestsCache = [];
@@ -1331,7 +1331,7 @@ if (!hasPermission($__me, 'manage_users')) {
                     const rows = d.requests.map(req => `
                         <div class="bonus-req-row" data-req-id="${req.id}">
                             <div class="bonus-req-info">
-                                <span><strong>${esc(req.name)}</strong> — درخواستِ ${req.requested_formatted} ساعت — موجودیِ فعلی: ${req.balance_formatted} ساعت</span>
+                                <span><strong>${esc(req.name)}</strong> — درخواست ${req.requested_formatted} ساعت — موجودی فعلی: ${req.balance_formatted} ساعت</span>
                                 ${req.note ? `<span class="bonus-req-note">${esc(req.note)}</span>` : ''}
                             </div>
                             <div class="d-flex gap-1">
@@ -1347,7 +1347,7 @@ if (!hasPermission($__me, 'manage_users')) {
 
                     box.innerHTML = `
                         <div class="bonus-req-box">
-                            <div class="bonus-req-title"><i class="bi bi-hourglass-split"></i> درخواست‌هایِ در‌انتظارِ سهمیهٔ تشویقی (${toFaDigits(d.requests.length)})</div>
+                            <div class="bonus-req-title"><i class="bi bi-hourglass-split"></i> درخواست‌های در‌انتظار سهمیهٔ تشویقی (${toFaDigits(d.requests.length)})</div>
                             ${rows}
                         </div>
                     `;
@@ -1367,7 +1367,7 @@ if (!hasPermission($__me, 'manage_users')) {
                     { yesText: 'بله، اعطا شود', noText: 'انصراف' }
                 );
             } else {
-                uiConfirm(`درخواستِ «${esc(name)}» رد شود؟`, function () {
+                uiConfirm(`درخواست «${esc(name)}» رد شود؟`, function () {
                     submitBonusResolve(requestId, 'decline');
                 }, { danger: true, yesText: 'بله، رد شود', noText: 'انصراف' });
             }

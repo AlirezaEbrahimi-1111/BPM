@@ -72,7 +72,7 @@ try {
 
     if (empty($validIds)) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'هیچ کاربرِ معتبری یافت نشد']);
+        echo json_encode(['success' => false, 'message' => 'هیچ کاربر معتبری یافت نشد']);
         exit;
     }
 
@@ -93,8 +93,8 @@ try {
         if ($viewerId !== $user_id && !in_array($viewerId, $alreadyViewers, true)) {
             $notif->create([
                 'to_user_id'   => $viewerId,
-                'title'        => 'دسترسیِ مشاهدهٔ یک کار',
-                'message'      => 'به شما دسترسیِ مشاهدهٔ کارِ «' . $task['title'] . '» داده شد',
+                'title'        => 'دسترسی مشاهدهٔ یک کار',
+                'message'      => 'به شما دسترسی مشاهدهٔ کار «' . $task['title'] . '» داده شد',
                 'type'         => 'info',
                 'link'         => '/pages/task-detail.php?id=' . $task_id,
                 'related_type' => 'task',

@@ -131,7 +131,7 @@ function insertLeaveAccrual(PDO $db, int $userId, string $periodYm, int $minutes
 
     $stmt = $db->prepare("
         INSERT INTO leave_balance_transactions (user_id, type, amount, period_ym, note)
-        VALUES (?, 'monthly_accrual', ?, ?, 'تعلقِ خودکارِ ماهانه (معادلِ ۲ روزِ کاری)')
+        VALUES (?, 'monthly_accrual', ?, ?, 'تعلق خودکار ماهانه (معادل ۲ روز کاری)')
     ");
     $stmt->execute([$userId, $minutes, $periodYm]);
 }

@@ -202,12 +202,12 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
                 <h1><i class="bi bi-receipt"></i> فاکتورهای فروش</h1>
-                <p>صدور، تأیید و چاپِ فاکتورِ فروش — سازمانِ ۱</p>
+                <p>صدور، تأیید و چاپ فاکتور فروش — سازمان ۱</p>
             </div>
         </div>
 
         <div class="crm-toolbar">
-            <input type="text" id="crmSearch" class="form-control crm-search" placeholder="جست‌وجو در شماره یا نامِ مشتری…">
+            <input type="text" id="crmSearch" class="form-control crm-search" placeholder="جست‌وجو در شماره یا نام مشتری…">
             <select id="stFilter" class="form-select" style="max-width:170px">
                 <option value="">همه‌ی وضعیت‌ها</option>
                 <option value="draft">پیش‌نویس</option>
@@ -226,13 +226,13 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">ویرایشِ وضعیتِ فاکتور <span id="stIdLbl"></span></h5>
+                    <h5 class="modal-title">ویرایش وضعیت فاکتور <span id="stIdLbl"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
                 </div>
                 <div class="modal-body">
                     <div id="stAlert"></div>
                     <div class="mb-3">
-                        <label class="form-label">وضعیتِ تسویه</label>
+                        <label class="form-label">وضعیت تسویه</label>
                         <select id="stSettlement" class="form-select">
                             <option value="unsettled">تسویه نشده</option>
                             <option value="settled">تسویه شده</option>
@@ -240,15 +240,15 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">وضعیتِ مودیان</label>
+                        <label class="form-label">وضعیت مودیان</label>
                         <select id="stMoadian" class="form-select">
                             <option value="unregistered">ثبت نشده</option>
                             <option value="registered">ثبت شده</option>
                         </select>
                     </div>
                     <div class="mb-1" id="stCodeWrap">
-                        <label class="form-label">کدِ ثبت در سامانه</label>
-                        <input id="stCode" class="form-control" placeholder="کدِ ثبت در سامانهٔ مودیان">
+                        <label class="form-label">کد ثبت در سامانه</label>
+                        <input id="stCode" class="form-control" placeholder="کد ثبت در سامانهٔ مودیان">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -344,7 +344,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     h += `<button class="ag-action-btn" style="color:#0f7a57" title="تبدیل به فاکتور رسمی" onclick="convertInv(${d.id})"><i class="bi bi-file-earmark-check"></i></button>`;
                 }
             }
-            h += `<button class="ag-action-btn" title="ویرایشِ وضعیتِ تسویه/مودیان" onclick="stEditStatus(${d.id})"><i class="bi bi-clipboard-check"></i></button>`;
+            h += `<button class="ag-action-btn" title="ویرایش وضعیت تسویه/مودیان" onclick="stEditStatus(${d.id})"><i class="bi bi-clipboard-check"></i></button>`;
             return h;
         }
 
@@ -433,7 +433,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 cellRenderer: p => p.data.partner_id ? money(p.value) : '—'
             },
             {
-                headerName: 'ثبتِ سود',
+                headerName: 'ثبت سود',
                 field: 'partner_profit_recorded',
                 width: 90,
                 sortable: false,
@@ -528,7 +528,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         }
 
         function approveInv(id) {
-            uiConfirm('این فاکتور تأیید و شماره‌ی رسمی برایش صادر شود؟ (پس از تأیید قابلِ ویرایش نیست)', async () => {
+            uiConfirm('این فاکتور تأیید و شماره‌ی رسمی برایش صادر شود؟ (پس از تأیید قابل ویرایش نیست)', async () => {
                 try {
                     const d = await apiSend('POST', '/inv/invoices/' + id + '/approve');
                     showToast('صادر شد: ' + faDigits(d.number || ''), 'success');
@@ -540,7 +540,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         }
 
         function cancelInv(id) {
-            uiConfirm('این فاکتور باطل شود؟ موجودیِ کالاها به انبار برمی‌گردد.', async () => {
+            uiConfirm('این فاکتور باطل شود؟ موجودی کالاها به انبار برمی‌گردد.', async () => {
                 try {
                     await apiSend('POST', '/inv/invoices/' + id + '/cancel');
                     showToast('باطل شد', 'success');
@@ -552,7 +552,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         }
 
         function convertInv(id) {
-            uiConfirm('از این پیش‌فاکتور یک «فاکتور رسمیِ پیش‌نویس» ساخته شود؟ پیش‌فاکتور بایگانی می‌شود و دیگر موجودی رزرو نمی‌کند.', async () => {
+            uiConfirm('از این پیش‌فاکتور یک «فاکتور رسمی پیش‌نویس» ساخته شود؟ پیش‌فاکتور بایگانی می‌شود و دیگر موجودی رزرو نمی‌کند.', async () => {
                 try {
                     const d = await apiSend('POST', '/inv/invoices/' + id + '/to-official');
                     showToast('فاکتور رسمی ساخته شد', 'success');
@@ -619,7 +619,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             const alertBox = msg => document.getElementById('stAlert').innerHTML =
                 msg ? `<div class="alert alert-danger py-2">${msg}</div>` : '';
             if (moadian === 'registered' && !code) {
-                alertBox('برایِ «مودیان ثبت‌شده» کدِ ثبت در سامانه لازم است.');
+                alertBox('برای «مودیان ثبت‌شده» کد ثبت در سامانه لازم است.');
                 return;
             }
             alertBox('');

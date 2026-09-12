@@ -55,7 +55,7 @@ try {
     if (!$request) {
         error_log("❌ Request not found or already processed");
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'درخواست یافت نشد یا قبلاً پاسخ داده شده']);
+        echo json_encode(['success' => false, 'message' => 'درخواست یافت نشد یا قبلا پاسخ داده شده']);
         exit;
     }
 
@@ -199,7 +199,7 @@ try {
         $jalali_date = JalaliHelper::formatJalaliDate($new_deadline);
 
         $message = sprintf(
-            '«%s» درخواست تمدید موعد کار «%s» تا تاریخ %s را تأیید کرد. لطفاً شما نیز بررسی کنید',
+            '«%s» درخواست تمدید موعد کار «%s» تا تاریخ %s را تأیید کرد. لطفا شما نیز بررسی کنید',
             $current_approver['full_name'],
             $request['title'],
             $jalali_date

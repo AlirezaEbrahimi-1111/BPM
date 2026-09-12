@@ -200,7 +200,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     <div id="supplierPicker"></div>
                 </div>
                 <div>
-                    <label class="form-label">شماره‌ی فاکتورِ فروشنده</label>
+                    <label class="form-label">شماره‌ی فاکتور فروشنده</label>
                     <input type="text" class="form-control" id="f_ref">
                 </div>
                 <div>
@@ -250,10 +250,10 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnAddRow"><i class="bi bi-plus-lg ms-1"></i> افزودن ردیف</button>
 
             <div class="totals-box">
-                <div class="tl"><span>جمعِ کل</span><span id="t_subtotal">۰</span></div>
+                <div class="tl"><span>جمع کل</span><span id="t_subtotal">۰</span></div>
                 <div class="tl"><span>تخفیف</span><span id="t_discount">۰</span></div>
                 <div class="tl"><span>مالیات بر ارزش افزوده (<span id="t_vatrate">۰</span>٪)</span><span id="t_tax">۰</span></div>
-                <div class="tl grand"><span>جمعِ نهایی</span><span id="t_total">۰</span></div>
+                <div class="tl grand"><span>جمع نهایی</span><span id="t_total">۰</span></div>
             </div>
 
             <div class="mt-3">
@@ -520,7 +520,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 return;
             }
             if (!body.items.length) {
-                alertBox('حداقل یک ردیف با کالا و تعدادِ معتبر لازم است.');
+                alertBox('حداقل یک ردیف با کالا و تعداد معتبر لازم است.');
                 return;
             }
             alertBox('');
@@ -614,7 +614,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     }
                     (pur.items || []).forEach(addRow);
                 } catch (e) {
-                    alertBox('بارگذاریِ فاکتور ناموفق بود: ' + (e.message || ''));
+                    alertBox('بارگذاری فاکتور ناموفق بود: ' + (e.message || ''));
                 }
             }
             if (!document.querySelectorAll('#itemsBody tr').length) {

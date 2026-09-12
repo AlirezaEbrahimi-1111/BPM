@@ -158,7 +158,7 @@ if (!headers_sent()) {
                 }
             } catch {
                 alert.className = 'alert alert-danger';
-                alert.textContent = 'خطا در اتصال. لطفاً دوباره تلاش کنید';
+                alert.textContent = 'خطا در اتصال. لطفا دوباره تلاش کنید';
                 btn.disabled = false;
                 btn.textContent = 'ثبت‌نام و شروع رایگان';
             }

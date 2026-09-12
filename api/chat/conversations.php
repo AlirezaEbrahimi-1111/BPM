@@ -125,7 +125,7 @@ try {
         return [
             'conversation_id' => (int) $r['conversation_id'],
             'type'            => $r['type'],
-            'title'           => $isGroup ? ($r['title'] ?: 'گروهِ بدونِ‌نام') : ($otherName ?: 'کاربر حذف‌شده'),
+            'title'           => $isGroup ? ($r['title'] ?: 'گروه بدون‌نام') : ($otherName ?: 'کاربر حذف‌شده'),
             'avatar_url'      => $isGroup ? ($r['group_avatar_path'] ?: null) : ($r['other_avatar_path'] ?: null),
             'is_muted'        => (bool) $r['is_muted'],
             'created_by'      => (int) $r['created_by'],

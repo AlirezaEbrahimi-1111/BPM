@@ -452,10 +452,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 style="display:flex; align-items:center; gap:8px;">
-                                <i class="bi bi-people"></i> دسترسیِ مشاهده برای افراد دیگر
+                                <i class="bi bi-people"></i> دسترسی مشاهده برای افراد دیگر
                             </h5>
                             <small class="form-text text-muted d-block mb-2">
-                                این افراد فقط جزئیاتِ کار را می‌بینند (بدون ویرایش یا اقدام). اعمالِ زیر برای همهٔ افرادِ افزوده‌شده مشترک است.
+                                این افراد فقط جزئیات کار را می‌بینند (بدون ویرایش یا اقدام). اعمال زیر برای همهٔ افراد افزوده‌شده مشترک است.
                             </small>
                             <div id="createViewerPicker"></div>
                             <div class="d-flex flex-wrap gap-3 mt-2">
@@ -1077,7 +1077,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             const title = document.getElementById('workflowTitle').value.trim();
 
             if (!templateId) {
-                const t = showToast('لطفاً نوع کار روتین را انتخاب کنید', 'warning');
+                const t = showToast('لطفا نوع کار روتین را انتخاب کنید', 'warning');
                 t.close();
                 return;
             }
@@ -1220,7 +1220,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
             if (sel && sel.type === 'section') {
                 if (!sel.value) {
-                    showToast('لطفاً یک واحد انتخاب کنید', 'warning');
+                    showToast('لطفا یک واحد انتخاب کنید', 'warning');
                     return null;
                 }
                 return await saveTaskForSection(sel.value);
@@ -1271,7 +1271,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             const __me = JSON.parse(localStorage.getItem('user_info') || 'null');
             const __isSelfTask = !taskData.assignee_id || (__me && String(taskData.assignee_id) === String(__me.id));
             if (taskData.task_type === 'periodic' && !taskData.due_date && !__isSelfTask) {
-                showToast('تاریخ انجام برای کارهای مقطعیِ ارجاع‌داده‌شده الزامی است', 'error');
+                showToast('تاریخ انجام برای کارهای مقطعی ارجاع‌داده‌شده الزامی است', 'error');
 
                 return;
             }
@@ -1381,7 +1381,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             const multiVal = multiAssigneePickerInst ? multiAssigneePickerInst.getValue() : null;
             const assigneeIds = multiVal ? multiVal.value : [];
             if (!assigneeIds.length) {
-                showToast('لطفاً حداقل یک نفر را انتخاب کنید', 'warning');
+                showToast('لطفا حداقل یک نفر را انتخاب کنید', 'warning');
                 return null;
             }
 
@@ -1404,7 +1404,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 baseTask.start_date = null;
                 baseTask.period_type = null;
                 if (!baseTask.due_date) {
-                    showToast('تاریخ انجام برای کارهای مقطعیِ ارجاع‌داده‌شده الزامی است', 'error');
+                    showToast('تاریخ انجام برای کارهای مقطعی ارجاع‌داده‌شده الزامی است', 'error');
                     return null;
                 }
             } else {
@@ -1601,7 +1601,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
 
             if (!routineId) {
-                const t = showToast('لطفاً یک کار روتین انتخاب کنید', 'info');
+                const t = showToast('لطفا یک کار روتین انتخاب کنید', 'info');
                 t.close();
                 return;
             }

@@ -3493,7 +3493,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             } else if (action === 'reject') {
                 const note = document.getElementById('rowNote').value.trim();
                 if (!note) {
-                    pmToast('لطفاً دلیل رد را بنویسید', 'err');
+                    pmToast('لطفا دلیل رد را بنویسید', 'err');
                     return;
                 }
                 url = '../api/tasks/approve.php';
@@ -3505,7 +3505,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             } else if (action === 'delegate') {
                 const sel = AssigneePicker.getValue();
                 if (!sel || sel.type !== 'user' || !sel.value || sel.value === '__all_users__') {
-                    pmToast('لطفاً کاربر مقصد را انتخاب کنید', 'err');
+                    pmToast('لطفا کاربر مقصد را انتخاب کنید', 'err');
                     return;
                 }
                 url = '../api/tasks/delegate.php';
@@ -3518,12 +3518,12 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             } else if (action === 'extend') {
                 const d = document.getElementById('rowDate').getAttribute('data-date');
                 if (!d) {
-                    pmToast('لطفاً موعد جدید را انتخاب کنید', 'err');
+                    pmToast('لطفا موعد جدید را انتخاب کنید', 'err');
                     return;
                 }
                 const note = document.getElementById('rowNote').value.trim();
                 if (!note) {
-                    pmToast('لطفاً دلیل تمدید را بنویسید', 'err');
+                    pmToast('لطفا دلیل تمدید را بنویسید', 'err');
                     return;
                 }
                 url = '../api/tasks/request-deadline.php';
@@ -4597,7 +4597,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
                 case 'reject':
                     if (!note) {
-                        pmToast('لطفاً دلیل رد را بنویسید', 'err');
+                        pmToast('لطفا دلیل رد را بنویسید', 'err');
                         return;
                     }
                     url = '../api/tasks/approve.php';
@@ -4612,7 +4612,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     const sel = AssigneePicker.getValue();
 
                     if (!sel || !sel.value) {
-                        pmToast('لطفاً کاربر مقصد را انتخاب کنید', 'err');
+                        pmToast('لطفا کاربر مقصد را انتخاب کنید', 'err');
                         return;
                     }
 
@@ -4632,11 +4632,11 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     const newDate = dateEl.getAttribute('data-date');
 
                     if (!newDate) {
-                        pmToast('لطفاً موعد جدید را انتخاب کنید', 'err');
+                        pmToast('لطفا موعد جدید را انتخاب کنید', 'err');
                         return;
                     }
                     if (!note) {
-                        pmToast('لطفاً دلیل تمدید را بنویسید', 'err');
+                        pmToast('لطفا دلیل تمدید را بنویسید', 'err');
                         return;
                     }
 

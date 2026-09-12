@@ -166,7 +166,7 @@ try {
                 $buttons[] = ['type' => 'check_in', 'shift' => 2, 'label' => 'ورود شیفت 2', 'enabled' => true];
             } else {
                 // بینِ دو شیفت ⟵ هیچ ورودی مجاز نیست
-                $window_message = 'الان زمانِ ثبتِ ورود نیست';
+                $window_message = 'الان زمان ثبت ورود نیست';
             }
         } elseif (!$shift1_check_out) {
             // شیفت ۱ باز است ⟵ همیشه می‌تواند خروجِ شیفت ۱ بزند
@@ -176,7 +176,7 @@ try {
             if ($shift2_in_open) {
                 $buttons[] = ['type' => 'check_in', 'shift' => 2, 'label' => 'ورود شیفت 2', 'enabled' => true];
             } else {
-                $window_message = 'الان زمانِ ثبتِ ورود نیست';
+                $window_message = 'الان زمان ثبت ورود نیست';
             }
         }
     }

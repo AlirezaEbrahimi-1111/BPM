@@ -76,13 +76,13 @@ try {
     // فقط کاربرِ id=1 اجازهٔ ساختنِ تعطیلیِ سراسری داره؛ بقیه همیشه برایِ سازمانِ خودشونه
     if ($scope === 'global' && (int) $user_id !== 1) {
         http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'فقط مدیرِ کلِ سامانه می‌تواند تعطیلیِ سراسری تعریف کند']);
+        echo json_encode(['success' => false, 'message' => 'فقط مدیر کل سامانه می‌تواند تعطیلی سراسری تعریف کند']);
         exit;
     }
     $organization_id = $scope === 'global' ? null : (int) ($user['organization_id'] ?? 0);
     if ($scope === 'org' && !$organization_id) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'سازمانِ کاربر مشخص نیست']);
+        echo json_encode(['success' => false, 'message' => 'سازمان کاربر مشخص نیست']);
         exit;
     }
 
@@ -96,7 +96,7 @@ try {
         $day_of_week = $input['day_of_week'] ?? null;
         if ($day_of_week === null || !is_numeric($day_of_week) || (int) $day_of_week < 0 || (int) $day_of_week > 6) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'روزِ هفته نامعتبر است']);
+            echo json_encode(['success' => false, 'message' => 'روز هفته نامعتبر است']);
             exit;
         }
         $day_of_week = (int) $day_of_week;
@@ -109,7 +109,7 @@ try {
         $stmt->execute([$day_of_week, $organization_id, $organization_id]);
         if ($stmt->fetch()) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'این روزِ هفته قبلاً به‌عنوانِ تعطیل ثبت شده است']);
+            echo json_encode(['success' => false, 'message' => 'این روز هفته قبلا به‌عنوان تعطیل ثبت شده است']);
             exit;
         }
 
@@ -122,7 +122,7 @@ try {
         $id = $db->lastInsertId();
         echo json_encode([
             'success' => true,
-            'message' => 'تعطیلیِ هفتگی با موفقیت اضافه شد',
+            'message' => 'تعطیلی هفتگی با موفقیت اضافه شد',
             'id' => $id,
             'type' => 'weekly',
             'day_of_week' => $day_of_week,
@@ -148,7 +148,7 @@ try {
     $stmt->execute([$holiday_date, $organization_id, $organization_id]);
     if ($stmt->fetch()) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'این تاریخ قبلاً ثبت شده است']);
+        echo json_encode(['success' => false, 'message' => 'این تاریخ قبلا ثبت شده است']);
         exit;
     }
 

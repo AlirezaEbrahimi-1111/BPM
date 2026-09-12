@@ -345,7 +345,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 return;
             }
             if (!d.invoice) {
-                sheetMsg('این فاکتور یافت نشد یا به سازمانِ شما تعلق ندارد.', true);
+                sheetMsg('این فاکتور یافت نشد یا به سازمان شما تعلق ندارد.', true);
                 return;
             }
             render(d.invoice, d.customer || {}, d.seller || {}, d.footer_note || '');

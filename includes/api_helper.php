@@ -14,7 +14,7 @@ if (!function_exists('requireAuth')) {
             http_response_code(401);
             echo json_encode([
                 'success' => false,
-                'message' => 'احراز هویت الزامی است. لطفاً وارد شوید.'
+                'message' => 'احراز هویت الزامی است. لطفا وارد شوید.'
             ]);
             exit;
         }

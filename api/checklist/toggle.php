@@ -77,7 +77,7 @@ try {
         http_response_code(403);
         echo json_encode([
             'success' => false,
-            'message' => 'این آیتم به فرد دیگری ارجاع شده و فقط مسئولِ آن می‌تواند آن را انجام دهد'
+            'message' => 'این آیتم به فرد دیگری ارجاع شده و فقط مسئول آن می‌تواند آن را انجام دهد'
         ]);
         exit;
     }
@@ -139,7 +139,7 @@ try {
         if (!$handledByLegacySync) {
             try {
                 $tm = new TaskManager($db);
-                $tm->updateTaskStatus($task['id'], 'in_progress', $user_id, 'کار با تیک‌زدنِ اولین آیتمِ چک‌لیست شروع شد');
+                $tm->updateTaskStatus($task['id'], 'in_progress', $user_id, 'کار با تیک‌زدن اولین آیتم چک‌لیست شروع شد');
             } catch (Exception $startErr) {
                 error_log('checklist auto-start error: ' . $startErr->getMessage());
             }

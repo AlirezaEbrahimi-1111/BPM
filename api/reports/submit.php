@@ -69,7 +69,7 @@ try {
         http_response_code(409);
         echo json_encode([
             'success' => false,
-            'message' => 'شما قبلاً برای امروز و این واحد گزارش ارسال کرده‌اید',
+            'message' => 'شما قبلا برای امروز و این واحد گزارش ارسال کرده‌اید',
             'existing_code' => $existingReport['unique_code']
         ]);
         exit;

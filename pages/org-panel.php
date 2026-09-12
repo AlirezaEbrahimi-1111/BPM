@@ -271,7 +271,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
     // هشدار انقضا
     const alertBox = document.getElementById('expireAlert');
     if (d.subscription.status === 'active' && d.subscription.days_left <= 7) {
-      alertBox.innerHTML = '<div class="alert-expire ' + (d.subscription.days_left <= 3 ? 'crit' : 'warn') + '"><i class="bi bi-exclamation-triangle"></i> اشتراک شما تا ' + toFa(d.subscription.days_left) + ' روز دیگر منقضی می‌شود. لطفاً تمدید کنید.</div>';
+      alertBox.innerHTML = '<div class="alert-expire ' + (d.subscription.days_left <= 3 ? 'crit' : 'warn') + '"><i class="bi bi-exclamation-triangle"></i> اشتراک شما تا ' + toFa(d.subscription.days_left) + ' روز دیگر منقضی می‌شود. لطفا تمدید کنید.</div>';
     } else if (d.subscription.status === 'expired') {
       alertBox.innerHTML = '<div class="alert-expire crit"><i class="bi bi-x-octagon"></i> اشتراک شما منقضی شده است. برای ادامه‌ی استفاده تمدید کنید.</div>';
     } else { alertBox.innerHTML = ''; }
@@ -347,7 +347,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
       success:  ['پرداخت موفق بود و اشتراک تمدید شد', 'success'],
       cancel:   ['پرداخت لغو شد', 'error'],
       failed:   ['پرداخت ناموفق بود', 'error'],
-      already:  ['این پرداخت قبلاً ثبت شده بود', 'error'],
+      already:  ['این پرداخت قبلا ثبت شده بود', 'error'],
       error:    ['خطا در ثبت اشتراک', 'error'],
       notfound: ['پرداخت یافت نشد', 'error'],
     };

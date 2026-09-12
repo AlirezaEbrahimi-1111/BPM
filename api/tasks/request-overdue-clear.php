@@ -228,7 +228,7 @@ try {
         $notification->create([
             'to_user_id'   => $approver_id,
             'title'        => 'درخواست رفع دوره‌های معوقه: ' . $task['title'],
-            'message'      => "«$rname» برای کار «{$task['title']}» درخواست رفع $remaining دورهٔ معوقه داده است. لطفاً بررسی کنید.",
+            'message'      => "«$rname» برای کار «{$task['title']}» درخواست رفع $remaining دورهٔ معوقه داده است. لطفا بررسی کنید.",
             'type'         => 'warning',
             'related_type' => 'task',
             'related_id'   => $task_id,

@@ -1955,7 +1955,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 <div class="chat-sidebar-head">
                     <h5>گفتگوها</h5>
                     <div class="d-flex align-items-center gap-2">
-                        <button class="chat-search-toggle-btn" id="chatDesktopNotifBtn" onclick="handleDesktopNotifClick()" title="اعلانِ دسکتاپ">
+                        <button class="chat-search-toggle-btn" id="chatDesktopNotifBtn" onclick="handleDesktopNotifClick()" title="اعلان دسکتاپ">
                             <i class="bi bi-bell" id="chatDesktopNotifIcon"></i>
                         </button>
                     </div>
@@ -2001,11 +2001,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                             <input type="text" id="chatMsgSearchInput" placeholder="جستجو در این گفتگو..." oninput="runMsgSearch()">
                         </div>
 
-                        <button class="chat-search-toggle-btn" id="chatMediaGalleryBtn" onclick="openMediaGallery()" title="فایل‌ها و عکس‌هایِ این گفتگو">
+                        <button class="chat-search-toggle-btn" id="chatMediaGalleryBtn" onclick="openMediaGallery()" title="فایل‌ها و عکس‌های این گفتگو">
                             <i class="bi bi-images"></i>
                         </button>
 
-                        <button class="chat-search-toggle-btn" id="chatMuteToggleBtn" onclick="toggleMuteActiveConversation()" title="بی‌صداکردنِ این گفتگو">
+                        <button class="chat-search-toggle-btn" id="chatMuteToggleBtn" onclick="toggleMuteActiveConversation()" title="بی‌صداکردن این گفتگو">
                             <i class="bi bi-bell"></i>
                         </button>
 
@@ -2017,10 +2017,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     <div class="chat-pinned-banner" id="chatPinnedBanner" style="display:none;">
                         <i class="bi bi-pin-angle-fill"></i>
                         <div class="chat-pinned-banner-body" onclick="scrollToOriginalMessage(pinnedMessage && pinnedMessage.id)">
-                            <div class="chat-pinned-banner-label">پیامِ سنجاق‌شده</div>
+                            <div class="chat-pinned-banner-label">پیام سنجاق‌شده</div>
                             <div class="chat-pinned-banner-text" id="chatPinnedBannerText"></div>
                         </div>
-                        <i class="bi bi-x-lg chat-pinned-banner-close" id="chatPinnedBannerClose" onclick="unpinCurrentMessage()" title="برداشتنِ سنجاق"></i>
+                        <i class="bi bi-x-lg chat-pinned-banner-close" id="chatPinnedBannerClose" onclick="unpinCurrentMessage()" title="برداشتن سنجاق"></i>
                     </div>
 
                     <div class="chat-messages-wrap">
@@ -2034,7 +2034,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
                     <div class="chat-edit-banner" id="chatEditBanner">
                         <i class="bi bi-pencil-square"></i>
-                        <span class="chat-edit-banner-text">در حالِ ویرایشِ پیام</span>
+                        <span class="chat-edit-banner-text">در حال ویرایش پیام</span>
                         <i class="bi bi-x-lg chat-edit-banner-cancel" onclick="cancelEditMessage()" title="انصراف از ویرایش"></i>
                     </div>
 
@@ -2071,7 +2071,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             <div class="chat-profile-drawer-overlay" id="chatProfileDrawerOverlay" onclick="closeChatProfileDrawer()"></div>
             <div class="chat-profile-drawer" id="chatProfileDrawer">
                 <div class="chat-profile-drawer-head">
-                    <span>اطلاعاتِ پروفایل</span>
+                    <span>اطلاعات پروفایل</span>
                     <button type="button" class="btn-close" onclick="closeChatProfileDrawer()"></button>
                 </div>
                 <div class="chat-profile-drawer-body">
@@ -2103,7 +2103,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         </label>
                     </div>
 
-                    <div class="chat-profile-drawer-media-heading">تصاویرِ ردوبدل‌شده</div>
+                    <div class="chat-profile-drawer-media-heading">تصاویر ردوبدل‌شده</div>
                     <div class="chat-media-grid" id="chatProfileDrawerMediaGrid">
                         <div class="chat-empty-list">در حال بارگذاری...</div>
                     </div>
@@ -2115,7 +2115,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             <div class="chat-profile-drawer-overlay" id="groupInfoDrawerOverlay" onclick="closeGroupInfoDrawer()"></div>
             <div class="chat-profile-drawer" id="groupInfoDrawer">
                 <div class="chat-profile-drawer-head">
-                    <span id="groupInfoTitle">اطلاعاتِ گروه</span>
+                    <span id="groupInfoTitle">اطلاعات گروه</span>
                     <button type="button" class="btn-close" onclick="closeGroupInfoDrawer()"></button>
                 </div>
                 <div class="chat-profile-drawer-body">
@@ -2136,10 +2136,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     <div class="chat-profile-drawer-media-heading">اعضا</div>
                     <div id="groupInfoMemberList"></div>
                     <button type="button" class="btn btn-sm btn-outline-secondary w-100 mt-2" id="groupInfoAddBtn" style="display:none;" onclick="openAddMembersMode()">
-                        <i class="bi bi-person-plus"></i> افزودنِ عضو
+                        <i class="bi bi-person-plus"></i> افزودن عضو
                     </button>
 
-                    <div class="chat-profile-drawer-media-heading">تصاویرِ ردوبدل‌شده</div>
+                    <div class="chat-profile-drawer-media-heading">تصاویر ردوبدل‌شده</div>
                     <div class="chat-media-grid" id="groupInfoMediaGrid">
                         <div class="chat-empty-list">در حال بارگذاری...</div>
                     </div>
@@ -2158,22 +2158,22 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title" id="newChatModalTitle">شروعِ گفتگوی جدید</h6>
+                    <h6 class="modal-title" id="newChatModalTitle">شروع گفتگوی جدید</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="chat-modal-tabs" id="newChatModeTabs">
                         <button type="button" class="chat-modal-tab active" id="newChatTabDirect" onclick="switchNewChatMode('direct')">گفتگوی مستقیم</button>
-                        <button type="button" class="chat-modal-tab" id="newChatTabGroup" onclick="switchNewChatMode('group')">گروهِ جدید</button>
+                        <button type="button" class="chat-modal-tab" id="newChatTabGroup" onclick="switchNewChatMode('group')">گروه جدید</button>
                     </div>
-                    <input type="text" class="form-control mb-2" id="newGroupTitleInput" placeholder="نامِ گروه..." autocomplete="off" style="display:none;" oninput="updateCreateGroupBtnState()">
+                    <input type="text" class="form-control mb-2" id="newGroupTitleInput" placeholder="نام گروه..." autocomplete="off" style="display:none;" oninput="updateCreateGroupBtnState()">
                     <div class="chat-group-chips" id="groupSelectedChips" style="display:none;"></div>
                     <input type="text" class="form-control mb-3" id="newChatSearchInput" placeholder="جستجوی نام همکار..." autocomplete="off">
                     <div id="newChatUserResults"></div>
                 </div>
                 <div class="modal-footer" id="newGroupFooter" style="display:none;">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">انصراف</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="createGroupBtn" onclick="submitNewChatModalAction()" disabled>ایجادِ گروه</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="createGroupBtn" onclick="submitNewChatModalAction()" disabled>ایجاد گروه</button>
                 </div>
             </div>
         </div>
@@ -2185,7 +2185,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">فایل‌ها و عکس‌هایِ این گفتگو</h6>
+                    <h6 class="modal-title">فایل‌ها و عکس‌های این گفتگو</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -2219,7 +2219,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">حذفِ پیام</h6>
+                    <h6 class="modal-title">حذف پیام</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -2241,29 +2241,29 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title"><i class="bi bi-list-task me-2"></i>تعریفِ کار</h6>
+                    <h6 class="modal-title"><i class="bi bi-list-task me-2"></i>تعریف کار</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">عنوانِ کار *</label>
-                        <input type="text" class="form-control" id="quickTaskTitle" placeholder="عنوانِ کار را وارد کنید...">
+                        <label class="form-label">عنوان کار *</label>
+                        <input type="text" class="form-control" id="quickTaskTitle" placeholder="عنوان کار را وارد کنید...">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">توضیحات</label>
                         <textarea class="form-control" id="quickTaskDescription" rows="3"></textarea>
                     </div>
                     <div class="mb-3" id="quickTaskAssigneeRow" style="display:none;">
-                        <label class="form-label d-block">این کار برایِ کیه؟</label>
+                        <label class="form-label d-block">این کار برای کیه؟</label>
                         <div class="qt-toggle">
                             <input type="radio" name="quickTaskAssignee" id="quickTaskAssigneeMe" value="me" checked>
                             <label for="quickTaskAssigneeMe"><i class="bi bi-person-fill"></i>خودم</label>
                             <input type="radio" name="quickTaskAssignee" id="quickTaskAssigneeOther" value="other">
-                            <label for="quickTaskAssigneeOther" id="quickTaskAssigneeOtherLabel"><i class="bi bi-people-fill"></i>مخاطبِ چت</label>
+                            <label for="quickTaskAssigneeOther" id="quickTaskAssigneeOtherLabel"><i class="bi bi-people-fill"></i>مخاطب چت</label>
                         </div>
                     </div>
                     <div class="mb-2">
-                        <label class="form-label">موعدِ انجام</label>
+                        <label class="form-label">موعد انجام</label>
                         <div class="persian-datepicker-wrapper" id="quickTaskDueDateWrap" data-restrict-past="0">
                             <input type="text" id="quickTaskDueDate" class="persian-datepicker-input form-control"
                                 placeholder="انتخاب تاریخ..." readonly>
@@ -2288,12 +2288,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         </div>
                     </div>
                     <a href="#" id="quickTaskCompleteLink" style="font-size:.82rem;">
-                        <i class="bi bi-arrow-up-left-circle me-2"></i>تکمیلِ اطلاعات (فیلدهایِ بیشتر)
+                        <i class="bi bi-arrow-up-left-circle me-2"></i>تکمیل اطلاعات (فیلدهای بیشتر)
                     </a>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">انصراف</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="quickTaskSubmitBtn" onclick="submitQuickTask()">ایجادِ کار</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="quickTaskSubmitBtn" onclick="submitQuickTask()">ایجاد کار</button>
                 </div>
             </div>
         </div>
@@ -2304,7 +2304,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content chat-fc-modal-content">
                 <div class="modal-header chat-fc-header">
-                    <h6 class="modal-title">ارسالِ فایل</h6>
+                    <h6 class="modal-title">ارسال فایل</h6>
                     <button type="button" class="btn-close" onclick="cancelFileCaptionModal()"></button>
                 </div>
                 <div class="chat-fc-preview-list" id="fileCaptionPreviewList"></div>
@@ -2330,7 +2330,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
         <div class="chat-ctx-menu-item" id="chatCtxTaskItem" onclick="taskFromCtxMenu()">
             <i class="bi bi-list-task"></i>
-            <span>تعریفِ کار</span>
+            <span>تعریف کار</span>
         </div>
         <div class="chat-ctx-menu-item" onclick="replyFromCtxMenu()">
             <i class="bi bi-reply-fill"></i>
@@ -2342,7 +2342,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
         <div class="chat-ctx-menu-item" id="chatCtxCopyItem" onclick="copyFromCtxMenu()">
             <i class="bi bi-clipboard"></i>
-            <span>کپیِ متن</span>
+            <span>کپی متن</span>
         </div>
         <div class="chat-ctx-menu-item" id="chatCtxPinItem" onclick="pinFromCtxMenu()">
             <i class="bi bi-pin-angle-fill"></i>
@@ -2799,7 +2799,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 })
                 .catch(function() {
                     document.getElementById('convList').innerHTML =
-                        '<div class="chat-empty-list">خطا در ارتباط با سرور — لطفاً صفحه را رفرش کنید</div>';
+                        '<div class="chat-empty-list">خطا در ارتباط با سرور — لطفا صفحه را رفرش کنید</div>';
                 });
         }
 
@@ -2976,7 +2976,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 })
                 .catch(function() {
                     document.getElementById('chatMessages').innerHTML =
-                        '<div class="chat-empty-list">خطا در ارتباط با سرور — لطفاً صفحه را رفرش کنید</div>';
+                        '<div class="chat-empty-list">خطا در ارتباط با سرور — لطفا صفحه را رفرش کنید</div>';
                 });
         }
 
@@ -3319,7 +3319,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     if (data.success) {
                         updateReactionsForMessage(messageId, data.reactions);
                     } else {
-                        showToast(data.message || 'خطا در ثبتِ ری‌اکشن', 'error');
+                        showToast(data.message || 'خطا در ثبت ری‌اکشن', 'error');
                     }
                 });
         }
@@ -3509,7 +3509,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             var messageId = parseInt(row.getAttribute('data-message-id'), 10);
             var isPinned = pinnedMessage && pinnedMessage.id === messageId;
             document.getElementById('chatCtxPinItem').style.display = pinnedCanManage ? 'flex' : 'none';
-            document.getElementById('chatCtxPinLabel').textContent = isPinned ? 'برداشتنِ سنجاق' : 'سنجاق‌کردن';
+            document.getElementById('chatCtxPinLabel').textContent = isPinned ? 'برداشتن سنجاق' : 'سنجاق‌کردن';
 
             menu.classList.add('show');
             // ابتدا نمایش داده می‌شود تا offsetWidth/Height درست خوانده شود، سپس موقعیتِ
@@ -3651,7 +3651,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         async function submitQuickTask() {
             var title = document.getElementById('quickTaskTitle').value.trim();
             if (!title) {
-                showToast('عنوانِ کار الزامی است', 'warning');
+                showToast('عنوان کار الزامی است', 'warning');
                 document.getElementById('quickTaskTitle').focus();
                 return;
             }
@@ -3680,7 +3680,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     showToast('کار ایجاد شد', 'success');
                     quickTaskModalInst.hide();
                 } else {
-                    showToast(data.message || 'خطا در ایجادِ کار', 'error');
+                    showToast(data.message || 'خطا در ایجاد کار', 'error');
                 }
             } catch (e) {
                 btn.disabled = false;
@@ -4192,24 +4192,24 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             if (Notification.permission === 'granted') {
                 icon.className = 'bi bi-bell-fill';
                 btn.classList.add('chat-notif-on');
-                btn.title = 'اعلانِ دسکتاپ فعاله';
+                btn.title = 'اعلان دسکتاپ فعاله';
             } else if (Notification.permission === 'denied') {
                 icon.className = 'bi bi-bell-slash';
                 btn.classList.add('chat-notif-blocked');
-                btn.title = 'اعلانِ دسکتاپ مسدود شده — برایِ راهنماییِ فعال‌سازی کلیک کنید';
+                btn.title = 'اعلان دسکتاپ مسدود شده — برای راهنمایی فعال‌سازی کلیک کنید';
             } else {
                 icon.className = 'bi bi-bell';
-                btn.title = 'فعال‌سازیِ اعلانِ دسکتاپ';
+                btn.title = 'فعال‌سازی اعلان دسکتاپ';
             }
         }
 
         function handleDesktopNotifClick() {
             if (!('Notification' in window)) {
-                showToast('مرورگرِ شما از اعلانِ دسکتاپ پشتیبانی نمی‌کند', 'warning');
+                showToast('مرورگر شما از اعلان دسکتاپ پشتیبانی نمی‌کند', 'warning');
                 return;
             }
             if (Notification.permission === 'granted') {
-                showToast('اعلانِ دسکتاپ از قبل فعاله', 'info');
+                showToast('اعلان دسکتاپ از قبل فعاله', 'info');
                 return;
             }
             if (Notification.permission === 'denied') {
@@ -4217,7 +4217,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 // این پرسش تکرار بشه — تنها راه، تنظیماتِ خودِ مرورگره؛ همینو
                 // به‌طورِ واضح توضیح می‌دیم تا کاربر گیج نشه چرا اتفاقی نمی‌افته
                 showToast(
-                    'اعلان قبلاً مسدود شده و مرورگر اجازه نمی‌ده دوباره از داخلِ سایت بپرسیم. برایِ فعال‌سازیِ دستی: رویِ آیکنِ قفل/اطلاعات کنارِ آدرسِ سایت (بالایِ مرورگر) بزنید ← «اعلان‌ها»/Notifications را Allow کنید ← صفحه را رفرش کنید.',
+                    'اعلان قبلا مسدود شده و مرورگر اجازه نمی‌ده دوباره از داخل سایت بپرسیم. برای فعال‌سازی دستی: روی آیکن قفل/اطلاعات کنار آدرس سایت (بالای مرورگر) بزنید ← «اعلان‌ها»/Notifications را Allow کنید ← صفحه را رفرش کنید.',
                     'warning',
                     { duration: 15000 }
                 );
@@ -4226,8 +4226,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             Notification.requestPermission().then(function(result) {
                 updateDesktopNotifIcon();
                 if (result === 'granted') {
-                    showToast('اعلانِ دسکتاپ فعال شد', 'success');
-                    new Notification('یکتا همراهانِ ملک', { body: 'اعلانِ دسکتاپ با موفقیت فعال شد ✅', silent: true });
+                    showToast('اعلان دسکتاپ فعال شد', 'success');
+                    new Notification('یکتا همراهان ملک', { body: 'اعلان دسکتاپ با موفقیت فعال شد ✅', silent: true });
                 } else if (result === 'denied') {
                     showToast('اجازهٔ اعلان داده نشد', 'warning');
                 }
@@ -4254,7 +4254,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 var isNew = c.unread_count > prevUnread;
                 if (isNew && tabHidden) {
                     try {
-                        var n = new Notification(c.title || 'پیامِ جدید', {
+                        var n = new Notification(c.title || 'پیام جدید', {
                             body: (c.last_message || '').slice(0, 120),
                             tag: 'chat-conv-' + c.conversation_id, // اعلان‌هایِ پشتِ‌سرِهمِ همون گفتگو، جایگزینِ هم بشن نه تلنبار
                         });
@@ -4366,7 +4366,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     if (data.success) {
                         loadPinnedMessage();
                     } else {
-                        showToast(data.message || 'خطا در سنجاق‌کردنِ پیام', 'error');
+                        showToast(data.message || 'خطا در سنجاق‌کردن پیام', 'error');
                     }
                 });
         }
@@ -4387,7 +4387,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         pinnedMessage = null;
                         renderPinnedBanner();
                     } else {
-                        showToast(data.message || 'خطا در برداشتنِ سنجاق', 'error');
+                        showToast(data.message || 'خطا در برداشتن سنجاق', 'error');
                     }
                 });
         }
@@ -4432,11 +4432,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('newChatModeTabs').style.display = 'flex';
             document.getElementById('newChatTabDirect').classList.add('active');
             document.getElementById('newChatTabGroup').classList.remove('active');
-            document.getElementById('newChatModalTitle').textContent = 'شروعِ گفتگوی جدید';
+            document.getElementById('newChatModalTitle').textContent = 'شروع گفتگوی جدید';
             document.getElementById('newGroupTitleInput').style.display = 'none';
             document.getElementById('newGroupTitleInput').value = '';
             document.getElementById('newGroupFooter').style.display = 'none';
-            document.getElementById('createGroupBtn').textContent = 'ایجادِ گروه';
+            document.getElementById('createGroupBtn').textContent = 'ایجاد گروه';
             document.getElementById('newChatSearchInput').value = '';
             document.getElementById('newChatUserResults').innerHTML = '';
             renderGroupChips();
@@ -4456,7 +4456,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             selectedGroupMembers = {};
             document.getElementById('newChatTabDirect').classList.toggle('active', mode === 'direct');
             document.getElementById('newChatTabGroup').classList.toggle('active', mode === 'group');
-            document.getElementById('newChatModalTitle').textContent = mode === 'group' ? 'ساختِ گروهِ جدید' : 'شروعِ گفتگوی جدید';
+            document.getElementById('newChatModalTitle').textContent = mode === 'group' ? 'ساخت گروه جدید' : 'شروع گفتگوی جدید';
             document.getElementById('newGroupTitleInput').style.display = mode === 'group' ? 'block' : 'none';
             document.getElementById('newGroupFooter').style.display = mode === 'group' ? 'flex' : 'none';
             renderGroupChips();
@@ -4474,10 +4474,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             selectedGroupMembers = {};
 
             document.getElementById('newChatModeTabs').style.display = 'none';
-            document.getElementById('newChatModalTitle').textContent = 'افزودنِ عضو به گروه';
+            document.getElementById('newChatModalTitle').textContent = 'افزودن عضو به گروه';
             document.getElementById('newGroupTitleInput').style.display = 'none';
             document.getElementById('newGroupFooter').style.display = 'flex';
-            document.getElementById('createGroupBtn').textContent = 'افزودنِ اعضا';
+            document.getElementById('createGroupBtn').textContent = 'افزودن اعضا';
             document.getElementById('newChatSearchInput').value = '';
             document.getElementById('newChatUserResults').innerHTML = '';
             renderGroupChips();
@@ -4574,7 +4574,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                             openConversation(data.conversation_id);
                         });
                     } else {
-                        showToast(data.message || 'خطا در ساختِ گروه', 'error');
+                        showToast(data.message || 'خطا در ساخت گروه', 'error');
                     }
                 });
         }
@@ -4595,9 +4595,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     if (data.success) {
                         bootstrap.Modal.getInstance(document.getElementById('newChatModal')).hide();
                         loadConversations();
-                        showToast('اعضایِ جدید اضافه شدند', 'success');
+                        showToast('اعضای جدید اضافه شدند', 'success');
                     } else {
-                        showToast(data.message || 'خطا در افزودنِ عضو', 'error');
+                        showToast(data.message || 'خطا در افزودن عضو', 'error');
                     }
                 });
         }
@@ -4645,7 +4645,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .then(data => {
                     if (!data.success) {
                         document.getElementById('groupInfoMemberList').innerHTML =
-                            '<div class="chat-empty-list">' + esc(data.message || 'خطا در بارگذاریِ اعضا') + '</div>';
+                            '<div class="chat-empty-list">' + esc(data.message || 'خطا در بارگذاری اعضا') + '</div>';
                         return;
                     }
                     document.getElementById('groupInfoTitle').textContent = activeConversationTitle + ' — ' + toFa(data.members.length) + ' عضو';
@@ -4660,10 +4660,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         return '<div class="chat-group-member-row">' +
                         '<div' + nameAttrs + '>' + avatarHtml(m.full_name, false, null, m.avatar_url) + '</div>' +
                         '<span class="chat-group-member-name"' + nameAttrs + '>' + esc(m.full_name) + ' ' +
-                        (m.is_owner ? '<span class="chat-group-owner-tag">مدیرِ گروه</span>' : '') +
+                        (m.is_owner ? '<span class="chat-group-owner-tag">مدیر گروه</span>' : '') +
                         '</span>' +
                         (data.is_owner && !m.is_owner
-                            ? '<button class="chat-group-member-remove" title="حذفِ عضو" onclick="removeGroupMember(' + m.id + ')"><i class="bi bi-x-lg"></i></button>'
+                            ? '<button class="chat-group-member-remove" title="حذف عضو" onclick="removeGroupMember(' + m.id + ')"><i class="bi bi-x-lg"></i></button>'
                             : '') +
                         '</div>';
                     }).join('');
@@ -4698,11 +4698,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .then(data => {
                     document.getElementById('groupAvatarFileInput').value = '';
                     if (data.success) {
-                        showToast('عکسِ گروه بروزرسانی شد', 'success');
+                        showToast('عکس گروه بروزرسانی شد', 'success');
                         openGroupInfoDrawer();
                         loadConversations();
                     } else {
-                        showToast(data.message || 'خطا در آپلودِ عکس', 'error');
+                        showToast(data.message || 'خطا در آپلود عکس', 'error');
                     }
                 });
         }
@@ -4723,7 +4723,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         openGroupInfoDrawer();
                         loadConversations();
                     } else {
-                        showToast(data.message || 'خطا در حذفِ عضو', 'error');
+                        showToast(data.message || 'خطا در حذف عضو', 'error');
                     }
                 });
         }
@@ -4854,7 +4854,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             var btn = document.getElementById('chatMuteToggleBtn');
             var muted = !!(conv && conv.is_muted);
             btn.querySelector('i').className = muted ? 'bi bi-bell-slash-fill' : 'bi bi-bell';
-            btn.title = muted ? 'باصداکردنِ این گفتگو' : 'بی‌صداکردنِ این گفتگو';
+            btn.title = muted ? 'باصداکردن این گفتگو' : 'بی‌صداکردن این گفتگو';
 
             var drawerToggle = document.getElementById('chatProfileDrawerMuteToggle');
             if (drawerToggle) drawerToggle.checked = !muted;
@@ -4881,7 +4881,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         updateMuteButton(conv);
                         renderConversationList();
                     } else {
-                        showToast(data.message || 'خطا در تغییرِ وضعیتِ صدا', 'error');
+                        showToast(data.message || 'خطا در تغییر وضعیت صدا', 'error');
                     }
                 });
         }
@@ -4948,7 +4948,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                             : data.users;
                         currentUserResults = users;
                         if (!users.length) {
-                            el.innerHTML = '<div class="text-muted text-center py-3" style="font-size:.85rem;">همه‌ی نتایج از قبل عضوِ گروه‌اند</div>';
+                            el.innerHTML = '<div class="text-muted text-center py-3" style="font-size:.85rem;">همه‌ی نتایج از قبل عضو گروه‌اند</div>';
                             return;
                         }
                         var multi = newChatMode !== 'direct';

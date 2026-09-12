@@ -36,7 +36,7 @@ try {
     $prefKey = $input['pref_key'] ?? '';
     if (!in_array($prefKey, $ALLOWED_KEYS, true)) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'کلیدِ نامعتبر']);
+        echo json_encode(['success' => false, 'message' => 'کلید نامعتبر']);
         exit;
     }
 

@@ -47,7 +47,7 @@ try {
         exit;
     }
     if ($req['status'] !== 'pending') {
-        echo json_encode(['success' => false, 'message' => 'این درخواست قبلاً تعیین‌تکلیف شده']);
+        echo json_encode(['success' => false, 'message' => 'این درخواست قبلا تعیین‌تکلیف شده']);
         exit;
     }
 
@@ -56,7 +56,7 @@ try {
 
     if ($action === 'grant') {
         if ($amount <= 0) {
-            echo json_encode(['success' => false, 'message' => 'این درخواست مقدارِ مشخصی نداره؛ فقط می‌توانید ردش کنید']);
+            echo json_encode(['success' => false, 'message' => 'این درخواست مقدار مشخصی نداره؛ فقط می‌توانید ردش کنید']);
             exit;
         }
         ensureMonthlyLeaveAccrual($db, $targetUserId);
@@ -74,7 +74,7 @@ try {
         $stmt->execute([$user_id, $amount, ($note !== '' ? $note : null), $requestId]);
 
         $balanceMinutes = getLeaveBalance($db, $targetUserId);
-        $notifMessage = 'درخواستِ سهمیهٔ تشویقیِ شما پذیرفته شد — ' . formatMinutesHM($amount) . ' ساعت به موجودیِ شما اضافه شد';
+        $notifMessage = 'درخواست سهمیهٔ تشویقی شما پذیرفته شد — ' . formatMinutesHM($amount) . ' ساعت به موجودی شما اضافه شد';
     } else {
         $stmt = $db->prepare("
             UPDATE leave_bonus_requests
@@ -83,7 +83,7 @@ try {
         ");
         $stmt->execute([$user_id, ($note !== '' ? $note : null), $requestId]);
 
-        $notifMessage = 'درخواستِ سهمیهٔ تشویقیِ شما رد شد';
+        $notifMessage = 'درخواست سهمیهٔ تشویقی شما رد شد';
         if ($note !== '') {
             $notifMessage .= ' — ' . $note;
         }
@@ -92,7 +92,7 @@ try {
     $notification = new Notification($db);
     $notification->create([
         'to_user_id'   => $targetUserId,
-        'title'        => $action === 'grant' ? 'سهمیهٔ تشویقی پذیرفته شد' : 'درخواستِ سهمیهٔ تشویقی رد شد',
+        'title'        => $action === 'grant' ? 'سهمیهٔ تشویقی پذیرفته شد' : 'درخواست سهمیهٔ تشویقی رد شد',
         'message'      => $notifMessage,
         'type'         => $action === 'grant' ? 'success' : 'warning',
         'link'         => '/attendance_system/pages/requests.php',

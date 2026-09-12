@@ -151,7 +151,7 @@ try {
         $taskForCheck = ['_is_assignee' => ((int) $task['assignee_id'] === (int) $user_id)];
         if (!canActOnChecklistItem($db, $checklistItem, $taskForCheck, $user_id)) {
             http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'شما مجاز به پیوست‌کردنِ فایل برای این آیتم نیستید']);
+            echo json_encode(['success' => false, 'message' => 'شما مجاز به پیوست‌کردن فایل برای این آیتم نیستید']);
             exit;
         }
     }
