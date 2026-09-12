@@ -18,6 +18,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
+    <!-- این صفحه header.php را include نمی‌کند (یک برگهٔ چاپیِ بدونِ نوار بالا)
+         پس faDigits/toFa و بقیهٔ کمکی‌های سراسری را باید خودش مستقیم بگیرد. -->
+    <script src="<?= asset('/assets/js/common-bundle.js') ?>"></script>
     <style>
         /* کاغذِ چاپ: A4 افقی */
         @page { size: A4 landscape; margin: 8mm; }
