@@ -55,8 +55,8 @@ try {
                 CONCAT(COALESCE(creator.first_name,''),' ',COALESCE(creator.last_name,'')) AS creator_name,
                 CONCAT(COALESCE(assignee.first_name,''),' ',COALESCE(assignee.last_name,'')) AS assignee_name
             FROM tasks t
-            LEFT JOIN users creator  ON t.creator_id  = creator.id
-            LEFT JOIN users assignee ON t.assignee_id = assignee.id
+            LEFT JOIN users creator  ON t.creator_id  = creator.id  AND creator.is_active = 1
+            LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1
             WHERE t.is_deleted = 0
               AND t.organization_id = ?
               -- کاربر نباید از راه دیگری (assignee) به تسک وصل باشد
@@ -174,8 +174,8 @@ SELECT DISTINCT
     tg.color as group_color,
     tg.icon as group_icon
 FROM tasks t
-LEFT JOIN users creator ON t.creator_id = creator.id
-LEFT JOIN users assignee ON t.assignee_id = assignee.id
+LEFT JOIN users creator ON t.creator_id = creator.id AND creator.is_active = 1
+LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1
 LEFT JOIN task_groups tg ON t.group_id = tg.id
 LEFT JOIN deadline_requests dr ON t.id = dr.task_id AND dr.status = 'pending'
 LEFT JOIN overdue_clear_requests ocr ON t.id = ocr.task_id AND ocr.status = 'pending'

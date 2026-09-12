@@ -326,8 +326,8 @@ class RequestManager {
                            substitute.first_name as substitute_first_name,
                            substitute.last_name as substitute_last_name
                     FROM requests r
-                    LEFT JOIN users manager ON r.manager_id = manager.id
-                    LEFT JOIN users substitute ON r.substitute_id = substitute.id
+                    LEFT JOIN users manager ON r.manager_id = manager.id AND manager.is_active = 1
+                    LEFT JOIN users substitute ON r.substitute_id = substitute.id AND substitute.is_active = 1
                     WHERE " . implode(' AND ', $where) . "
                     ORDER BY r.created_at DESC";
             
@@ -387,7 +387,7 @@ class RequestManager {
                            requester.phone as requester_phone,
                            requester.activity_section as requester_section
                     FROM requests r
-                    JOIN users requester ON r.user_id = requester.id
+                    JOIN users requester ON r.user_id = requester.id AND requester.is_active = 1
                     WHERE (" . implode(' OR ', $conditions) . ")
                     ORDER BY r.approval_deadline ASC, r.created_at ASC";
 
@@ -417,9 +417,9 @@ class RequestManager {
                            substitute.first_name as substitute_first_name,
                            substitute.last_name as substitute_last_name
                     FROM requests r
-                    JOIN users requester ON r.user_id = requester.id
-                    LEFT JOIN users manager ON r.manager_id = manager.id
-                    LEFT JOIN users substitute ON r.substitute_id = substitute.id
+                    LEFT JOIN users requester ON r.user_id = requester.id AND requester.is_active = 1
+                    LEFT JOIN users manager ON r.manager_id = manager.id AND manager.is_active = 1
+                    LEFT JOIN users substitute ON r.substitute_id = substitute.id AND substitute.is_active = 1
                     WHERE r.id = ?";
             
             $stmt = $this->db->prepare($sql);

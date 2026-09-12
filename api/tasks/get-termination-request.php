@@ -32,7 +32,7 @@ try {
             CONCAT(ru.first_name,' ',ru.last_name) AS requester_name,
             ru.phone AS requester_phone
         FROM task_termination_requests tr
-        JOIN users ru ON tr.requester_id = ru.id
+        LEFT JOIN users ru ON tr.requester_id = ru.id AND ru.is_active = 1
         JOIN tasks t ON tr.task_id = t.id
         WHERE tr.task_id = ? AND tr.status = 'pending'
           AND (

@@ -55,7 +55,7 @@ try {
     $stmt = $db->prepare("
         SELECT u.id, u.first_name, u.last_name, u.avatar_path, cp.joined_at
         FROM chat_participants cp
-        JOIN users u ON u.id = cp.user_id
+        JOIN users u ON u.id = cp.user_id AND u.is_active = 1
         WHERE cp.conversation_id = ?
         ORDER BY (u.id = ?) DESC, cp.joined_at ASC
     ");

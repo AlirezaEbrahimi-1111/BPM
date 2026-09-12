@@ -1088,7 +1088,7 @@ class WorkflowManager
                     TIMESTAMPDIFF(HOUR, wi.started_at, NOW()) as hours_elapsed
                 FROM workflow_instances wi
                 JOIN workflow_templates wt ON wi.template_id = wt.id
-                JOIN users creator ON wi.created_by = creator.id
+                LEFT JOIN users creator ON wi.created_by = creator.id AND creator.is_active = 1
                 WHERE " . implode(' AND ', $where_conditions) . "
                 ORDER BY wi.started_at DESC
             ";
@@ -1116,7 +1116,7 @@ class WorkflowManager
                     CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name
                 FROM workflow_instances wi
                 JOIN workflow_templates wt ON wi.template_id = wt.id
-                JOIN users creator ON wi.created_by = creator.id
+                LEFT JOIN users creator ON wi.created_by = creator.id AND creator.is_active = 1
                 WHERE wi.id = ?
             ";
             $params = [$instance_id];

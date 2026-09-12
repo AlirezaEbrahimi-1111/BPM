@@ -79,7 +79,7 @@ try {
     $stmt = $db->prepare("
         SELECT id, first_name, last_name, activity_section
         FROM users
-        WHERE organization_id = ? AND is_deleted = 0
+        WHERE organization_id = ? AND is_deleted = 0 AND is_active = 1
     ");
     $stmt->execute([$org_id]);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $u) {

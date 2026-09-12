@@ -38,7 +38,7 @@ try {
             r.status,
             CONCAT(u.first_name, ' ', u.last_name) AS requester_name
         FROM task_renewal_requests r
-        LEFT JOIN users u ON u.id = r.requested_by
+        LEFT JOIN users u ON u.id = r.requested_by AND u.is_active = 1
         JOIN tasks t ON r.task_id = t.id
         WHERE r.task_id = ? AND r.status = 'pending'
           AND (

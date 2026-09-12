@@ -138,7 +138,7 @@ try {
                    sec.section_label AS section_name
             FROM task_checklist_items ci
             LEFT JOIN users u
-                   ON (ci.assignee_type = 'user' AND ci.assignee_value = u.id)
+                   ON (ci.assignee_type = 'user' AND ci.assignee_value = u.id AND u.is_active = 1)
             LEFT JOIN organization_activity_sections sec
                    ON (ci.assignee_type = 'section' AND ci.assignee_value = sec.section_key)
             WHERE ci.task_id IN ($placeholders)
@@ -249,8 +249,8 @@ try {
                     )
                 ) AS history_text
             FROM tasks t
-            LEFT JOIN users creator ON t.creator_id = creator.id
-            LEFT JOIN users assignee ON t.assignee_id = assignee.id
+            LEFT JOIN users creator ON t.creator_id = creator.id AND creator.is_active = 1
+            LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1
             LEFT JOIN task_groups tg ON t.group_id = tg.id
             WHERE t.is_deleted = 0 AND t.organization_id = ?
             ORDER BY
@@ -373,8 +373,8 @@ try {
                     )
                 ) AS history_text
         FROM tasks t
-        LEFT JOIN users creator ON t.creator_id = creator.id
-        LEFT JOIN users assignee ON t.assignee_id = assignee.id
+        LEFT JOIN users creator ON t.creator_id = creator.id AND creator.is_active = 1
+        LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1
         LEFT JOIN task_groups tg ON t.group_id = tg.id
         WHERE t.is_deleted = 0
         AND (t.creator_id IN ($placeholders) OR t.assignee_id IN ($placeholders))

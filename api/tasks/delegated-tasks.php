@@ -47,7 +47,7 @@ try {
                    assignee.first_name as assignee_first_name,
                    assignee.last_name as assignee_last_name
             FROM tasks t
-            LEFT JOIN users assignee ON t.assignee_id = assignee.id
+            LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1
             WHERE t.organization_id = ?
               AND t.is_deleted = 0
               AND t.assignee_id IS NOT NULL

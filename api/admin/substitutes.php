@@ -38,7 +38,7 @@ try {
         $stmt = $db->prepare("
             SELECT s.*, u.first_name, u.last_name, u.phone
             FROM substitutes s
-            JOIN users u ON s.substitute_user_id = u.id
+            JOIN users u ON s.substitute_user_id = u.id AND u.is_active = 1
             WHERE s.user_id = ? AND s.is_active = 1
             ORDER BY s.id ASC
         ");

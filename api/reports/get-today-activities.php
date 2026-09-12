@@ -99,7 +99,7 @@ try {
             ) AS effective_due,
             CONCAT(COALESCE(c.first_name,''),' ',COALESCE(c.last_name,'')) as creator_name
         FROM tasks t
-        LEFT JOIN users c ON t.creator_id = c.id
+        LEFT JOIN users c ON t.creator_id = c.id AND c.is_active = 1
         WHERE t.assignee_id = ? AND t.is_deleted = 0
           AND t.status NOT IN ('completed','approved','stopped','rejected')
           AND (t.due_date IS NOT NULL OR t.deadline IS NOT NULL OR t.original_deadline IS NOT NULL)

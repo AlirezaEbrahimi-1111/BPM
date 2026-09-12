@@ -859,8 +859,8 @@ class TaskManager
                         )
                     ) AS history_text
                 FROM tasks t
-                LEFT JOIN users creator ON t.creator_id = creator.id
-                LEFT JOIN users assignee ON t.assignee_id = assignee.id
+                LEFT JOIN users creator ON t.creator_id = creator.id AND creator.is_active = 1
+                LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1
                 INNER JOIN task_history th ON t.id = th.task_id
                 WHERE (th.from_user_id = ? OR th.to_user_id = ?)
                 AND th.action = 'delegated'
@@ -908,8 +908,8 @@ class TaskManager
                             creator.last_name as creator_last_name,
                             CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
                             (SELECT COUNT(*) FROM task_history WHERE task_id = t.id AND action = 'completed') as completed_count
-                        FROM tasks t 
-                        LEFT JOIN users creator ON t.creator_id = creator.id 
+                        FROM tasks t
+                        LEFT JOIN users creator ON t.creator_id = creator.id AND creator.is_active = 1
                         WHERE " . implode(' AND ', $where_conditions) . " and t.is_deleted = 0
                         ORDER BY t.created_at DESC";
 
@@ -1012,9 +1012,9 @@ class TaskManager
                             WHEN t.assignee_id = ? THEN 'assigned'
                             ELSE 'unknown'
                         END as user_role
-                    FROM tasks t 
-                    LEFT JOIN users creator ON t.creator_id = creator.id
-                    LEFT JOIN users assignee ON t.assignee_id = assignee.id
+                    FROM tasks t
+                    LEFT JOIN users creator ON t.creator_id = creator.id AND creator.is_active = 1
+                    LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1
                     LEFT JOIN task_groups tg ON t.group_id = tg.id
                     WHERE " . implode(' AND ', $where_conditions) . " and t.is_deleted = 0
                     ORDER BY 
@@ -1068,7 +1068,7 @@ class TaskManager
                 ) AS history_text,
                 (SELECT COUNT(*) FROM task_history WHERE task_id = t.id AND action = 'completed') as completed_count
             FROM tasks t
-            LEFT JOIN users assignee ON t.assignee_id = assignee.id
+            LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1
             LEFT JOIN users creator_user ON t.creator_id = creator_user.id
             LEFT JOIN organization_activity_sections oas 
                 ON t.activity_section = oas.section_key 
@@ -1140,9 +1140,9 @@ class TaskManager
                             tg.name  as group_name,
                             tg.color as group_color,
                             tg.icon  as group_icon
-                        FROM tasks t 
-                        LEFT JOIN users creator ON t.creator_id = creator.id 
-                        LEFT JOIN users assignee ON t.assignee_id = assignee.id 
+                        FROM tasks t
+                        LEFT JOIN users creator ON t.creator_id = creator.id AND creator.is_active = 1
+                        LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1
                         LEFT JOIN task_groups tg ON t.group_id = tg.id
                         WHERE t.id = ?";
 

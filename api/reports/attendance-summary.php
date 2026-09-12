@@ -43,7 +43,7 @@ try {
     $stmt = $db->prepare("
         SELECT id, first_name, last_name
         FROM users
-        WHERE manager_id = ? AND role = 'employee'
+        WHERE manager_id = ? AND role = 'employee' AND is_active = 1 AND COALESCE(is_deleted, 0) = 0
         ORDER BY first_name, last_name
     ");
     $stmt->execute([$managerId]);

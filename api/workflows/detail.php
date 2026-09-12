@@ -50,7 +50,7 @@ try {
                 ) * 100) as progress
             FROM workflow_instances wi
             LEFT JOIN workflow_templates wt ON wi.template_id = wt.id
-            LEFT JOIN users creator ON wi.created_by = creator.id
+            LEFT JOIN users creator ON wi.created_by = creator.id AND creator.is_active = 1
             WHERE wi.id = ? AND wi.organization_id = ? AND wi.is_deleted = 0";
     
     $stmt = $db->prepare($sql);
@@ -141,7 +141,7 @@ try {
             LEFT JOIN users assignee ON assignee.id = COALESCE(
                 t_cur.assignee_id,
                 CASE WHEN ws.assignee_type = 'user' THEN ws.assignee_user_id END
-            )
+            ) AND assignee.is_active = 1
             WHERE wis.instance_id = ?
             ORDER BY wis.step_order ASC";
     

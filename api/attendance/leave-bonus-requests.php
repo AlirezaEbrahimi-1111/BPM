@@ -30,7 +30,7 @@ try {
         SELECT r.id, r.user_id, r.note, r.requested_minutes, r.balance_at_request, r.created_at,
                u.first_name, u.last_name
         FROM leave_bonus_requests r
-        JOIN users u ON u.id = r.user_id
+        JOIN users u ON u.id = r.user_id AND u.is_active = 1
         WHERE r.organization_id = ? AND r.status = 'pending'
         ORDER BY r.created_at ASC
     ");

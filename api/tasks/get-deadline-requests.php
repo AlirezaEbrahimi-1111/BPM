@@ -44,7 +44,7 @@ try {
                t.deadline as current_deadline,
                t.assignee_id
         FROM deadline_requests dr
-        JOIN users u1 ON dr.requested_by = u1.id
+        LEFT JOIN users u1 ON dr.requested_by = u1.id AND u1.is_active = 1
         JOIN tasks t ON dr.task_id = t.id
         WHERE dr.task_id = ? 
         AND dr.status = 'pending'

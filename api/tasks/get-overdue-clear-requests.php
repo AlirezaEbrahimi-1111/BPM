@@ -36,7 +36,7 @@ try {
                u.last_name  AS requester_last_name,
                t.assignee_id
         FROM overdue_clear_requests r
-        JOIN users u ON r.requested_by = u.id
+        LEFT JOIN users u ON r.requested_by = u.id AND u.is_active = 1
         JOIN tasks t ON r.task_id = t.id
         WHERE r.task_id = ? AND r.status = 'pending'
           AND (r.current_approver_id = ? OR t.assignee_id = ? OR r.requested_by = ?)

@@ -151,19 +151,19 @@ try {
                  FROM workflow_instance_steps wis
                  JOIN workflow_steps ws ON wis.step_id = ws.id
                  LEFT JOIN tasks t ON t.id = wis.task_id
-                 LEFT JOIN users u ON u.id = COALESCE(t.assignee_id, CASE WHEN ws.assignee_type = 'user' THEN ws.assignee_user_id END)
+                 LEFT JOIN users u ON u.id = COALESCE(t.assignee_id, CASE WHEN ws.assignee_type = 'user' THEN ws.assignee_user_id END) AND u.is_active = 1
                  WHERE wis.instance_id = wi.id AND wis.status IN ('active', 'delayed')
                  LIMIT 1) as assignee_first_name,
                 (SELECT u.last_name
                  FROM workflow_instance_steps wis
                  JOIN workflow_steps ws ON wis.step_id = ws.id
                  LEFT JOIN tasks t ON t.id = wis.task_id
-                 LEFT JOIN users u ON u.id = COALESCE(t.assignee_id, CASE WHEN ws.assignee_type = 'user' THEN ws.assignee_user_id END)
+                 LEFT JOIN users u ON u.id = COALESCE(t.assignee_id, CASE WHEN ws.assignee_type = 'user' THEN ws.assignee_user_id END) AND u.is_active = 1
                  WHERE wis.instance_id = wi.id AND wis.status IN ('active', 'delayed')
                  LIMIT 1) as assignee_last_name
             FROM workflow_instances wi
             LEFT JOIN workflow_templates wt ON wi.template_id = wt.id
-            LEFT JOIN users creator ON wi.created_by = creator.id
+            LEFT JOIN users creator ON wi.created_by = creator.id AND creator.is_active = 1
             WHERE wi.organization_id = :org_id
             AND wi.is_deleted = 0
             $visibilityCond

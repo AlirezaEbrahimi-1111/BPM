@@ -27,7 +27,7 @@ try {
     $stmt = $db->prepare("
         SELECT lr.*, u.first_name, u.last_name, u.phone
         FROM leave_requests lr
-        JOIN users u ON lr.user_id = u.id
+        JOIN users u ON lr.user_id = u.id AND u.is_active = 1
         WHERE lr.substitute_id = ? 
         AND lr.substitute_approval = 'pending'
         AND lr.status = 'pending'
@@ -56,7 +56,7 @@ try {
     $stmt = $db->prepare("
         SELECT lr.*, u.first_name, u.last_name, u.phone
         FROM leave_requests lr
-        JOIN users u ON lr.user_id = u.id
+        JOIN users u ON lr.user_id = u.id AND u.is_active = 1
         WHERE lr.manager_id = ? 
         AND lr.manager_approval = 'pending'
         AND lr.status = 'pending'
@@ -86,7 +86,7 @@ try {
     $stmt = $db->prepare("
         SELECT mr.*, u.first_name, u.last_name, u.phone
         FROM mission_requests mr
-        JOIN users u ON mr.user_id = u.id
+        JOIN users u ON mr.user_id = u.id AND u.is_active = 1
         WHERE mr.manager_id = ? 
         AND mr.manager_approval = 'pending'
         AND mr.status = 'pending'
@@ -116,7 +116,7 @@ try {
     $stmt = $db->prepare("
         SELECT fr.*, u.first_name, u.last_name, u.phone
         FROM forget_requests fr
-        JOIN users u ON fr.user_id = u.id
+        JOIN users u ON fr.user_id = u.id AND u.is_active = 1
         WHERE fr.manager_id = ? 
         AND fr.manager_approval = 'pending'
         AND fr.status = 'pending'
@@ -145,7 +145,7 @@ try {
         $stmt = $db->prepare("
             SELECT ti.*, u.first_name, u.last_name, u.phone
             FROM technical_issues ti
-            JOIN users u ON ti.user_id = u.id
+            JOIN users u ON ti.user_id = u.id AND u.is_active = 1
             WHERE ti.status = 'pending'
             ORDER BY ti.created_at ASC
         ");
@@ -175,7 +175,7 @@ try {
         $stmt = $db->prepare("
             SELECT lr.*, u.first_name, u.last_name, u.phone
             FROM leave_requests lr
-            JOIN users u ON lr.user_id = u.id
+            JOIN users u ON lr.user_id = u.id AND u.is_active = 1
             WHERE lr.supervisor_approval = 'pending'
             AND lr.status = 'pending'
             AND lr.substitute_approval = 'approved'
@@ -205,7 +205,7 @@ try {
         $stmt = $db->prepare("
             SELECT mr.*, u.first_name, u.last_name, u.phone
             FROM mission_requests mr
-            JOIN users u ON mr.user_id = u.id
+            JOIN users u ON mr.user_id = u.id AND u.is_active = 1
             WHERE mr.supervisor_approval = 'pending'
             AND mr.status = 'pending'
             AND mr.manager_approval = 'approved'
@@ -235,7 +235,7 @@ try {
         $stmt = $db->prepare("
             SELECT fr.*, u.first_name, u.last_name, u.phone
             FROM forget_requests fr
-            JOIN users u ON fr.user_id = u.id
+            JOIN users u ON fr.user_id = u.id AND u.is_active = 1
             WHERE fr.supervisor_approval = 'pending'
             AND fr.status = 'pending'
             AND fr.manager_approval = 'approved'

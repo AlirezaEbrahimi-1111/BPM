@@ -443,7 +443,7 @@ if ($user_id) {
             u.last_name as requester_last_name,
             'manager' as my_role
         FROM mission_requests m
-        JOIN users u ON m.user_id = u.id
+        JOIN users u ON m.user_id = u.id AND u.is_active = 1
         WHERE u.manager_id = ?
         AND m.manager_approval = 'pending'
         AND m.status = 'pending'
@@ -475,7 +475,7 @@ if ($user_id) {
                 u.last_name as requester_last_name,
                 'supervisor' as my_role
             FROM mission_requests m
-            JOIN users u ON m.user_id = u.id
+            JOIN users u ON m.user_id = u.id AND u.is_active = 1
             WHERE m.manager_approval = 'approved'
             AND m.supervisor_approval = 'pending'
             AND m.status = 'pending'
@@ -503,7 +503,7 @@ if ($user_id) {
             u.last_name as requester_last_name,
             'substitute' as my_role
         FROM leave_requests l
-        JOIN users u ON l.user_id = u.id
+        JOIN users u ON l.user_id = u.id AND u.is_active = 1
         JOIN substitutes s ON s.user_id = l.user_id AND s.substitute_user_id = ? AND s.is_active = 1
         WHERE l.substitute_approval = 'pending'
         AND l.status = 'pending'
@@ -529,7 +529,7 @@ if ($user_id) {
             u.last_name as requester_last_name,
             'manager' as my_role
         FROM leave_requests l
-        JOIN users u ON l.user_id = u.id
+        JOIN users u ON l.user_id = u.id AND u.is_active = 1
         WHERE u.manager_id = ?
         AND l.substitute_approval = 'approved'
         AND l.manager_approval = 'pending'
@@ -557,7 +557,7 @@ if ($user_id) {
                 u.last_name as requester_last_name,
                 'supervisor' as my_role
             FROM leave_requests l
-            JOIN users u ON l.user_id = u.id
+            JOIN users u ON l.user_id = u.id AND u.is_active = 1
             WHERE l.manager_approval = 'approved'
             AND l.supervisor_approval = 'pending'
             AND l.status = 'pending'
@@ -584,7 +584,7 @@ if ($user_id) {
             u.last_name as requester_last_name,
             'manager' as my_role
         FROM forget_requests f
-        JOIN users u ON f.user_id = u.id
+        JOIN users u ON f.user_id = u.id AND u.is_active = 1
         WHERE u.manager_id = ?
         AND f.manager_approval = 'pending'
         AND f.status = 'pending'
@@ -610,7 +610,7 @@ if ($user_id) {
                 u.last_name as requester_last_name,
                 'supervisor' as my_role
             FROM forget_requests f
-            JOIN users u ON f.user_id = u.id
+            JOIN users u ON f.user_id = u.id AND u.is_active = 1
             WHERE f.manager_approval = 'approved'
             AND f.supervisor_approval = 'pending'
             AND f.status = 'pending'
@@ -636,7 +636,7 @@ if ($user_id) {
                 u.last_name as requester_last_name,
                 'admin' as my_role
             FROM technical_issues t
-            JOIN users u ON t.user_id = u.id
+            JOIN users u ON t.user_id = u.id AND u.is_active = 1
             WHERE t.status = 'pending'
             AND u.organization_id = ?
         ");
@@ -684,7 +684,7 @@ if ($user_id) {
         ? "CONCAT(u.first_name, ' ', u.last_name) as user_full_name,"
         : "NULL as user_full_name,";
     $user_join = $is_admin_role
-        ? "JOIN users u ON mr.user_id = u.id"
+        ? "JOIN users u ON mr.user_id = u.id AND u.is_active = 1"
         : "";
 
     // دریافت درخواست‌های مأموریت
@@ -731,7 +731,7 @@ if ($user_id) {
             $user_name_select
             lr.user_id
         FROM leave_requests lr
-        " . ($is_admin_role ? "JOIN users u ON lr.user_id = u.id" : "") . "
+        " . ($is_admin_role ? "JOIN users u ON lr.user_id = u.id AND u.is_active = 1" : "") . "
         WHERE lr.user_id IN ($placeholders)
         ORDER BY lr.created_at DESC
     ");
@@ -754,7 +754,7 @@ if ($user_id) {
             $user_name_select
             pr.user_id
         FROM pass_requests pr
-        " . ($is_admin_role ? "JOIN users u ON pr.user_id = u.id" : "") . "
+        " . ($is_admin_role ? "JOIN users u ON pr.user_id = u.id AND u.is_active = 1" : "") . "
         WHERE pr.user_id IN ($placeholders)
         ORDER BY pr.created_at DESC
     ");
@@ -780,7 +780,7 @@ if ($user_id) {
                 $user_name_select
                 fr.user_id
             FROM forget_requests fr
-            " . ($is_admin_role ? "JOIN users u ON fr.user_id = u.id" : "") . "
+            " . ($is_admin_role ? "JOIN users u ON fr.user_id = u.id AND u.is_active = 1" : "") . "
             WHERE fr.user_id IN ($placeholders)
             ORDER BY fr.created_at DESC
         ");
@@ -806,7 +806,7 @@ if ($user_id) {
                 $user_name_select
                 ti.user_id
             FROM technical_issues ti
-            " . ($is_admin_role ? "JOIN users u ON ti.user_id = u.id" : "") . "
+            " . ($is_admin_role ? "JOIN users u ON ti.user_id = u.id AND u.is_active = 1" : "") . "
             WHERE ti.user_id IN ($placeholders)
             ORDER BY ti.created_at DESC
         ");
