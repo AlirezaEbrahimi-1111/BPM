@@ -16,6 +16,11 @@
 //	POST   /go/api/reports/generate → پورتِ api/reports/generate.php
 //	GET    /go/api/attendance/today-status → پورتِ api/attendance/today-status.php
 //	GET    /go/api/attendance/absent-today → پورتِ api/attendance/absent-today.php
+//	GET    /go/api/notifications/list      → پورتِ api/notifications/list.php
+//	GET    /go/api/notifications/new       → پورتِ api/notifications/new.php
+//	POST   /go/api/notifications/mark-read → پورتِ api/notifications/mark-read.php
+//	POST   /go/api/notifications/mark-all-read → پورتِ api/notifications/mark-all-read.php
+//	POST   /go/api/notifications/delete    → پورتِ api/notifications/delete.php
 //
 // عمداً پورت نشده: api/attendance/register.php (ثبتِ ورود/خروج) و هر منطقِ
 // محاسبه‌ی کسری/حقوق — ریسکِ مالی/عملیاتی‌شان بالاست؛ نیازمندِ تصمیمِ
@@ -43,6 +48,7 @@ import (
 
 	"bmp/go-api/internal/attendance"
 	"bmp/go-api/internal/core"
+	"bmp/go-api/internal/notifications"
 	"bmp/go-api/internal/reports"
 )
 
@@ -135,6 +141,13 @@ func main() {
 	// ── ماژولِ حضور و غیاب — فقط بخشِ خواندنی (پورتِ api/attendance/*) ──
 	mux.HandleFunc("GET /go/api/attendance/today-status", s.auth(attendance.TodayStatus(s.db)))
 	mux.HandleFunc("GET /go/api/attendance/absent-today", s.auth(attendance.AbsentToday(s.db)))
+
+	// ── ماژولِ اعلان‌ها (پورتِ api/notifications/*) ──
+	mux.HandleFunc("GET /go/api/notifications/list", s.auth(notifications.List(s.db)))
+	mux.HandleFunc("GET /go/api/notifications/new", s.auth(notifications.New(s.db)))
+	mux.HandleFunc("POST /go/api/notifications/mark-read", s.auth(notifications.MarkRead(s.db)))
+	mux.HandleFunc("POST /go/api/notifications/mark-all-read", s.auth(notifications.MarkAllRead(s.db)))
+	mux.HandleFunc("POST /go/api/notifications/delete", s.auth(notifications.Delete(s.db)))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{
