@@ -1,6 +1,9 @@
 package core
 
-import "database/sql"
+import (
+	"database/sql"
+	"strings"
+)
 
 // ─── پورتِ دقیقِ includes/permissions.php ───────────────────────────
 //
@@ -148,6 +151,63 @@ func HasPermission(u *PermUser, permission string) bool {
 		}
 	}
 	return false
+}
+
+// GetSubordinateIds — پورتِ دقیقِ getSubordinateIds(): همه‌ی زیردستانِ یک
+// مدیر با هر عمقی (زنجیره‌ی کاملِ manager_id)، با محافظِ حلقه (سقفِ ۵۰۰
+// مرحله) و مرزِ سازمان (هرگز از organization_id مدیر عبور نمی‌کند).
+func GetSubordinateIds(db *sql.DB, managerID int64) ([]int64, error) {
+	var orgID sql.NullInt64
+	err := db.QueryRow("SELECT organization_id FROM users WHERE id = ?", managerID).Scan(&orgID)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	if !orgID.Valid {
+		return []int64{}, nil
+	}
+
+	subordinates := []int64{}
+	visited := map[int64]bool{managerID: true}
+	frontier := []int64{managerID}
+
+	for guard := 0; len(frontier) > 0 && guard < 500; guard++ {
+		placeholders := make([]string, len(frontier))
+		args := make([]any, 0, len(frontier)+1)
+		for i, id := range frontier {
+			placeholders[i] = "?"
+			args = append(args, id)
+		}
+		args = append(args, orgID.Int64)
+
+		rows, err := db.Query(`
+			SELECT id FROM users
+			WHERE manager_id IN (`+strings.Join(placeholders, ",")+`)
+			  AND organization_id = ?
+			  AND (is_deleted = 0 OR is_deleted IS NULL)
+		`, args...)
+		if err != nil {
+			return nil, err
+		}
+
+		var next []int64
+		for rows.Next() {
+			var id int64
+			if err := rows.Scan(&id); err != nil {
+				rows.Close()
+				return nil, err
+			}
+			if visited[id] {
+				continue
+			}
+			visited[id] = true
+			subordinates = append(subordinates, id)
+			next = append(next, id)
+		}
+		rows.Close()
+		frontier = next
+	}
+
+	return subordinates, nil
 }
 
 // IsSameOrg — isSameOrganization(): سوپرادمین مستثناست.

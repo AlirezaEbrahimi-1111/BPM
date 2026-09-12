@@ -22,6 +22,8 @@
 //	POST   /go/api/notifications/mark-all-read → پورتِ api/notifications/mark-all-read.php
 //	POST   /go/api/notifications/delete    → پورتِ api/notifications/delete.php
 //	GET    /go/api/announcements/list      → پورتِ api/announcements/list.php
+//	GET    /go/api/tickets/list            → پورتِ api/tickets/list.php
+//	POST   /go/api/tickets/mark-all-read   → پورتِ api/tickets/mark-all-read.php
 //
 // عمداً پورت نشده: api/attendance/register.php (ثبتِ ورود/خروج) و هر منطقِ
 // محاسبه‌ی کسری/حقوق — ریسکِ مالی/عملیاتی‌شان بالاست؛ نیازمندِ تصمیمِ
@@ -52,6 +54,7 @@ import (
 	"bmp/go-api/internal/core"
 	"bmp/go-api/internal/notifications"
 	"bmp/go-api/internal/reports"
+	"bmp/go-api/internal/tickets"
 )
 
 type server struct {
@@ -153,6 +156,10 @@ func main() {
 
 	// ── ماژولِ اطلاعیه‌ها — فقط بخشِ خواندنی (پورتِ api/announcements/list.php) ──
 	mux.HandleFunc("GET /go/api/announcements/list", s.auth(announcements.List(s.db)))
+
+	// ── ماژولِ تیکت‌ها — فقط لیست + علامت‌گذاریِ همه‌خوانده‌شده ──
+	mux.HandleFunc("GET /go/api/tickets/list", s.auth(tickets.List(s.db)))
+	mux.HandleFunc("POST /go/api/tickets/mark-all-read", s.auth(tickets.MarkAllRead(s.db)))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{
