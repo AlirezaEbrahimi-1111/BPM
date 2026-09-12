@@ -111,25 +111,81 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             cursor: pointer;
         }
 
-        .pm-sel,
-        .pm-mo-code {
-            font-size: 12px;
-            padding: 2px 4px;
-            border: 1px solid var(--border-soft, #d1d5db);
-            border-radius: 6px;
-            background: var(--surface, #fff);
-            color: inherit;
-            max-width: 100%;
+        /* تسویه/مودیان دیگر <select> داخلِ سلول نیستند (کشویی‌شان بیرونِ
+           فضایِ ردیفِ AG-Grid کلیپ می‌شد) — فقط بجِ وضعیت + دکمهٔ ویرایش
+           که مودالِ جداگانه باز می‌کند. */
+        .pm-badge {
+            display: inline-block;
+            padding: 0 9px;
+            line-height: 1.7;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 500;
+            white-space: nowrap;
         }
 
-        .pm-moadian-cell {
-            display: flex;
-            gap: 4px;
+        .pm-badge.unsettled, .pm-badge.unregistered {
+            background: rgba(107, 114, 128, .16);
+            color: #4b5563;
+        }
+
+        .pm-badge.partial {
+            background: rgba(245, 158, 11, .16);
+            color: #b45309;
+        }
+
+        .pm-badge.settled, .pm-badge.registered {
+            background: rgba(16, 122, 87, .14);
+            color: #0f7a57;
+        }
+
+        :root[data-theme="dark"] .pm-badge.unsettled, :root[data-theme="dark"] .pm-badge.unregistered {
+            color: #cbd5e1;
+        }
+
+        .ag-action-btn {
+            display: inline-flex;
             align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 9px;
+            border: 1px solid #e9e9e9;
+            background: #fff;
+            cursor: pointer;
+            font-size: .8rem;
+            color: #8e57fe;
+            transition: background .12s, border-color .12s;
         }
 
-        .pm-mo-code {
-            width: 92px;
+        .ag-action-btn:hover {
+            background: rgba(142, 87, 254, .12);
+            border-color: rgba(142, 87, 254, .12);
+        }
+
+        :root[data-theme="dark"] .ag-action-btn {
+            background: var(--surface);
+            border-color: var(--border-soft);
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .ag-action-btn:hover {
+            background: rgba(142, 87, 254, .18);
+        }
+
+        /* ماهِ جاری در ویرایشگرِ درصدها برجسته شود */
+        .pm-months .m.m-current input {
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 .15rem rgba(142, 87, 254, .15);
+        }
+
+        .pm-cur-badge {
+            background: rgba(142, 87, 254, .15);
+            color: #8e57fe;
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 8px;
+            margin-inline-start: 3px;
         }
 
         .pm-months {
@@ -142,10 +198,11 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             display: flex;
             align-items: center;
             gap: 6px;
+            flex-wrap: wrap;
         }
 
         .pm-months .m label {
-            width: 62px;
+            min-width: 62px;
             font-size: 12px;
         }
 
@@ -158,13 +215,6 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         #pmAddBtn,
         #pmSelYear {
             height: 38px;
-        }
-
-        :root[data-theme="dark"] .pm-sel,
-        :root[data-theme="dark"] .pm-mo-code {
-            background: var(--surface);
-            border-color: var(--border-soft);
-            color: var(--text-strong);
         }
 
         :root[data-theme="dark"] .report-summary {
@@ -293,6 +343,46 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         </div>
     </div>
 
+    <!-- ── مودالِ ویرایشِ وضعیتِ یک فاکتور (تسویه/مودیان) ──
+         عمداً به‌جایِ <select> داخلِ سلولِ جدول: کشوییِ آن داخلِ ردیفِ
+         AG-Grid کلیپ می‌شد و بخشی از گزینه‌ها دیده نمی‌شد. -->
+    <div class="modal fade" id="pmStatusModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">ویرایشِ وضعیتِ فاکتور <span id="pmStIdLbl"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="pmStAlert"></div>
+                    <div class="mb-3">
+                        <label class="form-label">وضعیتِ تسویه</label>
+                        <select id="pmStSettlement" class="form-select">
+                            <option value="unsettled">تسویه نشده</option>
+                            <option value="settled">تسویه شده</option>
+                            <option value="partial">بخشی تسویه شده</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">وضعیتِ مودیان</label>
+                        <select id="pmStMoadian" class="form-select">
+                            <option value="unregistered">ثبت نشده</option>
+                            <option value="registered">ثبت شده</option>
+                        </select>
+                    </div>
+                    <div class="mb-1" id="pmStCodeWrap">
+                        <label class="form-label">کدِ ثبت در سامانه</label>
+                        <input id="pmStCode" class="form-control" placeholder="کدِ ثبت در سامانهٔ مودیان">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="button" class="btn btn-primary" id="pmStSaveBtn">ذخیره</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php include 'footer.php'; ?>
 
     <script>
@@ -370,21 +460,31 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             return d;
         }
 
-        // سالِ شمسیِ امروز
-        function currentJY() {
+        // سال و ماهِ شمسیِ امروز
+        function currentJYM() {
             try {
                 const t = new Date();
                 const g = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' +
                     String(t.getDate()).padStart(2, '0');
                 const j = (typeof convertToJalali === 'function') ? convertToJalali(g) : '';
-                const y = parseInt(String(j).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).split(/[\/\-]/)[0], 10);
-                return (y > 1300 && y < 1500) ? y : 1404;
+                const parts = String(j).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).split(/[\/\-]/);
+                const y = parseInt(parts[0], 10),
+                    m = parseInt(parts[1], 10);
+                return {
+                    jy: (y > 1300 && y < 1500) ? y : 1404,
+                    jm: (m >= 1 && m <= 12) ? m : 1,
+                };
             } catch (e) {
-                return 1404;
+                return {
+                    jy: 1404,
+                    jm: 1
+                };
             }
         }
 
-        const CUR_JY = currentJY();
+        const CUR_JYM = currentJYM();
+        const CUR_JY = CUR_JYM.jy;
+        const CUR_JM = CUR_JYM.jm;
         let gridApi = null,
             allRows = [],
             partners = [];
@@ -405,27 +505,34 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             return `<input type="checkbox" class="pm-chk" ${p.value ? 'checked' : ''} onchange="pmToggleProfit(${p.data.id}, this.checked)">`;
         }
 
+        const SETTLE_LABEL = {
+            unsettled: 'تسویه نشده',
+            settled: 'تسویه شده',
+            partial: 'بخشی تسویه شده'
+        };
+        const MOADIAN_LABEL = {
+            unregistered: 'ثبت نشده',
+            registered: 'ثبت شده'
+        };
+
+        // فقط نمایش — ویرایش از مودالِ pmStatusModal (pmEditStatus) انجام می‌شود.
         function settleCell(p) {
             const v = p.value || 'unsettled';
-            return `<select class="pm-sel" onchange="pmSetSettlement(${p.data.id}, this.value)">
-                <option value="unsettled" ${v==='unsettled'?'selected':''}>تسویه نشده</option>
-                <option value="settled" ${v==='settled'?'selected':''}>تسویه شده</option>
-                <option value="partial" ${v==='partial'?'selected':''}>بخشی تسویه شده</option>
-            </select>`;
+            return `<span class="pm-badge ${v}">${SETTLE_LABEL[v] || v}</span>`;
         }
 
         function moadianCell(p) {
             const d = p.data;
-            const reg = d.moadian_status === 'registered';
-            const code = String(d.moadian_code || '').replace(/"/g, '&quot;');
-            return `<div class="pm-moadian-cell">
-                <select class="pm-sel pm-mo-status" data-id="${d.id}" onchange="pmSetMoadian(${d.id})">
-                    <option value="unregistered" ${!reg?'selected':''}>ثبت نشده</option>
-                    <option value="registered" ${reg?'selected':''}>ثبت شده</option>
-                </select>
-                <input class="pm-mo-code" data-id="${d.id}" value="${code}" placeholder="کدِ سامانه"
-                    ${reg?'':'hidden'} onchange="pmSetMoadian(${d.id})">
-            </div>`;
+            const v = d.moadian_status || 'unregistered';
+            let html = `<span class="pm-badge ${v}">${MOADIAN_LABEL[v] || v}</span>`;
+            if (v === 'registered' && d.moadian_code) {
+                html += ` <span class="text-muted" style="font-size:11px">${faDigits(esc(d.moadian_code))}</span>`;
+            }
+            return html;
+        }
+
+        function statusActionCell(p) {
+            return `<button class="ag-action-btn" title="ویرایشِ وضعیتِ تسویه/مودیان" onclick="pmEditStatus(${p.data.id})"><i class="bi bi-pencil"></i></button>`;
         }
 
         const colDefs = [{
@@ -490,16 +597,23 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             {
                 headerName: 'تسویه',
                 field: 'settlement_status',
-                width: 150,
+                width: 130,
                 sortable: false,
                 cellRenderer: settleCell
             },
             {
                 headerName: 'مودیان',
                 field: 'moadian_status',
-                width: 210,
+                width: 150,
                 sortable: false,
                 cellRenderer: moadianCell
+            },
+            {
+                headerName: '',
+                width: 54,
+                sortable: false,
+                filter: false,
+                cellRenderer: statusActionCell
             },
         ];
 
@@ -574,44 +688,54 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             }
         }
 
-        async function pmSetSettlement(id, val) {
-            try {
-                await apiPatch('/inv/invoices/' + id + '/partner-status', {
-                    settlement_status: val
-                });
-                const row = allRows.find(r => r.id === id);
-                if (row) row.settlement_status = val;
-                showToast('ذخیره شد', 'success');
-            } catch (e) {
-                showToast(e.message || 'خطا', 'error');
-                loadReport();
-            }
+        // ── ویرایشِ تسویه/مودیان از مودال (نه <select> داخلِ سلول — کشوییِ
+        //    آن داخلِ ردیفِ AG-Grid کلیپ می‌شد و بخشی از گزینه‌ها دیده نمی‌شد) ──
+        let pmStRow = null;
+
+        function pmStToggleCode() {
+            const reg = document.getElementById('pmStMoadian').value === 'registered';
+            document.getElementById('pmStCodeWrap').hidden = !reg;
         }
 
-        async function pmSetMoadian(id) {
-            const sel = document.querySelector('.pm-mo-status[data-id="' + id + '"]');
-            const inp = document.querySelector('.pm-mo-code[data-id="' + id + '"]');
-            if (!sel || !inp) return;
-            const status = sel.value;
-            inp.hidden = status !== 'registered';
-            if (status === 'registered' && !inp.value.trim()) {
-                inp.focus();
-                return; // منتظرِ کدِ سامانه بمان
+        function pmEditStatus(id) {
+            const row = allRows.find(r => r.id === id);
+            if (!row) return;
+            pmStRow = row;
+            document.getElementById('pmStIdLbl').textContent = row.number ? ('#' + faDigits(row.number)) : '';
+            document.getElementById('pmStSettlement').value = row.settlement_status || 'unsettled';
+            document.getElementById('pmStMoadian').value = row.moadian_status || 'unregistered';
+            document.getElementById('pmStCode').value = row.moadian_code || '';
+            pmStToggleCode();
+            document.getElementById('pmStAlert').innerHTML = '';
+            new bootstrap.Modal(document.getElementById('pmStatusModal')).show();
+        }
+
+        async function pmSaveStatus() {
+            if (!pmStRow) return;
+            const settlement = document.getElementById('pmStSettlement').value;
+            const moadian = document.getElementById('pmStMoadian').value;
+            const code = document.getElementById('pmStCode').value.trim();
+            const alertBox = msg => document.getElementById('pmStAlert').innerHTML =
+                msg ? `<div class="alert alert-danger py-2">${msg}</div>` : '';
+            if (moadian === 'registered' && !code) {
+                alertBox('برایِ «مودیان ثبت‌شده» کدِ ثبت در سامانه لازم است.');
+                return;
             }
+            alertBox('');
             try {
-                await apiPatch('/inv/invoices/' + id + '/partner-status', {
-                    moadian_status: status,
-                    moadian_code: status === 'registered' ? inp.value.trim() : ''
+                await apiPatch('/inv/invoices/' + pmStRow.id + '/partner-status', {
+                    settlement_status: settlement,
+                    moadian_status: moadian,
+                    moadian_code: moadian === 'registered' ? code : '',
                 });
-                const row = allRows.find(r => r.id === id);
-                if (row) {
-                    row.moadian_status = status;
-                    row.moadian_code = status === 'registered' ? inp.value.trim() : '';
-                }
+                pmStRow.settlement_status = settlement;
+                pmStRow.moadian_status = moadian;
+                pmStRow.moadian_code = moadian === 'registered' ? code : '';
+                gridApi.setGridOption('rowData', allRows);
+                bootstrap.Modal.getInstance(document.getElementById('pmStatusModal')).hide();
                 showToast('ذخیره شد', 'success');
             } catch (e) {
-                showToast(e.message || 'خطا', 'error');
-                loadReport();
+                alertBox(e.message || 'خطا');
             }
         }
 
@@ -711,9 +835,10 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             const byM = {};
             months.forEach(m => byM[m.jm] = m.percent);
             for (let m = 1; m <= 12; m++) {
+                const isCur = (jy === CUR_JY && m === CUR_JM);
                 const div = document.createElement('div');
-                div.className = 'm';
-                div.innerHTML = `<label>${MONTHS[m-1]}</label>
+                div.className = 'm' + (isCur ? ' m-current' : '');
+                div.innerHTML = `<label>${MONTHS[m-1]}${isCur ? ' <span class="pm-cur-badge">ماهِ جاری</span>' : ''}</label>
                     <input type="number" step="0.001" min="0" max="100" class="form-control form-control-sm pm-month-inp"
                         data-jm="${m}" value="${byM[m] != null ? byM[m] : ''}" placeholder="۰">`;
                 wrap.appendChild(div);
@@ -772,11 +897,20 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 pmAlert('');
                 new bootstrap.Modal(document.getElementById('pmModal')).show();
             });
+            document.getElementById('pmModal').addEventListener('shown.bs.modal', () => {
+                document.getElementById('pmSelPartner').focus();
+            });
+            document.getElementById('pmStatusModal').addEventListener('shown.bs.modal', () => {
+                document.getElementById('pmStSettlement').focus();
+            });
             document.getElementById('pmAddBtn').addEventListener('click', pmAddPartner);
             document.getElementById('pmSelPartner').addEventListener('change', pmOnSelectPartner);
             document.getElementById('pmSelYear').addEventListener('change', pmLoadShares);
             document.getElementById('pmSaveBtn').addEventListener('click', pmSavePartner);
             document.getElementById('pmModal').addEventListener('hidden.bs.modal', loadReport);
+
+            document.getElementById('pmStMoadian').addEventListener('change', pmStToggleCode);
+            document.getElementById('pmStSaveBtn').addEventListener('click', pmSaveStatus);
 
             loadPartners().then(loadReport);
         });
