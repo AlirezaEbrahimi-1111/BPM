@@ -3142,9 +3142,13 @@ ${task.overdue_periods > 0 ? `
                 const deadlineElement = document.getElementById('deadlineValue');
                 if (deadlineElement) {
                     if (task.is_workflow_task == 1) {
-                        // کارِ روتین: موعد ساعتی، مستقیم از ستونِ deadline
-                        deadlineElement.textContent = task.deadline
-                            ? formatDateTime(task.deadline)
+                        // کارِ روتین: موعدِ ساعتی. منبعِ حقیقت workflow_instance_steps.deadline
+                        // است (current_step_deadline)؛ tasks.deadline گاهی با آن هم‌خوان
+                        // نیست (مثلِ تسکِ ۶۱۵ که ستونِ tasks.deadline خالی مانده بود ولی
+                        // موعدِ مرحله درست محاسبه شده بود) — پس هر دو را با هم چک کن.
+                        const wfDeadline = task.deadline || task.current_step_deadline;
+                        deadlineElement.textContent = wfDeadline
+                            ? formatDateTime(wfDeadline)
                             : 'بدون موعد';
                     } else {
                         // کارِ مقطعی: «موعد انجام» = جدیدترین از میان

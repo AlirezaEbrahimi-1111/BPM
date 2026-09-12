@@ -138,7 +138,7 @@ try {
                 // ✅ بخش و وضعیتِ مرحلهٔ خودِ این تسک (نه current_step) — لازم برای حالت موازی
                 $stmt = $db->prepare("
                     SELECT ws.activity_section, wis.status AS step_status,
-                           wis.step_description
+                           wis.step_description, wis.deadline AS step_deadline
                     FROM workflow_instance_steps wis
                     JOIN workflow_steps ws ON wis.step_id = ws.id
                     WHERE wis.instance_id = ?
@@ -153,6 +153,11 @@ try {
                 $task['current_step_section'] = $stepInfo ? $stepInfo['activity_section'] : null;
                 $task['current_step_status']  = $stepInfo ? $stepInfo['step_status'] : null;
                 $task['current_step_description'] = ($stepInfo && isset($stepInfo['step_description'])) ? $stepInfo['step_description'] : null;
+                // 🔒 منبعِ حقیقتِ موعدِ کارهایِ روتین، workflow_instance_steps.deadline
+                // است، نه tasks.deadline — این دو گاهی به‌هم‌نمی‌خورَند (مثلِ تسکِ
+                // ۶۱۵: tasks.deadline خالی مانده بود ولی موعدِ مرحله درست بود) و
+                // نمایش (updateDeadlineDisplay) فقط tasks.deadline را می‌خواند.
+                $task['current_step_deadline'] = ($stepInfo && !empty($stepInfo['step_deadline'])) ? $stepInfo['step_deadline'] : null;
             }
         } catch (Exception $e) {
             error_log("❌ Error getting workflow step: " . $e->getMessage());
