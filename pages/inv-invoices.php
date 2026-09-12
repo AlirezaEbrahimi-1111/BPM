@@ -101,13 +101,15 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             background: rgba(142, 87, 254, .18);
         }
 
+        /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) —
+           فقط رنگ‌ها مخصوصِ وضعیتِ فاکتور هستند، شکل/اندازه یکسان شد */
         .st-badge {
             display: inline-block;
-            padding: 0 10px;
-            line-height: 1.7;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 500;
+            padding: 7px 10px;
+            border-radius: var(--badge-radius, 7px);
+            font-size: 0.7rem;
+            font-weight: var(--badge-font-weight, 500);
+            text-align: center;
         }
 
         .num-ltr {
@@ -138,13 +140,14 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         /* بجِ وضعیتِ تسویه/مودیان — فقط نمایش؛ ویرایش از مودالِ جداگانه
            (نه <select> داخلِ سلولِ جدول، چون کشویی‌اش داخلِ ردیفِ AG-Grid
            کلیپ می‌شود و بخشی از گزینه‌ها دیده نمی‌شود). */
+        /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) */
         .pm-badge {
             display: inline-block;
-            padding: 0 9px;
-            line-height: 1.7;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 500;
+            padding: 7px 10px;
+            border-radius: var(--badge-radius, 7px);
+            font-size: 0.7rem;
+            font-weight: var(--badge-font-weight, 500);
+            text-align: center;
             white-space: nowrap;
         }
 

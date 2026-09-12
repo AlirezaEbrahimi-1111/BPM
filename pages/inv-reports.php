@@ -279,6 +279,21 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 width: 110px;
             }
         }
+
+        /* هاورِ استانداردِ سایت (تینتِ بنفشِ نرم) — .btn-outline-secondary اصلاً
+           هاورِ اختصاصی نداشت (پیش‌فرضِ خاکستریِ بوت‌استرپ می‌ماند) */
+        .btn-outline-primary:hover,
+        .btn-outline-secondary:hover {
+            background: rgba(142, 87, 254, .12);
+            border-color: rgba(142, 87, 254, .12);
+            color: var(--primary, #8e57fe);
+        }
+
+        :root[data-theme="dark"] .btn-outline-primary:hover,
+        :root[data-theme="dark"] .btn-outline-secondary:hover {
+            background: rgba(142, 87, 254, .18);
+            border-color: rgba(142, 87, 254, .18);
+        }
     </style>
 </head>
 

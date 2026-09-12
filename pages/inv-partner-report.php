@@ -76,13 +76,14 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             letter-spacing: 0;
         }
 
+        /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) */
         .st-badge {
             display: inline-block;
-            padding: 0 10px;
-            line-height: 1.7;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 500;
+            padding: 7px 10px;
+            border-radius: var(--badge-radius, 7px);
+            font-size: 0.7rem;
+            font-weight: var(--badge-font-weight, 500);
+            text-align: center;
         }
 
         .st-badge.draft {
@@ -114,13 +115,14 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         /* تسویه/مودیان دیگر <select> داخلِ سلول نیستند (کشویی‌شان بیرونِ
            فضایِ ردیفِ AG-Grid کلیپ می‌شد) — فقط بجِ وضعیت + دکمهٔ ویرایش
            که مودالِ جداگانه باز می‌کند. */
+        /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) */
         .pm-badge {
             display: inline-block;
-            padding: 0 9px;
-            line-height: 1.7;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 500;
+            padding: 7px 10px;
+            border-radius: var(--badge-radius, 7px);
+            font-size: 0.7rem;
+            font-weight: var(--badge-font-weight, 500);
+            text-align: center;
             white-space: nowrap;
         }
 
@@ -232,6 +234,21 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         .site-footer { position: fixed !important; left: 0; right: 0; bottom: 0; top: auto !important; margin-top: 0 !important; z-index: 80; }
         body { padding-bottom: 46px; }
         .grid-fill { height: calc(100vh - 400px); min-height: 240px; }
+
+        /* هاورِ استانداردِ سایت (تینتِ بنفشِ نرم) — .btn-outline-secondary اصلاً
+           هاورِ اختصاصی نداشت (پیش‌فرضِ خاکستریِ بوت‌استرپ می‌ماند) */
+        .btn-outline-primary:hover,
+        .btn-outline-secondary:hover {
+            background: rgba(142, 87, 254, .12);
+            border-color: rgba(142, 87, 254, .12);
+            color: var(--primary, #8e57fe);
+        }
+
+        :root[data-theme="dark"] .btn-outline-primary:hover,
+        :root[data-theme="dark"] .btn-outline-secondary:hover {
+            background: rgba(142, 87, 254, .18);
+            border-color: rgba(142, 87, 254, .18);
+        }
     </style>
 </head>
 

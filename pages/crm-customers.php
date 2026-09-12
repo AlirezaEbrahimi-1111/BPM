@@ -101,12 +101,10 @@ try {
         }
 
         .ctype-badge.legal {
-            background: rgba(142, 87, 254, .12);
             color: #6d3ed6;
         }
 
         .ctype-badge.individual {
-            background: rgba(16, 122, 87, .12);
             color: #0f7a57;
         }
 
