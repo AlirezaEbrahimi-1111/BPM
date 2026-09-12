@@ -1328,7 +1328,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             if (preData) {
                 data = preData;
             } else {
-                const apiUrl = '/api/notifications/list.php?limit=50';
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/notifications/list.php?limit=50' برگردان.
+                const apiUrl = '/go/api/notifications/list?limit=50';
 
                 const response = await fetch(apiUrl, {
                     method: 'GET',
@@ -1482,7 +1483,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             if (preData) {
                 data = preData;
             } else {
-                const response = await fetch('/api/announcements/list.php?limit=50&offset=0', {
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/announcements/list.php?limit=50&offset=0' برگردان.
+                const response = await fetch('/go/api/announcements/list?limit=50&offset=0', {
                     headers: {
                         'Authorization': 'Bearer ' + authToken
                     }
@@ -1757,7 +1759,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         if (!authToken || !box) return;
         box.innerHTML = '<div class="notification-loading"><div class="spinner-border" role="status"></div></div>';
         try {
-            var r = await fetch('/api/tickets/list.php?limit=50&mine=1', { headers: { 'Authorization': 'Bearer ' + authToken } });
+            // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/tickets/list.php?limit=50&mine=1' برگردان.
+            var r = await fetch('/go/api/tickets/list?limit=50&mine=1', { headers: { 'Authorization': 'Bearer ' + authToken } });
             var data = await r.json();
             if (!data.success) throw new Error(data.message || 'error');
             hdrTicketsAll = data.tickets || [];
@@ -1888,7 +1891,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
     async function checkNewAnnouncements() {
         if (!authToken) return;
         try {
-            const response = await fetch('/api/announcements/list.php?limit=1&offset=0', {
+            // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/announcements/list.php?limit=1&offset=0' برگردان.
+            const response = await fetch('/go/api/announcements/list?limit=1&offset=0', {
                 headers: {
                     'Authorization': 'Bearer ' + authToken
                 }
@@ -2174,7 +2178,9 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
     async function loadAbsentToday() {
         if (!authToken) return;
         try {
-            const res = await fetch(getApiUrl('attendance/absent-today.php'), {
+            // ✅ از go-api سرو می‌شود؛ برگشت = این را به
+            // getApiUrl('attendance/absent-today.php') برگردان.
+            const res = await fetch('/go/api/attendance/absent-today', {
                 headers: { 'Authorization': 'Bearer ' + authToken },
                 cache: 'no-store',
                 signal: AbortSignal.timeout(8000)

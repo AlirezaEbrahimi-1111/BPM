@@ -106,7 +106,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             var box = document.getElementById('ntList');
             if (!ntToken) { location.href = '../index.php'; return; }
             try {
-                var r = await fetch('/api/notifications/list.php?limit=200', { headers: { 'Authorization': 'Bearer ' + ntToken } });
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/notifications/list.php?limit=200' برگردان.
+                var r = await fetch('/go/api/notifications/list?limit=200', { headers: { 'Authorization': 'Bearer ' + ntToken } });
                 var data = await r.json();
                 if (!data.success) throw new Error(data.message || 'error');
                 ntAll = data.notifications || [];

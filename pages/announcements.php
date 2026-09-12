@@ -370,7 +370,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         async function loadList() {
             try {
                 const allParam = CAN_EDIT ? '&all=1' : '';
-                const data = await api('../api/announcements/list.php?limit=100&offset=0' + allParam);
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به '../api/announcements/list.php?limit=100&offset=0' + allParam برگردان.
+                const data = await api('/go/api/announcements/list?limit=100&offset=0' + allParam);
                 if (!data.success) { toast('خطا در بارگذاری', 'error'); return; }
                 BASE_ROWS = data.announcements || [];
                 Object.keys(ROW_MAP).forEach(k => delete ROW_MAP[k]);

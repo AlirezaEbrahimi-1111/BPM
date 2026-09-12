@@ -612,7 +612,8 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
             });
 
             try {
-                var res = await fetch('../api/tickets/list.php' + '?' + qs.toString(), {
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به '../api/tickets/list.php' برگردان.
+                var res = await fetch('/go/api/tickets/list' + '?' + qs.toString(), {
                     headers: { 'Authorization': 'Bearer ' + authToken }
                 });
                 var data = await res.json();
