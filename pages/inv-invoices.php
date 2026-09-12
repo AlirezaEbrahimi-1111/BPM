@@ -302,6 +302,26 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 cellRenderer: p => money(p.value)
             },
             {
+                headerName: 'همکار',
+                field: 'partner_name',
+                width: 130,
+                cellRenderer: p => p.data.partner_id ? esc(p.value || '—') : '—'
+            },
+            {
+                headerName: 'درصد سود',
+                field: 'partner_percent',
+                width: 100,
+                type: 'rightAligned',
+                cellRenderer: p => p.data.partner_id ? (faDigits(p.value || 0) + '٪') : '—'
+            },
+            {
+                headerName: 'مبلغ سود (ریال)',
+                field: 'partner_profit_amount',
+                width: 140,
+                type: 'rightAligned',
+                cellRenderer: p => p.data.partner_id ? money(p.value) : '—'
+            },
+            {
                 headerName: 'وضعیت',
                 field: 'status',
                 width: 120,

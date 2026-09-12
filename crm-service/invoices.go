@@ -174,9 +174,10 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 		       i.tax_amount, i.total_amount, COALESCE(i.note,''),
 		       DATE_FORMAT(i.created_at,'%Y-%m-%d %H:%i'),
 		       COALESCE(DATE_FORMAT(i.approved_at,'%Y-%m-%d %H:%i'),''),
-		       i.converted_to_id
+		       i.converted_to_id, i.partner_id, COALESCE(p.name,'')
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
+		LEFT JOIN inv_partners  p ON p.id = i.partner_id
 		WHERE `+where+`
 		ORDER BY i.id DESC
 		LIMIT ? OFFSET ?`, append(args, pg.Limit, pg.Offset)...)
@@ -186,13 +187,18 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
+	// درصدِ همکار به‌ازای (همکار، ماهِ شمسی) — یک‌بار برایِ کلِ صفحه کش می‌شود
+	// تا برایِ ردیف‌هایِ هم‌ماهِ یک همکار، partnerPercent چندبار کوئری نزند.
+	pctCache := map[[3]int]float64{}
+
 	items := []invoiceOut{}
 	for rows.Next() {
 		var o invoiceOut
-		var sy, sn, conv sql.NullInt64
+		var sy, sn, conv, pid sql.NullInt64
+		var partnerName string
 		if err := rows.Scan(&o.ID, &o.DocType, &o.Number, &sy, &sn, &o.CustomerID, &o.CustomerName,
 			&o.IssueDate, &o.Status, &o.Source, &o.PaymentType, &o.Subtotal, &o.DiscountAmount, &o.TaxAmount,
-			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv); err != nil {
+			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv, &pid, &partnerName); err != nil {
 			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 			return
 		}
@@ -207,6 +213,30 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 		if conv.Valid {
 			v := conv.Int64
 			o.ConvertedToID = &v
+		}
+		if pid.Valid && pid.Int64 > 0 {
+			v := pid.Int64
+			o.PartnerID = &v
+			o.PartnerName = partnerName
+
+			var jy, jm int
+			if _, t := parseIssueDate(o.IssueDate); !t.IsZero() {
+				jy, jm = jalaliYMOf(t)
+			} else {
+				jy, jm = jalaliYMOf(time.Time{})
+			}
+			key := [3]int{int(v), jy, jm}
+			pct, ok := pctCache[key]
+			if !ok {
+				pct = s.partnerPercent(v, jy, jm)
+				pctCache[key] = pct
+			}
+			o.PartnerPercent = pct
+			preTax := o.Subtotal - o.DiscountAmount
+			if preTax < 0 {
+				preTax = 0
+			}
+			o.PartnerProfitAmount = int64(math.Round(float64(preTax) * pct / 100))
 		}
 		items = append(items, o)
 	}

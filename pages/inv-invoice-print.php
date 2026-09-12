@@ -460,18 +460,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 </tr>
             </table>
 
-            ${inv.partner_id ? `
-            <table class="blk">
-                <tr>
-                    <td class="lbl" style="width:120px">همکار</td>
-                    <td>${esc(inv.partner_name || '—')}</td>
-                    <td class="lbl" style="width:130px">درصدِ سهمِ سود</td>
-                    <td style="width:80px">${faDigits(inv.partner_percent || 0)}٪</td>
-                    <td class="lbl" style="width:150px">مبلغِ سودِ همکار (ریال)</td>
-                    <td class="num" style="width:120px">${money(inv.partner_profit_amount || 0)}</td>
-                </tr>
-            </table>` : ''}
-
             <table class="blk pay-blk">
                 <tr>
                     <td class="pay-terms">
