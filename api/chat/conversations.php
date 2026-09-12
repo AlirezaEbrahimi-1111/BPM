@@ -84,9 +84,9 @@ try {
         $convIds = array_column($rows, 'conversation_id');
         $placeholders = implode(',', array_fill(0, count($convIds), '?'));
 
-        // ─── تعدادِ پیام‌های خوانده‌نشده به‌ازای هر گفتگو (یک کوئریِ دسته‌ای) ───
+        // ─── تعدادِ پیام‌های خوانده‌نشده + اولین پیامِ خوانده‌نشده، به‌ازای هر گفتگو ───
         $stmt = $db->prepare("
-            SELECT m.conversation_id, COUNT(*) AS unread
+            SELECT m.conversation_id, COUNT(*) AS unread, MIN(m.id) AS first_unread_id
             FROM chat_messages m
             JOIN chat_participants cp ON cp.conversation_id = m.conversation_id AND cp.user_id = ?
             LEFT JOIN chat_message_hidden h ON h.message_id = m.id AND h.user_id = ?
@@ -99,7 +99,10 @@ try {
         ");
         $stmt->execute(array_merge([$user_id, $user_id], $convIds, [$user_id]));
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
-            $unreadMap[(int) $r['conversation_id']] = (int) $r['unread'];
+            $unreadMap[(int) $r['conversation_id']] = [
+                'unread' => (int) $r['unread'],
+                'first_unread_id' => (int) $r['first_unread_id'],
+            ];
         }
 
         // ─── آیا طرفِ مقابلِ هر گفتگو الان در حالِ تایپ است (یک کوئریِ دسته‌ای) ───
@@ -140,7 +143,8 @@ try {
             'last_message_at' => $lastAt,
             'last_message_jalali' => $lastAt ? JalaliHelper::formatJalaliDate(substr($lastAt, 0, 10)) . ' ' . JalaliHelper::Persian(substr($lastAt, 11, 5)) : '',
             'is_own_last'     => $isOwnLast,
-            'unread_count'    => $unreadMap[(int) $r['conversation_id']] ?? 0,
+            'unread_count'    => $unreadMap[(int) $r['conversation_id']]['unread'] ?? 0,
+            'first_unread_id' => $unreadMap[(int) $r['conversation_id']]['first_unread_id'] ?? null,
         ];
     }, $rows);
 

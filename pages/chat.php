@@ -408,6 +408,24 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             background: var(--text-muted);
         }
 
+        .chat-unread-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 14px 0;
+            text-align: center;
+        }
+
+        .chat-unread-divider span {
+            background: rgba(142, 87, 254, .12);
+            color: var(--primary, #8e57fe);
+            font-size: .72rem;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
         .chat-conv-mute-icon {
             font-size: .72rem;
             color: var(--text-muted);
@@ -2384,6 +2402,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         var pinnedCanManage = false;
         var activeGroupMembers = []; // [{id, full_name}] — فقط برایِ گفتگویِ گروهیِ فعال، برایِ منشن
 
+        // ── پرش به اولین پیامِ خوانده‌نشده هنگامِ بازکردنِ گفتگو (مثلِ تلگرام/سروش) ──
+        var unreadDividerBeforeId = 0;  // idِ پیامی که خطِ «پیام‌های خوانده‌نشده» باید درست بالایش قرار بگیرد؛ فقط یک‌بار مصرف می‌شود
+        var readTrackMaxSeenId = 0;     // بزرگ‌ترین idِ پیامی که تاکنون واقعاً روی صفحه دیده شده (از IntersectionObserver)
+        var readTrackSentUpToId = 0;    // آخرین idـی که با موفقیت به mark-read.php فرستاده شده — از تکرارِ بی‌جهت جلوگیری می‌کند
+        var readTrackDebounce = null;
+        var chatMsgObserver = (typeof IntersectionObserver !== 'undefined') ? new IntersectionObserver(onMessageRowVisible, {
+            root: document.getElementById('chatMessages'), // باید نسبتِ به همین کادرِ اسکرول‌شونده حساب شود، نه کلِ ویوپورت صفحه
+            threshold: 0.6
+        }) : null;
+
         document.addEventListener('DOMContentLoaded', function() {
             authToken = localStorage.getItem('auth_token');
             if (!authToken) {
@@ -2947,6 +2975,18 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             renderPinnedBanner();
             loadActiveGroupMembers();
 
+            // ── پرش به اولین پیامِ خوانده‌نشده: فقط وقتی جایی برای پرش صراحتاً
+            // مشخص نشده (جستجو/ریپلای/پین هرکدام jumpToMessageId خودشان را می‌دهند) ──
+            var isUnreadJump = false;
+            if (!jumpToMessageId && conv && conv.unread_count > 0 && conv.first_unread_id) {
+                jumpToMessageId = conv.first_unread_id;
+                isUnreadJump = true;
+            }
+            unreadDividerBeforeId = isUnreadJump ? jumpToMessageId : 0;
+            readTrackMaxSeenId = 0;
+            readTrackSentUpToId = 0;
+            clearTimeout(readTrackDebounce);
+
             document.getElementById('chatSidebar').classList.add('hide-mobile');
             document.getElementById('chatMain').classList.remove('hide-mobile');
 
@@ -3362,6 +3402,17 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             msgs.forEach(m => {
                 lastMessageId = Math.max(lastMessageId, m.id);
                 if (!oldestMessageId || m.id < oldestMessageId) oldestMessageId = m.id;
+                // خطِ «پیام‌های خوانده‌نشده» — درست بالایِ اولین پیامِ خوانده‌نشده، فقط
+                // یک‌بار (unreadDividerBeforeId بلافاصله صفر می‌شود تا در پیام‌های
+                // بعدیِ همین دسته یا در after_id/prependِ بعدی دوباره درج نشود)
+                var dividerRow = null;
+                if (!prepend && unreadDividerBeforeId && m.id === unreadDividerBeforeId) {
+                    dividerRow = document.createElement('div');
+                    dividerRow.className = 'chat-unread-divider';
+                    dividerRow.innerHTML = '<span>پیام‌های خوانده‌نشده</span>';
+                    unreadDividerBeforeId = 0;
+                }
+
                 var row = document.createElement('div');
                 row.className = 'chat-bubble-row ' + (m.is_own ? 'own' : 'other');
                 row.setAttribute('data-message-id', m.id);
@@ -3446,15 +3497,54 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     frag.appendChild(row);
                     if (linkRefs.length) prependLinkRefs.push([row, linkRefs]);
                 } else {
+                    if (dividerRow) el.appendChild(dividerRow);
                     el.appendChild(row);
                     if (linkRefs.length) loadLinkRefPreviews(row, linkRefs);
                 }
+                if (chatMsgObserver) chatMsgObserver.observe(row);
             });
             if (prepend) {
                 if (frag.childNodes.length) el.insertBefore(frag, el.firstChild);
                 prependLinkRefs.forEach(function (x) { loadLinkRefPreviews(x[0], x[1]); });
             }
             if (scrollBottom) el.scrollTop = el.scrollHeight;
+        }
+
+        // ── خواندنِ تدریجی: وقتی یک ردیفِ پیام واقعاً روی صفحه دیده می‌شود (نه صرفاً
+        // لود شده)، id‌اش کاندیدِ «تا اینجا خوانده شد» می‌شود. با debounce و مقایسه با
+        // آخرین idِ ارسال‌شده، فقط وقتی واقعاً جلوتر رفته باشیم mark-read.php صدا زده می‌شود ──
+        function onMessageRowVisible(entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                var mid = parseInt(entry.target.getAttribute('data-message-id'), 10);
+                if (mid > readTrackMaxSeenId) readTrackMaxSeenId = mid;
+            });
+            if (readTrackMaxSeenId > readTrackSentUpToId) scheduleReadTrackSend();
+        }
+
+        function scheduleReadTrackSend() {
+            clearTimeout(readTrackDebounce);
+            readTrackDebounce = setTimeout(function () {
+                var convId = activeConversationId;
+                var upToId = readTrackMaxSeenId;
+                if (!convId || upToId <= readTrackSentUpToId) return;
+                fetch('../api/chat/mark-read.php', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ conversation_id: convId, up_to_id: upToId })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            readTrackSentUpToId = upToId;
+                            loadConversations(); // بجِ گفتگو در سایدبار بر همین اساس کم می‌شود
+                        }
+                    })
+                    .catch(function () {});
+            }, 700);
         }
 
         // درخواستِ ۴۰ پیامِ قدیمی‌ترِ بعدی و افزودنِ آن‌ها به ابتدای لیست،
