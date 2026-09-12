@@ -174,7 +174,8 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 		       i.tax_amount, i.total_amount, COALESCE(i.note,''),
 		       DATE_FORMAT(i.created_at,'%Y-%m-%d %H:%i'),
 		       COALESCE(DATE_FORMAT(i.approved_at,'%Y-%m-%d %H:%i'),''),
-		       i.converted_to_id, i.partner_id, COALESCE(p.name,'')
+		       i.converted_to_id, i.partner_id, COALESCE(p.name,''),
+		       i.partner_profit_recorded, i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,'')
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
 		LEFT JOIN inv_partners  p ON p.id = i.partner_id
@@ -196,12 +197,15 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 		var o invoiceOut
 		var sy, sn, conv, pid sql.NullInt64
 		var partnerName string
+		var recordedInt int
 		if err := rows.Scan(&o.ID, &o.DocType, &o.Number, &sy, &sn, &o.CustomerID, &o.CustomerName,
 			&o.IssueDate, &o.Status, &o.Source, &o.PaymentType, &o.Subtotal, &o.DiscountAmount, &o.TaxAmount,
-			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv, &pid, &partnerName); err != nil {
+			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv, &pid, &partnerName,
+			&recordedInt, &o.SettlementStatus, &o.MoadianStatus, &o.MoadianCode); err != nil {
 			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 			return
 		}
+		o.PartnerProfitRecorded = recordedInt == 1
 		if sy.Valid {
 			v := int(sy.Int64)
 			o.SeqYear = &v

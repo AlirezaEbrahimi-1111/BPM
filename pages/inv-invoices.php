@@ -135,6 +135,44 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             color: #cbd5e1;
         }
 
+        /* بجِ وضعیتِ تسویه/مودیان — فقط نمایش؛ ویرایش از مودالِ جداگانه
+           (نه <select> داخلِ سلولِ جدول، چون کشویی‌اش داخلِ ردیفِ AG-Grid
+           کلیپ می‌شود و بخشی از گزینه‌ها دیده نمی‌شود). */
+        .pm-badge {
+            display: inline-block;
+            padding: 0 9px;
+            line-height: 1.7;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .pm-badge.unsettled, .pm-badge.unregistered {
+            background: rgba(107, 114, 128, .16);
+            color: #4b5563;
+        }
+
+        .pm-badge.partial {
+            background: rgba(245, 158, 11, .16);
+            color: #b45309;
+        }
+
+        .pm-badge.settled, .pm-badge.registered {
+            background: rgba(16, 122, 87, .14);
+            color: #0f7a57;
+        }
+
+        :root[data-theme="dark"] .pm-badge.unsettled, :root[data-theme="dark"] .pm-badge.unregistered {
+            color: #cbd5e1;
+        }
+
+        .pm-chk {
+            width: 17px;
+            height: 17px;
+            cursor: pointer;
+        }
+
         .ag-theme-alpine,
         .ag-theme-alpine .ag-cell,
         .ag-theme-alpine .ag-header-cell,
@@ -180,6 +218,44 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         </div>
 
         <div id="invGrid" class="ag-theme-alpine grid-fill" style="width:100%;"></div>
+    </div>
+
+    <!-- ── مودالِ ویرایشِ وضعیتِ تسویه/مودیان (نه <select> داخلِ سلولِ جدول) ── -->
+    <div class="modal fade" id="stModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">ویرایشِ وضعیتِ فاکتور <span id="stIdLbl"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="stAlert"></div>
+                    <div class="mb-3">
+                        <label class="form-label">وضعیتِ تسویه</label>
+                        <select id="stSettlement" class="form-select">
+                            <option value="unsettled">تسویه نشده</option>
+                            <option value="settled">تسویه شده</option>
+                            <option value="partial">بخشی تسویه شده</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">وضعیتِ مودیان</label>
+                        <select id="stMoadian" class="form-select">
+                            <option value="unregistered">ثبت نشده</option>
+                            <option value="registered">ثبت شده</option>
+                        </select>
+                    </div>
+                    <div class="mb-1" id="stCodeWrap">
+                        <label class="form-label">کدِ ثبت در سامانه</label>
+                        <input id="stCode" class="form-control" placeholder="کدِ ثبت در سامانهٔ مودیان">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="button" class="btn btn-primary" id="stSaveBtn">ذخیره</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <?php include 'footer.php'; ?>
@@ -267,7 +343,38 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     h += `<button class="ag-action-btn" style="color:#0f7a57" title="تبدیل به فاکتور رسمی" onclick="convertInv(${d.id})"><i class="bi bi-file-earmark-check"></i></button>`;
                 }
             }
+            h += `<button class="ag-action-btn" title="ویرایشِ وضعیتِ تسویه/مودیان" onclick="stEditStatus(${d.id})"><i class="bi bi-clipboard-check"></i></button>`;
             return h;
+        }
+
+        function chkCell(p) {
+            if (!p.data.partner_id) return '—';
+            return `<input type="checkbox" class="pm-chk" ${p.value ? 'checked' : ''} onchange="toggleProfitRecorded(${p.data.id}, this.checked)">`;
+        }
+
+        const SETTLE_LABEL = {
+            unsettled: 'تسویه نشده',
+            settled: 'تسویه شده',
+            partial: 'بخشی تسویه شده'
+        };
+        const MOADIAN_LABEL = {
+            unregistered: 'ثبت نشده',
+            registered: 'ثبت شده'
+        };
+
+        function settleCell(p) {
+            const v = p.value || 'unsettled';
+            return `<span class="pm-badge ${v}">${SETTLE_LABEL[v] || v}</span>`;
+        }
+
+        function moadianCell(p) {
+            const d = p.data;
+            const v = d.moadian_status || 'unregistered';
+            let html = `<span class="pm-badge ${v}">${MOADIAN_LABEL[v] || v}</span>`;
+            if (v === 'registered' && d.moadian_code) {
+                html += ` <span class="text-muted" style="font-size:11px">${faDigits(esc(d.moadian_code))}</span>`;
+            }
+            return html;
         }
 
         const colDefs = [{
@@ -322,6 +429,27 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 cellRenderer: p => p.data.partner_id ? money(p.value) : '—'
             },
             {
+                headerName: 'ثبتِ سود',
+                field: 'partner_profit_recorded',
+                width: 90,
+                sortable: false,
+                cellRenderer: chkCell
+            },
+            {
+                headerName: 'تسویه',
+                field: 'settlement_status',
+                width: 130,
+                sortable: false,
+                cellRenderer: settleCell
+            },
+            {
+                headerName: 'مودیان',
+                field: 'moadian_status',
+                width: 150,
+                sortable: false,
+                cellRenderer: moadianCell
+            },
+            {
                 headerName: 'وضعیت',
                 field: 'status',
                 width: 120,
@@ -331,7 +459,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             },
             {
                 headerName: 'عملیات',
-                width: 244,
+                width: 278,
                 sortable: false,
                 filter: false,
                 cellRenderer: actionCell
@@ -442,6 +570,71 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             });
         }
 
+        async function toggleProfitRecorded(id, checked) {
+            try {
+                await apiSend('PATCH', '/inv/invoices/' + id + '/partner-status', {
+                    partner_profit_recorded: checked
+                });
+                const row = allRows.find(r => r.id === id);
+                if (row) row.partner_profit_recorded = checked;
+                showToast('ذخیره شد', 'success');
+            } catch (e) {
+                showToast(e.message || 'خطا', 'error');
+                loadAll();
+            }
+        }
+
+        // ── ویرایشِ تسویه/مودیان از مودال (نه <select> داخلِ سلول — کشوییِ
+        //    آن داخلِ ردیفِ AG-Grid کلیپ می‌شد و بخشی از گزینه‌ها دیده نمی‌شد) ──
+        let stRow = null;
+
+        function stToggleCode() {
+            const reg = document.getElementById('stMoadian').value === 'registered';
+            document.getElementById('stCodeWrap').hidden = !reg;
+        }
+
+        function stEditStatus(id) {
+            const row = allRows.find(r => r.id === id);
+            if (!row) return;
+            stRow = row;
+            document.getElementById('stIdLbl').textContent = row.number ? ('#' + faDigits(row.number)) : '';
+            document.getElementById('stSettlement').value = row.settlement_status || 'unsettled';
+            document.getElementById('stMoadian').value = row.moadian_status || 'unregistered';
+            document.getElementById('stCode').value = row.moadian_code || '';
+            stToggleCode();
+            document.getElementById('stAlert').innerHTML = '';
+            new bootstrap.Modal(document.getElementById('stModal')).show();
+        }
+
+        async function stSaveStatus() {
+            if (!stRow) return;
+            const settlement = document.getElementById('stSettlement').value;
+            const moadian = document.getElementById('stMoadian').value;
+            const code = document.getElementById('stCode').value.trim();
+            const alertBox = msg => document.getElementById('stAlert').innerHTML =
+                msg ? `<div class="alert alert-danger py-2">${msg}</div>` : '';
+            if (moadian === 'registered' && !code) {
+                alertBox('برایِ «مودیان ثبت‌شده» کدِ ثبت در سامانه لازم است.');
+                return;
+            }
+            alertBox('');
+            try {
+                await apiSend('PATCH', '/inv/invoices/' + stRow.id + '/partner-status', {
+                    settlement_status: settlement,
+                    moadian_status: moadian,
+                    moadian_code: moadian === 'registered' ? code : '',
+                });
+                stRow.settlement_status = settlement;
+                stRow.moadian_status = moadian;
+                stRow.moadian_code = moadian === 'registered' ? code : '';
+                gridApi.setGridOption('rowData', allRows);
+                bootstrap.Modal.getInstance(document.getElementById('stModal')).hide();
+                showToast('ذخیره شد', 'success');
+            } catch (e) {
+                alertBox(e.message || 'خطا');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             if (!tok()) {
                 location.href = '../index.php';
@@ -453,6 +646,11 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 searchTimer = setTimeout(applyFilter, 200);
             });
             document.getElementById('stFilter').addEventListener('change', applyFilter);
+            document.getElementById('stMoadian').addEventListener('change', stToggleCode);
+            document.getElementById('stSaveBtn').addEventListener('click', stSaveStatus);
+            document.getElementById('stModal').addEventListener('shown.bs.modal', () => {
+                document.getElementById('stSettlement').focus();
+            });
             loadAll();
         });
     </script>
