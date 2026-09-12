@@ -123,6 +123,26 @@ try {
         echo json_encode(['success' => false, 'message' => 'هیچ کاربر معتبری یافت نشد']);
         exit;
     }
+
+    // 🔒 موعد فقط وقتی الزامیه که کار به کسِ دیگه‌ای ارجاع داده بشه — همان
+    // قانونِ api/tasks/create.php. این‌جا TaskManager::createTask() به آن
+    // لایه اعتماد می‌کند و خودش این قانون را چک نمی‌کند (نگاه کن به کامنتِ
+    // بالای createTask)، پس این endpoint هم باید مثلِ create.php چک کند —
+    // وگرنه واگذاریِ گروهی/واحدی می‌تواند بدونِ موعد ثبت شود (باگِ تسکِ ۶۱۵).
+    $hasOtherAssignee = false;
+    foreach ($validIds as $vid) {
+        if ((int) $vid !== (int) $user_id) {
+            $hasOtherAssignee = true;
+            break;
+        }
+    }
+    if (($base_task['task_type'] ?? '') === 'periodic' && empty($base_task['due_date']) && $hasOtherAssignee) {
+        ob_end_clean();
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'تاریخ انجام برای کارهای مقطعیِ ارجاع‌داده‌شده الزامی است']);
+        exit;
+    }
+
     // 🔒 واگذاریِ چندواحدی («همه واحدها/همه کاربران») فقط برای سرپرست
     $ph2 = implode(',', array_fill(0, count($validIds), '?'));
     $stmt = $db->prepare("SELECT COUNT(DISTINCT activity_section) FROM users WHERE id IN ($ph2)");
