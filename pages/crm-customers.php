@@ -204,8 +204,8 @@ try {
                                 <input type="text" class="form-control" id="f_mobile">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">کد / شناسه ملی</label>
-                                <input type="text" class="form-control" id="f_national_id">
+                                <label class="form-label">کد / شناسه ملی <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="f_national_id" inputmode="numeric">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">کد اقتصادی</label>
@@ -220,8 +220,8 @@ try {
                                 <input type="text" class="form-control" id="f_city">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">کد پستی</label>
-                                <input type="text" class="form-control" id="f_postal_code">
+                                <label class="form-label">کد پستی <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="f_postal_code" inputmode="numeric">
                             </div>
                             <div class="col-12">
                                 <label class="form-label">آدرس</label>
@@ -435,9 +435,13 @@ try {
                 postal_code: toEn(document.getElementById('f_postal_code').value.trim()),
                 address: document.getElementById('f_address').value.trim(),
             };
-            if (!body.name) {
+            const missing = [];
+            if (!body.name) missing.push('نام');
+            if (!body.national_id) missing.push('شناسه/کد ملی');
+            if (!body.postal_code) missing.push('کد پستی');
+            if (missing.length) {
                 document.getElementById('custModalAlert').innerHTML =
-                    '<div class="alert alert-danger py-2">نام مشتری الزامی است</div>';
+                    '<div class="alert alert-danger py-2">این فیلدها الزامی‌اند: ' + missing.join('، ') + '</div>';
                 return;
             }
             try {

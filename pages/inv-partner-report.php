@@ -23,6 +23,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
 
     <style>
         .crm-toolbar {
@@ -648,21 +649,14 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 msg ? `<div class="alert alert-${kind} py-2">${msg}</div>` : '';
         }
 
-        // افزودنِ همکارِ جدید = فقط نام؛ تلفن/فعال‌بودن را بعد از انتخاب پایین ویرایش می‌کنی.
-        async function pmAddPartner() {
-            const name = (window.prompt('نامِ همکارِ جدید:') || '').trim();
-            if (!name) return;
-            try {
-                const d = await apiSend('POST', '/inv/partners', {
-                    name
-                });
-                pmAlert('همکار افزوده شد — تلفن و درصدها را پایین تنظیم کن.', 'success');
+        // افزودنِ همکارِ جدید با مودالِ استاندارد؛ فعال‌بودن/درصدها را بعد از انتخاب پایین ویرایش می‌کنی.
+        function pmAddPartner() {
+            QuickAdd.partner(async p => {
+                pmAlert('همکار افزوده شد — درصدها را پایین تنظیم کن.', 'success');
                 await loadPartners();
-                document.getElementById('pmSelPartner').value = d.id;
+                document.getElementById('pmSelPartner').value = p.id;
                 pmOnSelectPartner();
-            } catch (e) {
-                pmAlert(e.message || 'خطا');
-            }
+            });
         }
 
         function pmCurrentPartner() {

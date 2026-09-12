@@ -61,7 +61,7 @@ func (s *server) listPartners(w http.ResponseWriter, r *http.Request) {
 
 	var total int
 	if err := s.db.QueryRow("SELECT COUNT(*) FROM inv_partners WHERE "+where, args...).Scan(&total); err != nil {
-		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		writeDBErr(w, "listPartners", err)
 		return
 	}
 
@@ -71,7 +71,7 @@ func (s *server) listPartners(w http.ResponseWriter, r *http.Request) {
 		ORDER BY name
 		LIMIT ? OFFSET ?`, append(args, pg.Limit, pg.Offset)...)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		writeDBErr(w, "listPartners", err)
 		return
 	}
 	defer rows.Close()
@@ -81,7 +81,7 @@ func (s *server) listPartners(w http.ResponseWriter, r *http.Request) {
 		var it partnerOut
 		var active int
 		if err := rows.Scan(&it.ID, &it.Name, &it.Phone, &it.Note, &active); err != nil {
-			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+			writeDBErr(w, "listPartners", err)
 			return
 		}
 		it.IsActive = active == 1
@@ -111,7 +111,7 @@ func (s *server) createPartner(w http.ResponseWriter, r *http.Request) {
 		VALUES (?, ?, ?, ?, ?, ?)`,
 		u.OrgID, in.Name, nullIfEmpty(in.Phone), nullIfEmpty(in.Note), active, u.ID)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "درجِ همکار ناموفق بود")
+		writeDBErr(w, "createPartner", err)
 		return
 	}
 	id, _ := res.LastInsertId()
@@ -140,7 +140,7 @@ func (s *server) updatePartner(w http.ResponseWriter, r *http.Request) {
 		WHERE id = ? AND organization_id = ? AND is_deleted = 0`,
 		in.Name, nullIfEmpty(in.Phone), nullIfEmpty(in.Note), active, id, u.OrgID)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		writeDBErr(w, "updatePartner", err)
 		return
 	}
 	if n, _ := res.RowsAffected(); n == 0 {
@@ -157,7 +157,7 @@ func (s *server) deletePartner(w http.ResponseWriter, r *http.Request) {
 	res, err := s.db.Exec(
 		"UPDATE inv_partners SET is_deleted = 1 WHERE id = ? AND organization_id = ? AND is_deleted = 0", id, u.OrgID)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		writeDBErr(w, "deletePartner", err)
 		return
 	}
 	if n, _ := res.RowsAffected(); n == 0 {
@@ -206,7 +206,7 @@ func (s *server) listPartnerShares(w http.ResponseWriter, r *http.Request) {
 	got := map[int]float64{}
 	rows, err := s.db.Query("SELECT jm, percent FROM inv_partner_month_share WHERE partner_id = ? AND jy = ?", id, jy)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		writeDBErr(w, "listPartnerShares", err)
 		return
 	}
 	for rows.Next() {
@@ -214,7 +214,7 @@ func (s *server) listPartnerShares(w http.ResponseWriter, r *http.Request) {
 		var p float64
 		if err := rows.Scan(&jm, &p); err != nil {
 			rows.Close()
-			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+			writeDBErr(w, "listPartnerShares", err)
 			return
 		}
 		got[jm] = p
@@ -261,7 +261,7 @@ func (s *server) setPartnerShare(w http.ResponseWriter, r *http.Request) {
 		VALUES (?, ?, ?, ?, ?)
 		ON DUPLICATE KEY UPDATE percent = VALUES(percent), updated_by = VALUES(updated_by)`,
 		id, in.JY, in.JM, in.Percent, u.ID); err != nil {
-		writeErr(w, http.StatusInternalServerError, "ذخیره‌ی درصد ناموفق بود")
+		writeDBErr(w, "setPartnerShare", err)
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
@@ -328,7 +328,7 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 		WHERE `+where+`
 		ORDER BY i.issue_date DESC, i.id DESC`, args...)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		writeDBErr(w, "partnerReport", err)
 		return
 	}
 	defer rows.Close()
@@ -350,7 +350,7 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&id, &docType, &number, &status, &customerName, &issueDate,
 			&partnerID, &partnerName, &subtotal, &discount, &tax, &total,
 			&recorded, &settlement, &moadian, &mcode); err != nil {
-			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+			writeDBErr(w, "partnerReport", err)
 			return
 		}
 
@@ -428,7 +428,7 @@ func (s *server) setInvoicePartnerStatus(w http.ResponseWriter, r *http.Request)
 		writeErr(w, http.StatusNotFound, "فاکتور یافت نشد")
 		return
 	} else if err != nil {
-		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		writeDBErr(w, "setInvoicePartnerStatus", err)
 		return
 	}
 
@@ -487,7 +487,7 @@ func (s *server) setInvoicePartnerStatus(w http.ResponseWriter, r *http.Request)
 	res, err := s.db.Exec(
 		"UPDATE inv_invoices SET "+strings.Join(sets, ", ")+" WHERE id = ? AND organization_id = ?", args...)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "به‌روزرسانی ناموفق بود")
+		writeDBErr(w, "setInvoicePartnerStatus", err)
 		return
 	}
 	if n, _ := res.RowsAffected(); n == 0 {

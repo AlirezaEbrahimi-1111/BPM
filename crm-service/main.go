@@ -195,6 +195,23 @@ func writeErr(w http.ResponseWriter, status int, msg string) {
 	writeJSON(w, status, map[string]any{"success": false, "message": msg})
 }
 
+// writeDBErr: خطای واقعیِ SQL را لاگ می‌کند (journalctl -u crm-service) و اگر
+// تشخیص داد جدول/ستونی روی این سرور ساخته نشده، به‌جایِ «خطای دیتابیس»یِ کور،
+// پیامی می‌دهد که مستقیم می‌گوید مهاجرت اجرا نشده — برای دیباگِ سریع‌تر.
+func writeDBErr(w http.ResponseWriter, op string, err error) {
+	msg := err.Error()
+	log.Printf("%s: %v", op, err)
+	if strings.Contains(msg, "Error 1146") || strings.Contains(msg, "doesn't exist") {
+		writeErr(w, http.StatusInternalServerError, "جدولِ این فیچر روی این سرور ساخته نشده — مهاجرتِ پایگاه‌داده اجرا نشده (migrate.php up)")
+		return
+	}
+	if strings.Contains(msg, "Error 1054") || strings.Contains(msg, "Unknown column") {
+		writeErr(w, http.StatusInternalServerError, "ستونی در دیتابیس کم است — مهاجرتِ پایگاه‌داده اجرا نشده (migrate.php up)")
+		return
+	}
+	writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+}
+
 // ──────────────── سرور و هندلرها ────────────────
 
 type server struct {

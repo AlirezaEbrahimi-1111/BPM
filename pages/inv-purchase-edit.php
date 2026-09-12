@@ -76,8 +76,8 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             border-radius: 4px;
         }
 
-        table.inv-items .it-prod-pick {
-            min-width: 230px;
+        table.inv-items td:nth-child(2) input {
+            min-width: 200px;
         }
 
         .col-qty {
@@ -205,7 +205,8 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 </div>
                 <div>
                     <label class="form-label">تاریخ</label>
-                    <div class="persian-datepicker-wrapper">
+                    <!-- امکانِ انتخابِ تاریخِ گذشته، مثلِ فاکتورِ فروش (فقط ماژولِ فاکتورِ رسمی) -->
+                    <div class="persian-datepicker-wrapper" data-restrict-past="-1">
                         <input type="text" class="persian-datepicker-input form-control" id="f_issue_date" placeholder="۱۴۰۵/۰۶/۱۱" readonly>
                         <div class="persian-datepicker">
                             <div class="datepicker-header">
@@ -245,6 +246,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <tbody id="itemsBody"></tbody>
             </table>
 
+            <datalist id="prodNameList"></datalist>
             <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnAddRow"><i class="bi bi-plus-lg ms-1"></i> افزودن ردیف</button>
 
             <div class="totals-box">
@@ -328,26 +330,19 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         let VAT = 0;
         let products = [],
             suppliers = [];
-        let supplierPicker = null,
-            prodItems = [];
+        let supplierPicker = null;
 
         function alertBox(msg, kind = 'danger') {
             document.getElementById('formAlert').innerHTML =
                 msg ? `<div class="alert alert-${kind} py-2">${msg}</div>` : '';
         }
 
-        function firstWords(s, n) {
-            const w = String(s || '').trim().split(/\s+/);
-            return w.slice(0, n).join(' ') + (w.length > n ? '…' : '');
-        }
-
-        function buildProdItems() {
-            prodItems = products.map(p => ({
-                id: p.id,
-                label: p.code ? (faDigits(p.code) + ' — ' + firstWords(p.name, 5)) : firstWords(p.name, 5),
-                meta: 'موجودی ' + faDigits(Number(p.stock || 0)) + (p.unit ? ' • ' + p.unit : ''),
-                search: (p.code || '') + ' ' + p.name,
-            }));
+        // فهرستِ نام‌های کاتالوگ برای datalist زیرِ فیلدِ «نامِ کالا» (نامِ کالا
+        // مثلِ فاکتورِ فروش قابلِ تایپ است، نه فقط انتخاب از یک لیستِ کشویی).
+        function fillProdDatalist() {
+            const dl = document.getElementById('prodNameList');
+            if (dl) dl.innerHTML = products.map(p =>
+                `<option value="${String(p.name || '').replace(/"/g, '&quot;')}">`).join('');
         }
 
         function supItems() {
@@ -363,48 +358,75 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="idx text-center"></td>
-                <td><div class="it-prod-pick"></div></td>
+                <td><input class="it-prod-name" list="prodNameList" autocomplete="off" placeholder="نام کالا را تایپ کنید"></td>
                 <td class="col-qty"><input class="it-qty" inputmode="decimal" value="۱"></td>
                 <td class="col-price"><input class="it-price" inputmode="numeric" value="۰"></td>
                 <td class="col-disc"><input class="it-disc" inputmode="numeric" value="۰"></td>
                 <td class="col-stock it-stock small text-muted"></td>
                 <td class="col-total it-linetotal">۰</td>
                 <td class="col-del"><button type="button" class="btn btn-sm btn-link text-danger p-0 it-del">✕</button></td>`;
-            tr._picker = EntityPicker.create({
-                container: tr.querySelector('.it-prod-pick'),
-                items: prodItems,
-                placeholder: 'کد یا نامِ کالا…',
-                addTitle: 'افزودن کالای جدید',
-                onAdd: () => QuickAdd.product(p => {
-                    products.push(p);
-                    buildProdItems();
-                    document.querySelectorAll('#itemsBody tr').forEach(r => {
-                        if (r._picker) r._picker.updateItems(prodItems);
-                    });
-                    tr._picker.setValue(p.id);
-                }),
-                onSelect: it => onRowProduct(tr, it),
-            });
+            // نامِ کالا: فیلدِ متنِ آزاد (مثلِ فاکتورِ فروش). اگر متنِ تایپ‌شده دقیقاً
+            // با یک کالای کاتالوگ یکی بود، قیمت خودکار پر می‌شود و ردیف به آن کالا
+            // گره می‌خورد؛ وگرنه هنگامِ ذخیره یک کالای تازه در کاتالوگ ساخته می‌شود.
+            tr.querySelector('.it-prod-name').addEventListener('change', () => syncProdName(tr));
             tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => {
                 el.addEventListener('input', recalc);
                 el.addEventListener('blur', () => {
                     el.value = el.classList.contains('it-qty') ?
                         faDigits(toEn(el.value)) : faMoney(el.value);
                 });
+                if (el.classList.contains('it-price') || el.classList.contains('it-disc')) {
+                    el.addEventListener('focus', () => {
+                        if (num(el.value) === 0) el.value = '';
+                        if (typeof el.select === 'function') el.select();
+                    });
+                }
             });
             tr.querySelector('.it-del').addEventListener('click', () => {
                 tr.remove();
                 renumber();
                 recalc();
             });
+            focusOnEnter(tr.querySelector('.it-prod-name'), () => tr.querySelector('.it-qty'));
+            focusOnEnter(tr.querySelector('.it-qty'), () => tr.querySelector('.it-price'));
             return tr;
+        }
+
+        // فوکوسِ فیلدِ بعدی با زدنِ Enter
+        function focusOnEnter(el, nextFn) {
+            if (!el) return;
+            el.addEventListener('keydown', e => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                const n = (typeof nextFn === 'function') ? nextFn() : nextFn;
+                if (n && typeof n.focus === 'function') {
+                    n.focus();
+                    if (typeof n.select === 'function') n.select();
+                }
+            });
+        }
+
+        // متنِ نامِ کالا با کاتالوگ هماهنگ شود (تطبیقِ دقیقِ نام).
+        function syncProdName(tr) {
+            const v = tr.querySelector('.it-prod-name').value.trim();
+            const p = v ? products.find(x => String(x.name || '').trim() === v) : null;
+            if (p) {
+                tr.dataset.productId = p.id;
+                const priceEl = tr.querySelector('.it-price');
+                if (!num(priceEl.value)) priceEl.value = faMoney(p.unit_price);
+            } else {
+                delete tr.dataset.productId;
+            }
+            updateStockHint(tr);
+            recalc();
         }
 
         function addRow(data) {
             const tr = rowTemplate();
             document.getElementById('itemsBody').appendChild(tr);
             if (data) {
-                if (data.product_id) tr._picker.setValue(data.product_id);
+                if (data.product_id) tr.dataset.productId = data.product_id;
+                tr.querySelector('.it-prod-name').value = data.name || '';
                 tr.querySelector('.it-qty').value = faDigits(data.qty ?? 1);
                 tr.querySelector('.it-price').value = faMoney(data.unit_price ?? 0);
                 tr.querySelector('.it-disc').value = faMoney(data.discount ?? 0);
@@ -412,30 +434,13 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             renumber();
             updateStockHint(tr);
             recalc();
+            return tr;
         }
 
         function renumber() {
             document.querySelectorAll('#itemsBody tr').forEach((tr, i) => {
                 tr.querySelector('.idx').textContent = faDigits(i + 1);
             });
-        }
-
-        function onRowProduct(tr, item) {
-            if (item) {
-                const p = products.find(x => x.id === item.id);
-                tr.dataset.productId = item.id;
-                const price = tr.querySelector('.it-price');
-                if (p && num(price.value) === 0) price.value = faDigits(p.unit_price);
-                const q = tr.querySelector('.it-qty');
-                setTimeout(() => {
-                    q.focus();
-                    q.select();
-                }, 0);
-            } else {
-                delete tr.dataset.productId;
-            }
-            updateStockHint(tr);
-            recalc();
         }
 
         function updateStockHint(tr) {
@@ -479,11 +484,12 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const sup = picked ? suppliers.find(s => s.id === picked.id) : null;
             const items = [];
             document.querySelectorAll('#itemsBody tr').forEach(tr => {
-                const pid = tr.dataset.productId ? +tr.dataset.productId : 0;
+                const title = tr.querySelector('.it-prod-name').value.trim();
                 const qty = num(tr.querySelector('.it-qty').value);
-                if (!pid || qty <= 0) return;
+                if (!title || qty <= 0) return;
                 items.push({
-                    product_id: pid,
+                    product_id: tr.dataset.productId ? +tr.dataset.productId : null,
+                    title,
                     qty,
                     unit_price: Math.round(num(tr.querySelector('.it-price').value)),
                     discount: Math.round(num(tr.querySelector('.it-disc').value)),
@@ -579,7 +585,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             try {
                 products = await loadPaged('/inv/products');
             } catch (e) {}
-            buildProdItems();
+            fillProdDatalist();
 
             window.addEventListener('focus', async () => {
                 await reloadSuppliers();
@@ -587,10 +593,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 try {
                     products = await loadPaged('/inv/products');
                 } catch (e) {}
-                buildProdItems();
-                document.querySelectorAll('#itemsBody tr').forEach(tr => {
-                    if (tr._picker) tr._picker.updateItems(prodItems);
-                });
+                fillProdDatalist();
             });
 
             if (PUR_ID) {
@@ -620,7 +623,10 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             recalc();
             if (typeof window.reinitPersianDatepickers === 'function') window.reinitPersianDatepickers();
 
-            document.getElementById('btnAddRow').addEventListener('click', () => { const tr = addRow(); if (tr && tr._picker) tr._picker.focus(); });
+            document.getElementById('btnAddRow').addEventListener('click', () => {
+                const tr = addRow();
+                if (tr) tr.querySelector('.it-prod-name').focus();
+            });
             document.getElementById('btnSave').addEventListener('click', () => save(false));
             document.getElementById('btnSaveBack').addEventListener('click', () => save(true));
         }

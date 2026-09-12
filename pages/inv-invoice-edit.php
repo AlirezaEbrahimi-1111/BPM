@@ -35,7 +35,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         .inv-head-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            /* ۵ فیلد (نوع سند/مشتری/تاریخ/نحوهٔ فروش/همکار) در یک ردیف جا شوند؛
+               در صفحه‌های باریک‌تر auto-fit خودش کمتر می‌چیند. */
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
             gap: 14px;
             margin-bottom: 1rem;
         }
@@ -218,9 +220,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 </div>
                 <div>
                     <label class="form-label">تاریخِ صدور</label>
-                    <div class="persian-datepicker-wrapper">
-                        <!-- data-restrict-past="-1" → فقط همین فاکتور می‌تواند تاریخِ گذشته انتخاب کند (بقیهٔ صفحات دست‌نخورده) -->
-                        <input type="text" class="persian-datepicker-input form-control" id="f_issue_date" data-restrict-past="-1" placeholder="۱۴۰۵/۰۶/۱۱" readonly>
+                    <!-- data-restrict-past روی خودِ wrapper باید باشه، نه روی input — PersianDatePicker
+                         این مقدار را از element.dataset (یعنی wrapper) می‌خواند نه از فرزندش. -->
+                    <div class="persian-datepicker-wrapper" data-restrict-past="-1">
+                        <input type="text" class="persian-datepicker-input form-control" id="f_issue_date" placeholder="۱۴۰۵/۰۶/۱۱" readonly>
                         <div class="persian-datepicker">
                             <div class="datepicker-header">
                                 <button type="button" class="datepicker-nav" data-action="prev">►</button>
@@ -442,23 +445,20 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             recalc();
         }
 
-        async function quickAddPartner() {
-            const name = (window.prompt('نامِ همکارِ جدید:') || '').trim();
-            if (!name) return;
-            try {
-                const d = await apiSend('POST', '/inv/partners', {
-                    name
-                });
-                partners.push({
-                    id: d.id,
-                    name,
-                    phone: '',
-                    is_active: true
-                });
+        function quickAddPartner() {
+            QuickAdd.partner(p => {
+                partners.push(p);
                 partnerPicker.updateItems(partnerItems());
-                partnerPicker.setValue(d.id); // onSelect → refreshPartnerProfit
-            } catch (e) {
-                alertBox(e.message || 'افزودنِ همکار ناموفق بود');
+                partnerPicker.setValue(p.id); // onSelect → refreshPartnerProfit
+            });
+        }
+
+        // بعد از انتخابِ مشتری، فوکوس مستقیم برود روی «نامِ کالا»یِ ردیفِ اول
+        function focusFirstProductName() {
+            const el = document.querySelector('#itemsBody .it-prod-name');
+            if (el) {
+                el.focus();
+                if (typeof el.select === 'function') el.select();
             }
         }
 
@@ -768,6 +768,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     customerPicker.updateItems(custItems());
                     customerPicker.setValue(c.id);
                 }),
+                onSelect: () => focusFirstProductName(),
             });
             // همکار — اختیاری. انتخاب از فهرست، با دکمهٔ + برای افزودنِ سریع.
             await reloadPartners();

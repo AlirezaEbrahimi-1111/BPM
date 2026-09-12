@@ -5,6 +5,7 @@
  *   QuickAdd.customer(rec => { ... })   // rec = آبجکتِ کامل + id
  *   QuickAdd.supplier(rec => { ... })
  *   QuickAdd.product(rec  => { ... })
+ *   QuickAdd.partner(rec  => { ... })
  *
  * وابستگی: bootstrap.bundle (برای Modal) + توکن در localStorage['auth_token'].
  */
@@ -143,9 +144,9 @@ const QuickAdd = (() => {
         open('مشتری سریع', 'bi-person-plus', [
             { name: 'type', label: 'نوع', type: 'select', col: 4, options: [{ v: 'legal', t: 'حقوقی (شرکت)' }, { v: 'individual', t: 'حقیقی (شخص)' }] },
             { name: 'name', label: 'نام', required: true, col: 8 },
-            { name: 'national_id', label: 'شناسه / کد ملی', col: 6, attr: 'inputmode="numeric"' },
+            { name: 'national_id', label: 'شناسه / کد ملی', required: true, col: 6, attr: 'inputmode="numeric"' },
             { name: 'economic_code', label: 'کد اقتصادی', col: 6, attr: 'inputmode="numeric"' },
-            { name: 'postal_code', label: 'کد پستی', col: 6, attr: 'inputmode="numeric"' },
+            { name: 'postal_code', label: 'کد پستی', required: true, col: 6, attr: 'inputmode="numeric"' },
             { name: 'phone', label: 'تلفن', col: 6, attr: 'inputmode="numeric"' },
             { name: 'address', label: 'آدرس', type: 'textarea' },
         ], async d => {
@@ -210,5 +211,18 @@ const QuickAdd = (() => {
         });
     }
 
-    return { customer, supplier, product };
+    function partner(onDone) {
+        open('همکارِ سریع', 'bi-people', [
+            { name: 'name', label: 'نام', required: true },
+            { name: 'phone', label: 'تلفن (اختیاری)', attr: 'inputmode="numeric"' },
+        ], async d => {
+            const body = { name: d.name, phone: toEn(d.phone) };
+            const res = await post('/inv/partners', body);
+            const rec = { id: res.id, name: body.name, phone: body.phone, is_active: true };
+            onDone(rec);
+            return rec;
+        });
+    }
+
+    return { customer, supplier, product, partner };
 })();

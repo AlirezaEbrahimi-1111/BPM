@@ -11,7 +11,8 @@ import (
 // جدول‌ها: inv_purchase_invoices + inv_purchase_items (هر ردیف حتماً کالا دارد).
 
 type purchaseItemIn struct {
-	ProductID int64   `json:"product_id"`
+	ProductID *int64  `json:"product_id"`
+	Title     string  `json:"title"` // نامِ تایپ‌شده وقتی با هیچ کالای کاتالوگ مطابقت نداشت
 	Qty       float64 `json:"qty"`
 	UnitPrice int64   `json:"unit_price"`
 	Discount  int64   `json:"discount"`
@@ -53,8 +54,15 @@ type purchaseOut struct {
 	Items             []purchaseItemOut `json:"items,omitempty"`
 }
 
+// dbQuerier: هم *sql.DB هم *sql.Tx این را دارند — برای این‌که یک تابع بتواند
+// چه داخلِ تراکنش، چه بیرونش کوئری بزند (لازم برای دیدنِ کالاهایی که همین حالا،
+// در همین تراکنش، برای یک ردیفِ متنیِ آزاد تازه ساخته شده‌اند).
+type dbQuerier interface {
+	Query(query string, args ...any) (*sql.Rows, error)
+}
+
 // نقشه‌ی «معاف از مالیات» برای کالاهای داده‌شده.
-func (s *server) productExemptMap(ids []int64) (map[int64]bool, error) {
+func (s *server) productExemptMap(q dbQuerier, ids []int64) (map[int64]bool, error) {
 	out := map[int64]bool{}
 	if len(ids) == 0 {
 		return out, nil
@@ -64,7 +72,7 @@ func (s *server) productExemptMap(ids []int64) (map[int64]bool, error) {
 	for i, v := range ids {
 		args[i] = v
 	}
-	rows, err := s.db.Query("SELECT id, is_tax_exempt FROM inv_products WHERE id IN ("+ph+")", args...)
+	rows, err := q.Query("SELECT id, is_tax_exempt FROM inv_products WHERE id IN ("+ph+")", args...)
 	if err != nil {
 		return out, err
 	}
@@ -93,8 +101,12 @@ func computePurchase(items []purchaseItemIn, exempt map[int64]bool, vatRate floa
 		if after < 0 {
 			after = 0
 		}
+		var pid int64
+		if it.ProductID != nil {
+			pid = *it.ProductID
+		}
 		var t int64
-		if !exempt[it.ProductID] {
+		if !exempt[pid] {
 			t = int64(math.Round(float64(after) * vatRate / 100))
 		}
 		lt := after + t
@@ -107,10 +119,17 @@ func computePurchase(items []purchaseItemIn, exempt map[int64]bool, vatRate floa
 	return
 }
 
+// cleanPurchaseItems: ردیفی نگه داشته می‌شود که یا شناسهٔ کالای معتبر دارد،
+// یا نامِ تایپ‌شده (که هنگامِ درج، کالای تازه‌ای برایش ساخته می‌شود) — مثلِ
+// قلمِ متنیِ آزادِ فاکتورِ فروش.
 func cleanPurchaseItems(items []purchaseItemIn) []purchaseItemIn {
 	out := make([]purchaseItemIn, 0, len(items))
 	for _, it := range items {
-		if it.ProductID == 0 || it.Qty <= 0 {
+		hasProduct := it.ProductID != nil && *it.ProductID > 0
+		if !hasProduct && strings.TrimSpace(it.Title) == "" {
+			continue
+		}
+		if it.Qty <= 0 {
 			continue
 		}
 		if it.UnitPrice < 0 {
@@ -122,6 +141,36 @@ func cleanPurchaseItems(items []purchaseItemIn) []purchaseItemIn {
 		out = append(out, it)
 	}
 	return out
+}
+
+// resolvePurchaseItems: برای هر ردیفِ بدونِ شناسهٔ کالا (یعنی متنِ تایپ‌شده با
+// هیچ کالایِ کاتالوگی — سمتِ کلاینت — یکی نشد)، یک کالای تازه در کاتالوگ
+// می‌سازد و ردیف را به آن گره می‌زند — دقیقاً مثلِ قلمِ متنیِ آزادِ فاکتورِ
+// فروش (invoices.go: insertItems)، عمداً بدونِ حذفِ تکراریِ سمتِ سرور؛ تطبیقِ
+// نام با کاتالوگ کارِ کلاینت است (rowTemplate → syncProdName).
+// باید با همان tx-یی صدا زده شود که درجِ خودِ فاکتور هم در آن انجام می‌شود،
+// چون کالاهای تازه‌ساز تا commit برای کوئری‌های بیرونِ تراکنش دیده نمی‌شوند.
+func resolvePurchaseItems(tx *sql.Tx, orgID, userID int64, items []purchaseItemIn) ([]purchaseItemIn, error) {
+	out := make([]purchaseItemIn, len(items))
+	copy(out, items)
+	for i, it := range out {
+		if it.ProductID != nil && *it.ProductID > 0 {
+			continue
+		}
+		title := strings.TrimSpace(it.Title)
+		if title == "" {
+			continue
+		}
+		res, err := tx.Exec(
+			"INSERT INTO inv_products (organization_id, name, unit_price, created_by) VALUES (?, ?, ?, ?)",
+			orgID, title, it.UnitPrice, userID)
+		if err != nil {
+			return nil, err
+		}
+		newID, _ := res.LastInsertId()
+		out[i].ProductID = &newID
+	}
+	return out, nil
 }
 
 func (in *purchaseIn) validate() string {
@@ -240,21 +289,20 @@ func (s *server) getPurchase(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"purchase": o})
 }
 
-func (s *server) buildPurchaseLines(in *purchaseIn) ([]computedPLine, int64, int64, int64, int64, error) {
-	items := cleanPurchaseItems(in.Items)
+// buildPurchaseLines: items باید از قبل با resolvePurchaseItems حل شده باشند
+// (یعنی همه‌شان product_id دارند). حتماً با همان tx صدا زده شود.
+func (s *server) buildPurchaseLines(tx *sql.Tx, items []purchaseItemIn, vatRate float64) ([]computedPLine, int64, int64, int64, int64, error) {
 	ids := make([]int64, 0, len(items))
 	for _, it := range items {
-		ids = append(ids, it.ProductID)
+		if it.ProductID != nil {
+			ids = append(ids, *it.ProductID)
+		}
 	}
-	exempt, err := s.productExemptMap(ids)
+	exempt, err := s.productExemptMap(tx, ids)
 	if err != nil {
 		return nil, 0, 0, 0, 0, err
 	}
-	st, err := s.getSettings()
-	if err != nil {
-		return nil, 0, 0, 0, 0, err
-	}
-	lines, sub, disc, tax, total := computePurchase(items, exempt, st.VatRate)
+	lines, sub, disc, tax, total := computePurchase(items, exempt, vatRate)
 	return lines, sub, disc, tax, total, nil
 }
 
@@ -268,7 +316,11 @@ func insertPurchaseItems(tx *sql.Tx, pid int64, lines []computedPLine) error {
 	}
 	defer stmt.Close()
 	for i, ln := range lines {
-		if _, err := stmt.Exec(pid, ln.in.ProductID, ln.in.Qty, ln.in.UnitPrice, ln.in.Discount,
+		var pidVal any
+		if ln.in.ProductID != nil {
+			pidVal = *ln.in.ProductID
+		}
+		if _, err := stmt.Exec(pid, pidVal, ln.in.Qty, ln.in.UnitPrice, ln.in.Discount,
 			ln.taxAmount, ln.lineTotal, i); err != nil {
 			return err
 		}
@@ -287,9 +339,9 @@ func (s *server) createPurchase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := userOf(r.Context())
-	lines, sub, disc, tax, total, err := s.buildPurchaseLines(&in)
+	st, err := s.getSettings()
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "محاسبه‌ی ردیف‌ها ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "خواندنِ تنظیمات ناموفق بود")
 		return
 	}
 	issueNS, _ := parseIssueDate(in.IssueDate)
@@ -300,6 +352,17 @@ func (s *server) createPurchase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
+
+	resolved, err := resolvePurchaseItems(tx, u.OrgID, u.ID, cleanPurchaseItems(in.Items))
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "ثبتِ کالا ناموفق بود")
+		return
+	}
+	lines, sub, disc, tax, total, err := s.buildPurchaseLines(tx, resolved, st.VatRate)
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "محاسبه‌ی ردیف‌ها ناموفق بود")
+		return
+	}
 
 	res, err := tx.Exec(`
 		INSERT INTO inv_purchase_invoices
@@ -352,9 +415,9 @@ func (s *server) updatePurchase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lines, sub, disc, tax, total, err := s.buildPurchaseLines(&in)
+	st, err := s.getSettings()
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "محاسبه‌ی ردیف‌ها ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "خواندنِ تنظیمات ناموفق بود")
 		return
 	}
 	issueNS, _ := parseIssueDate(in.IssueDate)
@@ -365,6 +428,17 @@ func (s *server) updatePurchase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
+
+	resolved, err := resolvePurchaseItems(tx, u.OrgID, u.ID, cleanPurchaseItems(in.Items))
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "ثبتِ کالا ناموفق بود")
+		return
+	}
+	lines, sub, disc, tax, total, err := s.buildPurchaseLines(tx, resolved, st.VatRate)
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "محاسبه‌ی ردیف‌ها ناموفق بود")
+		return
+	}
 
 	if _, err := tx.Exec(`
 		UPDATE inv_purchase_invoices
