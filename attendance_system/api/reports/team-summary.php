@@ -14,7 +14,15 @@ date_default_timezone_set('Asia/Tehran');
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
 $auth = new Auth($db);
+
+// 🔒 ضریبِ کسری و مبنایِ گردکردنِ حقوق باید از تنظیماتِ سازمان خونده بشن،
+// نه ثابت — قبلاً اینجا × ۲ و گردکردنِ ۱۰۰٬۰۰۰ به‌صورتِ hardcode بودن، درحالی
+// که requests.php/team-report.php از همین app_settings می‌خونن؛ یعنی اگر
+// مدیری این دو مقدار رو عوض می‌کرد، این گزارش هنوز با مقادیرِ پیش‌فرض حساب
+// می‌کرد.
+$app_settings = loadSettings($db);
 
 
 // ============================================
@@ -523,8 +531,8 @@ foreach ($users as $user_item) {
         // کسری پوشش نشده
         $uncovered = max(0, $initial_shortage - $total_covered);
         
-        // کسری نهایی = دوبرابر! (طبق requests.php)
-        $final_shortage = $uncovered * 2;
+        // کسری نهایی = ضریبِ جریمه (طبق تنظیماتِ سازمان، مثلِ requests.php)
+        $final_shortage = $uncovered * $app_settings['shortage_multiplier'];
         
         // اضافه به کل کسری
         $shortage_minutes += $uncovered; // برای نمایش ساعتی
@@ -537,8 +545,9 @@ foreach ($users as $user_item) {
         $current_date->modify('+1 day');
     }
     
-    // گرد کردن کسری ریالی به نزدیک‌ترین 100,000 ریال (طبق requests.php)
-    $shortage_money = floor($shortage_money / 100000) * 100000;
+    // گرد کردن کسری ریالی طبقِ تنظیماتِ سازمان (طبق requests.php)
+    $round_to = max(1, (int) $app_settings['salary_round_to']);
+    $shortage_money = floor($shortage_money / $round_to) * $round_to;
     
     // محاسبه کسرکار ساعتی
     $shortage_hours = $shortage_minutes / 60;
@@ -546,8 +555,8 @@ foreach ($users as $user_item) {
     // حقوق دریافتی (طبق requests.php)
     $net_salary = max(0, $user_item['monthly_salary'] - $shortage_money);
     
-    // گرد کردن حقوق نهایی به نزدیک‌ترین 100,000 ریال
-    $net_salary = floor($net_salary / 100000) * 100000;
+    // گرد کردن حقوق نهایی طبقِ همان تنظیم
+    $net_salary = floor($net_salary / $round_to) * $round_to;
     
     $team_data[] = [
         'user_id' => $uid,
