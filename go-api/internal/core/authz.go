@@ -220,3 +220,50 @@ func IsSameOrg(u *PermUser, resourceOrgID int64) bool {
 	}
 	return u.OrganizationID == resourceOrgID
 }
+
+// CanManageTargetUser — پورتِ دقیقِ canManageTargetUser(): سوپرادمین →
+// همیشه؛ خودش → همیشه؛ supervisor/admin هم‌سازمان → بله؛ manager → فقط
+// اگر targetUserId زیرِمجموعه‌اش باشد؛ بقیه → نه.
+func CanManageTargetUser(db *sql.DB, actingUser *PermUser, targetUserID int64) (bool, error) {
+	if actingUser == nil {
+		return false, nil
+	}
+	if IsSuperAdmin(actingUser) {
+		return true, nil
+	}
+	if actingUser.ID == targetUserID {
+		return true, nil
+	}
+
+	role := actingUser.Role
+	if role == "" {
+		role = "employee"
+	}
+
+	if role == "supervisor" || role == "admin" {
+		var targetOrg sql.NullInt64
+		err := db.QueryRow("SELECT organization_id FROM users WHERE id = ?", targetUserID).Scan(&targetOrg)
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		if err != nil {
+			return false, err
+		}
+		return IsSameOrg(actingUser, targetOrg.Int64), nil
+	}
+
+	if role == "manager" {
+		subs, err := GetSubordinateIds(db, actingUser.ID)
+		if err != nil {
+			return false, err
+		}
+		for _, id := range subs {
+			if id == targetUserID {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+
+	return false, nil
+}

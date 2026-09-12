@@ -24,6 +24,10 @@
 //	GET    /go/api/announcements/list      → پورتِ api/announcements/list.php
 //	GET    /go/api/tickets/list            → پورتِ api/tickets/list.php
 //	POST   /go/api/tickets/mark-all-read   → پورتِ api/tickets/mark-all-read.php
+//	GET|POST /go/api/attendance/allowed-ips → پورتِ api/attendance/allowed-ips.php
+//	GET|POST /go/api/attendance/devices     → پورتِ جزئیِ api/attendance/devices.php (بدونِ approve/reject)
+//	GET|POST /go/api/attendance/denied-log  → پورتِ api/attendance/denied-log.php
+//	GET    /go/api/tickets/detail          → پورتِ api/tickets/detail.php
 //
 // عمداً پورت نشده: api/attendance/register.php (ثبتِ ورود/خروج) و هر منطقِ
 // محاسبه‌ی کسری/حقوق — ریسکِ مالی/عملیاتی‌شان بالاست؛ نیازمندِ تصمیمِ
@@ -146,6 +150,12 @@ func main() {
 	// ── ماژولِ حضور و غیاب — فقط بخشِ خواندنی (پورتِ api/attendance/*) ──
 	mux.HandleFunc("GET /go/api/attendance/today-status", s.auth(attendance.TodayStatus(s.db)))
 	mux.HandleFunc("GET /go/api/attendance/absent-today", s.auth(attendance.AbsentToday(s.db)))
+	// این سه‌تا در PHP هم روی متد شاخه نمی‌زنن (فقط GET را جدا می‌کنن، بقیه
+	// را به‌عنوانِ نوشتنِ JSON با یک action می‌خونن)، پس بدونِ پیشوندِ متد
+	// ثبت می‌شن تا همون انعطاف حفظ بشه.
+	mux.HandleFunc("/go/api/attendance/allowed-ips", s.auth(attendance.AllowedIPs(s.db)))
+	mux.HandleFunc("/go/api/attendance/devices", s.auth(attendance.Devices(s.db)))
+	mux.HandleFunc("/go/api/attendance/denied-log", s.auth(attendance.DeniedLog(s.db)))
 
 	// ── ماژولِ اعلان‌ها (پورتِ api/notifications/*) ──
 	mux.HandleFunc("GET /go/api/notifications/list", s.auth(notifications.List(s.db)))
@@ -160,6 +170,7 @@ func main() {
 	// ── ماژولِ تیکت‌ها — فقط لیست + علامت‌گذاریِ همه‌خوانده‌شده ──
 	mux.HandleFunc("GET /go/api/tickets/list", s.auth(tickets.List(s.db)))
 	mux.HandleFunc("POST /go/api/tickets/mark-all-read", s.auth(tickets.MarkAllRead(s.db)))
+	mux.HandleFunc("GET /go/api/tickets/detail", s.auth(tickets.Detail(s.db)))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{
