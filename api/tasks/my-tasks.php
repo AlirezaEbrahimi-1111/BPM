@@ -295,6 +295,13 @@ ORDER BY
     $completionMap = pe_preloadCompletionDates($db, $continuousIds);
 
     foreach ($all_tasks as $task) {
+        // 🔒 رفع ناهماهنگی: این برگشت‌ازِ period_done به دوره‌ی بعدی قبلاً فقط
+        // در overview.php/delegated-tasks.php انجام می‌شد، نه اینجا — یعنی
+        // وضعیتِ یک کارِ تکرارشونده بسته به اینکه کاربر کدوم صفحه را باز
+        // می‌کرد فرق داشت. حالا همه‌جا یکسان اجرا می‌شود.
+        if ($task['task_type'] === 'continuous' && !empty($task['start_date'])) {
+            maybeStartNextPeriod($db, $task, $user_id, $holidays, $completionMap);
+        }
         $task = enrichTaskDates($task, $db, $holidays, $today, $completionMap);
         // کار دوره‌ای که بازه‌اش تمام شده → نمایش نده
         if (

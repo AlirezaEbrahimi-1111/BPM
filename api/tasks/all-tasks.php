@@ -13,6 +13,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php'; // ← اضافه شد
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checklist-search-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-dates-helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
 
 try {
     $user_id = requireAuth();
@@ -35,9 +36,24 @@ try {
 
     $tasks = $taskManager->getAllTasks($user_id, $filters);
 
+    // 🆕 پیش‌واکشیِ دسته‌ایِ تاریخ‌های تکمیل برای کارهای دوره‌ای (بدونِ کوئریِ
+    // جدا به‌ازای هر کار) — برای maybeStartNextPeriod/enrichTaskDates
+    $continuousIds = [];
+    foreach ($tasks as $t) {
+        if (($t['task_type'] ?? '') === 'continuous') $continuousIds[] = $t['id'];
+    }
+    $completionMap = pe_preloadCompletionDates($db, $continuousIds);
+
     foreach ($tasks as &$task) {
+        // 🔒 رفع ناهماهنگی: این برگشت‌ازِ period_done به دوره‌ی بعدی قبلاً
+        // فقط در overview.php/delegated-tasks.php انجام می‌شد، نه اینجا —
+        // یعنی وضعیتِ یک کارِ تکرارشونده بسته به صفحه‌ای که کاربر باز
+        // می‌کرد فرق داشت. حالا همه‌جا یکسان اجرا می‌شود.
+        if (($task['task_type'] ?? '') === 'continuous' && !empty($task['start_date'])) {
+            maybeStartNextPeriod($db, $task, $user_id, $holidays, $completionMap);
+        }
         // ✅ محاسبهٔ مشترک: موعد بعدی، مهلت، معوقه‌ها
-        $task = enrichTaskDates($task, $db, $holidays, $today_str);
+        $task = enrichTaskDates($task, $db, $holidays, $today_str, $completionMap);
     }
     unset($task); // رفع reference leak
     attachChecklistTitles($db, $tasks);
