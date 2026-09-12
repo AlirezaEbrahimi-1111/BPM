@@ -18,10 +18,30 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`crm_proform
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`crm_actual_sales`          TO 'crm_service'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`crm_org_accounting_config` TO 'crm_service'@'localhost';
 
--- خواندنِ فقط سه جدولِ اصلی که برای احراز هویت و شناختِ کارشناس/سازمان لازم است
-GRANT SELECT ON `computeryekta_todo_system`.`users`               TO 'crm_service'@'localhost';
-GRANT SELECT ON `computeryekta_todo_system`.`organizations`       TO 'crm_service'@'localhost';
-GRANT SELECT ON `computeryekta_todo_system`.`user_activity_units` TO 'crm_service'@'localhost';
+-- نوشتن روی جدول‌های ماژولِ فاکتورِ رسمی (inv_*). این بخش با خودِ فایل هم‌قدم
+-- نمانده بود — وقتی این جدول‌ها ساخته شدند GRANT‌شان دستی روی سرور زده شد ولی
+-- این‌جا ثبت نشد؛ الان کامل شد تا یک استقرارِ تازه هم همین دسترسی را داشته باشد.
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_products`               TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_warehouses`             TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_stock`                  TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_stock_moves`            TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_suppliers`              TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_purchase_invoices`      TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_purchase_items`         TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_seller`                 TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_settings`               TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_invoices`               TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_invoice_items`          TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_invoice_requests`       TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_invoice_request_items`  TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_partners`               TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_partner_month_share`    TO 'crm_service'@'localhost';
+
+-- خواندنِ فقط جدول‌هایی که برای احراز هویت و شناختِ کارشناس/سازمان/بخشِ فعالیت لازم است
+GRANT SELECT ON `computeryekta_todo_system`.`users`                  TO 'crm_service'@'localhost';
+GRANT SELECT ON `computeryekta_todo_system`.`organizations`          TO 'crm_service'@'localhost';
+GRANT SELECT ON `computeryekta_todo_system`.`user_activity_units`    TO 'crm_service'@'localhost';
+GRANT SELECT ON `computeryekta_todo_system`.`user_activity_sections` TO 'crm_service'@'localhost';
 
 FLUSH PRIVILEGES;
 

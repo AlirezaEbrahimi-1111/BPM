@@ -209,6 +209,10 @@ func writeDBErr(w http.ResponseWriter, op string, err error) {
 		writeErr(w, http.StatusInternalServerError, "ستونی در دیتابیس کم است — مهاجرتِ پایگاه‌داده اجرا نشده (migrate.php up)")
 		return
 	}
+	if strings.Contains(msg, "Error 1142") || strings.Contains(msg, "command denied") {
+		writeErr(w, http.StatusInternalServerError, "یوزرِ دیتابیسِ سرویس به این جدول دسترسی ندارد — GRANT لازم است (crm-service/deploy/crm_service_db_user.sql)")
+		return
+	}
 	writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 }
 
