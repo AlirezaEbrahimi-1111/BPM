@@ -2054,7 +2054,11 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             if (preData) {
                 data = preData;
             } else {
-                const apiUrl = getApiUrl('attendance/today-status.php');
+                // ✅ از go-api سرو می‌شود (پورتِ api/attendance/today-status.php). خروجی
+                // بایت‌به‌بایت برابر است و با تستِ سایه‌ای روی پروداکشن تأیید شده.
+                // فایلِ PHP دست‌نخورده می‌ماند به‌عنوانِ fallback؛ برگشت = این را به
+                // getApiUrl('attendance/today-status.php') برگردان.
+                const apiUrl = '/go/api/attendance/today-status';
 
                 const response = await fetch(apiUrl, {
                     method: 'GET',
