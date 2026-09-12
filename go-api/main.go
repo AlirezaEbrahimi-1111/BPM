@@ -14,6 +14,12 @@
 //	POST   /go/api/reports/submit   → پورتِ api/reports/submit.php
 //	DELETE|POST /go/api/reports/delete   → پورتِ api/reports/delete.php
 //	POST   /go/api/reports/generate → پورتِ api/reports/generate.php
+//	GET    /go/api/attendance/today-status → پورتِ api/attendance/today-status.php
+//	GET    /go/api/attendance/absent-today → پورتِ api/attendance/absent-today.php
+//
+// عمداً پورت نشده: api/attendance/register.php (ثبتِ ورود/خروج) و هر منطقِ
+// محاسبه‌ی کسری/حقوق — ریسکِ مالی/عملیاتی‌شان بالاست؛ نیازمندِ تصمیمِ
+// جداگانه پیش از هر پورتی.
 //
 // روالِ افزودنِ endpoint: پورت در internal/<module>/، ثبت در main.go، سپس
 // «تستِ سایه‌ای» (SHADOW-TEST.md) — خروجیِ Go و PHP روی یک دیتابیس مقایسه شود —
@@ -35,6 +41,7 @@ import (
 	"strings"
 	"time"
 
+	"bmp/go-api/internal/attendance"
 	"bmp/go-api/internal/core"
 	"bmp/go-api/internal/reports"
 )
@@ -124,6 +131,10 @@ func main() {
 	mux.HandleFunc("DELETE /go/api/reports/delete", s.auth(reports.Delete(s.db)))
 	mux.HandleFunc("POST /go/api/reports/delete", s.auth(reports.Delete(s.db)))
 	mux.HandleFunc("POST /go/api/reports/generate", s.auth(reports.Generate(s.db)))
+
+	// ── ماژولِ حضور و غیاب — فقط بخشِ خواندنی (پورتِ api/attendance/*) ──
+	mux.HandleFunc("GET /go/api/attendance/today-status", s.auth(attendance.TodayStatus(s.db)))
+	mux.HandleFunc("GET /go/api/attendance/absent-today", s.auth(attendance.AbsentToday(s.db)))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{
