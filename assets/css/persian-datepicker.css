@@ -187,14 +187,14 @@
 }
 
 .datepicker-day.today {
-    background: linear-gradient(135deg, #fff4e6, #ffe8cc);
-    border-color: #ff9800;
+    background: rgba(142, 87, 254, 0.12);
+    border-color: #8e57fe;
     font-weight: bold;
-    color: #e65100;
+    color: #8e57fe;
 }
 
 .datepicker-day.today:hover {
-    background: linear-gradient(135deg, #ffe8cc, #ffd699);
+    background: rgba(142, 87, 254, 0.2);
 }
 
 .datepicker-day.selected {
@@ -211,12 +211,10 @@
     box-shadow: 0 3px 12px rgba(142, 87, 254, 0.4);
 }
 
-/* وقتی «امروز» هم‌زمان انتخاب‌شده هم هست (مثلاً پیش‌فرضِ مودالِ تعریفِ کار)،
-   رنگِ .selected (سفید) روی رنگِ .today غالب می‌شد و روی پس‌زمینه‌یِ کم‌رنگ
-   به‌سختی دیده می‌شد — این‌جا صریحاً مشکی می‌کنیم */
-.datepicker-day.today.selected {
-    color: #1a1a1a;
-}
+/* دیگر نیازی به رنگِ اختصاصیِ «امروز + انتخاب‌شده» نیست: هر دو حالا در
+   خانواده‌یِ رنگِ بنفش‌اند، پس .selected (که بعد از .today تعریف شده) به‌طورِ
+   طبیعی پس‌زمینهٔ توپُر و متنِ سفیدش را می‌بَرد — بدونِ افتادن در دامِ تضادِ
+   قدیمیِ نارنجی/سفید */
 
 .datepicker-day.disabled {
     color: #ddd;
@@ -361,21 +359,17 @@
 }
 
 :root[data-theme="dark"] .datepicker-day.today {
-    background: rgba(255, 152, 0, 0.15);
-    border-color: #ff9800;
-    color: #ffb74d;
+    background: rgba(142, 87, 254, 0.22);
+    border-color: #8e57fe;
+    color: #cdb8ff;
 }
 
 :root[data-theme="dark"] .datepicker-day.today:hover {
-    background: rgba(255, 152, 0, 0.25);
+    background: rgba(142, 87, 254, 0.32);
 }
 
 :root[data-theme="dark"] .datepicker-day.selected {
     box-shadow: 0 2px 10px rgba(142, 87, 254, 0.45);
-}
-
-:root[data-theme="dark"] .datepicker-day.today.selected {
-    color: #fff;
 }
 
 :root[data-theme="dark"] .datepicker-day.datepicker-friday.datepicker-holiday {
@@ -474,4 +468,43 @@
 }
 .datepicker-day.selected.datepicker-holiday::after {
     background: #fff;
+}
+
+/* «امروز» همیشه در اولویتِ بصریِ بنفشِ سازمانی است — حتی اگر جمعه/تعطیل
+   (یا هر دو) هم باشد، قرمزِ تعطیلات نباید جایِ بنفشِ «امروز» را بگیرد.
+   ویژگی‌شماری (۳ و ۴ کلاس) عمداً برابر یا بیشتر از قانون‌هایِ قرمزِ بالاست. */
+.datepicker-day.today.datepicker-friday,
+.datepicker-day.today.datepicker-holiday,
+.datepicker-day.today.datepicker-friday.datepicker-holiday {
+    background: rgba(142, 87, 254, 0.12);
+    border-color: #8e57fe;
+    color: #8e57fe;
+}
+.datepicker-day.today.datepicker-holiday::after,
+.datepicker-day.today.datepicker-friday.datepicker-holiday::after {
+    background: #8e57fe;
+}
+.datepicker-day.today.selected.datepicker-holiday,
+.datepicker-day.today.selected.datepicker-friday,
+.datepicker-day.today.selected.datepicker-friday.datepicker-holiday {
+    background: #8e57fe;
+    color: #fff;
+    border-color: #8e57fe;
+}
+.datepicker-day.today.selected.datepicker-holiday::after {
+    background: #fff;
+}
+
+:root[data-theme="dark"] .datepicker-day.today.datepicker-friday,
+:root[data-theme="dark"] .datepicker-day.today.datepicker-holiday,
+:root[data-theme="dark"] .datepicker-day.today.datepicker-friday.datepicker-holiday {
+    background: rgba(142, 87, 254, 0.22);
+    border-color: #8e57fe;
+    color: #cdb8ff;
+}
+:root[data-theme="dark"] .datepicker-day.today.selected.datepicker-holiday,
+:root[data-theme="dark"] .datepicker-day.today.selected.datepicker-friday,
+:root[data-theme="dark"] .datepicker-day.today.selected.datepicker-friday.datepicker-holiday {
+    background: #8e57fe;
+    color: #fff;
 }

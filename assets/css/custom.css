@@ -2533,9 +2533,9 @@ td:nth-child(2) {
 }
 
 :root[data-theme="dark"] .modal .datepicker-day.today {
-    background: #5a67d8;
+    background: #8e57fe;
     color: #fff;
-    border-color: #5a67d8;
+    border-color: #8e57fe;
 }
 
 :root[data-theme="dark"] .modal .datepicker-day.selected {
