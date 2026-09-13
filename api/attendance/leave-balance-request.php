@@ -3,8 +3,10 @@
  * API: درخواستِ سهمیهٔ تشویقیِ مرخصی/پاس از سرپرست — یک ردیفِ ماندگار در
  * leave_bonus_requests ثبت می‌شه (تا با فراموش‌شدنِ نوتیفیکیشن، درخواست
  * گم نشه) + یک نوتیفیکیشنِ آنی هم برایِ اطلاع‌رسانیِ سریع ارسال می‌شه.
- * خودِ اعطا از طریقِ فهرستِ درخواست‌ها یا دکمهٔ موجود در pages/users.php
- * (leave-balance-grant.php) انجام می‌شه
+ * خودِ تأیید/ردِ درخواست از طریقِ تبِ «درخواست‌های سازمان» در
+ * attendance_system/pages/requests.php انجام می‌شه (نه pages/users.php —
+ * طبقِ تصمیمِ صریح، این نوعِ درخواست باید کنارِ بقیه‌یِ درخواست‌هایِ
+ * حضور‌وغیاب/سازمانی باشه، نه توی صفحه‌یِ مدیریتِ کاربران).
  * POST { requested_minutes, note? }
  */
 
@@ -79,7 +81,7 @@ try {
             'title'        => 'درخواست سهمیهٔ تشویقی',
             'message'      => $message,
             'type'         => 'info',
-            'link'         => '/pages/users.php',
+            'link'         => '/attendance_system/pages/requests.php?tab=pending-approvals',
             'related_type' => 'leave_bonus_request',
             'related_id'   => $requestId,
             'sms_pattern'  => 'general',

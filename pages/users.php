@@ -565,9 +565,6 @@ if (!hasPermission($__me, 'manage_users')) {
 
         <div id="alertContainer" class="mb-3"></div>
 
-        <!-- درخواست‌هایِ در‌انتظارِ سهمیهٔ تشویقی (فقط سرپرست) -->
-        <div id="leaveBonusRequestsPanel" style="display:none;" class="mb-3"></div>
-
         <!-- هدر صفحه -->
         <div class="page-header-bar">
             <h1><i class="bi bi-people"></i> مدیریت کاربران</h1>
@@ -792,7 +789,7 @@ if (!hasPermission($__me, 'manage_users')) {
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">حقوق ماهانه (تومان)</label>
-                                <input type="text" class="form-control bg-light" id="e_monthly_salary" readonly>
+                                <input type="text" class="form-control" id="e_monthly_salary" inputmode="numeric" onblur="reformatSalaryInput()">
                             </div>
                         </div>
                     </div>
@@ -1023,8 +1020,6 @@ if (!hasPermission($__me, 'manage_users')) {
                 buildSectionOptionsForCreate();
                 initGrid();
                 loadUsers();
-
-                if (d.user.role === 'supervisor') loadLeaveBonusRequests();
 
             } catch (err) {
                 console.error('init error:', err);
@@ -1318,76 +1313,9 @@ if (!hasPermission($__me, 'manage_users')) {
                 .catch(() => showToast('خطا در دریافت موجودی', 'error'));
         }
 
-        let __bonusRequestsCache = [];
-
-        function loadLeaveBonusRequests() {
-            fetch('/api/attendance/leave-bonus-requests.php', { headers: ah() })
-                .then(r => r.json())
-                .then(d => {
-                    const box = document.getElementById('leaveBonusRequestsPanel');
-                    if (!d.success || !d.requests.length) { box.style.display = 'none'; box.innerHTML = ''; __bonusRequestsCache = []; return; }
-                    __bonusRequestsCache = d.requests;
-
-                    const rows = d.requests.map(req => `
-                        <div class="bonus-req-row" data-req-id="${req.id}">
-                            <div class="bonus-req-info">
-                                <span><strong>${esc(req.name)}</strong> — درخواست ${req.requested_formatted} ساعت — موجودی فعلی: ${req.balance_formatted} ساعت</span>
-                                ${req.note ? `<span class="bonus-req-note">${esc(req.note)}</span>` : ''}
-                            </div>
-                            <div class="d-flex gap-1">
-                                <button class="btn btn-success btn-sm" onclick="resolveLeaveBonusRequest(${req.id}, 'grant', '${escJsAttr(req.name)}')">
-                                    <i class="bi bi-check-lg"></i> تأیید
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="resolveLeaveBonusRequest(${req.id}, 'decline', '${escJsAttr(req.name)}')">
-                                    <i class="bi bi-x-lg"></i> رد
-                                </button>
-                            </div>
-                        </div>
-                    `).join('');
-
-                    box.innerHTML = `
-                        <div class="bonus-req-box">
-                            <div class="bonus-req-title"><i class="bi bi-hourglass-split"></i> درخواست‌های در‌انتظار سهمیهٔ تشویقی (${toFaDigits(d.requests.length)})</div>
-                            ${rows}
-                        </div>
-                    `;
-                    box.style.display = '';
-                })
-                .catch(() => {});
-        }
-
-        function resolveLeaveBonusRequest(requestId, action, name) {
-            if (action === 'grant') {
-                const req = __bonusRequestsCache.find(r => r.id === requestId);
-                uiConfirm(
-                    `${req ? req.requested_formatted : '؟'} ساعت سهمیهٔ تشویقی به «${esc(name)}» اعطا شود؟`,
-                    function () {
-                        submitBonusResolve(requestId, 'grant');
-                    },
-                    { yesText: 'بله، اعطا شود', noText: 'انصراف' }
-                );
-            } else {
-                uiConfirm(`درخواست «${esc(name)}» رد شود؟`, function () {
-                    submitBonusResolve(requestId, 'decline');
-                }, { danger: true, yesText: 'بله، رد شود', noText: 'انصراف' });
-            }
-        }
-
-        function submitBonusResolve(requestId, action) {
-            fetch('/api/attendance/leave-bonus-requests-resolve.php', {
-                    method: 'POST',
-                    headers: ahj(),
-                    body: JSON.stringify({ request_id: requestId, action: action })
-                })
-                .then(r => r.json())
-                .then(res => {
-                    if (res.success) {
-                        showToast(action === 'grant' ? 'سهمیه اعطا شد' : 'درخواست رد شد', 'success');
-                        loadLeaveBonusRequests();
-                    } else showToast(res.message || 'خطا', 'error');
-                })
-                .catch(() => showToast('خطا در ارتباط با سرور', 'error'));
-        }
+        // درخواست‌هایِ در‌انتظارِ سهمیهٔ تشویقی از این‌جا به
+        // attendance_system/pages/requests.php (تبِ «درخواست‌های سازمان»)
+        // منتقل شدن — طبقِ تصمیمِ صریح، این‌جا دیگه نمایش داده نمی‌شن.
 
         async function restoreUser(userId) {
             try {
@@ -1585,7 +1513,10 @@ if (!hasPermission($__me, 'manage_users')) {
             document.getElementById('e_phone').value = u.phone || '';
             document.getElementById('e_email').value = u.email || '';
 
-            document.getElementById('e_is_active').value = String(u.is_active ?? 1);
+            // هم‌راستا با نمایشِ جدول (p.value == 1) — نه ‍‍`?? 1`، چون
+            // is_active=null (نه 0) رو غلط «فعال» نشون می‌داد، درحالی‌که
+            // جدول همون null رو «غیرفعال» نشون می‌ده
+            document.getElementById('e_is_active').value = (u.is_active == 1) ? '1' : '0';
             // واحدها را از سرور بگیر (secList همه، secPrimary اصلی)
             secList = [];
             secPrimary = u.activity_section || '';
@@ -1636,7 +1567,7 @@ if (!hasPermission($__me, 'manage_users')) {
                 last_name: u.last_name || '',
                 phone: u.phone || '',
                 email: u.email || '',
-                is_active: String(u.is_active ?? 1),
+                is_active: (u.is_active == 1) ? '1' : '0',
                 shift_type: u.shift_type || 'single',
                 shift_1_start: (u.shift_1_start || '08:00').slice(0, 5),
                 shift_1_end: (u.shift_1_end || '17:00').slice(0, 5),
@@ -1738,7 +1669,11 @@ if (!hasPermission($__me, 'manage_users')) {
                 shift_1_end: document.getElementById('e_shift1_end').value || null,
                 shift_2_start: document.getElementById('e_shift2_start').value || null,
                 shift_2_end: document.getElementById('e_shift2_end').value || null,
-                monthly_salary: parseFloat(document.getElementById('e_monthly_salary').value) || 0,
+                // فیلد به‌صورتِ «تومان + رقمِ فارسی» نمایش داده می‌شه؛ قبل از
+                // ارسال باید به رقمِ لاتین و ریال (× ۱۰) تبدیل بشه — قبلاً
+                // اینجا parseFloat مستقیم روی متنِ فارسی می‌خورد و همیشه NaN
+                // می‌شد، یعنی هر ذخیره‌ای حقوقِ کاربر رو بی‌صدا صفر می‌کرد.
+                monthly_salary: Math.round(parseSalaryToman(document.getElementById('e_monthly_salary').value) * 10),
                 activity_section: document.getElementById('e_activity_section').value || null,
                 sections: collectSections(),
                 primary_section: secPrimary || null,
@@ -1776,6 +1711,22 @@ if (!hasPermission($__me, 'manage_users')) {
             if (!val) return '';
             const toman = Math.round(val / 10);
             return toFa(toman.toLocaleString('en-US'));
+        }
+        // معکوسِ formatSalary: رشته‌ی نمایشی (رقمِ فارسی/عربی + جداکننده‌ی هزارگان)
+        // رو به یک عددِ ریالِ خام برمی‌گردونه — برایِ ارسال به سرور.
+        function normalizeDigits(str) {
+            return String(str)
+                .replace(/[۰-۹]/g, d => d.charCodeAt(0) - 1776)
+                .replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632);
+        }
+        function parseSalaryToman(displayStr) {
+            const cleaned = normalizeDigits(displayStr || '').replace(/[^\d.]/g, '');
+            return cleaned === '' ? 0 : parseFloat(cleaned);
+        }
+        function reformatSalaryInput() {
+            const el = document.getElementById('e_monthly_salary');
+            const toman = parseSalaryToman(el.value);
+            el.value = toman ? toFa(toman.toLocaleString('en-US')) : '';
         }
         /* ── toggle status ── */
         function toggleStatus(userId, current) {
