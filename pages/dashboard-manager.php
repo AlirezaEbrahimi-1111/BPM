@@ -4728,7 +4728,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
          */
         async function pmRefresh() {
             try {
-                const res = await fetch('../api/tasks/my-tasks.php', {
+                // ✅ از go-api سرو می‌شود؛ برگشت = '../api/tasks/my-tasks.php'
+                const res = await fetch('/go/api/tasks/my-tasks', {
                     headers: {
                         'Authorization': 'Bearer ' + authToken
                     }

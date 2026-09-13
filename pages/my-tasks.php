@@ -446,7 +446,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
         async function loadTasks() {
             try {
-                const res = await fetch('../api/tasks/my-tasks.php', {
+                // ✅ از go-api سرو می‌شود؛ برگشت = '../api/tasks/my-tasks.php'
+                const res = await fetch('/go/api/tasks/my-tasks', {
                     headers: {
                         'Authorization': 'Bearer ' + authToken
                     }
@@ -540,7 +541,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         // بارگذاری کارهای تمام‌شده‌ی چک‌لیستی (بایگانی)
         async function loadChecklistArchive() {
             try {
-                const res = await fetch('../api/tasks/my-tasks.php?filter=checklist_archive', {
+                // ✅ از go-api سرو می‌شود؛ برگشت = '../api/tasks/my-tasks.php?filter=checklist_archive'
+                const res = await fetch('/go/api/tasks/my-tasks?filter=checklist_archive', {
                     headers: {
                         'Authorization': 'Bearer ' + authToken
                     }
