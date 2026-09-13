@@ -1498,6 +1498,19 @@ if (!hasPermission($__me, 'manage_users')) {
             }
         }
 
+        // ست‌کردنِ مقدارِ یک <select> از کدِ صفحه (نه با کلیکِ کاربر) باید
+        // رویدادِ change رو دستی شلیک کنه — وگرنه ویجتِ SelectBox
+        // (assets/js/select-box.js) که ظاهرِ این دراپ‌داون‌ها رو می‌سازه،
+        // بی‌خبر می‌مونه و برچسبِ نمایشی‌ش با مقدارِ واقعیِ <select> (که درست
+        // ذخیره می‌شه) ناهماهنگ می‌مونه — دقیقاً همون چیزی که برایِ
+        // «وضعیت» توی مودالِ ویرایش دیده شد.
+        function setSelectValue(id, value) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.value = value;
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
         /* ── edit user ── */
         async function openEditModal(userId) {
             const u = allUsers.find(x => x.id === userId);
@@ -1516,7 +1529,7 @@ if (!hasPermission($__me, 'manage_users')) {
             // هم‌راستا با نمایشِ جدول (p.value == 1) — نه ‍‍`?? 1`، چون
             // is_active=null (نه 0) رو غلط «فعال» نشون می‌داد، درحالی‌که
             // جدول همون null رو «غیرفعال» نشون می‌ده
-            document.getElementById('e_is_active').value = (u.is_active == 1) ? '1' : '0';
+            setSelectValue('e_is_active', (u.is_active == 1) ? '1' : '0');
             // واحدها را از سرور بگیر (secList همه، secPrimary اصلی)
             secList = [];
             secPrimary = u.activity_section || '';
@@ -1540,7 +1553,7 @@ if (!hasPermission($__me, 'manage_users')) {
             document.getElementById('e_password_confirm').value = '';
 
             // شیفت
-            document.getElementById('e_shift_type').value = u.shift_type || 'single';
+            setSelectValue('e_shift_type', u.shift_type || 'single');
             document.getElementById('e_shift1_start').value = (u.shift_1_start || '08:00').slice(0, 5);
             document.getElementById('e_shift1_end').value = (u.shift_1_end || '17:00').slice(0, 5);
             document.getElementById('e_shift2_start').value = (u.shift_2_start || '').slice(0, 5);
@@ -1554,7 +1567,7 @@ if (!hasPermission($__me, 'manage_users')) {
             document.getElementById('e_can_create_workflow').checked = u.can_create_workflow == 1;
 
             // نقش
-            document.getElementById('e_role').value = u.role || 'employee';
+            setSelectValue('e_role', u.role || 'employee');
 
             // تب ۵
             buildManagerDropdown(userId, u.manager_id);
