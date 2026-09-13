@@ -5270,7 +5270,7 @@ function formatDateJalali($gregorianDate)
                     __bonusRequestsCache = d.requests;
 
                     const rows = d.requests.map(req => `
-                        <div class="bonus-req-row" data-req-id="${req.id}" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border-soft,#eee);">
+                        <div class="bonus-req-row" data-req-id="${req.id}" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid rgba(245,158,11,.25);">
                             <div style="display:flex;flex-direction:column;gap:2px;">
                                 <span><strong>${escBonusHtml(req.name)}</strong> — درخواست ${escBonusHtml(req.requested_formatted)} ساعت — موجودی فعلی: ${escBonusHtml(req.balance_formatted)} ساعت</span>
                                 ${req.note ? `<span style="color:#888;font-size:.85em;">${escBonusHtml(req.note)}</span>` : ''}
@@ -5287,8 +5287,8 @@ function formatDateJalali($gregorianDate)
                     `).join('');
 
                     box.innerHTML = `
-                        <div style="border:1px solid var(--border-soft,#eee);border-radius:10px;overflow:hidden;">
-                            <div style="padding:10px 12px;font-weight:600;background:var(--surface-2,#f8f8f8);"><i class="bi bi-hourglass-split"></i> درخواست‌های در‌انتظار سهمیهٔ تشویقی (${toFaDigits(d.requests.length)})</div>
+                        <div style="border:1px solid rgba(245,158,11,.35);border-radius:10px;overflow:hidden;background:var(--warning-box-bg,#fff3cd);">
+                            <div style="padding:10px 12px;font-weight:600;color:var(--warning-box-text,#856404);"><i class="bi bi-hourglass-split"></i> درخواست‌های در‌انتظار سهمیهٔ تشویقی (${toFaDigits(d.requests.length)})</div>
                             ${rows}
                         </div>
                     `;
