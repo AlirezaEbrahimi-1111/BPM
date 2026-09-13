@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ticket-attachment-helper.php';
 // ✅ بعد
 try {
     $database = new Database();
@@ -145,11 +146,16 @@ try {
             $storedName = uniqid('tkt_') . '_' . time() . '.' . $ext;
 
             if (move_uploaded_file($tmpName, $uploadDir . $storedName)) {
+                // 🔒 mime_type ذخیره‌شده از رویِ خودِ فایل تشخیص داده می‌شه، نه
+                // از $type (که مرورگر می‌فرسته و قابلِ‌اعتماد نیست — مثلاً
+                // Samsung Internet برایِ عکسِ چسبونده‌شده، نوعِ خالی/نادرست
+                // می‌فرسته، پس بعداً توی نمایش «تصویر» تشخیص داده نمی‌شد).
+                $detectedMime = detectTicketAttachmentMime($uploadDir . $storedName, $ext);
                 $stmt = $db->prepare("
                     INSERT INTO ticket_attachments (ticket_id, message_id, user_id, original_name, stored_name, mime_type, file_size)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 ");
-                $stmt->execute([$ticketId, $messageId, $user_id, $name, $storedName, $type, $size]);
+                $stmt->execute([$ticketId, $messageId, $user_id, $name, $storedName, $detectedMime, $size]);
             }
         }
     }
