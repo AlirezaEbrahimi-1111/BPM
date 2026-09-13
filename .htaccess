@@ -4,6 +4,12 @@
 #     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 # </IfModule>
 
+# جلوگیریِ سراسری از نمایشِ فهرستِ فایل‌ها (Directory Listing) در پوشه‌هایی
+# که فایلِ index ندارن — طبقِ استانداردِ امنیتیِ وب، صرفِ نظر از اینکه کدوم
+# vhost/سرور این فایل‌ها رو سرو می‌کنه (چون این‌جا، نه توی تنظیماتِ Apache،
+# نوشته شده، خودکار با هر دیپلوی به همه‌جا اعمال می‌شه).
+Options -Indexes
+
 # .htaccess
 RewriteEngine On
 
