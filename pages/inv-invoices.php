@@ -104,7 +104,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) —
            فقط رنگ‌ها مخصوصِ وضعیتِ فاکتور هستند، شکل/اندازه یکسان شد */
         .st-badge {
-            display: inline-block;
+            /* display: inline-block; */
             padding: 7px 10px;
             border-radius: var(--badge-radius, 7px);
             font-size: 0.7rem;
@@ -142,7 +142,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
            کلیپ می‌شود و بخشی از گزینه‌ها دیده نمی‌شود). */
         /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) */
         .pm-badge {
-            display: inline-block;
+            /* display: inline-block; */
             padding: 7px 10px;
             border-radius: var(--badge-radius, 7px);
             font-size: 0.7rem;
@@ -328,8 +328,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         function actionCell(p) {
             const d = p.data;
-            let h = `<button class="ag-action-btn view" title="مشاهدهٔ فاکتور" onclick="location.href='/pages/inv-invoice-print.php?id=${d.id}'"><i class="bi bi-eye"></i></button>`;
-            h += `<button class="ag-action-btn print" title="چاپ" onclick="location.href='/pages/inv-invoice-print.php?id=${d.id}&print=1'"><i class="bi bi-printer"></i></button>`;
+            let h = `<button class="ag-action-btn print" title="چاپ" onclick="location.href='/pages/inv-invoice-print.php?id=${d.id}&print=1'"><i class="bi bi-printer"></i></button>`;
             if (d.status === 'draft') {
                 h += `<button class="ag-action-btn edit" title="ویرایش" onclick="location.href='/pages/inv-invoice-edit.php?id=${d.id}'"><i class="bi bi-pencil"></i></button>`;
                 h += `<button class="ag-action-btn approve" title="تأیید و صدور" onclick="approveInv(${d.id})"><i class="bi bi-check2-circle"></i></button>`;

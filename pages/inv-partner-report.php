@@ -78,7 +78,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
 
         /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) */
         .st-badge {
-            display: inline-block;
+            /* display: inline-block; */
             padding: 7px 10px;
             border-radius: var(--badge-radius, 7px);
             font-size: 0.7rem;
@@ -115,7 +115,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
            که مودالِ جداگانه باز می‌کند. */
         /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) */
         .pm-badge {
-            display: inline-block;
+            /* display: inline-block; */
             padding: 7px 10px;
             border-radius: var(--badge-radius, 7px);
             font-size: 0.7rem;
