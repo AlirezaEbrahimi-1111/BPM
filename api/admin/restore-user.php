@@ -80,9 +80,10 @@ try {
         }
     }
 
-    // بازگردانی
+    // بازگردانی — is_active هم به ۱ برمی‌گردد (طرفِ مقابلِ delete-user.php
+    // که حالا هنگامِ حذف is_active را صفر می‌کند)
     $stmt = $db->prepare('UPDATE users
-                          SET is_deleted = 0, deleted_at = NULL, deleted_by = NULL,
+                          SET is_deleted = 0, is_active = 1, deleted_at = NULL, deleted_by = NULL,
                               username = ?, phone = ?
                           WHERE id = ?');
     $stmt->execute([$newUsername, $newPhone, $uid]);
