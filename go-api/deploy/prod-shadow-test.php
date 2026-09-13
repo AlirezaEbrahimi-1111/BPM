@@ -72,7 +72,9 @@ function compare($label, $phpUrl, $goUrl, $token) {
 }
 
 // دامنه رو با دامنه‌ی واقعیِ خودِ سایت جایگزین کن اگر فرق داشت.
-$base = 'https://itmalek.com';
+// ⚠️ از ۱۴۰۵/۰۶/۲۲: itmalek.com فقط ریدایرکت به bpm.itmalek.com می‌کنه —
+// curl پیش‌فرض ریدایرکت رو دنبال نمی‌کنه، پس باید مستقیم آدرسِ نهایی داده بشه.
+$base = 'https://bpm.itmalek.com';
 $php = $base . '/api';
 $go  = $base . '/go/api';
 
@@ -93,6 +95,9 @@ compare('notifications/new (since=0)', "$php/notifications/new.php?since=0", "$g
 compare('announcements/list', "$php/announcements/list.php", "$go/announcements/list", $token);
 
 compare('tickets/list', "$php/tickets/list.php?mine=1&limit=50", "$go/tickets/list?mine=1&limit=50", $token);
+
+compare('tasks/my-tasks', "$php/tasks/my-tasks.php", "$go/tasks/my-tasks", $token);
+compare('tasks/my-tasks (checklist_archive)', "$php/tasks/my-tasks.php?filter=checklist_archive", "$go/tasks/my-tasks?filter=checklist_archive", $token);
 
 if ($reportId > 0) {
     compare('reports/detail', "$php/reports/detail.php?id=$reportId", "$go/reports/detail?id=$reportId", $token);
