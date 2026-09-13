@@ -14,6 +14,11 @@ Options -Indexes
 RewriteEngine On
 
 # فعال فقط روی هاست واقعی
+# استثنایِ مسیرِ چالشِ certbot — بدونِ این، تمدیدِ خودکارِ گواهیِ SSL
+# (که از همین webroot استفاده می‌کنه) با ریدایرکتِ اجباری به https شکست
+# می‌خورد. این خط قبلاً فقط مستقیم رویِ سرور اضافه شده بود (نه اینجا) —
+# همین ناهماهنگی باعث شد چند دیپلویِ بعدی روی سرور fast-forward نشن.
+RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
 RewriteCond %{HTTP_HOST} !^(localhost|bpm\.local) [NC]
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
