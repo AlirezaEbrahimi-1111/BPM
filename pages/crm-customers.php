@@ -9,15 +9,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
     exit;
 }
 
-// دسترسیِ نوشتن: همان قاعده‌ی سرویسِ Go — یکی از این دو مجوز کافی است.
-$canWrite = false;
-try {
-    $st = $db->prepare("SELECT (COALESCE(is_create_official_invoice,0) = 1 OR COALESCE(is_sales_manager,0) = 1) AS w FROM users WHERE id = ?");
-    $st->execute([(int) $user_id]);
-    $canWrite = (bool) $st->fetchColumn();
-} catch (Throwable $e) {
-    $canWrite = false;
-}
+// دسترسیِ نوشتن = دسترسیِ دیدن: هرکسی که این منو را می‌بیند، CRUD کامل دارد.
+$canWrite = true;
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">

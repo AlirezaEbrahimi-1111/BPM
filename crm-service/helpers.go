@@ -76,10 +76,13 @@ func (s *server) requireFlags(cols []string, next http.HandlerFunc) http.Handler
 	}
 }
 
-// requireCRMAccess: نوشتن در ماژولِ فاکتور برای هر کسی که «دیدنِ ماژول» را دارد.
-// معادلِ includes/crm_access.php: سوپرادمین (id 1/19)، یا فلگِ
-// is_create_official_invoice / is_sales_manager، یا عضوِ فعالِ تیمِ حسابداریِ
-// سازمانِ ۱ (بخش/واحد). با این، «دسترسیِ دیدن = دسترسیِ نوشتن/ابطال/ویرایش».
+// requireCRMAccess: نوشتن در ماژولِ فاکتور برای هر کسی که «دیدنِ ماژول» را دارد —
+// دقیقاً همان مجموعه‌ی crmModuleAllowed در includes/crm_access.php (سوپرادمین
+// id 1/19، شماره‌موبایل‌هایِ EXTRA_PHONES، یا عضوِ فعالِ تیمِ حسابداریِ سازمانِ ۱).
+// طبقِ تصمیمِ صریح: «دیدنِ منو = دسترسیِ کاملِ CRUD»، بدونِ محدودیتِ ریزتر —
+// فلگ‌هایِ is_create_official_invoice/is_sales_manager دیگر شرطِ لازم نیستند
+// (قبلاً کسانی که فقط از راهِ EXTRA_PHONES می‌دیدند، منو را داشتند ولی هر
+// نوشتنی ۴۰۳ می‌گرفت؛ همین ناهماهنگی گزارش شد).
 func (s *server) requireCRMAccess(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := userOf(r.Context())
@@ -92,8 +95,7 @@ func (s *server) requireCRMAccess(next http.HandlerFunc) http.HandlerFunc {
 			SELECT 1 FROM users u
 			WHERE u.id = ? AND u.is_active = 1
 			  AND (
-			        u.is_create_official_invoice = 1
-			     OR u.is_sales_manager = 1
+			        u.phone IN ('09927949376')
 			     OR (u.organization_id = 1 AND (
 			            u.activity_section = 'accounting'
 			         OR u.activity_unit = 'AC'
