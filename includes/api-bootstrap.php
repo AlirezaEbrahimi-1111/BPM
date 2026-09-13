@@ -34,7 +34,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 // ── CORS ──
 // همان سیاستِ includes/cors.php : فقط دامنه‌های خودی، با fallback به دامنه‌ی اصلی.
-$corsAllowedOrigins = ['https://itmalek.com', 'https://www.itmalek.com'];
+$corsAllowedOrigins = ['https://itmalek.com', 'https://www.itmalek.com', 'https://bpm.itmalek.com'];
 $corsRequestOrigin  = $_SERVER['HTTP_ORIGIN'] ?? '';
 header('Access-Control-Allow-Origin: ' . (
     in_array($corsRequestOrigin, $corsAllowedOrigins, true)
