@@ -42,7 +42,7 @@ try {
     $myName = trim($me['first_name'] . ' ' . $me['last_name']);
 
     // مقصدِ درخواست: همیشه سرپرست(هایِ) سازمان — نه مدیرِ بخش
-    $stmt = $db->prepare("SELECT id FROM users WHERE organization_id = ? AND role = 'supervisor' AND is_active = 1");
+    $stmt = $db->prepare("SELECT id FROM users WHERE organization_id = ? AND role = 'supervisor' AND is_active = 1 AND is_deleted = 0");
     $stmt->execute([$me['organization_id']]);
     $recipients = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
 

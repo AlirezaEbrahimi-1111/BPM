@@ -53,6 +53,7 @@ try {
                 JOIN unit_visibility v ON v.unit_to = u.activity_unit
                 WHERE v.unit_from = ?
                   AND u.is_active = 1
+                  AND u.is_deleted = 0
                   AND u.organization_id = ?
         
                 UNION
