@@ -14,7 +14,9 @@ type absentEntry struct {
 	Type   string `json:"type"`
 }
 
-// AbsentToday — پورتِ دقیقِ api/attendance/absent-today.php
+// AbsentToday — پورتِ دقیقِ api/attendance/absent-today.php. فقط کاربرانی
+// که واقعاً شیفت (shift_1_start) و حقوقِ ماهانه (monthly_salary) برایشان
+// ثبت شده وارد محاسبه می‌شوند — نه صرفاً پیش‌فرضِ فرمِ ویرایشِ کاربر.
 //
 //	GET /go/api/attendance/absent-today
 //	→ {"success":true,"holiday":bool,"today":"YYYY-MM-DD","absent":[...],"count":N}
@@ -60,6 +62,8 @@ func AbsentToday(db *sql.DB) http.HandlerFunc {
 			  AND COALESCE(role, '') <> 'supervisor'
 			  AND COALESCE(is_supervisor, 0) = 0
 			  AND COALESCE(shift_count, 0) >= 1
+			  AND shift_1_start IS NOT NULL
+			  AND COALESCE(monthly_salary, 0) > 0
 			ORDER BY first_name, last_name
 		`, orgID.Int64, u.ID)
 		if err != nil {
