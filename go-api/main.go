@@ -28,6 +28,7 @@
 //	GET|POST /go/api/attendance/devices     → پورتِ جزئیِ api/attendance/devices.php (بدونِ approve/reject)
 //	GET|POST /go/api/attendance/denied-log  → پورتِ api/attendance/denied-log.php
 //	GET    /go/api/tickets/detail          → پورتِ api/tickets/detail.php
+//	GET    /go/api/tasks/my-tasks          → پورتِ api/tasks/my-tasks.php
 //
 // عمداً پورت نشده: api/attendance/register.php (ثبتِ ورود/خروج) و هر منطقِ
 // محاسبه‌ی کسری/حقوق — ریسکِ مالی/عملیاتی‌شان بالاست؛ نیازمندِ تصمیمِ
@@ -58,6 +59,7 @@ import (
 	"bmp/go-api/internal/core"
 	"bmp/go-api/internal/notifications"
 	"bmp/go-api/internal/reports"
+	"bmp/go-api/internal/tasks"
 	"bmp/go-api/internal/tickets"
 )
 
@@ -171,6 +173,11 @@ func main() {
 	mux.HandleFunc("GET /go/api/tickets/list", s.auth(tickets.List(s.db)))
 	mux.HandleFunc("POST /go/api/tickets/mark-all-read", s.auth(tickets.MarkAllRead(s.db)))
 	mux.HandleFunc("GET /go/api/tickets/detail", s.auth(tickets.Detail(s.db)))
+
+	// ── ماژولِ کارها — فقط api/tasks/my-tasks.php (طبقِ تصمیمِ صریح: بقیهٔ
+	// ۳ endpointِ لیستِ کارها هرکدوم قاعدهٔ دسترسیِ مستقل و ناهماهنگِ
+	// خودشون رو دارن و فعلاً روی PHP می‌مونن) ──
+	mux.HandleFunc("GET /go/api/tasks/my-tasks", s.auth(tasks.MyTasks(s.db)))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{

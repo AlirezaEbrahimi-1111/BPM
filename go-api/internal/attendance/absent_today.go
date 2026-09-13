@@ -33,17 +33,17 @@ func AbsentToday(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		holidays, err := holidaySet(db, orgID.Int64)
+		holidays, err := core.HolidaySet(db, &orgID.Int64)
 		if err != nil {
 			core.WriteErr(w, http.StatusInternalServerError, "خطای سرور")
 			return
 		}
-		recurring, err := recurringHolidayWeekdays(db, orgID.Int64)
+		recurring, err := core.RecurringHolidayWeekdays(db, &orgID.Int64)
 		if err != nil {
 			core.WriteErr(w, http.StatusInternalServerError, "خطای سرور")
 			return
 		}
-		if !isWorkingDay(now, holidays, recurring) {
+		if !core.IsWorkingDay(now, holidays, recurring) {
 			core.WriteJSON(w, http.StatusOK, map[string]any{
 				"success": true, "holiday": true, "today": today, "absent": []absentEntry{}, "count": 0,
 			})
