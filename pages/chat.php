@@ -976,15 +976,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             font-style: italic;
         }
 
-        @keyframes chat-highlight-flash {
-            0%, 100% { background: transparent; }
-            30% { background: var(--ink-050); }
-        }
-
-        .chat-bubble-row.flash .chat-bubble {
-            animation: chat-highlight-flash 1.2s ease;
-        }
-
         /* حباب‌ها: رنگِ تخت، بدونِ گرادیان؛ گوشه‌ی نزدیک به فرستنده (دُم) تیزتر */
         .chat-bubble-row.own .chat-bubble {
             background: var(--bubble-own-bg);
@@ -2778,10 +2769,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         function focusMsgSearchMatch() {
             var match = msgSearchMatches[msgSearchActiveIdx];
             if (!match) return;
+            // فقط اسکرول + هایلایتِ زردِ کلمه (که از قبل توسطِ runMsgSearch گذاشته
+            // شده) کافیه — قبلاً کلِ حباب هم فلشِ خاکستری می‌گرفت که طبقِ
+            // خواسته حذف شد.
             match.row.scrollIntoView({ block: 'center', behavior: 'smooth' });
-            match.row.classList.remove('flash');
-            void match.row.offsetWidth;
-            match.row.classList.add('flash');
         }
 
         function initials(name) {
@@ -3633,10 +3624,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         function scrollToOriginalMessage(messageId) {
             var row = document.querySelector('.chat-bubble-row[data-message-id="' + messageId + '"]');
             if (!row) return;
+            // فقط اسکرول — فلشِ کلِ حباب طبقِ خواسته حذف شد (برایِ سنجاق‌شده،
+            // ریپلای، و جهشِ سرچِ بینِ‌گفتگویی که همگی از همین تابع استفاده می‌کنن)
             row.scrollIntoView({ block: 'center', behavior: 'smooth' });
-            row.classList.remove('flash');
-            void row.offsetWidth; // ری‌استارت انیمیشن اگه قبلاً هم فلش شده بود
-            row.classList.add('flash');
         }
 
         // ─────────────── منویِ راست‌کلیک (ویرایش/حذف) ───────────────
