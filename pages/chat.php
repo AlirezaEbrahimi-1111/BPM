@@ -426,6 +426,30 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             white-space: nowrap;
         }
 
+        /* جداکننده‌ی تاریخ — خنثی و کم‌رنگ‌تر از جداکننده‌ی «خوانده‌نشده»
+           تا با اون اشتباه گرفته نشه */
+        .chat-date-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 12px 0;
+            text-align: center;
+        }
+
+        .chat-date-divider span {
+            background: var(--surface-2, #f1f2f4);
+            color: var(--text-muted, #6b7280);
+            font-size: .7rem;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        :root[data-theme="dark"] .chat-date-divider span {
+            background: var(--surface-3, rgba(255, 255, 255, .08));
+        }
+
         .chat-conv-mute-icon {
             font-size: .72rem;
             color: var(--text-muted);
@@ -2393,6 +2417,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         var lastMessageId = 0;
         // ── بارگذاریِ پیام‌های قدیمی‌تر با اسکرول به بالا ──
         var oldestMessageId = 0;   // کوچک‌ترین idِ نمایش‌داده‌شده
+        var lastAppendedDateKey = null; // تاریخِ (میلادیِ خام) آخرین پیامِ اضافه‌شده به‌ته لیست — برایِ تشخیصِ نیازِ جداکننده‌ی تاریخ
         var hasMoreOlder = false;  // آیا در دیتابیس پیامِ قدیمی‌ترِ نمایش‌داده‌نشده هست؟
         var loadingOlder = false;  // گاردِ همزمانی — جلوی درخواستِ تکراری حینِ اسکرول
         var pendingFiles = [];
@@ -2967,6 +2992,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('chatComposerInput').focus();
             lastMessageId = 0;
             oldestMessageId = 0;
+            lastAppendedDateKey = null;
             hasMoreOlder = false;
             loadingOlder = false;
             readReceipts = {};
@@ -3395,8 +3421,29 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .catch(function() {});
         }
 
+        // ── جداکننده‌ی تاریخ (شمسی) بینِ گروه‌هایِ پیامِ روزهایِ مختلف ──
+        function chatDateKey(m) {
+            return window.TimeSync ? TimeSync.dateOnly(m.created_at) : String(m.created_at || '').slice(0, 10);
+        }
+        function chatDateDividerLabel(m) {
+            if (!window.TimeSync) return chatDateKey(m);
+            var diff = TimeSync.daysFromToday(m.created_at); // ۰=امروز، ‑۱=دیروز، ...
+            if (diff === 0) return 'امروز';
+            if (diff === -1) return 'دیروز';
+            if (diff > -7) return TimeSync.weekdayName(m.created_at); // ۲ تا ۶ روزِ قبل: فقط اسمِ روز
+            return TimeSync.formatJalaliWithWeekday(m.created_at); // ۷+ روزِ قبل: روز + تاریخِ کامل
+        }
+        function buildChatDateDivider(m) {
+            var d = document.createElement('div');
+            d.className = 'chat-date-divider';
+            d.setAttribute('data-date-key', chatDateKey(m));
+            d.innerHTML = '<span>' + esc(chatDateDividerLabel(m)) + '</span>';
+            return d;
+        }
+
         function appendMessages(msgs, scrollBottom, prepend) {
             var el = document.getElementById('chatMessages');
+            var prevKeyInPrependBatch = null; // فقط برایِ حالتِ prepend استفاده می‌شود
             var frag = prepend ? document.createDocumentFragment() : null;
             var prependLinkRefs = [];
             msgs.forEach(m => {
@@ -3488,15 +3535,25 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 row.setAttribute('data-can-edit', (m.is_own && m.message) ? '1' : '0');
                 row.setAttribute('data-can-delete', m.is_own ? '1' : '0');
                 row.setAttribute('data-sender-name', m.user_name);
+                var dateKey = chatDateKey(m);
+                row.setAttribute('data-date-key', dateKey);
                 row.addEventListener('contextmenu', function (e) {
                     e.preventDefault();
                     openChatCtxMenu(e.clientX, e.clientY, row);
                 });
 
                 if (prepend) {
+                    if (dateKey && dateKey !== prevKeyInPrependBatch) {
+                        frag.appendChild(buildChatDateDivider(m));
+                        prevKeyInPrependBatch = dateKey;
+                    }
                     frag.appendChild(row);
                     if (linkRefs.length) prependLinkRefs.push([row, linkRefs]);
                 } else {
+                    if (dateKey && dateKey !== lastAppendedDateKey) {
+                        el.appendChild(buildChatDateDivider(m));
+                        lastAppendedDateKey = dateKey;
+                    }
                     if (dividerRow) el.appendChild(dividerRow);
                     el.appendChild(row);
                     if (linkRefs.length) loadLinkRefPreviews(row, linkRefs);

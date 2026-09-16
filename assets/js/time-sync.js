@@ -156,6 +156,23 @@
         return toFaDigits(pad2(p.h)) + ':' + toFaDigits(pad2(p.mi));
     }
 
+    /* نامِ روزِ هفته به وقتِ تهران — هفته از شنبه شروع می‌شود */
+    var WEEKDAYS = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
+    function weekdayName(v) {
+        var p = tehranParts(v);
+        if (!p) return '';
+        // Date.UTC(...).getUTCDay(): ۰=یکشنبه ... ۶=شنبه — دقیقاً هم‌ترازِ WEEKDAYS
+        var dow = new Date(Date.UTC(p.y, p.mo - 1, p.d)).getUTCDay();
+        return WEEKDAYS[dow];
+    }
+
+    /* «چهارشنبه ۱۴۰۵/۰۴/۲۴» — برایِ جداکننده‌هایِ تاریخِ قدیمی‌تر از یک هفته */
+    function formatJalaliWithWeekday(v) {
+        var wd = weekdayName(v);
+        var d = formatJalali(v);
+        return wd && d ? (wd + ' ' + d) : (wd || d);
+    }
+
     /* ═══ کمکی‌های «امروزِ سرور» برای منطقِ دسته‌بندی (فاز ۲) ═══ */
 
     function serverParts() { return tehranParts(serverNow()); }
@@ -208,6 +225,8 @@
         formatJalaliTime: formatJalaliTime,
         formatJalaliLong: formatJalaliLong,
         formatTimeOnly: formatTimeOnly,
+        weekdayName: weekdayName,
+        formatJalaliWithWeekday: formatJalaliWithWeekday,
         gregorianToJalali: gregorianToJalali,
         jMonthName: function (m) { return JMONTHS[m - 1] || ''; },
         toFaDigits: toFaDigits
