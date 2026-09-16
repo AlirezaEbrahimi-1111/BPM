@@ -4145,6 +4145,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                             }
                         }
                         cancelEditMessage();
+                        // متنِ درحالِ‌ویرایش، به‌خاطرِ ذخیره‌ی خودکارِ پیش‌نویسِ کامپوزر
+                        // (debounce ۳۰۰ms روی رویدادِ input که beginEditMessage هم
+                        // شلیکش می‌کنه)، ممکنه قبلِ ارسال یک‌بار به‌عنوانِ پیش‌نویس در
+                        // localStorage ذخیره شده باشه — بعدِ ارسالِ موفق باید پاک بشه،
+                        // وگرنه توی لیستِ گفتگوها به‌اشتباه «پیش‌نویس» نشون داده می‌شه
+                        clearComposerDraft(activeConversationId);
                         loadConversations();
                     } else {
                         showToast(data.message || 'خطا در ویرایش پیام', 'error');
