@@ -4942,14 +4942,27 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 })
                 .catch(function(err) { console.error('group media fetch error:', err); });
 
-            fetch('../api/chat/group-members.php?conversation_id=' + activeConversationId, {
+            refreshGroupInfoMembers(true);
+        }
+
+        // بارگذاریِ لیستِ اعضایِ دراورِ گروه. brandNew=true فقط زمانِ بازکردنِ
+        // تازه‌یِ دراور (لیست از قبل خالی/بارگذاری‌شده) — تویِ آپدیت‌هایِ بعدی
+        // (ارتقا/عزلِ مدیر، افزودن/حذفِ عضو، تغییرِ عکس) عمداً falseه تا لیست
+        // یک لحظه مخفی/«در حال بارگذاری» نشه و فقط جایگزینِ بی‌فِلَش انجام بشه
+        function refreshGroupInfoMembers(brandNew) {
+            if (!activeConversationId) return;
+            var convId = activeConversationId;
+            fetch('../api/chat/group-members.php?conversation_id=' + convId, {
                     headers: { 'Authorization': 'Bearer ' + authToken }
                 })
                 .then(r => r.json())
                 .then(data => {
+                    if (convId !== activeConversationId) return;
                     if (!data.success) {
-                        document.getElementById('groupInfoMemberList').innerHTML =
-                            '<div class="chat-empty-list">' + esc(data.message || 'خطا در بارگذاری اعضا') + '</div>';
+                        if (brandNew) {
+                            document.getElementById('groupInfoMemberList').innerHTML =
+                                '<div class="chat-empty-list">' + esc(data.message || 'خطا در بارگذاری اعضا') + '</div>';
+                        }
                         return;
                     }
                     document.getElementById('groupInfoTitle').textContent = activeConversationTitle + ' — ' + toFa(data.members.length) + ' عضو';
@@ -4989,8 +5002,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     }).join('');
                 })
                 .catch(function() {
-                    document.getElementById('groupInfoMemberList').innerHTML =
-                        '<div class="chat-empty-list">خطا در ارتباط با سرور</div>';
+                    if (brandNew) {
+                        document.getElementById('groupInfoMemberList').innerHTML =
+                            '<div class="chat-empty-list">خطا در ارتباط با سرور</div>';
+                    }
                 });
         }
 
@@ -5019,7 +5034,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     document.getElementById('groupAvatarFileInput').value = '';
                     if (data.success) {
                         showToast('عکس گروه بروزرسانی شد', 'success');
-                        openGroupInfoDrawer();
+                        refreshGroupInfoMembers(false);
                         loadConversations();
                     } else {
                         showToast(data.message || 'خطا در آپلود عکس', 'error');
@@ -5040,7 +5055,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        openGroupInfoDrawer();
+                        refreshGroupInfoMembers(false);
                         loadConversations();
                     } else {
                         showToast(data.message || 'خطا در حذف عضو', 'error');
