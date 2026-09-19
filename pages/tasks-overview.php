@@ -622,8 +622,14 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                 // فیلترِ وضعیت — تنها مرجع: assets/js/task-filters.js
                 if (st && st !== 'all' && !TF.matchesStatusFilter(t, st, { id: currentUserId })) return false;
 
-                // 🆕 فیلتر واحد (از داشبورد)
-                if (window._filterSection && t.activity_section !== window._filterSection) return false;
+                // 🆕 فیلتر واحد (از داشبورد) — «نامشخص» یعنی کاری که اصلاً واحد
+                // نداره (activity_section خالی/تهی)، نه واحدی به همین اسم؛ چون
+                // ویجتِ «بیشترین تأخیر» (api/reports/top-delayed-users.php) دقیقاً
+                // چنین کارهایی رو زیرِ همین برچسب جمع می‌کنه
+                if (window._filterSection) {
+                    const isUnknownSection = window._filterSection === 'نامشخص';
+                    if (isUnknownSection ? !!t.activity_section : t.activity_section !== window._filterSection) return false;
+                }
 
                 // 🆕 فیلتر تأخیردار (از داشبورد) — با جستجو نادیده گرفته می‌شود
                 if (window._filterOverdue && !s) {

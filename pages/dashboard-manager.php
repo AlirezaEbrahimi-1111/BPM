@@ -1941,6 +1941,14 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             white-space: nowrap;
         }
 
+        .td-user-badges {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
         .td-user-count {
             font-size: .72rem;
             font-weight: 700;
@@ -1948,12 +1956,28 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             background: #fee2e2;
             border-radius: 8px;
             min-width: 34px;
-            height: 28px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
             padding: 0 10px 0 10px !important;
+        }
+
+        .td-user-task-count {
+            font-size: .68rem;
+            font-weight: 700;
+            color: #8e57fe;
+            background: rgba(142, 87, 254, 0.12);
+            border: 1px solid rgba(142, 87, 254, 0.25);
+            border-radius: 8px;
+            min-width: 34px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            padding: 0 10px;
         }
 
         /* پیام کوتاه */
@@ -3604,6 +3628,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 if (u.delay_hours > 0) countParts.push(`${toFa(u.delay_hours)} ساعت`);
                 const countText = countParts.join(' • ') || '۰ روز';
 
+                // 🆕 تعدادِ کل کارهایِ تأخیردار (مقطعی+دوره‌ای+روتین) — بجِ دومِ جدا،
+                // کنارِ بجِ روز/ساعتِ تأخیر
+                const totalTasks = (u.periodic || 0) + (u.continuous || 0) + (u.workflow || 0);
+
                 return `
                 <div class="td-user-row" onclick="openDelayedUser('${escJsAttr(u.kind)}', '${escJsAttr(String(u.ref_id))}', '${escJsAttr(displayName)}')">
                     <div class="td-user-icon"><i class="bi ${icon}"></i></div>
@@ -3611,7 +3639,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                         <div class="td-user-name">${esc(displayName)}</div>
                         <div class="td-user-breakdown">${breakdown}</div>
                     </div>
-                    <div class="td-user-count">${countText}</div>
+                    <div class="td-user-badges">
+                        <div class="td-user-count">${countText}</div>
+                        <div class="td-user-task-count">${toFa(totalTasks)} کار</div>
+                    </div>
                 </div>`;
             }).join('');
         }
