@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/chat-helpers.php';
 
 try {
     $database = new Database();
@@ -53,7 +54,7 @@ try {
     }
 
     $stmt = $db->prepare("
-        SELECT u.id, u.first_name, u.last_name, u.avatar_path, cp.joined_at
+        SELECT u.id, u.first_name, u.last_name, u.avatar_path, cp.joined_at, cp.role
         FROM chat_participants cp
         JOIN users u ON u.id = cp.user_id AND u.is_active = 1 AND u.is_deleted = 0
         WHERE cp.conversation_id = ?
@@ -68,16 +69,18 @@ try {
             'id'         => (int) $r['id'],
             'full_name'  => trim($r['first_name'] . ' ' . $r['last_name']),
             'is_owner'   => (int) $r['id'] === $ownerId,
+            'is_admin'   => $r['role'] === 'admin',
             'avatar_url' => $r['avatar_path'] ?: null,
         ];
     }, $rows);
 
     echo json_encode([
-        'success'         => true,
-        'is_owner'        => $ownerId === $user_id,
-        'group_title'     => $conv['title'],
+        'success'          => true,
+        'is_owner'         => $ownerId === $user_id,
+        'can_manage'       => chatUserIsGroupManager($db, $conversationId, $user_id),
+        'group_title'      => $conv['title'],
         'group_avatar_url' => $conv['avatar_path'] ?: null,
-        'members'         => $members,
+        'members'          => $members,
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {

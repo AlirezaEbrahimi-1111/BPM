@@ -1,6 +1,6 @@
 <?php
 /**
- * API: آپلود/تغییرِ عکسِ گروه — فقط سازنده‌ی گروه مجاز است
+ * API: آپلود/تغییرِ عکسِ گروه — سازنده یا هر مدیرِ گروه مجاز است
  * POST /api/chat/upload-group-avatar.php   (multipart/form-data)   fields: conversation_id, avatar
  */
 
@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/chat-helpers.php';
 
 try {
     $database = new Database();
@@ -42,7 +43,7 @@ try {
         echo json_encode(['success' => false, 'message' => 'این گفتگو گروهی نیست']);
         exit;
     }
-    if ((int) $conv['created_by'] !== $user_id) {
+    if (!chatUserIsGroupManager($db, $conversationId, $user_id)) {
         http_response_code(403);
         error_log("Chat upload-group-avatar denied | user_id={$user_id} | conversation_id={$conversationId}");
         echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند عکس گروه را تغییر دهد']);

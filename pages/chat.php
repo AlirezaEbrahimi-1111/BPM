@@ -1945,6 +1945,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             padding: 4px;
         }
 
+        .chat-group-member-role-btn {
+            border: none;
+            background: transparent;
+            color: var(--primary, #8e57fe);
+            cursor: pointer;
+            font-size: .95rem;
+            padding: 4px;
+        }
+
         @media (max-width: 768px) {
             .chat-wrap {
                 padding: 0;
@@ -2444,6 +2453,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         var pinnedMessage = null; // { id, snippet, user_name, is_own } یا null
         var pinnedCanManage = false;
         var activeGroupMembers = []; // [{id, full_name}] — فقط برایِ گفتگویِ گروهیِ فعال، برایِ منشن
+        var activeGroupIsCreator = false; // آیا کاربرِ جاری سازنده‌یِ همین گروهِ فعال است — برایِ حذفِ پیامِ دیگران
+        var activeGroupCanManage = false; // سازنده یا مدیر — برایِ نمایشِ کنترل‌هایِ مدیریتی در دراورِ اطلاعاتِ گروه
 
         // ── پرش به اولین پیامِ خوانده‌نشده هنگامِ بازکردنِ گفتگو (مثلِ تلگرام/سروش) ──
         var unreadDividerBeforeId = 0;  // idِ پیامی که خطِ «پیام‌های خوانده‌نشده» باید درست بالایش قرار بگیرد؛ فقط یک‌بار مصرف می‌شود
@@ -3108,13 +3119,21 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         // ─────────────── منشن (@نام) در گروه ───────────────
         function loadActiveGroupMembers() {
             activeGroupMembers = [];
+            activeGroupIsCreator = false;
+            activeGroupCanManage = false;
             if (!activeConversationId || activeConversationType === 'direct') return;
+            var convId = activeConversationId;
             fetch('../api/chat/group-members.php?conversation_id=' + activeConversationId, {
                     headers: { 'Authorization': 'Bearer ' + authToken }
                 })
                 .then(r => r.json())
                 .then(data => {
-                    if (data.success) activeGroupMembers = data.members;
+                    if (convId !== activeConversationId) return; // گفتگو عوض شده — این پاسخِ کهنه نادیده گرفته می‌شود
+                    if (data.success) {
+                        activeGroupMembers = data.members;
+                        activeGroupIsCreator = !!data.is_owner;
+                        activeGroupCanManage = !!data.can_manage;
+                    }
                 })
                 .catch(function() {});
         }
@@ -3705,7 +3724,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             ctxMenuTargetRow = row;
             var menu = document.getElementById('chatCtxMenu');
             var canEdit = row.getAttribute('data-can-edit') === '1';
-            var canDelete = row.getAttribute('data-can-delete') === '1';
+            // خودِ پیام یا — در گروه — سازنده‌ی گروه که اجازه دارد پیامِ هرکسی را حذف کند.
+            // این چک عمداً همینجا (زمانِ بازکردنِ منو) انجام می‌شود نه زمانِ رندرِ ردیف،
+            // چون activeGroupIsCreator با یک fetch جداگانه (loadActiveGroupMembers) پر می‌شود
+            // و ممکن است هنگامِ رندرِ اولین پیام‌ها هنوز آماده نباشد.
+            var canDelete = row.getAttribute('data-can-delete') === '1' ||
+                (activeConversationType !== 'direct' && activeGroupIsCreator);
             var hasText = !!(row.getAttribute('data-message-text') || '').trim();
             document.getElementById('chatCtxEditItem').style.display = canEdit ? 'flex' : 'none';
             document.getElementById('chatCtxDeleteItem').style.display = canDelete ? 'flex' : 'none';
@@ -4882,7 +4906,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         // ─────────────── دراورِ اطلاعاتِ گروه ───────────────
-        var groupInfoIsOwner = false;
+        var groupInfoIsOwner = false;   // فقط سازنده‌ی گروه (created_by)
+        var groupInfoCanManage = false; // سازنده یا هر مدیرِ (admin) گروه
 
         function openGroupInfoDrawer() {
             if (!activeConversationId) return;
@@ -4928,20 +4953,36 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         return;
                     }
                     document.getElementById('groupInfoTitle').textContent = activeConversationTitle + ' — ' + toFa(data.members.length) + ' عضو';
-                    document.getElementById('groupInfoAddBtn').style.display = data.is_owner ? 'block' : 'none';
+                    document.getElementById('groupInfoAddBtn').style.display = data.can_manage ? 'block' : 'none';
                     groupInfoIsOwner = !!data.is_owner;
+                    groupInfoCanManage = !!data.can_manage;
                     document.getElementById('groupInfoAvatarWrap').innerHTML =
                         avatarHtml(data.group_title || activeConversationTitle, false, 'chat-group-avatar-big', data.group_avatar_url) +
-                        (data.is_owner ? '<div class="chat-group-avatar-edit-badge"><i class="bi bi-camera-fill"></i></div>' : '');
+                        (data.can_manage ? '<div class="chat-group-avatar-edit-badge"><i class="bi bi-camera-fill"></i></div>' : '');
                     document.getElementById('groupInfoMemberList').innerHTML = data.members.map(m => {
                         var isMe = myUserId && Number(m.id) === Number(myUserId);
                         var nameAttrs = isMe ? '' : ' onclick="openMemberDirectChat(' + m.id + ')" style="cursor:pointer;"';
+                        var roleTag = m.is_owner
+                            ? '<span class="chat-group-owner-tag">سازنده‌ی گروه</span>'
+                            : (m.is_admin ? '<span class="chat-group-owner-tag">مدیر</span>' : '');
+                        // ارتقا به مدیر: کارِ هر مدیری. عزل از مدیریت: فقط سازنده (تا مدیرها نتونن همدیگه رو عزل کنن)
+                        var roleBtn = '';
+                        if (!isMe && !m.is_owner) {
+                            if (!m.is_admin && data.can_manage) {
+                                roleBtn = '<button class="chat-group-member-role-btn" title="ارتقا به مدیر" onclick="promoteGroupMember(' + m.id + ')"><i class="bi bi-shield-plus"></i></button>';
+                            } else if (m.is_admin && data.is_owner) {
+                                roleBtn = '<button class="chat-group-member-role-btn" title="عزل از مدیریت" onclick="demoteGroupMember(' + m.id + ')"><i class="bi bi-shield-minus"></i></button>';
+                            }
+                        }
+                        // حذفِ عضو: هر مدیری برایِ اعضایِ عادی؛ حذفِ یک مدیرِ دیگه فقط دستِ سازنده‌ست
+                        var canRemove = data.can_manage && !m.is_owner && (!m.is_admin || data.is_owner);
                         return '<div class="chat-group-member-row">' +
                         '<div' + nameAttrs + '>' + avatarHtml(m.full_name, false, null, m.avatar_url) + '</div>' +
                         '<span class="chat-group-member-name"' + nameAttrs + '>' + esc(m.full_name) + ' ' +
-                        (m.is_owner ? '<span class="chat-group-owner-tag">مدیر گروه</span>' : '') +
+                        roleTag +
                         '</span>' +
-                        (data.is_owner && !m.is_owner
+                        roleBtn +
+                        (canRemove
                             ? '<button class="chat-group-member-remove" title="حذف عضو" onclick="removeGroupMember(' + m.id + ')"><i class="bi bi-x-lg"></i></button>'
                             : '') +
                         '</div>';
@@ -4959,7 +5000,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         function triggerGroupAvatarUpload() {
-            if (!groupInfoIsOwner) return;
+            if (!groupInfoCanManage) return;
             document.getElementById('groupAvatarFileInput').click();
         }
 
@@ -5005,6 +5046,35 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         showToast(data.message || 'خطا در حذف عضو', 'error');
                     }
                 });
+        }
+
+        function setGroupMemberRole(userId, role, errorMessage) {
+            if (!activeConversationId) return;
+            fetch('../api/chat/set-member-role.php', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ conversation_id: activeConversationId, user_id: userId, role: role })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        openGroupInfoDrawer();
+                        loadActiveGroupMembers(); // برای منشن و data-can-delete هم به‌روز بشه
+                    } else {
+                        showToast(data.message || errorMessage, 'error');
+                    }
+                });
+        }
+
+        function promoteGroupMember(userId) {
+            setGroupMemberRole(userId, 'admin', 'خطا در ارتقای عضو');
+        }
+
+        function demoteGroupMember(userId) {
+            setGroupMemberRole(userId, 'member', 'خطا در عزلِ مدیر');
         }
 
         function confirmLeaveGroup() {

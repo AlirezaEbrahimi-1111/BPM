@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/chat-helpers.php';
 
 try {
     $database = new Database();
@@ -54,7 +55,7 @@ try {
     $stmt->execute([$conversationId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $canManage = $row && ($row['type'] === 'direct' || (int) $row['created_by'] === $user_id);
+    $canManage = $row && ($row['type'] === 'direct' || chatUserIsGroupManager($db, $conversationId, $user_id));
 
     // 🔒 اگر پیامِ سنجاق‌شده بعداً soft-delete شده باشد، sender_id از جوین NULL می‌شود
     // (نه صرفاً pinned_message_id) — همینجا هم به‌عنوانِ لایه‌ی دومِ محافظت در نظر گرفته می‌شود

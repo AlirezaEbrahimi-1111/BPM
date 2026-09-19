@@ -1,6 +1,6 @@
 <?php
 /**
- * API: افزودنِ عضو به گروه — فقط سازنده‌ی گروه مجاز است
+ * API: افزودنِ عضو به گروه — سازنده یا هر مدیرِ گروه مجاز است
  * POST /api/chat/group-add-members.php   body: { conversation_id: 1, member_ids: [4,5] }
  */
 
@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/chat-helpers.php';
 
 try {
     $database = new Database();
@@ -49,8 +50,8 @@ try {
         exit;
     }
 
-    // 🔒 فقط سازنده‌ی گروه اجازه‌ی افزودنِ عضو دارد
-    if ((int) $conv['created_by'] !== $user_id) {
+    // 🔒 سازنده یا هر مدیرِ گروه اجازه‌ی افزودنِ عضو داره
+    if (!chatUserIsGroupManager($db, $conversationId, $user_id)) {
         http_response_code(403);
         error_log("Chat group-add-members denied | user_id={$user_id} | conversation_id={$conversationId}");
         echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند عضو اضافه کند']);

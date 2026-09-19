@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/chat-helpers.php';
 
 try {
     $database = new Database();
@@ -52,7 +53,7 @@ try {
         exit;
     }
 
-    if ($conv['type'] !== 'direct' && (int) $conv['created_by'] !== $user_id) {
+    if ($conv['type'] !== 'direct' && !chatUserIsGroupManager($db, $conversationId, $user_id)) {
         http_response_code(403);
         error_log("Chat unpin-message denied | user_id={$user_id} | conversation_id={$conversationId}");
         echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند سنجاق را بردارد']);

@@ -3,8 +3,8 @@
  * API: سنجاق‌کردنِ یک پیام در گفتگو
  * POST /api/chat/pin-message.php   body: { conversation_id: 1, message_id: 45 }
  *
- * دسترسی: در گفتگویِ مستقیم هر دو طرف مجازند؛ در گروه فقط سازنده (همون سطحِ
- * دسترسیِ افزودن/حذفِ عضو) — تا با انتخابِ کاربر برایِ مدیریتِ گروه یکدست بماند.
+ * دسترسی: در گفتگویِ مستقیم هر دو طرف مجازند؛ در گروه سازنده یا هر مدیرِ
+ * گروه (chatUserIsGroupManager) — همون سطحِ دسترسیِ افزودن/حذفِ عضو.
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/chat-helpers.php';
 
 try {
     $database = new Database();
@@ -57,8 +58,8 @@ try {
         exit;
     }
 
-    // 🔒 در گروه فقط سازنده اجازه‌ی سنجاق‌کردن دارد؛ در گفتگویِ مستقیم هر دو طرف
-    if ($conv['type'] !== 'direct' && (int) $conv['created_by'] !== $user_id) {
+    // 🔒 در گروه فقط سازنده یا مدیرهایِ گروه اجازه‌ی سنجاق‌کردن دارن؛ در گفتگویِ مستقیم هر دو طرف
+    if ($conv['type'] !== 'direct' && !chatUserIsGroupManager($db, $conversationId, $user_id)) {
         http_response_code(403);
         error_log("Chat pin-message denied | user_id={$user_id} | conversation_id={$conversationId}");
         echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند پیام سنجاق کند']);

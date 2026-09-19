@@ -1,6 +1,8 @@
 <?php
 /**
- * API: حذفِ یک عضو از گروه — فقط سازنده‌ی گروه مجاز است
+ * API: حذفِ یک عضو از گروه — سازنده یا هر مدیرِ گروه مجاز است، با یک
+ * استثنا: عزلِ یک «مدیرِ» دیگه فقط دستِ خودِ سازنده‌ست (تا مدیرها نتونن
+ * همدیگه رو حذف کنن).
  * POST /api/chat/group-remove-member.php   body: { conversation_id: 1, user_id: 4 }
  */
 
@@ -15,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/chat-helpers.php';
 
 try {
     $database = new Database();
@@ -47,8 +50,8 @@ try {
         exit;
     }
 
-    // 🔒 فقط سازنده‌ی گروه اجازه‌ی حذفِ عضو دارد
-    if ((int) $conv['created_by'] !== $user_id) {
+    // 🔒 سازنده یا هر مدیرِ گروه اجازه‌ی حذفِ عضو داره
+    if (!chatUserIsGroupManager($db, $conversationId, $user_id)) {
         http_response_code(403);
         error_log("Chat group-remove-member denied | user_id={$user_id} | conversation_id={$conversationId}");
         echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند عضو حذف کند']);
@@ -57,7 +60,16 @@ try {
 
     if ($targetUserId === (int) $conv['created_by']) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'مدیر گروه نمی‌تواند خودش را حذف کند؛ برای خروج از «خروج از گروه» استفاده کنید']);
+        echo json_encode(['success' => false, 'message' => 'سازنده‌ی گروه را نمی‌توان حذف کرد؛ برای خروج از «خروج از گروه» استفاده کنید']);
+        exit;
+    }
+
+    // 🔒 عزلِ یک مدیرِ دیگه فقط دستِ سازنده‌ست — تا مدیرها نتونن همدیگه رو حذف کنن
+    $targetRole = chatMemberRole($db, $conversationId, $targetUserId);
+    if ($targetRole === 'admin' && !chatUserIsGroupCreator($db, $conversationId, $user_id)) {
+        http_response_code(403);
+        error_log("Chat group-remove-member denied (target is admin, actor not creator) | user_id={$user_id} | target={$targetUserId} | conversation_id={$conversationId}");
+        echo json_encode(['success' => false, 'message' => 'فقط سازنده‌ی گروه می‌تواند یک مدیرِ دیگر را حذف کند']);
         exit;
     }
 

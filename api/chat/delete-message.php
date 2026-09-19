@@ -3,8 +3,8 @@
  * API: حذفِ یک پیامِ چت
  * POST /api/chat/delete-message.php   body: { message_id, for_everyone: true|false }
  *
- *   for_everyone=true  → فقط فرستنده مجاز است؛ پیام واقعاً برای هر دو طرف حذف می‌شود
- *                         (chat_messages.is_deleted=1)
+ *   for_everyone=true  → فرستنده‌ی خودِ پیام، یا (در گروه) سازنده‌ی گروه؛
+ *                         پیام واقعاً برای هر دو طرف حذف می‌شود (chat_messages.is_deleted=1)
  *   for_everyone=false → فقط از دیدِ همین کاربر پنهان می‌شود (chat_message_hidden)
  */
 
@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/chat-helpers.php';
 
 try {
     $database = new Database();
@@ -62,11 +63,13 @@ try {
     }
 
     if ($forEveryone) {
-        // 🔒 حذف برای همه فقط برای فرستنده‌ی خودِ پیام مجاز است
-        if ((int) $message['user_id'] !== $user_id) {
+        // 🔒 حذف برای همه: فرستنده‌ی خودِ پیام، یا سازنده‌ی گروه (برای هر پیامی در گروه)
+        $isSender = (int) $message['user_id'] === $user_id;
+        $isGroupCreator = !$isSender && chatUserIsGroupCreator($db, (int) $message['conversation_id'], $user_id);
+        if (!$isSender && !$isGroupCreator) {
             http_response_code(403);
-            error_log("Chat delete-message-for-everyone denied (not sender) | user_id={$user_id} | message_id={$messageId}");
-            echo json_encode(['success' => false, 'message' => 'فقط فرستنده می‌تواند پیام را برای همه حذف کند']);
+            error_log("Chat delete-message-for-everyone denied (not sender/creator) | user_id={$user_id} | message_id={$messageId}");
+            echo json_encode(['success' => false, 'message' => 'فقط فرستنده یا سازنده‌ی گروه می‌تواند پیام را برای همه حذف کند']);
             exit;
         }
         $db->prepare("UPDATE chat_messages SET is_deleted = 1 WHERE id = ?")->execute([$messageId]);
