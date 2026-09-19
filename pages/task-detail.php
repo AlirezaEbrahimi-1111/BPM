@@ -207,9 +207,35 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         .chk-note-file label {
             margin: 0;
             display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
             color: #8e57fe;
+            background: rgba(142, 87, 254, 0.1);
+            border: 1px solid rgba(142, 87, 254, 0.3);
+            border-radius: 6px;
             font-size: .95rem;
             flex-shrink: 0;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .chk-note-file label:hover {
+            background: rgba(142, 87, 254, 0.18);
+        }
+
+        /* ویژگی‌شماریِ این قانون از قانونِ عمومیِ ".chk-note-drawer label"
+           (بالاتر، برایِ لیبلِ متنیِ textarea) بیشتره — تا رنگِ خاکستریِ اونجا
+           رنگِ بنفشِ این دکمه‌یِ آیکن‌دار رو تویِ تمِ تاریک عوض نکنه */
+        :root[data-theme="dark"] .chk-note-file label {
+            color: #cdb8ff;
+            background: rgba(205, 184, 255, 0.12);
+            border-color: rgba(205, 184, 255, 0.3);
+        }
+
+        :root[data-theme="dark"] .chk-note-file label:hover {
+            background: rgba(205, 184, 255, 0.2);
         }
 
         .chk-note-file input[type="file"] {
@@ -226,6 +252,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             font-size: .82rem;
             color: #999;
             cursor: pointer;
+        }
+
+        :root[data-theme="dark"] .chk-note-file .chk-file-name {
+            color: var(--text-muted);
         }
 
         .chk-note-actions {
@@ -4757,6 +4787,20 @@ ${task.overdue_periods > 0 ? `
                     });
 
                     const data = await response.json();
+
+                    if (!data.success && data.code === 'overdue_periodic') {
+                        // 🆕 موعدِ کار گذشته — به‌جایِ فقط اطلاع‌دادن، مستقیماً راهِ
+                        // تمدیدِ موعد رو هم جلوی کاربر می‌ذاریم
+                        bootstrap.Modal.getInstance(document.getElementById('delegateModal'))?.hide();
+                        showToast(data.message, 'warning', {
+                            buttons: [
+                                { label: 'تمدید موعد', style: 'primary', onClick: () => showRequestDeadlineModal() },
+                                { label: 'باشه', style: 'ghost' }
+                            ]
+                        });
+                        return;
+                    }
+
                     const t = showToast(data.message, 'info');
 
 

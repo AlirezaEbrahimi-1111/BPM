@@ -3573,6 +3573,30 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     body: JSON.stringify(payload)
                 });
                 const data = await res.json();
+
+                // 🆕 موعدِ کار گذشته — به‌جایِ فقط اطلاع‌دادن، دکمهٔ «تمدید موعد» رو
+                // هم می‌ذاریم که مستقیم همون تسک رو تویِ همین مودال به حالتِ تمدید ببره
+                if (!data.success && data.code === 'overdue_periodic') {
+                    if (rowModal) rowModal.hide();
+                    showToast(data.message, 'warning', {
+                        buttons: [
+                            {
+                                label: 'تمدید موعد', style: 'primary', onClick: () => {
+                                    const t = store.mine.find(x => Number(x.id) === Number(taskId)) ||
+                                        store.delegated.find(x => Number(x.id) === Number(taskId));
+                                    if (t) rowActionInModal(t, 'extend');
+                                }
+                            },
+                            { label: 'باشه', style: 'ghost' }
+                        ]
+                    });
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = 'تلاش دوباره';
+                    }
+                    return;
+                }
+
                 if (!data.success) throw new Error(data.message || 'عملیات ناموفق بود');
 
                 const msgs = {
@@ -4699,6 +4723,20 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     body: JSON.stringify(payload)
                 });
                 const data = await res.json();
+
+                // 🆕 موعدِ کار گذشته — دکمهٔ «تمدید موعد» رو هم می‌ذاریم که مستقیم
+                // همون ردیف رو به فرمِ تمدید سوییچ کنه
+                if (!data.success && data.code === 'overdue_periodic') {
+                    showToast(data.message, 'warning', {
+                        buttons: [
+                            { label: 'تمدید موعد', style: 'primary', onClick: () => pmOpenForm(taskId, 'extend') },
+                            { label: 'باشه', style: 'ghost' }
+                        ]
+                    });
+                    btn.disabled = false;
+                    btn.innerHTML = original;
+                    return;
+                }
 
                 if (!data.success) {
                     throw new Error(data.message || 'عملیات ناموفق بود');

@@ -692,7 +692,7 @@ class TaskManager
             // دوره‌ای/روتین از موتورِ عقب‌افتادگیِ متفاوتی استفاده می‌کنن
             // (overdue_periods / مرحله‌یِ active)، نه این سه ستون.
             if ($task['task_type'] === 'periodic' && !empty($effective_due) && $effective_due < date('Y-m-d')) {
-                return ['success' => false, 'message' => 'موعد این کار گذشته است — امکان ارجاع نیست. ابتدا موعد کار را تمدید کنید'];
+                return ['success' => false, 'code' => 'overdue_periodic', 'message' => 'موعد این کار گذشته است — امکان ارجاع نیست. ابتدا موعد کار را تمدید کنید'];
             }
 
             // اگر ارجاع‌دهنده موعدِ جدیدی نداده ولی کار از قبل موعدِ مؤثر دارد،
