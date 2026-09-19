@@ -349,6 +349,19 @@ body .mobile-menu-btn .hamburger-line {
     transform: translateY(-1px);
 }
 
+/* بدونِ این، بوت‌استرپ روی :active/:focus رنگِ آبیِ پیش‌فرضِ خودش رو
+   نشون می‌داد (چون --bs-primary هنوز آبیه، فقط background رو بالا
+   override کردیم) — رویِ کلیک باید همون رنگِ هاور بمونه، نه فلشِ آبی */
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary:active:focus,
+.btn-primary:focus-visible {
+    background: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+    color: white !important;
+    box-shadow: 0 0 0 .2rem rgba(142, 87, 254, .25) !important;
+}
+
 .btn-success {
     background: var(--success);
     color: white;

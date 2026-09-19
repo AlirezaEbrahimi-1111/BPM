@@ -195,16 +195,27 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         /* هاورِ استانداردِ سایت (تینتِ بنفشِ نرم) — .btn-outline-secondary اصلاً
            هاورِ اختصاصی نداشت (پیش‌فرضِ خاکستریِ بوت‌استرپ می‌ماند) */
         .btn-outline-primary:hover,
-        .btn-outline-secondary:hover {
-            background: rgba(142, 87, 254, .12);
-            border-color: rgba(142, 87, 254, .12);
-            color: var(--primary, #8e57fe);
+        .btn-outline-secondary:hover,
+        .btn-outline-primary:active,
+        .btn-outline-secondary:active,
+        .btn-outline-primary.active,
+        .btn-outline-secondary.active,
+        .btn-outline-primary:active:focus,
+        .btn-outline-secondary:active:focus {
+            background: rgba(142, 87, 254, .12) !important;
+            border-color: rgba(142, 87, 254, .12) !important;
+            color: var(--primary, #8e57fe) !important;
+            box-shadow: none !important;
         }
 
         :root[data-theme="dark"] .btn-outline-primary:hover,
-        :root[data-theme="dark"] .btn-outline-secondary:hover {
-            background: rgba(142, 87, 254, .18);
-            border-color: rgba(142, 87, 254, .18);
+        :root[data-theme="dark"] .btn-outline-secondary:hover,
+        :root[data-theme="dark"] .btn-outline-primary:active,
+        :root[data-theme="dark"] .btn-outline-secondary:active,
+        :root[data-theme="dark"] .btn-outline-primary.active,
+        :root[data-theme="dark"] .btn-outline-secondary.active {
+            background: rgba(142, 87, 254, .18) !important;
+            border-color: rgba(142, 87, 254, .18) !important;
         }
     </style>
 </head>
@@ -643,9 +654,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             document.getElementById('t_total').textContent = money(subtotal - discount + tax);
 
             // سهمِ همکار = درصد × (جمعِ کل منهای تخفیف، پیش از مالیات)
+            // فقط موقعِ ساختنِ فاکتورِ جدید نمایش داده بشه، نه موقعِ ویرایشِ
+            // یک فاکتورِ از‌قبل‌ثبت‌شده (INV_ID > 0)
             const rowPct = document.getElementById('row_partner_pct');
             const rowProfit = document.getElementById('row_partner_profit');
-            if (hasPartner) {
+            if (hasPartner && !INV_ID) {
                 const preTax = Math.max(0, subtotal - discount);
                 const profit = Math.round(preTax * partnerPercent / 100);
                 document.getElementById('t_partner_pct').textContent = faDigits(partnerPercent) + '٪';
