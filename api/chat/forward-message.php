@@ -1,6 +1,6 @@
 <?php
 /**
- * API: فورواردِ یک پیامِ موجود به گفتگویِ دیگر
+ * API: هدایت یک پیامِ موجود به گفتگویِ دیگر
  * POST /api/chat/forward-message.php   body: { message_id: 45, conversation_id: 3 }
  *   conversation_id همان گفتگویِ مقصد است
  */
@@ -47,7 +47,7 @@ try {
         exit;
     }
 
-    // 🔒 برای فوروارد، کاربر باید هم به گفتگویِ مبدأ (که پیام را می‌بیند) و هم
+    // 🔒 برای هدایت کاربر باید هم به گفتگویِ مبدأ (که پیام را می‌بیند) و هم
     // به گفتگویِ مقصد (که می‌خواهد در آن بفرستد) دسترسی داشته باشد
     $stmt = $db->prepare("SELECT id FROM chat_participants WHERE conversation_id = ? AND user_id = ?");
     $stmt->execute([$original['conversation_id'], $user_id]);
@@ -69,7 +69,7 @@ try {
 
     if ($original['message'] === null && !$attachments) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'پیام خالی قابل فوروارد نیست']);
+        echo json_encode(['success' => false, 'message' => 'پیام خالی قابل هدایت نیست']);
         exit;
     }
 

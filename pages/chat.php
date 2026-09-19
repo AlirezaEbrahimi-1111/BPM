@@ -2250,12 +2250,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
     </div>
 
     <!-- دراورِ پروفایلِ طرفِ مقابل (فقط گفتگویِ مستقیم) -->
-    <!-- مودالِ فورواردِ پیام -->
+    <!-- مودالِ هدایت پیام -->
     <div class="modal fade" id="forwardModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">فوروارد به...</h6>
+                    <h6 class="modal-title">هدایت به...</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -2390,7 +2390,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
         <div class="chat-ctx-menu-item" onclick="forwardFromCtxMenu()">
             <i class="bi bi-arrow-return-right"></i>
-            <span>فوروارد</span>
+            <span>هدایت</span>
         </div>
         <div class="chat-ctx-menu-item" id="chatCtxCopyItem" onclick="copyFromCtxMenu()">
             <i class="bi bi-clipboard"></i>
@@ -3503,6 +3503,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             msgs.forEach(m => {
                 lastMessageId = Math.max(lastMessageId, m.id);
                 if (!oldestMessageId || m.id < oldestMessageId) oldestMessageId = m.id;
+                // 🔒 اگه این پیام از قبل رندر شده (مثلاً چون هم پول‌کردنِ دوره‌ایِ
+                // ۴ثانیه‌ای و هم پول‌کردنِ فوریِ بعدِ ارسال/هدایت، هم‌زمان با یک
+                // after_idِ یکسان به سرور رسیدن و هردو همون پیامِ تازه رو گرفتن)،
+                // یک ردیفِ تکراری نساز — این دقیقاً همون چیزی بود که باعث می‌شد
+                // یک پیام دوبار (یا یک هدایت، دوبار) روی صفحه دیده بشه
+                if (el.querySelector('.chat-bubble-row[data-message-id="' + m.id + '"]')) return;
                 // خطِ «پیام‌های خوانده‌نشده» — درست بالایِ اولین پیامِ خوانده‌نشده، فقط
                 // یک‌بار (unreadDividerBeforeId بلافاصله صفر می‌شود تا در پیام‌های
                 // بعدیِ همین دسته یا در after_id/prependِ بعدی دوباره درج نشود)
@@ -3942,7 +3948,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }
         }
 
-        // ─────────────── فورواردِ پیام ───────────────
+        // ─────────────── هدایت پیام ───────────────
         var forwardModalInstance = null;
         var forwardTargetMessageId = null;
 
@@ -3991,12 +3997,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .then(data => {
                     if (data.success) {
                         bootstrap.Modal.getInstance(document.getElementById('forwardModal')).hide();
-                        showToast('پیام فوروارد شد', 'success');
+                        showToast('پیام هدایت شد', 'success');
                         if (conversationId === activeConversationId) {
                             pollForUpdates(true);
                         }
                     } else {
-                        showToast(data.message || 'خطا در فوروارد پیام', 'error');
+                        showToast(data.message || 'خطا در هدایت پیام', 'error');
                     }
                 });
         }
@@ -4534,7 +4540,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             __convSnapshotReady = true;
         }
 
-        // forceScroll=true فقط برایِ اقدامِ خودِ کاربر (فرستادن/فورواردِ پیام) —
+        // forceScroll=true فقط برایِ اقدامِ خودِ کاربر (فرستادن/هدایت پیام) —
         // چرخه‌یِ معمولیِ poll (هر ۴ ثانیه) این رو نمی‌فرسته، پس اگه کاربر
         // بالایِ تاریخچه‌ست و یکیِ دیگه پیام بده، خودکار پرتاب نمی‌شه پایین؛
         // فقط بجِ عددیِ رویِ دکمه‌ی «برو به آخرین پیام» بالا می‌ره
