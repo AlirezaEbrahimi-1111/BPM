@@ -2391,6 +2391,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
     </div>
 
+    <!-- راست‌کلیک روی یک ردیفِ گفتگو در لیست (فقط گفتگوهایِ مستقیم) -->
+    <div class="chat-ctx-menu" id="chatConvCtxMenu">
+        <div class="chat-ctx-menu-item danger" onclick="deleteConversationFromCtxMenu()">
+            <i class="bi bi-trash"></i>
+            <span>حذف گفتگو</span>
+        </div>
+    </div>
+
     <script>
         // ⚠️ عمداً بدونِ «= null»: header.php از قبل، توی یک IIFE سینکرون (که زودتر از این
         // اسکریپت اجرا می‌شه)، authToken رو درست از localStorage خونده. اگه اینجا با
@@ -2887,7 +2895,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     : (isDraft
                         ? '<div class="chat-conv-preview draft"><span class="chat-conv-draft-label">پیش‌نویس:</span> ' + preview + '</div>'
                         : '<div class="chat-conv-preview">' + preview + '</div>');
-                return '<div class="chat-conv-item' + active + '" onclick="openConversation(' + c.conversation_id + ')">' +
+                // راست‌کلیک برایِ حذفِ گفتگو فقط رویِ چت‌هایِ مستقیم (نه گروه —
+                // برایِ گروه معادلش «ترک گروه» از داخلِ خودِ گفتگوست)
+                var convCtxAttr = c.type === 'direct'
+                    ? ' oncontextmenu="return openConvCtxMenu(event, ' + c.conversation_id + ')"'
+                    : '';
+                return '<div class="chat-conv-item' + active + '" onclick="openConversation(' + c.conversation_id + ')"' + convCtxAttr + '>' +
                     avatarHtml(c.title, c.other_user_is_online, null, c.avatar_url) +
                     '<div class="chat-conv-info">' +
                     '<div class="chat-conv-name-row"><span class="chat-conv-name">' + esc(c.title) + muteIcon + '</span><span class="chat-conv-time">' + time + '</span></div>' +
@@ -3498,7 +3511,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     : '';
 
                 var forwardLabel = m.forwarded_from
-                    ? '<div class="chat-bubble-forward-label"><i class="bi bi-arrow-return-right"></i> فوروارد شده از ' + esc(m.forwarded_from) + '</div>'
+                    ? '<div class="chat-bubble-forward-label"><i class="bi bi-arrow-return-right"></i> هدایت شده از ' + esc(m.forwarded_from) + '</div>'
                     : '';
 
                 // رسیدِ خوانده‌شدن: فقط برایِ پیام‌هایِ خودم — با تیکِ ✓ (ارسال‌شده) شروع می‌شود
@@ -3514,7 +3527,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     quoteHtml +
                     (imagesHtml ? '<div class="chat-bubble-images">' + imagesHtml + '</div>' : '') +
                     filesHtml +
-                    (m.message ? '<div>' + highlightLinkRefs(highlightMentions(esc(m.message), activeGroupMembers)).replace(/\n/g, '<br>') + '</div>' : '') +
+                    (m.message ? '<div class="chat-bubble-text">' + highlightLinkRefs(highlightMentions(esc(m.message), activeGroupMembers)).replace(/\n/g, '<br>') + '</div>' : '') +
                     linkRefsHtml +
                     '<div class="chat-bubble-time">' + esc(m.time_jalali) + editedTag + ticksHtml + '</div>' +
                     reactionsHtml(m.id, m.reactions) +
@@ -3666,6 +3679,60 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         document.addEventListener('click', closeChatCtxMenu);
         document.addEventListener('scroll', closeChatCtxMenu, true);
+
+        // ─────────────── منویِ راست‌کلیکِ ردیفِ گفتگو در لیست (حذفِ گفتگو) ───────────────
+        var convCtxTargetId = null;
+
+        function openConvCtxMenu(e, conversationId) {
+            e.preventDefault();
+            convCtxTargetId = conversationId;
+            var menu = document.getElementById('chatConvCtxMenu');
+            menu.classList.add('show');
+            var menuW = menu.offsetWidth,
+                menuH = menu.offsetHeight;
+            var left = Math.min(e.clientX, window.innerWidth - menuW - 8);
+            var top = Math.min(e.clientY, window.innerHeight - menuH - 8);
+            menu.style.left = left + 'px';
+            menu.style.top = top + 'px';
+            return false;
+        }
+
+        function closeConvCtxMenu() {
+            document.getElementById('chatConvCtxMenu').classList.remove('show');
+            convCtxTargetId = null;
+        }
+
+        document.addEventListener('click', closeConvCtxMenu);
+        document.addEventListener('scroll', closeConvCtxMenu, true);
+
+        function deleteConversationFromCtxMenu() {
+            var conversationId = convCtxTargetId;
+            closeConvCtxMenu();
+            if (!conversationId) return;
+            uiConfirm(
+                'این گفتگو فقط برایِ شما حذف می‌شود؛ طرفِ مقابل هیچ تغییری نمی‌بیند و اگه بعداً پیامِ جدیدی بفرسته، دوباره توی لیست ظاهر می‌شه. ادامه بدیم؟',
+                function () {
+                    fetch('../api/chat/delete-conversation.php', {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ conversation_id: conversationId })
+                        })
+                        .then(r => r.json())
+                        .then(function (data) {
+                            if (data.success) {
+                                conversations = conversations.filter(c => c.conversation_id !== conversationId);
+                                renderConversationList();
+                                if (activeConversationId === conversationId) exitActiveConversation();
+                                showToast('گفتگو حذف شد', 'success');
+                            } else {
+                                showToast(data.message || 'خطا در حذفِ گفتگو', 'error');
+                            }
+                        })
+                        .catch(function () { showToast('خطا در ارتباط با سرور', 'error'); });
+                },
+                { danger: true, yesText: 'بله، حذف شود', noText: 'انصراف' }
+            );
+        }
 
         function startEditFromCtxMenu() {
             if (!ctxMenuTargetRow) return;
@@ -4137,8 +4204,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         var row = document.querySelector('.chat-bubble-row[data-message-id="' + messageId + '"]');
                         if (row) {
                             row.setAttribute('data-message-text', data.message);
-                            var textEl = row.querySelector('.chat-bubble > div:first-child');
-                            if (textEl) textEl.innerHTML = esc(data.message).replace(/\n/g, '<br>');
+                            // ‍‍`.chat-bubble-text` (نه `div:first-child`) — چون اولین
+                            // فرزندِ حباب می‌تونست عکس/فایلِ پیوست‌شده باشه، نه متن؛
+                            // با first-child، متنِ ویرایش‌شده جایِ عکس می‌نشست و عکس
+                            // پاک می‌شد، درحالی‌که متنِ قدیمی هم دست‌نخورده می‌موند
+                            var textEl = row.querySelector('.chat-bubble-text');
+                            if (textEl) textEl.innerHTML = highlightLinkRefs(highlightMentions(esc(data.message), activeGroupMembers)).replace(/\n/g, '<br>');
                             var timeEl = row.querySelector('.chat-bubble-time');
                             if (timeEl && !timeEl.querySelector('.chat-bubble-edited-tag')) {
                                 timeEl.insertAdjacentHTML('beforeend', '<span class="chat-bubble-edited-tag">(ویرایش‌شده)</span>');

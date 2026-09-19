@@ -66,6 +66,11 @@ try {
         )
         LEFT JOIN users lmu ON lmu.id = lm.user_id
         WHERE cp.user_id = ? AND cp.is_archived = ?
+          -- گفتگویِ یک‌به‌یکی که هیچ پیامِ واقعی‌ای توش رد‌وبدل نشده (چه هیچ‌وقت
+          -- پیامی فرستاده نشده — مثلِ انتخابِ کاربر و بعد انصراف، چه تنها پیامش
+          -- حذف شده) نباید توی لیست دیده بشه؛ lm از قبل فقط پیام‌هایِ
+          -- غیرحذف‌شده رو در نظر می‌گیره، پس لبِ NULLـش دقیقاً همین حالته
+          AND (c.type != 'direct' OR lm.created_at IS NOT NULL)
         ORDER BY c.updated_at DESC
     ");
     $stmt->execute([$user_id, $user_id, $user_id, $archived]);
