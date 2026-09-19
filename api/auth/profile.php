@@ -24,32 +24,22 @@ try {
     }
 
     // ── بروزرسانیِ اطلاعاتِ شخصی ──
+    // 🔒 نام/نام‌خانوادگی عمداً اینجا قابل‌تغییر نیستن — فقط ادمین از
+    // pages/users.php (api/admin/update-user.php) می‌تونه اسمِ یک کاربر رو
+    // عوض کنه. حتی اگه فرانت‌اند (که فیلدهاش readonly شدن) این مقادیر رو
+    // بفرسته هم، اینجا نادیده گرفته می‌شن — طبقِ تصمیمِ صریح.
     if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $input = json_decode(file_get_contents('php://input'), true) ?: [];
-        $first_name = trim($input['first_name'] ?? '');
-        $last_name  = trim($input['last_name'] ?? '');
-        $email      = isset($input['email']) ? trim($input['email']) : null;
+        $email = isset($input['email']) ? trim($input['email']) : null;
 
-        if ($first_name === '' || $last_name === '') {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'نام و نام خانوادگی الزامی است']);
-            exit;
-        }
-        // فقط حروف (فارسی/عربی/لاتین)، فاصله، خط‌تیره — هم‌راستا با همین چک در
-        // api/auth/register_user.php (جلوگیری از تزریقِ HTML/اسکریپت در نام)
-        if (!preg_match('/^[\p{L}\s\-]+$/u', $first_name) || !preg_match('/^[\p{L}\s\-]+$/u', $last_name)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'نام و نام خانوادگی فقط می‌توانند شامل حروف باشند']);
-            exit;
-        }
         if ($email !== null && $email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'ایمیل واردشده معتبر نیست']);
             exit;
         }
 
-        $stmt = $db->prepare("UPDATE users SET first_name = ?, last_name = ?, email = ?, updated_at = NOW() WHERE id = ?");
-        $stmt->execute([$first_name, $last_name, ($email !== '' ? $email : null), $user_id]);
+        $stmt = $db->prepare("UPDATE users SET email = ?, updated_at = NOW() WHERE id = ?");
+        $stmt->execute([($email !== '' ? $email : null), $user_id]);
 
         echo json_encode(['success' => true, 'message' => 'اطلاعات بروزرسانی شد']);
         exit;

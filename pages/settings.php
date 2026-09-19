@@ -200,11 +200,13 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     <div class="row g-3">
                         <div class="col-sm-6">
                             <label class="form-label">نام</label>
-                            <input type="text" class="form-control" id="firstName" required>
+                            <input type="text" class="form-control" id="firstName" readonly>
+                            <div class="form-hint">توسط ادمین قابل تغییر است</div>
                         </div>
                         <div class="col-sm-6">
                             <label class="form-label">نام خانوادگی</label>
-                            <input type="text" class="form-control" id="lastName" required>
+                            <input type="text" class="form-control" id="lastName" readonly>
+                            <div class="form-hint">توسط ادمین قابل تغییر است</div>
                         </div>
                         <div class="col-sm-6">
                             <label class="form-label">شماره موبایل</label>
@@ -381,10 +383,8 @@ function fillForm() {
 
 async function saveProfile(e) {
     e.preventDefault();
-    const fn = document.getElementById('firstName').value.trim();
-    const ln = document.getElementById('lastName').value.trim();
-    if (!fn || !ln) { showFormAlert('profileAlert', 'نام و نام خانوادگی الزامی است', 'danger'); return; }
-
+    // نام/نام‌خانوادگی فقط توسطِ ادمین قابلِ‌تغییرن (pages/users.php) — این
+    // فرم فقط ایمیل رو می‌فرسته؛ فیلدهایِ نام readonly-ان و اصلاً ارسال نمی‌شن
     const btn = document.getElementById('profileSaveBtn');
     btn.disabled = true;
     clearFormAlert('profileAlert');
@@ -393,15 +393,12 @@ async function saveProfile(e) {
         const r = await fetch('../api/auth/profile.php', {
             method: 'PUT', headers: ahj(),
             body: JSON.stringify({
-                first_name: fn, last_name: ln,
                 email: document.getElementById('email').value.trim() || null
             })
         });
         const d = await r.json();
         if (d.success) {
-            currentUser = { ...currentUser, first_name: fn, last_name: ln, email: document.getElementById('email').value.trim() };
-            const info = JSON.parse(localStorage.getItem('user_info') || '{}');
-            localStorage.setItem('user_info', JSON.stringify({ ...info, first_name: fn, last_name: ln }));
+            currentUser = { ...currentUser, email: document.getElementById('email').value.trim() };
             fillForm();
             showToast('اطلاعات با موفقیت ذخیره شد', 'success');
         } else {
