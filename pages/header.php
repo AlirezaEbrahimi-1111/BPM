@@ -2951,6 +2951,22 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             }
         }
 
+        // 🔒 چند اندپوینت (دانلودِ فایلِ چت، تیکت) چون امکانِ فرستادنِ هدرِ
+        // Authorization ندارن (باز شدن در تبِ جدید یا <img src>)، به‌جایِ توکنِ
+        // JWT توی URL (که قبلاً امنیتی نبود — نشتِ توکن در لاگ/DOM)، به فالبکِ
+        // $_SESSION تکیه می‌کنن. اما این سشن با gc_maxlifetime پیش‌فرضِ PHP (~۲۴
+        // دقیقه) منقضی می‌شه، در حالی که JWT ساعت‌ها/روزها معتبره — یعنی بعدِ
+        // مدتی استفاده‌ی مداوم از یک صفحه (بدون رفرشِ کامل)، سشن خاموش خاموش
+        // می‌شه و دانلود/پیش‌نمایشِ عکس با «عدم احراز هویت» شکست می‌خوره، با
+        // اینکه کاربر هنوز کاملاً لاگین هست. این تازه‌سازیِ دوره‌ای سشن رو با
+        // همون JWTِ جاری زنده نگه می‌داره تا هیچ‌وقت این‌قدر بی‌کار نمونه.
+        function refreshServerSession() {
+            if (!authToken) return;
+            fetch('/api/auth/set-session.php', {
+                headers: { 'Authorization': 'Bearer ' + authToken }
+            }).catch(function() {});
+        }
+
         function initializeHeader() {
             toggleManagerMenu();
             setupOverviewForUnit();
@@ -2960,12 +2976,14 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             if (authToken) {
                 loadHeaderBundle();
                 loadHdrTickets(); // تا بجِ «تیکتِ دیده‌نشده» قبل از بازکردنِ پنل هم دیده شود
+                refreshServerSession();
 
                 // بررسی هر 30 ثانیه
                 setInterval(checkNewNotifications, 30000);
                 setInterval(loadAttendanceStatus, 60000);
                 setInterval(updateChatUnreadBadge, 15000);
                 setInterval(loadHdrTickets, 60000);
+                setInterval(refreshServerSession, 10 * 60 * 1000); // هر ۱۰ دقیقه
             }
             highlightActiveMenu();
         }
