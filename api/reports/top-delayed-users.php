@@ -75,26 +75,35 @@ try {
     $acc = [];
 
     // نگاشت شناسهٔ کاربر → نام، و نام واحد → برچسب
+    // 🔒 is_active=1 دیگه شرطِ WHERE نیست — قبلاً کاری که assignee_id داشت
+    // ولی اون کاربر غیرفعال شده بود (نه حذف، فقط غیرفعال)، این‌جا اصلاً پیدا
+    // نمی‌شد و بی‌سروصدا زیرِ «نامشخص» جمع می‌شد؛ کاربر واقعاً حذف‌نشده،
+    // پس نامش رو نشون می‌دیم با برچسبِ «(غیرفعال)» تا مدیر بدونه این کارها
+    // مالِ کی بوده و باید به کی ارجاع بده
     $userNames = [];
+    $userActive = [];
     $stmt = $db->prepare("
-        SELECT id, first_name, last_name, activity_section
+        SELECT id, first_name, last_name, is_active
         FROM users
-        WHERE organization_id = ? AND is_deleted = 0 AND is_active = 1
+        WHERE organization_id = ? AND is_deleted = 0
     ");
     $stmt->execute([$org_id]);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $u) {
-        $userNames[(int)$u['id']] = trim($u['first_name'] . ' ' . $u['last_name']);
+        $uid = (int) $u['id'];
+        $userNames[$uid] = trim($u['first_name'] . ' ' . $u['last_name']);
+        $userActive[$uid] = (bool) $u['is_active'];
     }
 
     /** کلید کاربر یا واحد را برمی‌گرداند و در صورت نبود، می‌سازد */
-    $bucket = function ($assignee_id, $section) use (&$acc, $userNames) {
+    $bucket = function ($assignee_id, $section) use (&$acc, $userNames, $userActive) {
         if (!empty($assignee_id) && isset($userNames[(int)$assignee_id])) {
-            $key = 'user:' . (int)$assignee_id;
+            $aid = (int) $assignee_id;
+            $key = 'user:' . $aid;
             if (!isset($acc[$key])) {
                 $acc[$key] = [
                     'kind'       => 'user',
-                    'ref_id'     => (int)$assignee_id,
-                    'name'       => $userNames[(int)$assignee_id],
+                    'ref_id'     => $aid,
+                    'name'       => $userNames[$aid] . ($userActive[$aid] ? '' : ' (غیرفعال)'),
                     'periodic'    => 0,
                     'continuous'  => 0,
                     'workflow'    => 0,
