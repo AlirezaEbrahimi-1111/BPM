@@ -217,6 +217,17 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             min-width: 0;
         }
 
+        .chk-note-file .chk-file-name {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: .82rem;
+            color: #999;
+            cursor: pointer;
+        }
+
         .chk-note-actions {
             display: flex;
             align-items: center;
@@ -2002,8 +2013,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         <div class="chk-note-row">
                             <div class="chk-note-file">
                                 <label for="chk-file-${item.id}" title="پیوست فایل (اختیاری)"><i class="bi bi-paperclip"></i></label>
-                                <input type="file" id="chk-file-${item.id}" class="form-control form-control-sm"
+                                <input type="file" id="chk-file-${item.id}" class="file-input-hidden"
+                                       onchange="onChkFileChosen(${item.id})"
                                        accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg">
+                                <span class="chk-file-name" id="chk-file-name-${item.id}" onclick="document.getElementById('chk-file-${item.id}').click()">فایلی انتخاب نشده</span>
                             </div>
                             <div class="chk-note-actions">
                                 <button class="btn btn-primary btn-sm" onclick="saveDoneNote(${item.id}, true)">ثبت و انجام شد</button>
@@ -2155,10 +2168,25 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 setTimeout(() => document.getElementById('chk-note-' + itemId)?.focus(), 50);
             }
 
+            /* نمایشِ نامِ فایلِ انتخاب‌شده — چون خودِ input[type=file] مخفی است
+               (متنِ انگلیسیِ نیتیوِ Choose File/No file chosen قابلِ فارسی‌سازی
+               نبود)، این span جایگزینِ نمایشیِ آن است */
+            function onChkFileChosen(itemId) {
+                const fileInput = document.getElementById('chk-file-' + itemId);
+                const nameEl = document.getElementById('chk-file-name-' + itemId);
+                if (!fileInput || !nameEl) return;
+                const file = (fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
+                nameEl.textContent = file ? file.name : 'فایلی انتخاب نشده';
+            }
+
             function cancelDoneNote(itemId) {
                 document.getElementById('chk-' + itemId)
                     ?.closest('.checklist-detail-item-wrap')
                     ?.classList.remove('noting');
+                const fileInput = document.getElementById('chk-file-' + itemId);
+                if (fileInput) fileInput.value = '';
+                const nameEl = document.getElementById('chk-file-name-' + itemId);
+                if (nameEl) nameEl.textContent = 'فایلی انتخاب نشده';
             }
 
             /* ثبت نهایی — با یادداشت یا بدون آن، و فایلِ پیوستِ اختیاری */
