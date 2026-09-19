@@ -712,6 +712,24 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             transform: translateX(-50%) translateY(0);
         }
 
+        .chat-scroll-bottom-badge {
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background: var(--primary, #8e57fe);
+            color: #fff;
+            font-size: .65rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
         .chat-day-sep {
             text-align: center;
             font-size: .7rem;
@@ -2060,6 +2078,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         <div class="chat-messages" id="chatMessages"></div>
                         <button class="chat-scroll-bottom-btn" id="chatScrollBottomBtn" onclick="scrollChatToBottom()" title="برو به آخرین پیام">
                             <i class="bi bi-chevron-down"></i>
+                            <span class="chat-scroll-bottom-badge" id="chatScrollBottomBadge" style="display:none;"></span>
                         </button>
                     </div>
 
@@ -2578,6 +2597,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 var el = this;
                 var distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
                 document.getElementById('chatScrollBottomBtn').classList.toggle('show', distanceFromBottom > 200);
+                // اگه کاربر خودش دوباره به پایین برگشت، بجِ «پیامِ جدید» بی‌مورد می‌شه
+                if (distanceFromBottom <= 200) { chatNewMsgCount = 0; updateChatNewMsgBadge(); }
                 // نزدیکِ بالای لیست → پیام‌های قدیمی‌ترِ بعدی را بیاور
                 if (el.scrollTop < 120) prependOlderMessages();
             });
@@ -2595,6 +2616,29 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         function scrollChatToBottom() {
             var el = document.getElementById('chatMessages');
             el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+            chatNewMsgCount = 0;
+            updateChatNewMsgBadge();
+        }
+
+        // آیا کاربر همین الان نزدیکِ پایینِ لیستِ پیام‌هاست؟ (هم‌آستانه با
+        // دکمه‌ی «برو به آخرین پیام») — برایِ تصمیم‌گیری که پیامِ تازه‌رسیده
+        // خودکار اسکرول کنه یا فقط بج بخوره
+        function isChatNearBottom() {
+            var el = document.getElementById('chatMessages');
+            if (!el) return true;
+            return (el.scrollHeight - el.scrollTop - el.clientHeight) <= 200;
+        }
+
+        var chatNewMsgCount = 0;
+        function updateChatNewMsgBadge() {
+            var badge = document.getElementById('chatScrollBottomBadge');
+            if (!badge) return;
+            if (chatNewMsgCount > 0) {
+                badge.textContent = chatNewMsgCount > 9 ? '۹+' : toFa(chatNewMsgCount);
+                badge.style.display = '';
+            } else {
+                badge.style.display = 'none';
+            }
         }
 
         function sendChatPing() {
@@ -2966,12 +3010,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         // ─────────────── بازکردنِ یک گفتگو ───────────────
-        function openConversation(id, jumpToMessageId) {
+        // fallbackInfo اختیاریه: {title, avatar_url} — برایِ اولین‌بار که با
+        // کسی چت می‌کنیم، گفتگویِ تازه‌ساخته‌شده هنوز پیامی نداره، پس توی
+        // لیستِ conversations نیست (که عمداً چت‌هایِ بدونِ‌پیام رو نشون نمی‌ده)؛
+        // بدونِ این fallback، هدر تا فرستادنِ اولین پیام و رفرش/سوییچ، خط‌تیره می‌موند
+        function openConversation(id, jumpToMessageId, fallbackInfo) {
             saveComposerDraft(); // پیش‌نویسِ گفتگویِ قبلی (اگر بود) قبل از جابه‌جایی ذخیره بشه
 
             activeConversationId = id;
             var conv = conversations.find(c => c.conversation_id === id);
-            activeConversationTitle = conv ? conv.title : '—';
+            activeConversationTitle = conv ? conv.title : (fallbackInfo ? fallbackInfo.title : '—');
             activeConversationType = conv ? conv.type : 'direct';
             cancelEditMessage();
             cancelReplyMessage();
@@ -2988,10 +3036,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('chatMuteToggleBtn').style.display = 'none';
             var headAvatar = document.getElementById('chatHeadAvatar');
             headAvatar.classList.toggle('online', !!(conv && conv.other_user_is_online));
-            setAvatarContent(headAvatar, activeConversationTitle, conv && conv.avatar_url);
+            setAvatarContent(headAvatar, activeConversationTitle, conv ? conv.avatar_url : (fallbackInfo ? fallbackInfo.avatar_url : null));
             updateMuteButton(conv);
             updateChatHeadLastSeen(conv);
             document.getElementById('chatMessages').innerHTML = '';
+            chatNewMsgCount = 0;
+            updateChatNewMsgBadge();
             restoreComposerDraft(id);
             document.getElementById('chatComposerInput').focus();
             lastMessageId = 0;
@@ -3943,7 +3993,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         bootstrap.Modal.getInstance(document.getElementById('forwardModal')).hide();
                         showToast('پیام فوروارد شد', 'success');
                         if (conversationId === activeConversationId) {
-                            pollForUpdates();
+                            pollForUpdates(true);
                         }
                     } else {
                         showToast(data.message || 'خطا در فوروارد پیام', 'error');
@@ -4116,7 +4166,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         pendingFiles = [];
                         cancelReplyMessage();
                         if (fileCaptionModalInst) fileCaptionModalInst.hide();
-                        pollForUpdates();
+                        pollForUpdates(true);
                     } else {
                         showToast(data.message || 'خطا در ارسال فایل', 'error');
                     }
@@ -4169,7 +4219,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         input.style.height = 'auto';
                         clearComposerDraft(activeConversationId);
                         cancelReplyMessage();
-                        pollForUpdates();
+                        pollForUpdates(true);
                     } else {
                         showToast(data.message || 'خطا در ارسال پیام', 'error');
                     }
@@ -4484,7 +4534,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             __convSnapshotReady = true;
         }
 
-        function pollForUpdates() {
+        // forceScroll=true فقط برایِ اقدامِ خودِ کاربر (فرستادن/فورواردِ پیام) —
+        // چرخه‌یِ معمولیِ poll (هر ۴ ثانیه) این رو نمی‌فرسته، پس اگه کاربر
+        // بالایِ تاریخچه‌ست و یکیِ دیگه پیام بده، خودکار پرتاب نمی‌شه پایین؛
+        // فقط بجِ عددیِ رویِ دکمه‌ی «برو به آخرین پیام» بالا می‌ره
+        function pollForUpdates(forceScroll) {
             loadConversations();
             if (activeConversationId) {
                 fetch('../api/chat/messages.php?conversation_id=' + activeConversationId + '&after_id=' + lastMessageId, {
@@ -4495,7 +4549,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     .then(r => r.json())
                     .then(data => {
                         if (data.success && data.messages.length) {
-                            appendMessages(data.messages, true);
+                            var shouldScroll = forceScroll || isChatNearBottom();
+                            appendMessages(data.messages, shouldScroll);
+                            if (!shouldScroll) {
+                                chatNewMsgCount += data.messages.length;
+                                updateChatNewMsgBadge();
+                            }
                             renderReadReceipts();
                         }
                     })
@@ -5224,6 +5283,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         function startChatWith(userId) {
+            // برایِ fallbackِ نام/عکسِ هدر، قبل از اینکه اولین پیام فرستاده بشه
+            // (وقتی گفتگوی تازه هنوز توی لیستِ conversations نیست)
+            var userInfo = currentUserResults.find(u => u.id === userId);
+            var fallbackInfo = userInfo ? { title: userInfo.full_name, avatar_url: userInfo.avatar_url } : null;
+
             fetch('../api/chat/start.php', {
                     method: 'POST',
                     headers: {
@@ -5240,7 +5304,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         var newChatInst = bootstrap.Modal.getInstance(document.getElementById('newChatModal'));
                         if (newChatInst) newChatInst.hide();
                         loadConversations(function() {
-                            openConversation(data.conversation_id);
+                            openConversation(data.conversation_id, null, fallbackInfo);
                         });
                     } else {
                         showToast(data.message || 'خطا در شروع گفتگو', 'error');
