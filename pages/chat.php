@@ -1266,6 +1266,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             gap: 12px;
             padding: 10px 4px;
             border-bottom: 1px solid var(--border-soft, #eee);
+            direction: ltr;
         }
 
         .chat-profile-drawer-field i {
