@@ -38,6 +38,7 @@ try {
     $conversationId = (int) ($input['conversation_id'] ?? 0);
     $targetUserId = (int) ($input['user_id'] ?? 0);
     $role = $input['role'] ?? '';
+    $permissionsInput = $input['permissions'] ?? null;
 
     if (!$conversationId || !$targetUserId || !in_array($role, ['admin', 'member'], true)) {
         http_response_code(400);
@@ -88,9 +89,20 @@ try {
 
     // 🔒 هر تغییرِ نقش (ارتقا یا عزل)، اختیاراتِ اختصاصیِ قبلی رو پاک می‌کنه —
     // اگه بعداً دوباره مدیر بشه، از پیش‌فرضِ «همه‌ی اختیارات» شروع می‌کنه، نه
-    // یک ستِ قدیمیِ سفارشی که ممکنه دیگه ربطی به تصمیمِ سازنده نداشته باشه
-    $db->prepare("UPDATE chat_participants SET role = ?, permissions = NULL WHERE conversation_id = ? AND user_id = ?")
-        ->execute([$role, $conversationId, $targetUserId]);
+    // یک ستِ قدیمیِ سفارشی که ممکنه دیگه ربطی به تصمیمِ سازنده نداشته باشه.
+    //
+    // 🆕 استثنا: اگه همین درخواست، سازنده‌ی گروه داره یک عضو رو به مدیر ارتقا
+    // می‌ده و یک آرایه‌ی permissions هم فرستاده (یعنی از همون لحظه‌ی ارتقا
+    // اختیاراتِ اختصاصی رو انتخاب کرده، نه بعداً جداگانه)، همون آرایه به‌جایِ
+    // NULLِ پیش‌فرض ثبت می‌شه. فقط سازنده — چون تنظیمِ اختیارات همیشه
+    // سازنده‌محوره (نه هر مدیری)
+    $permissionsToStore = null;
+    if ($role === 'admin' && is_array($permissionsInput) && chatUserIsGroupCreator($db, $conversationId, $user_id)) {
+        $permissionsToStore = json_encode(array_values(array_intersect(array_unique($permissionsInput), CHAT_GROUP_ADMIN_PERMISSIONS)));
+    }
+
+    $db->prepare("UPDATE chat_participants SET role = ?, permissions = ? WHERE conversation_id = ? AND user_id = ?")
+        ->execute([$role, $permissionsToStore, $conversationId, $targetUserId]);
 
     echo json_encode(['success' => true, 'role' => $role]);
 
