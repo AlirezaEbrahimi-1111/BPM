@@ -2284,9 +2284,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="deleteMsgForEveryoneCheck" checked>
-                        <label class="form-check-label" for="deleteMsgForEveryoneCheck" id="deleteMsgForEveryoneLabel"></label>
+                    <div class="chat-profile-drawer-field" style="border-bottom:none; padding:4px;">
+                        <label class="chat-profile-drawer-label" for="deleteMsgForEveryoneCheck" id="deleteMsgForEveryoneLabel" style="flex:1; font-size:.85rem; color:var(--ink-900); cursor:pointer;"></label>
+                        <label class="chat-toggle-switch">
+                            <input type="checkbox" id="deleteMsgForEveryoneCheck" checked>
+                            <span class="chat-toggle-slider"></span>
+                        </label>
                     </div>
                 </div>
                 <div class="modal-footer">
