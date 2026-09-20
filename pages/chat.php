@@ -755,6 +755,31 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             justify-content: flex-end;
         }
 
+        /* هاله‌ی سرتاسری (به‌اندازه‌ی کلِ عرضِ فضایِ چت) وقتی از روی بنرِ
+           پیامِ سنجاق‌شده به این پیام می‌پریم — چون خودِ ردیف (نه حبابِ داخلش)
+           تمامِ عرض رو می‌گیره، پس‌زمینه‌دادن به همین ردیف خودبه‌خود یک نوارِ
+           سرتاسریِ چپ‌به‌راست می‌سازه، نه فقط دورِ حباب */
+        .chat-bubble-row.pinned-jump-highlight {
+            border-radius: 8px;
+            animation: chat-pinned-jump-fade 3s ease-out;
+        }
+
+        @keyframes chat-pinned-jump-fade {
+            0%   { background: rgba(142, 87, 254, .22); }
+            70%  { background: rgba(142, 87, 254, .14); }
+            100% { background: transparent; }
+        }
+
+        :root[data-theme="dark"] .chat-bubble-row.pinned-jump-highlight {
+            animation-name: chat-pinned-jump-fade-dark;
+        }
+
+        @keyframes chat-pinned-jump-fade-dark {
+            0%   { background: rgba(142, 87, 254, .3); }
+            70%  { background: rgba(142, 87, 254, .18); }
+            100% { background: transparent; }
+        }
+
         .chat-bubble {
             max-width: 66%;
             padding: 8px 12px;
@@ -1021,6 +1046,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             display: inline-flex;
             align-items: center;
             gap: 2px;
+        }
+
+        .chat-bubble-pin-icon {
+            margin-inline-end: 3px;
+            font-size: .72rem;
+            color: #8e57fe;
         }
 
         .chat-bubble-ticks i {
@@ -2076,7 +2107,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
                     <div class="chat-pinned-banner" id="chatPinnedBanner" style="display:none;">
                         <i class="bi bi-pin-angle-fill"></i>
-                        <div class="chat-pinned-banner-body" onclick="scrollToOriginalMessage(pinnedMessage && pinnedMessage.id)">
+                        <div class="chat-pinned-banner-body" onclick="scrollToOriginalMessage(pinnedMessage && pinnedMessage.id, true)">
                             <div class="chat-pinned-banner-label">پیام سنجاق‌شده</div>
                             <div class="chat-pinned-banner-text" id="chatPinnedBannerText"></div>
                         </div>
@@ -2295,6 +2326,23 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">انصراف</button>
                     <button type="button" class="btn btn-danger btn-sm" onclick="confirmDeleteMessage()">حذف پیام</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودالِ تنظیمِ اختیاراتِ اختصاصیِ یک مدیرِ گروه (فقط سازنده) -->
+    <div class="modal fade" id="groupMemberPermissionsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">اختیاراتِ <span id="gmpMemberName"></span></h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="gmpPermissionList"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">انصراف</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveGroupMemberPermissions()">ذخیره</button>
                 </div>
             </div>
         </div>
@@ -3598,6 +3646,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     ? '<span class="chat-bubble-ticks" data-mid="' + m.id + '"><i class="bi bi-check"></i></span>'
                     : '';
 
+                // آیکنِ سنجاق کنارِ ساعت — فقط اگه pinnedMessage تا همین لحظه
+                // لود شده باشه؛ اگه دیرتر لود بشه یا پین/آن‌پین حین بازبودنِ
+                // چت اتفاق بیفته، updatePinnedIconInMessages() این رو sync می‌کنه
+                var pinIconHtml = (pinnedMessage && pinnedMessage.id === m.id)
+                    ? '<i class="bi bi-pin-angle-fill chat-bubble-pin-icon" title="پیامِ سنجاق‌شده"></i>'
+                    : '';
+
                 row.innerHTML =
                     '<div class="chat-bubble">' +
                     senderLabel +
@@ -3607,7 +3662,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     filesHtml +
                     (m.message ? '<div class="chat-bubble-text">' + highlightLinkRefs(highlightMentions(esc(m.message), activeGroupMembers)).replace(/\n/g, '<br>') + '</div>' : '') +
                     linkRefsHtml +
-                    '<div class="chat-bubble-time">' + esc(m.time_jalali) + editedTag + ticksHtml + '</div>' +
+                    '<div class="chat-bubble-time">' + pinIconHtml + esc(m.time_jalali) + editedTag + ticksHtml + '</div>' +
                     reactionsHtml(m.id, m.reactions) +
                     '</div>';
 
@@ -3712,12 +3767,19 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .finally(function () { loadingOlder = false; });
         }
 
-        function scrollToOriginalMessage(messageId) {
+        // highlight=true فقط برایِ کلیک روی بنرِ پیامِ سنجاق‌شده صدا زده می‌شه —
+        // ریپلای و جهشِ سرچِ بینِ‌گفتگویی (که از همین تابع استفاده می‌کنن) عمداً
+        // بدونِ هاله می‌مونن، چون قبلاً صراحتاً درخواستِ حذفِ فلش برایِ اونا شده بود
+        function scrollToOriginalMessage(messageId, highlight) {
             var row = document.querySelector('.chat-bubble-row[data-message-id="' + messageId + '"]');
             if (!row) return;
-            // فقط اسکرول — فلشِ کلِ حباب طبقِ خواسته حذف شد (برایِ سنجاق‌شده،
-            // ریپلای، و جهشِ سرچِ بینِ‌گفتگویی که همگی از همین تابع استفاده می‌کنن)
             row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            if (highlight) {
+                row.classList.remove('pinned-jump-highlight');
+                void row.offsetWidth; // reflow — تا کلیکِ پشتِ‌سرِهم روی بنر، انیمیشن رو از اول اجرا کنه
+                row.classList.add('pinned-jump-highlight');
+                setTimeout(function () { row.classList.remove('pinned-jump-highlight'); }, 3000);
+            }
         }
 
         // ─────────────── منویِ راست‌کلیک (ویرایش/حذف) ───────────────
@@ -4632,6 +4694,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     pinnedMessage = data.pinned;
                     pinnedCanManage = !!data.can_manage;
                     renderPinnedBanner();
+                    updatePinnedIconInMessages();
                 })
                 .catch(function() {});
         }
@@ -4646,6 +4709,23 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             var who = pinnedMessage.is_own ? 'شما' : pinnedMessage.user_name;
             document.getElementById('chatPinnedBannerText').textContent = who + ': ' + (pinnedMessage.snippet || '📎 پیوست');
             document.getElementById('chatPinnedBannerClose').style.display = pinnedCanManage ? 'block' : 'none';
+        }
+
+        // آیکنِ سنجاقِ کنارِ ساعتِ پیام رو با pinnedMessageِ فعلی هماهنگ می‌کنه —
+        // برایِ ردیف‌هایی که از قبلِ لودشدنِ pinnedMessage روی صفحه بودن، یا
+        // وقتی پین/آن‌پین حینِ بازبودنِ همین چت اتفاق می‌افته
+        function updatePinnedIconInMessages() {
+            document.querySelectorAll('.chat-bubble-pin-icon').forEach(function (el) { el.remove(); });
+            if (!pinnedMessage) return;
+            var row = document.querySelector('.chat-bubble-row[data-message-id="' + pinnedMessage.id + '"]');
+            if (!row) return; // هنوز لود نشده (مثلاً تویِ تاریخچه‌ی قدیمی‌تر) — صرفاً بصریه، مشکلی نیست
+            var timeEl = row.querySelector('.chat-bubble-time');
+            if (timeEl && !timeEl.querySelector('.chat-bubble-pin-icon')) {
+                var icon = document.createElement('i');
+                icon.className = 'bi bi-pin-angle-fill chat-bubble-pin-icon';
+                icon.title = 'پیامِ سنجاق‌شده';
+                timeEl.insertBefore(icon, timeEl.firstChild);
+            }
         }
 
         function pinFromCtxMenu() {
@@ -4692,6 +4772,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     if (data.success) {
                         pinnedMessage = null;
                         renderPinnedBanner();
+                        updatePinnedIconInMessages();
                     } else {
                         showToast(data.message || 'خطا در برداشتن سنجاق', 'error');
                     }
@@ -4911,6 +4992,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         // ─────────────── دراورِ اطلاعاتِ گروه ───────────────
         var groupInfoIsOwner = false;   // فقط سازنده‌ی گروه (created_by)
         var groupInfoCanManage = false; // سازنده یا هر مدیرِ (admin) گروه
+        var groupInfoMyPermissions = []; // اختیاراتِ اختصاصیِ من در همین گروه — از group-members.php (my_permissions)
+        var groupInfoAllPermissions = []; // کلِ کلیدهایِ اختیاراتِ قابل‌واگذاری (از سرور، برایِ مودالِ تنظیمِ اختیارات)
+        var groupInfoMembersCache = []; // آخرین لیستِ اعضا — تا مودالِ اختیارات بدونِ فراخوانیِ دوباره، اطلاعاتِ عضو رو پیدا کنه
+        var GROUP_PERMISSION_LABELS = {
+            pin: 'سنجاق‌کردنِ پیام',
+            add_member: 'افزودنِ عضو',
+            remove_member: 'حذفِ عضو',
+            avatar: 'تغییرِ عکسِ گروه'
+        };
 
         function openGroupInfoDrawer() {
             if (!activeConversationId) return;
@@ -4969,12 +5059,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         return;
                     }
                     document.getElementById('groupInfoTitle').textContent = activeConversationTitle + ' — ' + toFa(data.members.length) + ' عضو';
-                    document.getElementById('groupInfoAddBtn').style.display = data.can_manage ? 'block' : 'none';
                     groupInfoIsOwner = !!data.is_owner;
                     groupInfoCanManage = !!data.can_manage;
+                    groupInfoMyPermissions = data.my_permissions || [];
+                    groupInfoAllPermissions = data.all_permissions || [];
+                    groupInfoMembersCache = data.members || [];
+                    document.getElementById('groupInfoAddBtn').style.display = groupInfoMyPermissions.indexOf('add_member') !== -1 ? 'block' : 'none';
                     document.getElementById('groupInfoAvatarWrap').innerHTML =
                         avatarHtml(data.group_title || activeConversationTitle, false, 'chat-group-avatar-big', data.group_avatar_url) +
-                        (data.can_manage ? '<div class="chat-group-avatar-edit-badge"><i class="bi bi-camera-fill"></i></div>' : '');
+                        (groupInfoMyPermissions.indexOf('avatar') !== -1 ? '<div class="chat-group-avatar-edit-badge"><i class="bi bi-camera-fill"></i></div>' : '');
                     document.getElementById('groupInfoMemberList').innerHTML = data.members.map(m => {
                         var isMe = myUserId && Number(m.id) === Number(myUserId);
                         var nameAttrs = isMe ? '' : ' onclick="openMemberDirectChat(' + m.id + ')" style="cursor:pointer;"';
@@ -4990,14 +5083,19 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                                 roleBtn = '<button class="chat-group-member-role-btn" title="عزل از مدیریت" onclick="demoteGroupMember(' + m.id + ')"><i class="bi bi-shield-minus"></i></button>';
                             }
                         }
-                        // حذفِ عضو: هر مدیری برایِ اعضایِ عادی؛ حذفِ یک مدیرِ دیگه فقط دستِ سازنده‌ست
-                        var canRemove = data.can_manage && !m.is_owner && (!m.is_admin || data.is_owner);
+                        // تنظیمِ اختیاراتِ اختصاصی: فقط سازنده، فقط رویِ مدیرهایِ دیگه
+                        var permBtn = (data.is_owner && m.is_admin && !m.is_owner)
+                            ? '<button class="chat-group-member-role-btn" title="تنظیمِ اختیارات" onclick="openGroupMemberPermissionsModal(' + m.id + ')"><i class="bi bi-gear-fill"></i></button>'
+                            : '';
+                        // حذفِ عضو: مدیرِ دارایِ اختیارِ remove_member برایِ اعضایِ عادی؛ حذفِ یک مدیرِ دیگه فقط دستِ سازنده‌ست
+                        var canRemove = !m.is_owner && (groupInfoMyPermissions.indexOf('remove_member') !== -1) && (!m.is_admin || data.is_owner);
                         return '<div class="chat-group-member-row">' +
                         '<div' + nameAttrs + '>' + avatarHtml(m.full_name, false, null, m.avatar_url) + '</div>' +
                         '<span class="chat-group-member-name"' + nameAttrs + '>' + esc(m.full_name) + ' ' +
                         roleTag +
                         '</span>' +
                         roleBtn +
+                        permBtn +
                         (canRemove
                             ? '<button class="chat-group-member-remove" title="حذف عضو" onclick="removeGroupMember(' + m.id + ')"><i class="bi bi-x-lg"></i></button>'
                             : '') +
@@ -5018,7 +5116,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         function triggerGroupAvatarUpload() {
-            if (!groupInfoCanManage) return;
+            if (groupInfoMyPermissions.indexOf('avatar') === -1) return;
             document.getElementById('groupAvatarFileInput').click();
         }
 
@@ -5093,6 +5191,56 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         function demoteGroupMember(userId) {
             setGroupMemberRole(userId, 'member', 'خطا در عزلِ مدیر');
+        }
+
+        // ─────────────── اختیاراتِ اختصاصیِ یک مدیر (فقط سازنده تنظیم می‌کنه) ───────────────
+        var gmpModalInstance = null;
+        var gmpTargetUserId = null;
+
+        function openGroupMemberPermissionsModal(userId) {
+            var m = groupInfoMembersCache.find(function (x) { return Number(x.id) === Number(userId); });
+            if (!m) return;
+            gmpTargetUserId = userId;
+            document.getElementById('gmpMemberName').textContent = m.full_name;
+            document.getElementById('gmpPermissionList').innerHTML = groupInfoAllPermissions.map(function (key) {
+                var checked = m.permissions.indexOf(key) !== -1;
+                var label = GROUP_PERMISSION_LABELS[key] || key;
+                return '<div class="chat-profile-drawer-field" style="border-bottom:none; padding:6px 4px;">' +
+                    '<label class="chat-profile-drawer-label" for="gmp-perm-' + key + '" style="flex:1; font-size:.85rem; color:var(--ink-900); cursor:pointer;">' + esc(label) + '</label>' +
+                    '<label class="chat-toggle-switch">' +
+                        '<input type="checkbox" id="gmp-perm-' + key + '" data-perm="' + key + '"' + (checked ? ' checked' : '') + '>' +
+                        '<span class="chat-toggle-slider"></span>' +
+                    '</label>' +
+                '</div>';
+            }).join('');
+            if (!gmpModalInstance) {
+                gmpModalInstance = new bootstrap.Modal(document.getElementById('groupMemberPermissionsModal'));
+            }
+            gmpModalInstance.show();
+        }
+
+        function saveGroupMemberPermissions() {
+            if (!gmpTargetUserId || !activeConversationId) return;
+            var granted = Array.prototype.slice.call(document.querySelectorAll('#gmpPermissionList input[type=checkbox]:checked'))
+                .map(function (el) { return el.getAttribute('data-perm'); });
+            fetch('../api/chat/set-member-permissions.php', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ conversation_id: activeConversationId, user_id: gmpTargetUserId, permissions: granted })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        gmpModalInstance.hide();
+                        refreshGroupInfoMembers(false);
+                        showToast('اختیارات به‌روزرسانی شد', 'success');
+                    } else {
+                        showToast(data.message || 'خطا در ذخیره‌ی اختیارات', 'error');
+                    }
+                });
         }
 
         function confirmLeaveGroup() {
