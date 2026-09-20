@@ -1943,18 +1943,18 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         .td-user-badges {
             display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            gap: 4px;
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
             flex-shrink: 0;
         }
 
         .td-user-count {
             font-size: .72rem;
-            font-weight: 700;
+            font-weight: var(--badge-font-weight);
             color: #b91c1c;
             background: #fee2e2;
-            border-radius: 8px;
+            border-radius: var(--badge-radius);
             min-width: 34px;
             height: 24px;
             display: flex;
@@ -1966,11 +1966,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         .td-user-task-count {
             font-size: .68rem;
-            font-weight: 700;
+            font-weight: var(--badge-font-weight);
             color: #8e57fe;
             background: rgba(142, 87, 254, 0.12);
-            border: 1px solid rgba(142, 87, 254, 0.25);
-            border-radius: 8px;
+            border-radius: var(--badge-radius);
             min-width: 34px;
             height: 22px;
             display: flex;
