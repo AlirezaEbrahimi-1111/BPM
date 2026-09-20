@@ -860,6 +860,34 @@ if (!hasPermission($__me, 'manage_users')) {
         </div>
     </div>
 
+    <!-- مودالِ رسیدگی به کارهایِ بازِ کاربر، قبل از غیرفعال‌سازی -->
+    <div class="modal fade" id="pendingTasksModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header-custom modal-header border-0">
+                    <h5 class="modal-title text-white">
+                        <i class="bi bi-exclamation-triangle ms-2"></i>
+                        کارهایِ بازِ <span id="ptName"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning" style="font-size:.85rem;">
+                        این کاربر <b id="ptCount"></b> کارِ باز دارد. قبل از غیرفعال‌سازی، برایِ هرکدوم تعیین کنید:
+                        ارجاع به شخصِ دیگر، تکمیلِ کار (بدونِ نیاز به تأیید)، یا لغوِ کار — و دلیلش را بنویسید.
+                    </div>
+                    <div id="ptTaskList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">انصراف</button>
+                    <button type="button" class="btn btn-danger btn-sm" id="ptSubmitBtn" onclick="submitPendingTaskResolutions()">
+                        <i class="bi bi-check2-all ms-1"></i>رسیدگی و غیرفعال‌سازی
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php include 'footer.php'; ?>
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/table-utils.js') ?>"></script>
@@ -1742,10 +1770,27 @@ if (!hasPermission($__me, 'manage_users')) {
             el.value = toman ? toFa(toman.toLocaleString('en-US')) : '';
         }
         /* ── toggle status ── */
-        function toggleStatus(userId, current) {
+        async function toggleStatus(userId, current) {
             const newVal = current == 1 ? 0 : 1;
             const user = allUsers.find(x => x.id === userId);
             const name = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'این کاربر';
+
+            // 🆕 قبل از غیرفعال‌سازی (نه فعال‌سازی)، اول چک کن این کاربر کارِ
+            // بازی داره یا نه — اگه داره، به‌جایِ تأییدِ ساده، مودالِ رسیدگی
+            // به کارها باز می‌شه؛ غیرفعال‌سازیِ واقعی از دلِ همون مودال انجام می‌شه
+            if (newVal === 0) {
+                try {
+                    const pr = await fetch('/api/admin/user-pending-tasks.php?user_id=' + userId, { headers: ahj() });
+                    const pd = await pr.json();
+                    if (pd.success && pd.tasks && pd.tasks.length > 0) {
+                        openPendingTasksModal(userId, name, pd.tasks);
+                        return;
+                    }
+                } catch {
+                    // شکستِ این چک نباید جلویِ کلِ غیرفعال‌سازی رو بگیره — با
+                    // همون مسیرِ سادهٔ زیر ادامه می‌دیم
+                }
+            }
 
             const msg = (newVal === 0) ?
                 `⚠️ غیرفعال کردن «${name}» — این کاربر دیگر نمی‌تواند وارد سیستم شود و تمام دسترسی‌هایش قطع می‌شود. مطمئن هستید؟` :
@@ -1772,6 +1817,108 @@ if (!hasPermission($__me, 'manage_users')) {
                 yesText: (newVal === 0 ? 'بله، غیرفعال کن' : 'بله، فعال کن'),
                 noText: 'انصراف'
             });
+        }
+
+        // ─────────────── رسیدگی به کارهایِ بازِ کاربر قبل از غیرفعال‌سازی ───────────────
+        var ptModalInstance = null;
+        var ptTargetUserId = null;
+        var ptTasks = [];
+
+        const PT_TASK_TYPE_LABEL = { periodic: 'مقطعی', continuous: 'دوره‌ای' };
+
+        function openPendingTasksModal(userId, name, tasks) {
+            ptTargetUserId = userId;
+            ptTasks = tasks;
+            document.getElementById('ptName').textContent = name;
+            document.getElementById('ptCount').textContent = toFa ? toFa(tasks.length) : tasks.length;
+
+            // مقصدهایِ ممکن برایِ ارجاع: کاربرانِ فعالِ همون سازمان، به‌جز خودِ
+            // کاربرِ در‌حالِ‌غیرفعال‌شدن
+            const targetUser = allUsers.find(x => x.id === userId);
+            const orgId = targetUser ? targetUser.organization_id : null;
+            const reassignCandidates = allUsers.filter(u =>
+                u.id !== userId && u.is_active == 1 && (!orgId || u.organization_id === orgId)
+            );
+
+            document.getElementById('ptTaskList').innerHTML = tasks.map(function(t, idx) {
+                const typeLabel = t.is_workflow_task == 1 ? 'روتین' : (PT_TASK_TYPE_LABEL[t.task_type] || t.task_type);
+                const userOptions = reassignCandidates.map(function(u) {
+                    return '<option value="' + u.id + '">' + esc(((u.first_name || '') + ' ' + (u.last_name || '')).trim()) + '</option>';
+                }).join('');
+                return `
+                <div class="border rounded-3 p-3 mb-2" data-pt-task-id="${t.id}">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div><strong>${esc(t.title || '—')}</strong> <span class="badge bg-light text-dark border">${esc(typeLabel)}</span></div>
+                    </div>
+                    <div class="btn-group btn-group-sm mb-2" role="group" style="width:100%;">
+                        <input type="radio" class="btn-check" name="pt-action-${t.id}" id="pt-reassign-${t.id}" value="reassign" checked onchange="ptOnActionChange(${t.id})">
+                        <label class="btn btn-outline-primary" for="pt-reassign-${t.id}">ارجاع به دیگری</label>
+                        <input type="radio" class="btn-check" name="pt-action-${t.id}" id="pt-complete-${t.id}" value="complete" onchange="ptOnActionChange(${t.id})">
+                        <label class="btn btn-outline-success" for="pt-complete-${t.id}">تکمیلِ کار</label>
+                        <input type="radio" class="btn-check" name="pt-action-${t.id}" id="pt-cancel-${t.id}" value="cancel" onchange="ptOnActionChange(${t.id})">
+                        <label class="btn btn-outline-danger" for="pt-cancel-${t.id}">لغوِ کار</label>
+                    </div>
+                    <div id="pt-reassign-wrap-${t.id}" class="mb-2">
+                        <select class="form-select form-select-sm" id="pt-to-user-${t.id}">
+                            <option value="">— انتخابِ کاربرِ مقصد —</option>
+                            ${userOptions}
+                        </select>
+                    </div>
+                    <textarea class="form-control form-control-sm" id="pt-reason-${t.id}" rows="1" placeholder="دلیل (مثلاً: غیرفعال‌سازیِ ${esc(name)})"></textarea>
+                </div>`;
+            }).join('');
+
+            if (!ptModalInstance) {
+                ptModalInstance = new bootstrap.Modal(document.getElementById('pendingTasksModal'));
+            }
+            ptModalInstance.show();
+        }
+
+        function ptOnActionChange(taskId) {
+            const action = document.querySelector('input[name="pt-action-' + taskId + '"]:checked').value;
+            const wrap = document.getElementById('pt-reassign-wrap-' + taskId);
+            if (wrap) wrap.style.display = (action === 'reassign') ? 'block' : 'none';
+        }
+
+        async function submitPendingTaskResolutions() {
+            const resolutions = [];
+            for (const t of ptTasks) {
+                const checkedEl = document.querySelector('input[name="pt-action-' + t.id + '"]:checked');
+                const action = checkedEl ? checkedEl.value : 'cancel';
+                const reason = (document.getElementById('pt-reason-' + t.id) || {}).value || '';
+                const item = { task_id: t.id, action: action, reason: reason };
+                if (action === 'reassign') {
+                    const toUserId = document.getElementById('pt-to-user-' + t.id).value;
+                    if (!toUserId) {
+                        showAlert('برایِ «' + (t.title || 'یک کار') + '» کاربرِ مقصد را انتخاب کنید', 'danger');
+                        return;
+                    }
+                    item.to_user_id = parseInt(toUserId, 10);
+                }
+                resolutions.push(item);
+            }
+
+            const btn = document.getElementById('ptSubmitBtn');
+            btn.disabled = true;
+            try {
+                const r = await fetch('/api/admin/resolve-user-tasks.php', {
+                    method: 'POST',
+                    headers: ahj(),
+                    body: JSON.stringify({ user_id: ptTargetUserId, resolutions: resolutions })
+                });
+                const d = await r.json();
+                if (d.success) {
+                    ptModalInstance.hide();
+                    showAlert(d.message || 'کارها رسیدگی شد و کاربر غیرفعال شد', 'success');
+                    loadUsers();
+                } else {
+                    showAlert(d.message || 'خطا', 'danger');
+                }
+            } catch {
+                showAlert('خطا در سرور', 'danger');
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         /* ── manager dropdown ── */
