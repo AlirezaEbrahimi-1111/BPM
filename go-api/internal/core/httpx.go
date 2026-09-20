@@ -3,7 +3,9 @@ package core
 import (
 	"encoding/json"
 	"log"
+	"net"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -24,6 +26,26 @@ func WriteJSON(w http.ResponseWriter, status int, v any) {
 // WriteErr قالبِ خطای یکسانِ اپ: {"success":false,"message":...}
 func WriteErr(w http.ResponseWriter, status int, msg string) {
 	WriteJSON(w, status, map[string]any{"success": false, "message": msg})
+}
+
+// ClientIP — IPِ واقعیِ کلاینت، معادلِ $_SERVER['REMOTE_ADDR'] در PHP.
+// چونِ /go/api/ پشتِ ProxyPass اپاچی می‌آد (نگاه کن به
+// go-api/deploy/apache-go-api-proxy.conf)، r.RemoteAddr همیشه 127.0.0.1
+// (خودِ اپاچی) رو نشون می‌ده؛ IPِ واقعی رو mod_proxy_http به‌صورتِ
+// پیش‌فرض توی X-Forwarded-For می‌ذاره. چون Go فقط رویِ 127.0.0.1 گوش
+// می‌ده (بندِ main.go)، این هدر همیشه از همون اپاچیِ محلی و قابلِ‌اعتماده،
+// نه از یک کلاینتِ بیرونیِ جعل‌کننده.
+func ClientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		if i := strings.IndexByte(xff, ','); i != -1 {
+			return strings.TrimSpace(xff[:i])
+		}
+		return strings.TrimSpace(xff)
+	}
+	if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+		return host
+	}
+	return r.RemoteAddr
 }
 
 // LogRequests یک میدل‌ورِ لاگِ ساده (متد، مسیر، زمان).

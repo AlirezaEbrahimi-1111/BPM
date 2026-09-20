@@ -23,6 +23,12 @@ type Config struct {
 	DBUser    string `json:"db_user"`
 	DBPass    string `json:"db_pass"`
 	JWTSecret string `json:"jwt_secret"` // باید دقیقاً برابرِ jwt_secret در config/config.php باشد
+
+	// برایِ اکشن‌هایی که عمداً به Go پورت نمی‌شن (مثلِ Notification::create() —
+	// نگاه کن به internal/attendance/admin_devices.go) ولی Go بعد از انجامِ
+	// کارِ اصلیِ خودش باید یک تماسِ داخلیِ HTTP به PHP بزنه.
+	GoInternalSecret string `json:"go_internal_secret"` // باید دقیقاً برابرِ go_internal_secret در config/config.php باشد
+	BaseURL          string `json:"base_url"`           // مثلاً https://bpm.itmalek.com — برایِ همون تماس‌هایِ داخلی
 }
 
 // LoadConfig ابتدا فایلِ JSON (پیش‌فرض config.json، یا مسیرِ GOAPI_CONFIG) را
@@ -53,6 +59,8 @@ func LoadConfig() Config {
 	set("GOAPI_DB_USER", &c.DBUser)
 	set("GOAPI_DB_PASS", &c.DBPass)
 	set("GOAPI_JWT_SECRET", &c.JWTSecret)
+	set("GOAPI_INTERNAL_SECRET", &c.GoInternalSecret)
+	set("GOAPI_BASE_URL", &c.BaseURL)
 
 	if c.JWTSecret == "" || c.DBName == "" || c.DBUser == "" {
 		log.Fatal("config: jwt_secret و db_name و db_user الزامی‌اند (در config.json یا متغیرهای محیطی GOAPI_*)")

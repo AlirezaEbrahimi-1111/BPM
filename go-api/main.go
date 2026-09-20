@@ -29,10 +29,16 @@
 //	GET|POST /go/api/attendance/denied-log  → پورتِ api/attendance/denied-log.php
 //	GET    /go/api/tickets/detail          → پورتِ api/tickets/detail.php
 //	GET    /go/api/tasks/my-tasks          → پورتِ api/tasks/my-tasks.php
+//	POST   /go/api/attendance/register     → پورتِ api/attendance/register.php
+//	                                          (پورت شده؛ فرانت‌اند هنوز وصل نیست — پایینِ همین کامنت)
 //
-// عمداً پورت نشده: api/attendance/register.php (ثبتِ ورود/خروج) و هر منطقِ
-// محاسبه‌ی کسری/حقوق — ریسکِ مالی/عملیاتی‌شان بالاست؛ نیازمندِ تصمیمِ
-// جداگانه پیش از هر پورتی.
+// ثبتِ ورود/خروج (بالا) با احتیاطِ بیشتری پورت شده چون این جدول مستقیم
+// توسطِ monthly-report.php/monthly-deficit.php/leave-balance*.php خونده
+// می‌شه (ریسکِ مالی/عملیاتی). یک استثنا داره: حالتِ نادرِ «دستگاهِ کاملاً
+// جدید + کاربرِ تأییدنشده» که باید پیامک بفرسته — اون با یک تماسِ داخلیِ
+// HTTP به api/internal/notify-new-device.php انجام می‌شه (نگاه کن به
+// core.NotifyNewDeviceAsync)، نه با بازنویسیِ Notification::create() در Go.
+// عمداً پورت نشده: هر منطقِ محاسبه‌ی کسری/حقوق (خودِ گزارش‌ها/کسری‌ها).
 //
 // روالِ افزودنِ endpoint: پورت در internal/<module>/، ثبت در main.go، سپس
 // «تستِ سایه‌ای» (SHADOW-TEST.md) — خروجیِ Go و PHP روی یک دیتابیس مقایسه شود —
@@ -158,6 +164,10 @@ func main() {
 	mux.HandleFunc("/go/api/attendance/allowed-ips", s.auth(attendance.AllowedIPs(s.db)))
 	mux.HandleFunc("/go/api/attendance/devices", s.auth(attendance.Devices(s.db)))
 	mux.HandleFunc("/go/api/attendance/denied-log", s.auth(attendance.DeniedLog(s.db)))
+	// ⚠️ فقط پورت شده — فرانت‌اند هنوز به این وصل نیست (نگاه کن به کامنتِ
+	// register.go). قبل از وصل‌کردنِ فرانت‌اند، تستِ محلیِ کاملِ همه‌ی
+	// مسیرها لازم است (ریسکِ مالی/عملیاتیِ داده‌های حضور).
+	mux.HandleFunc("POST /go/api/attendance/register", s.auth(attendance.Register(s.db, s.cfg)))
 
 	// ── ماژولِ اعلان‌ها (پورتِ api/notifications/*) ──
 	mux.HandleFunc("GET /go/api/notifications/list", s.auth(notifications.List(s.db)))

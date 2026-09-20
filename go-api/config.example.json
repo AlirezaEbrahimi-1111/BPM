@@ -5,5 +5,7 @@
   "db_name": "PUT_YOUR_DB_NAME_HERE",
   "db_user": "go_api",
   "db_pass": "CHANGE_ME",
-  "jwt_secret": "PASTE_THE_SAME_jwt_secret_FROM_config_config.php"
+  "jwt_secret": "PASTE_THE_SAME_jwt_secret_FROM_config_config.php",
+  "go_internal_secret": "PASTE_THE_SAME_go_internal_secret_FROM_config_config.php",
+  "base_url": "https://bpm.itmalek.com"
 }
