@@ -3,8 +3,8 @@
  * API: سنجاق‌کردنِ یک پیام در گفتگو
  * POST /api/chat/pin-message.php   body: { conversation_id: 1, message_id: 45 }
  *
- * دسترسی: در گفتگویِ مستقیم هر دو طرف مجازند؛ در گروه سازنده یا هر مدیرِ
- * گروه (chatUserIsGroupManager) — همون سطحِ دسترسیِ افزودن/حذفِ عضو.
+ * دسترسی: در گفتگویِ مستقیم هر دو طرف مجازند؛ در گروه سازنده یا مدیری
+ * که اختیارِ اختصاصیِ «pin» را دارد (chatUserHasGroupPermission).
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -58,8 +58,8 @@ try {
         exit;
     }
 
-    // 🔒 در گروه فقط سازنده یا مدیرهایِ گروه اجازه‌ی سنجاق‌کردن دارن؛ در گفتگویِ مستقیم هر دو طرف
-    if ($conv['type'] !== 'direct' && !chatUserIsGroupManager($db, $conversationId, $user_id)) {
+    // 🔒 در گروه فقط سازنده یا مدیرِ دارایِ اختیارِ «pin» اجازه‌ی سنجاق‌کردن دارن؛ در گفتگویِ مستقیم هر دو طرف
+    if ($conv['type'] !== 'direct' && !chatUserHasGroupPermission($db, $conversationId, $user_id, 'pin')) {
         http_response_code(403);
         error_log("Chat pin-message denied | user_id={$user_id} | conversation_id={$conversationId}");
         echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند پیام سنجاق کند']);

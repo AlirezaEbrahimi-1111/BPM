@@ -86,7 +86,10 @@ try {
         }
     }
 
-    $db->prepare("UPDATE chat_participants SET role = ? WHERE conversation_id = ? AND user_id = ?")
+    // 🔒 هر تغییرِ نقش (ارتقا یا عزل)، اختیاراتِ اختصاصیِ قبلی رو پاک می‌کنه —
+    // اگه بعداً دوباره مدیر بشه، از پیش‌فرضِ «همه‌ی اختیارات» شروع می‌کنه، نه
+    // یک ستِ قدیمیِ سفارشی که ممکنه دیگه ربطی به تصمیمِ سازنده نداشته باشه
+    $db->prepare("UPDATE chat_participants SET role = ?, permissions = NULL WHERE conversation_id = ? AND user_id = ?")
         ->execute([$role, $conversationId, $targetUserId]);
 
     echo json_encode(['success' => true, 'role' => $role]);

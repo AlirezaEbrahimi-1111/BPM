@@ -50,8 +50,8 @@ try {
         exit;
     }
 
-    // 🔒 سازنده یا هر مدیرِ گروه اجازه‌ی افزودنِ عضو داره
-    if (!chatUserIsGroupManager($db, $conversationId, $user_id)) {
+    // 🔒 سازنده یا مدیرِ دارایِ اختیارِ اختصاصیِ «add_member» اجازه‌ی افزودنِ عضو داره
+    if (!chatUserHasGroupPermission($db, $conversationId, $user_id, 'add_member')) {
         http_response_code(403);
         error_log("Chat group-add-members denied | user_id={$user_id} | conversation_id={$conversationId}");
         echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند عضو اضافه کند']);

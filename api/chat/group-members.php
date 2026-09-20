@@ -54,7 +54,7 @@ try {
     }
 
     $stmt = $db->prepare("
-        SELECT u.id, u.first_name, u.last_name, u.avatar_path, cp.joined_at, cp.role
+        SELECT u.id, u.first_name, u.last_name, u.avatar_path, cp.joined_at, cp.role, cp.permissions
         FROM chat_participants cp
         JOIN users u ON u.id = cp.user_id AND u.is_active = 1 AND u.is_deleted = 0
         WHERE cp.conversation_id = ?
@@ -64,23 +64,39 @@ try {
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $ownerId = (int) $conv['created_by'];
-    $members = array_map(function ($r) use ($ownerId) {
+
+    // 🔒 اختیاراتِ مؤثر از همین ردیفی که همین‌الان خوندیم حل می‌شه (نه یک
+    // کوئریِ جداگانه به‌ازایِ هر عضو) — permissions=NULL یعنی پیش‌فرض همه،
+    // وگرنه دقیقاً همون آرایه‌ی JSONِ ثبت‌شده
+    $resolvePermissions = function (array $r) {
+        if ($r['role'] !== 'admin') return [];
+        if ($r['permissions'] === null) return CHAT_GROUP_ADMIN_PERMISSIONS;
+        $decoded = json_decode($r['permissions'], true);
+        return is_array($decoded) ? array_values(array_intersect($decoded, CHAT_GROUP_ADMIN_PERMISSIONS)) : CHAT_GROUP_ADMIN_PERMISSIONS;
+    };
+
+    $members = array_map(function ($r) use ($ownerId, $resolvePermissions) {
         return [
-            'id'         => (int) $r['id'],
-            'full_name'  => trim($r['first_name'] . ' ' . $r['last_name']),
-            'is_owner'   => (int) $r['id'] === $ownerId,
-            'is_admin'   => $r['role'] === 'admin',
-            'avatar_url' => $r['avatar_path'] ?: null,
+            'id'          => (int) $r['id'],
+            'full_name'   => trim($r['first_name'] . ' ' . $r['last_name']),
+            'is_owner'    => (int) $r['id'] === $ownerId,
+            'is_admin'    => $r['role'] === 'admin',
+            'permissions' => (int) $r['id'] === $ownerId ? CHAT_GROUP_ADMIN_PERMISSIONS : $resolvePermissions($r),
+            'avatar_url'  => $r['avatar_path'] ?: null,
         ];
     }, $rows);
 
+    $myPermissions = $ownerId === $user_id ? CHAT_GROUP_ADMIN_PERMISSIONS : chatGroupAdminEffectivePermissions($db, $conversationId, $user_id);
+
     echo json_encode([
-        'success'          => true,
-        'is_owner'         => $ownerId === $user_id,
-        'can_manage'       => chatUserIsGroupManager($db, $conversationId, $user_id),
-        'group_title'      => $conv['title'],
-        'group_avatar_url' => $conv['avatar_path'] ?: null,
-        'members'          => $members,
+        'success'              => true,
+        'is_owner'             => $ownerId === $user_id,
+        'can_manage'           => chatUserIsGroupManager($db, $conversationId, $user_id),
+        'my_permissions'       => $myPermissions,
+        'all_permissions'      => CHAT_GROUP_ADMIN_PERMISSIONS,
+        'group_title'          => $conv['title'],
+        'group_avatar_url'     => $conv['avatar_path'] ?: null,
+        'members'              => $members,
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {

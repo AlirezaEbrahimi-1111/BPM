@@ -43,7 +43,7 @@ try {
         echo json_encode(['success' => false, 'message' => 'این گفتگو گروهی نیست']);
         exit;
     }
-    if (!chatUserIsGroupManager($db, $conversationId, $user_id)) {
+    if (!chatUserHasGroupPermission($db, $conversationId, $user_id, 'avatar')) {
         http_response_code(403);
         error_log("Chat upload-group-avatar denied | user_id={$user_id} | conversation_id={$conversationId}");
         echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند عکس گروه را تغییر دهد']);

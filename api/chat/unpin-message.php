@@ -53,7 +53,7 @@ try {
         exit;
     }
 
-    if ($conv['type'] !== 'direct' && !chatUserIsGroupManager($db, $conversationId, $user_id)) {
+    if ($conv['type'] !== 'direct' && !chatUserHasGroupPermission($db, $conversationId, $user_id, 'pin')) {
         http_response_code(403);
         error_log("Chat unpin-message denied | user_id={$user_id} | conversation_id={$conversationId}");
         echo json_encode(['success' => false, 'message' => 'فقط مدیر گروه می‌تواند سنجاق را بردارد']);
