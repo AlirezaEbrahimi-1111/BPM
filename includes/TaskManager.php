@@ -691,7 +691,16 @@ class TaskManager
             // (فرآیندِ جداگانه‌یِ request-deadline.php). فقط مقطعی، چون
             // دوره‌ای/روتین از موتورِ عقب‌افتادگیِ متفاوتی استفاده می‌کنن
             // (overdue_periods / مرحله‌یِ active)، نه این سه ستون.
-            if ($task['task_type'] === 'periodic' && !empty($effective_due) && $effective_due < date('Y-m-d')) {
+            //
+            // 🆕 استثنا: ارجاع به خودِ تعریف‌کننده‌ی کار مسدود نمی‌شه — چون
+            // تعریف‌کننده خودش می‌تونه بلافاصله موعد رو تمدید کنه، پس این
+            // قفل این‌جا فایده‌ای نداره و فقط مانعِ یک گردشِ کارِ طبیعی می‌شه.
+            if (
+                $task['task_type'] === 'periodic'
+                && !empty($effective_due)
+                && $effective_due < date('Y-m-d')
+                && (int) $to_user_id !== (int) $task['creator_id']
+            ) {
                 return ['success' => false, 'code' => 'overdue_periodic', 'message' => 'موعد این کار گذشته است — امکان ارجاع نیست. ابتدا موعد کار را تمدید کنید'];
             }
 
