@@ -76,6 +76,16 @@ try {
         WHERE id = ?
     ")->execute([date('Y-m-d'), $task_id]);
 
+    // 🔒 ریستِ چک‌لیست برایِ دوره‌ی بعدی — قبلاً این‌جا فراموش شده بود (فقط
+    // مسیرِ قدیمیِ registerRecurringPeriod در api/checklist/_helpers.php این
+    // ریست رو داشت، ولی اون تابع الان جایی صدا زده نمی‌شه)؛ بدونِ این خط،
+    // تیک‌هایِ دوره‌ی قبل تا ابد روی چک‌لیستِ دوره‌ی جدید هم باقی می‌موندن
+    $db->prepare("
+        UPDATE task_checklist_items
+        SET is_done = 0, done_at = NULL, done_by = NULL
+        WHERE task_id = ?
+    ")->execute([$task_id]);
+
     // وضعیت تازه (بعد از ثبت تکمیل)
     $after = pe_state($db, $task, $holidays);
 

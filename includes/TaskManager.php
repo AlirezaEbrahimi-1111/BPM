@@ -299,6 +299,17 @@ class TaskManager
                 WHERE id = ?
             ")->execute([$today, $today, $task_id]);
 
+            // 🔒 ریستِ چک‌لیست برایِ دوره‌ی بعدی — بدونِ این، تیک‌هایِ همین دوره
+            // (که برایِ رسیدن به این‌جا لازم بود همه‌شون زده شده باشن، طبقِ قفلِ
+            // updateTaskStatus) تا ابد روی چک‌لیستِ دوره‌ی بعدی هم باقی می‌موندن
+            // و isChecklistLocked() هم تا خودترمیمیِ status (maybeStartNextPeriod)
+            // اشتباهاً قفلش نشون می‌داد
+            $this->db->prepare("
+                UPDATE task_checklist_items
+                SET is_done = 0, done_at = NULL, done_by = NULL
+                WHERE task_id = ?
+            ")->execute([$task_id]);
+
             $this->addTaskHistory(
                 $task_id,
                 $user_id,

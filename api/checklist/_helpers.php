@@ -4,6 +4,7 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-access.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
 
 /**
  * گرفتن کار + بررسی دسترسی (زنجیره‌ی مشترکِ taskUserAccess: سازنده/مسئول/
@@ -20,6 +21,13 @@ function getTaskForChecklist($db, $task_id, $user_id)
     $stmt->execute([$task_id]);
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$task) return null;
+
+    // 🔒 همون خودترمیمیِ status که detail.php/my-tasks.php/overview.php/... از
+    // قبل دارن (برگشت از period_done به حالتِ فعال اگه دوره‌ی بعدی رسیده باشه) —
+    // این‌جا هم لازمه، وگرنه اگه کاربر مستقیم/فقط چک‌لیست رو باز کنه (بدونِ
+    // اینکه یکی از اون endpointها قبلش صدا زده شده باشه)، status هنوز
+    // 'period_done'ِ کهنه می‌مونه و isChecklistLocked() اشتباهاً قفلش می‌کنه
+    maybeStartNextPeriod($db, $task, $user_id);
 
     $access = taskUserAccess($db, (int) $user_id, $task);
 
