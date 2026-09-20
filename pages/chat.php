@@ -1051,7 +1051,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         .chat-bubble-pin-icon {
             margin-inline-end: 3px;
             font-size: .72rem;
-            color: #8e57fe;
+            /* رنگِ ثابتِ بنفش رویِ حبابِ خودم (که پس‌زمینه‌اش خودش بنفشه) اصلاً
+               دیده نمی‌شد؛ inherit همیشه هم‌رنگِ متنِ همون حباب می‌شه — سفید
+               رویِ حبابِ خودم، تیره رویِ حبابِ طرفِ مقابل — یعنی همیشه قابلِ‌دیدنه */
+            color: inherit;
         }
 
         .chat-bubble-ticks i {
