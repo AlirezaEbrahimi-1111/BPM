@@ -199,25 +199,24 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             flex: 0 0 50%;
             max-width: 50%;
             display: flex;
-            align-items: center;
-            gap: 6px;
+            align-items: stretch;
             direction: ltr !important;
         }
 
-        .chk-note-file label {
-            margin: 0;
-            display: inline-flex;
-            color: #8e57fe;
-            font-size: .95rem;
-            flex-shrink: 0;
+        /* شبیهِ ظاهرِ استانداردِ فایل‌پیکرِ مرورگرها (Choose file | Browse) —
+           یک کادرِ مستطیلیِ واحد، سمتِ متن‌نما (نامِ فایل/پیش‌فرض) کشیده و
+           بخشِ دکمه‌ای (انتخاب فایل) ثابت؛ کلیک روی هرجایِ کادر فایل‌پیکر رو
+           باز می‌کنه چون همه‌چیز داخلِ همون <label for=...> است */
+        .chk-file-input-box {
+            display: flex;
+            align-items: stretch;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
             cursor: pointer;
-        }
-
-        /* ویژگی‌شماریِ این قانون از قانونِ عمومیِ ".chk-note-drawer label"
-           (بالاتر، برایِ لیبلِ متنیِ textarea) بیشتره — تا رنگِ خاکستریِ اونجا
-           رنگِ بنفشِ آیکنِ پیوست رو تویِ تمِ تاریک عوض نکنه */
-        :root[data-theme="dark"] .chk-note-file label {
-            color: #cdb8ff;
+            background: #fff;
+            margin: 0;
         }
 
         .chk-note-file input[type="file"] {
@@ -225,19 +224,44 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             min-width: 0;
         }
 
-        .chk-note-file .chk-file-name {
+        .chk-file-input-box .chk-file-name {
             flex: 1;
             min-width: 0;
+            display: flex;
+            align-items: center;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             font-size: .82rem;
             color: #999;
-            cursor: pointer;
+            padding: 0 10px;
         }
 
-        :root[data-theme="dark"] .chk-note-file .chk-file-name {
+        .chk-file-input-box .chk-file-browse-btn {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: .78rem;
+            color: #333;
+            background: #f1f1f1;
+            border-left: 1px solid #ddd;
+            white-space: nowrap;
+        }
+
+        :root[data-theme="dark"] .chk-file-input-box {
+            background: var(--surface);
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .chk-file-input-box .chk-file-name {
             color: var(--text-muted);
+        }
+
+        :root[data-theme="dark"] .chk-file-input-box .chk-file-browse-btn {
+            background: var(--surface-alt, #2a2a38);
+            color: var(--text-strong);
+            border-left-color: var(--border-soft);
         }
 
         .chk-note-actions {
@@ -2024,11 +2048,13 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                                   placeholder="مثلا: فاکتور با شماره ۴۸۲۱ صادر شد"></textarea>
                         <div class="chk-note-row">
                             <div class="chk-note-file">
-                                <label for="chk-file-${item.id}" title="پیوست فایل (اختیاری)"><i class="bi bi-paperclip"></i></label>
+                                <label for="chk-file-${item.id}" class="chk-file-input-box" title="پیوست فایل (اختیاری)">
+                                    <span class="chk-file-name" id="chk-file-name-${item.id}">فایلی انتخاب نشده</span>
+                                    <span class="chk-file-browse-btn">انتخاب فایل</span>
+                                </label>
                                 <input type="file" id="chk-file-${item.id}" class="file-input-hidden"
                                        onchange="onChkFileChosen(${item.id})"
                                        accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg">
-                                <span class="chk-file-name" id="chk-file-name-${item.id}" onclick="document.getElementById('chk-file-${item.id}').click()">فایلی انتخاب نشده</span>
                             </div>
                             <div class="chk-note-actions">
                                 <button class="btn btn-primary btn-sm" onclick="saveDoneNote(${item.id}, true)">ثبت و انجام شد</button>
