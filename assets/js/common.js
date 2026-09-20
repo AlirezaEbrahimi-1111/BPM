@@ -34,6 +34,20 @@ function toFaDigits(n)   { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶�
 function toFaNum(n)      { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
 function enTofaNumber(n) { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
 
+// وقتی تأخیر ساعتی از ۲۴ ساعت گذشته، فقط عددِ ساعتِ خام (مثلاً «۸۲ ساعت»)
+// خیلی خوانا نیست — این تابع تفکیکِ روز+ساعت رو به‌صورتِ پرانتزی برمی‌گردونه
+// (مثلاً « (۳ روز و ۱۰ ساعت)») تا کنارِ متنِ اصلی اضافه بشه؛ اگه کمتر از
+// ۲۴ ساعت باشه رشته‌ی خالی برمی‌گردونه (یعنی چیزی اضافه نشه)
+function formatHourDelayBreakdown(hours) {
+    hours = Number(hours) || 0;
+    if (hours < 24) return '';
+    const days = Math.floor(hours / 24);
+    const remHours = hours % 24;
+    let text = toFa(days) + ' روز';
+    if (remHours > 0) text += ' و ' + toFa(remHours) + ' ساعت';
+    return ' (' + text + ')';
+}
+
 // نامِ ماه‌های شمسی — مرجعِ یگانه (به‌جای ~۱۷ کپیِ محلی: months / persianMonths / J_MONTHS).
 // صفحات: «const months = FA_MONTHS;» — بدونِ تغییرِ محلِ استفاده. (TimeSync.jMonthName(m)
 // هم همین را می‌دهد ولی این آرایه برای index مستقیم مثلِ months[jm-1] دم‌دست‌تر است.)

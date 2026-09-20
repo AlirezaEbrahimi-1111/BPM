@@ -3589,7 +3589,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
            بقیه روزِ کاری — هر دو عدد از سرور (enrichTaskDates) */
         function daysLate(t) {
             if (t.is_workflow_task == 1) {
-                return `${toFa(t.hours_delayed || 0)} ساعت`;
+                return `${toFa(t.hours_delayed || 0)} ساعت${formatHourDelayBreakdown(t.hours_delayed || 0)}`;
             }
             // 🔒 کارِ دوره‌ای: working_days_delayed فقط تأخیرِ دوره‌ی جاریه (که
             // معمولاً ۰ست چون next_due_date همیشه نزدیکِ امروزه) — معیارِ درستِ
