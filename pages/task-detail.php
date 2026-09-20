@@ -156,10 +156,12 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
 
         .chk-note-drawer label {
-            display: block;
+            display: flex;
             font-size: .78rem;
             color: #4b5563;
             margin-bottom: 6px;
+            height: 2rem;
+            direction: rtl;
         }
 
         :root[data-theme="dark"] .chk-note-drawer label {
