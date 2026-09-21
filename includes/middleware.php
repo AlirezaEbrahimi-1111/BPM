@@ -40,7 +40,7 @@ function getUserInfo($user_id) {
     $db = $database->getConnection();
     
     $stmt = $db->prepare("
-        SELECT 
+        SELECT
             id,
             organization_id,
             role,
@@ -54,7 +54,15 @@ function getUserInfo($user_id) {
             can_create_workflow,
             is_active,
             created_at,
-            updated_at
+            updated_at,
+            activity_unit,
+            official_code,
+            manager_id,
+            manager_code,
+            manager_name,
+            manager_lastname,
+            report_prefix,
+            report_suffix
         FROM users
         WHERE id = ? AND is_active = 1
     ");

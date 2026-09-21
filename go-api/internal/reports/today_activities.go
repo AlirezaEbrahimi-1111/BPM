@@ -25,13 +25,11 @@ var dateRe = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
 //	GET /go/api/reports/get-today-activities[?date=YYYY-MM-DD]
 //	→ {"success":true,"data":{date,user,activities,grouped_activities,summary,overdue_tasks}}
 //
-// ⚠️ باگِ موجود در PHP عمداً بازتولید شده است (اصلِ «اول برابری، بعد
-// اصلاح»): getUserInfo() در includes/middleware.php ستون‌هایِ
+// ✅ getUserInfo() در includes/middleware.php قبلاً ستون‌هایِ
 // manager_code/manager_name/manager_lastname/report_prefix/report_suffix/
-// official_code/manager_id/activity_unit را اصلاً SELECT نمی‌کند، پس این
-// فیلدها در خروجیِ PHP همیشه تهی‌اند. این‌جا هم تهی برگردانده می‌شوند تا
-// تستِ سایه‌ای MATCH بدهد؛ اصلاحِ خودِ باگ باید جداگانه و آگاهانه انجام
-// شود، نه پنهان داخلِ یک مهاجرت.
+// official_code/manager_id/activity_unit را SELECT نمی‌کرد (این فیلدها در
+// خروجیِ userInfo همیشه تهی بودند). این باگ جداگانه و آگاهانه در PHP رفع
+// شد؛ این‌جا هم همزمان با هم رفع شده تا با خروجیِ جدیدِ PHP برابر بماند.
 func TodayActivities(db *sql.DB) http.HandlerFunc {
 	const qActivities = `
         SELECT
@@ -77,15 +75,31 @@ func TodayActivities(db *sql.DB) http.HandlerFunc {
 		// معادلِ getUserInfo() — با همان قیدِ is_active = 1، پس کاربرِ
 		// غیرفعال ۴۰۱ می‌گیرد.
 		var (
-			uid       int64
-			orgID     sql.NullInt64
-			firstName sql.NullString
-			lastName  sql.NullString
+			uid             int64
+			orgID           sql.NullInt64
+			firstName       sql.NullString
+			lastName        sql.NullString
+			activityUnit    sql.NullString
+			officialCode    sql.NullString
+			managerID       sql.NullInt64
+			managerCode     sql.NullString
+			managerName     sql.NullString
+			managerLastname sql.NullString
+			reportPrefix    sql.NullString
+			reportSuffix    sql.NullString
 		)
-		err := db.QueryRow(
-			"SELECT id, organization_id, first_name, last_name FROM users WHERE id = ? AND is_active = 1",
-			u.ID,
-		).Scan(&uid, &orgID, &firstName, &lastName)
+		err := db.QueryRow(`
+			SELECT id, organization_id, first_name, last_name,
+			       activity_unit, official_code,
+			       manager_id, manager_code, manager_name, manager_lastname,
+			       report_prefix, report_suffix
+			FROM users WHERE id = ? AND is_active = 1
+		`, u.ID).Scan(
+			&uid, &orgID, &firstName, &lastName,
+			&activityUnit, &officialCode,
+			&managerID, &managerCode, &managerName, &managerLastname,
+			&reportPrefix, &reportSuffix,
+		)
 		if err == sql.ErrNoRows {
 			core.WriteErr(w, http.StatusUnauthorized, "کاربر یافت نشد")
 			return
@@ -192,20 +206,26 @@ func TodayActivities(db *sql.DB) http.HandlerFunc {
 		}
 
 		// ══ ۴) اطلاعات کاربر ══
-		// فیلدهایِ تهی: ببین یادداشتِ بالایِ همین تابع.
+		// PHP: `$user['x'] ?? ''` برایِ فیلدهایِ رشته‌ای (NULL دیتابیس →
+		// رشته‌ی خالی، نه JSON null)، ولی `$user['manager_id'] ?? null`
+		// برایِ manager_id (NULL دیتابیس → JSON null، نه ۰).
+		var managerIDOut any
+		if managerID.Valid {
+			managerIDOut = managerID.Int64
+		}
 		userInfo := map[string]any{
 			"id":               uid,
 			"first_name":       firstName.String,
 			"last_name":        lastName.String,
 			"full_name":        strings.TrimSpace(firstName.String + " " + lastName.String),
-			"activity_unit":    "",
-			"official_code":    "",
-			"manager_id":       nil,
-			"manager_code":     "",
-			"manager_name":     "",
-			"manager_lastname": "",
-			"report_prefix":    "",
-			"report_suffix":    "",
+			"activity_unit":    activityUnit.String,
+			"official_code":    officialCode.String,
+			"manager_id":       managerIDOut,
+			"manager_code":     managerCode.String,
+			"manager_name":     managerName.String,
+			"manager_lastname": managerLastname.String,
+			"report_prefix":    reportPrefix.String,
+			"report_suffix":    reportSuffix.String,
 		}
 
 		core.WriteJSON(w, http.StatusOK, map[string]any{
