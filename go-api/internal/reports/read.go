@@ -28,88 +28,6 @@ func qint(r *http.Request, key string, def int) int {
 	return def
 }
 
-// Today — پورتِ api/reports/today.php
-//
-//	GET /go/api/reports/today
-//	→ {"success":true,"reports":[{id,unique_code,activity_unit,report_date,created_at,content}],"count":N}
-func Today(db *sql.DB) http.HandlerFunc {
-	const q = `SELECT id, unique_code, activity_unit, report_date, created_at, content
-	           FROM reports
-	           WHERE user_id = ? AND report_date = CURDATE()
-	           ORDER BY created_at DESC`
-	return func(w http.ResponseWriter, r *http.Request) {
-		u := core.UserOf(r.Context())
-		rows, err := db.Query(q, u.ID)
-		if err != nil {
-			core.WriteErr(w, http.StatusInternalServerError, "خطای سرور")
-			return
-		}
-		defer rows.Close()
-
-		out := []map[string]any{}
-		for rows.Next() {
-			var id int64
-			var code, unit, date, created, content string
-			if err := rows.Scan(&id, &code, &unit, &date, &created, &content); err != nil {
-				core.WriteErr(w, http.StatusInternalServerError, "خطای سرور")
-				return
-			}
-			out = append(out, map[string]any{
-				"id": id, "unique_code": code, "activity_unit": unit,
-				"report_date": date, "created_at": created, "content": content,
-			})
-		}
-		core.WriteJSON(w, http.StatusOK, map[string]any{
-			"success": true, "reports": out, "count": len(out),
-		})
-	}
-}
-
-// History — پورتِ api/reports/history.php
-//
-//	GET /go/api/reports/history?limit=N   (limit: 1..100, پیش‌فرض 20)
-//	→ {"success":true,"reports":[{id,unique_code,activity_unit,report_date,content_preview,created_at}]}
-func History(db *sql.DB) http.HandlerFunc {
-	const q = `SELECT id, unique_code, activity_unit, report_date,
-	                  SUBSTRING(content, 1, 100) AS content_preview, created_at
-	           FROM reports
-	           WHERE user_id = ?
-	           ORDER BY report_date DESC, created_at DESC
-	           LIMIT ?`
-	return func(w http.ResponseWriter, r *http.Request) {
-		u := core.UserOf(r.Context())
-		limit := qint(r, "limit", 20)
-		if limit < 1 {
-			limit = 1
-		}
-		if limit > 100 {
-			limit = 100
-		}
-		rows, err := db.Query(q, u.ID, limit)
-		if err != nil {
-			core.WriteErr(w, http.StatusInternalServerError, "خطای داخلی سرور")
-			return
-		}
-		defer rows.Close()
-
-		out := []map[string]any{}
-		for rows.Next() {
-			var id int64
-			var code, unit, date, created string
-			var preview sql.NullString
-			if err := rows.Scan(&id, &code, &unit, &date, &preview, &created); err != nil {
-				core.WriteErr(w, http.StatusInternalServerError, "خطای داخلی سرور")
-				return
-			}
-			out = append(out, map[string]any{
-				"id": id, "unique_code": code, "activity_unit": unit,
-				"report_date": date, "content_preview": nsToAny(preview), "created_at": created,
-			})
-		}
-		core.WriteJSON(w, http.StatusOK, map[string]any{"success": true, "reports": out})
-	}
-}
-
 // List — پورتِ api/reports/list.php
 //
 //	GET /go/api/reports/list?limit=&offset=&unit=&search=
@@ -183,11 +101,4 @@ func List(db *sql.DB) http.HandlerFunc {
 			"success": true, "reports": out, "total": len(out),
 		})
 	}
-}
-
-func nsToAny(n sql.NullString) any {
-	if n.Valid {
-		return n.String
-	}
-	return nil
 }

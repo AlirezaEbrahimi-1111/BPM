@@ -13,15 +13,14 @@
  *
  * <user_id> رو با شناسه‌ی یک کاربرِ واقعی که خودت باهاش تست می‌کنی پر کن
  * (ترجیحاً یک supervisor/superadmin تا همه‌ی شاخه‌ها رو ببینه).
- * [report_id]/[ticket_id] اختیاری‌اند — اگر بدی، reports/detail و
- * tickets/detail هم (فقط GET، بدونِ نوشتن) چک می‌شن.
+ * [ticket_id] اختیاریه — اگر بدی، tickets/detail هم (فقط GET، بدونِ
+ * نوشتن) چک می‌شه.
  */
 
 $userId   = isset($argv[1]) ? (int) $argv[1] : 0;
-$reportId = isset($argv[2]) ? (int) $argv[2] : 0;
-$ticketId = isset($argv[3]) ? (int) $argv[3] : 0;
+$ticketId = isset($argv[2]) ? (int) $argv[2] : 0;
 if (!$userId) {
-    fwrite(STDERR, "Usage: php prod-shadow-test.php <user_id> [report_id] [ticket_id]\n");
+    fwrite(STDERR, "Usage: php prod-shadow-test.php <user_id> [ticket_id]\n");
     exit(1);
 }
 
@@ -79,8 +78,6 @@ $php = $base . '/api';
 $go  = $base . '/go/api';
 
 compare('reports/stats',   "$php/reports/stats.php",   "$go/reports/stats",   $token);
-compare('reports/today',   "$php/reports/today.php",   "$go/reports/today",   $token);
-compare('reports/history', "$php/reports/history.php", "$go/reports/history", $token);
 compare('reports/list',    "$php/reports/list.php",    "$go/reports/list",    $token);
 
 // سه endpointِ زنده‌ی داشبورد/گزارشِ روزانه — تنها موارد این ماژول که
@@ -109,9 +106,6 @@ compare('tickets/list', "$php/tickets/list.php?mine=1&limit=50", "$go/tickets/li
 compare('tasks/my-tasks', "$php/tasks/my-tasks.php", "$go/tasks/my-tasks", $token);
 compare('tasks/my-tasks (checklist_archive)', "$php/tasks/my-tasks.php?filter=checklist_archive", "$go/tasks/my-tasks?filter=checklist_archive", $token);
 
-if ($reportId > 0) {
-    compare('reports/detail', "$php/reports/detail.php?id=$reportId", "$go/reports/detail?id=$reportId", $token);
-}
 if ($ticketId > 0) {
     compare('tickets/detail', "$php/tickets/detail.php?id=$ticketId", "$go/tickets/detail?id=$ticketId", $token);
 }

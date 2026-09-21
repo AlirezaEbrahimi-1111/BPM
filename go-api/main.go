@@ -5,15 +5,11 @@
 //	GET    /go/api/health           → بدونِ احراز هویت؛ سلامتِ سرویس و دیتابیس
 //	GET    /go/api/me               → با همان JWTِ اپِ PHP؛ کاربر + اجازه‌هایش
 //	GET    /go/api/reports/stats    → پورتِ api/reports/stats.php
-//	GET    /go/api/reports/today    → پورتِ api/reports/today.php
-//	GET    /go/api/reports/history  → پورتِ api/reports/history.php
 //	GET    /go/api/reports/list     → پورتِ api/reports/list.php
-//	GET    /go/api/reports/detail   → پورتِ api/reports/detail.php
-//	GET    /go/api/reports/search   → پورتِ api/reports/search.php
-//	POST   /go/api/reports/save     → پورتِ api/reports/save.php
 //	POST   /go/api/reports/submit   → پورتِ api/reports/submit.php
-//	DELETE|POST /go/api/reports/delete   → پورتِ api/reports/delete.php
-//	POST   /go/api/reports/generate → پورتِ api/reports/generate.php
+//	GET    /go/api/reports/get-today-activities → پورتِ api/reports/get-today-activities.php
+//	GET    /go/api/reports/bottleneck-report    → پورتِ api/reports/bottleneck-report.php
+//	GET    /go/api/reports/top-delayed-users    → پورتِ api/reports/top-delayed-users.php
 //	GET    /go/api/attendance/today-status → پورتِ api/attendance/today-status.php
 //	GET    /go/api/attendance/absent-today → پورتِ api/attendance/absent-today.php
 //	GET    /go/api/notifications/list      → پورتِ api/notifications/list.php
@@ -143,19 +139,14 @@ func main() {
 	mux.HandleFunc("GET /go/api/me", s.auth(s.handleMe))
 
 	// ── ماژولِ گزارش‌ها (پورتِ api/reports/*) ──
+	// 🔒 today/history/detail/search/save/delete/generate عمداً این‌جا نیستند:
+	// بررسی شد و معلوم شد نسخه‌ی PHP‌شون هم صفر مصرف‌کننده داشت (نه در
+	// فرانت‌اند، نه در هیچ فایلِ دیگه‌ای)؛ کدِ مرده بود، هم PHPش هم این
+	// پورت‌ها، پس هر دو حذف شدن (۲۰۲۶/۰۶/۳۰).
 	mux.HandleFunc("GET /go/api/reports/stats", s.auth(reports.Stats(s.db)))
-	mux.HandleFunc("GET /go/api/reports/today", s.auth(reports.Today(s.db)))
-	mux.HandleFunc("GET /go/api/reports/history", s.auth(reports.History(s.db)))
 	mux.HandleFunc("GET /go/api/reports/list", s.auth(reports.List(s.db)))
-	mux.HandleFunc("GET /go/api/reports/detail", s.auth(reports.Detail(s.db)))
-	mux.HandleFunc("GET /go/api/reports/search", s.auth(reports.Search(s.db)))
-	mux.HandleFunc("POST /go/api/reports/save", s.auth(reports.Save(s.db)))
 	mux.HandleFunc("POST /go/api/reports/submit", s.auth(reports.Submit(s.db)))
-	mux.HandleFunc("DELETE /go/api/reports/delete", s.auth(reports.Delete(s.db)))
-	mux.HandleFunc("POST /go/api/reports/delete", s.auth(reports.Delete(s.db)))
-	mux.HandleFunc("POST /go/api/reports/generate", s.auth(reports.Generate(s.db)))
-	// سه endpointِ زنده‌ی داشبورد/گزارشِ روزانه — تنها موارد این ماژول که
-	// واقعاً از فرانت صدا زده می‌شوند (بقیه‌ی بالا فعلاً مصرف‌کننده ندارند).
+	// سه endpointِ زنده‌ی داشبورد/گزارشِ روزانه.
 	mux.HandleFunc("GET /go/api/reports/get-today-activities", s.auth(reports.TodayActivities(s.db)))
 	mux.HandleFunc("GET /go/api/reports/bottleneck-report", s.auth(reports.Bottleneck(s.db)))
 	mux.HandleFunc("GET /go/api/reports/top-delayed-users", s.auth(reports.TopDelayedUsers(s.db)))
