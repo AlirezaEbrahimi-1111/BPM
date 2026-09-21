@@ -504,7 +504,9 @@ if (!hasPermission($__me, 'view_reports')) {
             }
 
             try {
-                const res = await fetch('../api/reports/bottleneck-report.php', {
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به
+                // '../api/reports/bottleneck-report.php' برگردان.
+                const res = await fetch('/go/api/reports/bottleneck-report', {
                     headers: {
                         'Authorization': 'Bearer ' + authToken
                     }

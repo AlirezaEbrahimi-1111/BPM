@@ -181,7 +181,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             document.getElementById('activityDate').textContent = getCurrentPersianDate();
 
             try {
-                const response = await fetch(`../api/reports/get-today-activities.php?date=${getCurrentDate()}`, {
+                // ✅ از go-api سرو می‌شود؛ برگشت = این را به
+                // '../api/reports/get-today-activities.php' برگردان.
+                const response = await fetch(`/go/api/reports/get-today-activities?date=${getCurrentDate()}`, {
                     headers: { 'Authorization': 'Bearer ' + authToken }
                 });
                 const data = await response.json();
