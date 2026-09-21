@@ -443,6 +443,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             color: #1a1a1a;
         }
         .composer-attach-btn,
+        .composer-canned-btn,
         .composer-send-btn {
             flex: 0 0 auto;
             width: 34px;
@@ -455,13 +456,75 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             justify-content: center;
             font-size: .95rem;
             transition: background .15s, opacity .15s;
-            
+
         }
-        .composer-attach-btn {
+        .composer-attach-btn,
+        .composer-canned-btn {
             background: transparent;
             color: #8e57fe;
         }
-        .composer-attach-btn:hover { background: rgba(142, 87, 254, 0.1); }
+        .composer-attach-btn:hover,
+        .composer-canned-btn:hover { background: rgba(142, 87, 254, 0.1); }
+
+        /* ── پاسخ‌های آماده ── */
+        .canned-panel {
+            position: absolute;
+            bottom: 52px;
+            inset-inline-start: 8px;
+            width: min(340px, calc(100% - 16px));
+            max-height: 300px;
+            overflow-y: auto;
+            background: var(--surface, #fff);
+            border: 1px solid var(--border-soft, #e6e6e6);
+            border-radius: 12px;
+            box-shadow: 0 8px 28px rgba(36, 27, 51, .16);
+            padding: 6px;
+            z-index: 30;
+        }
+        .canned-item {
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .canned-item:hover { background: rgba(142, 87, 254, 0.12); }
+        .canned-item-title {
+            flex: 1;
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--text-strong, #1a1a1a);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .canned-item-body {
+            font-size: .72rem;
+            color: var(--text-muted, #9ca3af);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .canned-item-actions button {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: .8rem;
+            padding: 2px 4px;
+            color: var(--text-muted, #9ca3af);
+        }
+        .canned-panel-empty {
+            padding: 14px 10px;
+            text-align: center;
+            font-size: .78rem;
+            color: var(--text-muted, #9ca3af);
+        }
+        .canned-panel-footer {
+            border-top: 1px solid var(--border-soft, #eee);
+            margin-top: 4px;
+            padding-top: 6px;
+        }
         .composer-send-btn {
             background: #8e57fe;
             color: #fff;
@@ -682,12 +745,17 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     </div>
 
                     <div id="replyFilePreview" class="file-preview"></div>
-                    <div class="chat-composer">
+                    <div class="chat-composer" style="position:relative;">
+                        <div id="cannedPanel" class="canned-panel" style="display:none;"></div>
                         <label class="composer-attach-btn" title="پیوست فایل">
                             <input type="file" id="replyFileInput" multiple hidden
                                    accept=".jpg,.jpeg,.png,.pdf,.docx,.doc,.xls,.xlsx,.mp3,.m4a,.ogg">
                             <i class="bi bi-paperclip"></i>
                         </label>
+                        <button type="button" class="composer-canned-btn" id="btnCanned"
+                                onclick="toggleCannedPanel(event)" title="پاسخ‌های آماده">
+                            <i class="bi bi-lightning-charge"></i>
+                        </button>
                         <textarea id="replyMsg" class="composer-textarea" rows="1"
                                   placeholder="پیام خود را بنویسید... (Ctrl+V برای چسباندن عکس)"></textarea>
                         <button class="composer-send-btn" id="btnReply" onclick="sendReply()" title="ارسال">
@@ -712,6 +780,31 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     <i class="bi bi-x-lg"></i>
                 </button>
                 <img id="imgPreviewImg" src="" alt="">
+            </div>
+        </div>
+    </div>
+
+    <!-- مودالِ ساخت/ویرایشِ پاسخِ آماده -->
+    <div class="modal fade" id="cannedEditModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title" id="cannedEditTitle">پاسخ آماده‌ی جدید</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="cannedEditId">
+                    <label class="form-label" style="font-size:.82rem;">عنوان</label>
+                    <input type="text" class="form-control form-control-sm mb-3" id="cannedEditTitleInput"
+                           placeholder="مثلاً: بازنشانی رمز عبور" maxlength="150">
+                    <label class="form-label" style="font-size:.82rem;">متنِ پاسخ</label>
+                    <textarea class="form-control form-control-sm" id="cannedEditBody" rows="5"
+                              placeholder="متنی که با یک کلیک در کادرِ پاسخ درج می‌شود..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">انصراف</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveCannedResponse()">ذخیره</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1127,6 +1220,159 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             } catch(e) {
                 showToast('خطا در ارتباط با سرور', 'error');
             }
+        }
+
+        // ─── پاسخ‌هایِ آماده (canned responses) ───
+        var cannedList = [];
+        var cannedCanManage = false;
+        var cannedLoaded = false;
+        var cannedEditModalInst = null;
+
+        async function loadCannedResponses() {
+            try {
+                var res = await fetch('../api/tickets/canned-responses.php', {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                var data = await res.json();
+                if (data.success) {
+                    cannedList = data.responses || [];
+                    cannedCanManage = !!data.can_manage;
+                    cannedLoaded = true;
+                }
+            } catch (e) { /* شبکه — پنل خالی می‌مونه، بقیه‌ی صفحه دست‌نخورده */ }
+        }
+
+        function renderCannedPanel() {
+            var panel = document.getElementById('cannedPanel');
+            var html = '';
+
+            if (!cannedList.length) {
+                html += '<div class="canned-panel-empty">هنوز پاسخِ آماده‌ای ثبت نشده است</div>';
+            } else {
+                html += cannedList.map(function (c) {
+                    var manageBtns = cannedCanManage
+                        ? '<span class="canned-item-actions">' +
+                              '<button title="ویرایش" onclick="event.stopPropagation();openCannedEditor(' + c.id + ')"><i class="bi bi-pencil"></i></button>' +
+                              '<button title="حذف" onclick="event.stopPropagation();deleteCannedResponse(' + c.id + ')"><i class="bi bi-trash"></i></button>' +
+                          '</span>'
+                        : '';
+                    return '<div class="canned-item" onclick="insertCannedResponse(' + c.id + ')">' +
+                        '<span class="canned-item-title">' + esc(c.title) +
+                            '<span class="canned-item-body d-block">' + esc((c.body || '').slice(0, 60)) + '</span>' +
+                        '</span>' + manageBtns +
+                    '</div>';
+                }).join('');
+            }
+
+            if (cannedCanManage) {
+                html += '<div class="canned-panel-footer">' +
+                    '<div class="canned-item" onclick="openCannedEditor(0)">' +
+                        '<i class="bi bi-plus-circle" style="color:#8e57fe;"></i>' +
+                        '<span class="canned-item-title">افزودنِ پاسخِ آماده</span>' +
+                    '</div></div>';
+            }
+
+            panel.innerHTML = html;
+        }
+
+        async function toggleCannedPanel(ev) {
+            if (ev) ev.stopPropagation();
+            var panel = document.getElementById('cannedPanel');
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+                return;
+            }
+            if (!cannedLoaded) await loadCannedResponses();
+            renderCannedPanel();
+            panel.style.display = 'block';
+        }
+
+        function closeCannedPanel() {
+            var panel = document.getElementById('cannedPanel');
+            if (panel) panel.style.display = 'none';
+        }
+
+        document.addEventListener('click', function (e) {
+            var panel = document.getElementById('cannedPanel');
+            var btn = document.getElementById('btnCanned');
+            if (!panel || panel.style.display !== 'block') return;
+            if (!panel.contains(e.target) && btn && !btn.contains(e.target)) closeCannedPanel();
+        });
+
+        // درج در کادرِ پاسخ — اگه از قبل متنی نوشته شده، پشتش اضافه می‌شه
+        // (نه جایگزین)، تا چیزی که کاربر تایپ کرده از بین نره
+        function insertCannedResponse(id) {
+            var item = cannedList.find(function (c) { return Number(c.id) === Number(id); });
+            if (!item) return;
+            var el = document.getElementById('replyMsg');
+            el.value = el.value.trim() ? (el.value.trim() + '\n' + item.body) : item.body;
+            closeCannedPanel();
+            el.focus();
+            autoGrowComposer(el);
+        }
+
+        function openCannedEditor(id) {
+            closeCannedPanel();
+            var item = cannedList.find(function (c) { return Number(c.id) === Number(id); });
+            document.getElementById('cannedEditId').value = item ? item.id : '';
+            document.getElementById('cannedEditTitleInput').value = item ? item.title : '';
+            document.getElementById('cannedEditBody').value = item ? item.body : '';
+            document.getElementById('cannedEditTitle').textContent = item ? 'ویرایشِ پاسخِ آماده' : 'پاسخ آماده‌ی جدید';
+            if (!cannedEditModalInst) {
+                cannedEditModalInst = new bootstrap.Modal(document.getElementById('cannedEditModal'));
+            }
+            cannedEditModalInst.show();
+            setTimeout(function () { document.getElementById('cannedEditTitleInput').focus(); }, 300);
+        }
+
+        async function saveCannedResponse() {
+            var id = document.getElementById('cannedEditId').value;
+            var title = document.getElementById('cannedEditTitleInput').value.trim();
+            var body = document.getElementById('cannedEditBody').value.trim();
+            if (!title || !body) {
+                showToast('عنوان و متن الزامی است', 'warning');
+                return;
+            }
+            try {
+                var res = await fetch('../api/tickets/canned-responses.php', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: id ? 'update' : 'create', id: id ? parseInt(id, 10) : 0, title: title, body: body })
+                });
+                var data = await res.json();
+                if (data.success) {
+                    cannedEditModalInst.hide();
+                    showToast(data.message, 'success');
+                    await loadCannedResponses();
+                    renderCannedPanel();
+                } else {
+                    showToast(data.message || 'خطا', 'warning');
+                }
+            } catch (e) {
+                showToast('خطا در ارتباط با سرور', 'error');
+            }
+        }
+
+        function deleteCannedResponse(id) {
+            uiConfirm('این پاسخِ آماده حذف شود؟', async function () {
+                try {
+                    var res = await fetch('../api/tickets/canned-responses.php', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete', id: id })
+                    });
+                    var data = await res.json();
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        await loadCannedResponses();
+                        renderCannedPanel();
+                    } else {
+                        showToast(data.message || 'خطا', 'warning');
+                    }
+                } catch (e) {
+                    showToast('خطا در ارتباط با سرور', 'error');
+                }
+            }, { danger: true, yesText: 'بله، حذف کن', noText: 'انصراف' });
         }
 
         // ─── ارسال پاسخ ───
