@@ -154,6 +154,11 @@ func main() {
 	mux.HandleFunc("DELETE /go/api/reports/delete", s.auth(reports.Delete(s.db)))
 	mux.HandleFunc("POST /go/api/reports/delete", s.auth(reports.Delete(s.db)))
 	mux.HandleFunc("POST /go/api/reports/generate", s.auth(reports.Generate(s.db)))
+	// سه endpointِ زنده‌ی داشبورد/گزارشِ روزانه — تنها موارد این ماژول که
+	// واقعاً از فرانت صدا زده می‌شوند (بقیه‌ی بالا فعلاً مصرف‌کننده ندارند).
+	mux.HandleFunc("GET /go/api/reports/get-today-activities", s.auth(reports.TodayActivities(s.db)))
+	mux.HandleFunc("GET /go/api/reports/bottleneck-report", s.auth(reports.Bottleneck(s.db)))
+	mux.HandleFunc("GET /go/api/reports/top-delayed-users", s.auth(reports.TopDelayedUsers(s.db)))
 
 	// ── ماژولِ حضور و غیاب — فقط بخشِ خواندنی (پورتِ api/attendance/*) ──
 	mux.HandleFunc("GET /go/api/attendance/today-status", s.auth(attendance.TodayStatus(s.db)))

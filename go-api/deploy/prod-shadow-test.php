@@ -83,6 +83,16 @@ compare('reports/today',   "$php/reports/today.php",   "$go/reports/today",   $t
 compare('reports/history', "$php/reports/history.php", "$go/reports/history", $token);
 compare('reports/list',    "$php/reports/list.php",    "$go/reports/list",    $token);
 
+// سه endpointِ زنده‌ی داشبورد/گزارشِ روزانه — تنها موارد این ماژول که
+// فرانت واقعاً صدا می‌زند، پس مهم‌ترین موارد همین تست‌اند.
+compare('reports/get-today-activities', "$php/reports/get-today-activities.php", "$go/reports/get-today-activities", $token);
+// یک تاریخِ ثابتِ گذشته هم چک می‌شود تا شاخه‌ی ?date= و گروه‌بندی با
+// دیتایِ واقعی (نه یک روزِ احتمالاً خالی) سنجیده شود.
+$pastDate = date('Y-m-d', strtotime('-7 days'));
+compare('reports/get-today-activities (date)', "$php/reports/get-today-activities.php?date=$pastDate", "$go/reports/get-today-activities?date=$pastDate", $token);
+compare('reports/bottleneck-report',    "$php/reports/bottleneck-report.php",    "$go/reports/bottleneck-report",    $token);
+compare('reports/top-delayed-users',    "$php/reports/top-delayed-users.php",    "$go/reports/top-delayed-users",    $token);
+
 compare('attendance/today-status', "$php/attendance/today-status.php", "$go/attendance/today-status", $token);
 compare('attendance/absent-today', "$php/attendance/absent-today.php", "$go/attendance/absent-today", $token);
 compare('attendance/allowed-ips (GET)', "$php/attendance/allowed-ips.php", "$go/attendance/allowed-ips", $token);
