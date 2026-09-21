@@ -96,11 +96,62 @@ func passesMessageNameFilter(db *sql.DB, message string, userID int64) bool {
 	return performerName != fullName.String
 }
 
-// filterList — ترکیبِ هر دو فیلتر، برایِ list.php/new.php.
+// filterList — ترکیبِ هر دو فیلتر، برایِ list.php.
 func filterList(db *sql.DB, rows []map[string]any, userID int64) []map[string]any {
 	out := make([]map[string]any, 0, len(rows))
 	for _, n := range rows {
 		if !passesTaskSelfFilter(db, n, userID) {
+			continue
+		}
+		msg, _ := n["message"].(string)
+		if !passesMessageNameFilter(db, msg, userID) {
+			continue
+		}
+		out = append(out, n)
+	}
+	return out
+}
+
+// passesTaskSelfFilterStrict — پورتِ دقیقِ چکِ تکراریِ خودِ
+// api/notifications/new.php (نه کلاسِ Notification::shouldShowNotification).
+//
+// 🔒 این یک اینکانسیستنسیِ واقعی و موجودِ خودِ PHP است، عمداً بازتولید
+// شده تا new_count دقیقاً با new.php برابر باشد: new.php روی خروجیِ
+// getNewNotifications() (که از قبل bypass_self_filter را رعایت کرده)
+// یک بارِ دیگر creator==assignee==خودم را چک می‌کند، اما این‌بار
+// bypass_self_filter را اصلاً نمی‌بیند — پس نوتیفیکیشنی که عمداً با
+// bypass_self_filter=1 ساخته شده تا نشان داده شود، اگر روی تسکِ خودِ
+// کاربر باشد، همچنان همین‌جا پنهان می‌شود. list.php همین چکِ تکراری را
+// دارد ولی برخلافِ new.php، اول bypass_self_filter را چک می‌کند — یعنی
+// این باگ فقط مخصوصِ new.php است.
+func passesTaskSelfFilterStrict(db *sql.DB, n map[string]any, userID int64) bool {
+	relatedType, _ := n["related_type"].(string)
+	relatedID := toInt64(n["related_id"])
+	if relatedID == 0 || relatedType != "task" {
+		return true
+	}
+	var creatorID, assigneeID sql.NullInt64
+	err := db.QueryRow("SELECT creator_id, assignee_id FROM tasks WHERE id = ?", relatedID).
+		Scan(&creatorID, &assigneeID)
+	if err != nil {
+		return true
+	}
+	if creatorID.Valid && assigneeID.Valid && creatorID.Int64 == userID && assigneeID.Int64 == userID {
+		return false
+	}
+	return true
+}
+
+// filterNew — همانِ filterList به‌علاوه‌یِ لایه‌ی تکراریِ بدونِ-بای‌پسِ
+// بالا، مخصوصِ new.php. دو لایه عمداً جدا نگه داشته شده‌اند (نه یک تابعِ
+// مشترک) چون در PHP هم دو فایلِ متفاوت‌اند با دو رفتارِ واقعاً متفاوت.
+func filterNew(db *sql.DB, rows []map[string]any, userID int64) []map[string]any {
+	out := make([]map[string]any, 0, len(rows))
+	for _, n := range rows {
+		if !passesTaskSelfFilter(db, n, userID) {
+			continue
+		}
+		if !passesTaskSelfFilterStrict(db, n, userID) {
 			continue
 		}
 		msg, _ := n["message"].(string)
@@ -210,7 +261,7 @@ func New(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		filtered := filterList(db, maps, u.ID)
+		filtered := filterNew(db, maps, u.ID)
 
 		resp := map[string]any{
 			"success":       true,
