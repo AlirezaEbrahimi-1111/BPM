@@ -892,6 +892,11 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                                 <i class="bi bi-shield-lock ms-2"></i>رصد امنیتی
                             </a>
                         </li>
+                        <li id="errorLogMenuItem" style="display:none;">
+                            <a class="dropdown-item" href="../../pages/error-log.php">
+                                <i class="bi bi-terminal ms-2"></i>مشاهده‌ی لاگِ خطا
+                            </a>
+                        </li>
                         <li id="holidaysMenuItem" style="display:none;">
                             <a class="dropdown-item" href="../../pages/holidays.php">
                                 <i class="bi bi-calendar-x ms-2"></i>روزهای تعطیل
@@ -2629,10 +2634,15 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         // 🔒 فقط سوپرادمین (هم‌راستا با getSuperAdminIds سمتِ سرور: ۱ و ۱۹) —
         // این فقط نمایش/مخفی‌بودنِ لینکه، مرزِ امنیتیِ واقعی سمتِ سرورِ
         // security-log.php خودش با isSuperAdmin چک می‌شه
+        // 🔒 «رصد امنیتی» و «مشاهده‌ی لاگِ خطا» — طبقِ درخواستِ صریح، فقط
+        // id=1 (نه ۱۹) این دوتا رو توی منو می‌بینه.
         const securityLogItem = document.getElementById('securityLogMenuItem');
         if (securityLogItem) {
-            const isSuperAdminUser = [1, 19].includes(Number(user.id));
-            securityLogItem.style.display = isSuperAdminUser ? 'block' : 'none';
+            securityLogItem.style.display = (Number(user.id) === 1) ? 'block' : 'none';
+        }
+        const errorLogItem = document.getElementById('errorLogMenuItem');
+        if (errorLogItem) {
+            errorLogItem.style.display = (Number(user.id) === 1) ? 'block' : 'none';
         }
         const overviewMenu = document.getElementById('navOverview');
         if (overviewMenu) {
