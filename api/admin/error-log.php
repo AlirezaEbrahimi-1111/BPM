@@ -91,7 +91,12 @@ function readErrorLog(string $path, int $limit, string $q, ?int $fromTs, ?int $t
     }
 
     $lines = explode("\n", $content);
-    $datePattern = '/^\[(\w+ \w+ +\d+ \d+:\d+:\d+ \d+)\]/';
+    // 🔒 ثانیه‌ها ممکنه میکروثانیه هم داشته باشن (فرمتِ واقعیِ همین vhost:
+    // «19:20:04.958029»، نه فقط «19:20:04» مثلِ فرمتِ کلاسیکِ Apache) — این
+    // بخش عمداً اختیاریه (`(?:\.\d+)?`) تا هر دو فرمت رو بپوشونه. سالِ ۴رقمی
+    // رو جدا capture می‌کنیم تا برایِ strtotime یه رشته‌ی تمیز (بدونِ
+    // میکروثانیه) بسازیم.
+    $datePattern = '/^\[(\w+ \w+ +\d+ \d+:\d+:\d+)(?:\.\d+)? (\d+)\]/';
 
     $records = [];
     $current = null;
@@ -99,7 +104,7 @@ function readErrorLog(string $path, int $limit, string $q, ?int $fromTs, ?int $t
         if ($ln === '') continue;
         if (preg_match($datePattern, $ln, $m)) {
             if ($current !== null) $records[] = $current;
-            $current = ['ts' => strtotime($m[1]), 'raw' => $ln];
+            $current = ['ts' => strtotime($m[1] . ' ' . $m[2]), 'raw' => $ln];
         } elseif ($current !== null) {
             $current['raw'] .= "\n" . $ln;
         }
