@@ -1249,7 +1249,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                         <!-- بومِ مسیر و انشعاب (فاز ۴) -->
                         <div class="wf-canvas-wrap" id="wfCanvasWrap">
                             <div class="wf-canvas-toolbar">
-                                <b><i class="bi bi-diagram-2"></i> مسیر و انشعاب روتین</b>
+                                <b><i class="bi bi-diagram-2"></i>مسیردهی روتین</b>
                                 <button type="button" onclick="wfSyncFromForm()" title="بازچینش از روی فهرست مراحل"><i class="bi bi-arrow-repeat"></i> همگام‌سازی</button>
                                 <button type="button" onclick="wfZoom(0.1)" title="بزرگ‌نمایی"><i class="bi bi-zoom-in"></i></button>
                                 <button type="button" onclick="wfZoom(-0.1)" title="کوچک‌نمایی"><i class="bi bi-zoom-out"></i></button>
@@ -2021,7 +2021,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
         function wfNodeHtml(order, name, isDecision, assigneeLabel) {
             return `<div class="wf-node-body">
                 <div class="wf-node-title">${toFa(order)}. <span class="wf-node-name">${escHtml(name || ('مرحلهٔ ' + toFa(order)))}</span></div>
-                <label><input type="checkbox" class="wf-dec-chk" ${isDecision ? 'checked' : ''}> نقطهٔ تصمیم (تأیید/رد)</label>
+                <label><input type="checkbox" class="wf-dec-chk" ${isDecision ? 'checked' : ''}> شرط مسیر (تأیید/رد)</label>
                 <div class="wf-node-assignee">${escHtml(assigneeLabel || '—')}</div>
             </div>`;
         }
