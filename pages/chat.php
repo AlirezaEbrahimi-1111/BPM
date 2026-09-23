@@ -3150,7 +3150,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             // خواسته، تا وقتی خودِ کاربر متن رو پاک نکنه یا Esc نزنه (پایین‌تر:
             // onConvSearchKeydown)، بعدِ کلیک روی یه نتیجه و پرش به پیام، لیستِ
             // نتایج همچنان روی صفحه می‌مونه تا بشه نتیجه‌یِ بعدی رو هم زد
-            openConversation(conversationId, messageId);
+            var term = document.getElementById('convSearchInput').value.trim();
+            openConversation(conversationId, messageId, null, term);
         }
 
         // ─────────────── بازکردنِ یک گفتگو ───────────────
@@ -3158,7 +3159,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         // کسی چت می‌کنیم، گفتگویِ تازه‌ساخته‌شده هنوز پیامی نداره، پس توی
         // لیستِ conversations نیست (که عمداً چت‌هایِ بدونِ‌پیام رو نشون نمی‌ده)؛
         // بدونِ این fallback، هدر تا فرستادنِ اولین پیام و رفرش/سوییچ، خط‌تیره می‌موند
-        function openConversation(id, jumpToMessageId, fallbackInfo) {
+        // highlightTerm اختیاریه: وقتی جهش از یه نتیجه‌ی جست‌وجو میاد (نه
+        // پرش به پیامِ خوانده‌نشده/سنجاق‌شده)، همون کلمه‌ی جست‌وجوشده رو هم
+        // (علاوه بر چشمک‌زدنِ کلِ ردیف) توی خودِ پیام زرد هایلایت می‌کنه —
+        // درست مثلِ جست‌وجویِ داخلِ گفتگو.
+        function openConversation(id, jumpToMessageId, fallbackInfo, highlightTerm) {
             saveComposerDraft(); // پیش‌نویسِ گفتگویِ قبلی (اگر بود) قبل از جابه‌جایی ذخیره بشه
 
             activeConversationId = id;
@@ -3183,7 +3188,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             setAvatarContent(headAvatar, activeConversationTitle, conv ? conv.avatar_url : (fallbackInfo ? fallbackInfo.avatar_url : null));
             updateMuteButton(conv);
             updateChatHeadLastSeen(conv);
-            document.getElementById('chatMessages').innerHTML = '';
+            // 🔒 عمداً innerHTML اینجا پاک نمی‌شه (قبلاً اینجا بود) — طبقِ
+            // گزارشِ کاربر، خالی‌کردنِ فوریِ صفحه و بعد صبرکردنِ ۱ثانیه‌ای
+            // برایِ جوابِ شبکه یه لحظه‌ی خالیِ زشت می‌ساخت. پایین‌تر، داخلِ
+            // then(data => ...)، درست قبل از appendMessages پاک می‌شه — یعنی
+            // پاک‌کردن و رندرِ تازه هر دو *بعد* از رسیدنِ جواب و توی یک تیکِ
+            // همزمان انجام می‌شن، پس مرورگر هیچ فریمِ خالی‌ای بینشون رندر
+            // نمی‌کنه (دقیقاً همون فیکسِ jumpToMessageInConversation).
             chatNewMsgCount = 0;
             updateChatNewMsgBadge();
             restoreComposerDraft(id);
@@ -3225,6 +3236,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
+                        document.getElementById('chatMessages').innerHTML = '';
                         // ✅ در حالتِ پرش، اسکرولِ خودکار به پایین نمی‌خواهیم — به‌جایش
                         // بعد از رندر، دقیقاً به همون پیامِ موردنظر اسکرول و هایلایت می‌شود
                         appendMessages(data.messages, !jumpToMessageId);
@@ -3232,7 +3244,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         loadConversations();
                         pollReadReceipts();
                         loadPinnedMessage();
-                        if (jumpToMessageId) scrollToOriginalMessage(jumpToMessageId);
+                        if (jumpToMessageId) {
+                            scrollToOriginalMessage(jumpToMessageId, true);
+                            if (highlightTerm) highlightSearchTermInRow(jumpToMessageId, highlightTerm);
+                        }
                     } else {
                         document.getElementById('chatMessages').innerHTML =
                             '<div class="chat-empty-list">' + esc(data.message || 'خطا در بارگذاری پیام‌ها') + '</div>';
