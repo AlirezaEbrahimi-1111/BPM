@@ -4941,7 +4941,7 @@ ${task.overdue_periods > 0 ? `
                         return `
                 <div class="info-item">
                     <div class="info-label">تأخیر:</div>
-                    <div class="info-value"><span class="badge bg-danger"><i class="bi bi-clock-history me-1"></i>${enTofaNumber(task.hours_delayed)} ساعت تأخیر${formatHourDelayBreakdown(task.hours_delayed)}</span></div>
+                    <div class="info-value"><span class="badge bg-danger"><i class="bi bi-clock-history me-1"></i>${formatHourDelay(task.hours_delayed, 'تأخیر')}</span></div>
                 </div>`;
                     }
                     if (task.hours_remaining != null && task.hours_remaining > 0) {

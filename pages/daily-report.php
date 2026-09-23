@@ -559,7 +559,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         // — هر دو عدد از سرور (api/reports/get-today-activities.php)
         function overdueLabel(task) {
             if (task.unit === 'hours') {
-                return `${toFa(task.hours_overdue || 0)} ساعت تأخیر${formatHourDelayBreakdown(task.hours_overdue || 0)}`;
+                return formatHourDelay(task.hours_overdue || 0, 'تأخیر');
             }
             return `${toFa(task.days_overdue || 0)} روز کاری تأخیر`;
         }

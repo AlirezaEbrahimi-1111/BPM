@@ -36,18 +36,21 @@ function toFaDigits(n)   { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶�
 function toFaNum(n)      { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
 function enTofaNumber(n) { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
 
-// وقتی تأخیر ساعتی از ۲۴ ساعت گذشته، فقط عددِ ساعتِ خام (مثلاً «۸۲ ساعت»)
-// خیلی خوانا نیست — این تابع تفکیکِ روز+ساعت رو به‌صورتِ پرانتزی برمی‌گردونه
-// (مثلاً « (۳ روز و ۱۰ ساعت)») تا کنارِ متنِ اصلی اضافه بشه؛ اگه کمتر از
-// ۲۴ ساعت باشه رشته‌ی خالی برمی‌گردونه (یعنی چیزی اضافه نشه)
-function formatHourDelayBreakdown(hours) {
+// نمایشِ تأخیرِ ساعتی (فقط کارهایِ روتین/فرآیندی ساعتی حساب می‌شن، بقیه
+// روزِ کاری‌ان و اصلاً از این تابع رد نمی‌شن). زیرِ ۲۴ ساعت: «۸۲ ساعت
+// [پسوند]». از ۲۴ ساعت به بعد، به‌جایِ نمایشِ هم‌زمانِ عددِ خامِ ساعت و
+// شکسته‌شده‌ی روز/ساعت (که تکراری و شلوغ بود — مثلاً «۷۴۲۷ ساعت (۳۰۹ روز
+// و ۱۱ ساعت)»)، فقط شکسته‌شده نشون داده می‌شه: «۳۰۹ روز و ۱۱ ساعت
+// [پسوند]» — دیگه اصلاً بر اساسِ ساعتِ خام نیست.
+function formatHourDelay(hours, suffix) {
     hours = Number(hours) || 0;
-    if (hours < 24) return '';
+    const suf = suffix ? (' ' + suffix) : '';
+    if (hours < 24) return toFa(hours) + ' ساعت' + suf;
     const days = Math.floor(hours / 24);
     const remHours = hours % 24;
     let text = toFa(days) + ' روز';
     if (remHours > 0) text += ' و ' + toFa(remHours) + ' ساعت';
-    return ' (' + text + ')';
+    return text + suf;
 }
 
 // نامِ ماه‌های شمسی — مرجعِ یگانه (به‌جای ~۱۷ کپیِ محلی: months / persianMonths / J_MONTHS).
