@@ -2939,10 +2939,19 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         // هایلایتِ زردِ خودِ کلمه (نه فقط چشمک‌زدنِ کلِ حباب) — فقط وقتی که
         // ردیفِ پیام قطعاً در DOM هست (بعد از اسکرول یا بعدِ لودشدن)
+        //
+        // 🔒 قبلاً سلکتور `.chat-bubble > div:not(.chat-bubble-quote)` بود که
+        // فقط اولین divِ زیرِ .chat-bubble رو می‌گرفت که quote نباشه — ولی
+        // برایِ پیامِ گروهی (که یه div اسمِ فرستنده قبل از متن داره)، پیامِ
+        // هدایت‌شده (forward label)، یا پیامِ دارایِ عکس، اون «اولین div»
+        // اصلاً متنِ پیام نبود (بلکه اسمِ فرستنده/برچسبِ هدایت/عکس بود)، پس
+        // جست‌وجویِ کلمه توش همیشه شکست می‌خورد — دقیقاً همون «بعضی وقتا کار
+        // نمی‌کنه»یِ گزارش‌شده. الان مستقیم روی خودِ div.chat-bubble-text
+        // (که در appendMessages ساخته می‌شه) هدف می‌گیریم.
         function highlightSearchTermInRow(messageId, term) {
             if (!term) return;
             var row = document.querySelector('.chat-bubble-row[data-message-id="' + messageId + '"]');
-            var textDiv = row && row.querySelector('.chat-bubble > div:not(.chat-bubble-quote)');
+            var textDiv = row && row.querySelector('.chat-bubble-text');
             if (!textDiv) return;
             var termLower = term.toLowerCase();
             var walker = document.createTreeWalker(textDiv, NodeFilter.SHOW_TEXT);
