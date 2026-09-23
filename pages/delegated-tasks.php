@@ -614,7 +614,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
             if (task && task.is_workflow_task == 1) {
                 const hd = (task.hours_delayed) || 0;
-                if (hd > 0) return `<span class="badge days-badge days-overdue">${toPersian(hd)} ساعت تاخیر</span>`;
+                if (hd > 0) return `<span class="badge days-badge days-overdue">${toPersian(hd)} ساعت تاخیر${formatHourDelayBreakdown(hd)}</span>`;
                 const hr = task.hours_remaining;
                 if (hr == null) return '<span class="badge days-badge">-</span>';
                 if (hr === 0) return `<span class="badge days-badge days-today">اکنون</span>`;

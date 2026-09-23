@@ -3648,7 +3648,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 // قاطی نمی‌شن، جدا جدا نشون داده می‌شن (اگه هر دو باشن، هر دو دیده می‌شن)
                 const countParts = [];
                 if (u.delay_days > 0) countParts.push(`${toFa(u.delay_days)} روز`);
-                if (u.delay_hours > 0) countParts.push(`${toFa(u.delay_hours)} ساعت`);
+                if (u.delay_hours > 0) countParts.push(`${toFa(u.delay_hours)} ساعت${formatHourDelayBreakdown(u.delay_hours)}`);
                 const countText = countParts.join(' • ') || '۰ روز';
 
                 // 🆕 تعدادِ کل کارهایِ تأخیردار (مقطعی+دوره‌ای+روتین) — بجِ دومِ جدا،
