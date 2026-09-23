@@ -77,6 +77,32 @@ window.TF = (function () {
         return dates.length ? dates.sort().pop() : '';   // بزرگ‌ترین
     }
 
+    /**
+     * مثلِ effectiveDue، ولی برایِ کارهایِ روتین/فرآیندی لحظه‌یِ کاملِ موعد
+     * (میلی‌ثانیه، با ساعت‌وددقیقه‌یِ دقیق) رو برمی‌گردونه، نه فقط تاریخِ
+     * خالص. isOverdue برایِ این نوع باید ساعتی حساب کنه (هم‌راستا با
+     * calcHourDelay سمتِ سرور)، نه روزِ تقویمی — وگرنه کاری که موعدش مثلاً
+     * ۲۳:۵۰ دیشب بوده، همین که نیمه‌شب رد بشه «تأخیردار» می‌شد با اینکه
+     * هنوز یک ساعتِ کامل هم نگذشته.
+     *
+     * حتماً با TimeSync.parseServerTime پارس می‌شه، نه new Date خام —
+     * چون رشته‌یِ خامِ سرور وقتِ تهرانه، نه وقتِ دستگاه؛ new Date روی یه
+     * رشته‌یِ بدونِ آفست، با تایم‌زونِ خودِ مرورگر تفسیرش می‌کنه که می‌تونه
+     * با تهران فرق داشته باشه.
+     */
+    function effectiveDueMs(t) {
+        if (!t) return null;
+        const raw = [t.due_date, t.deadline, t.original_deadline].filter(Boolean);
+        if (!raw.length) return null;
+        const parse = window.TimeSync
+            ? TimeSync.parseServerTime
+            : function (s) { const d = new Date(String(s).replace(' ', 'T')); return isNaN(d.getTime()) ? null : d; };
+        const ts = raw
+            .map(v => { const d = parse(v); return d ? d.getTime() : NaN; })
+            .filter(n => !isNaN(n));
+        return ts.length ? Math.max(...ts) : null;   // دیرترین
+    }
+
 
     /* ═══════════════════════════════════════════════════
        ۳) وضعیت‌های پایه
@@ -197,10 +223,18 @@ window.TF = (function () {
             return true;
         }
 
-        // کار فرآیندی
+        // کار فرآیندی — ساعتی حساب می‌شه (هم‌راستا با calcHourDelay سمتِ
+        // سرور)، نه روزِ تقویمی؛ وگرنه کاری که موعدش مثلاً ۲۳:۵۰ دیشب بوده،
+        // همین که نیمه‌شب رد بشه «تأخیردار» می‌شد با اینکه هنوز یک ساعتِ
+        // کامل هم نگذشته (و بجِ ساعتِ تأخیرش هم «۰ ساعت» نشون می‌داد —
+        // دقیقاً همین ناهماهنگی گزارش شد). طبقِ تأیید: فقط ساعت (floor)،
+        // دقیقه لازم نیست — همون granularityِ calcHourDelay.
         if (t.is_workflow_task == 1) {
-            const due = effectiveDue(t);
-            if (due && due < td) return true;
+            const dueMs = effectiveDueMs(t);
+            if (dueMs !== null) {
+                const nowMs = window.TimeSync ? TimeSync.serverNowMs() : Date.now();
+                if (Math.floor((nowMs - dueMs) / 3600000) > 0) return true;
+            }
         }
 
         // ── کار دوره‌ای ──────────────────────────────
@@ -510,6 +544,7 @@ window.TF = (function () {
         dateOnly,
         toFa,
         effectiveDue,
+        effectiveDueMs,
 
         // وضعیت پایه
         isDone,
