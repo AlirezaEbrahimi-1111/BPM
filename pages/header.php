@@ -1170,7 +1170,6 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             <span class="gs-type-chip" data-type="ticket" onclick="gsToggleType(this)">تیکت‌ها</span>
             <span class="gs-type-chip" data-type="announcement" onclick="gsToggleType(this)">اطلاعیه‌ها</span>
             <span class="gs-type-chip" data-type="notification" onclick="gsToggleType(this)">نوتیفیکیشن‌ها</span>
-            <span class="gs-type-chip" data-type="task_history" onclick="gsToggleType(this)">تاریخچه کار</span>
             <span class="gs-type-chip" data-type="workflow" onclick="gsToggleType(this)">فرآیندهای جاری</span>
         </div>
         <div class="gs-results" id="gsResults">

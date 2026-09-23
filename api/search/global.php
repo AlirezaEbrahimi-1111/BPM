@@ -2,14 +2,20 @@
 /**
  * global.php
  * سرچ سراسریِ زیر هدر — روی تسک‌ها، تیکت‌ها، اطلاعیه‌ها، نوتیفیکیشن‌ها،
- * تاریخچه‌ی تسک، و فرآیندهای در حال اجرا (workflow) هم‌زمان جستجو می‌کنه،
- * با همون قواعد دسترسیِ APIهای اصلیِ هر بخش (quick-search.php برای تسک/
- * تیکت، api/announcements/list.php برای اطلاعیه، Notification.php برای
+ * و فرآیندهای در حال اجرا (workflow) هم‌زمان جستجو می‌کنه، با همون قواعد
+ * دسترسیِ APIهای اصلیِ هر بخش (quick-search.php برای تسک/تیکت،
+ * api/announcements/list.php برای اطلاعیه، Notification.php برای
  * نوتیفیکیشن) تا نتیجه هرگز چیزی بیرون از دسترسِ کاربر رو نشون نده.
  *
  * تطبیق: کلمه‌به‌کلمه (AND) — هر کلمه‌ی جستجوشده باید جایی در فیلدهای
  * قابل‌جستجوی همون آیتم پیدا بشه، نه اینکه کل عبارتِ تایپ‌شده باید عیناً
  * پشت‌سرهم پیدا بشه.
+ *
+ * 🔒 اولویت‌بندیِ نتایجِ «تسک»: دیگه یه دسته‌ی جداگانه به‌اسمِ «تاریخچه‌ی
+ * تسک» وجود نداره — عنوان/توضیحات/آیتم‌هایِ چک‌لیست/تاریخچه‌ی هر تسک همه
+ * زیرِ همون نتیجه‌یِ «کار» جستجو می‌شن، و رتبه‌ی هر کار توسطِ بالاترین‌
+ * اولویت‌ترین لایه‌ای که عبارتِ جست‌وجو توش پیدا شده تعیین می‌شه: عنوان
+ * (۱) > توضیحات (۲) > چک‌لیست (۳) > تاریخچه (۴).
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -63,7 +69,7 @@ try {
     if (!$words) $words = [$q];
 
     // انواعِ درخواستی — پیش‌فرض همه
-    $allTypes = ['task', 'ticket', 'announcement', 'notification', 'task_history', 'workflow'];
+    $allTypes = ['task', 'ticket', 'announcement', 'notification', 'workflow'];
     $reqTypes = isset($_GET['types']) ? explode(',', $_GET['types']) : $allTypes;
     $activeTypes = array_values(array_intersect($allTypes, $reqTypes));
     if (!$activeTypes) $activeTypes = $allTypes;
@@ -117,18 +123,64 @@ try {
             );
         }
 
-        $params = $accessParams;
-        $wordSql = gs_word_conditions(['t.title', 't.description'], $words, $params);
-        $params[] = $idMatch;   // t.id
-        $params[] = $idMatch;   // t.workflow_instance_id — جستجوی همهٔ کارهای یک روتین با شناسهٔ روتین
+        // 🔒 اولویت‌بندیِ نتایج: هر کاری که کلِ عبارتِ جست‌وجو (همه‌ی کلمات، AND)
+        // توی «فقط عنوان» پیدا بشه، رتبه‌ی ۱ می‌گیره؛ وگرنه اگه توی «عنوان+
+        // توضیحات» پیدا بشه رتبه‌ی ۲؛ وگرنه اگه توی «عنوان+توضیحات+چک‌لیست»
+        // پیدا بشه رتبه‌ی ۳؛ وگرنه (یعنی فقط با کمکِ تاریخچه پیدا شده) رتبه‌ی
+        // ۴. چون چک‌لیست/تاریخچه رابطه‌ی یک‌به‌چند با کار دارن (هر کار چند
+        // آیتم/رویداد داره)، به‌جایِ LIKEِ مستقیم از EXISTS استفاده می‌شه —
+        // هر کلمه باید *جایی* (حتی اگه هرکلمه توی یه آیتم/رکوردِ متفاوت باشه)
+        // در دسترسِ همون لایه پیدا بشه.
+        $p1 = [];
+        $tier1Sql = gs_word_conditions(['t.title'], $words, $p1);
+
+        $p2 = [];
+        $tier2Sql = gs_word_conditions(['t.title', 't.description'], $words, $p2);
+
+        $p3 = [];
+        $tier3Clauses = [];
+        foreach ($words as $w) {
+            $tier3Clauses[] = "(t.title LIKE ? OR t.description LIKE ? OR EXISTS (
+                SELECT 1 FROM task_checklist_items tci
+                WHERE tci.task_id = t.id AND (tci.title LIKE ? OR tci.description LIKE ?)
+            ))";
+            array_push($p3, '%' . $w . '%', '%' . $w . '%', '%' . $w . '%', '%' . $w . '%');
+        }
+        $tier3Sql = implode(' AND ', $tier3Clauses);
+
+        $p4 = [];
+        $tier4Clauses = [];
+        foreach ($words as $w) {
+            $tier4Clauses[] = "(t.title LIKE ? OR t.description LIKE ? OR EXISTS (
+                SELECT 1 FROM task_checklist_items tci
+                WHERE tci.task_id = t.id AND (tci.title LIKE ? OR tci.description LIKE ?)
+            ) OR EXISTS (
+                SELECT 1 FROM task_history th2
+                WHERE th2.task_id = t.id AND th2.notes LIKE ?
+            ))";
+            array_push($p4, '%' . $w . '%', '%' . $w . '%', '%' . $w . '%', '%' . $w . '%', '%' . $w . '%');
+        }
+        $tier4Sql = implode(' AND ', $tier4Clauses);
+
+        // ترتیبِ زیر باید دقیقاً با ترتیبِ ظاهرشدنِ «?» در متنِ کوئری یکی
+        // باشه: اول CASE (p1,p2,p3) توی SELECT، بعد accessSql، بعد شرطِ
+        // نهاییِ WHERE (p4)، بعد دوتا idMatch
+        $params = array_merge($p1, $p2, $p3, $accessParams, $p4, [$idMatch, $idMatch]);
+
         $stmt = $db->prepare("
-            SELECT t.id, t.title, t.description
+            SELECT t.id, t.title, t.description,
+              CASE
+                WHEN ($tier1Sql) THEN 1
+                WHEN ($tier2Sql) THEN 2
+                WHEN ($tier3Sql) THEN 3
+                ELSE 4
+              END AS match_tier
             FROM tasks t
             WHERE t.is_deleted = 0
               AND t.status NOT IN ('completed', 'approved', 'stopped', 'rejected')
               AND $accessSql
-              AND ($wordSql OR t.id = ? OR t.workflow_instance_id = ?)
-            ORDER BY t.created_at DESC
+              AND ($tier4Sql OR t.id = ? OR t.workflow_instance_id = ?)
+            ORDER BY match_tier ASC, t.created_at DESC
             LIMIT $perType
         ");
         $stmt->execute($params);
@@ -258,35 +310,6 @@ try {
                 'message' => $row['message'],
                 'is_read' => (bool) $row['is_read'],
                 'link' => $link,
-            ];
-        }
-    }
-
-    // ───── تاریخچه‌ی تسک (رویدادها/یادداشت‌ها) ─────
-    if (isset($want['task_history'])) {
-        $params = [$user_id, $user_id, $user_id, $user_id];
-        $wordSql = gs_word_conditions(['th.notes'], $words, $params);
-        $stmt = $db->prepare("
-            SELECT th.id, th.task_id, th.action, th.notes, t.title AS task_title
-            FROM task_history th
-            JOIN tasks t ON t.id = th.task_id AND t.is_deleted = 0
-            WHERE (
-                th.from_user_id = ? OR th.to_user_id = ? OR t.creator_id = ? OR t.assignee_id = ?
-              )
-              AND ($wordSql)
-            ORDER BY th.created_at DESC
-            LIMIT $perType
-        ");
-        $stmt->execute($params);
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $results[] = [
-                'type' => 'task_history',
-                'type_label' => 'تاریخچه کار',
-                'icon' => 'bi-clock-history',
-                'id' => (int) $row['id'],
-                'title' => $row['task_title'],
-                'snippet' => gs_snippet($row['notes']),
-                'link' => 'task-detail.php?id=' . $row['task_id'],
             ];
         }
     }
