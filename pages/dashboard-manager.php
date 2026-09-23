@@ -1957,8 +1957,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
            بالاش (مقطعی/دوره‌ای/روتین) واضح جفت بشه */
         .td-user-counts {
             display: flex;
-            flex-direction: column;
-            align-items: stretch;
+            flex-direction: row;
+            align-items: center;
             gap: 4px;
             flex-shrink: 0;
         }
