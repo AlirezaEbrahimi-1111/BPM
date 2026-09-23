@@ -815,7 +815,24 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                         <i class="bi bi-person-check me-2"></i>کارهای واگذارشده
                     </a>
                 </li>
-                <?php if ((int)($_SESSION['organization_id'] ?? 0) === 1): ?>
+                <?php
+                // 🔒 ریشه‌یِ باگِ «گاهی این گزینه دیده نمی‌شه»: قبلاً فقط از
+                // $_SESSION['organization_id'] خونده می‌شد — ولی این مقدار
+                // فقط لحظه‌ی لاگین (api/auth/login.php) نوشته می‌شه، جایِ
+                // دیگه‌ای هیچ‌وقت دوباره ست نمی‌شه. سشنِ PHP عمرِ کوتاهی داره
+                // (gc_maxlifetime) در حالی که JWT طولانی‌مدته — همون کلاس‌باگیِ
+                // قبلیِ پیش‌نمایشِ عکس‌ها (ست‌نشدنِ سشن). اگه سشنِ کاربر بینِ
+                // این صفحه و لاگینِ قبلی‌ش منقضی/بازسازی شده باشه (ولی خودِ
+                // JWT هنوز معتبره، پس کاربر همچنان لاگین‌شده به‌نظر می‌رسه)،
+                // این کلید اصلاً وجود نداره و === 1 همیشه false می‌شه، حتی
+                // برایِ کاربرِ واقعیِ سازمانِ ۱. الان اول $__me['organization_id']
+                // رو امتحان می‌کنیم — همون‌ که page-bootstrap.php با شناسه‌ی
+                // کاربرِ *واقعاً*‌حل‌شده (سشن یا JWT یا کوکی، هرکدوم معتبر بود)
+                // تازه از دیتابیس می‌خونه، پس مستقل از عمرِ سشنه. session فقط
+                // fallbackِ آخره، برایِ صفحاتی که شاید $__me نداشته باشن.
+                $__orgIdForMenu = (int) ($__me['organization_id'] ?? $_SESSION['organization_id'] ?? 0);
+                ?>
+                <?php if ($__orgIdForMenu === 1): ?>
                     <li class="nav-item">
                         <a class="nav-link" href="../../attendance_system/pages/requests.php">
                             <i class="bi bi-file-text me-2"></i>ورود و خروج
