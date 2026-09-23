@@ -229,12 +229,24 @@ window.TF = (function () {
         // کامل هم نگذشته (و بجِ ساعتِ تأخیرش هم «۰ ساعت» نشون می‌داد —
         // دقیقاً همین ناهماهنگی گزارش شد). طبقِ تأیید: فقط ساعت (floor)،
         // دقیقه لازم نیست — همون granularityِ calcHourDelay.
+        //
+        // 🔒 اینجا باید return (نه فقط return true وقتی شرط برقراره) باشه —
+        // چون task_type این کارها هم زیرِ پوست همیشه 'periodic'ه (طبقِ
+        // کامنتِ enrichTaskDates)، اگه شرطِ بالا false بشه و ادامه بدیم، به
+        // شاخه‌ی «کار مقطعی» پایین‌تر می‌رسه که هنوز effectiveDue (تاریخِ
+        // خالص، نه ساعت) رو چک می‌کنه — یعنی همون باگی که همین الان با
+        // فیلترِ ساعتی رفعش کردیم، از پشت‌درِ شاخه‌ی مقطعی دوباره برمی‌گشت.
+        // این دقیقاً چیزی بود که کاربر بعد از دیپلویِ فیکسِ اول گزارش داد
+        // (سه موردِ «۰ ساعت» که هنوز توی لیستِ تأخیردار بودن). وضعیت‌هایِ
+        // مجاز هم عیناً همون سه‌تاییِ شاخه‌ی مقطعیه (نه فقط isDone که
+        // stopped/rejected رو پوشش نمی‌ده) — تا با حذفِ fallthrough چیزی
+        // که قبلاً درست فیلتر می‌شد، رگرسیون نگیره.
         if (t.is_workflow_task == 1) {
+            if (t.status !== 'not_started' && t.status !== 'in_progress' && t.status !== 'delegated') return false;
             const dueMs = effectiveDueMs(t);
-            if (dueMs !== null) {
-                const nowMs = window.TimeSync ? TimeSync.serverNowMs() : Date.now();
-                if (Math.floor((nowMs - dueMs) / 3600000) > 0) return true;
-            }
+            if (dueMs === null) return false;
+            const nowMs = window.TimeSync ? TimeSync.serverNowMs() : Date.now();
+            return Math.floor((nowMs - dueMs) / 3600000) > 0;
         }
 
         // ── کار دوره‌ای ──────────────────────────────
