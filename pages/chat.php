@@ -2899,20 +2899,42 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 return;
             }
 
-            // پیام هنوز در DOM لود نشده — گفتگو با تمرکز روی همین پیام دوباره
-            // بارگذاری می‌شه (openConversation خودش closeMsgSearch رو صدا می‌زنه،
-            // برایِ همین باید بعدِ اتمامِ لود، نوار و نتایجِ جست‌وجو رو خودمون
-            // برگردونیم — afterLoad دقیقاً برایِ همین به openConversation اضافه شد)
-            var savedResults = msgSearchMatches;
-            var savedIdx = msgSearchActiveIdx;
-            openConversation(activeConversationId, match.message_id, null, function () {
-                document.getElementById('chatMsgSearchBar').classList.add('show');
-                document.getElementById('chatMsgSearchInput').value = term;
-                msgSearchMatches = savedResults;
-                msgSearchActiveIdx = savedIdx;
-                updateMsgSearchCount();
+            // پیام هنوز در DOM لود نشده — یه دورِ سبک (بدونِ resetِ کاملِ
+            // openConversation) دورِ همین پیام لود می‌کنیم؛ نوارِ جست‌وجو و
+            // پیش‌نویسِ کادرِ پیام و... هیچ‌کدوم دست نمی‌خورن
+            jumpToMessageInConversation(match.message_id, function () {
                 highlightSearchTermInRow(match.message_id, term);
             });
+        }
+
+        // بارگذاریِ یک بازه‌ی جدید از همین گفتگویِ بازشده، دورِ یک پیامِ
+        // مشخص — برایِ جهش‌هایی مثلِ جست‌وجویِ داخلِ گفتگو که نیازی به
+        // resetِ کاملِ openConversation (پیش‌نویس، اعضایِ گروه، پیامِ
+        // سنجاق‌شده، و...) ندارن.
+        //
+        // 🔒 عمداً innerHTML قبل از fetch پاک نمی‌شه — طبقِ گزارشِ کاربر،
+        // خالی‌کردنِ فوریِ صفحه و بعد صبرکردنِ ۱-۲ثانیه‌ای برایِ جوابِ شبکه
+        // یه لحظه‌ی خالیِ زشت می‌سازه. این‌جا پاک‌کردن و رندرِ تازه هر دو
+        // *بعد* از رسیدنِ جواب و داخلِ یک تیکِ همزمان انجام می‌شن، پس
+        // مرورگر هیچ فریمِ خالی‌ای بینشون رندر نمی‌کنه.
+        function jumpToMessageInConversation(messageId, afterDone) {
+            var convId = activeConversationId;
+            fetch('../api/chat/messages.php?conversation_id=' + convId + '&limit=40&around_id=' + messageId, {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (convId !== activeConversationId || !data.success) return; // کاربر جایِ دیگه‌ای رو باز کرده — این پاسخِ کهنه رو نادیده بگیر
+                    document.getElementById('chatMessages').innerHTML = '';
+                    lastAppendedDateKey = null;
+                    oldestMessageId = 0;
+                    lastMessageId = 0;
+                    appendMessages(data.messages, false);
+                    hasMoreOlder = !!data.has_more;
+                    scrollToOriginalMessage(messageId, true);
+                    if (typeof afterDone === 'function') afterDone();
+                })
+                .catch(function () {});
         }
 
         // هایلایتِ زردِ خودِ کلمه (نه فقط چشمک‌زدنِ کلِ حباب) — فقط وقتی که
@@ -3125,11 +3147,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         // کسی چت می‌کنیم، گفتگویِ تازه‌ساخته‌شده هنوز پیامی نداره، پس توی
         // لیستِ conversations نیست (که عمداً چت‌هایِ بدونِ‌پیام رو نشون نمی‌ده)؛
         // بدونِ این fallback، هدر تا فرستادنِ اولین پیام و رفرش/سوییچ، خط‌تیره می‌موند
-        // afterLoad اختیاریه: تابعی که درست بعدِ رندرشدنِ پیام‌ها (و اسکرولِ
-        // jumpToMessageId، اگر بود) صدا زده می‌شه — مثلاً جست‌وجویِ داخلِ گفتگو
-        // ازش استفاده می‌کنه تا بعدِ این ریست‌شدنِ کاملِ صفحه، نوارِ جست‌وجو رو
-        // دوباره برگردونه (چون این تابع خودش closeMsgSearch رو صدا می‌زنه)
-        function openConversation(id, jumpToMessageId, fallbackInfo, afterLoad) {
+        function openConversation(id, jumpToMessageId, fallbackInfo) {
             saveComposerDraft(); // پیش‌نویسِ گفتگویِ قبلی (اگر بود) قبل از جابه‌جایی ذخیره بشه
 
             activeConversationId = id;
@@ -3204,7 +3222,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         pollReadReceipts();
                         loadPinnedMessage();
                         if (jumpToMessageId) scrollToOriginalMessage(jumpToMessageId);
-                        if (typeof afterLoad === 'function') afterLoad();
                     } else {
                         document.getElementById('chatMessages').innerHTML =
                             '<div class="chat-empty-list">' + esc(data.message || 'خطا در بارگذاری پیام‌ها') + '</div>';
