@@ -114,14 +114,36 @@ function enrichTaskDates(array $task, PDO $db, array $holidays, string $today, ?
                 }
             }
 
-            // 🆕 کارِ روتین/فرآیندی: ساعتی، از رویِ خودِ deadline (که ساعت‌داره)
-            // — نه از رویِ due_date/original_deadline که برایِ این‌ها معمولاً خالیه
-            if (!empty($task['is_workflow_task']) && !empty($task['deadline'])) {
+            // 🔒 کارِ روتین/فرآیندی: ساعتی، از رویِ effective deadline (بزرگ‌ترینِ
+            // due_date/deadline/original_deadline) — قبلاً فقط از رویِ خودِ
+            // deadline محاسبه می‌شد، با این فرض که due_date/original_deadline
+            // برایِ این‌ها «معمولاً خالیه». این فرض همیشه درست نبود: چندتا کارِ
+            // روتینِ واقعی پیدا شدن که برعکسش بود — deadline خالی، ولی due_date
+            // پر (و ماه‌ها گذشته). با شرطِ قبلی، hours_delayed برایِ این‌ها رویِ
+            // مقدارِ پیش‌فرضِ ۰ می‌موند، حتی وقتی ماه‌ها تأخیر داشتن — دقیقاً همون
+            // «۰ ساعت» ی که توی لیستِ تأخیردارها گزارش شد (که isOverdue سمتِ
+            // جاوااسکریپت، با معیارِ مستقلِ خودش، درست تشخیص می‌داد تأخیرداره،
+            // ولی عددِ نمایش‌داده‌شده هیچ‌وقت محاسبه نمی‌شد).
+            // اگه فقط due_date (بدونِ ساعت) موجود بود، انتهایِ همون روز
+            // (۲۳:۵۹:۵۹) در نظر گرفته می‌شه — هم‌راستا با قاعده‌یِ «کارِ امروز
+            // تا فردا تأخیردار نیست» که working_days_delayed بالاتر هم ازش
+            // پیروی می‌کنه.
+            if (!empty($task['is_workflow_task'])) {
                 $done = in_array($task['status'] ?? '', ['completed', 'approved'], true);
                 if (!$done) {
-                    $nowDateTime = date('Y-m-d H:i:s');
-                    $task['hours_delayed']   = calcHourDelay($task['deadline'], $nowDateTime);
-                    $task['hours_remaining'] = calcHourRemaining($task['deadline'], $nowDateTime);
+                    $candidates = [];
+                    foreach (['due_date', 'deadline', 'original_deadline'] as $f) {
+                        if (!empty($task[$f])) {
+                            $v = $task[$f];
+                            $candidates[] = (strlen($v) <= 10) ? ($v . ' 23:59:59') : $v;
+                        }
+                    }
+                    if ($candidates) {
+                        $effectiveDeadline = max($candidates);
+                        $nowDateTime = date('Y-m-d H:i:s');
+                        $task['hours_delayed']   = calcHourDelay($effectiveDeadline, $nowDateTime);
+                        $task['hours_remaining'] = calcHourRemaining($effectiveDeadline, $nowDateTime);
+                    }
                 }
             }
         } catch (Exception $e) {

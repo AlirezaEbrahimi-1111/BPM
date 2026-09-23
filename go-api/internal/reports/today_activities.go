@@ -49,6 +49,12 @@ func TodayActivities(db *sql.DB) http.HandlerFunc {
         ORDER BY th.created_at DESC
     `
 
+	// 🔒 effective_deadline (با ساعت) — قبلاً شاخه‌یِ ساعتی فقط با
+	// «is_workflow_task && deadline!=""» انتخاب می‌شد، با این فرض که
+	// deadline برایِ کارِ روتین همیشه پره. این فرض همیشه درست نبود: چندتا
+	// کارِ روتینِ واقعی پیدا شدن که deadline‌شون خالی بود ولی due_date پر
+	// بود (و ماه‌ها گذشته) — parityِ این فیکس با api/reports/
+	// get-today-activities.php و top-delayed-users.php لازمه.
 	const qOverdue = `
         SELECT
             t.id, t.title, t.priority, t.task_type, t.is_workflow_task,
@@ -58,6 +64,11 @@ func TodayActivities(db *sql.DB) http.HandlerFunc {
                 COALESCE(CAST(t.deadline AS DATE), CAST('1000-01-01' AS DATE)),
                 COALESCE(CAST(t.original_deadline AS DATE), CAST('1000-01-01' AS DATE))
             ) AS effective_due,
+            GREATEST(
+                COALESCE(CAST(CONCAT(t.due_date, ' 23:59:59') AS DATETIME), CAST('1000-01-01 00:00:00' AS DATETIME)),
+                COALESCE(CAST(t.deadline AS DATETIME), CAST('1000-01-01 00:00:00' AS DATETIME)),
+                COALESCE(CAST(t.original_deadline AS DATETIME), CAST('1000-01-01 00:00:00' AS DATETIME))
+            ) AS effective_deadline,
             CONCAT(COALESCE(c.first_name,''),' ',COALESCE(c.last_name,'')) as creator_name
         FROM tasks t
         LEFT JOIN users c ON t.creator_id = c.id AND c.is_active = 1
@@ -173,11 +184,13 @@ func TodayActivities(db *sql.DB) http.HandlerFunc {
 		nowStr := now.Format("2006-01-02 15:04:05")
 
 		for _, ot := range overdue {
-			deadline := mStr(ot, "deadline")
-			// PHP: !empty($ot['is_workflow_task']) && !empty($ot['deadline'])
-			if mInt(ot, "is_workflow_task") != 0 && deadline != "" {
+			// PHP (فیکس‌شده): !empty($ot['is_workflow_task']) — دیگه شرطِ
+			// deadline!="" نداره؛ effective_deadline (GREATEST) جایگزینِ
+			// خودِ deadline در calcHourDelay شده.
+			if mInt(ot, "is_workflow_task") != 0 {
+				effDeadline := mStr(ot, "effective_deadline")
 				ot["unit"] = "hours"
-				ot["hours_overdue"] = core.CalcHourDelay(deadline, nowStr)
+				ot["hours_overdue"] = core.CalcHourDelay(effDeadline, nowStr)
 				ot["days_overdue"] = nil
 			} else {
 				due := mStr(ot, "effective_due")

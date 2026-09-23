@@ -196,25 +196,45 @@ try {
     // ══════════════════════════════════════════════
     //  ۳) کارهای روتین تأخیردار (مرحلهٔ active و از موعد گذشته)
     // ══════════════════════════════════════════════
+    // 🔒 قبلاً این کوئری فقط t.deadline رو می‌دید (AND deadline IS NOT NULL) —
+    // با این فرض که برایِ کارِ روتین همیشه پره. این فرض همیشه درست نبود:
+    // چندتا کارِ روتینِ واقعی پیدا شدن که deadline‌شون خالی بود ولی
+    // due_date پر بود (و ماه‌ها گذشته)، و این کوئری کلاً حذفشون می‌کرد —
+    // یعنی نه فقط توی این ویجت دیده نمی‌شدن، بلکه delay_hoursِ مجموعِ
+    // واحد/کاربر هم کمتر از واقعیت حساب می‌شد. الان مثلِ
+    // get-today-activities.php از GREATEST(due_date/deadline/
+    // original_deadline) استفاده می‌کنه؛ اگه فقط due_date (بدونِ ساعت)
+    // موجود بود، انتهایِ همون روز (۲۳:۵۹:۵۹) در نظر گرفته می‌شه.
+    // 🔒 CAST(...AS DATETIME) — بدونِ این، GREATEST/COALESCE این سه ستون رو
+    // به‌عنوانِ رشته می‌بینه، و چون due_date/deadline/original_deadline
+    // collationِ یکسانی باهم ندارن (همون ناهماهنگیِ قدیمیِ اسکیما که
+    // effective_due پایین‌تر هم با CAST AS DATE ازش دور می‌زنه)، خطایِ
+    // «Illegal mix of collations» (1267) می‌ده — رویِ دیتایِ واقعی تستِ
+    // محلی گرفت.
     $stmt = $db->prepare("
-        SELECT t.id, t.assignee_id, t.activity_section, t.deadline
+        SELECT t.id, t.assignee_id, t.activity_section,
+            GREATEST(
+                COALESCE(CAST(CONCAT(t.due_date, ' 23:59:59') AS DATETIME), CAST('1000-01-01 00:00:00' AS DATETIME)),
+                COALESCE(CAST(t.deadline AS DATETIME), CAST('1000-01-01 00:00:00' AS DATETIME)),
+                COALESCE(CAST(t.original_deadline AS DATETIME), CAST('1000-01-01 00:00:00' AS DATETIME))
+            ) AS effective_deadline
         FROM tasks t
         JOIN workflow_instance_steps wis ON wis.task_id = t.id
         WHERE t.organization_id = ?
           AND t.is_deleted = 0
           AND t.is_workflow_task = 1
           AND wis.status IN ('active', 'pending', 'delayed')
-          AND t.deadline IS NOT NULL
-          AND t.deadline < NOW()
+          AND (t.due_date IS NOT NULL OR t.deadline IS NOT NULL OR t.original_deadline IS NOT NULL)
           AND t.status NOT IN ('completed', 'approved', 'stopped', 'rejected')
+        HAVING effective_deadline > '1000-01-01 00:00:00' AND effective_deadline < ?
     ");
-    $stmt->execute([$org_id]);
+    $stmt->execute([$org_id, $now]);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
         $k = $bucket($t['assignee_id'], $t['activity_section']);
         $acc[$k]['workflow']++;
         // 🔒 روتین/فرآیندی ساعتی حساب می‌شه، نه روزِ کاری — طبقِ قاعده‌یِ
         // «کارهایِ روتین همیشه ساعتی» — بدونِ کوتاه‌کردنِ deadline به روز
-        $acc[$k]['delay_hours'] += calcHourDelay($t['deadline'], $now);
+        $acc[$k]['delay_hours'] += calcHourDelay($t['effective_deadline'], $now);
     }
 
     // ── خروجی: مرتب نزولی — اول بر اساسِ روزِ کاری (مقطعی+دوره‌ای)، بعد ساعتِ

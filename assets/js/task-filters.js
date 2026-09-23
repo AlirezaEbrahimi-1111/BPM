@@ -98,6 +98,11 @@ window.TF = (function () {
             ? TimeSync.parseServerTime
             : function (s) { const d = new Date(String(s).replace(' ', 'T')); return isNaN(d.getTime()) ? null : d; };
         const ts = raw
+            // 🔒 اگه فقط تاریخ بود (بدونِ ساعت، مثلِ due_date)، انتهایِ همون
+            // روز (۲۳:۵۹:۵۹) فرض می‌شه — دقیقاً هم‌راستا با همین قاعده‌یِ
+            // سمتِ سرور (enrichTaskDates)، وگرنه اینجا نیمه‌شبِ همون روز و
+            // سرور انتهایِ روز حساب می‌کرد و دو تا عددِ متفاوت می‌دادن
+            .map(v => (String(v).length <= 10 ? v + ' 23:59:59' : v))
             .map(v => { const d = parse(v); return d ? d.getTime() : NaN; })
             .filter(n => !isNaN(n));
         return ts.length ? Math.max(...ts) : null;   // دیرترین
