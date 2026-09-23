@@ -1976,12 +1976,33 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 }
             });
 
-            // Escape → خروج از تمام‌صفحه
+            // Escape → فقط خروج از تمام‌صفحه‌یِ نمودار، نه بستنِ کلِ مودالِ
+            // «تعریفِ روتینِ جدید» (که #templateModal یه مودالِ Bootstrapه و
+            // خودِ Bootstrap هم یه listenerِ Escape داره که با هر Escape کلِ
+            // مودال رو می‌بنده و اطلاعاتِ واردشده رو می‌پرونه). این‌جا با
+            // capture:true زودتر از listenerِ Bootstrap اجرا می‌شه و با
+            // stopPropagation جلویِ رسیدنِ رویداد به اون رو می‌گیره — پس
+            // Escape وقتی نمودار تمام‌صفحه‌ست، فقط از تمام‌صفحه خارج می‌کنه.
             document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape' && document.getElementById('wfCanvasWrap')?.classList.contains('wf-canvas-fs')) {
+                    e.stopPropagation();
+                    e.preventDefault();
                     wfToggleFullscreen(false);
                 }
-            });
+            }, true);
+
+            // 🆕 زوم با چرخِ وسطِ موس — خودِ Drawflow از قبل فقط با
+            // Ctrl+چرخ زوم می‌کنه (zoom_enter داخلِ کتابخونه)؛ این‌جا حالتِ
+            // بدونِ Ctrl رو هم اضافه می‌کنیم تا اسکرولِ سادهٔ چرخِ موس هم
+            // زوم/بک‌زوم کنه، هم توی حالتِ عادی هم تمام‌صفحه (چون این
+            // لیسنر رویِ خودِ #wfCanvas هست، نه رویِ wrapperِ تمام‌صفحه).
+            // passive:false لازمه وگرنه مرورگر e.preventDefault() رو
+            // نادیده می‌گیره و صفحه هم اسکرول می‌کنه.
+            el.addEventListener('wheel', function (e) {
+                if (e.ctrlKey || !wfEditor) return; // حالتِ Ctrl رو خودِ Drawflow هندل می‌کنه
+                e.preventDefault();
+                if (e.deltaY > 0) wfEditor.zoom_out(); else wfEditor.zoom_in();
+            }, { passive: false });
         }
 
         function wfToggleFullscreen(force) {
