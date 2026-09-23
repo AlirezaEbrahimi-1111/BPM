@@ -2057,7 +2057,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 </div>
                 <div class="chat-search-box">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="convSearchInput" placeholder="جستجو در گفتگوها و پیام‌ها..." oninput="onConvSearchInput()">
+                    <input type="text" id="convSearchInput" placeholder="جستجو در گفتگوها و پیام‌ها..." oninput="onConvSearchInput()" onkeydown="onConvSearchKeydown(event)">
                 </div>
                 <div class="chat-conv-list" id="convListWrap">
                     <div id="convList">
@@ -3104,6 +3104,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }, 300);
         }
 
+        // Esc → پاک‌کردنِ عبارتِ جست‌وجو و مخفی‌کردنِ لیستِ نتایج (تنها
+        // راهِ دیگه‌ای که طبقِ خواسته این لیست باید مخفی بشه، جز پاک‌کردنِ
+        // دستیِ خودِ متن که از قبل توسطِ onConvSearchInput هندل می‌شه)
+        function onConvSearchKeydown(e) {
+            if (e.key !== 'Escape') return;
+            document.getElementById('convSearchInput').value = '';
+            document.getElementById('msgSearchResultsSection').style.display = 'none';
+            renderConversationList();
+        }
+
         function runGlobalMessageSearch(term) {
             fetch('../api/chat/search-messages.php?q=' + encodeURIComponent(term), {
                     headers: { 'Authorization': 'Bearer ' + authToken }
@@ -3136,9 +3146,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         function jumpToSearchResult(conversationId, messageId) {
-            document.getElementById('convSearchInput').value = '';
-            document.getElementById('msgSearchResultsSection').style.display = 'none';
-            renderConversationList();
+            // 🔒 عمداً عبارتِ جست‌وجو و لیستِ نتایج پاک/مخفی نمی‌شن — طبقِ
+            // خواسته، تا وقتی خودِ کاربر متن رو پاک نکنه یا Esc نزنه (پایین‌تر:
+            // onConvSearchKeydown)، بعدِ کلیک روی یه نتیجه و پرش به پیام، لیستِ
+            // نتایج همچنان روی صفحه می‌مونه تا بشه نتیجه‌یِ بعدی رو هم زد
             openConversation(conversationId, messageId);
         }
 
