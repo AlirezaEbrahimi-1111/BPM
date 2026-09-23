@@ -1949,6 +1949,20 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             flex-shrink: 0;
         }
 
+        /* 🔒 مجموعِ تأخیرِ مقطعی/دوره‌ای (روز) و مجموعِ تأخیرِ روتین (ساعت) دو
+           عددِ مستقلن، هرکدوم برایِ یک زیرمجموعه‌یِ متفاوت از کارها — نه دو
+           محاسبه‌یِ متفاوت از همون چیز. قبلاً هر دو تویِ یک بجِ قرمز با «•»
+           کنارِ هم می‌نشستن و بدونِ برچسب، به‌نظر دو مدلِ محاسبه‌یِ متضاد
+           می‌اومدن؛ الان هرکدوم بجِ جدا و رنگِ جدا داره تا با ردیفِ تفکیکِ
+           بالاش (مقطعی/دوره‌ای/روتین) واضح جفت بشه */
+        .td-user-counts {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
         .td-user-count {
             font-size: .72rem;
             font-weight: var(--badge-font-weight);
@@ -1962,6 +1976,12 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             justify-content: center;
             flex-shrink: 0;
             padding: 0 10px 0 10px !important;
+            white-space: nowrap;
+        }
+
+        .td-user-count-hours {
+            color: #c2410c;
+            background: #ffedd5;
         }
 
         .td-user-task-count {
@@ -3647,12 +3667,19 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 // 🔒 دو مدلِ تأخیر: مقطعی/دوره‌ای روزِ کاری، روتین/فرآیندی ساعتی —
                 // قاطی نمی‌شن، جدا جدا نشون داده می‌شن (اگه هر دو باشن، هر دو دیده
                 // می‌شن). طبقِ تأییدِ صریح: روتین هم از ۲۴ ساعت به بالا روز‌وساعت
-                // نشون بده (نه فقط ساعتِ خام) — even though این بج کنارِ بجِ
-                // روزِ کاری می‌شینه، هردو «روز» می‌گن؛ عمداً همینه.
-                const countParts = [];
-                if (u.delay_days > 0) countParts.push(`${toFa(u.delay_days)} روز`);
-                if (u.delay_hours > 0) countParts.push(formatHourDelay(u.delay_hours));
-                const countText = countParts.join(' • ') || '۰ روز';
+                // نشون بده (نه فقط ساعتِ خام). قبلاً این دو عدد تویِ یک بجِ قرمزِ
+                // مشترک با «•» می‌نشستن و بدونِ برچسب، دو محاسبه‌یِ متضاد از یک
+                // چیز به‌نظر می‌رسیدن — درحالی‌که دوتا مجموعِ مستقل برایِ دو
+                // دسته‌یِ متفاوتِ کارن. الان هرکدوم بجِ جدا با رنگِ جدا و
+                // tooltip داره تا با ردیفِ تفکیکِ بالاش واضح جفت بشه.
+                const countBadges = [];
+                if (u.delay_days > 0) {
+                    countBadges.push(`<div class="td-user-count" title="مجموع تأخیر کارهای مقطعی و دوره‌ای">${toFa(u.delay_days)} روز</div>`);
+                }
+                if (u.delay_hours > 0) {
+                    countBadges.push(`<div class="td-user-count td-user-count-hours" title="مجموع تأخیر کارهای روتین">${formatHourDelay(u.delay_hours)}</div>`);
+                }
+                const countHtml = countBadges.length ? countBadges.join('') : `<div class="td-user-count">۰ روز</div>`;
 
                 // 🆕 تعدادِ کل کارهایِ تأخیردار (مقطعی+دوره‌ای+روتین) — بجِ دومِ جدا،
                 // کنارِ بجِ روز/ساعتِ تأخیر
@@ -3666,7 +3693,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                         <div class="td-user-breakdown">${breakdown}</div>
                     </div>
                     <div class="td-user-badges">
-                        <div class="td-user-count">${countText}</div>
+                        <div class="td-user-counts">${countHtml}</div>
                         <div class="td-user-task-count">${toFa(totalTasks)} کار</div>
                     </div>
                 </div>`;
