@@ -2798,10 +2798,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         // ─────────────── جستجو در پیام‌های گفتگویِ جاری ───────────────
-        // ⚠️ فقط روی پیام‌هایی که همین الان در DOM لود شده‌اند (لیستِ نمایشی)
-        // جستجو می‌کند، نه کلِ تاریخچه — چون هنوز endpoint جستجوی سمتِ سرور نداریم
-        var msgSearchMatches = [];
+        // ✅ حالا با api/chat/search-messages.php (محدود به همین گفتگو، با
+        // conversation_id) کلِ تاریخچه رو می‌گرده، نه فقط پیام‌هایی که تصادفاً
+        // همین الان لود شدن — قبلاً فقط DOM رو می‌گشت (کدِ قدیمی، محدودیتش
+        // مستندشده بود) و برایِ پیام‌هایِ قدیمی‌ترِ لودنشده هیچی پیدا نمی‌کرد
+        var msgSearchMatches = []; // نتایجِ خامِ API: [{message_id, snippet, ...}]
         var msgSearchActiveIdx = -1;
+        var msgSearchDebounce = null;
+        var msgSearchReqSeq = 0; // نادیده‌گرفتنِ پاسخِ دیرکرده‌یِ یک جست‌وجویِ قدیمی‌تر
 
         function toggleMsgSearch() {
             var bar = document.getElementById('chatMsgSearchBar');
@@ -2840,45 +2844,44 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         function runMsgSearch() {
+            clearTimeout(msgSearchDebounce);
             clearMsgSearchHighlights();
-            msgSearchMatches = [];
-            msgSearchActiveIdx = -1;
 
             var term = document.getElementById('chatMsgSearchInput').value.trim();
             if (!term) {
+                msgSearchMatches = [];
+                msgSearchActiveIdx = -1;
                 updateMsgSearchCount();
                 return;
             }
-            var termLower = term.toLowerCase();
 
-            document.querySelectorAll('#chatMessages .chat-bubble-row').forEach(function (row) {
-                var textDiv = row.querySelector('.chat-bubble > div:not(.chat-bubble-quote)');
-                if (!textDiv) return;
-                var walker = document.createTreeWalker(textDiv, NodeFilter.SHOW_TEXT);
-                var node;
-                while ((node = walker.nextNode())) {
-                    var idx = node.nodeValue.toLowerCase().indexOf(termLower);
-                    if (idx === -1) continue;
-                    var range = document.createRange();
-                    range.setStart(node, idx);
-                    range.setEnd(node, idx + term.length);
-                    var mark = document.createElement('mark');
-                    mark.className = 'chat-bubble-highlight';
-                    range.surroundContents(mark);
-                    msgSearchMatches.push({ row: row, mark: mark });
-                    break; // یک هایلایتِ کافی به‌ازای هر پیام؛ برای سادگی و پرهیز از تداخلِ Range
-                }
-            });
-
-            if (msgSearchMatches.length) {
-                msgSearchActiveIdx = 0;
-                focusMsgSearchMatch();
-            }
-            updateMsgSearchCount();
+            var mySeq = ++msgSearchReqSeq;
+            var convId = activeConversationId;
+            msgSearchDebounce = setTimeout(function () {
+                fetch('../api/chat/search-messages.php?q=' + encodeURIComponent(term) + '&conversation_id=' + convId, {
+                        headers: { 'Authorization': 'Bearer ' + authToken }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        // گفتگو عوض شده یا جست‌وجویِ تازه‌تری در راهه — این پاسخِ کهنه رو نادیده بگیر
+                        if (mySeq !== msgSearchReqSeq || convId !== activeConversationId) return;
+                        msgSearchMatches = (data.success && data.results) ? data.results : [];
+                        msgSearchActiveIdx = msgSearchMatches.length ? 0 : -1;
+                        updateMsgSearchCount();
+                        if (msgSearchMatches.length) focusMsgSearchMatch();
+                    })
+                    .catch(function () {
+                        if (mySeq !== msgSearchReqSeq) return;
+                        msgSearchMatches = [];
+                        msgSearchActiveIdx = -1;
+                        updateMsgSearchCount();
+                    });
+            }, 350);
         }
 
         function navMsgSearch(direction) {
             if (!msgSearchMatches.length) return;
+            clearMsgSearchHighlights();
             msgSearchActiveIdx = (msgSearchActiveIdx + direction + msgSearchMatches.length) % msgSearchMatches.length;
             focusMsgSearchMatch();
             updateMsgSearchCount();
@@ -2887,10 +2890,52 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         function focusMsgSearchMatch() {
             var match = msgSearchMatches[msgSearchActiveIdx];
             if (!match) return;
-            // فقط اسکرول + هایلایتِ زردِ کلمه (که از قبل توسطِ runMsgSearch گذاشته
-            // شده) کافیه — قبلاً کلِ حباب هم فلشِ خاکستری می‌گرفت که طبقِ
-            // خواسته حذف شد.
-            match.row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            var term = document.getElementById('chatMsgSearchInput').value.trim();
+
+            var row = document.querySelector('.chat-bubble-row[data-message-id="' + match.message_id + '"]');
+            if (row) {
+                scrollToOriginalMessage(match.message_id, true);
+                highlightSearchTermInRow(match.message_id, term);
+                return;
+            }
+
+            // پیام هنوز در DOM لود نشده — گفتگو با تمرکز روی همین پیام دوباره
+            // بارگذاری می‌شه (openConversation خودش closeMsgSearch رو صدا می‌زنه،
+            // برایِ همین باید بعدِ اتمامِ لود، نوار و نتایجِ جست‌وجو رو خودمون
+            // برگردونیم — afterLoad دقیقاً برایِ همین به openConversation اضافه شد)
+            var savedResults = msgSearchMatches;
+            var savedIdx = msgSearchActiveIdx;
+            openConversation(activeConversationId, match.message_id, null, function () {
+                document.getElementById('chatMsgSearchBar').classList.add('show');
+                document.getElementById('chatMsgSearchInput').value = term;
+                msgSearchMatches = savedResults;
+                msgSearchActiveIdx = savedIdx;
+                updateMsgSearchCount();
+                highlightSearchTermInRow(match.message_id, term);
+            });
+        }
+
+        // هایلایتِ زردِ خودِ کلمه (نه فقط چشمک‌زدنِ کلِ حباب) — فقط وقتی که
+        // ردیفِ پیام قطعاً در DOM هست (بعد از اسکرول یا بعدِ لودشدن)
+        function highlightSearchTermInRow(messageId, term) {
+            if (!term) return;
+            var row = document.querySelector('.chat-bubble-row[data-message-id="' + messageId + '"]');
+            var textDiv = row && row.querySelector('.chat-bubble > div:not(.chat-bubble-quote)');
+            if (!textDiv) return;
+            var termLower = term.toLowerCase();
+            var walker = document.createTreeWalker(textDiv, NodeFilter.SHOW_TEXT);
+            var node;
+            while ((node = walker.nextNode())) {
+                var idx = node.nodeValue.toLowerCase().indexOf(termLower);
+                if (idx === -1) continue;
+                var range = document.createRange();
+                range.setStart(node, idx);
+                range.setEnd(node, idx + term.length);
+                var mark = document.createElement('mark');
+                mark.className = 'chat-bubble-highlight';
+                range.surroundContents(mark);
+                break;
+            }
         }
 
         function initials(name) {
@@ -3080,7 +3125,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         // کسی چت می‌کنیم، گفتگویِ تازه‌ساخته‌شده هنوز پیامی نداره، پس توی
         // لیستِ conversations نیست (که عمداً چت‌هایِ بدونِ‌پیام رو نشون نمی‌ده)؛
         // بدونِ این fallback، هدر تا فرستادنِ اولین پیام و رفرش/سوییچ، خط‌تیره می‌موند
-        function openConversation(id, jumpToMessageId, fallbackInfo) {
+        // afterLoad اختیاریه: تابعی که درست بعدِ رندرشدنِ پیام‌ها (و اسکرولِ
+        // jumpToMessageId، اگر بود) صدا زده می‌شه — مثلاً جست‌وجویِ داخلِ گفتگو
+        // ازش استفاده می‌کنه تا بعدِ این ریست‌شدنِ کاملِ صفحه، نوارِ جست‌وجو رو
+        // دوباره برگردونه (چون این تابع خودش closeMsgSearch رو صدا می‌زنه)
+        function openConversation(id, jumpToMessageId, fallbackInfo, afterLoad) {
             saveComposerDraft(); // پیش‌نویسِ گفتگویِ قبلی (اگر بود) قبل از جابه‌جایی ذخیره بشه
 
             activeConversationId = id;
@@ -3155,6 +3204,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         pollReadReceipts();
                         loadPinnedMessage();
                         if (jumpToMessageId) scrollToOriginalMessage(jumpToMessageId);
+                        if (typeof afterLoad === 'function') afterLoad();
                     } else {
                         document.getElementById('chatMessages').innerHTML =
                             '<div class="chat-empty-list">' + esc(data.message || 'خطا در بارگذاری پیام‌ها') + '</div>';

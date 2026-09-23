@@ -37,15 +37,25 @@ try {
         exit;
     }
 
+    // 🔒 قبلاً «طرفِ مقابل» بدونِ توجه به نوعِ گفتگو join می‌شد — برایِ گروه
+    // (چند نفره)، این یعنی هر پیام به‌ازایِ هر عضوِ دیگه یک‌بار تکراری
+    // برمی‌گشت (مثلاً یه پیام در گروهِ ۷نفره → ۶ ردیفِ عیناً تکراری)، که
+    // LIMIT رو خیلی زود با تکرارهایِ یک پیام پر می‌کرد و نتایجِ واقعیِ
+    // دیگه (به‌خصوص قدیمی‌ترها) اصلاً به کاربر نمی‌رسید — دقیقاً همون‌چیزی
+    // که کاربر «جستجو چیزی پیدا نمی‌کنه» گزارش کرد. الان «طرفِ مقابل» فقط
+    // برایِ گفتگویِ direct (که واقعاً یک‌نفره‌ست) join می‌شه؛ برایِ
+    // گروه/کانال، عنوانِ خودِ گفتگو (c.title) استفاده می‌شه.
     $sql = "
         SELECT m.id, m.conversation_id, m.user_id, m.message, m.created_at,
                u.first_name, u.last_name,
+               c.type AS conv_type, c.title AS conv_title,
                ou.id AS other_user_id, ou.first_name AS other_first_name, ou.last_name AS other_last_name
         FROM chat_messages m
         JOIN chat_participants cp ON cp.conversation_id = m.conversation_id AND cp.user_id = ?
+        JOIN chat_conversations c ON c.id = m.conversation_id
         JOIN users u ON u.id = m.user_id
         LEFT JOIN chat_message_hidden h ON h.message_id = m.id AND h.user_id = ?
-        LEFT JOIN chat_participants op ON op.conversation_id = m.conversation_id AND op.user_id != ?
+        LEFT JOIN chat_participants op ON op.conversation_id = m.conversation_id AND op.user_id != ? AND c.type = 'direct'
         LEFT JOIN users ou ON ou.id = op.user_id
         WHERE m.is_deleted = 0
           AND h.id IS NULL
@@ -65,7 +75,12 @@ try {
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $results = array_map(function ($r) use ($user_id) {
-        $otherName = trim(($r['other_first_name'] ?? '') . ' ' . ($r['other_last_name'] ?? ''));
+        if ($r['conv_type'] === 'direct') {
+            $otherName = trim(($r['other_first_name'] ?? '') . ' ' . ($r['other_last_name'] ?? ''));
+            $title = $otherName ?: 'کاربر حذف‌شده';
+        } else {
+            $title = $r['conv_title'] ?: 'گروه';
+        }
         $snippet = $r['message'];
         if (mb_strlen($snippet) > 100) {
             $snippet = mb_substr($snippet, 0, 100) . '…';
@@ -73,7 +88,7 @@ try {
         return [
             'message_id'      => (int) $r['id'],
             'conversation_id' => (int) $r['conversation_id'],
-            'conversation_title' => $otherName ?: 'کاربر حذف‌شده',
+            'conversation_title' => $title,
             'sender_name'     => trim($r['first_name'] . ' ' . $r['last_name']),
             'is_own'          => (int) $r['user_id'] === $user_id,
             'snippet'         => $snippet,
