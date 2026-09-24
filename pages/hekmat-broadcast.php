@@ -138,6 +138,11 @@ if ((int) $__me['id'] !== 1) {
                             <textarea class="form-control" id="hkClosing" rows="2" placeholder="مثلاً نام سازمان یا یک جمله‌ی ثابت که ته هر پیام بیاید"></textarea>
                         </div>
 
+                        <div class="mb-3">
+                            <label class="form-label">شماره‌ی هشدار (اگر ارسال روزانه ناموفق شد، پیامک خطا اینجا می‌آید)</label>
+                            <input type="text" class="form-control" id="hkAlertPhone" placeholder="مثلاً 09121234567" style="max-width:220px;">
+                        </div>
+
                         <button class="btn btn-primary btn-sm" onclick="hkSaveSettings()">
                             <i class="bi bi-check-lg me-1"></i>ذخیره‌ی تنظیمات
                         </button>
@@ -281,6 +286,7 @@ if ((int) $__me['id'] !== 1) {
             document.getElementById('hkMinute').value = String(roundedMin);
             document.getElementById('hkRotation').value = s.rotation_mode;
             document.getElementById('hkClosing').value = s.closing_text || '';
+            document.getElementById('hkAlertPhone').value = s.alert_phone || '';
 
             document.getElementById('hkQuotesText').value = hkState.quotes.map(q => q.text).join('\n');
             document.getElementById('hkQuotesCount').textContent = `${toFa(hkState.quotes.length)} جمله`;
@@ -326,6 +332,7 @@ if ((int) $__me['id'] !== 1) {
                 closing_text: document.getElementById('hkClosing').value,
                 is_enabled: document.getElementById('hkEnabled').checked,
                 rotation_mode: document.getElementById('hkRotation').value,
+                alert_phone: document.getElementById('hkAlertPhone').value,
             };
             try {
                 const res = await fetch('/api/admin/hekmat-save-settings.php', {

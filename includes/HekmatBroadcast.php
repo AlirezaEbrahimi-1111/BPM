@@ -53,12 +53,15 @@ class HekmatBroadcast
         $enabled = !empty($data['is_enabled']) ? 1 : 0;
         $rotation = ($data['rotation_mode'] ?? 'sequential') === 'random' ? 'random' : 'sequential';
 
+        $current = self::getSettings($db);
+        $alertPhone = self::normalizePhone((string) ($data['alert_phone'] ?? '')) ?? $current['alert_phone'];
+
         $stmt = $db->prepare("
             UPDATE hekmat_settings
-            SET send_hour = ?, send_minute = ?, closing_text = ?, is_enabled = ?, rotation_mode = ?
+            SET send_hour = ?, send_minute = ?, closing_text = ?, is_enabled = ?, rotation_mode = ?, alert_phone = ?
             WHERE id = 1
         ");
-        $stmt->execute([$hour, $minute, $closing, $enabled, $rotation]);
+        $stmt->execute([$hour, $minute, $closing, $enabled, $rotation, $alertPhone]);
 
         return self::getSettings($db);
     }
@@ -178,9 +181,11 @@ class HekmatBroadcast
         $recipients = array_values(array_filter(self::getRecipients($db), fn($r) => (int) $r['is_active'] === 1));
 
         if (!$quotes) {
+            self::notifyFailure($db, $settings, 'ارسال خودکار حکمت روزانه انجام نشد: هیچ جمله‌ی فعالی در لیست نیست.');
             return ['ok' => false, 'reason' => 'no_quotes', 'sent' => 0, 'failed' => 0];
         }
         if (!$recipients) {
+            self::notifyFailure($db, $settings, 'ارسال خودکار حکمت روزانه انجام نشد: هیچ گیرنده‌ی فعالی در لیست نیست.');
             return ['ok' => false, 'reason' => 'no_recipients', 'sent' => 0, 'failed' => 0];
         }
 
@@ -199,6 +204,7 @@ class HekmatBroadcast
         $sms = new SMS($db);
         $sentCount = 0;
         $failedCount = 0;
+        $lastFailReason = null;
 
         $logStmt = $db->prepare("
             INSERT INTO hekmat_send_log (send_date, quote_text, recipient_phone, status, error_message)
@@ -212,12 +218,22 @@ class HekmatBroadcast
                 $logStmt->execute([$today, $quote['text'], $r['phone'], 'sent', null]);
             } else {
                 $failedCount++;
-                $logStmt->execute([$today, $quote['text'], $r['phone'], 'failed', self::lastSmsError($db)]);
+                $lastFailReason = self::lastSmsError($db);
+                $logStmt->execute([$today, $quote['text'], $r['phone'], 'failed', $lastFailReason]);
             }
         }
 
         $upd = $db->prepare("UPDATE hekmat_settings SET next_index = ?, last_sent_date = ? WHERE id = 1");
         $upd->execute([$newIndex, $today]);
+
+        if ($failedCount > 0) {
+            self::notifyFailure($db, $settings, sprintf(
+                'ارسال حکمت روزانه امروز %d از %d پیامک ناموفق بود. آخرین دلیل خطا: %s',
+                $failedCount,
+                $failedCount + $sentCount,
+                $lastFailReason ?: 'نامشخص'
+            ));
+        }
 
         return ['ok' => true, 'sent' => $sentCount, 'failed' => $failedCount, 'quote_text' => $quote['text']];
     }
@@ -257,6 +273,24 @@ class HekmatBroadcast
             'ok' => $ok,
             'message' => $ok ? 'پیامک آزمایشی ارسال شد' : ('ارسال پیامک آزمایشی ناموفق بود' . ($reason ? " ({$reason})" : '')),
         ];
+    }
+
+    /**
+     * پیامکِ هشدار به مدیر وقتی ارسالِ روزانه (کامل یا بخشی‌ازش) ناموفق
+     * بود — best-effort: اگه خودِ این پیامکِ هشدار هم ناموفق بشه، فقط لاگ
+     * می‌شه، هیچ استثنایی به بیرون درز نمی‌کنه تا جریانِ اصلیِ ارسال رو خراب نکنه
+     */
+    private static function notifyFailure(PDO $db, array $settings, string $message): void
+    {
+        $alertPhone = self::normalizePhone((string) ($settings['alert_phone'] ?? ''));
+        if (!$alertPhone) return;
+
+        try {
+            $sms = new SMS($db);
+            $sms->send(self::OWNER_USER_ID, $alertPhone, $message, 'hekmat_alert');
+        } catch (Throwable $e) {
+            error_log('HekmatBroadcast::notifyFailure failed | ' . $e->getMessage());
+        }
     }
 
     /** آخرین علتِ خطایِ ثبت‌شده در sms_logs — برایِ نشون‌دادنِ دلیلِ واقعیِ ناموفقی، نه فقط یه پیامِ کلی */
