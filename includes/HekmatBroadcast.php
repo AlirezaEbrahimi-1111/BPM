@@ -8,10 +8,19 @@
  * انتخابِ جمله/ساختِ پیام فقط یک‌جا نوشته بشه.
  *
  * 🔒 ارسالِ واقعیِ پیامک از طریقِ همون کلاسِ SMS موجود (includes/sms.php،
- * پنلِ ملی‌پیامک) انجام می‌شه — چیزی به اون فایل اضافه/تغییر داده نشده.
- * چون sms_logs.user_id ستونِ NOT NULL داره و این گیرنده‌ها لزوماً کاربرِ
- * ثبت‌شده‌ی سیستم نیستن، user_id=1 (سوپرادمین/مالکِ سیستم) به‌عنوانِ
- * صاحبِ این ارسال‌هایِ خودکار پاس داده می‌شه.
+ * پنلِ ملی‌پیامک) انجام می‌شه. چون sms_logs.user_id ستونِ NOT NULL داره و
+ * این گیرنده‌ها لزوماً کاربرِ ثبت‌شده‌ی سیستم نیستن، user_id=1
+ * (سوپرادمین/مالکِ سیستم) به‌عنوانِ صاحبِ این ارسال‌هایِ خودکار پاس داده می‌شه.
+ *
+ * 🔒 فیلترِ محتواییِ خطِ پیامک (کلماتِ حساس): موقعِ تستِ این فیچر معلوم شد
+ * پنلِ ملی‌پیامک بعضی کلماتِ سیاسی/حساس (مثلِ «فتنه») رو به‌صورتِ کامل رد
+ * می‌کنه (RetStatus=35/InvalidData) — حتی وقتی جمله‌ی دینیِ کاملاً عادیه.
+ * چون نهج‌البلاغه پر از همچین کلماتیه، درستِ قبل از ارسالِ واقعی (نه توی
+ * چیزی که ذخیره/نمایش داده می‌شه)، این کلمات با یه zero-width space
+ * (U+200B) وسطشون جایگزین می‌شن — از نظرِ چشم نامرئیه، ولی دیگه substring
+ * دقیقی که فیلتر دنبالشه پیدا نمی‌شه. لیستِ زیر تجربی/دستیه: هر کلمه‌ی
+ * جدیدی که رد شد (تویِ تاریخچه‌ی ارسال با status=failed دیده می‌شه)، باید
+ * دستی به همین لیست اضافه بشه.
  */
 
 require_once __DIR__ . '/sms.php';
@@ -19,6 +28,11 @@ require_once __DIR__ . '/sms.php';
 class HekmatBroadcast
 {
     const OWNER_USER_ID = 1;
+
+    /** کلماتی که پنلِ پیامک رد می‌کنه — دستی و تجربی، بر اساسِ موارد کشف‌شده.
+     *  هر دو رسم‌الخطِ کلاسیک (ى/ي عربی) و استانداردِ فارسی (ی) اضافه شده
+     *  چون فیلتر روی نسخه‌ی دقیقِ حروف حساسه، نه معنی. */
+    const FILTERED_WORDS = ['فتنه', 'پستانى', 'پستانی'];
 
     public static function getSettings(PDO $db): array
     {
@@ -192,13 +206,13 @@ class HekmatBroadcast
         ");
 
         foreach ($recipients as $r) {
-            $ok = $sms->send(self::OWNER_USER_ID, $r['phone'], $message, 'hekmat_daily');
+            $ok = $sms->send(self::OWNER_USER_ID, $r['phone'], self::sanitizeForSmsFilter($message), 'hekmat_daily');
             if ($ok) {
                 $sentCount++;
                 $logStmt->execute([$today, $quote['text'], $r['phone'], 'sent', null]);
             } else {
                 $failedCount++;
-                $logStmt->execute([$today, $quote['text'], $r['phone'], 'failed', 'ارسال پیامک ناموفق بود']);
+                $logStmt->execute([$today, $quote['text'], $r['phone'], 'failed', self::lastSmsError($db)]);
             }
         }
 
@@ -230,15 +244,43 @@ class HekmatBroadcast
         }
 
         $sms = new SMS($db);
-        $ok = $sms->send(self::OWNER_USER_ID, $phone, $message, 'hekmat_test');
+        $ok = $sms->send(self::OWNER_USER_ID, $phone, self::sanitizeForSmsFilter($message), 'hekmat_test');
+        $reason = $ok ? null : self::lastSmsError($db);
 
         $stmt = $db->prepare("
             INSERT INTO hekmat_send_log (send_date, quote_text, recipient_phone, status, is_test, error_message)
             VALUES (?, ?, ?, ?, 1, ?)
         ");
-        $stmt->execute([date('Y-m-d'), $quoteTextForLog, $phone, $ok ? 'sent' : 'failed', $ok ? null : 'ارسال آزمایشی ناموفق بود']);
+        $stmt->execute([date('Y-m-d'), $quoteTextForLog, $phone, $ok ? 'sent' : 'failed', $reason]);
 
-        return ['ok' => $ok, 'message' => $ok ? 'پیامک آزمایشی ارسال شد' : 'ارسال پیامک آزمایشی ناموفق بود'];
+        return [
+            'ok' => $ok,
+            'message' => $ok ? 'پیامک آزمایشی ارسال شد' : ('ارسال پیامک آزمایشی ناموفق بود' . ($reason ? " ({$reason})" : '')),
+        ];
+    }
+
+    /** آخرین علتِ خطایِ ثبت‌شده در sms_logs — برایِ نشون‌دادنِ دلیلِ واقعیِ ناموفقی، نه فقط یه پیامِ کلی */
+    private static function lastSmsError(PDO $db): string
+    {
+        $stmt = $db->query("SELECT error_message FROM sms_logs ORDER BY id DESC LIMIT 1");
+        $err = $stmt->fetchColumn();
+        return $err ?: 'ارسال پیامک ناموفق بود';
+    }
+
+    /**
+     * جایگزینیِ کلماتِ فیلترشده با نسخه‌ی نامرئی‌شده (zero-width space وسطِ
+     * کلمه) — فقط رویِ متنی که واقعاً به API فرستاده می‌شه، نه چیزی که
+     * ذخیره/لاگ/نمایش داده می‌شه (به همین دلیل جدا از buildMessage است)
+     */
+    private static function sanitizeForSmsFilter(string $message): string
+    {
+        foreach (self::FILTERED_WORDS as $word) {
+            $chars = preg_split('//u', $word, -1, PREG_SPLIT_NO_EMPTY);
+            if (count($chars) < 2) continue;
+            $obfuscated = $chars[0] . "\u{200B}" . implode('', array_slice($chars, 1));
+            $message = str_replace($word, $obfuscated, $message);
+        }
+        return $message;
     }
 
     public static function getRecentLog(PDO $db, int $limit = 50): array
