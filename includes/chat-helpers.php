@@ -45,8 +45,14 @@ function chatMemberRole(PDO $db, int $conversationId, int $userId): ?string
 /**
  * اختیاراتِ اختصاصیِ قابل‌واگذاری به هر مدیرِ گروه — سازنده می‌تونه برایِ
  * هر مدیر جداگانه انتخاب کنه کدوم‌ها رو داشته باشه (لزوماً همه‌شون نه).
+ *
+ * 🔒 'badge' یه کلیدِ استثناست — برخلافِ بقیه، به هیچ چکِ دسترسی‌ای
+ * (chatUserHasGroupPermission) وصل نیست و هیچ اختیارِ واقعی‌ای نمی‌ده؛
+ * فقط تعیین می‌کنه توی لیستِ اعضایِ گروه، بجِ «مدیر» کنارِ اسمِ این عضو
+ * نشون داده بشه یا نه (طبقِ درخواستِ صریح: می‌خوایم بشه یکی رو با هیچ
+ * اختیارِ خاصی «مدیر»‌نما کرد، صرفاً برایِ نمایش).
  */
-const CHAT_GROUP_ADMIN_PERMISSIONS = ['pin', 'add_member', 'remove_member', 'avatar'];
+const CHAT_GROUP_ADMIN_PERMISSIONS = ['pin', 'add_member', 'remove_member', 'avatar', 'badge'];
 
 /**
  * اختیاراتِ مؤثرِ یک مدیر — اگر ستونِ permissions برایِ اون ردیف NULL باشه
