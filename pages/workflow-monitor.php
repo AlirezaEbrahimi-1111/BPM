@@ -1143,8 +1143,12 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 </button>
             </div>
 
-            <button class="filter-pill active" data-filter="all" onclick="setStatusFilter('all', this)">
+            <button class="filter-pill" data-filter="all" onclick="setStatusFilter('all', this)">
                 <i class="bi bi-list-ul"></i>همه
+            </button>
+            <!-- 🆕 پیش‌فرض صفحه: روتین‌های جاری = در حال اجرا + دارای تأخیر (نه تکمیل/لغو) -->
+            <button class="filter-pill active" data-filter="active" onclick="setStatusFilter('active', this)">
+                <i class="bi bi-activity"></i>جاری
             </button>
             <button class="filter-pill" data-filter="in_progress" onclick="setStatusFilter('in_progress', this)">
                 <i class="bi bi-play"></i>در حال اجرا
@@ -1279,7 +1283,16 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script>
         let allWorkflows = [];
-        let currentFilter = 'all'; // فیلتر وضعیت
+        // 🆕 فیلتر پیش‌فرض: «جاری» (in_progress + delayed). فقط وقتی با لینکِ هدفمند
+        // (?template= از داشبورد، ?instance= از گزارش گلوگاه، ?search= از سرچ سراسری)
+        // آمده‌ایم، «همه» می‌ماند تا همان مورد مقصد حتی اگر تکمیل‌شده باشد گم نشود.
+        const DEFAULT_FILTER = 'active';
+        const _urlQ = new URLSearchParams(location.search);
+        const _hasUrlTarget = ['template', 'instance', 'search'].some(k => _urlQ.get(k));
+        let currentFilter = _hasUrlTarget ? 'all' : DEFAULT_FILTER; // فیلتر وضعیت
+        if (currentFilter !== DEFAULT_FILTER) {
+            document.querySelectorAll('.filter-pill').forEach(b => b.classList.toggle('active', b.dataset.filter === currentFilter));
+        }
         // نقش کاربر — فقط مدیریت/سرپرست دکمهٔ حذف ببینند
         let isManagerUser = false;
         try {
@@ -1369,6 +1382,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     // 🆕 اگر با ?search=... آمده‌ایم (از سرچ سراسری)، در کادر جستجو بگذار
                     applySearchFromUrl();
 
+                    updateResetBtn();
                     applyFilter(); // ← render با فیلتر فعلی، نه reset
 
                     // 🆕 اگر با ?instance=ID آمده‌ایم، مستقیم جزئیات همان نمونه را باز کن
@@ -1450,7 +1464,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             let list = allWorkflows;
 
             // فیلتر وضعیت — تنها مرجع لیست/منطق: TF.ROUTINE_INSTANCE_FILTERS در assets/js/task-filters.js
-            if (currentFilter && currentFilter !== 'all') {
+            if (currentFilter === 'active') {
+                // «جاری» = در حال اجرا + دارای تأخیر (کلید محلی همین صفحه، نه لیست مشترک TF)
+                list = list.filter(w => w.status === 'in_progress' || w.status === 'delayed');
+            } else if (currentFilter && currentFilter !== 'all') {
                 list = list.filter(w => TF.matchesStatusFilter(w, currentFilter, null, 'instance'));
             }
 
@@ -1541,7 +1558,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
 
         function resetAllFilters() {
-            currentFilter = 'all';
+            currentFilter = DEFAULT_FILTER;
             _hideCompletedFromUrl = false; // 🆕 محدودیت داشبورد هم برداشته شود
             currentRoutine = null;
             currentSection = null;
@@ -1549,7 +1566,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             searchQuery = ''; // 🆕 پاک کردن سرچ
 
             document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-            document.querySelector('.filter-pill[data-filter="all"]').classList.add('active');
+            document.querySelector('.filter-pill[data-filter="' + DEFAULT_FILTER + '"]').classList.add('active');
 
             document.getElementById('routineDropdownLabel').textContent = 'روتین';
             document.getElementById('routineDropdownBtn').classList.remove('active');
@@ -1566,7 +1583,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
 
         function updateResetBtn() {
-            const hasExtra = currentRoutine !== null || currentSection !== null || currentFilter !== 'all' || onlyMyRoutines || searchQuery.length > 0; // 🆕
+            const hasExtra = currentRoutine !== null || currentSection !== null || currentFilter !== DEFAULT_FILTER || onlyMyRoutines || searchQuery.length > 0; // 🆕
             document.getElementById('resetFiltersBtn').style.display = hasExtra ? 'inline-flex' : 'none';
         }
 
