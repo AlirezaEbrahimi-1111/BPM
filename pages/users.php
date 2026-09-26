@@ -559,6 +559,15 @@ if (!hasPermission($__me, 'manage_users')) {
         /* دکمه‌هایِ «تکمیلِ کار»/«لغوِ کار» تو مودالِ رسیدگی‌به‌کارهایِ کاربرِ
            غیرفعال‌شده — رنگِ سبز/قرمزِ صریح، تا وضوحِ دیداری داشته باشن و با
            «ارجاع به دیگری» (بنفش) قاطی نشن */
+        #pendingTasksModal .btn-outline-success,
+        #pendingTasksModal .btn-outline-danger,
+        #pendingTasksModal .btn-outline-primary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
         #pendingTasksModal .btn-outline-success {
             border-color: #16a34a;
             color: #16a34a;
@@ -586,6 +595,17 @@ if (!hasPermission($__me, 'manage_users')) {
         :root[data-theme="dark"] #pendingTasksModal .btn-outline-success,
         :root[data-theme="dark"] #pendingTasksModal .btn-outline-danger {
             background: transparent;
+        }
+
+        /* دکمه‌ی «ارجاع به دیگری» — همیشه بنفشِ اصلیِ سایت (نه فقط وقتی
+           checkه)، و چون اولین دکمه‌ی گروهه (سمتِ راست، تویِ صفحه‌ی RTL)،
+           رادیوسِ گوشه‌هایِ سمتِ راستش عمداً صفره */
+        #pendingTasksModal .btn-outline-primary {
+            background-color: #8e57fe !important;
+            border-color: #8e57fe !important;
+            color: white !important;
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
         }
     </style>
 </head>
@@ -644,7 +664,7 @@ if (!hasPermission($__me, 'manage_users')) {
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header-custom modal-header border-0">
-                    <h5 class="modal-title text-white"><i class="bi bi-person-plus ms-2"></i>کاربر جدید</h5>
+                    <h5 class="modal-title text-white" style="color: black;"><i class="bi bi-person-plus ms-2"></i>کاربر جدید</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -710,7 +730,7 @@ if (!hasPermission($__me, 'manage_users')) {
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header-custom modal-header border-0">
-                    <h5 class="modal-title text-white">
+                    <h5 class="modal-title text-white" style="color: black;">
                         <i class="bi bi-pencil-square ms-2"></i>
                         ویرایش: <span id="editModalName"></span>
                     </h5>
@@ -897,7 +917,7 @@ if (!hasPermission($__me, 'manage_users')) {
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header-custom modal-header border-0">
-                    <h5 class="modal-title text-white">
+                    <h5 class="modal-title text-white" style="color: black;">
                         <i class="bi bi-exclamation-triangle ms-2"></i>
                         کارهایِ بازِ <span id="ptName"></span>
                     </h5>
