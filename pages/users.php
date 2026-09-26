@@ -1726,6 +1726,42 @@ if (!hasPermission($__me, 'manage_users')) {
                 manager_lastname: mgr?.last_name || null,
             };
 
+            // 🆕 اگه از داخلِ همین مودال هم وضعیت از فعال به غیرفعال عوض
+            // بشه، باید دقیقاً مثلِ سوییچِ غیرفعال‌سازیِ لیست، اول کارهایِ
+            // بازِ کاربر چک بشه — وگرنه از این مسیر می‌شد یه کاربر رو با
+            // کارهایِ بازِ رهاشده غیرفعال کرد. اگه کارِ بازی بود، بقیه‌ی
+            // فیلدها (بدونِ is_active) همین‌جا ذخیره می‌شن و بعد همون
+            // مودالِ رسیدگی‌به‌کارهایِ toggleStatus باز می‌شه؛ خودِ آن مودال
+            // (submitPendingTaskResolutions) غیرفعال‌سازیِ واقعی رو انجام می‌ده.
+            const isDeactivating = originalUserData.is_active === '1' && payload.is_active === 0;
+            if (isDeactivating) {
+                try {
+                    const pr = await fetch('/api/admin/user-pending-tasks.php?user_id=' + uid, { headers: ahj() });
+                    const pd = await pr.json();
+                    if (pd.success && pd.tasks && pd.tasks.length > 0) {
+                        const payloadWithoutStatus = { ...payload };
+                        delete payloadWithoutStatus.is_active;
+                        const r = await fetch('/api/admin/update-user.php', {
+                            method: 'POST',
+                            headers: ahj(),
+                            body: JSON.stringify(payloadWithoutStatus)
+                        });
+                        const d = await r.json();
+                        if (!d.success) {
+                            showModalAlert(d.message || 'خطا در ذخیره');
+                            return;
+                        }
+                        editModalInst.hide();
+                        const targetUser = allUsers.find(x => x.id == uid);
+                        const targetName = targetUser ? `${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim() : 'این کاربر';
+                        openPendingTasksModal(parseInt(uid, 10), targetName, pd.tasks);
+                        return;
+                    }
+                } catch {
+                    // مثلِ toggleStatus، شکستِ این چک نباید جلویِ ذخیره‌ی معمولی رو بگیره
+                }
+            }
+
             try {
                 const r = await fetch('/api/admin/update-user.php', {
                     method: 'POST',
