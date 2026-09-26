@@ -555,6 +555,38 @@ if (!hasPermission($__me, 'manage_users')) {
             border-color: #8e57fe;
             box-shadow: 0 0 0 .2rem rgba(142, 87, 254, .25);
         }
+
+        /* دکمه‌هایِ «تکمیلِ کار»/«لغوِ کار» تو مودالِ رسیدگی‌به‌کارهایِ کاربرِ
+           غیرفعال‌شده — رنگِ سبز/قرمزِ صریح، تا وضوحِ دیداری داشته باشن و با
+           «ارجاع به دیگری» (بنفش) قاطی نشن */
+        #pendingTasksModal .btn-outline-success {
+            border-color: #16a34a;
+            color: #16a34a;
+            background: white;
+        }
+
+        #pendingTasksModal .btn-check:checked + .btn-outline-success {
+            background-color: #16a34a;
+            border-color: #16a34a;
+            color: white;
+        }
+
+        #pendingTasksModal .btn-outline-danger {
+            border-color: #dc2626;
+            color: #dc2626;
+            background: white;
+        }
+
+        #pendingTasksModal .btn-check:checked + .btn-outline-danger {
+            background-color: #dc2626;
+            border-color: #dc2626;
+            color: white;
+        }
+
+        :root[data-theme="dark"] #pendingTasksModal .btn-outline-success,
+        :root[data-theme="dark"] #pendingTasksModal .btn-outline-danger {
+            background: transparent;
+        }
     </style>
 </head>
 
