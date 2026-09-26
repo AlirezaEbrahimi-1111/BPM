@@ -55,10 +55,18 @@ function chatMemberRole(PDO $db, int $conversationId, int $userId): ?string
 const CHAT_GROUP_ADMIN_PERMISSIONS = ['pin', 'add_member', 'remove_member', 'avatar', 'badge'];
 
 /**
- * اختیاراتِ مؤثرِ یک مدیر — اگر ستونِ permissions برایِ اون ردیف NULL باشه
- * (یعنی سازنده هنوز سفارشی‌اش نکرده)، پیش‌فرض همه‌ی اختیاراته (رفتارِ
- * قدیمی، برایِ سازگاری با مدیرهایِ ازقبل‌موجود). فقط وقتی سازنده صراحتاً
- * یک آرایه ثبت کرده، همون آرایه مرجعه.
+ * 🔒 پیش‌فرضِ واقعیِ اختیارات وقتی permissions=NULL باشه (یعنی سازنده هنوز
+ * سفارشی‌اش نکرده) — عمداً 'badge' رو نداره. چون این فیچرِ تازه‌ایه، هیچ
+ * مدیرِ ازقبل‌موجودی نباید خودکار بجِ «مدیر» بگیره؛ سازنده باید صراحتاً
+ * برایِ هرکی خواست فعالش کنه (opt-in واقعی، نه یه پیش‌فرضِ روشن).
+ * چهارتایِ دیگه (پین/افزودن/حذف/عکس) طبقِ رفتارِ قدیمی، پیش‌فرض همه‌شون فعاله.
+ */
+const CHAT_GROUP_ADMIN_DEFAULT_PERMISSIONS = ['pin', 'add_member', 'remove_member', 'avatar'];
+
+/**
+ * اختیاراتِ مؤثرِ یک مدیر — اگر ستونِ permissions برایِ اون ردیف NULL باشه،
+ * پیش‌فرضِ بالا مرجعه. فقط وقتی سازنده صراحتاً یک آرایه ثبت کرده، همون
+ * آرایه مرجعه (که می‌تونه 'badge' رو هم صراحتاً داشته باشه).
  *
  * @return string[] زیرمجموعه‌ای از CHAT_GROUP_ADMIN_PERMISSIONS
  */
@@ -71,11 +79,11 @@ function chatGroupAdminEffectivePermissions(PDO $db, int $conversationId, int $u
         return [];
     }
     if ($row['permissions'] === null) {
-        return CHAT_GROUP_ADMIN_PERMISSIONS;
+        return CHAT_GROUP_ADMIN_DEFAULT_PERMISSIONS;
     }
     $decoded = json_decode($row['permissions'], true);
     if (!is_array($decoded)) {
-        return CHAT_GROUP_ADMIN_PERMISSIONS;
+        return CHAT_GROUP_ADMIN_DEFAULT_PERMISSIONS;
     }
     return array_values(array_intersect($decoded, CHAT_GROUP_ADMIN_PERMISSIONS));
 }

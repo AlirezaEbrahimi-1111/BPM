@@ -66,13 +66,14 @@ try {
     $ownerId = (int) $conv['created_by'];
 
     // 🔒 اختیاراتِ مؤثر از همین ردیفی که همین‌الان خوندیم حل می‌شه (نه یک
-    // کوئریِ جداگانه به‌ازایِ هر عضو) — permissions=NULL یعنی پیش‌فرض همه،
-    // وگرنه دقیقاً همون آرایه‌ی JSONِ ثبت‌شده
+    // کوئریِ جداگانه به‌ازایِ هر عضو) — permissions=NULL یعنی پیش‌فرضِ
+    // CHAT_GROUP_ADMIN_DEFAULT_PERMISSIONS (بدونِ 'badge' — نگاهِ توضیحِ
+    // کاملش در chat-helpers.php)، وگرنه دقیقاً همون آرایه‌ی JSONِ ثبت‌شده
     $resolvePermissions = function (array $r) {
         if ($r['role'] !== 'admin') return [];
-        if ($r['permissions'] === null) return CHAT_GROUP_ADMIN_PERMISSIONS;
+        if ($r['permissions'] === null) return CHAT_GROUP_ADMIN_DEFAULT_PERMISSIONS;
         $decoded = json_decode($r['permissions'], true);
-        return is_array($decoded) ? array_values(array_intersect($decoded, CHAT_GROUP_ADMIN_PERMISSIONS)) : CHAT_GROUP_ADMIN_PERMISSIONS;
+        return is_array($decoded) ? array_values(array_intersect($decoded, CHAT_GROUP_ADMIN_PERMISSIONS)) : CHAT_GROUP_ADMIN_DEFAULT_PERMISSIONS;
     };
 
     $members = array_map(function ($r) use ($ownerId, $resolvePermissions) {
