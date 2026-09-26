@@ -54,7 +54,7 @@ try {
     }
 
     $stmt = $db->prepare("
-        SELECT u.id, u.first_name, u.last_name, u.avatar_path, cp.joined_at, cp.role, cp.permissions
+        SELECT u.id, u.first_name, u.last_name, u.avatar_path, cp.joined_at, cp.role, cp.permissions, cp.admin_title
         FROM chat_participants cp
         JOIN users u ON u.id = cp.user_id AND u.is_active = 1 AND u.is_deleted = 0
         WHERE cp.conversation_id = ?
@@ -82,6 +82,7 @@ try {
             'is_owner'    => (int) $r['id'] === $ownerId,
             'is_admin'    => $r['role'] === 'admin',
             'permissions' => (int) $r['id'] === $ownerId ? CHAT_GROUP_ADMIN_PERMISSIONS : $resolvePermissions($r),
+            'admin_title' => $r['role'] === 'admin' ? ($r['admin_title'] ?: null) : null,
             'avatar_url'  => $r['avatar_path'] ?: null,
         ];
     }, $rows);
