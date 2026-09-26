@@ -4717,6 +4717,16 @@ ${task.overdue_periods > 0 ? `
                         showToast(data.message, 'success');
                         bootstrap.Modal.getInstance(document.getElementById('delegateModal')).hide();
                         goBackSmart();
+                    } else if (data.code === 'overdue_periodic') {
+                        // 🆕 موعد کار گذشته — همان رفتار ارجاع معمولی (submitDelegate):
+                        // پیام + دکمهٔ مستقیم «تمدید موعد». کار هنوز «در انتظار تأیید» است.
+                        bootstrap.Modal.getInstance(document.getElementById('delegateModal'))?.hide();
+                        showToast(data.message, 'warning', {
+                            buttons: [
+                                { label: 'تمدید موعد', style: 'primary', onClick: () => showRequestDeadlineModal() },
+                                { label: 'باشه', style: 'ghost' }
+                            ]
+                        });
                     } else {
                         showToast(data.message || 'خطا در تأیید و ارجاع', 'warning');
                     }

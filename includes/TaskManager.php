@@ -656,6 +656,54 @@ class TaskManager
         return $this->finalizeSelfCompletion($task, $task_id, $user_id, $notes);
     }
 
+    /**
+     * موعد مؤثر کار مقطعی (YYYY-MM-DD) = بزرگ‌ترین سه ستون تاریخ — دقیقا همان
+     * منطق enrichTaskDates() در includes/task-dates-helper.php. اگر موعدی
+     * نبود null. («تمدید موعد» فقط deadline را جلو می‌برد و due_date را
+     * دست‌نخورده می‌گذارد، پس فقط due_date کافی نیست.)
+     */
+    public function effectiveDueDate(array $task): ?string
+    {
+        $effective_due = null;
+        foreach (['due_date', 'deadline', 'original_deadline'] as $f) {
+            if (!empty($task[$f])) {
+                $d = substr($task[$f], 0, 10);
+                if ($effective_due === null || $d > $effective_due) {
+                    $effective_due = $d;
+                }
+            }
+        }
+        return $effective_due;
+    }
+
+    /**
+     * قانون «کار عقب‌افتاده قابل ارجاع نیست» — تنها منبع این قانون؛ هم
+     * delegateTask() (ارجاع معمولی) و هم approve-and-delegate.php (تأیید و
+     * ارجاع) از همین‌جا می‌پرسند. اگر مسدود باشد آرایهٔ خطا، وگرنه null.
+     *
+     * چرا مسدود؟ تریگر دیتابیس هر تلاش برای ثبت due_date به تاریخ گذشته را
+     * رد می‌کند، پس ارجاع چنین کاری بی‌سروصدا با همان موعد گذشته می‌ماند و
+     * هیچ‌وقت روی زمان درست نمی‌نشیند؛ باید اول موعد تمدید شود
+     * (request-deadline.php). فقط مقطعی، چون دوره‌ای/روتین از موتور
+     * عقب‌افتادگی متفاوتی استفاده می‌کنند، نه این سه ستون.
+     *
+     * استثنا: ارجاع به خود تعریف‌کنندهٔ کار مسدود نمی‌شود — او خودش می‌تواند
+     * بلافاصله موعد را تمدید کند، پس قفل فایده‌ای ندارد.
+     */
+    public function overdueDelegationBlock(array $task, $to_user_id): ?array
+    {
+        $effective_due = $this->effectiveDueDate($task);
+        if (
+            ($task['task_type'] ?? '') === 'periodic'
+            && !empty($effective_due)
+            && $effective_due < date('Y-m-d')
+            && (int) $to_user_id !== (int) $task['creator_id']
+        ) {
+            return ['success' => false, 'code' => 'overdue_periodic', 'message' => 'موعد این کار گذشته است — امکان ارجاع نیست. ابتدا موعد کار را تمدید کنید'];
+        }
+        return null;
+    }
+
     // ارجاع کار - قانون 2
     public function delegateTask($task_id, $to_user_id, $from_user_id, $notes = '', $due_date = null)
     {
@@ -681,38 +729,17 @@ class TaskManager
             // این‌جا هنوز «بدون موعد» شمرده می‌شد و ارجاعش را می‌بست.
             // موعد مؤثر = بزرگ‌ترین سه ستون تاریخ — دقیقا همان منطق
             // enrichTaskDates() در includes/task-dates-helper.php.
-            $effective_due = null;
-            foreach (['due_date', 'deadline', 'original_deadline'] as $f) {
-                if (!empty($task[$f])) {
-                    $d = substr($task[$f], 0, 10);
-                    if ($effective_due === null || $d > $effective_due) {
-                        $effective_due = $d;
-                    }
-                }
-            }
+            $effective_due = $this->effectiveDueDate($task);
 
             if ($task['task_type'] === 'periodic' && empty($effective_due) && empty($due_date)) {
                 return ['success' => false, 'message' => 'این کار موعد ندارد — برای ارجاع، ابتدا یک موعد تعیین کنید'];
             }
 
-            // 🆕 کار مقطعی عقب‌افتاده قابل ارجاع نیست — چون تریگر دیتابیس
-            // (چند خط پایین‌تر) هر تلاش برای ثبت due_date به تاریخ گذشته را
-            // رد می‌کند، ارجاع چنین کاری بی‌سروصدا با همان موعد گذشته می‌ماند
-            // و هیچ‌وقت واقعا روی زمان درست نمی‌شینه. باید اول موعد تمدید بشه
-            // (فرآیند جداگانه‌ی request-deadline.php). فقط مقطعی، چون
-            // دوره‌ای/روتین از موتور عقب‌افتادگی متفاوتی استفاده می‌کنن
-            // (overdue_periods / مرحله‌ی active)، نه این سه ستون.
-            //
-            // 🆕 استثنا: ارجاع به خود تعریف‌کننده‌ی کار مسدود نمی‌شه — چون
-            // تعریف‌کننده خودش می‌تونه بلافاصله موعد رو تمدید کنه، پس این
-            // قفل این‌جا فایده‌ای نداره و فقط مانع یک گردش کار طبیعی می‌شه.
-            if (
-                $task['task_type'] === 'periodic'
-                && !empty($effective_due)
-                && $effective_due < date('Y-m-d')
-                && (int) $to_user_id !== (int) $task['creator_id']
-            ) {
-                return ['success' => false, 'code' => 'overdue_periodic', 'message' => 'موعد این کار گذشته است — امکان ارجاع نیست. ابتدا موعد کار را تمدید کنید'];
+            // 🆕 کار مقطعی عقب‌افتاده قابل ارجاع نیست (قانون در overdueDelegationBlock —
+            // مشترک با approve-and-delegate.php تا دو مسیر ارجاع هم‌رفتار بمانند)
+            $block = $this->overdueDelegationBlock($task, $to_user_id);
+            if ($block !== null) {
+                return $block;
             }
 
             // اگر ارجاع‌دهنده موعد جدیدی نداده ولی کار از قبل موعد مؤثر دارد،

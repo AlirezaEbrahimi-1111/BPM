@@ -92,6 +92,17 @@ try {
         exit;
     }
 
+    // 🔒 کار مقطعی عقب‌افتاده قابل ارجاع نیست — همان قانون ارجاع معمولی
+    // (TaskManager::overdueDelegationBlock). قبلا این مسیر مستقیم UPDATE می‌زد و
+    // از این قانون رد می‌شد. تأیید ساده (بدون ارجاع) اینجا تأثیری نمی‌گیرد.
+    $block = $taskManager->overdueDelegationBlock($task, $input['to_user_id']);
+    if ($block !== null) {
+        error_log("approve-and-delegate denied (overdue task) | user_id={$user_id} | task_id={$input['task_id']} | to_user_id={$input['to_user_id']}");
+        http_response_code(400);
+        echo json_encode($block);
+        exit;
+    }
+
     // نام کاربر جاری
     $stmt = $db->prepare("SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
