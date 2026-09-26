@@ -74,36 +74,41 @@ try {
     // مقدار = ['type'=>..., 'name'=>..., 'periodic'=>0, 'continuous'=>0, 'workflow'=>0]
     $acc = [];
 
-    // نگاشت شناسهٔ کاربر → نام، و نام واحد → برچسب
-    // 🔒 is_active=1 دیگه شرطِ WHERE نیست — قبلاً کاری که assignee_id داشت
-    // ولی اون کاربر غیرفعال شده بود (نه حذف، فقط غیرفعال)، این‌جا اصلاً پیدا
-    // نمی‌شد و بی‌سروصدا زیرِ «نامشخص» جمع می‌شد؛ کاربر واقعاً حذف‌نشده،
-    // پس نامش رو نشون می‌دیم با برچسبِ «(غیرفعال)» تا مدیر بدونه این کارها
-    // مالِ کی بوده و باید به کی ارجاع بده
-    $userNames = [];
-    $userActive = [];
+    // نگاشت شناسهٔ کاربر → نام — فقط کاربرانِ فعال و حذف‌نشده
+    // 🔒 طبقِ درخواستِ صریح: کارهایِ یک کاربرِ غیرفعال/حذف‌شده نه نشون داده
+    // بشه نه توی مجموعِ تأخیر حساب بشه — قبلاً (کامنتِ قدیمی که این‌جا بود)
+    // عمداً برعکسِ این بود (نشون‌دادنِ نامش با برچسبِ «(غیرفعال)»)، ولی طبقِ
+    // تصمیمِ تازه، اون رفتار برعکس شده: پایین‌تر، $bucket() برایِ
+    // assignee_idِ متعلق به کاربرِ غیرفعال/حذف‌شده، null برمی‌گردونه و
+    // خودِ کار کلاً نادیده گرفته می‌شه (نه حتی زیرِ واحدش جمع بشه)
+    $activeUserNames = [];
     $stmt = $db->prepare("
-        SELECT id, first_name, last_name, is_active
+        SELECT id, first_name, last_name
         FROM users
-        WHERE organization_id = ? AND is_deleted = 0
+        WHERE organization_id = ? AND is_deleted = 0 AND is_active = 1
     ");
     $stmt->execute([$org_id]);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $u) {
-        $uid = (int) $u['id'];
-        $userNames[$uid] = trim($u['first_name'] . ' ' . $u['last_name']);
-        $userActive[$uid] = (bool) $u['is_active'];
+        $activeUserNames[(int) $u['id']] = trim($u['first_name'] . ' ' . $u['last_name']);
     }
 
-    /** کلید کاربر یا واحد را برمی‌گرداند و در صورت نبود، می‌سازد */
-    $bucket = function ($assignee_id, $section) use (&$acc, $userNames, $userActive) {
-        if (!empty($assignee_id) && isset($userNames[(int)$assignee_id])) {
+    /**
+     * کلید کاربر یا واحد را برمی‌گرداند؛ اگر assignee_id متعلق به کاربرِ
+     * غیرفعال/حذف‌شده باشه، null برمی‌گردونه — یعنی صدازننده باید کلِ اون
+     * کار رو نادیده بگیره (نه حتی زیرِ واحد جمعش بزنه)
+     */
+    $bucket = function ($assignee_id, $section) use (&$acc, $activeUserNames) {
+        if (!empty($assignee_id)) {
             $aid = (int) $assignee_id;
+            if (!isset($activeUserNames[$aid])) {
+                return null;
+            }
             $key = 'user:' . $aid;
             if (!isset($acc[$key])) {
                 $acc[$key] = [
                     'kind'       => 'user',
                     'ref_id'     => $aid,
-                    'name'       => $userNames[$aid] . ($userActive[$aid] ? '' : ' (غیرفعال)'),
+                    'name'       => $activeUserNames[$aid],
                     'periodic'    => 0,
                     'continuous'  => 0,
                     'workflow'    => 0,
@@ -169,6 +174,7 @@ try {
     $stmt->execute([$org_id, $today]);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
         $k = $bucket($t['assignee_id'], $t['activity_section']);
+        if ($k === null) continue;
         $acc[$k]['periodic']++;
         $acc[$k]['delay_days'] += calcPeriodicDelayWorkingDays(substr($t['effective_due'], 0, 10), $today, $holidays);
     }
@@ -188,6 +194,7 @@ try {
         $state = pe_state($db, $t, $holidays, $today);
         if ($state['overdue_periods'] > 0) {
             $k = $bucket($t['assignee_id'], $t['activity_section']);
+            if ($k === null) continue;
             $acc[$k]['continuous']++;
             $acc[$k]['delay_days'] += $state['working_days_delayed'];
         }
@@ -231,6 +238,7 @@ try {
     $stmt->execute([$org_id, $now]);
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
         $k = $bucket($t['assignee_id'], $t['activity_section']);
+        if ($k === null) continue;
         $acc[$k]['workflow']++;
         // 🔒 روتین/فرآیندی ساعتی حساب می‌شه، نه روزِ کاری — طبقِ قاعده‌یِ
         // «کارهایِ روتین همیشه ساعتی» — بدونِ کوتاه‌کردنِ deadline به روز
