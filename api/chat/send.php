@@ -73,8 +73,14 @@ try {
 
     $db->beginTransaction();
 
+    // 🔒 برایِ پیامِ فقط‌پیوست (بدونِ متن)، عمداً '' ذخیره می‌شه نه NULL —
+    // چون لیستِ گفتگوها (api/chat/conversations.php → chat.php خطِ پیش‌نمایش)
+    // دقیقاً با last_message === '' تشخیص می‌ده که پیام «فقط پیوست»ه و
+    // «📎 پیوست» نشون بده؛ اگه NULL ذخیره می‌شد، اون چک هیچ‌وقت true
+    // نمی‌شد و به‌جاش غلط «هنوز پیامی نیست» نشون داده می‌شد — دقیقاً همون
+    // گزارشِ کاربر برایِ گفتگوهایی که آخرین پیامشون فقط عکس/فایل بود
     $stmt = $db->prepare("INSERT INTO chat_messages (conversation_id, user_id, message, reply_to_message_id) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$conversationId, $user_id, $message !== '' ? $message : null, $replyToId]);
+    $stmt->execute([$conversationId, $user_id, $message, $replyToId]);
     $messageId = (int) $db->lastInsertId();
 
     // ─── آپلود فایل‌ها ───
