@@ -40,24 +40,37 @@ class Auth
     public function login($username, $password, $remember_me = false)
     {
         try {
-            // جستجوی کاربر با username یا phone
+            // 🔒 جستجوی کاربر بدونِ فیلترِ is_active — برخلافِ قبل، که چون این
+            // شرط تو خودِ SELECT بود، یک حسابِ غیرفعال با رمزِ درست هم دقیقاً
+            // همون پیامِ کلیِ «نام کاربری یا رمز اشتباه» رو می‌گرفت (هیچ‌جوره
+            // قابلِ تشخیص از رمزِ واقعاً غلط نبود). الان اول احرازِ هویتِ واقعی
+            // (رمز درسته یا نه) انجام می‌شه، بعد وضعیتِ is_active چک می‌شه —
+            // فقط وقتی رمز واقعاً درسته، پیامِ اختصاصیِ «حساب غیرفعال شده»
+            // نشون داده می‌شه؛ برایِ رمزِ غلط یا کاربرِ ناموجود، همچنان همون
+            // پیامِ کلی (تا وجودِ حساب لو نره)
             $stmt = $this->db->prepare("
-                SELECT * FROM users 
-                WHERE (username = ? OR phone = ?) 
-                AND is_active = 1
+                SELECT * FROM users
+                WHERE (username = ? OR phone = ?)
             ");
             $stmt->execute([$username, $username]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             $is_valid = false;
-            if (substr($user['password'], 0, 3) === '$2y') {
+            if ($user && substr($user['password'], 0, 3) === '$2y') {
                 $is_valid = password_verify($password, $user['password']);
             }
-            
-            if (!$is_valid || !$user) {
+
+            if (!$user || !$is_valid) {
                 return [
                     'success' => false,
                     'message' => 'نام کاربری یا رمز عبور اشتباه است'
+                ];
+            }
+
+            if ((int) $user['is_active'] !== 1) {
+                return [
+                    'success' => false,
+                    'message' => 'این حساب غیرفعال شده است'
                 ];
             }
 
