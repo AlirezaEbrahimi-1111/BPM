@@ -12,6 +12,7 @@ date_default_timezone_set('Asia/Tehran');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php'; // isSuperAdmin()
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php'; // jalaliPeriodKey()
@@ -66,12 +67,45 @@ if (!isset($tables[$request_type])) {
 $table = $tables[$request_type];
 
 try {
-    // دریافت اطلاعات درخواست
-    $stmt = $db->prepare("SELECT * FROM {$table} WHERE id = ? AND user_id = ?");
-    $stmt->execute([$request_id, $user_id]);
+    // دریافت اطلاعات درخواست (فقط با شناسه؛ مالکیت پایین‌تر بررسی می‌شود)
+    $stmt = $db->prepare("SELECT * FROM {$table} WHERE id = ?");
+    $stmt->execute([$request_id]);
     $request = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$request) {
+        echo json_encode(['success' => false, 'message' => 'درخواست یافت نشد']);
+        exit;
+    }
+
+    $owner_id = (int) $request['user_id'];
+    $is_own = ($owner_id === (int) $user_id);
+
+    // 🆕 مسئول (supervisor / سوپرادمین) می‌تواند درخواست مأموریت، فراموشی و مشکل فنی
+    // «ماه جاری» را حذف کند — حتی بعد از تأیید و حتی برای دیگر کاربران همان سازمان.
+    // ماه جاری = ماه شمسی تاریخ شروع درخواست. سایر انواع (مرخصی/پاس) مشمول نیست.
+    $sup_delete = false;
+    $me_stmt = $db->prepare("SELECT id, role, organization_id, first_name, last_name FROM users WHERE id = ?");
+    $me_stmt->execute([$user_id]);
+    $me = $me_stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    $is_supervisor_user = !empty($me) && (isSuperAdmin($me) || ($me['role'] ?? '') === 'supervisor');
+
+    if ($is_supervisor_user && in_array($request_type, ['mission', 'forget', 'technical'], true)) {
+        $own_org_stmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
+        $own_org_stmt->execute([$owner_id]);
+        $same_org = ((int) $own_org_stmt->fetchColumn() === (int) ($me['organization_id'] ?? 0));
+        if ($same_org) {
+            $req_date = substr($request['start_date'] ?? '', 0, 10);
+            if ($req_date !== '' && jalaliPeriodKey($req_date) === jalaliPeriodKey(date('Y-m-d'))) {
+                $sup_delete = true;
+            } elseif (!$is_own) {
+                echo json_encode(['success' => false, 'message' => 'فقط درخواست‌های ماه جاری قابل حذف هستند؛ این درخواست برای ماه دیگری ثبت شده است']);
+                exit;
+            }
+        }
+    }
+
+    // غیرمالک بدون اختیار مسئول: وجود درخواست را فاش نکن
+    if (!$is_own && !$sup_delete) {
         echo json_encode(['success' => false, 'message' => 'درخواست یافت نشد']);
         exit;
     }
@@ -81,7 +115,9 @@ try {
     $burn_quota = false; // مرخصی تأییدشدهٔ ماه جاری که حذف می‌شود → سهمیه برنمی‌گردد و «می‌سوزد»
     $error_message = '';
 
-    if ($request_type === 'pass') {
+    if ($sup_delete) {
+        $can_delete = true; // حذف توسط مسئول: بدون شرط وضعیت تأیید
+    } elseif ($request_type === 'pass') {
         // پاس: تا pass_edit_hours «ساعت کاری» بعد از ارسال — جمعه/تعطیلات کاملا
         // نادیده گرفته می‌شوند
         $pass_edit_hours = (int) getSetting($db, 'pass_edit_hours', 24);
@@ -150,13 +186,34 @@ try {
                 INSERT INTO leave_balance_transactions (user_id, type, amount, related_request_id, related_request_type, note)
                 VALUES (?, 'manual_adjustment', ?, ?, ?, 'بازگشت سهمیه به‌دلیل حذف درخواست')
             ");
-            $stmt->execute([$user_id, -$ded_amount, $request_id, $request_type]);
+            $stmt->execute([$owner_id, -$ded_amount, $request_id, $request_type]);
         }
     }
 
     // حذف درخواست
     $stmt = $db->prepare("DELETE FROM {$table} WHERE id = ? AND user_id = ?");
-    $stmt->execute([$request_id, $user_id]);
+    $stmt->execute([$request_id, $owner_id]);
+
+    // 🆕 حذف درخواستِ دیگری توسط مسئول: ردپا در لاگ + اطلاع به صاحب درخواست
+    if ($sup_delete && !$is_own) {
+        $type_labels = ['mission' => 'مأموریت', 'forget' => 'فراموشی', 'technical' => 'مشکل فنی'];
+        $by_name = trim(($me['first_name'] ?? '') . ' ' . ($me['last_name'] ?? ''));
+        error_log("Attendance request deleted by supervisor | supervisor_id={$user_id} | owner_id={$owner_id} | request_id={$request_id} | request_type={$request_type} | request_code=" . ($request['request_code'] ?? '') . " | status=" . ($request['status'] ?? ''));
+        try {
+            require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
+            $notif = new Notification($db);
+            $notif->create([
+                'to_user_id' => $owner_id,
+                'title' => 'درخواست شما حذف شد',
+                'message' => "درخواست {$type_labels[$request_type]} شما (کد " . ($request['request_code'] ?? '—') . ") توسط {$by_name} حذف شد.",
+                'type' => 'warning',
+                'link' => '/attendance_system/pages/requests.php',
+                'skip_self_check' => true
+            ]);
+        } catch (Exception $notifError) {
+            error_log("Notification error in attendance delete (supervisor): " . $notifError->getMessage());
+        }
+    }
 
     $ok_message = $burn_quota
         ? 'درخواست مرخصی حذف شد. توجه: سهمیهٔ این مرخصی بازنگشت و سوخت.'

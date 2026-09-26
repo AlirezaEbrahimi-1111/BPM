@@ -851,6 +851,7 @@ usort($all_requests, function ($a, $b) {
 $requests_for_grid = [];
 $__type_labels = ['mission' => 'مأموریت', 'leave' => 'مرخصی', 'pass' => 'پاس', 'forget' => 'فراموشی', 'technical' => 'مشکل فنی'];
 $__my_org_id = (int) ($user['organization_id'] ?? 0);
+$__is_supervisor_deleter = isSuperAdmin($user) || (($user['role'] ?? '') === 'supervisor'); // 🆕 حذف ماه جاری توسط مسئول
 $__holidays = getHolidaySet($db, $__my_org_id);
 $__recurringWeekdays = getRecurringHolidayWeekdays($db, $__my_org_id);
 foreach ($all_requests as $req) {
@@ -905,6 +906,21 @@ foreach ($all_requests as $req) {
                         $delete_burns_quota = true;
                     }
                 }
+            }
+        }
+    }
+
+    // 🆕 مسئول (supervisor/سوپرادمین): حذف مأموریت/فراموشی/مشکل فنی «ماه جاری»
+    // (همه‌ی کاربران سازمان، با هر وضعیتی — حتی تأییدشده). هم‌راستا با
+    // api/requests/delete.php؛ ماه شمسی از تاریخ شروع درخواست.
+    $delete_by_supervisor = false;
+    if (($__is_supervisor_deleter ?? false) && in_array($type, ['mission', 'forget', 'technical'], true)) {
+        $__sd = substr($req['request_date'] ?? '', 0, 10);
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $__sd, $__sm)) {
+            list($__sjy, $__sjm) = gregorianToJalaliCalc((int) $__sm[1], (int) $__sm[2], (int) $__sm[3]);
+            if ($__sjy == $j_y && $__sjm == $j_m) {
+                if (!$can_delete) $delete_by_supervisor = true; // فقط وقتی قانون عادی اجازه نمی‌داد
+                $can_delete = true;
             }
         }
     }
@@ -966,6 +982,7 @@ foreach ($all_requests as $req) {
         'can_edit'       => (bool) $can_edit,
         'can_delete'     => (bool) $can_delete,
         'delete_burns_quota' => (bool) $delete_burns_quota,
+        'delete_by_supervisor' => (bool) $delete_by_supervisor,
         '_debug'         => "type={$type} status={$status} sub=" . ($req['substitute_approval'] ?? 'NULL') . " mgr=" . ($req['manager_approval'] ?? 'NULL') . " sup=" . ($req['supervisor_approval'] ?? 'NULL') . " can_del=" . ($can_delete ? '1' : '0'),
     ];
 }
@@ -3558,7 +3575,7 @@ function formatDateJalali($gregorianDate)
             function actionsCell(d) {
                 let h = '';
                 if (d.can_edit) h += `<button class="action-icon-btn edit-btn" onclick="editRequest(${d.id}, '${d.type}')" title="ویرایش"><i class="bi bi-pencil"></i></button>`;
-                if (d.can_delete) h += `<button class="action-icon-btn delete-btn" onclick="deleteRequest(${d.id}, '${d.type}', ${d.delete_burns_quota ? 'true' : 'false'})" title="حذف"><i class="bi bi-trash"></i></button>`;
+                if (d.can_delete) h += `<button class="action-icon-btn delete-btn" onclick="deleteRequest(${d.id}, '${d.type}', ${d.delete_burns_quota ? 'true' : 'false'}, ${d.delete_by_supervisor ? 'true' : 'false'})" title="حذف"><i class="bi bi-trash"></i></button>`;
                 if (!d.can_edit && !d.can_delete) return '<span class="no-action">—</span>';
                 return `<div style="display:flex;gap:6px;justify-content:center;align-items:center;height:100%;">${h}</div>`;
             }
@@ -5635,10 +5652,12 @@ function formatDateJalali($gregorianDate)
         }
 
         // حذف درخواست
-        async function deleteRequest(id, type, burnsQuota) {
+        async function deleteRequest(id, type, burnsQuota, bySupervisor) {
             const confirmMsg = burnsQuota ?
                 'این درخواست تأیید نهایی شده است و در صورت حذف، سهمیهٔ مرخصی آن باطل می‌شود. آیا مطمئن هستید؟' :
-                'آیا از حذف این درخواست مطمئن هستید؟';
+                (bySupervisor ?
+                    'شما به‌عنوان مسئول این درخواست ماه جاری را حذف می‌کنید. حذف قطعی است (حتی اگر تأیید شده باشد) و صاحب درخواست مطلع می‌شود. آیا مطمئن هستید؟' :
+                    'آیا از حذف این درخواست مطمئن هستید؟');
             showToast(confirmMsg, 'warning', {
                 duration: 1500000,
                 buttons: [{
