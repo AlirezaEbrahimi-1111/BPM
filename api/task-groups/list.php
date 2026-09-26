@@ -15,7 +15,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // گروه‌های شخصیِ همین کاربر + گروه‌های سازمانیِ همین سازمان
+    // گروه‌های شخصی همین کاربر + گروه‌های سازمانی همین سازمان
     $stmt = $db->prepare("
         SELECT id, name, color, icon, scope, created_by
         FROM task_groups

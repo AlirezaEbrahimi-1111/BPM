@@ -14,9 +14,9 @@ type absentEntry struct {
 	Type   string `json:"type"`
 }
 
-// AbsentToday — پورتِ دقیقِ api/attendance/absent-today.php. فقط کاربرانی
-// که واقعاً شیفت (shift_1_start) و حقوقِ ماهانه (monthly_salary) برایشان
-// ثبت شده وارد محاسبه می‌شوند — نه صرفاً پیش‌فرضِ فرمِ ویرایشِ کاربر.
+// AbsentToday — پورت دقیق api/attendance/absent-today.php. فقط کاربرانی
+// که واقعا شیفت (shift_1_start) و حقوق ماهانه (monthly_salary) برایشان
+// ثبت شده وارد محاسبه می‌شوند — نه صرفا پیش‌فرض فرم ویرایش کاربر.
 //
 //	GET /go/api/attendance/absent-today
 //	→ {"success":true,"holiday":bool,"today":"YYYY-MM-DD","absent":[...],"count":N}

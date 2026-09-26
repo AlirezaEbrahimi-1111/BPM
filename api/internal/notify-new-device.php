@@ -1,21 +1,21 @@
 <?php
 /**
- * API داخلی: اطلاع به مدیران هنگام ثبتِ یک دستگاهِ کاملاً جدید (در انتظار تأیید)
+ * API داخلی: اطلاع به مدیران هنگام ثبت یک دستگاه کاملا جدید (در انتظار تأیید)
  * POST /api/internal/notify-new-device.php
  *   header: Authorization: Bearer <go_internal_secret>
  *   body:   { organization_id, user_id, ip }
  *
  * چرا این فایل جدا؟
- *   go-api/internal/attendance/register.go بخشِ اصلیِ ثبتِ ورود/خروج رو
- *   کامل پورت کرده، اما طبقِ همون مرزی که در go-api/internal/attendance/
- *   admin_devices.go مستندشده، منطقِ Notification::create() (که شاملِ
- *   ارسالِ پیامکِ async هم می‌شه) عمداً به Go پورت نمی‌شه — پیچیده و
- *   وابسته به سرویسِ پیامکه. برای این‌که این یک حالتِ نادر (دستگاهِ کاملاً
- *   جدید + کاربرِ تأییدنشده) رفتارش عوض نشه، Go فقط همین یک اکشنِ جانبی
- *   رو با یک تماسِ داخلیِ HTTP به همین فایل واگذار می‌کنه — نه کلِ فرایند.
+ *   go-api/internal/attendance/register.go بخش اصلی ثبت ورود/خروج رو
+ *   کامل پورت کرده، اما طبق همون مرزی که در go-api/internal/attendance/
+ *   admin_devices.go مستندشده، منطق Notification::create() (که شامل
+ *   ارسال پیامک async هم می‌شه) عمدا به Go پورت نمی‌شه — پیچیده و
+ *   وابسته به سرویس پیامکه. برای این‌که این یک حالت نادر (دستگاه کاملا
+ *   جدید + کاربر تأییدنشده) رفتارش عوض نشه، Go فقط همین یک اکشن جانبی
+ *   رو با یک تماس داخلی HTTP به همین فایل واگذار می‌کنه — نه کل فرایند.
  *
- * 🔒 این endpoint عمومی نیست — فقط با go_internal_secret (کلیدِ مشترکِ
- *   config/config.php و go-api/config.json) قابلِ‌فراخوانیه، نه با JWTِ کاربر.
+ * 🔒 این endpoint عمومی نیست — فقط با go_internal_secret (کلید مشترک
+ *   config/config.php و go-api/config.json) قابل‌فراخوانیه، نه با JWT کاربر.
  */
 
 header('Content-Type: application/json; charset=utf-8');

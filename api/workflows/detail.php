@@ -132,10 +132,10 @@ try {
             FROM workflow_instance_steps wis
             LEFT JOIN workflow_steps ws ON wis.step_id = ws.id
             LEFT JOIN users completed ON wis.completed_by = completed.id
-            -- 🔒 مسئولِ واقعیِ الان: اگر تسکِ زیرینِ این مرحله همین حالا assignee_id
-            -- داره (چه با claim‌کردنِ یه مرحلهٔ سراسرِ واحد، چه با ارجاعِ دستی به فردِ
-            -- دیگه)، همون رو نشون بده — نه واحدِ پیش‌فرضِ قالب. فقط برایِ مرحله‌ای که
-            -- هنوز هیچ‌کس claim/ارجاع نکرده، به فردِ از‌پیش‌تعیین‌شدهٔ قالب (assignee_type='user')
+            -- 🔒 مسئول واقعی الان: اگر تسک زیرین این مرحله همین حالا assignee_id
+            -- داره (چه با claim‌کردن یه مرحلهٔ سراسر واحد، چه با ارجاع دستی به فرد
+            -- دیگه)، همون رو نشون بده — نه واحد پیش‌فرض قالب. فقط برای مرحله‌ای که
+            -- هنوز هیچ‌کس claim/ارجاع نکرده، به فرد از‌پیش‌تعیین‌شدهٔ قالب (assignee_type='user')
             -- برمی‌گردیم.
             LEFT JOIN tasks t_cur ON t_cur.id = wis.task_id
             LEFT JOIN users assignee ON assignee.id = COALESCE(

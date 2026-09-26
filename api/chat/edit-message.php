@@ -1,9 +1,9 @@
 <?php
 /**
- * API: ویرایشِ متنِ یک پیامِ چت
+ * API: ویرایش متن یک پیام چت
  * POST /api/chat/edit-message.php   body: { message_id, message }
  *
- *   فقط فرستنده‌ی خودِ پیام مجاز است؛ پیام‌های حاوی فقط پیوست (بدون متن) یا
+ *   فقط فرستنده‌ی خود پیام مجاز است؛ پیام‌های حاوی فقط پیوست (بدون متن) یا
  *   پیام‌های حذف‌شده قابل‌ویرایش نیستند.
  */
 
@@ -55,7 +55,7 @@ try {
         exit;
     }
 
-    // 🔒 فقط فرستنده‌ی خودِ پیام مجاز به ویرایش است
+    // 🔒 فقط فرستنده‌ی خود پیام مجاز به ویرایش است
     if ((int) $message['user_id'] !== $user_id) {
         http_response_code(403);
         error_log("Chat edit-message denied (not sender) | user_id={$user_id} | message_id={$messageId}");

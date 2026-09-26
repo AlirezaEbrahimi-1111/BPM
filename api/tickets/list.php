@@ -26,9 +26,9 @@ if (!$user_id) {
     echo json_encode(['success' => false, 'message' => 'عدم احراز هویت'], JSON_UNESCAPED_UNICODE);
     exit;
 }
-// 🔒 هم‌راستا با قاعدهٔ api/tickets/detail.php (canManageTargetUser) — قبلاً
-// اینجا فقط بر اساسِ سازمان فیلتر می‌شد، یعنی هر کارمندِ عادی لیستِ کلِ
-// تیکت‌هایِ سازمان (نه فقط خودش) رو می‌دید؛ فقط بازکردنِ تکیِ تیکتِ کسِ
+// 🔒 هم‌راستا با قاعدهٔ api/tickets/detail.php (canManageTargetUser) — قبلا
+// اینجا فقط بر اساس سازمان فیلتر می‌شد، یعنی هر کارمند عادی لیست کل
+// تیکت‌های سازمان (نه فقط خودش) رو می‌دید؛ فقط بازکردن تکی تیکت کس
 // دیگه بلاک می‌شد. الان همون قاعده اینجا هم اعمال می‌شه.
 $me = loadUserForPermissions($db, $user_id);
 if (!$me) {
@@ -43,15 +43,15 @@ $status   = trim($_GET['status']   ?? '');
 $priority = trim($_GET['priority'] ?? '');
 $category = trim($_GET['category'] ?? '');
 $search   = trim($_GET['search']   ?? '');
-// mine=1 → محدوده‌ی پنلِ تیکتِ هدر (بقیه = فقط تیکتِ خودِ کاربر). لیست همیشه
-// برمی‌گردد؛ ستونِ awaiting_you روی هر ردیف می‌گوید که در بج شمرده شود یا نه.
+// mine=1 → محدوده‌ی پنل تیکت هدر (بقیه = فقط تیکت خود کاربر). لیست همیشه
+// برمی‌گردد؛ ستون awaiting_you روی هر ردیف می‌گوید که در بج شمرده شود یا نه.
 $mineScope = ($_GET['mine'] ?? '') === '1';
 $offset   = ($page - 1) * $limit;
 
 try {
-    // فیلترِ پایه (سازمان + حذف‌نشده) — برایِ کارت‌هایِ آماری استفاده می‌شه، چون
-    // اون کارت‌ها باید همیشه شکستِ کلیِ وضعیت‌ها رو نشون بدن، نه فقط بینِ
-    // نتایجِ فیلترِ فعلی (وگرنه با زدنِ یک کارت، بقیه‌ی کارت‌ها صفر می‌شدن)
+    // فیلتر پایه (سازمان + حذف‌نشده) — برای کارت‌های آماری استفاده می‌شه، چون
+    // اون کارت‌ها باید همیشه شکست کلی وضعیت‌ها رو نشون بدن، نه فقط بین
+    // نتایج فیلتر فعلی (وگرنه با زدن یک کارت، بقیه‌ی کارت‌ها صفر می‌شدن)
     $baseWhere  = [];
     $baseParams = [];
     $baseWhere[] = 't.deleted_at IS NULL';
@@ -59,25 +59,25 @@ try {
     if (!isSuperAdmin($me)) {
         $role = $me['role'] ?? 'employee';
         if (in_array($role, ['supervisor', 'admin'], true)) {
-            // سرپرست/ادمین: کلِ تیکت‌هایِ سازمانِ خودش
+            // سرپرست/ادمین: کل تیکت‌های سازمان خودش
             $baseWhere[]  = 't.organization_id = ?';
             $baseParams[] = $me['organization_id'];
         } elseif ($role === 'manager') {
-            // مدیر: تیکتِ خودش + زیرمجموعه‌اش
+            // مدیر: تیکت خودش + زیرمجموعه‌اش
             $subIds   = getSubordinateIds($db, (int) $user_id);
             $subIds[] = (int) $user_id;
             $ph = implode(',', array_fill(0, count($subIds), '?'));
             $baseWhere[] = "t.created_by IN ($ph)";
             $baseParams  = array_merge($baseParams, $subIds);
         } else {
-            // کارمندِ عادی: فقط تیکتِ خودش
+            // کارمند عادی: فقط تیکت خودش
             $baseWhere[]  = 't.created_by = ?';
             $baseParams[] = $user_id;
         }
     }
     $baseWhereSQL = 'WHERE ' . implode(' AND ', $baseWhere);
 
-    // فیلترِ کامل (پایه + جستجو/وضعیت/اولویت/دسته) — برایِ خودِ لیستِ تیکت‌ها
+    // فیلتر کامل (پایه + جستجو/وضعیت/اولویت/دسته) — برای خود لیست تیکت‌ها
     $where  = $baseWhere;
     $params = $baseParams;
 
@@ -99,13 +99,13 @@ try {
         $params[] = "%{$search}%";
     }
 
-    // «پشتیبان» = دو کاربرِ سیستمی (getSuperAdminIds). مبنایِ منطقِ «توپ در
-    // زمینِ کیست».
+    // «پشتیبان» = دو کاربر سیستمی (getSuperAdminIds). مبنای منطق «توپ در
+    // زمین کیست».
     $supportIds  = getSuperAdminIds();                              // [1, 19]
     $supportList = implode(',', array_map('intval', $supportIds));  // "1,19"
     $iAmSupport  = in_array((int) $user_id, $supportIds, true);
 
-    // زیرکوئریِ «نویسنده‌ی آخرین پیامِ (حذف‌نشده‌ی) این تیکت»
+    // زیرکوئری «نویسنده‌ی آخرین پیام (حذف‌نشده‌ی) این تیکت»
     $lastAuthorSub = "(SELECT tm2.user_id FROM ticket_messages tm2
                         WHERE tm2.ticket_id = t.id AND tm2.deleted_at IS NULL
                         ORDER BY tm2.created_at DESC, tm2.id DESC LIMIT 1)";
@@ -116,7 +116,7 @@ try {
     } catch (Throwable $e) {
     }
 
-    // mine=1 — محدوده‌ی پنلِ هدر: پشتیبان همه‌ی تیکت‌ها، بقیه فقط تیکتِ خودشان.
+    // mine=1 — محدوده‌ی پنل هدر: پشتیبان همه‌ی تیکت‌ها، بقیه فقط تیکت خودشان.
     // لیست همیشه نمایش داده می‌شود؛ فقط «خوانده‌نشده‌ها» در بج شمرده می‌شوند.
     if ($mineScope && !$iAmSupport) {
         $where[]  = '(t.created_by = ? OR t.assigned_to = ?)';
@@ -126,10 +126,10 @@ try {
 
     $whereSQL = 'WHERE ' . implode(' AND ', $where);
 
-    // awaiting_you — «توپ در زمینِ کاربرِ جاری است و آن پیام را هنوز ندیده‌ای؟»
-    //   ۱) نویسنده‌ی آخرین پیام از طرفِ مقابل باشد
-    //   ۲) و newest message از آخرین بازدیدِ کاربر تازه‌تر باشد
-    // ($iAmSupport یک بولِ سروری است، نه ورودیِ کاربر — درجش در SQL امن است.)
+    // awaiting_you — «توپ در زمین کاربر جاری است و آن پیام را هنوز ندیده‌ای؟»
+    //   ۱) نویسنده‌ی آخرین پیام از طرف مقابل باشد
+    //   ۲) و newest message از آخرین بازدید کاربر تازه‌تر باشد
+    // ($iAmSupport یک بول سروری است، نه ورودی کاربر — درجش در SQL امن است.)
     $ballExpr = $iAmSupport
         ? "($lastAuthorSub IS NOT NULL AND $lastAuthorSub NOT IN ($supportList))"
         : "($lastAuthorSub IN ($supportList))";
@@ -142,7 +142,7 @@ try {
         : "1";
     $awaitingExpr = "(CASE WHEN $ballExpr AND $unseenExpr THEN 1 ELSE 0 END) as awaiting_you";
 
-    // ── آمار (بر اساسِ فیلترِ پایه، نه فیلترِ فعلی) ──
+    // ── آمار (بر اساس فیلتر پایه، نه فیلتر فعلی) ──
     $statsSQL = "
         SELECT
             COUNT(*) as total,
@@ -163,8 +163,8 @@ try {
     // ── شمارش کل ──
     $total = intval($stats['total'] ?? 0);
 
-    // «پیامِ دیده‌نشده»: تعدادِ پیام‌هایِ کاربرِ دیگر که بعد از آخرین‌باری که
-    // کاربرِ جاری این تیکت را دید ثبت شده‌اند. ($hasReads بالاتر تشخیص داده شده)
+    // «پیام دیده‌نشده»: تعداد پیام‌های کاربر دیگر که بعد از آخرین‌باری که
+    // کاربر جاری این تیکت را دید ثبت شده‌اند. ($hasReads بالاتر تشخیص داده شده)
     $unseenSelect = $hasReads
         ? "(SELECT COUNT(*) FROM ticket_messages tmu
               WHERE tmu.ticket_id = t.id
@@ -219,9 +219,9 @@ try {
     $stmtList = $db->prepare($listSQL);
     $stmtList->execute($listParams);
     $tickets = $stmtList->fetchAll(PDO::FETCH_ASSOC);
-    // awaiting_you از خودِ SQL می‌آید (ستونِ CASE). عددی‌اش می‌کنیم.
-    // کاربرِ نظاره‌گر (id=19): «توپ در زمینِ تو»/بجِ هدر فقط برایِ تیکتِ خودش —
-    // برایِ بقیه صفر، تا هیچ آلارمی از تیکت‌های دیگران نبیند. (لیست را همچنان
+    // awaiting_you از خود SQL می‌آید (ستون CASE). عددی‌اش می‌کنیم.
+    // کاربر نظاره‌گر (id=19): «توپ در زمین تو»/بج هدر فقط برای تیکت خودش —
+    // برای بقیه صفر، تا هیچ آلارمی از تیکت‌های دیگران نبیند. (لیست را همچنان
     // کامل می‌بیند.)
     $viewerIsObserver = isTicketObserver($user_id);
     foreach ($tickets as &$tk) {

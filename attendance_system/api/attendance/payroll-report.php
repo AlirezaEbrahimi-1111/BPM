@@ -30,7 +30,7 @@ try {
         exit;
     }
 
-    // اطلاعات مدیرِ جاری
+    // اطلاعات مدیر جاری
     $stmt = $db->prepare("SELECT id, role, activity_section, organization_id FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $me = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -52,7 +52,7 @@ try {
 
     $app_settings = loadSettings($db);
 
-    // ماهِ شمسیِ موردنظر
+    // ماه شمسی موردنظر
     $today = date('Y-m-d');
     list($g_y, $g_m, $g_d) = explode('-', $today);
     list($cj_y, $cj_m, $cj_d) = sc_gregorianToJalali($g_y, $g_m, $g_d);
@@ -68,7 +68,7 @@ try {
     $start_of_month = $range['start'];
     $end_of_month = $range['end'];
 
-    // تعطیلاتِ بازه (یک‌بار برای همه)
+    // تعطیلات بازه (یک‌بار برای همه)
     $stmt = $db->prepare("SELECT holiday_date, title FROM holidays WHERE holiday_date >= ? AND holiday_date <= ?");
     $stmt->execute([$start_of_month, $end_of_month]);
     $holiday_dates = [];
@@ -76,7 +76,7 @@ try {
         $holiday_dates[$h['holiday_date']] = $h['title'];
     }
 
-    // کاربرانِ فعالِ سازمان
+    // کاربران فعال سازمان
     $stmt = $db->prepare("
         SELECT id, first_name, last_name, activity_section,
                shift_count, shift_1_start, shift_1_end, shift_2_start, shift_2_end,
@@ -88,7 +88,7 @@ try {
     $stmt->execute([$organization_id]);
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // برچسبِ فارسیِ واحدها
+    // برچسب فارسی واحدها
     $sec_labels = [];
     try {
         $sl = $db->prepare("SELECT section_key, section_label FROM organization_activity_sections WHERE organization_id = ?");
@@ -129,7 +129,7 @@ try {
             'salary_received' => $rep['salary_received'], // ریال (حقوق − جریمه)
             'leave_pass_minutes' => $lp['used_minutes'],             // جمع کل مرخصی+پاس در کل ماه (دقیقه)
             'leave_pass_hms' => $lp['used_hms'],
-            'leave_pass_quota_minutes' => $lp['quota_minutes'],      // سهمیهٔ ماهانه (۲ روزِ کاریِ کاربر)
+            'leave_pass_quota_minutes' => $lp['quota_minutes'],      // سهمیهٔ ماهانه (۲ روز کاری کاربر)
             'leave_pass_remaining_minutes' => $lp['remaining_minutes'], // مثبت = باقیمانده، منفی = تجاوز
             'leave_pass_remaining_hms' => $lp['remaining_hms'],
         ];

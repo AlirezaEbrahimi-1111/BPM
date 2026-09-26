@@ -167,7 +167,7 @@ if ($user_id) {
     list($j_y, $j_m, $j_d) = gregorianToJalaliCalc($g_y, $g_m, $g_d);
     list($g_start_y, $g_start_m, $g_start_d) = jalaliToGregorianCalc($j_y, $j_m, 1);
     $start_of_month = sprintf('%04d-%02d-%02d', $g_start_y, $g_start_m, $g_start_d);
-    // ✅ تا پایان ماه شمسی (شامل روزهای آینده): آخرین روزِ ماه = روز اولِ ماهِ بعد منهای یک روز
+    // ✅ تا پایان ماه شمسی (شامل روزهای آینده): آخرین روز ماه = روز اول ماه بعد منهای یک روز
     $__nj_y = ($j_m == 12) ? $j_y + 1 : $j_y;
     $__nj_m = ($j_m == 12) ? 1 : $j_m + 1;
     list($__ng_y, $__ng_m, $__ng_d) = jalaliToGregorian($__nj_y, $__nj_m, 1);
@@ -368,10 +368,10 @@ if ($user_id) {
                     $shortage_slots[] = ['start' => $shift_start, 'end' => $shift1_in, 'minutes' => $delay];
                 }
                 // خروج زودهنگام
-                // 🔒 اگر خروج قبل از شروعِ شیفت باشد (کاربر زودتر از شیفت وارد و
-                // به‌اشتباه/زود خارج شده)، بازه نباید از خودِ خروج شروع شود — از
-                // شروعِ شیفت شروع می‌شود، وگرنه دقایقِ قبل از شیفت هم به‌غلط جزوِ
-                // کسری حساب می‌شوند (مثلاً ورودِ ۸:۵۵ + خروجِ ۸:۵۸ برایِ شیفتِ
+                // 🔒 اگر خروج قبل از شروع شیفت باشد (کاربر زودتر از شیفت وارد و
+                // به‌اشتباه/زود خارج شده)، بازه نباید از خود خروج شروع شود — از
+                // شروع شیفت شروع می‌شود، وگرنه دقایق قبل از شیفت هم به‌غلط جزو
+                // کسری حساب می‌شوند (مثلا ورود ۸:۵۵ + خروج ۸:۵۸ برای شیفت
                 // ۹:۰۰-۱۴:۰۰ نباید کسری را از ۸:۵۸ بلکه از ۹:۰۰ حساب کند)
                 if ($shift1_out && $shift1_out < $shift_end) {
                     $early_start = max($shift1_out, $shift_start);
@@ -458,8 +458,8 @@ if ($user_id) {
     $stmt->execute([$user_id]);
     $pending_approvals = array_merge($pending_approvals, $stmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
 
-    // امنیت: تشخیصِ مسئول/مدیر — فقط بر اساسِ role (نه activity_section که
-    // یک دپارتمانه، نه سطحِ اختیار) + سوپرادمینِ واقعی (نه فقط id=1 هاردکد)
+    // امنیت: تشخیص مسئول/مدیر — فقط بر اساس role (نه activity_section که
+    // یک دپارتمانه، نه سطح اختیار) + سوپرادمین واقعی (نه فقط id=1 هاردکد)
     $me_row = loadUserForPermissions($db, (int) $user_id);
     $my_org_id = (int) ($me_row['organization_id'] ?? 0);
     $is_supervisor = ($me_row && (isSuperAdmin($me_row) || ($me_row['role'] ?? '') === 'supervisor'));
@@ -826,7 +826,7 @@ if ($user_id) {
 // ترکیب تمام درخواست‌ها
 $all_requests = array_merge($mission_requests, $leave_requests, $pass_requests, $forget_requests, $technical_issue);
 // ===== لایهٔ دادهٔ گرید درخواست‌ها (فاز ج‑۱) =====
-// واحدِ کاربرانِ درخواست‌ها
+// واحد کاربران درخواست‌ها
 $__sections_map = [];
 $__uids = array_values(array_unique(array_filter(array_map(function ($r) {
     return $r['user_id'] ?? null;
@@ -860,12 +860,12 @@ foreach ($all_requests as $req) {
     // can_edit / can_delete (همان منطق جدول فعلی)
     $can_edit = false;
     $can_delete = false;
-    $delete_burns_quota = false; // مرخصیِ ماهِ جاری که با حذفش سهمیه برنمی‌گردد
+    $delete_burns_quota = false; // مرخصی ماه جاری که با حذفش سهمیه برنمی‌گردد
     $is_own = (($req['user_id'] ?? null) == $user_id);
     if (!($is_admin_role ?? false) || $is_own) {
         if ($type === 'pass') {
-            // پاس: تا pass_edit_hours «ساعتِ کاری» بعد از ارسال — جمعه/تعطیلات
-            // کاملاً نادیده گرفته می‌شوند (هم‌راستا با edit.php/delete.php)
+            // پاس: تا pass_edit_hours «ساعت کاری» بعد از ارسال — جمعه/تعطیلات
+            // کاملا نادیده گرفته می‌شوند (هم‌راستا با edit.php/delete.php)
             $ca = new DateTime($req['created_at']);
             $nw = new DateTime();
             $deadline = addWorkingHours($ca, (int) ($app_settings['pass_edit_hours'] ?? 24), $__holidays, $__recurringWeekdays);
@@ -885,15 +885,15 @@ foreach ($all_requests as $req) {
             }
             $can_edit = $can_delete = !$has_action;
 
-            // مرخصیِ همین ماهِ شمسیِ خودِ کاربر: حتی بعد از تأییدِ نهایی هم قابلِ «حذف» است
-            // (نه ویرایش). در این حالت سهمیهٔ کسرشده برنمی‌گردد و «می‌سوزد»؛ فرانت پیامِ
-            // تأییدِ جداگانه نشان می‌دهد. هم‌راستا با api/requests/delete.php
+            // مرخصی همین ماه شمسی خود کاربر: حتی بعد از تأیید نهایی هم قابل «حذف» است
+            // (نه ویرایش). در این حالت سهمیهٔ کسرشده برنمی‌گردد و «می‌سوزد»؛ فرانت پیام
+            // تأیید جداگانه نشان می‌دهد. هم‌راستا با api/requests/delete.php
             //
-            // ⚠️ «ماهِ جاری» را با سال+ماهِ شمسی می‌سنجیم، نه با بازهٔ میلادیِ
+            // ⚠️ «ماه جاری» را با سال+ماه شمسی می‌سنجیم، نه با بازهٔ میلادی
             //    [$start_of_month..$end_of_month]. چون jalaliToGregorian() در
-            //    date_helper.php برای سال‌های شمسیِ > ۹۷۹ خراب است و
-            //    $end_of_month را به تاریخی در سالِ ۱۶۰۰ می‌برد. اما
-            //    gregorianToJalaliCalc() درست است و $j_y/$j_m همان ماهِ شمسیِ
+            //    date_helper.php برای سال‌های شمسی > ۹۷۹ خراب است و
+            //    $end_of_month را به تاریخی در سال ۱۶۰۰ می‌برد. اما
+            //    gregorianToJalaliCalc() درست است و $j_y/$j_m همان ماه شمسی
             //    امروز هستند (بالای همین فایل حساب شده‌اند).
             if ($type === 'leave' && $is_own && !$can_delete
                 && $status !== 'rejected' && $status !== 'cancelled') {
@@ -1230,7 +1230,7 @@ function formatDateJalali($gregorianDate)
             border-color: #8e57fe;
         }
 
-        /* چک‌باکسِ «فقط ماه جاری» و انتخابگرِ کارمند همیشه کنارِ هم در یک ردیف */
+        /* چک‌باکس «فقط ماه جاری» و انتخابگر کارمند همیشه کنار هم در یک ردیف */
         .filter-row-inline {
             display: flex;
             align-items: center;
@@ -1562,7 +1562,7 @@ function formatDateJalali($gregorianDate)
             border-color: var(--border-soft);
         }
 
-        /* فوکوسِ انتخابگرِ ماه: حاشیهٔ پیش‌فرضِ مشکی/آبی → بنفشِ سازمانی */
+        /* فوکوس انتخابگر ماه: حاشیهٔ پیش‌فرض مشکی/آبی → بنفش سازمانی */
         .att-month-toolbar select:focus {
             outline: none;
             border-color: #8e57fe;
@@ -1865,15 +1865,15 @@ function formatDateJalali($gregorianDate)
             opacity: 0.6;
         }
 
-        /* 🔒 <form id="requestForm"> (نه یه <div> ساده) بینِ .modal-content
+        /* 🔒 <form id="requestForm"> (نه یه <div> ساده) بین .modal-content
            (flex-column) و .modal-body قرار گرفته — چون <form> خودش هیچ
-           قاعده‌ی flex ای نداره، flex:1 روی .modal-body هیچ‌وقت واقعاً اعمال
+           قاعده‌ی flex ای نداره، flex:1 روی .modal-body هیچ‌وقت واقعا اعمال
            نمی‌شه، ارتفاعش هیچ‌وقت محدود نمی‌شه، و overflow:auto هم چون چیزی
-           برایِ اسکرول‌کردن نداره (همه‌چی راست تویِ ارتفاعِ طبیعیِ خودش جا
-           می‌شه) کار نمی‌کنه — نتیجه: رویِ موبایل (که ارتفاعِ صفحه کمه) کلِ
-           فرم از پایینِ مودال بیرون می‌زد و دکمه‌ی ارسال هیچ‌وقت با اسکرول در
-           دسترس نبود. این‌جا زنجیره‌ی flex رو با اضافه‌کردنِ همون قاعده‌ها به
-           خودِ <form> ترمیم می‌کنیم */
+           برای اسکرول‌کردن نداره (همه‌چی راست توی ارتفاع طبیعی خودش جا
+           می‌شه) کار نمی‌کنه — نتیجه: روی موبایل (که ارتفاع صفحه کمه) کل
+           فرم از پایین مودال بیرون می‌زد و دکمه‌ی ارسال هیچ‌وقت با اسکرول در
+           دسترس نبود. این‌جا زنجیره‌ی flex رو با اضافه‌کردن همون قاعده‌ها به
+           خود <form> ترمیم می‌کنیم */
         #requestForm {
             display: flex;
             flex-direction: column;
@@ -2018,7 +2018,7 @@ function formatDateJalali($gregorianDate)
             gap: 16px;
         }
 
-        /* ─── جعبهٔ موجودیِ سهمیهٔ مرخصی/پاس ─── */
+        /* ─── جعبهٔ موجودی سهمیهٔ مرخصی/پاس ─── */
         .leave-balance-box {
             border-radius: 8px;
             padding: 8px 14px;
@@ -2186,10 +2186,10 @@ function formatDateJalali($gregorianDate)
         }
 
         @media (max-width: 768px) {
-            /* 🔒 بود: padding-top:120px — رویِ ۵۶px مارجینِ سراسریِ هدر
-               (custom.css) اضافه می‌شد و ~۱۷۶px فضایِ خالیِ بلااستفاده بالایِ
-               صفحه می‌ساخت. هدرِ موبایلِ این صفحه هم مثلِ همه‌جایِ دیگه
-               تک‌ردیفه، نیازی به فضایِ اضافه نداره */
+            /* 🔒 بود: padding-top:120px — روی ۵۶px مارجین سراسری هدر
+               (custom.css) اضافه می‌شد و ~۱۷۶px فضای خالی بلااستفاده بالای
+               صفحه می‌ساخت. هدر موبایل این صفحه هم مثل همه‌جای دیگه
+               تک‌ردیفه، نیازی به فضای اضافه نداره */
 
             .main-layout {
                 padding: 16px;
@@ -2204,8 +2204,8 @@ function formatDateJalali($gregorianDate)
                 min-width: 100%;
             }
 
-            /* چک‌باکسِ «فقط ماه جاری» + انتخابگرِ کارمند: روی موبایل هم در یک
-               ردیف بمانند (نه زیرِ هم) */
+            /* چک‌باکس «فقط ماه جاری» + انتخابگر کارمند: روی موبایل هم در یک
+               ردیف بمانند (نه زیر هم) */
             .filter-row-inline {
                 flex-direction: row;
                 flex-wrap: nowrap;
@@ -2225,8 +2225,8 @@ function formatDateJalali($gregorianDate)
                 grid-template-columns: 1fr;
             }
 
-            /* 🔒 کارت‌های آماری روی موبایل: هر کارت یک ردیفِ کاملِ جدا، در یک
-               خط — لیبل سمتِ راست، عدد سمتِ چپ (space-between). متن نمی‌شکند؛
+            /* 🔒 کارت‌های آماری روی موبایل: هر کارت یک ردیف کامل جدا، در یک
+               خط — لیبل سمت راست، عدد سمت چپ (space-between). متن نمی‌شکند؛
                فونت کمی کوچک‌تر تا در یک خط جا شود. */
             .page-header {
                 display: grid;
@@ -2254,7 +2254,7 @@ function formatDateJalali($gregorianDate)
             }
 
             /* 🔒 تب‌های مودال: ۴ تا با min-width:100px روی صفحه‌ی باریک جا
-               نمی‌شدن؛ به‌جایِ له‌شدن، افقی اسکرول می‌شن */
+               نمی‌شدن؛ به‌جای له‌شدن، افقی اسکرول می‌شن */
             .tabs-container {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
@@ -2267,8 +2267,8 @@ function formatDateJalali($gregorianDate)
                 padding: 12px 10px;
             }
 
-            /* 🔒 کاهشِ پدینگِ داخلیِ مودال/سایدبار روی موبایل — عرضِ مفید
-               بیشتری برایِ فرم می‌مونه */
+            /* 🔒 کاهش پدینگ داخلی مودال/سایدبار روی موبایل — عرض مفید
+               بیشتری برای فرم می‌مونه */
             .modal-overlay {
                 padding: 10px;
             }
@@ -2293,8 +2293,8 @@ function formatDateJalali($gregorianDate)
                 max-width: 95%;
             }
 
-            /* 🔒 ارتفاعِ ثابتِ گریدِ حضور/درخواست‌ها (۷۰۰/۵۶۰px inline) رویِ
-               موبایل بیش‌ازحدِ صفحه‌س — قبلِ رسیدن به بقیه‌ی صفحه، اسکرولِ
+            /* 🔒 ارتفاع ثابت گرید حضور/درخواست‌ها (۷۰۰/۵۶۰px inline) روی
+               موبایل بیش‌ازحد صفحه‌س — قبل رسیدن به بقیه‌ی صفحه، اسکرول
                زیادی لازمه */
             #attendanceGrid,
             .attendance-table-wrapper,
@@ -2303,8 +2303,8 @@ function formatDateJalali($gregorianDate)
                 height: 460px !important;
             }
 
-            /* 🔒 سه‌تبِ سوییچِ اصلی روی موبایل: زیرِ هم (ستونی)، هر تب تمام‌عرض،
-               آیکن کنارِ متن در یک خط بدونِ شکستن */
+            /* 🔒 سه‌تب سوییچ اصلی روی موبایل: زیر هم (ستونی)، هر تب تمام‌عرض،
+               آیکن کنار متن در یک خط بدون شکستن */
             .section-tabs {
                 flex-direction: column;
             }
@@ -2323,9 +2323,9 @@ function formatDateJalali($gregorianDate)
                 font-size: 16px;
             }
 
-            /* 🔒 ماه + سه‌آمارِ ریالی: دو‌ردیفِ دو‌ستونیِ مرتب به‌جایِ شکستنِ
-               نامنظمِ flex-wrap — با display:contents، سه‌تا اسپنِ آمار از
-               داخلِ .att-month-toolbar-stats مستقیم عضوِ گریدِ والد می‌شن */
+            /* 🔒 ماه + سه‌آمار ریالی: دو‌ردیف دو‌ستونی مرتب به‌جای شکستن
+               نامنظم flex-wrap — با display:contents، سه‌تا اسپن آمار از
+               داخل .att-month-toolbar-stats مستقیم عضو گرید والد می‌شن */
             .att-month-toolbar {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -2910,8 +2910,8 @@ function formatDateJalali($gregorianDate)
             font-weight: 600;
         }
 
-        /* یکدست‌سازیِ فوکوسِ فرم‌ها با بنفشِ سازمانی — جای‌گزینِ حلقهٔ آبیِ
-           پیش‌فرضِ بوت‌استرپ/مرورگر روی هر ورودی، لیستِ کشویی و ناحیهٔ متن */
+        /* یکدست‌سازی فوکوس فرم‌ها با بنفش سازمانی — جای‌گزین حلقهٔ آبی
+           پیش‌فرض بوت‌استرپ/مرورگر روی هر ورودی، لیست کشویی و ناحیهٔ متن */
         .form-control:focus,
         .form-select:focus,
         .modal input:focus,
@@ -2922,7 +2922,7 @@ function formatDateJalali($gregorianDate)
             box-shadow: 0 0 0 3px rgba(142, 87, 254, 0.15);
         }
 
-        /* دکمه‌های آبیِ بوت‌استرپ روی این صفحه → بنفشِ سازمانی */
+        /* دکمه‌های آبی بوت‌استرپ روی این صفحه → بنفش سازمانی */
         .btn-primary,
         .btn-primary:hover,
         .btn-primary:focus,
@@ -2979,7 +2979,7 @@ function formatDateJalali($gregorianDate)
                     </button>
                 </div>
 
-                <!-- کارت‌های آماریِ شخصیِ کاربر جاری — ثابت در هر سه زبانه -->
+                <!-- کارت‌های آماری شخصی کاربر جاری — ثابت در هر سه زبانه -->
                 <div class="page-header">
                     <div class="stat-card stat-card-inline">
                         <span class="stat-label">
@@ -3056,7 +3056,7 @@ function formatDateJalali($gregorianDate)
                             <button class="filter-btn" onclick="filterByStatus('rejected')">رد شده</button>
                         </div>
 
-                        <!-- چک‌باکسِ «فقط ماه جاری» + انتخابگرِ کارمند در یک ردیف -->
+                        <!-- چک‌باکس «فقط ماه جاری» + انتخابگر کارمند در یک ردیف -->
                         <div class="filter-row-inline">
                         <!-- ✅ چک‌باکس فیلتر ماه جاری -->
                         <label class="current-month-filter">
@@ -3068,7 +3068,7 @@ function formatDateJalali($gregorianDate)
                         <?php if ($is_admin_role ?? false): ?>
                             <!-- فیلتر کارمند/واحد برای مدیران -->
                             <?php
-                            // برچسب فارسیِ واحدها (همهٔ واحدهای سازمان)
+                            // برچسب فارسی واحدها (همهٔ واحدهای سازمان)
                             $__sec_labels = [];
                             if (!empty($org_id)) {
                                 try {
@@ -3081,7 +3081,7 @@ function formatDateJalali($gregorianDate)
                                 }
                             }
 
-                            // همهٔ کاربران فعالِ سازمان (مثل create-task)
+                            // همهٔ کاربران فعال سازمان (مثل create-task)
                             $filter_users_list = [];
                             if (!empty($org_id)) {
                                 try {
@@ -3142,8 +3142,8 @@ function formatDateJalali($gregorianDate)
                 <!-- بخش درخواست‌های منتظر تأیید من -->
                 <div id="pending-approvals-section" style="display: none;">
 
-                    <!-- درخواست‌هایِ سهمیهٔ تشویقیِ مرخصی — قبلاً توی pages/users.php بود،
-                         به‌عنوانِ یک نوع دیگه از «درخواست‌هایِ منتظرِ تأییدِ من» به همین‌جا منتقل شد -->
+                    <!-- درخواست‌های سهمیهٔ تشویقی مرخصی — قبلا توی pages/users.php بود،
+                         به‌عنوان یک نوع دیگه از «درخواست‌های منتظر تأیید من» به همین‌جا منتقل شد -->
                     <div id="leaveBonusRequestsPanel" style="display:none;" class="mb-3"></div>
 
                     <div class="table-container">
@@ -3675,7 +3675,7 @@ function formatDateJalali($gregorianDate)
                 if (window.__reqGridApi) window.__reqGridApi.onFilterChanged();
             };
             initPagination = function() {
-                /* صفحه‌بندی داخلیِ گرید */
+                /* صفحه‌بندی داخلی گرید */
             };
 
             document.addEventListener('DOMContentLoaded', function() {
@@ -4204,7 +4204,7 @@ function formatDateJalali($gregorianDate)
                         if (p.data.is_holiday) return '<span class="att-off">تعطیل</span>';
                         const a = which === 'in' ? p.data.shift1_in : p.data.shift1_out;
                         const b = which === 'in' ? p.data.shift2_in : p.data.shift2_out;
-                        // اگر شیفت/ورودِ دوم وجود دارد یا کاربر دوشیفته است → هر دو زیرِ هم
+                        // اگر شیفت/ورود دوم وجود دارد یا کاربر دوشیفته است → هر دو زیر هم
                         if (shiftCount >= 2 || b) {
                             return '<span class="shift-time">' + (a ? convertToFarsiNumber(a) : '') + '</span>' +
                                 '<span class="shift-time shift-2">' + (b ? convertToFarsiNumber(b) : '') + '</span>';
@@ -4445,7 +4445,7 @@ function formatDateJalali($gregorianDate)
 
             const finalShortageHours = finalMinutesWithMultiplier / 60;
 
-            // محاسبه مبلغ ریالی (۳۰ روز — تخمینِ نمایشی؛ مبلغِ نهایی از سرور با شمارشِ دقیقِ روزهای غیرجمعهٔ همان ماه محاسبه می‌شود)
+            // محاسبه مبلغ ریالی (۳۰ روز — تخمین نمایشی؛ مبلغ نهایی از سرور با شمارش دقیق روزهای غیرجمعهٔ همان ماه محاسبه می‌شود)
             const hourlySalary = monthlySalary / 30 / dailyWorkHours;
             const minuteSalary = hourlySalary / 60;
             const shortageMoney = Math.round(minuteSalary * finalMinutesWithMultiplier);
@@ -4543,8 +4543,8 @@ function formatDateJalali($gregorianDate)
                 content.classList.toggle('active', index === tabIndex);
             });
 
-            if (tabIndex === 1) loadLeaveBalance('leaveBalanceBox', 'leaveBalanceValue'); // تبِ مرخصی
-            if (tabIndex === 2) loadLeaveBalance('passBalanceBox', 'passBalanceValue');  // تبِ پاس — همون استخرِ مشترک
+            if (tabIndex === 1) loadLeaveBalance('leaveBalanceBox', 'leaveBalanceValue'); // تب مرخصی
+            if (tabIndex === 2) loadLeaveBalance('passBalanceBox', 'passBalanceValue');  // تب پاس — همون استخر مشترک
         }
 
         function loadLeaveBalance(boxId, elementId) {
@@ -4744,7 +4744,7 @@ function formatDateJalali($gregorianDate)
 
         // تابع اعتبارسنجی ساعت
         function validateTimeRange(startTime, endTime) {
-            if (!startTime || !endTime) return true; // بعداً چک الزامی میشه
+            if (!startTime || !endTime) return true; // بعدا چک الزامی میشه
             return endTime > startTime;
         }
 
@@ -4755,7 +4755,7 @@ function formatDateJalali($gregorianDate)
             const submitBtn = document.getElementById('submitBtn');
             const form = document.getElementById('requestForm');
             const editId = form.getAttribute('data-edit-id');
-            // ✅ در صورت رد شدنِ اعتبارسنجی، دکمه باید به همین حالت برگردد
+            // ✅ در صورت رد شدن اعتبارسنجی، دکمه باید به همین حالت برگردد
             const resetSubmitBtn = () => {
                 submitBtn.disabled = false;
                 submitBtn.textContent = editId ? 'ذخیره تغییرات' : 'ارسال درخواست';
@@ -5167,7 +5167,7 @@ function formatDateJalali($gregorianDate)
                     switchSection('pending-approvals');
                 }
 
-                // بازکردنِ این صفحه = دیدنِ درخواست‌های حضور و غیاب؛ پس اعلان‌هایِ
+                // بازکردن این صفحه = دیدن درخواست‌های حضور و غیاب؛ پس اعلان‌های
                 // مربوط به مرخصی/مأموریت/پاس/فراموشی/مشکل فنی خوانده‌شده حساب شوند.
                 // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/notifications/mark-read.php' برگردان.
                 fetch('/go/api/notifications/mark-read', {
@@ -5252,7 +5252,7 @@ function formatDateJalali($gregorianDate)
             }
         }
 
-        // ── درخواست‌هایِ سهمیهٔ تشویقیِ مرخصی (منتقل‌شده از pages/users.php) ──
+        // ── درخواست‌های سهمیهٔ تشویقی مرخصی (منتقل‌شده از pages/users.php) ──
         function escBonusHtml(s) {
             const d = document.createElement('div');
             d.textContent = s == null ? '' : String(s);

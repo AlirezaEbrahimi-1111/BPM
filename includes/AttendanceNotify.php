@@ -1,11 +1,11 @@
 <?php
-// /includes/AttendanceNotify.php — نوتیفیکیشن + پیامکِ پترن‌محورِ تأیید دستگاه‌های حضور و غیاب
+// /includes/AttendanceNotify.php — نوتیفیکیشن + پیامک پترن‌محور تأیید دستگاه‌های حضور و غیاب
 // پیامک از طریق Notification::create و کلیدهای sms_pattern/sms_args ارسال می‌شود (مثل بقیهٔ سیستم)
 
 if (!function_exists('attendance_notify_managers_new_device')) {
 
     /**
-     * اطلاع به مدیران/سرپرست‌ها هنگام ثبت یک دستگاهِ جدیدِ «در انتظار تأیید»
+     * اطلاع به مدیران/سرپرست‌ها هنگام ثبت یک دستگاه جدید «در انتظار تأیید»
      */
     function attendance_notify_managers_new_device($db, $org, $requester_id, $ip)
     {
@@ -27,7 +27,7 @@ if (!function_exists('attendance_notify_managers_new_device')) {
             $st->execute([$org]);
             $managers = $st->fetchAll(PDO::FETCH_COLUMN);
 
-            // ملی‌پیامک مقادیرِ شبیه لینک/آدرس (IP با نقطه) را در الگو رد می‌کند → نقطه‌ها را به خط تبدیل می‌کنیم
+            // ملی‌پیامک مقادیر شبیه لینک/آدرس (IP با نقطه) را در الگو رد می‌کند → نقطه‌ها را به خط تبدیل می‌کنیم
             $ip_safe = str_replace('.', '-', $ip);
 
             foreach ($managers as $mid) {

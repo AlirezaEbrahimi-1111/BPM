@@ -94,7 +94,7 @@ try {
 
     // ─── تغییر خودکار وضعیت بر اساس فرستنده‌ی پیام ───
     // پاسخ سوپرادمین → منتظر پاسخ (کاربر)؛ پاسخ کاربر → باز (منتظر بررسی سوپرادمین)
-    // تیکتِ لغوشده خودکار دوباره باز نمی‌شود؛ باید دستی تغییر وضعیت داده شود.
+    // تیکت لغوشده خودکار دوباره باز نمی‌شود؛ باید دستی تغییر وضعیت داده شود.
     if ($ticket['old_status_name'] !== 'cancelled') {
         $newStatusName = $isSuperAdmin ? 'waiting_reply' : 'open';
         $stmt = $db->prepare("SELECT id, label FROM ticket_statuses WHERE name = ?");
@@ -141,15 +141,15 @@ try {
             if ($error !== UPLOAD_ERR_OK || $size > $maxSize || !in_array($type, $allowedTypes)) continue;
 
             $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-            // فقط پسوندهایِ امن ذخیره شوند (نه php/phtml/svg/html/js/...)
+            // فقط پسوندهای امن ذخیره شوند (نه php/phtml/svg/html/js/...)
             if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'mp3', 'm4a', 'ogg', 'txt'], true)) continue;
             $storedName = uniqid('tkt_') . '_' . time() . '.' . $ext;
 
             if (move_uploaded_file($tmpName, $uploadDir . $storedName)) {
-                // 🔒 mime_type ذخیره‌شده از رویِ خودِ فایل تشخیص داده می‌شه، نه
-                // از $type (که مرورگر می‌فرسته و قابلِ‌اعتماد نیست — مثلاً
-                // Samsung Internet برایِ عکسِ چسبونده‌شده، نوعِ خالی/نادرست
-                // می‌فرسته، پس بعداً توی نمایش «تصویر» تشخیص داده نمی‌شد).
+                // 🔒 mime_type ذخیره‌شده از روی خود فایل تشخیص داده می‌شه، نه
+                // از $type (که مرورگر می‌فرسته و قابل‌اعتماد نیست — مثلا
+                // Samsung Internet برای عکس چسبونده‌شده، نوع خالی/نادرست
+                // می‌فرسته، پس بعدا توی نمایش «تصویر» تشخیص داده نمی‌شد).
                 $detectedMime = detectTicketAttachmentMime($uploadDir . $storedName, $ext);
                 $stmt = $db->prepare("
                     INSERT INTO ticket_attachments (ticket_id, message_id, user_id, original_name, stored_name, mime_type, file_size)
@@ -176,7 +176,7 @@ try {
         ? (int) $ticket['created_by']
         : (int) $ticket['assigned_to'];
 
-    // کاربرِ نظاره‌گر (مثل id=19): فقط تیکتِ خودش را دنبال می‌کند؛ برای بقیه
+    // کاربر نظاره‌گر (مثل id=19): فقط تیکت خودش را دنبال می‌کند؛ برای بقیه
     // هیچ اعلان/پیامکی نباید بگیرد.
     if (!shouldNotifyTicketUser($notifyUserId, $ticket)) {
         $notifyUserId = 0;

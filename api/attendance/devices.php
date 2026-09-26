@@ -48,7 +48,7 @@ try {
     $c->execute([$id, $org]);
     if (!$c->fetch()) dev_out(['success' => false, 'message' => 'دستگاه یافت نشد'], 404);
 
-    // کاربرِ صاحبِ این دستگاه (برای تأیید/لغوِ سطحِ کاربر)
+    // کاربر صاحب این دستگاه (برای تأیید/لغو سطح کاربر)
     $ownerStmt = $db->prepare("SELECT first_seen_user_id FROM attendance_devices WHERE id = ?");
     $ownerStmt->execute([$id]);
     $deviceUserId = (int) ($ownerStmt->fetchColumn() ?: 0);
@@ -56,8 +56,8 @@ try {
     if ($action === 'approve') {
         $db->prepare("UPDATE attendance_devices SET status='approved', approved_by=?, approved_at=NOW() WHERE id=?")
            ->execute([$user_id, $id]);
-        // ✅ تأییدِ سطحِ کاربر → از این پس هر دستگاهِ جدیدِ همین کاربر (حتی بعد از کلیر کش)
-        //    خودکار مجاز است و درخواستِ تازه‌ای نمی‌فرستد.
+        // ✅ تأیید سطح کاربر → از این پس هر دستگاه جدید همین کاربر (حتی بعد از کلیر کش)
+        //    خودکار مجاز است و درخواست تازه‌ای نمی‌فرستد.
         if ($deviceUserId > 0) {
             $db->prepare("INSERT IGNORE INTO attendance_approved_users (organization_id, user_id, approved_by, approved_at)
                           VALUES (?, ?, ?, NOW())")
@@ -68,7 +68,7 @@ try {
     } elseif ($action === 'reject') {
         $db->prepare("UPDATE attendance_devices SET status='rejected', approved_by=?, approved_at=NOW() WHERE id=?")
            ->execute([$user_id, $id]);
-        // لغوِ تأییدِ سطحِ کاربر — فقط اگر این کاربر هیچ دستگاهِ approvedِ دیگری ندارد
+        // لغو تأیید سطح کاربر — فقط اگر این کاربر هیچ دستگاه approved دیگری ندارد
         if ($deviceUserId > 0) {
             $db->prepare("
                 DELETE FROM attendance_approved_users

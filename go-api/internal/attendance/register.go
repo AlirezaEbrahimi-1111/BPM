@@ -12,7 +12,7 @@ import (
 	"bmp/go-api/internal/core"
 )
 
-// registerBody — بدنه‌ی درخواستِ ثبتِ ورود/خروج.
+// registerBody — بدنه‌ی درخواست ثبت ورود/خروج.
 type registerBody struct {
 	Action      string `json:"action"`
 	Shift       int    `json:"shift"`
@@ -24,22 +24,22 @@ func sha256Hex(s string) string {
 	return hex.EncodeToString(h[:])
 }
 
-// Register — پورتِ دقیقِ api/attendance/register.php (ثبتِ ورود/خروج).
+// Register — پورت دقیق api/attendance/register.php (ثبت ورود/خروج).
 //
 //	POST /go/api/attendance/register   body: {action, shift, fingerprint}
 //
-// 🔒 طبقِ یادداشتِ بالایِ main.go، این فایل به‌خاطرِ ریسکِ مالی/عملیاتیِ
-// داده‌هایِ حضور (این جدول مستقیم توسطِ monthly-report.php/monthly-deficit.php/
-// leave-balance*.php خونده می‌شه) با دقتِ کامل و پیام‌به‌پیام برابرِ نسخه‌ی
-// PHP پورت شده — از جمله کدهایِ HTTPِ به‌ظاهر عجیبِ PHP (مثلاً «قبلاً ثبت
-// شده» با کدِ ۲۰۰ به‌جایِ ۴۰۰، چون خودِ PHP هم اونجا http_response_code
+// 🔒 طبق یادداشت بالای main.go، این فایل به‌خاطر ریسک مالی/عملیاتی
+// داده‌های حضور (این جدول مستقیم توسط monthly-report.php/monthly-deficit.php/
+// leave-balance*.php خونده می‌شه) با دقت کامل و پیام‌به‌پیام برابر نسخه‌ی
+// PHP پورت شده — از جمله کدهای HTTP به‌ظاهر عجیب PHP (مثلا «قبلا ثبت
+// شده» با کد ۲۰۰ به‌جای ۴۰۰، چون خود PHP هم اونجا http_response_code
 // صدا نمی‌زنه).
 //
-// 🔒 تنها استثنا: حالتِ نادرِ «دستگاهِ کاملاً جدید + کاربرِ تأییدنشده» —
-// اون یک شاخه به‌جایِ بازنویسیِ Notification::create() اینجا، یک تماسِ
-// داخلیِ HTTP به api/internal/notify-new-device.php می‌زنه (نگاه کن به
-// core.NotifyNewDeviceAsync و internal/attendance/admin_devices.go برایِ
-// همون مرزِ ازقبل‌پذیرفته‌شده).
+// 🔒 تنها استثنا: حالت نادر «دستگاه کاملا جدید + کاربر تأییدنشده» —
+// اون یک شاخه به‌جای بازنویسی Notification::create() اینجا، یک تماس
+// داخلی HTTP به api/internal/notify-new-device.php می‌زنه (نگاه کن به
+// core.NotifyNewDeviceAsync و internal/attendance/admin_devices.go برای
+// همون مرز ازقبل‌پذیرفته‌شده).
 func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := core.UserOf(r.Context())
@@ -80,7 +80,7 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 			`, org, u.ID, actionForLog, reason, clientIP, fpHashForLog, ua)
 		}
 
-		// ── لایهٔ ۱: IP داخلیِ مجاز ──
+		// ── لایهٔ ۱: IP داخلی مجاز ──
 		var ipCount int
 		if err := db.QueryRow(`
 			SELECT COUNT(*) FROM attendance_allowed_ips
@@ -97,7 +97,7 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 			return
 		}
 
-		// ── لایهٔ ۲: دستگاهِ تأییدشده ──
+		// ── لایهٔ ۲: دستگاه تأییدشده ──
 		if len(fp) < 16 {
 			logDenied("NO_FINGERPRINT")
 			core.WriteJSON(w, http.StatusBadRequest, map[string]any{
@@ -115,7 +115,7 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 		`, org, fpHash).Scan(&deviceStatus)
 
 		if err == sql.ErrNoRows {
-			// دستگاه اصلاً دیده نشده — یا خودکار تأیید می‌شه (کاربرِ ازقبل‌تأییدشده)
+			// دستگاه اصلا دیده نشده — یا خودکار تأیید می‌شه (کاربر ازقبل‌تأییدشده)
 			// یا در انتظار می‌مونه و مدیران مطلع می‌شن
 			var approvedCount int
 			_ = db.QueryRow("SELECT COUNT(*) FROM attendance_approved_users WHERE organization_id = ? AND user_id = ? LIMIT 1", org, u.ID).Scan(&approvedCount)
@@ -143,7 +143,7 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 			if autoApprove {
 				_, _ = db.Exec("UPDATE attendance_devices SET last_used_at = NOW() WHERE organization_id = ? AND fingerprint_hash = ?", org, fpHash)
 				_, _ = db.Exec("INSERT IGNORE INTO attendance_approved_users (organization_id, user_id, approved_at) VALUES (?, ?, NOW())", org, u.ID)
-				// اجازهٔ ثبتِ ورود/خروج — ادامه به پایینِ تابع
+				// اجازهٔ ثبت ورود/خروج — ادامه به پایین تابع
 			} else {
 				if rows, _ := res.RowsAffected(); rows > 0 {
 					core.NotifyNewDeviceAsync(cfg, org, u.ID, clientIP)
@@ -174,7 +174,7 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 		}
 
 		// ============================================
-		// پایانِ گاردِ امنیتی — شروعِ ثبتِ ورود/خروج
+		// پایان گارد امنیتی — شروع ثبت ورود/خروج
 		// ============================================
 		if body.Action != "check_in" && body.Action != "check_out" {
 			core.WriteJSON(w, http.StatusBadRequest, map[string]any{"success": false, "message": "Invalid action"})
@@ -200,9 +200,9 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 			core.WriteErr(w, http.StatusInternalServerError, "خطا در پردازش درخواست")
 			return
 		}
-		_ = shift1Start // فقط برایِ parity با SELECTِ PHP نگه داشته شده؛ منطق ازش استفاده نمی‌کنه (خودِ PHP هم همینطوره)
+		_ = shift1Start // فقط برای parity با SELECT PHP نگه داشته شده؛ منطق ازش استفاده نمی‌کنه (خود PHP هم همینطوره)
 
-		// ⭐ محدودیتِ شیفتِ دوم: فقط از ۳۰ دقیقه قبلِ شروعِ شیفت ۲
+		// ⭐ محدودیت شیفت دوم: فقط از ۳۰ دقیقه قبل شروع شیفت ۲
 		if body.Action == "check_in" && shift == 2 {
 			if shiftCount < 2 {
 				core.WriteJSON(w, http.StatusBadRequest, map[string]any{"success": false, "message": "شما کاربر دو شیفته نیستید"})
@@ -230,7 +230,7 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 			}
 		}
 
-		// ⭐ محدودیتِ ورودِ شیفتِ ۱: فقط تا پایانِ شیفتِ ۱ (برایِ کاربرانِ دوشیفته)
+		// ⭐ محدودیت ورود شیفت ۱: فقط تا پایان شیفت ۱ (برای کاربران دوشیفته)
 		if body.Action == "check_in" && shift == 1 && shiftCount >= 2 && shift1End.Valid && shift1End.String != "" {
 			end, ok1 := parseClock(shift1End.String)
 			curr, ok2 := parseClock(currentTime)
@@ -265,7 +265,7 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 
 		if body.Action == "check_in" {
 			if hasRecord && checkIn.Valid && !checkOut.Valid {
-				// 🔒 عیناً مثلِ PHP: بدونِ http_response_code صریح → پیش‌فرضِ ۲۰۰
+				// 🔒 عینا مثل PHP: بدون http_response_code صریح → پیش‌فرض ۲۰۰
 				core.WriteJSON(w, http.StatusOK, map[string]any{
 					"success": false, "message": "شما قبلا ورود شیفت " + shiftStr + " را ثبت کرده‌اید",
 				})

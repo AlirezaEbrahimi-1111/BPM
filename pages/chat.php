@@ -18,9 +18,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/jquery.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/custom.css') ?>">
-    <!-- تقویمِ شمسی — برایِ فیلدِ موعدِ مودالِ «تعریفِ کار از رویِ پیام»؛ دقیقاً
-         همون ست‌ِ فایل‌هایی که task-detail.php/create-task.php استفاده می‌کنن
-         (پیاده‌سازیِ سفارشیِ خودِ پروژه، نه یک کتابخانه‌یِ دیگه) -->
+    <!-- تقویم شمسی — برای فیلد موعد مودال «تعریف کار از روی پیام»؛ دقیقا
+         همون ست‌ فایل‌هایی که task-detail.php/create-task.php استفاده می‌کنن
+         (پیاده‌سازی سفارشی خود پروژه، نه یک کتابخانه‌ی دیگه) -->
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/persian-datepicker.min.css') ?>">
     <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
     <script src="<?= asset('../assets/js/cdn/persian-date.min.js') ?>"></script>
@@ -28,12 +28,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
     <style>
         /* ═══════════════════════════════════════════════════════════
-           پالتِ صفحه‌ی گفتگوها — عامدانه محدود، بدونِ گرادیان
+           پالت صفحه‌ی گفتگوها — عامدانه محدود، بدون گرادیان
            ───────────────────────────────────────────────────────────
-           جوهری: بنفشِ تیره و خنثی، برایِ پیام‌های خودم و نشانه‌های تعاملی
-           مرکب: نزدیک به مشکی، برایِ متنِ اصلی
-           کهربا: تنها رنگِ دومِ صفحه، فقط برایِ نشانگرِ آنلاین/تایپ
-           هر رنگِ دیگر (خاکستری/سطح) از متغیرهایِ تمِ خودِ سایت می‌آید
+           جوهری: بنفش تیره و خنثی، برای پیام‌های خودم و نشانه‌های تعاملی
+           مرکب: نزدیک به مشکی، برای متن اصلی
+           کهربا: تنها رنگ دوم صفحه، فقط برای نشانگر آنلاین/تایپ
+           هر رنگ دیگر (خاکستری/سطح) از متغیرهای تم خود سایت می‌آید
            ═══════════════════════════════════════════════════════════ */
         :root {
             --ink-900: #6e52a7;
@@ -64,15 +64,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         .chat-wrap {
             max-width: 1200px;
-            /* این صفحه ثابت (overflow:hidden) و بدونِ اسکرولِ خودِ body است،
-               پس ارتفاعِ فوترِ چسبان (site-footer) هم باید صریحاً از بودجهٔ
-               ارتفاع کم بشه، وگرنه فوتر رویِ کادرِ تایپِ چت می‌افته */
+            /* این صفحه ثابت (overflow:hidden) و بدون اسکرول خود body است،
+               پس ارتفاع فوتر چسبان (site-footer) هم باید صریحا از بودجهٔ
+               ارتفاع کم بشه، وگرنه فوتر روی کادر تایپ چت می‌افته */
             height: calc(100vh - 70px - 32px - 34px);
-            /* 100vh در مرورگرهایِ موبایل نوارِ آدرس/دکمه‌هایِ گوشی رو حساب
-               نمی‌کنه (بزرگ‌تر از فضایِ واقعاً دیده‌شده‌ست) — چون این صفحه
-               اسکرول نداره، هرچی بیرون از فضایِ واقعی بیفته (فوتر، دکمه‌ی
-               شناور) اصلاً دیده نمی‌شه. 100dvh فضایِ واقعیِ دیده‌شده رو
-               می‌ده؛ خط بالا صرفاً fallbackِ مرورگرهایِ خیلی قدیمیه */
+            /* 100vh در مرورگرهای موبایل نوار آدرس/دکمه‌های گوشی رو حساب
+               نمی‌کنه (بزرگ‌تر از فضای واقعا دیده‌شده‌ست) — چون این صفحه
+               اسکرول نداره، هرچی بیرون از فضای واقعی بیفته (فوتر، دکمه‌ی
+               شناور) اصلا دیده نمی‌شه. 100dvh فضای واقعی دیده‌شده رو
+               می‌ده؛ خط بالا صرفا fallback مرورگرهای خیلی قدیمیه */
             height: calc(100dvh - 70px - 32px - 34px);
             margin: 16px auto;
             padding: 0 16px;
@@ -98,7 +98,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             max-width: 400px !important;
         }
 
-        /* ── سایدبار — سطحِ ساده و روشن، مثلِ لیستِ گفتگویِ تلگرام ── */
+        /* ── سایدبار — سطح ساده و روشن، مثل لیست گفتگوی تلگرام ── */
         .chat-sidebar {
             width: 320px;
             flex-shrink: 0;
@@ -135,7 +135,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             font-variant-numeric: tabular-nums;
         }
 
-        /* دکمه‌ی شناور «گفتگوی جدید» — مثلِ FAB تلگرام، گوشه‌ی سایدبار */
+        /* دکمه‌ی شناور «گفتگوی جدید» — مثل FAB تلگرام، گوشه‌ی سایدبار */
         .chat-new-btn {
             position: absolute;
             inset-inline-start: 18px;
@@ -194,7 +194,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             border-color: var(--ink-900);
         }
 
-        /* دکمه‌ی پاک‌کردنِ سرچ — فقط وقتی متنی تایپ شده نشون داده می‌شه */
+        /* دکمه‌ی پاک‌کردن سرچ — فقط وقتی متنی تایپ شده نشون داده می‌شه */
         .chat-search-box .chat-search-clear {
             position: absolute;
             top: 40%;
@@ -229,7 +229,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             padding-bottom: 76px;
         }
 
-        /* ── نتایجِ جستجوی سراسری ── */
+        /* ── نتایج جستجوی سراسری ── */
         .chat-search-results-heading {
             padding: 12px 18px 4px;
             font-size: .68rem;
@@ -289,8 +289,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             color: #fff;
         }
 
-        /* ردیفِ تختِ ساده، بدونِ کارت/حاشیه — جداسازی فقط با فاصله‌گذاری و
-           هاورِ ظریف، مثلِ لیستِ گفتگویِ تلگرام */
+        /* ردیف تخت ساده، بدون کارت/حاشیه — جداسازی فقط با فاصله‌گذاری و
+           هاور ظریف، مثل لیست گفتگوی تلگرام */
         .chat-conv-item {
             display: flex;
             align-items: center;
@@ -457,12 +457,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         /* جداکننده‌ی تاریخ — خنثی و کم‌رنگ‌تر از جداکننده‌ی «خوانده‌نشده»
            تا با اون اشتباه گرفته نشه.
-           🔒 شناور (مثلِ تلگرام): چون هر جداکننده دقیقاً یک‌بار، درست بالایِ
-           پیام‌هایِ همون روز، به‌عنوانِ فرزندِ مستقیمِ #chatMessages درج
-           می‌شه (نه داخلِ یه رَپرِ دیگه)، position:sticky با top:0 خودش
-           به‌طورِ طبیعی این رفتار رو می‌ده: تا وقتی پیام‌هایِ همون روز رویِ
-           صفحه‌ن، برچسب بالا می‌چسبه؛ به‌محضِ رسیدن به جداکننده‌ی روزِ بعد،
-           خودکار جاش رو بهش می‌ده — بدون نیاز به هیچ کدِ جاوااسکریپتِ اسکرول */
+           🔒 شناور (مثل تلگرام): چون هر جداکننده دقیقا یک‌بار، درست بالای
+           پیام‌های همون روز، به‌عنوان فرزند مستقیم #chatMessages درج
+           می‌شه (نه داخل یه رپر دیگه)، position:sticky با top:0 خودش
+           به‌طور طبیعی این رفتار رو می‌ده: تا وقتی پیام‌های همون روز روی
+           صفحه‌ن، برچسب بالا می‌چسبه؛ به‌محض رسیدن به جداکننده‌ی روز بعد،
+           خودکار جاش رو بهش می‌ده — بدون نیاز به هیچ کد جاوااسکریپت اسکرول */
         .chat-date-divider {
             display: flex;
             align-items: center;
@@ -488,8 +488,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             background: var(--surface-3, rgba(255, 255, 255, .08));
         }
 
-        /* پیامِ سیستمی/رویدادی («فلانی به گروه اضافه شد») — بدونِ حباب،
-           بدونِ آواتار، وسط‌چین؛ دقیقاً مثلِ تلگرام/واتساپ */
+        /* پیام سیستمی/رویدادی («فلانی به گروه اضافه شد») — بدون حباب،
+           بدون آواتار، وسط‌چین؛ دقیقا مثل تلگرام/واتساپ */
         .chat-system-message {
             display: flex;
             align-items: center;
@@ -659,8 +659,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             cursor: not-allowed;
         }
 
-        /* دکمه‌ی پاک‌کردنِ متنِ جست‌وجویِ داخلِ گفتگو — جدا از دکمه‌ی
-           بستن‌کاملِ نوارِ جست‌وجو (chatSearchToggleBtn)؛ فقط متن رو پاک
+        /* دکمه‌ی پاک‌کردن متن جست‌وجوی داخل گفتگو — جدا از دکمه‌ی
+           بستن‌کامل نوار جست‌وجو (chatSearchToggleBtn)؛ فقط متن رو پاک
            می‌کنه و نوار باز می‌مونه */
         .chat-msg-search-clear-btn {
             display: none;
@@ -681,7 +681,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             color: #fff;
         }
 
-        /* ── نوارِ پیامِ سنجاق‌شده ── */
+        /* ── نوار پیام سنجاق‌شده ── */
         .chat-pinned-banner {
             display: flex;
             align-items: center;
@@ -822,7 +822,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             margin-bottom: 3px;
         }
 
-        /* در RTL، flex-start معادلِ سمتِ راست است — پیام‌های خودم راست، طرفِ مقابل چپ */
+        /* در RTL، flex-start معادل سمت راست است — پیام‌های خودم راست، طرف مقابل چپ */
         .chat-bubble-row.own {
             justify-content: flex-start;
         }
@@ -831,10 +831,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             justify-content: flex-end;
         }
 
-        /* هاله‌ی سرتاسری (به‌اندازه‌ی کلِ عرضِ فضایِ چت) وقتی از روی بنرِ
-           پیامِ سنجاق‌شده به این پیام می‌پریم — چون خودِ ردیف (نه حبابِ داخلش)
-           تمامِ عرض رو می‌گیره، پس‌زمینه‌دادن به همین ردیف خودبه‌خود یک نوارِ
-           سرتاسریِ چپ‌به‌راست می‌سازه، نه فقط دورِ حباب */
+        /* هاله‌ی سرتاسری (به‌اندازه‌ی کل عرض فضای چت) وقتی از روی بنر
+           پیام سنجاق‌شده به این پیام می‌پریم — چون خود ردیف (نه حباب داخلش)
+           تمام عرض رو می‌گیره، پس‌زمینه‌دادن به همین ردیف خودبه‌خود یک نوار
+           سرتاسری چپ‌به‌راست می‌سازه، نه فقط دور حباب */
         .chat-bubble-row.pinned-jump-highlight {
             border-radius: 8px;
             animation: chat-pinned-jump-fade 3s ease-out;
@@ -884,7 +884,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             margin-inline-start: 4px;
         }
 
-        /* ── منویِ راست‌کلیک ── */
+        /* ── منوی راست‌کلیک ── */
         .chat-ctx-menu {
             position: fixed;
             z-index: 2000;
@@ -986,7 +986,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             background: #fbeae7;
         }
 
-        /* ── نوارِ ویرایش ── */
+        /* ── نوار ویرایش ── */
         .chat-edit-banner {
             display: none;
             align-items: center;
@@ -1015,7 +1015,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             font-size: 1.05rem;
         }
 
-        /* ── نوارِ پاسخ ── */
+        /* ── نوار پاسخ ── */
         .chat-reply-banner {
             display: none;
             align-items: center;
@@ -1060,7 +1060,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             font-size: 1.05rem;
         }
 
-        /* ── نقل‌قول در حبابِ پاسخ ── */
+        /* ── نقل‌قول در حباب پاسخ ── */
         .chat-bubble-quote {
             border-right: 3px solid rgba(255, 255, 255, .5);
             padding: 4px 9px;
@@ -1095,7 +1095,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             font-style: italic;
         }
 
-        /* حباب‌ها: رنگِ تخت، بدونِ گرادیان؛ گوشه‌ی نزدیک به فرستنده (دُم) تیزتر */
+        /* حباب‌ها: رنگ تخت، بدون گرادیان؛ گوشه‌ی نزدیک به فرستنده (دم) تیزتر */
         .chat-bubble-row.own .chat-bubble {
             background: var(--bubble-own-bg);
             color: #fff;
@@ -1127,9 +1127,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         .chat-bubble-pin-icon {
             margin-inline-end: 3px;
             font-size: .72rem;
-            /* رنگِ ثابتِ بنفش رویِ حبابِ خودم (که پس‌زمینه‌اش خودش بنفشه) اصلاً
-               دیده نمی‌شد؛ inherit همیشه هم‌رنگِ متنِ همون حباب می‌شه — سفید
-               رویِ حبابِ خودم، تیره رویِ حبابِ طرفِ مقابل — یعنی همیشه قابلِ‌دیدنه */
+            /* رنگ ثابت بنفش روی حباب خودم (که پس‌زمینه‌اش خودش بنفشه) اصلا
+               دیده نمی‌شد؛ inherit همیشه هم‌رنگ متن همون حباب می‌شه — سفید
+               روی حباب خودم، تیره روی حباب طرف مقابل — یعنی همیشه قابل‌دیدنه */
             color: inherit;
         }
 
@@ -1180,7 +1180,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             background: rgba(0, 0, 0, .05);
         }
 
-        /* ─── گالریِ فایل/عکسِ مشترکِ گفتگو ─── */
+        /* ─── گالری فایل/عکس مشترک گفتگو ─── */
         .chat-media-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -1188,8 +1188,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             margin-bottom: 14px;
         }
 
-        /* پیامِ متنیِ «هنوز عکسی نیست» وقتی داخلِ گریدِ ۴ستونی می‌شینه، نباید
-           فقط تویِ یک ستونِ باریک (۱/۴ عرض) فشرده بشه — باید کلِ عرض رو بگیره */
+        /* پیام متنی «هنوز عکسی نیست» وقتی داخل گرید ۴ستونی می‌شینه، نباید
+           فقط توی یک ستون باریک (۱/۴ عرض) فشرده بشه — باید کل عرض رو بگیره */
         .chat-media-grid .chat-empty-list {
             grid-column: 1 / -1;
         }
@@ -1244,7 +1244,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             color: var(--text-muted);
         }
 
-        /* ─── دراورِ پروفایلِ طرفِ مقابل ─── */
+        /* ─── دراور پروفایل طرف مقابل ─── */
         .chat-profile-drawer-overlay {
             position: absolute;
             inset: 0;
@@ -1373,7 +1373,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             margin: 18px 0 10px;
         }
 
-        /* سوییچِ اعلان‌ها */
+        /* سوییچ اعلان‌ها */
         .chat-toggle-switch {
             position: relative;
             display: inline-block;
@@ -1673,7 +1673,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             cursor: not-allowed;
         }
 
-        /* ─── پیکرِ ایموجی ─── */
+        /* ─── پیکر ایموجی ─── */
         .chat-emoji-picker {
             position: absolute;
             bottom: 54px;
@@ -1710,7 +1710,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             background: var(--ink-050);
         }
 
-        /* ─── سوئیچِ دوگزینه‌ایِ «برایِ کیه؟» در مودالِ تعریفِ کار ─── */
+        /* ─── سوئیچ دوگزینه‌ای «برای کیه؟» در مودال تعریف کار ─── */
         .qt-toggle {
             display: flex;
             gap: 4px;
@@ -1795,7 +1795,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             color: #b3382c;
         }
 
-        /* ── مودالِ ارسالِ فایل/عکس همراه با توضیح ── */
+        /* ── مودال ارسال فایل/عکس همراه با توضیح ── */
         .chat-fc-modal-content {
             overflow: hidden;
         }
@@ -1871,7 +1871,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             border-top: 1px solid var(--border-soft, #eee);
         }
 
-        /* ── مودالِ گفتگوی جدید ── */
+        /* ── مودال گفتگوی جدید ── */
         #newChatModal .modal-dialog {
             max-width: 350px;
         }
@@ -1928,7 +1928,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             font-weight: 600;
         }
 
-        /* ── تبِ گفتگوی مستقیم / گروهِ جدید ── */
+        /* ── تب گفتگوی مستقیم / گروه جدید ── */
         .chat-modal-tabs {
             display: flex;
             gap: 4px;
@@ -1992,7 +1992,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             font-size: .85rem;
         }
 
-        /* ── مودالِ اطلاعاتِ گروه ── */
+        /* ── مودال اطلاعات گروه ── */
         .chat-group-avatar-wrap {
             display: flex;
             justify-content: center;
@@ -2073,8 +2073,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 margin: 0;
             }
 
-            /* رويِ گوشی‌هایِ دارایِ نوارِ اشاره‌ای (gesture bar) پایینِ صفحه،
-               ۱۸px پیش‌فرض کافی نیست و دکمه زیرِ اون نوار پنهان می‌شه */
+            /* روي گوشی‌های دارای نوار اشاره‌ای (gesture bar) پایین صفحه،
+               ۱۸px پیش‌فرض کافی نیست و دکمه زیر اون نوار پنهان می‌شه */
             .chat-new-btn {
                 bottom: calc(18px + env(safe-area-inset-bottom, 0px));
             }
@@ -2240,8 +2240,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 </div>
             </div>
 
-            <!-- دراورِ پروفایلِ طرفِ مقابل — عمداً داخلِ chat-shell، تا فقط رویِ
-                 خودِ صفحه‌یِ چت باز بشه، نه رویِ کلِ مانیتور/صفحه -->
+            <!-- دراور پروفایل طرف مقابل — عمدا داخل chat-shell، تا فقط روی
+                 خود صفحه‌ی چت باز بشه، نه روی کل مانیتور/صفحه -->
             <div class="chat-profile-drawer-overlay" id="chatProfileDrawerOverlay" onclick="closeChatProfileDrawer()"></div>
             <div class="chat-profile-drawer" id="chatProfileDrawer">
                 <div class="chat-profile-drawer-head">
@@ -2284,8 +2284,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 </div>
             </div>
 
-            <!-- دراورِ اطلاعاتِ گروه — دراورِ جدا از دراورِ پروفایلِ مستقیم،
-                 چون محتوایِ خیلی متفاوتی داره (اعضا/آپلودِ عکس/افزودنِ عضو) -->
+            <!-- دراور اطلاعات گروه — دراور جدا از دراور پروفایل مستقیم،
+                 چون محتوای خیلی متفاوتی داره (اعضا/آپلود عکس/افزودن عضو) -->
             <div class="chat-profile-drawer-overlay" id="groupInfoDrawerOverlay" onclick="closeGroupInfoDrawer()"></div>
             <div class="chat-profile-drawer" id="groupInfoDrawer">
                 <div class="chat-profile-drawer-head">
@@ -2327,7 +2327,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
     </div>
 
-    <!-- مودالِ گفتگوی جدید -->
+    <!-- مودال گفتگوی جدید -->
     <div class="modal fade" id="newChatModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -2353,8 +2353,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
     </div>
 
-    <!-- مودالِ اطلاعاتِ گروه -->
-    <!-- مودالِ فایل‌ها و عکس‌هایِ مشترکِ گفتگو -->
+    <!-- مودال اطلاعات گروه -->
+    <!-- مودال فایل‌ها و عکس‌های مشترک گفتگو -->
     <div class="modal fade" id="mediaGalleryModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -2371,8 +2371,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
     </div>
 
-    <!-- دراورِ پروفایلِ طرفِ مقابل (فقط گفتگویِ مستقیم) -->
-    <!-- مودالِ هدایت پیام -->
+    <!-- دراور پروفایل طرف مقابل (فقط گفتگوی مستقیم) -->
+    <!-- مودال هدایت پیام -->
     <div class="modal fade" id="forwardModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -2388,7 +2388,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
     </div>
 
-    <!-- مودالِ تأییدِ حذفِ پیام -->
+    <!-- مودال تأیید حذف پیام -->
     <div class="modal fade" id="deleteMessageModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -2413,12 +2413,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
     </div>
 
-    <!-- مودالِ تنظیمِ اختیاراتِ اختصاصیِ یک مدیرِ گروه (فقط سازنده) -->
+    <!-- مودال تنظیم اختیارات اختصاصی یک مدیر گروه (فقط سازنده) -->
     <div class="modal fade" id="groupMemberPermissionsModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h6 class="modal-title">اختیاراتِ <span id="gmpMemberName"></span></h6>
+                    <h6 class="modal-title">اختیارات <span id="gmpMemberName"></span></h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="gmpPermissionList"></div>
@@ -2430,7 +2430,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
     </div>
 
-    <!-- مودالِ تعریفِ کار از رویِ یک پیامِ چت -->
+    <!-- مودال تعریف کار از روی یک پیام چت -->
     <div class="modal fade" id="quickTaskModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -2493,7 +2493,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
     </div>
 
-    <!-- مودالِ ارسالِ فایل/عکس همراه با توضیح -->
+    <!-- مودال ارسال فایل/عکس همراه با توضیح -->
     <div class="modal fade" id="fileCaptionModal" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content chat-fc-modal-content">
@@ -2512,7 +2512,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
     </div>
 
-    <!-- منویِ راست‌کلیکِ پیام -->
+    <!-- منوی راست‌کلیک پیام -->
     <div class="chat-ctx-menu" id="chatCtxMenu">
         <div class="chat-ctx-emoji-row">
             <span onclick="reactFromCtxMenu('👍')">👍</span>
@@ -2552,7 +2552,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         </div>
     </div>
 
-    <!-- راست‌کلیک روی یک ردیفِ گفتگو در لیست (فقط گفتگوهایِ مستقیم) -->
+    <!-- راست‌کلیک روی یک ردیف گفتگو در لیست (فقط گفتگوهای مستقیم) -->
     <div class="chat-ctx-menu" id="chatConvCtxMenu">
         <div class="chat-ctx-menu-item danger" onclick="deleteConversationFromCtxMenu()">
             <i class="bi bi-trash"></i>
@@ -2561,13 +2561,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
     </div>
 
     <script>
-        // ⚠️ عمداً بدونِ «= null»: header.php از قبل، توی یک IIFE سینکرون (که زودتر از این
+        // ⚠️ عمدا بدون «= null»: header.php از قبل، توی یک IIFE سینکرون (که زودتر از این
         // اسکریپت اجرا می‌شه)، authToken رو درست از localStorage خونده. اگه اینجا با
-        // «= null» دوباره تعریفش کنیم، همون مقدارِ درستِ header.php رو پاک می‌کنه — و چون
+        // «= null» دوباره تعریفش کنیم، همون مقدار درست header.php رو پاک می‌کنه — و چون
         // initializeHeader() توی header.php هم زودتر (روی DOMContentLoaded) اجرا می‌شه و
         // authToken رو در اون لحظه null می‌بینه، loadAttendanceStatus/loadNotifications و
-        // بقیه‌ی کارهای هدر (که پشتِ if(authToken) قفلن) رو کلاً رد می‌کنه — دقیقاً همون
-        // چیزی که باعث می‌شد آیکنِ ورود/خروج توی صفحه‌ی چت برای همیشه لودینگ بمونه.
+        // بقیه‌ی کارهای هدر (که پشت if(authToken) قفلن) رو کلا رد می‌کنه — دقیقا همون
+        // چیزی که باعث می‌شد آیکن ورود/خروج توی صفحه‌ی چت برای همیشه لودینگ بمونه.
         var authToken;
         var myUserId = null;
         var conversations = [];
@@ -2575,27 +2575,27 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         var activeConversationTitle = '';
         var activeConversationType = 'direct';
         var lastMessageId = 0;
-        // ── بارگذاریِ پیام‌های قدیمی‌تر با اسکرول به بالا ──
-        var oldestMessageId = 0;   // کوچک‌ترین idِ نمایش‌داده‌شده
-        var lastAppendedDateKey = null; // تاریخِ (میلادیِ خام) آخرین پیامِ اضافه‌شده به‌ته لیست — برایِ تشخیصِ نیازِ جداکننده‌ی تاریخ
-        var hasMoreOlder = false;  // آیا در دیتابیس پیامِ قدیمی‌ترِ نمایش‌داده‌نشده هست؟
-        var loadingOlder = false;  // گاردِ همزمانی — جلوی درخواستِ تکراری حینِ اسکرول
+        // ── بارگذاری پیام‌های قدیمی‌تر با اسکرول به بالا ──
+        var oldestMessageId = 0;   // کوچک‌ترین id نمایش‌داده‌شده
+        var lastAppendedDateKey = null; // تاریخ (میلادی خام) آخرین پیام اضافه‌شده به‌ته لیست — برای تشخیص نیاز جداکننده‌ی تاریخ
+        var hasMoreOlder = false;  // آیا در دیتابیس پیام قدیمی‌تر نمایش‌داده‌نشده هست؟
+        var loadingOlder = false;  // گارد همزمانی — جلوی درخواست تکراری حین اسکرول
         var pendingFiles = [];
         var pollTimer = null;
-        var readReceipts = {}; // user_id -> آخرین پیامِ‌خوانده‌شده‌یِ او، فقط برایِ گفتگویِ فعال
+        var readReceipts = {}; // user_id -> آخرین پیام‌خوانده‌شده‌ی او، فقط برای گفتگوی فعال
         var pinnedMessage = null; // { id, snippet, user_name, is_own } یا null
         var pinnedCanManage = false;
-        var activeGroupMembers = []; // [{id, full_name}] — فقط برایِ گفتگویِ گروهیِ فعال، برایِ منشن
-        var activeGroupIsCreator = false; // آیا کاربرِ جاری سازنده‌یِ همین گروهِ فعال است — برایِ حذفِ پیامِ دیگران
-        var activeGroupCanManage = false; // سازنده یا مدیر — برایِ نمایشِ کنترل‌هایِ مدیریتی در دراورِ اطلاعاتِ گروه
+        var activeGroupMembers = []; // [{id, full_name}] — فقط برای گفتگوی گروهی فعال، برای منشن
+        var activeGroupIsCreator = false; // آیا کاربر جاری سازنده‌ی همین گروه فعال است — برای حذف پیام دیگران
+        var activeGroupCanManage = false; // سازنده یا مدیر — برای نمایش کنترل‌های مدیریتی در دراور اطلاعات گروه
 
-        // ── پرش به اولین پیامِ خوانده‌نشده هنگامِ بازکردنِ گفتگو (مثلِ تلگرام/سروش) ──
-        var unreadDividerBeforeId = 0;  // idِ پیامی که خطِ «پیام‌های خوانده‌نشده» باید درست بالایش قرار بگیرد؛ فقط یک‌بار مصرف می‌شود
-        var readTrackMaxSeenId = 0;     // بزرگ‌ترین idِ پیامی که تاکنون واقعاً روی صفحه دیده شده (از IntersectionObserver)
-        var readTrackSentUpToId = 0;    // آخرین idـی که با موفقیت به mark-read.php فرستاده شده — از تکرارِ بی‌جهت جلوگیری می‌کند
+        // ── پرش به اولین پیام خوانده‌نشده هنگام بازکردن گفتگو (مثل تلگرام/سروش) ──
+        var unreadDividerBeforeId = 0;  // id پیامی که خط «پیام‌های خوانده‌نشده» باید درست بالایش قرار بگیرد؛ فقط یک‌بار مصرف می‌شود
+        var readTrackMaxSeenId = 0;     // بزرگ‌ترین id پیامی که تاکنون واقعا روی صفحه دیده شده (از IntersectionObserver)
+        var readTrackSentUpToId = 0;    // آخرین idـی که با موفقیت به mark-read.php فرستاده شده — از تکرار بی‌جهت جلوگیری می‌کند
         var readTrackDebounce = null;
         var chatMsgObserver = (typeof IntersectionObserver !== 'undefined') ? new IntersectionObserver(onMessageRowVisible, {
-            root: document.getElementById('chatMessages'), // باید نسبتِ به همین کادرِ اسکرول‌شونده حساب شود، نه کلِ ویوپورت صفحه
+            root: document.getElementById('chatMessages'), // باید نسبت به همین کادر اسکرول‌شونده حساب شود، نه کل ویوپورت صفحه
             threshold: 0.6
         }) : null;
 
@@ -2644,7 +2644,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 }
             });
             composer.addEventListener('blur', function() {
-                // تأخیرِ کوتاه تا رویدادِ کلیک روی گزینه‌یِ اتوکامپلیت زودتر ثبت شود
+                // تأخیر کوتاه تا رویداد کلیک روی گزینه‌ی اتوکامپلیت زودتر ثبت شود
                 setTimeout(closeMentionAutocomplete, 150);
                 setTimeout(closeLinkRefAutocomplete, 150);
             });
@@ -2729,21 +2729,21 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
             pollTimer = setInterval(pollForUpdates, 4000);
 
-            // نشانگرِ «در حالِ تایپ» — بازه‌ی کوتاه‌تر تا واکنشِ سریع‌تری حس بشه
+            // نشانگر «در حال تایپ» — بازه‌ی کوتاه‌تر تا واکنش سریع‌تری حس بشه
             setInterval(pollTypingStatus, 2000);
 
-            // ثبتِ حضور در صفحه‌ی چت — برای «آخرین بازدید» در مودالِ گفتگوی جدید
+            // ثبت حضور در صفحه‌ی چت — برای «آخرین بازدید» در مودال گفتگوی جدید
             sendChatPing();
             setInterval(sendChatPing, 60000);
 
-            // نمایشِ دکمهٔ «برو به آخرین پیام» وقتی کاربر از پایینِ لیست فاصله می‌گیرد
+            // نمایش دکمهٔ «برو به آخرین پیام» وقتی کاربر از پایین لیست فاصله می‌گیرد
             document.getElementById('chatMessages').addEventListener('scroll', function () {
                 var el = this;
                 var distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
                 document.getElementById('chatScrollBottomBtn').classList.toggle('show', distanceFromBottom > 200);
-                // اگه کاربر خودش دوباره به پایین برگشت، بجِ «پیامِ جدید» بی‌مورد می‌شه
+                // اگه کاربر خودش دوباره به پایین برگشت، بج «پیام جدید» بی‌مورد می‌شه
                 if (distanceFromBottom <= 200) { chatNewMsgCount = 0; updateChatNewMsgBadge(); }
-                // نزدیکِ بالای لیست → پیام‌های قدیمی‌ترِ بعدی را بیاور
+                // نزدیک بالای لیست → پیام‌های قدیمی‌تر بعدی را بیاور
                 if (el.scrollTop < 120) prependOlderMessages();
             });
 
@@ -2764,8 +2764,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             updateChatNewMsgBadge();
         }
 
-        // آیا کاربر همین الان نزدیکِ پایینِ لیستِ پیام‌هاست؟ (هم‌آستانه با
-        // دکمه‌ی «برو به آخرین پیام») — برایِ تصمیم‌گیری که پیامِ تازه‌رسیده
+        // آیا کاربر همین الان نزدیک پایین لیست پیام‌هاست؟ (هم‌آستانه با
+        // دکمه‌ی «برو به آخرین پیام») — برای تصمیم‌گیری که پیام تازه‌رسیده
         // خودکار اسکرول کنه یا فقط بج بخوره
         function isChatNearBottom() {
             var el = document.getElementById('chatMessages');
@@ -2798,8 +2798,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
 
-        // رشدِ خودکارِ کادرِ نوشتن تا سقفِ ۱۰ خط؛ بعد از آن اسکرولِ داخلیِ خودِ کادر فعال می‌شود
-        // ─────────────── پیکرِ ایموجی (سبک، بدونِ کتابخانه‌یِ بیرونی) ───────────────
+        // رشد خودکار کادر نوشتن تا سقف ۱۰ خط؛ بعد از آن اسکرول داخلی خود کادر فعال می‌شود
+        // ─────────────── پیکر ایموجی (سبک، بدون کتابخانه‌ی بیرونی) ───────────────
         var EMOJI_LIST = [
             '😀', '😁', '😂', '🤣', '😊', '😍', '😘', '😉', '😎', '🤩',
             '🥳', '😇', '🙂', '🙃', '😅', '😆', '😋', '😜', '🤗', '🤔',
@@ -2816,7 +2816,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         function renderEmojiPicker() {
             var box = document.getElementById('chatEmojiPicker');
-            if (box.childElementCount) return; // فقط بارِ اول
+            if (box.childElementCount) return; // فقط بار اول
             box.innerHTML = EMOJI_LIST.map(function (e) {
                 return '<span onclick="insertEmoji(\'' + e + '\')">' + e + '</span>';
             }).join('');
@@ -2845,7 +2845,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }
         });
 
-        // درجِ ایموجیِ انتخاب‌شده در محلِ نشانگرِ ماوس داخلِ کادرِ پیام (نه لزوماً انتهایِ متن)
+        // درج ایموجی انتخاب‌شده در محل نشانگر ماوس داخل کادر پیام (نه لزوما انتهای متن)
         function insertEmoji(emoji) {
             var input = document.getElementById('chatComposerInput');
             var start = input.selectionStart ?? input.value.length;
@@ -2875,15 +2875,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }
         }
 
-        // ─────────────── جستجو در پیام‌های گفتگویِ جاری ───────────────
+        // ─────────────── جستجو در پیام‌های گفتگوی جاری ───────────────
         // ✅ حالا با api/chat/search-messages.php (محدود به همین گفتگو، با
-        // conversation_id) کلِ تاریخچه رو می‌گرده، نه فقط پیام‌هایی که تصادفاً
-        // همین الان لود شدن — قبلاً فقط DOM رو می‌گشت (کدِ قدیمی، محدودیتش
-        // مستندشده بود) و برایِ پیام‌هایِ قدیمی‌ترِ لودنشده هیچی پیدا نمی‌کرد
-        var msgSearchMatches = []; // نتایجِ خامِ API: [{message_id, snippet, ...}]
+        // conversation_id) کل تاریخچه رو می‌گرده، نه فقط پیام‌هایی که تصادفا
+        // همین الان لود شدن — قبلا فقط DOM رو می‌گشت (کد قدیمی، محدودیتش
+        // مستندشده بود) و برای پیام‌های قدیمی‌تر لودنشده هیچی پیدا نمی‌کرد
+        var msgSearchMatches = []; // نتایج خام API: [{message_id, snippet, ...}]
         var msgSearchActiveIdx = -1;
         var msgSearchDebounce = null;
-        var msgSearchReqSeq = 0; // نادیده‌گرفتنِ پاسخِ دیرکرده‌یِ یک جست‌وجویِ قدیمی‌تر
+        var msgSearchReqSeq = 0; // نادیده‌گرفتن پاسخ دیرکرده‌ی یک جست‌وجوی قدیمی‌تر
 
         function toggleMsgSearch() {
             var bar = document.getElementById('chatMsgSearchBar');
@@ -2905,9 +2905,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             updateMsgSearchCount();
         }
 
-        // دکمه‌ی ضربدرِ داخلِ نوارِ جست‌وجویِ گفتگو — فقط متن رو پاک می‌کنه؛
-        // برخلافِ closeMsgSearch، نوار همچنان باز می‌مونه (کاربر می‌تونه
-        // بلافاصله عبارتِ دیگه‌ای تایپ کنه)
+        // دکمه‌ی ضربدر داخل نوار جست‌وجوی گفتگو — فقط متن رو پاک می‌کنه؛
+        // برخلاف closeMsgSearch، نوار همچنان باز می‌مونه (کاربر می‌تونه
+        // بلافاصله عبارت دیگه‌ای تایپ کنه)
         function clearMsgSearchText() {
             var input = document.getElementById('chatMsgSearchInput');
             input.value = '';
@@ -2957,7 +2957,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     })
                     .then(r => r.json())
                     .then(data => {
-                        // گفتگو عوض شده یا جست‌وجویِ تازه‌تری در راهه — این پاسخِ کهنه رو نادیده بگیر
+                        // گفتگو عوض شده یا جست‌وجوی تازه‌تری در راهه — این پاسخ کهنه رو نادیده بگیر
                         if (mySeq !== msgSearchReqSeq || convId !== activeConversationId) return;
                         msgSearchMatches = (data.success && data.results) ? data.results : [];
                         msgSearchActiveIdx = msgSearchMatches.length ? 0 : -1;
@@ -2993,24 +2993,24 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 return;
             }
 
-            // پیام هنوز در DOM لود نشده — یه دورِ سبک (بدونِ resetِ کاملِ
-            // openConversation) دورِ همین پیام لود می‌کنیم؛ نوارِ جست‌وجو و
-            // پیش‌نویسِ کادرِ پیام و... هیچ‌کدوم دست نمی‌خورن
+            // پیام هنوز در DOM لود نشده — یه دور سبک (بدون reset کامل
+            // openConversation) دور همین پیام لود می‌کنیم؛ نوار جست‌وجو و
+            // پیش‌نویس کادر پیام و... هیچ‌کدوم دست نمی‌خورن
             jumpToMessageInConversation(match.message_id, function () {
                 highlightSearchTermInRow(match.message_id, term);
             });
         }
 
-        // بارگذاریِ یک بازه‌ی جدید از همین گفتگویِ بازشده، دورِ یک پیامِ
-        // مشخص — برایِ جهش‌هایی مثلِ جست‌وجویِ داخلِ گفتگو که نیازی به
-        // resetِ کاملِ openConversation (پیش‌نویس، اعضایِ گروه، پیامِ
+        // بارگذاری یک بازه‌ی جدید از همین گفتگوی بازشده، دور یک پیام
+        // مشخص — برای جهش‌هایی مثل جست‌وجوی داخل گفتگو که نیازی به
+        // reset کامل openConversation (پیش‌نویس، اعضای گروه، پیام
         // سنجاق‌شده، و...) ندارن.
         //
-        // 🔒 عمداً innerHTML قبل از fetch پاک نمی‌شه — طبقِ گزارشِ کاربر،
-        // خالی‌کردنِ فوریِ صفحه و بعد صبرکردنِ ۱-۲ثانیه‌ای برایِ جوابِ شبکه
-        // یه لحظه‌ی خالیِ زشت می‌سازه. این‌جا پاک‌کردن و رندرِ تازه هر دو
-        // *بعد* از رسیدنِ جواب و داخلِ یک تیکِ همزمان انجام می‌شن، پس
-        // مرورگر هیچ فریمِ خالی‌ای بینشون رندر نمی‌کنه.
+        // 🔒 عمدا innerHTML قبل از fetch پاک نمی‌شه — طبق گزارش کاربر،
+        // خالی‌کردن فوری صفحه و بعد صبرکردن ۱-۲ثانیه‌ای برای جواب شبکه
+        // یه لحظه‌ی خالی زشت می‌سازه. این‌جا پاک‌کردن و رندر تازه هر دو
+        // *بعد* از رسیدن جواب و داخل یک تیک همزمان انجام می‌شن، پس
+        // مرورگر هیچ فریم خالی‌ای بینشون رندر نمی‌کنه.
         function jumpToMessageInConversation(messageId, afterDone) {
             var convId = activeConversationId;
             fetch('../api/chat/messages.php?conversation_id=' + convId + '&limit=40&around_id=' + messageId, {
@@ -3018,7 +3018,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 })
                 .then(r => r.json())
                 .then(data => {
-                    if (convId !== activeConversationId || !data.success) return; // کاربر جایِ دیگه‌ای رو باز کرده — این پاسخِ کهنه رو نادیده بگیر
+                    if (convId !== activeConversationId || !data.success) return; // کاربر جای دیگه‌ای رو باز کرده — این پاسخ کهنه رو نادیده بگیر
                     document.getElementById('chatMessages').innerHTML = '';
                     lastAppendedDateKey = null;
                     oldestMessageId = 0;
@@ -3031,16 +3031,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .catch(function () {});
         }
 
-        // هایلایتِ زردِ خودِ کلمه (نه فقط چشمک‌زدنِ کلِ حباب) — فقط وقتی که
-        // ردیفِ پیام قطعاً در DOM هست (بعد از اسکرول یا بعدِ لودشدن)
+        // هایلایت زرد خود کلمه (نه فقط چشمک‌زدن کل حباب) — فقط وقتی که
+        // ردیف پیام قطعا در DOM هست (بعد از اسکرول یا بعد لودشدن)
         //
-        // 🔒 قبلاً سلکتور `.chat-bubble > div:not(.chat-bubble-quote)` بود که
-        // فقط اولین divِ زیرِ .chat-bubble رو می‌گرفت که quote نباشه — ولی
-        // برایِ پیامِ گروهی (که یه div اسمِ فرستنده قبل از متن داره)، پیامِ
-        // هدایت‌شده (forward label)، یا پیامِ دارایِ عکس، اون «اولین div»
-        // اصلاً متنِ پیام نبود (بلکه اسمِ فرستنده/برچسبِ هدایت/عکس بود)، پس
-        // جست‌وجویِ کلمه توش همیشه شکست می‌خورد — دقیقاً همون «بعضی وقتا کار
-        // نمی‌کنه»یِ گزارش‌شده. الان مستقیم روی خودِ div.chat-bubble-text
+        // 🔒 قبلا سلکتور `.chat-bubble > div:not(.chat-bubble-quote)` بود که
+        // فقط اولین div زیر .chat-bubble رو می‌گرفت که quote نباشه — ولی
+        // برای پیام گروهی (که یه div اسم فرستنده قبل از متن داره)، پیام
+        // هدایت‌شده (forward label)، یا پیام دارای عکس، اون «اولین div»
+        // اصلا متن پیام نبود (بلکه اسم فرستنده/برچسب هدایت/عکس بود)، پس
+        // جست‌وجوی کلمه توش همیشه شکست می‌خورد — دقیقا همون «بعضی وقتا کار
+        // نمی‌کنه»ی گزارش‌شده. الان مستقیم روی خود div.chat-bubble-text
         // (که در appendMessages ساخته می‌شه) هدف می‌گیریم.
         function highlightSearchTermInRow(messageId, term) {
             if (!term) return;
@@ -3068,7 +3068,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             return ((parts[0] || '')[0] || '') + ((parts[1] || '')[0] || '');
         }
 
-        // پالتِ رنگِ آواتار — هر مخاطب بر اساسِ نامش رنگِ ثابتِ خودش را می‌گیرد (مثلِ تلگرام)
+        // پالت رنگ آواتار — هر مخاطب بر اساس نامش رنگ ثابت خودش را می‌گیرد (مثل تلگرام)
         var AVATAR_COLORS = ['#e0574a', '#e0972e', '#3f9e4d', '#3a9fc9', '#7c66d9', '#d4569a', '#2e9e93', '#c07b30'];
 
         function avatarColor(name) {
@@ -3078,11 +3078,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             return AVATAR_COLORS[hash % AVATAR_COLORS.length];
         }
 
-        // برایِ آواتارِ هدرِ گفتگو که به‌جایِ ساختِ کاملِ عنصر، فقط محتوایِ داخلی‌اش تغییر می‌کند
+        // برای آواتار هدر گفتگو که به‌جای ساخت کامل عنصر، فقط محتوای داخلی‌اش تغییر می‌کند
         function setAvatarContent(el, name, avatarUrl) {
             if (avatarUrl) {
                 el.style.background = '';
-                // avatarUrl مسیرِ فایلی است که سرور ساخته؛ باز هم برای اطمینان
+                // avatarUrl مسیر فایلی است که سرور ساخته؛ باز هم برای اطمینان
                 // کاراکترهای شکنندهٔ attribute را انکد می‌کنیم.
                 var safeUrl = String(avatarUrl).replace(/[<>"'\s]/g, encodeURIComponent);
                 el.innerHTML = '<img class="chat-avatar-img" src="../' + safeUrl + '" alt=""><span class="chat-avatar-online-dot"></span>';
@@ -3103,7 +3103,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 '</div>';
         }
 
-        // ─────────────── لیستِ گفتگوها ───────────────
+        // ─────────────── لیست گفتگوها ───────────────
         function loadConversations(cb) {
             fetch('../api/chat/conversations.php', {
                     headers: {
@@ -3141,9 +3141,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             var list = conversations.filter(c => !term || c.title.toLowerCase().includes(term));
 
             if (!list.length) {
-                // ⚠️ اگر کاربر در حالِ جستجوست، این پیام گمراه‌کننده است — چون این بخش
-                // فقط روی «عنوانِ گفتگو» فیلتر می‌کند، نه متنِ پیام‌ها؛ نتیجهٔ واقعیِ
-                // جستجوی پیام (اگر باشد) پایین‌تر، در بخشِ «پیام‌های یافت‌شده» نمایش داده می‌شود
+                // ⚠️ اگر کاربر در حال جستجوست، این پیام گمراه‌کننده است — چون این بخش
+                // فقط روی «عنوان گفتگو» فیلتر می‌کند، نه متن پیام‌ها؛ نتیجهٔ واقعی
+                // جستجوی پیام (اگر باشد) پایین‌تر، در بخش «پیام‌های یافت‌شده» نمایش داده می‌شود
                 el.innerHTML = term
                     ? ''
                     : '<div class="chat-empty-list">هنوز گفتگویی نیست</div>';
@@ -3151,7 +3151,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }
 
             el.innerHTML = list.map(c => {
-                // در گروه، چون چند فرستنده وجود دارد، پیش‌نمایشِ آخرین پیام با نامِ فرستنده مشخص می‌شود
+                // در گروه، چون چند فرستنده وجود دارد، پیش‌نمایش آخرین پیام با نام فرستنده مشخص می‌شود
                 var sender = c.is_own_last
                     ? 'شما: '
                     : (c.type !== 'direct' && c.last_message_sender_name ? c.last_message_sender_name.split(' ')[0] + ': ' : '');
@@ -3175,8 +3175,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     : (isDraft
                         ? '<div class="chat-conv-preview draft"><span class="chat-conv-draft-label">پیش‌نویس:</span> ' + preview + '</div>'
                         : '<div class="chat-conv-preview">' + preview + '</div>');
-                // راست‌کلیک برایِ حذفِ گفتگو فقط رویِ چت‌هایِ مستقیم (نه گروه —
-                // برایِ گروه معادلش «ترک گروه» از داخلِ خودِ گفتگوست)
+                // راست‌کلیک برای حذف گفتگو فقط روی چت‌های مستقیم (نه گروه —
+                // برای گروه معادلش «ترک گروه» از داخل خود گفتگوست)
                 var convCtxAttr = c.type === 'direct'
                     ? ' oncontextmenu="return openConvCtxMenu(event, ' + c.conversation_id + ')"'
                     : '';
@@ -3190,7 +3190,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }).join('');
         }
 
-        // ─────────────── جستجوی سراسری در متنِ پیام‌ها ───────────────
+        // ─────────────── جستجوی سراسری در متن پیام‌ها ───────────────
         var globalSearchDebounce = null;
 
         function onConvSearchInput() {
@@ -3208,8 +3208,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }, 300);
         }
 
-        // دکمه‌ی ضربدرِ داخلِ سرچ‌باکس + Esc — هر دو همینو صدا می‌زنن:
-        // پاک‌کردنِ عبارتِ جست‌وجو، مخفی‌کردنِ لیستِ نتایج، و فوکوسِ دوباره
+        // دکمه‌ی ضربدر داخل سرچ‌باکس + Esc — هر دو همینو صدا می‌زنن:
+        // پاک‌کردن عبارت جست‌وجو، مخفی‌کردن لیست نتایج، و فوکوس دوباره
         function clearConvSearch() {
             var input = document.getElementById('convSearchInput');
             input.value = '';
@@ -3256,25 +3256,25 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         function jumpToSearchResult(conversationId, messageId) {
-            // 🔒 عمداً عبارتِ جست‌وجو و لیستِ نتایج پاک/مخفی نمی‌شن — طبقِ
-            // خواسته، تا وقتی خودِ کاربر متن رو پاک نکنه یا Esc نزنه (پایین‌تر:
-            // onConvSearchKeydown)، بعدِ کلیک روی یه نتیجه و پرش به پیام، لیستِ
-            // نتایج همچنان روی صفحه می‌مونه تا بشه نتیجه‌یِ بعدی رو هم زد
+            // 🔒 عمدا عبارت جست‌وجو و لیست نتایج پاک/مخفی نمی‌شن — طبق
+            // خواسته، تا وقتی خود کاربر متن رو پاک نکنه یا Esc نزنه (پایین‌تر:
+            // onConvSearchKeydown)، بعد کلیک روی یه نتیجه و پرش به پیام، لیست
+            // نتایج همچنان روی صفحه می‌مونه تا بشه نتیجه‌ی بعدی رو هم زد
             var term = document.getElementById('convSearchInput').value.trim();
             openConversation(conversationId, messageId, null, term);
         }
 
-        // ─────────────── بازکردنِ یک گفتگو ───────────────
-        // fallbackInfo اختیاریه: {title, avatar_url} — برایِ اولین‌بار که با
-        // کسی چت می‌کنیم، گفتگویِ تازه‌ساخته‌شده هنوز پیامی نداره، پس توی
-        // لیستِ conversations نیست (که عمداً چت‌هایِ بدونِ‌پیام رو نشون نمی‌ده)؛
-        // بدونِ این fallback، هدر تا فرستادنِ اولین پیام و رفرش/سوییچ، خط‌تیره می‌موند
+        // ─────────────── بازکردن یک گفتگو ───────────────
+        // fallbackInfo اختیاریه: {title, avatar_url} — برای اولین‌بار که با
+        // کسی چت می‌کنیم، گفتگوی تازه‌ساخته‌شده هنوز پیامی نداره، پس توی
+        // لیست conversations نیست (که عمدا چت‌های بدون‌پیام رو نشون نمی‌ده)؛
+        // بدون این fallback، هدر تا فرستادن اولین پیام و رفرش/سوییچ، خط‌تیره می‌موند
         // highlightTerm اختیاریه: وقتی جهش از یه نتیجه‌ی جست‌وجو میاد (نه
-        // پرش به پیامِ خوانده‌نشده/سنجاق‌شده)، همون کلمه‌ی جست‌وجوشده رو هم
-        // (علاوه بر چشمک‌زدنِ کلِ ردیف) توی خودِ پیام زرد هایلایت می‌کنه —
-        // درست مثلِ جست‌وجویِ داخلِ گفتگو.
+        // پرش به پیام خوانده‌نشده/سنجاق‌شده)، همون کلمه‌ی جست‌وجوشده رو هم
+        // (علاوه بر چشمک‌زدن کل ردیف) توی خود پیام زرد هایلایت می‌کنه —
+        // درست مثل جست‌وجوی داخل گفتگو.
         function openConversation(id, jumpToMessageId, fallbackInfo, highlightTerm) {
-            saveComposerDraft(); // پیش‌نویسِ گفتگویِ قبلی (اگر بود) قبل از جابه‌جایی ذخیره بشه
+            saveComposerDraft(); // پیش‌نویس گفتگوی قبلی (اگر بود) قبل از جابه‌جایی ذخیره بشه
 
             activeConversationId = id;
             var conv = conversations.find(c => c.conversation_id === id);
@@ -3289,8 +3289,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('chatActiveView').style.display = 'flex';
             document.getElementById('chatHeadName').textContent = activeConversationTitle;
             document.getElementById('chatHeadInfoWrap').classList.add('clickable');
-            // چه مستقیم چه گروه، کنترلِ رسانه/اعلان الان از داخلِ دراورِ
-            // پروفایل/اطلاعاتِ گروه انجام می‌شه — آیکن‌هایِ جداگانهٔ هدر دیگه لازم نیستن
+            // چه مستقیم چه گروه، کنترل رسانه/اعلان الان از داخل دراور
+            // پروفایل/اطلاعات گروه انجام می‌شه — آیکن‌های جداگانهٔ هدر دیگه لازم نیستن
             document.getElementById('chatMediaGalleryBtn').style.display = 'none';
             document.getElementById('chatMuteToggleBtn').style.display = 'none';
             var headAvatar = document.getElementById('chatHeadAvatar');
@@ -3298,13 +3298,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             setAvatarContent(headAvatar, activeConversationTitle, conv ? conv.avatar_url : (fallbackInfo ? fallbackInfo.avatar_url : null));
             updateMuteButton(conv);
             updateChatHeadLastSeen(conv);
-            // 🔒 عمداً innerHTML اینجا پاک نمی‌شه (قبلاً اینجا بود) — طبقِ
-            // گزارشِ کاربر، خالی‌کردنِ فوریِ صفحه و بعد صبرکردنِ ۱ثانیه‌ای
-            // برایِ جوابِ شبکه یه لحظه‌ی خالیِ زشت می‌ساخت. پایین‌تر، داخلِ
+            // 🔒 عمدا innerHTML اینجا پاک نمی‌شه (قبلا اینجا بود) — طبق
+            // گزارش کاربر، خالی‌کردن فوری صفحه و بعد صبرکردن ۱ثانیه‌ای
+            // برای جواب شبکه یه لحظه‌ی خالی زشت می‌ساخت. پایین‌تر، داخل
             // then(data => ...)، درست قبل از appendMessages پاک می‌شه — یعنی
-            // پاک‌کردن و رندرِ تازه هر دو *بعد* از رسیدنِ جواب و توی یک تیکِ
-            // همزمان انجام می‌شن، پس مرورگر هیچ فریمِ خالی‌ای بینشون رندر
-            // نمی‌کنه (دقیقاً همون فیکسِ jumpToMessageInConversation).
+            // پاک‌کردن و رندر تازه هر دو *بعد* از رسیدن جواب و توی یک تیک
+            // همزمان انجام می‌شن، پس مرورگر هیچ فریم خالی‌ای بینشون رندر
+            // نمی‌کنه (دقیقا همون فیکس jumpToMessageInConversation).
             chatNewMsgCount = 0;
             updateChatNewMsgBadge();
             restoreComposerDraft(id);
@@ -3320,7 +3320,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             renderPinnedBanner();
             loadActiveGroupMembers();
 
-            // ── پرش به اولین پیامِ خوانده‌نشده: فقط وقتی جایی برای پرش صراحتاً
+            // ── پرش به اولین پیام خوانده‌نشده: فقط وقتی جایی برای پرش صراحتا
             // مشخص نشده (جستجو/ریپلای/پین هرکدام jumpToMessageId خودشان را می‌دهند) ──
             var isUnreadJump = false;
             if (!jumpToMessageId && conv && conv.unread_count > 0 && conv.first_unread_id) {
@@ -3347,8 +3347,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .then(data => {
                     if (data.success) {
                         document.getElementById('chatMessages').innerHTML = '';
-                        // ✅ در حالتِ پرش، اسکرولِ خودکار به پایین نمی‌خواهیم — به‌جایش
-                        // بعد از رندر، دقیقاً به همون پیامِ موردنظر اسکرول و هایلایت می‌شود
+                        // ✅ در حالت پرش، اسکرول خودکار به پایین نمی‌خواهیم — به‌جایش
+                        // بعد از رندر، دقیقا به همون پیام موردنظر اسکرول و هایلایت می‌شود
                         appendMessages(data.messages, !jumpToMessageId);
                         hasMoreOlder = !!data.has_more;   // اگر ۴۰ پیام کامل آمد، یعنی قدیمی‌ترها هم هست
                         loadConversations();
@@ -3386,7 +3386,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 })
                 .then(r => r.json())
                 .then(data => {
-                    if (convId !== activeConversationId) return; // گفتگو عوض شده — این پاسخِ کهنه نادیده گرفته می‌شود
+                    if (convId !== activeConversationId) return; // گفتگو عوض شده — این پاسخ کهنه نادیده گرفته می‌شود
                     if (data.success) {
                         activeGroupMembers = data.members;
                         activeGroupIsCreator = !!data.is_owner;
@@ -3400,8 +3400,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
-        // متنِ ورودی از قبل با esc() امن شده — الگو هم روی همان نسخه‌ی امن‌شده‌یِ
-        // نام‌ها ساخته می‌شود تا HTMLِ تزریق‌شده مطابقتِ درستی داشته باشد
+        // متن ورودی از قبل با esc() امن شده — الگو هم روی همان نسخه‌ی امن‌شده‌ی
+        // نام‌ها ساخته می‌شود تا HTML تزریق‌شده مطابقت درستی داشته باشد
         function highlightMentions(escapedText, members) {
             if (!members || !members.length) return escapedText;
             var sorted = members.slice().sort((a, b) => b.full_name.length - a.full_name.length);
@@ -3415,10 +3415,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             });
         }
 
-        // ─────────────── اتوکامپلیتِ منشن حینِ تایپ ───────────────
+        // ─────────────── اتوکامپلیت منشن حین تایپ ───────────────
         var mentionCandidates = [];
         var mentionActiveIndex = -1;
-        var mentionRangeStart = -1; // موقعیتِ کاراکترِ «@» در متنِ کادر، برایِ جایگزینی
+        var mentionRangeStart = -1; // موقعیت کاراکتر «@» در متن کادر، برای جایگزینی
 
         function checkMentionTrigger() {
             var box = document.getElementById('mentionAutocomplete');
@@ -3434,7 +3434,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 box.style.display = 'none';
                 return;
             }
-            // «@» باید ابتدایِ متن باشد یا بعد از فاصله/خطِ‌جدید — تا داخلِ ایمیل و... مچ نشود
+            // «@» باید ابتدای متن باشد یا بعد از فاصله/خط‌جدید — تا داخل ایمیل و... مچ نشود
             if (atIndex > 0 && !/\s/.test(textBefore[atIndex - 1])) {
                 box.style.display = 'none';
                 return;
@@ -3481,8 +3481,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         // ─────────────── ارجاع به کار/تیکت (#) در پیام ───────────────
-        // مشابهِ اتوکامپلیتِ منشن، ولی به‌جایِ لیستِ ثابتِ اعضایِ گروه، هر بار
-        // با فاصله (debounce) از دو APIِ جستجویِ سبک (کار/تیکت) نتیجه می‌گیره
+        // مشابه اتوکامپلیت منشن، ولی به‌جای لیست ثابت اعضای گروه، هر بار
+        // با فاصله (debounce) از دو API جستجوی سبک (کار/تیکت) نتیجه می‌گیره
         var linkRefCandidates = [];
         var linkRefActiveIndex = -1;
         var linkRefRangeStart = -1;
@@ -3500,7 +3500,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             return refs;
         }
 
-        // ورودی از قبل با esc() امن شده — الگو روی کاراکترهایِ ساده (#, حروفِ
+        // ورودی از قبل با esc() امن شده — الگو روی کاراکترهای ساده (#, حروف
         // لاتین، اعداد) کار می‌کنه که esc() دست‌نخورده می‌ذارتشون
         function highlightLinkRefs(escapedText) {
             return escapedText.replace(/#(task|ticket):(\d+)/g, function(full, type, id) {
@@ -3536,7 +3536,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             });
         }
 
-        // 'YYYY-MM-DD' میلادی → 'YYYY/MM/DD' شمسی با اعدادِ فارسی
+        // 'YYYY-MM-DD' میلادی → 'YYYY/MM/DD' شمسی با اعداد فارسی
         function toJalaliDateStr(gregorianDate) {
             if (!gregorianDate || !window.jalaali) return '';
             var parts = gregorianDate.split('-').map(Number);
@@ -3562,13 +3562,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             } else if (data.last_message) {
                 metaHtml = '<div class="chat-linkref-card-meta"><i class="bi bi-chat-left-text"></i>' + esc(data.last_message) + '</div>';
             }
-            // پیش‌نمایشِ پیوست‌ها فقط برایِ تیکت — کارتِ تسک به عنوان/مسئول/موعد
-            // بسنده می‌کنه (بدونِ تصویر، تا وابسته به سالم‌بودنِ فایلِ روی دیسک نباشه)
+            // پیش‌نمایش پیوست‌ها فقط برای تیکت — کارت تسک به عنوان/مسئول/موعد
+            // بسنده می‌کنه (بدون تصویر، تا وابسته به سالم‌بودن فایل روی دیسک نباشه)
             var thumbs = data.type === 'ticket' ? (data.attachments || []).map(function(a) {
                 if (a.is_image) {
-                    // اگه فایل روی دیسک وجود نداشت (رکوردِ یتیم در دیتابیس)، به‌جایِ
-                    // آیکنِ شکسته + نامِ فایل (که مرورگر به‌عنوانِ alt نشون می‌ده)،
-                    // با یک آیکنِ فایلِ ساده جایگزینش می‌کنیم
+                    // اگه فایل روی دیسک وجود نداشت (رکورد یتیم در دیتابیس)، به‌جای
+                    // آیکن شکسته + نام فایل (که مرورگر به‌عنوان alt نشون می‌ده)،
+                    // با یک آیکن فایل ساده جایگزینش می‌کنیم
                     return '<img src="' + a.url + '" alt="" onclick="event.stopPropagation();window.open(\'' + a.url + '\',\'_blank\')" ' +
                         'onerror="this.outerHTML=\'<div class=&quot;chat-linkref-file&quot; title=&quot;' + esc(a.name) + '&quot;><i class=&quot;bi bi-file-earmark&quot;></i></div>\'">';
                 }
@@ -3596,9 +3596,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 return;
             }
             var partial = textBefore.slice(hashIndex + 1);
-            // برخلافِ @منشن (که معمولاً یک کلمه‌ست)، عنوانِ کار/تیکت اغلب چندکلمه‌ایه؛
-            // قبلاً با اولین فاصله جستجو کاملاً بسته می‌شد و امکانِ جستجو با عنوانِ
-            // چندکلمه‌ای اصلاً وجود نداشت — الان فقط با خطِ‌جدید یا طولانی‌شدنِ
+            // برخلاف @منشن (که معمولا یک کلمه‌ست)، عنوان کار/تیکت اغلب چندکلمه‌ایه؛
+            // قبلا با اولین فاصله جستجو کاملا بسته می‌شد و امکان جستجو با عنوان
+            // چندکلمه‌ای اصلا وجود نداشت — الان فقط با خط‌جدید یا طولانی‌شدن
             // بیش‌ازحد (که دیگه به‌وضوح یک جستجو نیست) می‌بندیم
             if (/[\n\r]/.test(partial) || partial.length > 60) {
                 box.style.display = 'none';
@@ -3679,7 +3679,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             autoGrowComposer(input);
         }
 
-        // ─────────────── ری‌اکشنِ ایموجی ───────────────
+        // ─────────────── ری‌اکشن ایموجی ───────────────
         function reactionsHtml(messageId, reactions) {
             if (!reactions || !reactions.length) return '';
             return '<div class="chat-bubble-reactions" data-mid="' + messageId + '">' +
@@ -3752,7 +3752,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .catch(function() {});
         }
 
-        // ── جداکننده‌ی تاریخ (شمسی) بینِ گروه‌هایِ پیامِ روزهایِ مختلف ──
+        // ── جداکننده‌ی تاریخ (شمسی) بین گروه‌های پیام روزهای مختلف ──
         function chatDateKey(m) {
             return window.TimeSync ? TimeSync.dateOnly(m.created_at) : String(m.created_at || '').slice(0, 10);
         }
@@ -3761,8 +3761,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             var diff = TimeSync.daysFromToday(m.created_at); // ۰=امروز، ‑۱=دیروز، ...
             if (diff === 0) return 'امروز';
             if (diff === -1) return 'دیروز';
-            if (diff > -7) return TimeSync.weekdayName(m.created_at); // ۲ تا ۶ روزِ قبل: فقط اسمِ روز
-            return TimeSync.formatJalaliWithWeekday(m.created_at); // ۷+ روزِ قبل: روز + تاریخِ کامل
+            if (diff > -7) return TimeSync.weekdayName(m.created_at); // ۲ تا ۶ روز قبل: فقط اسم روز
+            return TimeSync.formatJalaliWithWeekday(m.created_at); // ۷+ روز قبل: روز + تاریخ کامل
         }
         function buildChatDateDivider(m) {
             var d = document.createElement('div');
@@ -3774,22 +3774,22 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         function appendMessages(msgs, scrollBottom, prepend) {
             var el = document.getElementById('chatMessages');
-            var prevKeyInPrependBatch = null; // فقط برایِ حالتِ prepend استفاده می‌شود
+            var prevKeyInPrependBatch = null; // فقط برای حالت prepend استفاده می‌شود
             var frag = prepend ? document.createDocumentFragment() : null;
             var prependLinkRefs = [];
             msgs.forEach(m => {
                 lastMessageId = Math.max(lastMessageId, m.id);
                 if (!oldestMessageId || m.id < oldestMessageId) oldestMessageId = m.id;
-                // 🔒 اگه این پیام از قبل رندر شده (مثلاً چون هم پول‌کردنِ دوره‌ایِ
-                // ۴ثانیه‌ای و هم پول‌کردنِ فوریِ بعدِ ارسال/هدایت، هم‌زمان با یک
-                // after_idِ یکسان به سرور رسیدن و هردو همون پیامِ تازه رو گرفتن)،
-                // یک ردیفِ تکراری نساز — این دقیقاً همون چیزی بود که باعث می‌شد
+                // 🔒 اگه این پیام از قبل رندر شده (مثلا چون هم پول‌کردن دوره‌ای
+                // ۴ثانیه‌ای و هم پول‌کردن فوری بعد ارسال/هدایت، هم‌زمان با یک
+                // after_id یکسان به سرور رسیدن و هردو همون پیام تازه رو گرفتن)،
+                // یک ردیف تکراری نساز — این دقیقا همون چیزی بود که باعث می‌شد
                 // یک پیام دوبار (یا یک هدایت، دوبار) روی صفحه دیده بشه
                 if (el.querySelector('.chat-bubble-row[data-message-id="' + m.id + '"]')) return;
                 if (el.querySelector('.chat-system-message[data-message-id="' + m.id + '"]')) return;
 
-                // پیامِ سیستمی/رویدادی (مثلاً «فلانی به گروه اضافه شد») — بدونِ
-                // حباب، بدونِ منویِ راست‌کلیک، فقط یه نوارِ خاکستریِ وسط‌چین
+                // پیام سیستمی/رویدادی (مثلا «فلانی به گروه اضافه شد») — بدون
+                // حباب، بدون منوی راست‌کلیک، فقط یه نوار خاکستری وسط‌چین
                 if (m.type === 'system') {
                     var sysDateKey = chatDateKey(m);
                     var sysRow = document.createElement('div');
@@ -3812,9 +3812,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     }
                     return;
                 }
-                // خطِ «پیام‌های خوانده‌نشده» — درست بالایِ اولین پیامِ خوانده‌نشده، فقط
+                // خط «پیام‌های خوانده‌نشده» — درست بالای اولین پیام خوانده‌نشده، فقط
                 // یک‌بار (unreadDividerBeforeId بلافاصله صفر می‌شود تا در پیام‌های
-                // بعدیِ همین دسته یا در after_id/prependِ بعدی دوباره درج نشود)
+                // بعدی همین دسته یا در after_id/prepend بعدی دوباره درج نشود)
                 var dividerRow = null;
                 if (!prepend && unreadDividerBeforeId && m.id === unreadDividerBeforeId) {
                     dividerRow = document.createElement('div');
@@ -3840,9 +3840,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     }
                 });
 
-                // ارجاع به کار/تیکت (#task:ID یا #ticket:ID داخلِ متنِ پیام) —
-                // متن جایگزینِ یک تگِ کوچکِ قابل‌کلیک می‌شه، و زیرِ پیام یک
-                // کارتِ پیش‌نمایش (عنوان/وضعیت/پیوست‌ها) به‌صورتِ async لود می‌شه
+                // ارجاع به کار/تیکت (#task:ID یا #ticket:ID داخل متن پیام) —
+                // متن جایگزین یک تگ کوچک قابل‌کلیک می‌شه، و زیر پیام یک
+                // کارت پیش‌نمایش (عنوان/وضعیت/پیوست‌ها) به‌صورت async لود می‌شه
                 var linkRefs = extractLinkRefs(m.message || '');
                 var linkRefsHtml = '';
                 if (linkRefs.length) {
@@ -3864,7 +3864,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         '</div>';
                 }
 
-                // در گروه، چون چند فرستنده وجود دارد، بالایِ پیامِ دیگران نامشان مشخص می‌شود
+                // در گروه، چون چند فرستنده وجود دارد، بالای پیام دیگران نامشان مشخص می‌شود
                 var senderLabel = (!m.is_own && activeConversationType !== 'direct')
                     ? '<div class="chat-bubble-sender-name" style="color:' + avatarColor(m.user_name) + '">' + esc(m.user_name) + '</div>'
                     : '';
@@ -3873,17 +3873,17 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     ? '<div class="chat-bubble-forward-label"><i class="bi bi-arrow-return-right"></i> هدایت شده از ' + esc(m.forwarded_from) + '</div>'
                     : '';
 
-                // رسیدِ خوانده‌شدن: فقط برایِ پیام‌هایِ خودم — با تیکِ ✓ (ارسال‌شده) شروع می‌شود
-                // و با هر بار poll (پایینِ فایل، renderReadReceipts) به‌روز می‌شود
+                // رسید خوانده‌شدن: فقط برای پیام‌های خودم — با تیک ✓ (ارسال‌شده) شروع می‌شود
+                // و با هر بار poll (پایین فایل، renderReadReceipts) به‌روز می‌شود
                 var ticksHtml = m.is_own
                     ? '<span class="chat-bubble-ticks" data-mid="' + m.id + '"><i class="bi bi-check"></i></span>'
                     : '';
 
-                // آیکنِ سنجاق کنارِ ساعت — فقط اگه pinnedMessage تا همین لحظه
-                // لود شده باشه؛ اگه دیرتر لود بشه یا پین/آن‌پین حین بازبودنِ
+                // آیکن سنجاق کنار ساعت — فقط اگه pinnedMessage تا همین لحظه
+                // لود شده باشه؛ اگه دیرتر لود بشه یا پین/آن‌پین حین بازبودن
                 // چت اتفاق بیفته، updatePinnedIconInMessages() این رو sync می‌کنه
                 var pinIconHtml = (pinnedMessage && pinnedMessage.id === m.id)
-                    ? '<i class="bi bi-pin-angle-fill chat-bubble-pin-icon" title="پیامِ سنجاق‌شده"></i>'
+                    ? '<i class="bi bi-pin-angle-fill chat-bubble-pin-icon" title="پیام سنجاق‌شده"></i>'
                     : '';
 
                 row.innerHTML =
@@ -3900,7 +3900,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     '</div>';
 
                 // راست‌کلیک برای همه‌ی پیام‌ها فعال است (پاسخ برای هر پیامی ممکن است)؛
-                // ویرایش/حذف فقط داخلِ منو برای پیام‌های خودم نمایش داده می‌شود
+                // ویرایش/حذف فقط داخل منو برای پیام‌های خودم نمایش داده می‌شود
                 row.setAttribute('data-message-text', m.message || '');
                 row.setAttribute('data-can-edit', (m.is_own && m.message) ? '1' : '0');
                 row.setAttribute('data-can-delete', m.is_own ? '1' : '0');
@@ -3937,9 +3937,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             if (scrollBottom) el.scrollTop = el.scrollHeight;
         }
 
-        // ── خواندنِ تدریجی: وقتی یک ردیفِ پیام واقعاً روی صفحه دیده می‌شود (نه صرفاً
-        // لود شده)، id‌اش کاندیدِ «تا اینجا خوانده شد» می‌شود. با debounce و مقایسه با
-        // آخرین idِ ارسال‌شده، فقط وقتی واقعاً جلوتر رفته باشیم mark-read.php صدا زده می‌شود ──
+        // ── خواندن تدریجی: وقتی یک ردیف پیام واقعا روی صفحه دیده می‌شود (نه صرفا
+        // لود شده)، id‌اش کاندید «تا اینجا خوانده شد» می‌شود. با debounce و مقایسه با
+        // آخرین id ارسال‌شده، فقط وقتی واقعا جلوتر رفته باشیم mark-read.php صدا زده می‌شود ──
         function onMessageRowVisible(entries) {
             entries.forEach(function (entry) {
                 if (!entry.isIntersecting) return;
@@ -3967,15 +3967,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     .then(data => {
                         if (data.success) {
                             readTrackSentUpToId = upToId;
-                            loadConversations(); // بجِ گفتگو در سایدبار بر همین اساس کم می‌شود
+                            loadConversations(); // بج گفتگو در سایدبار بر همین اساس کم می‌شود
                         }
                     })
                     .catch(function () {});
             }, 700);
         }
 
-        // درخواستِ ۴۰ پیامِ قدیمی‌ترِ بعدی و افزودنِ آن‌ها به ابتدای لیست،
-        // با حفظِ موقعیتِ اسکرول (کاربر همان‌جا که بود می‌ماند).
+        // درخواست ۴۰ پیام قدیمی‌تر بعدی و افزودن آن‌ها به ابتدای لیست،
+        // با حفظ موقعیت اسکرول (کاربر همان‌جا که بود می‌ماند).
         function prependOlderMessages() {
             if (loadingOlder || !hasMoreOlder || !activeConversationId || !oldestMessageId) return;
             loadingOlder = true;
@@ -3990,7 +3990,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     if (data.success && data.messages && data.messages.length) {
                         appendMessages(data.messages, false, true);   // prepend
                         hasMoreOlder = !!data.has_more;
-                        // لنگرِ اسکرول: به همان پیامی که کاربر می‌دید برگرد
+                        // لنگر اسکرول: به همان پیامی که کاربر می‌دید برگرد
                         el.scrollTop = prevTop + (el.scrollHeight - prevH);
                     } else {
                         hasMoreOlder = false;
@@ -4000,32 +4000,32 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .finally(function () { loadingOlder = false; });
         }
 
-        // highlight=true فقط برایِ کلیک روی بنرِ پیامِ سنجاق‌شده صدا زده می‌شه —
-        // ریپلای و جهشِ سرچِ بینِ‌گفتگویی (که از همین تابع استفاده می‌کنن) عمداً
-        // بدونِ هاله می‌مونن، چون قبلاً صراحتاً درخواستِ حذفِ فلش برایِ اونا شده بود
+        // highlight=true فقط برای کلیک روی بنر پیام سنجاق‌شده صدا زده می‌شه —
+        // ریپلای و جهش سرچ بین‌گفتگویی (که از همین تابع استفاده می‌کنن) عمدا
+        // بدون هاله می‌مونن، چون قبلا صراحتا درخواست حذف فلش برای اونا شده بود
         function scrollToOriginalMessage(messageId, highlight) {
             var row = document.querySelector('.chat-bubble-row[data-message-id="' + messageId + '"]');
             if (!row) return;
             row.scrollIntoView({ block: 'center', behavior: 'smooth' });
             if (highlight) {
                 row.classList.remove('pinned-jump-highlight');
-                void row.offsetWidth; // reflow — تا کلیکِ پشتِ‌سرِهم روی بنر، انیمیشن رو از اول اجرا کنه
+                void row.offsetWidth; // reflow — تا کلیک پشت‌سرهم روی بنر، انیمیشن رو از اول اجرا کنه
                 row.classList.add('pinned-jump-highlight');
                 setTimeout(function () { row.classList.remove('pinned-jump-highlight'); }, 3000);
             }
         }
 
-        // ─────────────── منویِ راست‌کلیک (ویرایش/حذف) ───────────────
+        // ─────────────── منوی راست‌کلیک (ویرایش/حذف) ───────────────
         var ctxMenuTargetRow = null;
 
         function openChatCtxMenu(x, y, row) {
             ctxMenuTargetRow = row;
             var menu = document.getElementById('chatCtxMenu');
             var canEdit = row.getAttribute('data-can-edit') === '1';
-            // خودِ پیام یا — در گروه — سازنده‌ی گروه که اجازه دارد پیامِ هرکسی را حذف کند.
-            // این چک عمداً همینجا (زمانِ بازکردنِ منو) انجام می‌شود نه زمانِ رندرِ ردیف،
+            // خود پیام یا — در گروه — سازنده‌ی گروه که اجازه دارد پیام هرکسی را حذف کند.
+            // این چک عمدا همینجا (زمان بازکردن منو) انجام می‌شود نه زمان رندر ردیف،
             // چون activeGroupIsCreator با یک fetch جداگانه (loadActiveGroupMembers) پر می‌شود
-            // و ممکن است هنگامِ رندرِ اولین پیام‌ها هنوز آماده نباشد.
+            // و ممکن است هنگام رندر اولین پیام‌ها هنوز آماده نباشد.
             var canDelete = row.getAttribute('data-can-delete') === '1' ||
                 (activeConversationType !== 'direct' && activeGroupIsCreator);
             var hasText = !!(row.getAttribute('data-message-text') || '').trim();
@@ -4040,7 +4040,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('chatCtxPinLabel').textContent = isPinned ? 'برداشتن سنجاق' : 'سنجاق‌کردن';
 
             menu.classList.add('show');
-            // ابتدا نمایش داده می‌شود تا offsetWidth/Height درست خوانده شود، سپس موقعیتِ
+            // ابتدا نمایش داده می‌شود تا offsetWidth/Height درست خوانده شود، سپس موقعیت
             // نهایی طوری تنظیم می‌شود که از لبه‌ی صفحه بیرون نزند
             var menuW = menu.offsetWidth,
                 menuH = menu.offsetHeight;
@@ -4058,7 +4058,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         document.addEventListener('click', closeChatCtxMenu);
         document.addEventListener('scroll', closeChatCtxMenu, true);
 
-        // ─────────────── منویِ راست‌کلیکِ ردیفِ گفتگو در لیست (حذفِ گفتگو) ───────────────
+        // ─────────────── منوی راست‌کلیک ردیف گفتگو در لیست (حذف گفتگو) ───────────────
         var convCtxTargetId = null;
 
         function openConvCtxMenu(e, conversationId) {
@@ -4088,7 +4088,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             closeConvCtxMenu();
             if (!conversationId) return;
             uiConfirm(
-                'این گفتگو فقط برایِ شما حذف می‌شود؛ طرفِ مقابل هیچ تغییری نمی‌بیند و اگه بعداً پیامِ جدیدی بفرسته، دوباره توی لیست ظاهر می‌شه. ادامه بدیم؟',
+                'این گفتگو فقط برای شما حذف می‌شود؛ طرف مقابل هیچ تغییری نمی‌بیند و اگه بعدا پیام جدیدی بفرسته، دوباره توی لیست ظاهر می‌شه. ادامه بدیم؟',
                 function () {
                     fetch('../api/chat/delete-conversation.php', {
                             method: 'POST',
@@ -4103,7 +4103,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                                 if (activeConversationId === conversationId) exitActiveConversation();
                                 showToast('گفتگو حذف شد', 'success');
                             } else {
-                                showToast(data.message || 'خطا در حذفِ گفتگو', 'error');
+                                showToast(data.message || 'خطا در حذف گفتگو', 'error');
                             }
                         })
                         .catch(function () { showToast('خطا در ارتباط با سرور', 'error'); });
@@ -4136,7 +4136,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             beginReplyMessage(messageId, senderName, text);
         }
 
-        // ─────────────── کپیِ متنِ پیام ───────────────
+        // ─────────────── کپی متن پیام ───────────────
         function copyFromCtxMenu() {
             if (!ctxMenuTargetRow) return;
             var text = ctxMenuTargetRow.getAttribute('data-message-text') || '';
@@ -4147,7 +4147,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     .then(() => showToast('متن کپی شد', 'success'))
                     .catch(() => showToast('کپی ناموفق بود', 'error'));
             } else {
-                // راهِ‌فرار برای مرورگرهایِ بدونِ Clipboard API (مثلاً بافرِ non-HTTPS)
+                // راه‌فرار برای مرورگرهای بدون Clipboard API (مثلا بافر non-HTTPS)
                 var ta = document.createElement('textarea');
                 ta.value = text;
                 ta.style.position = 'fixed';
@@ -4164,7 +4164,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }
         }
 
-        // ─────────────── تعریفِ کار از رویِ یک پیام ───────────────
+        // ─────────────── تعریف کار از روی یک پیام ───────────────
         var quickTaskModalInst = null;
 
         function taskFromCtxMenu() {
@@ -4178,8 +4178,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('quickTaskDueDate').removeAttribute('data-date');
             document.getElementById('quickTaskAssigneeMe').checked = true;
 
-            // «مخاطبِ چت» فقط تویِ گفتگویِ مستقیم معنی داره (تویِ گروه یک نفرِ
-            // مشخص به‌عنوانِ «طرفِ مقابل» وجود نداره)
+            // «مخاطب چت» فقط توی گفتگوی مستقیم معنی داره (توی گروه یک نفر
+            // مشخص به‌عنوان «طرف مقابل» وجود نداره)
             var conv = conversations.find(c => c.conversation_id === activeConversationId);
             var assigneeRow = document.getElementById('quickTaskAssigneeRow');
             if (activeConversationType === 'direct' && conv && conv.other_user_id) {
@@ -4194,7 +4194,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 quickTaskModalInst = new bootstrap.Modal(document.getElementById('quickTaskModal'));
                 document.getElementById('quickTaskModal').addEventListener('shown.bs.modal', function () {
                     document.getElementById('quickTaskTitle').focus();
-                    // پیش‌فرضِ موعد = امروز (بدونِ تأییدِ جمعه/تعطیلی که برایِ انتخابِ دستی هست)
+                    // پیش‌فرض موعد = امروز (بدون تأیید جمعه/تعطیلی که برای انتخاب دستی هست)
                     var wrap = document.getElementById('quickTaskDueDateWrap');
                     if (wrap.datepickerInstance) {
                         var today = wrap.datepickerInstance.gregorianToJalali(new Date());
@@ -4205,14 +4205,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             quickTaskModalInst.show();
         }
 
-        // لینکِ «تکمیلِ اطلاعات» — همون عنوان/توضیحات/موعدی که تا این لحظه تویِ
-        // مودال وارد شده رو به‌عنوانِ پیش‌پرشده به create-task.php منتقل می‌کنه
+        // لینک «تکمیل اطلاعات» — همون عنوان/توضیحات/موعدی که تا این لحظه توی
+        // مودال وارد شده رو به‌عنوان پیش‌پرشده به create-task.php منتقل می‌کنه
         function selectedQuickTaskAssigneeId() {
             var otherRadio = document.getElementById('quickTaskAssigneeOther');
             if (otherRadio && otherRadio.checked) {
                 return otherRadio.getAttribute('data-user-id');
             }
-            return null; // یعنی خودم — سرور به‌طورِ پیش‌فرض همینو در نظر می‌گیره
+            return null; // یعنی خودم — سرور به‌طور پیش‌فرض همینو در نظر می‌گیره
         }
 
         function goToFullCreateTask(ev) {
@@ -4346,7 +4346,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('chatReplyBanner').classList.remove('show');
         }
 
-        // ─────────────── ویرایشِ پیام ───────────────
+        // ─────────────── ویرایش پیام ───────────────
         var editingMessageId = null;
 
         function beginEditMessage(messageId, currentText) {
@@ -4364,8 +4364,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             var wasEditing = editingMessageId !== null;
             editingMessageId = null;
             var input = document.getElementById('chatComposerInput');
-            // فقط وقتی واقعاً در حالِ ویرایش بودیم کادر را خالی کن؛ وگرنه متنی که
-            // کاربر تازه تایپ کرده (و هنوز نفرستاده) با شروعِ «پاسخ» پاک می‌شد.
+            // فقط وقتی واقعا در حال ویرایش بودیم کادر را خالی کن؛ وگرنه متنی که
+            // کاربر تازه تایپ کرده (و هنوز نفرستاده) با شروع «پاسخ» پاک می‌شد.
             if (wasEditing) {
                 input.value = '';
                 input.style.height = 'auto';
@@ -4374,7 +4374,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('chatAttachBtn').style.display = '';
         }
 
-        // ─────────────── حذفِ پیام ───────────────
+        // ─────────────── حذف پیام ───────────────
         var pendingDeleteMessageId = null;
         var deleteMessageModalInstance = null;
 
@@ -4418,7 +4418,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 });
         }
 
-        // ─────────────── پیوستِ فایل/عکس (مودالِ ارسال با توضیح) ───────────────
+        // ─────────────── پیوست فایل/عکس (مودال ارسال با توضیح) ───────────────
         var fileCaptionModalInst = null;
 
         function addPendingFiles(files) {
@@ -4505,7 +4505,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 });
         }
 
-        // ─────────────── ارسالِ پیام (فقط متن — پیوست از مسیرِ مودالِ بالا می‌ره) ───────────────
+        // ─────────────── ارسال پیام (فقط متن — پیوست از مسیر مودال بالا می‌ره) ───────────────
         function sendChatMessage() {
             if (!activeConversationId) return;
             var input = document.getElementById('chatComposerInput');
@@ -4519,11 +4519,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             if (!text) return;
 
             var btn = document.getElementById('chatSendBtn');
-            // ⚠️ کلیک روی دکمه‌ی غیرفعال خودش رویداد نمی‌سازه، ولی کلیدِ Enter از
-            // این چک عبور نمی‌کنه — اگه کاربر Enter رو دوبار پشتِ‌سرِهم بزنه (یا
-            // به‌خاطرِ auto-repeatِ صفحه‌کلید کمی نگه‌داره)، قبل از این‌که پاسخِ
-            // درخواستِ اول برسه و متن پاک بشه، همون متن دوباره ارسال می‌شد —
-            // این گارد جلویِ ارسالِ تکراری رو می‌گیره
+            // ⚠️ کلیک روی دکمه‌ی غیرفعال خودش رویداد نمی‌سازه، ولی کلید Enter از
+            // این چک عبور نمی‌کنه — اگه کاربر Enter رو دوبار پشت‌سرهم بزنه (یا
+            // به‌خاطر auto-repeat صفحه‌کلید کمی نگه‌داره)، قبل از این‌که پاسخ
+            // درخواست اول برسه و متن پاک بشه، همون متن دوباره ارسال می‌شد —
+            // این گارد جلوی ارسال تکراری رو می‌گیره
             if (btn.disabled) return;
             btn.disabled = true;
 
@@ -4583,9 +4583,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         if (row) {
                             row.setAttribute('data-message-text', data.message);
                             // ‍‍`.chat-bubble-text` (نه `div:first-child`) — چون اولین
-                            // فرزندِ حباب می‌تونست عکس/فایلِ پیوست‌شده باشه، نه متن؛
-                            // با first-child، متنِ ویرایش‌شده جایِ عکس می‌نشست و عکس
-                            // پاک می‌شد، درحالی‌که متنِ قدیمی هم دست‌نخورده می‌موند
+                            // فرزند حباب می‌تونست عکس/فایل پیوست‌شده باشه، نه متن؛
+                            // با first-child، متن ویرایش‌شده جای عکس می‌نشست و عکس
+                            // پاک می‌شد، درحالی‌که متن قدیمی هم دست‌نخورده می‌موند
                             var textEl = row.querySelector('.chat-bubble-text');
                             if (textEl) textEl.innerHTML = highlightLinkRefs(highlightMentions(esc(data.message), activeGroupMembers)).replace(/\n/g, '<br>');
                             var timeEl = row.querySelector('.chat-bubble-time');
@@ -4594,11 +4594,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                             }
                         }
                         cancelEditMessage();
-                        // متنِ درحالِ‌ویرایش، به‌خاطرِ ذخیره‌ی خودکارِ پیش‌نویسِ کامپوزر
-                        // (debounce ۳۰۰ms روی رویدادِ input که beginEditMessage هم
-                        // شلیکش می‌کنه)، ممکنه قبلِ ارسال یک‌بار به‌عنوانِ پیش‌نویس در
-                        // localStorage ذخیره شده باشه — بعدِ ارسالِ موفق باید پاک بشه،
-                        // وگرنه توی لیستِ گفتگوها به‌اشتباه «پیش‌نویس» نشون داده می‌شه
+                        // متن درحال‌ویرایش، به‌خاطر ذخیره‌ی خودکار پیش‌نویس کامپوزر
+                        // (debounce ۳۰۰ms روی رویداد input که beginEditMessage هم
+                        // شلیکش می‌کنه)، ممکنه قبل ارسال یک‌بار به‌عنوان پیش‌نویس در
+                        // localStorage ذخیره شده باشه — بعد ارسال موفق باید پاک بشه،
+                        // وگرنه توی لیست گفتگوها به‌اشتباه «پیش‌نویس» نشون داده می‌شه
                         clearComposerDraft(activeConversationId);
                         loadConversations();
                     } else {
@@ -4612,7 +4612,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         // ─────────────── Polling ───────────────
-        // ─────────────── پیش‌نویسِ پیام (به‌ازایِ هر گفتگو، در localStorage) ───────────────
+        // ─────────────── پیش‌نویس پیام (به‌ازای هر گفتگو، در localStorage) ───────────────
         function draftKey(convId) {
             return 'chat_draft_' + convId;
         }
@@ -4640,7 +4640,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             localStorage.removeItem(draftKey(convId));
         }
 
-        // ─────────────── میانبرهایِ صفحه‌کلید (فقط دسکتاپ) ───────────────
+        // ─────────────── میانبرهای صفحه‌کلید (فقط دسکتاپ) ───────────────
         function navigateConversationList(direction) {
             var term = (document.getElementById('convSearchInput').value || '').trim().toLowerCase();
             var list = conversations.filter(c => !term || c.title.toLowerCase().includes(term));
@@ -4651,9 +4651,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         document.addEventListener('keydown', function(e) {
-            // ⚠️ Ctrl/Cmd+K مالِ آدرس‌بارِ خودِ مرورگرهاست (کروم/اج/فایرفاکس) و
-            // صفحه‌یِ وب هیچ‌وقت نمی‌تونه با preventDefault جلوشو بگیره — برایِ
-            // همین از یه ترکیبِ آزادِ دیگه (Ctrl+/) استفاده می‌کنیم
+            // ⚠️ Ctrl/Cmd+K مال آدرس‌بار خود مرورگرهاست (کروم/اج/فایرفاکس) و
+            // صفحه‌ی وب هیچ‌وقت نمی‌تونه با preventDefault جلوشو بگیره — برای
+            // همین از یه ترکیب آزاد دیگه (Ctrl+/) استفاده می‌کنیم
             if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key === '/') {
                 e.preventDefault();
                 var searchInput = document.getElementById('convSearchInput');
@@ -4664,7 +4664,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 return;
             }
 
-            // Alt+↑/↓ → حرکت بینِ گفتگوها بدونِ دست‌زدن به موس
+            // Alt+↑/↓ → حرکت بین گفتگوها بدون دست‌زدن به موس
             if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
                 e.preventDefault();
                 navigateConversationList(e.key === 'ArrowDown' ? 1 : -1);
@@ -4699,7 +4699,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             renderConversationList();
         }
 
-        // ─────────────── گالریِ فایل/عکسِ مشترکِ گفتگو ───────────────
+        // ─────────────── گالری فایل/عکس مشترک گفتگو ───────────────
         var mediaGalleryModalInst = null;
 
         function fmtFileSize(bytes) {
@@ -4768,7 +4768,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             body.innerHTML = html;
         }
 
-        // ─────────────── اعلانِ دسکتاپ (Browser Notification API) ───────────────
+        // ─────────────── اعلان دسکتاپ (Browser Notification API) ───────────────
         var __convSnapshot = {}; // conversation_id -> { unread_count, last_message }
         var __convSnapshotReady = false; // اولین بار نباید همه‌چیز «جدید» حساب بشه
 
@@ -4805,9 +4805,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 return;
             }
             if (Notification.permission === 'denied') {
-                // ⚠️ مرورگرها به‌عمد اجازه نمی‌دن بعدِ ردکردنِ کاربر، دوباره از راهِ کد
-                // این پرسش تکرار بشه — تنها راه، تنظیماتِ خودِ مرورگره؛ همینو
-                // به‌طورِ واضح توضیح می‌دیم تا کاربر گیج نشه چرا اتفاقی نمی‌افته
+                // ⚠️ مرورگرها به‌عمد اجازه نمی‌دن بعد ردکردن کاربر، دوباره از راه کد
+                // این پرسش تکرار بشه — تنها راه، تنظیمات خود مرورگره؛ همینو
+                // به‌طور واضح توضیح می‌دیم تا کاربر گیج نشه چرا اتفاقی نمی‌افته
                 showToast(
                     'اعلان قبلا مسدود شده و مرورگر اجازه نمی‌ده دوباره از داخل سایت بپرسیم. برای فعال‌سازی دستی: روی آیکن قفل/اطلاعات کنار آدرس سایت (بالای مرورگر) بزنید ← «اعلان‌ها»/Notifications را Allow کنید ← صفحه را رفرش کنید.',
                     'warning',
@@ -4833,8 +4833,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 convs.forEach(function(c) { __convSnapshot[c.conversation_id] = { unread_count: c.unread_count, last_message: c.last_message }; });
                 return;
             }
-            // فقط وقتی تب/پنجره در پس‌زمینه‌ست اعلانِ دسکتاپ بده — وگرنه کاربر
-            // همین الان داره خودِ صفحه رو می‌بینه و نیازی به دوبل نیست
+            // فقط وقتی تب/پنجره در پس‌زمینه‌ست اعلان دسکتاپ بده — وگرنه کاربر
+            // همین الان داره خود صفحه رو می‌بینه و نیازی به دوبل نیست
             var tabHidden = document.hidden || !document.hasFocus();
 
             var nextSnapshot = {};
@@ -4848,7 +4848,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     try {
                         var n = new Notification(c.title || 'پیام جدید', {
                             body: (c.last_message || '').slice(0, 120),
-                            tag: 'chat-conv-' + c.conversation_id, // اعلان‌هایِ پشتِ‌سرِهمِ همون گفتگو، جایگزینِ هم بشن نه تلنبار
+                            tag: 'chat-conv-' + c.conversation_id, // اعلان‌های پشت‌سرهم همون گفتگو، جایگزین هم بشن نه تلنبار
                         });
                         n.onclick = function() {
                             window.focus();
@@ -4862,10 +4862,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             __convSnapshotReady = true;
         }
 
-        // forceScroll=true فقط برایِ اقدامِ خودِ کاربر (فرستادن/هدایت پیام) —
-        // چرخه‌یِ معمولیِ poll (هر ۴ ثانیه) این رو نمی‌فرسته، پس اگه کاربر
-        // بالایِ تاریخچه‌ست و یکیِ دیگه پیام بده، خودکار پرتاب نمی‌شه پایین؛
-        // فقط بجِ عددیِ رویِ دکمه‌ی «برو به آخرین پیام» بالا می‌ره
+        // forceScroll=true فقط برای اقدام خود کاربر (فرستادن/هدایت پیام) —
+        // چرخه‌ی معمولی poll (هر ۴ ثانیه) این رو نمی‌فرسته، پس اگه کاربر
+        // بالای تاریخچه‌ست و یکی دیگه پیام بده، خودکار پرتاب نمی‌شه پایین؛
+        // فقط بج عددی روی دکمه‌ی «برو به آخرین پیام» بالا می‌ره
         function pollForUpdates(forceScroll) {
             loadConversations();
             if (activeConversationId) {
@@ -4892,7 +4892,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }
         }
 
-        // ─────────────── رسیدِ خوانده‌شدن (تیکِ ✓ / ✓✓) ───────────────
+        // ─────────────── رسید خوانده‌شدن (تیک ✓ / ✓✓) ───────────────
         function pollReadReceipts() {
             if (!activeConversationId) return;
             var convId = activeConversationId;
@@ -4902,7 +4902,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 })
                 .then(r => r.json())
                 .then(data => {
-                    // ⚠️ اگر تا زمانِ برگشتِ پاسخ، کاربر گفتگویِ دیگری باز کرده، این نتیجه را نادیده می‌گیریم
+                    // ⚠️ اگر تا زمان برگشت پاسخ، کاربر گفتگوی دیگری باز کرده، این نتیجه را نادیده می‌گیریم
                     if (!data.success || convId !== activeConversationId) return;
                     readReceipts = {};
                     data.participants.forEach(function(p) {
@@ -4913,7 +4913,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .catch(function() {});
         }
 
-        // ─────────────── سنجاق‌کردنِ پیام ───────────────
+        // ─────────────── سنجاق‌کردن پیام ───────────────
         function loadPinnedMessage() {
             if (!activeConversationId) return;
             var convId = activeConversationId;
@@ -4944,19 +4944,19 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('chatPinnedBannerClose').style.display = pinnedCanManage ? 'block' : 'none';
         }
 
-        // آیکنِ سنجاقِ کنارِ ساعتِ پیام رو با pinnedMessageِ فعلی هماهنگ می‌کنه —
-        // برایِ ردیف‌هایی که از قبلِ لودشدنِ pinnedMessage روی صفحه بودن، یا
-        // وقتی پین/آن‌پین حینِ بازبودنِ همین چت اتفاق می‌افته
+        // آیکن سنجاق کنار ساعت پیام رو با pinnedMessage فعلی هماهنگ می‌کنه —
+        // برای ردیف‌هایی که از قبل لودشدن pinnedMessage روی صفحه بودن، یا
+        // وقتی پین/آن‌پین حین بازبودن همین چت اتفاق می‌افته
         function updatePinnedIconInMessages() {
             document.querySelectorAll('.chat-bubble-pin-icon').forEach(function (el) { el.remove(); });
             if (!pinnedMessage) return;
             var row = document.querySelector('.chat-bubble-row[data-message-id="' + pinnedMessage.id + '"]');
-            if (!row) return; // هنوز لود نشده (مثلاً تویِ تاریخچه‌ی قدیمی‌تر) — صرفاً بصریه، مشکلی نیست
+            if (!row) return; // هنوز لود نشده (مثلا توی تاریخچه‌ی قدیمی‌تر) — صرفا بصریه، مشکلی نیست
             var timeEl = row.querySelector('.chat-bubble-time');
             if (timeEl && !timeEl.querySelector('.chat-bubble-pin-icon')) {
                 var icon = document.createElement('i');
                 icon.className = 'bi bi-pin-angle-fill chat-bubble-pin-icon';
-                icon.title = 'پیامِ سنجاق‌شده';
+                icon.title = 'پیام سنجاق‌شده';
                 timeEl.insertBefore(icon, timeEl.firstChild);
             }
         }
@@ -5037,9 +5037,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         var kbActiveIndex = -1;
         var currentUserResults = [];
 
-        // حالتِ مودالِ «گفتگوی جدید»: مستقیم / ساختِ گروه / افزودنِ عضو به گروهِ موجود
+        // حالت مودال «گفتگوی جدید»: مستقیم / ساخت گروه / افزودن عضو به گروه موجود
         var newChatMode = 'direct';
-        var selectedGroupMembers = {}; // id -> full_name — هم برایِ ساختِ گروه، هم افزودنِ عضو
+        var selectedGroupMembers = {}; // id -> full_name — هم برای ساخت گروه، هم افزودن عضو
         var addMembersTargetConvId = null;
         var addMembersExistingIds = [];
 
@@ -5084,8 +5084,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             searchChatUsers();
         }
 
-        // از مودالِ «اطلاعاتِ گروه» صدا زده می‌شود — همان مودالِ گفتگویِ جدید را
-        // در حالتِ «افزودنِ عضو به گروهِ موجود» دوباره‌استفاده می‌کند
+        // از مودال «اطلاعات گروه» صدا زده می‌شود — همان مودال گفتگوی جدید را
+        // در حالت «افزودن عضو به گروه موجود» دوباره‌استفاده می‌کند
         function openAddMembersMode() {
             closeGroupInfoDrawer();
 
@@ -5222,17 +5222,17 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 });
         }
 
-        // ─────────────── دراورِ اطلاعاتِ گروه ───────────────
+        // ─────────────── دراور اطلاعات گروه ───────────────
         var groupInfoIsOwner = false;   // فقط سازنده‌ی گروه (created_by)
-        var groupInfoCanManage = false; // سازنده یا هر مدیرِ (admin) گروه
-        var groupInfoMyPermissions = []; // اختیاراتِ اختصاصیِ من در همین گروه — از group-members.php (my_permissions)
-        var groupInfoAllPermissions = []; // کلِ کلیدهایِ اختیاراتِ قابل‌واگذاری (از سرور، برایِ مودالِ تنظیمِ اختیارات)
-        var groupInfoMembersCache = []; // آخرین لیستِ اعضا — تا مودالِ اختیارات بدونِ فراخوانیِ دوباره، اطلاعاتِ عضو رو پیدا کنه
+        var groupInfoCanManage = false; // سازنده یا هر مدیر (admin) گروه
+        var groupInfoMyPermissions = []; // اختیارات اختصاصی من در همین گروه — از group-members.php (my_permissions)
+        var groupInfoAllPermissions = []; // کل کلیدهای اختیارات قابل‌واگذاری (از سرور، برای مودال تنظیم اختیارات)
+        var groupInfoMembersCache = []; // آخرین لیست اعضا — تا مودال اختیارات بدون فراخوانی دوباره، اطلاعات عضو رو پیدا کنه
         var GROUP_PERMISSION_LABELS = {
-            pin: 'سنجاق‌کردنِ پیام',
-            add_member: 'افزودنِ عضو',
-            remove_member: 'حذفِ عضو',
-            avatar: 'تغییرِ عکسِ گروه'
+            pin: 'سنجاق‌کردن پیام',
+            add_member: 'افزودن عضو',
+            remove_member: 'حذف عضو',
+            avatar: 'تغییر عکس گروه'
         };
 
         function openGroupInfoDrawer() {
@@ -5271,10 +5271,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             refreshGroupInfoMembers(true);
         }
 
-        // بارگذاریِ لیستِ اعضایِ دراورِ گروه. brandNew=true فقط زمانِ بازکردنِ
-        // تازه‌یِ دراور (لیست از قبل خالی/بارگذاری‌شده) — تویِ آپدیت‌هایِ بعدی
-        // (ارتقا/عزلِ مدیر، افزودن/حذفِ عضو، تغییرِ عکس) عمداً falseه تا لیست
-        // یک لحظه مخفی/«در حال بارگذاری» نشه و فقط جایگزینِ بی‌فِلَش انجام بشه
+        // بارگذاری لیست اعضای دراور گروه. brandNew=true فقط زمان بازکردن
+        // تازه‌ی دراور (لیست از قبل خالی/بارگذاری‌شده) — توی آپدیت‌های بعدی
+        // (ارتقا/عزل مدیر، افزودن/حذف عضو، تغییر عکس) عمدا falseه تا لیست
+        // یک لحظه مخفی/«در حال بارگذاری» نشه و فقط جایگزین بی‌فلش انجام بشه
         function refreshGroupInfoMembers(brandNew) {
             if (!activeConversationId) return;
             var convId = activeConversationId;
@@ -5304,13 +5304,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     document.getElementById('groupInfoMemberList').innerHTML = data.members.map(m => {
                         var isMe = myUserId && Number(m.id) === Number(myUserId);
                         var nameAttrs = isMe ? '' : ' onclick="openMemberDirectChat(' + m.id + ')" style="cursor:pointer;"';
-                        // 🔒 بجِ «مدیر» کاملاً مستقل از role/permissionsِ واقعیه (نه
-                        // اینکه m.is_admin باشه) — طبقِ درخواستِ صریح، باید برایِ هر
-                        // عضوی (نه فقط مدیرها) قابل‌فعال‌سازیِ صرفاً نمایشی باشه
+                        // 🔒 بج «مدیر» کاملا مستقل از role/permissions واقعیه (نه
+                        // اینکه m.is_admin باشه) — طبق درخواست صریح، باید برای هر
+                        // عضوی (نه فقط مدیرها) قابل‌فعال‌سازی صرفا نمایشی باشه
                         var roleTag = m.is_owner
                             ? '<span class="chat-group-owner-tag">سازنده‌ی گروه</span>'
                             : (m.show_badge ? '<span class="chat-group-owner-tag">مدیر</span>' : '');
-                        // ارتقا به مدیر: کارِ هر مدیری. عزل از مدیریت: فقط سازنده (تا مدیرها نتونن همدیگه رو عزل کنن)
+                        // ارتقا به مدیر: کار هر مدیری. عزل از مدیریت: فقط سازنده (تا مدیرها نتونن همدیگه رو عزل کنن)
                         var roleBtn = '';
                         if (!isMe && !m.is_owner) {
                             if (!m.is_admin && data.can_manage) {
@@ -5319,16 +5319,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                                 roleBtn = '<button class="chat-group-member-role-btn" title="عزل از مدیریت" onclick="demoteGroupMember(' + m.id + ')"><i class="bi bi-shield-minus"></i></button>';
                             }
                         }
-                        // تنظیمِ اختیاراتِ اختصاصی: فقط سازنده، فقط رویِ مدیرهایِ دیگه
+                        // تنظیم اختیارات اختصاصی: فقط سازنده، فقط روی مدیرهای دیگه
                         var permBtn = (data.is_owner && m.is_admin && !m.is_owner)
-                            ? '<button class="chat-group-member-role-btn" title="تنظیمِ اختیارات" onclick="openGroupMemberPermissionsModal(' + m.id + ')"><i class="bi bi-gear-fill"></i></button>'
+                            ? '<button class="chat-group-member-role-btn" title="تنظیم اختیارات" onclick="openGroupMemberPermissionsModal(' + m.id + ')"><i class="bi bi-gear-fill"></i></button>'
                             : '';
-                        // نمایش/عدم‌نمایشِ بجِ «مدیر» — فقط سازنده، برایِ هر عضوی غیر از
-                        // خودِ سازنده (چه واقعاً مدیر باشه چه نه)؛ هیچ اختیارِ واقعی‌ای نمی‌ده
+                        // نمایش/عدم‌نمایش بج «مدیر» — فقط سازنده، برای هر عضوی غیر از
+                        // خود سازنده (چه واقعا مدیر باشه چه نه)؛ هیچ اختیار واقعی‌ای نمی‌ده
                         var badgeBtn = (data.is_owner && !m.is_owner)
-                            ? '<button class="chat-group-member-role-btn" title="' + (m.show_badge ? 'حذفِ بجِ مدیر' : 'نمایشِ بجِ مدیر') + '" onclick="toggleMemberBadge(' + m.id + ', ' + (m.show_badge ? 'true' : 'false') + ')"><i class="bi ' + (m.show_badge ? 'bi-patch-check-fill' : 'bi-patch-check') + '"></i></button>'
+                            ? '<button class="chat-group-member-role-btn" title="' + (m.show_badge ? 'حذف بج مدیر' : 'نمایش بج مدیر') + '" onclick="toggleMemberBadge(' + m.id + ', ' + (m.show_badge ? 'true' : 'false') + ')"><i class="bi ' + (m.show_badge ? 'bi-patch-check-fill' : 'bi-patch-check') + '"></i></button>'
                             : '';
-                        // حذفِ عضو: مدیرِ دارایِ اختیارِ remove_member برایِ اعضایِ عادی؛ حذفِ یک مدیرِ دیگه فقط دستِ سازنده‌ست
+                        // حذف عضو: مدیر دارای اختیار remove_member برای اعضای عادی؛ حذف یک مدیر دیگه فقط دست سازنده‌ست
                         var canRemove = !m.is_owner && (groupInfoMyPermissions.indexOf('remove_member') !== -1) && (!m.is_admin || data.is_owner);
                         return '<div class="chat-group-member-row">' +
                         '<div' + nameAttrs + '>' + avatarHtml(m.full_name, false, null, m.avatar_url) + '</div>' +
@@ -5427,11 +5427,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 });
         }
 
-        // ارتقا به مدیر: اگه من سازنده‌ام، همون اول مودالِ انتخابِ اختیارات باز
-        // می‌شه (تا انتخابِ اختیارات جزوِ خودِ عملِ ارتقا باشه، نه یک قدمِ
-        // جداگانه‌ی بعدی)؛ اگه فقط مدیرِ عادی‌ام (نه سازنده)، طبقِ همون قاعده‌یِ
-        // «تنظیمِ اختیارات فقط دستِ سازنده‌ست»، نمی‌تونم انتخاب کنم — همون
-        // ارتقایِ مستقیم با اختیاراتِ پیش‌فرض (همه) انجام می‌شه
+        // ارتقا به مدیر: اگه من سازنده‌ام، همون اول مودال انتخاب اختیارات باز
+        // می‌شه (تا انتخاب اختیارات جزو خود عمل ارتقا باشه، نه یک قدم
+        // جداگانه‌ی بعدی)؛ اگه فقط مدیر عادی‌ام (نه سازنده)، طبق همون قاعده‌ی
+        // «تنظیم اختیارات فقط دست سازنده‌ست»، نمی‌تونم انتخاب کنم — همون
+        // ارتقای مستقیم با اختیارات پیش‌فرض (همه) انجام می‌شه
         function promoteGroupMember(userId) {
             if (groupInfoIsOwner) {
                 openGroupMemberPermissionsModal(userId, 'promote');
@@ -5441,13 +5441,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         function demoteGroupMember(userId) {
-            setGroupMemberRole(userId, 'member', 'خطا در عزلِ مدیر');
+            setGroupMemberRole(userId, 'member', 'خطا در عزل مدیر');
         }
 
-        // ─────────────── اختیاراتِ اختصاصیِ یک مدیر (فقط سازنده تنظیم می‌کنه) ───────────────
+        // ─────────────── اختیارات اختصاصی یک مدیر (فقط سازنده تنظیم می‌کنه) ───────────────
         var gmpModalInstance = null;
         var gmpTargetUserId = null;
-        var gmpMode = 'edit'; // 'edit' = تنظیمِ اختیاراتِ مدیرِ موجود | 'promote' = ارتقا+انتخابِ اختیارات هم‌زمان
+        var gmpMode = 'edit'; // 'edit' = تنظیم اختیارات مدیر موجود | 'promote' = ارتقا+انتخاب اختیارات هم‌زمان
 
         function openGroupMemberPermissionsModal(userId, mode) {
             var m = groupInfoMembersCache.find(function (x) { return Number(x.id) === Number(userId); });
@@ -5456,10 +5456,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             gmpTargetUserId = userId;
             var isPromote = gmpMode === 'promote';
             document.querySelector('#groupMemberPermissionsModal .modal-title').innerHTML =
-                (isPromote ? 'ارتقا به مدیر — انتخابِ اختیاراتِ ' : 'اختیاراتِ ') + esc(m.full_name);
+                (isPromote ? 'ارتقا به مدیر — انتخاب اختیارات ' : 'اختیارات ') + esc(m.full_name);
             var saveBtn = document.getElementById('gmpSaveBtn');
             if (saveBtn) saveBtn.textContent = isPromote ? 'ارتقا به مدیر' : 'ذخیره';
-            // پیش‌فرض برایِ ارتقا: همه‌ی اختیارات تیک‌خورده (هم‌راستا با پیش‌فرضِ
+            // پیش‌فرض برای ارتقا: همه‌ی اختیارات تیک‌خورده (هم‌راستا با پیش‌فرض
             // سرور — NULL یعنی همه)؛ سازنده هرکدوم رو نخواد، خودش برمی‌داره
             var currentPermissions = isPromote ? groupInfoAllPermissions : m.permissions;
             document.getElementById('gmpPermissionList').innerHTML = groupInfoAllPermissions.map(function (key) {
@@ -5511,7 +5511,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 });
         }
 
-        // نمایش/عدم‌نمایشِ بجِ «مدیر» — مستقل از هرگونه اختیارِ واقعی، فقط
+        // نمایش/عدم‌نمایش بج «مدیر» — مستقل از هرگونه اختیار واقعی، فقط
         // سازنده‌ی گروه صدا می‌زنه (دکمه‌اش هم فقط براش رندر می‌شه)
         function toggleMemberBadge(userId, currentlyShown) {
             if (!activeConversationId) return;
@@ -5527,9 +5527,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .then(data => {
                     if (data.success) {
                         refreshGroupInfoMembers(false);
-                        showToast(data.show_badge ? 'بجِ مدیر نشون داده می‌شه' : 'بجِ مدیر برداشته شد', 'success');
+                        showToast(data.show_badge ? 'بج مدیر نشون داده می‌شه' : 'بج مدیر برداشته شد', 'success');
                     } else {
-                        showToast(data.message || 'خطا در تنظیمِ بج', 'error');
+                        showToast(data.message || 'خطا در تنظیم بج', 'error');
                     }
                 });
         }
@@ -5562,7 +5562,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }, { danger: true, yesText: 'بله، خروج', noText: 'انصراف' });
         }
 
-        // «آخرین بازدید از صفحه‌ی چت» به‌صورتِ نسبی — منبعِ یگانه (ساعتِ سرور)
+        // «آخرین بازدید از صفحه‌ی چت» به‌صورت نسبی — منبع یگانه (ساعت سرور)
         function formatLastSeen(dateStr) {
             if (!dateStr) return 'هیچ‌وقت';
             return window.TimeSync ? TimeSync.timeAgo(dateStr) : '';
@@ -5599,7 +5599,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }
         }
 
-        // ─────────────── دراورِ پروفایلِ طرفِ مقابل (گفتگویِ مستقیم) ───────────────
+        // ─────────────── دراور پروفایل طرف مقابل (گفتگوی مستقیم) ───────────────
         function openChatProfileDrawer() {
             if (!activeConversationId) return;
             var convId = activeConversationId;
@@ -5655,7 +5655,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('chatProfileDrawer').classList.remove('show');
         }
 
-        // ─────────────── بی‌صداکردنِ گفتگو ───────────────
+        // ─────────────── بی‌صداکردن گفتگو ───────────────
         function updateMuteButton(conv) {
             var btn = document.getElementById('chatMuteToggleBtn');
             var muted = !!(conv && conv.is_muted);
@@ -5692,7 +5692,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 });
         }
 
-        // ─────────────── نشانگرِ «در حالِ تایپ» ───────────────
+        // ─────────────── نشانگر «در حال تایپ» ───────────────
         var lastTypingPingAt = 0;
         var isOtherPartyTyping = false;
 
@@ -5748,7 +5748,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                             el.innerHTML = '<div class="text-muted text-center py-3" style="font-size:.85rem;">کاربری یافت نشد</div>';
                             return;
                         }
-                        // در حالتِ افزودنِ عضو، کسانی که از قبل عضوِ گروه‌اند از لیست حذف می‌شوند
+                        // در حالت افزودن عضو، کسانی که از قبل عضو گروه‌اند از لیست حذف می‌شوند
                         var users = newChatMode === 'add-members'
                             ? data.users.filter(u => addMembersExistingIds.indexOf(u.id) === -1)
                             : data.users;
@@ -5808,16 +5808,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             });
         });
 
-        // از دراورِ اطلاعاتِ گروه صدا زده می‌شه — کلیک روی نامِ یک عضو،
-        // گفتگویِ مستقیم با همون فرد رو باز می‌کنه
+        // از دراور اطلاعات گروه صدا زده می‌شه — کلیک روی نام یک عضو،
+        // گفتگوی مستقیم با همون فرد رو باز می‌کنه
         function openMemberDirectChat(userId) {
-            // 🔒 قبلاً اینجا fallbackInfo پاس داده نمی‌شد و startChatWith
-            // فقط توی currentUserResults (نتیجهٔ سرچِ مودالِ «گفتگوی جدید»)
-            // دنبالِ اسم/عکس می‌گشت — که وقتی از داخلِ لیستِ اعضایِ گروه
+            // 🔒 قبلا اینجا fallbackInfo پاس داده نمی‌شد و startChatWith
+            // فقط توی currentUserResults (نتیجهٔ سرچ مودال «گفتگوی جدید»)
+            // دنبال اسم/عکس می‌گشت — که وقتی از داخل لیست اعضای گروه
             // کلیک می‌کردیم (نه از اون مودال)، هیچ‌وقت پر نبود، پس اسم تا
-            // برگشتنِ جوابِ start.php خط‌تیره می‌موند. حالا مستقیماً از
-            // کشِ اعضایِ همین گروه (groupInfoMembersCache) که هنگامِ بازکردنِ
-            // درآورِ اطلاعاتِ گروه پر شده، اسم/عکس رو برمی‌داریم.
+            // برگشتن جواب start.php خط‌تیره می‌موند. حالا مستقیما از
+            // کش اعضای همین گروه (groupInfoMembersCache) که هنگام بازکردن
+            // درآور اطلاعات گروه پر شده، اسم/عکس رو برمی‌داریم.
             var m = groupInfoMembersCache.find(x => Number(x.id) === Number(userId));
             var fallbackInfo = m ? { title: m.full_name, avatar_url: m.avatar_url } : null;
             closeGroupInfoDrawer();
@@ -5825,11 +5825,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         function startChatWith(userId, fallbackInfo) {
-            // برایِ fallbackِ نام/عکسِ هدر، قبل از اینکه اولین پیام فرستاده بشه
-            // (وقتی گفتگوی تازه هنوز توی لیستِ conversations نیست) — اگه
-            // صدازننده (مثلِ openMemberDirectChat) خودش از قبل fallbackInfo
-            // داده باشه، همونو نگه می‌داریم؛ وگرنه (مودالِ «گفتگوی جدید»)
-            // مثلِ قبل از currentUserResults می‌سازیمش
+            // برای fallback نام/عکس هدر، قبل از اینکه اولین پیام فرستاده بشه
+            // (وقتی گفتگوی تازه هنوز توی لیست conversations نیست) — اگه
+            // صدازننده (مثل openMemberDirectChat) خودش از قبل fallbackInfo
+            // داده باشه، همونو نگه می‌داریم؛ وگرنه (مودال «گفتگوی جدید»)
+            // مثل قبل از currentUserResults می‌سازیمش
             if (!fallbackInfo) {
                 var userInfo = currentUserResults.find(u => u.id === userId);
                 fallbackInfo = userInfo ? { title: userInfo.full_name, avatar_url: userInfo.avatar_url } : null;

@@ -3,10 +3,10 @@
  * فایل مشترک محاسبهٔ کسری و حقوق — منبع واحد محاسبات حقوقی
  * مسیر نصب: /attendance_system/includes/salary_calc.php
  *
- * نکته: توابع با پیشوند sc_ تعریف شده‌اند تا با توابع موجودِ
+ * نکته: توابع با پیشوند sc_ تعریف شده‌اند تا با توابع موجود
  * monthly-report.php (timeToMinutes و ...) تداخل نکنند.
  *
- * منطق دقیقاً مطابق نسخهٔ تأییدشده:
+ * منطق دقیقا مطابق نسخهٔ تأییدشده:
  *   - عدم ورود → کل شیفت کسری
  *   - عدم خروج در روز گذشته → کل شیفت کسری (A-1)
  *   - تأخیر ورود / خروج زودهنگام → بازهٔ مربوطه
@@ -126,7 +126,7 @@ if (!function_exists('sc_jalaliToGregorian')) {
 }
 
 /**
- * طول ماهِ شمسی (آخرین روز)
+ * طول ماه شمسی (آخرین روز)
  */
 if (!function_exists('sc_jalaliMonthLength')) {
     function sc_jalaliMonthLength($jy, $jm)
@@ -143,7 +143,7 @@ if (!function_exists('sc_jalaliMonthLength')) {
 }
 
 /**
- * بازهٔ میلادیِ یک ماهِ شمسی → ['start'=>Y-m-d, 'end'=>Y-m-d]
+ * بازهٔ میلادی یک ماه شمسی → ['start'=>Y-m-d, 'end'=>Y-m-d]
  */
 if (!function_exists('sc_jalaliMonthRange')) {
     function sc_jalaliMonthRange($jy, $jm)
@@ -158,7 +158,7 @@ if (!function_exists('sc_jalaliMonthRange')) {
 }
 
 /**
- * بازه‌های کسریِ یک شیفت (نسخهٔ A-1)
+ * بازه‌های کسری یک شیفت (نسخهٔ A-1)
  */
 if (!function_exists('sc_getShiftShortageSlots')) {
     function sc_getShiftShortageSlots($check_in_time, $check_out_time, $shift_start, $shift_end, $is_past_day)
@@ -179,7 +179,7 @@ if (!function_exists('sc_getShiftShortageSlots')) {
         }
 
         // تأخیر ورود
-        // تأخیر ورود (با سقفِ پایانِ شیفت: تأخیر هیچ‌وقت از طولِ شیفت بیشتر نمی‌شود)
+        // تأخیر ورود (با سقف پایان شیفت: تأخیر هیچ‌وقت از طول شیفت بیشتر نمی‌شود)
         if ($check_in_time > $shift_start) {
             $late_end = ($check_in_time < $shift_end) ? $check_in_time : $shift_end;
             $delay = sc_timeToMinutes($late_end) - sc_timeToMinutes($shift_start);
@@ -187,8 +187,8 @@ if (!function_exists('sc_getShiftShortageSlots')) {
                 $slots[] = ['start' => $shift_start, 'end' => $late_end, 'minutes' => $delay, 'type' => 'late_arrival'];
         }
 
-        // خروج زودهنگام — اگر قبل از شروعِ شیفت باشد، بازه از شروعِ شیفت
-        // حساب شود نه از خودِ خروج (وگرنه دقایقِ قبل از شیفت هم به‌غلط
+        // خروج زودهنگام — اگر قبل از شروع شیفت باشد، بازه از شروع شیفت
+        // حساب شود نه از خود خروج (وگرنه دقایق قبل از شیفت هم به‌غلط
         // کسری حساب می‌شوند)
         if ($check_out_time && $check_out_time < $shift_end) {
             $early_start = max($check_out_time, $shift_start);
@@ -201,7 +201,7 @@ if (!function_exists('sc_getShiftShortageSlots')) {
 }
 
 /**
- * کسریِ یک روز (با پوشش درخواست‌ها و ضرب نهایی)
+ * کسری یک روز (با پوشش درخواست‌ها و ضرب نهایی)
  */
 if (!function_exists('sc_calculateDailyShortage')) {
     function sc_calculateDailyShortage($shortage_slots, $day_requests, $app_settings)
@@ -247,15 +247,15 @@ if (!function_exists('sc_calculateDailyShortage')) {
 }
 
 /**
- * گزارش حقوقِ یک کاربر برای یک ماهِ شمسی (تا دیروز).
+ * گزارش حقوق یک کاربر برای یک ماه شمسی (تا دیروز).
  *
  * @param PDO    $db
  * @param array  $userRow      شامل: id, shift_count, shift_1_start, shift_1_end, shift_2_start, shift_2_end, monthly_salary, daily_work_hours
- * @param string $start_of_month  Y-m-d (اول ماهِ شمسی به میلادی)
- * @param string $end_of_month    Y-m-d (آخر ماهِ شمسی به میلادی)
+ * @param string $start_of_month  Y-m-d (اول ماه شمسی به میلادی)
+ * @param string $end_of_month    Y-m-d (آخر ماه شمسی به میلادی)
  * @param string $today           Y-m-d (امروز)
  * @param array  $app_settings    خروجی loadSettings()
- * @param array  $holiday_dates   [Y-m-d => title] تعطیلاتِ بازه (یک‌بار توسط فراخواننده گرفته می‌شود)
+ * @param array  $holiday_dates   [Y-m-d => title] تعطیلات بازه (یک‌بار توسط فراخواننده گرفته می‌شود)
  * @return array
  */
 if (!function_exists('sc_computeUserSalaryReport')) {
@@ -266,7 +266,7 @@ if (!function_exists('sc_computeUserSalaryReport')) {
         $daily_work_hours = (float) ($userRow['daily_work_hours'] ?? 0);
         $shift_count = (int) ($userRow['shift_count'] ?? 0);
 
-        // مخرجِ غیرجمعهٔ کلِ ماه
+        // مخرج غیرجمعهٔ کل ماه
         $divisor = 0;
         $d1 = new DateTime($start_of_month);
         $d2 = new DateTime($end_of_month);
@@ -289,7 +289,7 @@ if (!function_exists('sc_computeUserSalaryReport')) {
             $records_by_date[$rec['date']][] = $rec;
         }
 
-        // درخواست‌ها (همان ۵ کوئریِ monthly-report)
+        // درخواست‌ها (همان ۵ کوئری monthly-report)
         $all_requests = [];
         $run = function ($sql) use ($db, $userId, $start_of_month, $end_of_month) {
             $s = $db->prepare($sql);
@@ -307,8 +307,8 @@ if (!function_exists('sc_computeUserSalaryReport')) {
             $requests_by_date[$req['request_date']][] = $req;
         }
 
-        // حلقهٔ روزها — جمعِ حقوقی فقط روی «روزهای قبل از امروزِ غیرتعطیل».
-        // در صورت $collect_days، جزئیاتِ همهٔ روزها برای نمایش در مودال جمع می‌شود.
+        // حلقهٔ روزها — جمع حقوقی فقط روی «روزهای قبل از امروز غیرتعطیل».
+        // در صورت $collect_days، جزئیات همهٔ روزها برای نمایش در مودال جمع می‌شود.
         $total_final = 0;
         $total_before = 0;
         $total_money = 0;
@@ -329,10 +329,10 @@ if (!function_exists('sc_computeUserSalaryReport')) {
             $is_past_day = ($date_str < $today);
             $is_counted = (!$is_holiday && $is_past_day);
 
-            // ورود/خروجِ روز (برای نمایش، حتی در روزهای محاسبه‌نشده)
+            // ورود/خروج روز (برای نمایش، حتی در روزهای محاسبه‌نشده)
             $day_records = $records_by_date[$date_str] ?? [];
-            // ورود/خروج شیفت‌ها — تطبیقِ هوشمند بر اساسِ ساعتِ ورود (قانون گزینه ۳)
-            // ورودِ بعد از پایانِ شیفت ۱ ⟵ متعلق به شیفت ۲، در غیر این صورت شیفت ۱
+            // ورود/خروج شیفت‌ها — تطبیق هوشمند بر اساس ساعت ورود (قانون گزینه ۳)
+            // ورود بعد از پایان شیفت ۱ ⟵ متعلق به شیفت ۲، در غیر این صورت شیفت ۱
             $s1in = $s1out = $s2in = $s2out = null;
             $day_records = $records_by_date[$date_str] ?? [];
 
@@ -343,14 +343,14 @@ if (!function_exists('sc_computeUserSalaryReport')) {
                 $rec_in = $rec['check_in'] ? substr($rec['check_in'], 11, 5) : null;
                 $rec_out = $rec['check_out'] ? substr($rec['check_out'], 11, 5) : null;
 
-                // تعیینِ شیفتِ مقصد بر اساسِ ساعتِ ورود
+                // تعیین شیفت مقصد بر اساس ساعت ورود
                 $target = 1;
                 if ($has_two_shifts && $rec_in !== null && $shift1_end_hm !== null && $rec_in >= $shift1_end_hm) {
                     $target = 2;
                 }
 
                 if ($target === 1) {
-                    // اگر قبلاً پر شده، خالیِ بعدی را پر نکن (اولویت با اولین رکوردِ شیفت ۱)
+                    // اگر قبلا پر شده، خالی بعدی را پر نکن (اولویت با اولین رکورد شیفت ۱)
                     if ($s1in === null && $s1out === null) {
                         $s1in = $rec_in;
                         $s1out = $rec_out;
@@ -396,7 +396,7 @@ if (!function_exists('sc_computeUserSalaryReport')) {
                 list($gy2, $gm2, $gd2) = explode('-', $date_str);
                 list($jy2, $jm2, $jd2) = sc_gregorianToJalali((int) $gy2, (int) $gm2, (int) $gd2);
 
-                // درخواست‌های معتبرِ روز (پاسِ غیرلغو + بقیه approved)
+                // درخواست‌های معتبر روز (پاس غیرلغو + بقیه approved)
                 $valid_reqs = [];
                 foreach (($requests_by_date[$date_str] ?? []) as $req) {
                     $ok = ($req['type'] === 'pass') ? ($req['status'] !== 'cancelled') : ($req['status'] === 'approved');
@@ -436,9 +436,9 @@ if (!function_exists('sc_computeUserSalaryReport')) {
             $cur->modify('+1 day');
         }
 
-        // گردکردنِ مبالغِ ریالی (طبقِ تنظیماتِ salary_round_to) — هم‌راستا با
-        // تبِ «درخواست‌های من» در همین صفحه، تا عددِ گزارشِ رسمیِ حقوق با
-        // چیزی که خودِ کارمند می‌بیند یکی باشد
+        // گردکردن مبالغ ریالی (طبق تنظیمات salary_round_to) — هم‌راستا با
+        // تب «درخواست‌های من» در همین صفحه، تا عدد گزارش رسمی حقوق با
+        // چیزی که خود کارمند می‌بیند یکی باشد
         $round_to = isset($app_settings['salary_round_to']) ? (int) $app_settings['salary_round_to'] : 100000;
         if ($round_to > 0) {
             $total_money = floor($total_money / $round_to) * $round_to;
@@ -466,36 +466,36 @@ if (!function_exists('sc_computeUserSalaryReport')) {
 }
 
 /**
- * جمع کل ساعتِ مرخصی + پاسِ معتبرِ یک کاربر در کلِ بازهٔ ماه (بدون محدودیتِ «تا دیروز»)
- * و مقایسه با سهمیهٔ ماهانه (۲ روزِ کاریِ همان کاربر، بر اساسِ daily_work_hours).
+ * جمع کل ساعت مرخصی + پاس معتبر یک کاربر در کل بازهٔ ماه (بدون محدودیت «تا دیروز»)
+ * و مقایسه با سهمیهٔ ماهانه (۲ روز کاری همان کاربر، بر اساس daily_work_hours).
  *
- * قراردادِ اعتبارِ درخواست‌ها هماهنگ با sc_calculateDailyShortage است:
+ * قرارداد اعتبار درخواست‌ها هماهنگ با sc_calculateDailyShortage است:
  *   - مرخصی: فقط status = 'approved'
  *   - پاس: هر چیزی جز status = 'cancelled'
- * مرخصیِ بدون start_time/end_time (تمام‌روز) معادلِ یک روزِ کاریِ کامل (daily_work_hours) حساب می‌شود.
- * فقط تاریخ شروع (start_date / pass_date) ملاک است — هماهنگ با کوئریِ مشابه در sc_computeUserSalaryReport.
+ * مرخصی بدون start_time/end_time (تمام‌روز) معادل یک روز کاری کامل (daily_work_hours) حساب می‌شود.
+ * فقط تاریخ شروع (start_date / pass_date) ملاک است — هماهنگ با کوئری مشابه در sc_computeUserSalaryReport.
  */
 if (!function_exists('sc_computeLeavePassQuota')) {
     function sc_computeLeavePassQuota($db, $userRow, $start_of_month, $end_of_month)
     {
-        // «سهمیهٔ مانده» باید همون عددی باشه که در همه‌جایِ دیگرِ برنامه (باکسِ
+        // «سهمیهٔ مانده» باید همون عددی باشه که در همه‌جای دیگر برنامه (باکس
         // موجودی در requests.php، دکمهٔ اعطا در users.php) نمایش داده می‌شه —
-        // یعنی موجودیِ واقعیِ leave_balance_transactions (که تعلقِ ماهانه،
-        // سهمیهٔ تشویقی، و مانده‌یِ ماه‌هایِ قبل رو هم لحاظ می‌کنه)، نه یک
-        // سقفِ ثابتِ «۲ روزِ کاری منهایِ مصرفِ همین ماه» که قبلاً اینجا
-        // به‌صورتِ جدا و ناهماهنگ با بقیهٔ سیستم محاسبه می‌شد.
+        // یعنی موجودی واقعی leave_balance_transactions (که تعلق ماهانه،
+        // سهمیهٔ تشویقی، و مانده‌ی ماه‌های قبل رو هم لحاظ می‌کنه)، نه یک
+        // سقف ثابت «۲ روز کاری منهای مصرف همین ماه» که قبلا اینجا
+        // به‌صورت جدا و ناهماهنگ با بقیهٔ سیستم محاسبه می‌شد.
         require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php';
         $userId = (int) $userRow['id'];
 
         ensureMonthlyLeaveAccrual($db, $userId);
         $remaining_minutes = getLeaveBalance($db, $userId);
 
-        // «جمع مرخصی/پاس» یعنی چقدر واقعاً از همین ماه مصرف شده — این باید
-        // مستقیماً از خودِ درخواست‌ها بیاد، نه از کسوراتِ لجر: لجر فقط از
-        // زمانِ ساختِ سیستمِ سهمیه به بعد پر می‌شه، پس درخواست‌هایِ قدیمی‌تر
-        // (که واقعاً رخ دادن ولی تراکنشِ کسر ندارن) با کوئریِ لجر صفر
+        // «جمع مرخصی/پاس» یعنی چقدر واقعا از همین ماه مصرف شده — این باید
+        // مستقیما از خود درخواست‌ها بیاد، نه از کسورات لجر: لجر فقط از
+        // زمان ساخت سیستم سهمیه به بعد پر می‌شه، پس درخواست‌های قدیمی‌تر
+        // (که واقعا رخ دادن ولی تراکنش کسر ندارن) با کوئری لجر صفر
         // نشون داده می‌شدن — درحالی‌که «سهمیهٔ مانده» (بالا) درست همون
-        // موجودیِ لجره، چون اون باید با بقیهٔ برنامه هماهنگ باشه.
+        // موجودی لجره، چون اون باید با بقیهٔ برنامه هماهنگ باشه.
         $daily_work_minutes = getUserDailyWorkMinutes($db, $userId);
         $used_minutes = 0;
 

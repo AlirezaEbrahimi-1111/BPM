@@ -9,17 +9,17 @@
  */
 
 /**
- * دریافتِ تاریخ‌هایِ تعطیلِ «یک‌روزه» (type=date) از دیتابیس و cache در حافظه
- * (کلیدِ کش بر اساسِ organization_id — تا در یک request که چندین سازمان رو
- * پردازش می‌کنه، کشِ سازمانِ اول اشتباهی برایِ سازمانِ دوم استفاده نشه)
+ * دریافت تاریخ‌های تعطیل «یک‌روزه» (type=date) از دیتابیس و cache در حافظه
+ * (کلید کش بر اساس organization_id — تا در یک request که چندین سازمان رو
+ * پردازش می‌کنه، کش سازمان اول اشتباهی برای سازمان دوم استفاده نشه)
  *
- * دو مدلِ تعطیلی وجود داره:
+ * دو مدل تعطیلی وجود داره:
  *   ۱) سراسری (organization_id = NULL در دیتابیس) — همیشه برگردونده می‌شه
- *   ۲) مخصوصِ سازمان — فقط اگر $organizationId داده بشه و مطابقت داشته باشه
+ *   ۲) مخصوص سازمان — فقط اگر $organizationId داده بشه و مطابقت داشته باشه
  *
  * @param PDO      $db
- * @param int|null $organizationId اگر null باشه، فقط تعطیلاتِ سراسری برمی‌گرده
- *                                 (سازگار با فراخوانی‌هایِ قدیمی‌تر بدونِ این پارامتر)
+ * @param int|null $organizationId اگر null باشه، فقط تعطیلات سراسری برمی‌گرده
+ *                                 (سازگار با فراخوانی‌های قدیمی‌تر بدون این پارامتر)
  */
 function getHolidaySet(PDO $db, ?int $organizationId = null): array {
     static $cache = [];
@@ -48,11 +48,11 @@ function getHolidaySet(PDO $db, ?int $organizationId = null): array {
 }
 
 /**
- * دریافتِ روزهایِ هفتهٔ تعطیلِ «تکرارشونده» (type=weekly، مثلاً هر پنج‌شنبه)
- * برایِ یک سازمانِ خاص + تعطیلاتِ هفتگیِ سراسری. مقادیر بر اساسِ PHP
+ * دریافت روزهای هفتهٔ تعطیل «تکرارشونده» (type=weekly، مثلا هر پنج‌شنبه)
+ * برای یک سازمان خاص + تعطیلات هفتگی سراسری. مقادیر بر اساس PHP
  * date('w') هستن: ۰=یکشنبه، ۱=دوشنبه، ... ۵=جمعه، ۶=شنبه
  *
- * @return int[] لیستِ اعدادِ روزِ هفته (بدونِ تکرار)
+ * @return int[] لیست اعداد روز هفته (بدون تکرار)
  */
 function getRecurringHolidayWeekdays(PDO $db, ?int $organizationId = null): array {
     static $cache = [];
@@ -83,8 +83,8 @@ function getRecurringHolidayWeekdays(PDO $db, ?int $organizationId = null): arra
  * بررسی اینکه یک تاریخ روز کاری هست یا نه
  *
  * @param DateTime $date             تاریخ مورد بررسی
- * @param array    $holidays         آرایه تعطیلاتِ یک‌روزه (کلید = 'Y-m-d')
- * @param int[]    $recurringWeekdays روزهایِ هفتهٔ تعطیلِ تکرارشونده (خروجیِ getRecurringHolidayWeekdays)
+ * @param array    $holidays         آرایه تعطیلات یک‌روزه (کلید = 'Y-m-d')
+ * @param int[]    $recurringWeekdays روزهای هفتهٔ تعطیل تکرارشونده (خروجی getRecurringHolidayWeekdays)
  * @return bool
  */
 function isWorkingDay(DateTime $date, array $holidays, array $recurringWeekdays = []): bool {
@@ -95,7 +95,7 @@ function isWorkingDay(DateTime $date, array $holidays, array $recurringWeekdays 
         return false;
     }
 
-    // تعطیلیِ هفتگیِ تکرارشونده (مثلاً هر پنج‌شنبه)
+    // تعطیلی هفتگی تکرارشونده (مثلا هر پنج‌شنبه)
     if (in_array($dayOfWeek, $recurringWeekdays, true)) {
         return false;
     }
@@ -109,18 +109,18 @@ function isWorkingDay(DateTime $date, array $holidays, array $recurringWeekdays 
 }
 
 /**
- * افزودنِ N «ساعتِ کاری» به یک لحظه — روزهایِ غیرکاری (جمعه/تعطیلات) کاملاً
+ * افزودن N «ساعت کاری» به یک لحظه — روزهای غیرکاری (جمعه/تعطیلات) کاملا
  * نادیده گرفته می‌شوند (نه فقط کم‌شمرده)، یعنی اگر بازه‌ای از ساعت‌شمار با یک
- * روزِ تعطیل تلاقی کند، آن روز به‌طورِ کامل به مهلت اضافه می‌شود.
+ * روز تعطیل تلاقی کند، آن روز به‌طور کامل به مهلت اضافه می‌شود.
  *
- * مثال: پنج‌شنبه ساعتِ ۲۰:۰۰ + ۲۴ ساعتِ کاری = شنبه ساعتِ ۲۰:۰۰
- * (نه جمعه ساعتِ ۲۰:۰۰، چون کلِ جمعه صفر ساعت محسوب می‌شود)
+ * مثال: پنج‌شنبه ساعت ۲۰:۰۰ + ۲۴ ساعت کاری = شنبه ساعت ۲۰:۰۰
+ * (نه جمعه ساعت ۲۰:۰۰، چون کل جمعه صفر ساعت محسوب می‌شود)
  *
  * @param DateTime $start   لحظه‌ی شروع
- * @param int      $hours   تعداد ساعتِ کاری که باید اضافه شود
+ * @param int      $hours   تعداد ساعت کاری که باید اضافه شود
  * @param array    $holidays آرایه‌ی تعطیلات (کلید = 'Y-m-d')
- * @param int[]    $recurringWeekdays روزهایِ هفتهٔ تعطیلِ تکرارشونده (اختیاری)
- * @return DateTime لحظه‌ی نتیجه (یک شیِ DateTimeِ جدید — ورودی تغییر نمی‌کند)
+ * @param int[]    $recurringWeekdays روزهای هفتهٔ تعطیل تکرارشونده (اختیاری)
+ * @return DateTime لحظه‌ی نتیجه (یک شی DateTime جدید — ورودی تغییر نمی‌کند)
  */
 function addWorkingHours(DateTime $start, int $hours, array $holidays, array $recurringWeekdays = []): DateTime {
     $cursor = clone $start;
@@ -139,7 +139,7 @@ function addWorkingHours(DateTime $start, int $hours, array $holidays, array $re
                 $cursor = $midnight;
             }
         } else {
-            // روزِ غیرکاری — کاملاً رد می‌شود، هیچ ساعتی از آن کم نمی‌شود
+            // روز غیرکاری — کاملا رد می‌شود، هیچ ساعتی از آن کم نمی‌شود
             $cursor->modify('tomorrow midnight');
         }
     }
@@ -156,7 +156,7 @@ function addWorkingHours(DateTime $start, int $hours, array $holidays, array $re
  * @param DateTime $start تاریخ شروع
  * @param DateTime $end   تاریخ پایان
  * @param array    $holidays آرایه تعطیلات
- * @param int[]    $recurringWeekdays روزهایِ هفتهٔ تعطیلِ تکرارشونده (اختیاری)
+ * @param int[]    $recurringWeekdays روزهای هفتهٔ تعطیل تکرارشونده (اختیاری)
  * @return int تعداد روزهای کاری (عدد مثبت یعنی end > start)
  */
 function countWorkingDaysBetween(DateTime $start, DateTime $end, array $holidays, array $recurringWeekdays = []): int {
@@ -286,16 +286,16 @@ function calcPeriodicDelayWorkingDays(
 }
 
 /**
- * معادلِ ساعتیِ calcPeriodicDelayWorkingDays — مخصوصِ کارهایِ روتین/فرآیندی
- * (is_workflow_task=1). برخلافِ کارهایِ معمولی، اینجا جمعه/تعطیلات کسر
- * نمی‌شه — چون مهلتِ روتین (t.deadline) از قبل با زمانِ مجازِ همون مرحله
- * (ws.time_limit_hours، طبقِ همون منطقی که api/reports/bottleneck-report.php
- * و includes/WorkflowManager.php استفاده می‌کنن) محاسبه شده، پس خودِ مهلت
+ * معادل ساعتی calcPeriodicDelayWorkingDays — مخصوص کارهای روتین/فرآیندی
+ * (is_workflow_task=1). برخلاف کارهای معمولی، اینجا جمعه/تعطیلات کسر
+ * نمی‌شه — چون مهلت روتین (t.deadline) از قبل با زمان مجاز همون مرحله
+ * (ws.time_limit_hours، طبق همون منطقی که api/reports/bottleneck-report.php
+ * و includes/WorkflowManager.php استفاده می‌کنن) محاسبه شده، پس خود مهلت
  * از قبل «تنظیم‌شده» است — فقط باید فاصله‌ی ساعتی تا الان رو حساب کرد.
  *
- * @param string $deadline تاریخ‌وساعتِ مهلت ('Y-m-d H:i:s')
- * @param string|null $now لحظه‌ی «الان» (پیش‌فرض: ساعتِ سرور)
- * @return int تعداد ساعتِ تأخیر (0 = هنوز به موقع)
+ * @param string $deadline تاریخ‌وساعت مهلت ('Y-m-d H:i:s')
+ * @param string|null $now لحظه‌ی «الان» (پیش‌فرض: ساعت سرور)
+ * @return int تعداد ساعت تأخیر (0 = هنوز به موقع)
  */
 function calcHourDelay(string $deadline, ?string $now = null): int {
     $now = $now ?: date('Y-m-d H:i:s');
@@ -306,11 +306,11 @@ function calcHourDelay(string $deadline, ?string $now = null): int {
 }
 
 /**
- * ساعتِ باقی‌مانده تا مهلتِ یک کارِ روتین/فرآیندی (هنوز نرسیده به موعد).
+ * ساعت باقی‌مانده تا مهلت یک کار روتین/فرآیندی (هنوز نرسیده به موعد).
  *
- * @param string $deadline تاریخ‌وساعتِ مهلت ('Y-m-d H:i:s')
- * @param string|null $now لحظه‌ی «الان» (پیش‌فرض: ساعتِ سرور)
- * @return int تعداد ساعتِ باقی‌مانده (0 = مهلت گذشته یا همین الان)
+ * @param string $deadline تاریخ‌وساعت مهلت ('Y-m-d H:i:s')
+ * @param string|null $now لحظه‌ی «الان» (پیش‌فرض: ساعت سرور)
+ * @return int تعداد ساعت باقی‌مانده (0 = مهلت گذشته یا همین الان)
  */
 function calcHourRemaining(string $deadline, ?string $now = null): int {
     $now = $now ?: date('Y-m-d H:i:s');

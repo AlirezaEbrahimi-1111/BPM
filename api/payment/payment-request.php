@@ -13,7 +13,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once __DIR__ . '/zarinpal.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
 
-/* ── ۱) فقط کاربرِ لاگین‌کرده اجازه دارد ──
+/* ── ۱) فقط کاربر لاگین‌کرده اجازه دارد ──
    نکته: کلید سشن را با سیستم لاگین خودت هماهنگ کن.
    اگر کاربر لاگین‌نکرده باشد، اینجا متوقف می‌شود. */
 if (empty($_SESSION['user_id'])) {

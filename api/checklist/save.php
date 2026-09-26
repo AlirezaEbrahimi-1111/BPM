@@ -34,7 +34,7 @@ try {
     // ── آماده‌سازی لیست شناسه‌های معتبر برای اعتبارسنجی ارجاع ──
     $org_id = intval($task['organization_id'] ?? 0);
 
-    // شناسه‌های معتبر کاربرانِ همین سازمان
+    // شناسه‌های معتبر کاربران همین سازمان
     $valid_user_ids = [];
     if ($org_id) {
         $uStmt = $db->prepare("SELECT id FROM users WHERE organization_id = ?");
@@ -75,7 +75,7 @@ try {
             $assignee_type  = null;
             $assignee_value = null;
         }
-        // ۳) شناسه باید واقعاً در همین سازمان وجود داشته باشد
+        // ۳) شناسه باید واقعا در همین سازمان وجود داشته باشد
         if ($assignee_type === 'user' && !in_array((string)$assignee_value, $valid_user_ids, true)) {
             $assignee_type  = null;
             $assignee_value = null;

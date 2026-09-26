@@ -233,7 +233,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
         ];
 
         const gridOptions = {
-            theme: AgGridFa.theme({ rowHoverColor: '#f0f7ff' }), // پایهٔ مشترک؛ هاورِ فعلیِ همین صفحه حفظ شد
+            theme: AgGridFa.theme({ rowHoverColor: '#f0f7ff' }), // پایهٔ مشترک؛ هاور فعلی همین صفحه حفظ شد
             columnDefs,
             rowData: [],
             enableRtl: true,
@@ -299,7 +299,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                 window.location.href = '../index.php';
                 return;
             }
-            // گزینه‌های فیلترِ وضعیت از فایلِ مشترک (assets/js/task-filters.js)
+            // گزینه‌های فیلتر وضعیت از فایل مشترک (assets/js/task-filters.js)
             TF.renderStatusFilter(document.getElementById('filterStatus'), { selected: 'open' });
             loadFiltersFromURL();
             checkManagerRole();
@@ -619,13 +619,13 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                 if (as && t.assignee_id != as) return false;
                 if (pr && t.priority !== pr) return false;
                 if (ty && t.task_type !== ty) return false;
-                // فیلترِ وضعیت — تنها مرجع: assets/js/task-filters.js
+                // فیلتر وضعیت — تنها مرجع: assets/js/task-filters.js
                 if (st && st !== 'all' && !TF.matchesStatusFilter(t, st, { id: currentUserId })) return false;
 
-                // 🆕 فیلتر واحد (از داشبورد) — «نامشخص» یعنی کاری که اصلاً واحد
+                // 🆕 فیلتر واحد (از داشبورد) — «نامشخص» یعنی کاری که اصلا واحد
                 // نداره (activity_section خالی/تهی)، نه واحدی به همین اسم؛ چون
-                // ویجتِ «بیشترین تأخیر» (api/reports/top-delayed-users.php) دقیقاً
-                // چنین کارهایی رو زیرِ همین برچسب جمع می‌کنه
+                // ویجت «بیشترین تأخیر» (api/reports/top-delayed-users.php) دقیقا
+                // چنین کارهایی رو زیر همین برچسب جمع می‌کنه
                 if (window._filterSection) {
                     const isUnknownSection = window._filterSection === 'نامشخص';
                     if (isUnknownSection ? !!t.activity_section : t.activity_section !== window._filterSection) return false;
@@ -677,7 +677,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
             continuous: ['دوره‌ای', 'arrow-repeat']
         };
 
-        // برچسب/آیکن/رنگِ وضعیت — از assets/js/task-filters.js (تنها مرجع)
+        // برچسب/آیکن/رنگ وضعیت — از assets/js/task-filters.js (تنها مرجع)
         function statusBadge(s) {
             return `<span class="badge ${TF.statusClass(s)}"><i class="bi bi-${TF.statusIcon(s)}"></i>${TF.statusLabel(s)}</span>`;
         }
@@ -692,18 +692,18 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
             return `<span class="badge type-${t}"><i class="bi bi-${i}"></i>${l}</span>`;
         }
 
-        // 🔒 دو مدلِ تأخیر/مهلت: کارهایِ روتین/فرآیندی (is_workflow_task=1) ساعتی،
-        // بقیه (مقطعی/دوره‌ای) روزِ کاری — هر دو عدد از سرور می‌آد
+        // 🔒 دو مدل تأخیر/مهلت: کارهای روتین/فرآیندی (is_workflow_task=1) ساعتی،
+        // بقیه (مقطعی/دوره‌ای) روز کاری — هر دو عدد از سرور می‌آد
         // (enrichTaskDates: hours_delayed/hours_remaining/working_days_delayed)
-        // نه از محاسبه‌ی خامِ new Date() سمتِ مرورگر
+        // نه از محاسبه‌ی خام new Date() سمت مرورگر
         function daysLeft(d, status, task) {
             if (status === 'completed' || status === 'approved')
                 return '<span class="badge days-badge days-normal">تکمیل</span>';
 
-            // 🔒 کارِ دوره‌ای: تأخیرِ واقعی یعنی دوره‌هایِ معوقه، نه اختلافِ
-            // تقویمیِ next_due_date — چون next_due_date همیشه نزدیکِ امروزه
+            // 🔒 کار دوره‌ای: تأخیر واقعی یعنی دوره‌های معوقه، نه اختلاف
+            // تقویمی next_due_date — چون next_due_date همیشه نزدیک امروزه
             // (حتی وقتی ده‌ها دوره معوقه داره)، محاسبه‌ی رو‌به‌پایین می‌تونست
-            // «امروز»/«N روز دیگر» نشون بده و تأخیرِ واقعی رو کاملاً پنهان کنه
+            // «امروز»/«N روز دیگر» نشون بده و تأخیر واقعی رو کاملا پنهان کنه
             if (task && task.task_type === 'continuous') {
                 const op = task.overdue_periods || 0;
                 if (op > 0) {
@@ -739,7 +739,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
         }
 
         function relTime(d) {
-            // زمانِ نسبی از منبعِ یگانه (ساعتِ سرور، نه دستگاه) — time-sync.js
+            // زمان نسبی از منبع یگانه (ساعت سرور، نه دستگاه) — time-sync.js
             return window.TimeSync ? TimeSync.timeAgo(d) : '';
         }
 
@@ -826,8 +826,8 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
         }
 
         // نمایش پیام (alert)
-        // showAlert قبلاً یک پیاده‌سازیِ جداگانه (باکسِ alert بوت‌استرپ) داشت؛
-        // الان فقط یک نام‌مستعارِ نازک برایِ showToastِ مشترکه (از assets/js/alert.js)
+        // showAlert قبلا یک پیاده‌سازی جداگانه (باکس alert بوت‌استرپ) داشت؛
+        // الان فقط یک نام‌مستعار نازک برای showToast مشترکه (از assets/js/alert.js)
         function showAlert(message, type = 'info') {
             showToast(message, type);
         }

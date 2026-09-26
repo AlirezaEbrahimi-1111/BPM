@@ -47,8 +47,8 @@ try {
         exit;
     }
 
-    // موعد فقط وقتی الزامیه که کار به کسِ دیگه‌ای ارجاع داده بشه؛ اگه خودِ
-    // تعریف‌کننده مسئولِ انجامش هم باشه، می‌تونه بدونِ موعد ثبت کنه
+    // موعد فقط وقتی الزامیه که کار به کس دیگه‌ای ارجاع داده بشه؛ اگه خود
+    // تعریف‌کننده مسئول انجامش هم باشه، می‌تونه بدون موعد ثبت کنه
     $__is_self_task = (($input['assignee_id'] ?? $user_id) == $user_id);
     if ($input['task_type'] === 'periodic' && empty($input['due_date']) && !$__is_self_task) {
         ob_end_clean();
@@ -146,8 +146,8 @@ try {
             error_log("set share_history error: " . $e->getMessage());
         }
 
-        // ─── دسترسیِ «فقط مشاهده» برای افرادِ خاص (task_viewers) ───────────
-        // هم‌رفتار با api/tasks/add-viewers.php: فقط کاربرانِ فعالِ همان سازمان،
+        // ─── دسترسی «فقط مشاهده» برای افراد خاص (task_viewers) ───────────
+        // هم‌رفتار با api/tasks/add-viewers.php: فقط کاربران فعال همان سازمان،
         // granted_by = تعریف‌کننده، و اعلان برای هر بیننده.
         if (!empty($input['viewers']) && is_array($input['viewers'])) {
             try {

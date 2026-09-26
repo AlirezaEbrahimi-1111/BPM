@@ -9,9 +9,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
-// این endpoint قبلاً کاملاً بدونِ احرازِ هویت بود — هر کسی با حدس‌زدنِ
-// routine_id می‌تونست مراحلِ روتینِ هر سازمانی رو ببینه. هم‌راستا با
-// routines-all.php (که همین داده رو لیست می‌کنه)، همون سطحِ دسترسی اعمال می‌شه
+// این endpoint قبلا کاملا بدون احراز هویت بود — هر کسی با حدس‌زدن
+// routine_id می‌تونست مراحل روتین هر سازمانی رو ببینه. هم‌راستا با
+// routines-all.php (که همین داده رو لیست می‌کنه)، همون سطح دسترسی اعمال می‌شه
 $user_id = requireAuth();
 $database = new Database();
 $db = $database->getConnection();

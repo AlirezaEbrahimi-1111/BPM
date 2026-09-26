@@ -53,7 +53,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         .nt-empty { text-align: center; color: #9ca3af; padding: 40px 0; }
         .nt-empty i { font-size: 2rem; display: block; margin-bottom: .5rem; }
 
-        /* حالتِ تاریک */
+        /* حالت تاریک */
         :root[data-theme="dark"] .nt-search input { border-color: var(--border-soft); }
         :root[data-theme="dark"] .nt-chip { border-color: var(--border-soft); color: var(--text-muted); }
         :root[data-theme="dark"] .nt-card { box-shadow: 0 1px 4px rgba(0,0,0,.35); }

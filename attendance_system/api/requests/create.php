@@ -77,8 +77,8 @@ function generateRequestCode($prefix, $user_id)
 }
 
 // ✅ تابع چک کردن آیا مدیر کاربر همان مسئول کل است یا نه
-// نکته: manager_code یک کدِ نمایشیِ بی‌ربط به id است (نه شناسه‌ی مدیر)؛
-// معیارِ معتبرِ «مسئول کل بودن» ستونِ is_supervisor است.
+// نکته: manager_code یک کد نمایشی بی‌ربط به id است (نه شناسه‌ی مدیر)؛
+// معیار معتبر «مسئول کل بودن» ستون is_supervisor است.
 function isManagerSupervisor($db, $user_id)
 {
     try {
@@ -115,10 +115,10 @@ if (!$type) {
     exit;
 }
 
-// 🔒 محدودیتِ روزهایِ کاری برایِ ثبتِ درخواست — طبقِ تنظیمِ clickable_days_limit،
-// این‌بار سمتِ سرور. قبلاً این محدودیت فقط در جاوااسکریپتِ گریدِ تقویم اعمال
-// می‌شد (کدامِ روزها قابلِ‌کلیک‌اند) و با فراخوانیِ مستقیمِ همین API (بدونِ
-// رفتن از فرم) کاملاً قابلِ‌دورزدن بود.
+// 🔒 محدودیت روزهای کاری برای ثبت درخواست — طبق تنظیم clickable_days_limit،
+// این‌بار سمت سرور. قبلا این محدودیت فقط در جاوااسکریپت گرید تقویم اعمال
+// می‌شد (کدام روزها قابل‌کلیک‌اند) و با فراخوانی مستقیم همین API (بدون
+// رفتن از فرم) کاملا قابل‌دورزدن بود.
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 
 $request_target_date = null;
@@ -339,7 +339,7 @@ if ($type === 'leave') {
     }
 
     // بررسی وجود جانشین
-    // 🔒 خط قرمز: جانشین باید از همان سازمانِ درخواست‌دهنده باشد
+    // 🔒 خط قرمز: جانشین باید از همان سازمان درخواست‌دهنده باشد
     $stmt = $db->prepare("
         SELECT u.id FROM users u
         WHERE u.id = ?
@@ -367,7 +367,7 @@ if ($type === 'leave') {
     list($start_date, $start_time) = explode(' ', $start_datetime);
     list($end_date, $end_time) = explode(' ', $end_datetime);
 
-    // ✅ سقفِ روزهایِ متوالیِ مرخصی (طبقِ تنظیماتِ واقعی، نه هاردکد)
+    // ✅ سقف روزهای متوالی مرخصی (طبق تنظیمات واقعی، نه هاردکد)
     $leave_max_consecutive = (int) getSetting($db, 'leave_max_consecutive', 20);
     $consecutive_days = (int) ((strtotime($end_date) - strtotime($start_date)) / 86400) + 1;
     if ($consecutive_days > $leave_max_consecutive) {
@@ -378,8 +378,8 @@ if ($type === 'leave') {
         exit;
     }
 
-    // ✅ سهمیهٔ مشترکِ مرخصی+پاس (بر‌حسبِ دقیقه، متناسب با ساعتِ کاریِ خودِ فرد)
-    // تعلقِ ماهانه رو تا همین لحظه به‌روز می‌کنیم، بعد چک می‌کنیم موجودی کافیه یا نه
+    // ✅ سهمیهٔ مشترک مرخصی+پاس (بر‌حسب دقیقه، متناسب با ساعت کاری خود فرد)
+    // تعلق ماهانه رو تا همین لحظه به‌روز می‌کنیم، بعد چک می‌کنیم موجودی کافیه یا نه
     ensureMonthlyLeaveAccrual($db, $user_id);
     $daily_work_minutes = getUserDailyWorkMinutes($db, $user_id);
     $requested_minutes = computeLeaveRequestMinutes($start_date, $start_time, $end_date, $end_time, $daily_work_minutes);
@@ -400,12 +400,12 @@ if ($type === 'leave') {
 
     $leave_id = $db->lastInsertId();
 
-    // ✅ کسرِ سهمیه همین حالا (نه فقط بعدِ تأیید) — اگه بعداً رد یا حذف بشه،
+    // ✅ کسر سهمیه همین حالا (نه فقط بعد تأیید) — اگه بعدا رد یا حذف بشه،
     // در approve.php/delete.php برگردونده می‌شه
     deductLeaveBalance($db, $user_id, $requested_minutes, 'leave', (int) $leave_id, "کسر بابت درخواست مرخصی {$request_code}");
 
     // ✅ ثبت/آپدیت جانشین در جدول substitutes
-    // اول چک کن آیا قبلاً وجود دارد
+    // اول چک کن آیا قبلا وجود دارد
     $stmt = $db->prepare("SELECT id FROM substitutes WHERE user_id = ? AND substitute_user_id = ?");
     $stmt->execute([$user_id, $substitute_id]);
     $existing = $stmt->fetch();
@@ -501,7 +501,7 @@ if ($type === 'pass') {
         }
     }
 
-    // ✅ سهمیهٔ مشترکِ مرخصی+پاس (بر‌حسبِ دقیقه) — پاس هم از همون استخر کم می‌شه
+    // ✅ سهمیهٔ مشترک مرخصی+پاس (بر‌حسب دقیقه) — پاس هم از همون استخر کم می‌شه
     ensureMonthlyLeaveAccrual($db, $user_id);
     $daily_work_minutes = getUserDailyWorkMinutes($db, $user_id);
     $requested_minutes = computeLeaveRequestMinutes($pass_date, $start_time, $pass_date, $end_time, $daily_work_minutes);

@@ -1,7 +1,7 @@
 <?php
 /**
- * API: حذفِ یک عضو از گروه — سازنده یا هر مدیرِ گروه مجاز است، با یک
- * استثنا: عزلِ یک «مدیرِ» دیگه فقط دستِ خودِ سازنده‌ست (تا مدیرها نتونن
+ * API: حذف یک عضو از گروه — سازنده یا هر مدیر گروه مجاز است، با یک
+ * استثنا: عزل یک «مدیر» دیگه فقط دست خود سازنده‌ست (تا مدیرها نتونن
  * همدیگه رو حذف کنن).
  * POST /api/chat/group-remove-member.php   body: { conversation_id: 1, user_id: 4 }
  */
@@ -50,7 +50,7 @@ try {
         exit;
     }
 
-    // 🔒 سازنده یا مدیرِ دارایِ اختیارِ اختصاصیِ «remove_member» اجازه‌ی حذفِ عضو داره
+    // 🔒 سازنده یا مدیر دارای اختیار اختصاصی «remove_member» اجازه‌ی حذف عضو داره
     if (!chatUserHasGroupPermission($db, $conversationId, $user_id, 'remove_member')) {
         http_response_code(403);
         error_log("Chat group-remove-member denied | user_id={$user_id} | conversation_id={$conversationId}");
@@ -64,12 +64,12 @@ try {
         exit;
     }
 
-    // 🔒 عزلِ یک مدیرِ دیگه فقط دستِ سازنده‌ست — تا مدیرها نتونن همدیگه رو حذف کنن
+    // 🔒 عزل یک مدیر دیگه فقط دست سازنده‌ست — تا مدیرها نتونن همدیگه رو حذف کنن
     $targetRole = chatMemberRole($db, $conversationId, $targetUserId);
     if ($targetRole === 'admin' && !chatUserIsGroupCreator($db, $conversationId, $user_id)) {
         http_response_code(403);
         error_log("Chat group-remove-member denied (target is admin, actor not creator) | user_id={$user_id} | target={$targetUserId} | conversation_id={$conversationId}");
-        echo json_encode(['success' => false, 'message' => 'فقط سازنده‌ی گروه می‌تواند یک مدیرِ دیگر را حذف کند']);
+        echo json_encode(['success' => false, 'message' => 'فقط سازنده‌ی گروه می‌تواند یک مدیر دیگر را حذف کند']);
         exit;
     }
 

@@ -1,13 +1,13 @@
 name: Deploy to VPS
 
-# دستی‌ست، عمداً — هیچ push‌ای خودش دیپلوی نمی‌کنه؛ فقط از تبِ Actions با
+# دستی‌ست، عمدا — هیچ push‌ای خودش دیپلوی نمی‌کنه؛ فقط از تب Actions با
 # دکمهٔ «Run workflow» اجرا می‌شه.
 #
 # این workflow اینها را با هم می‌فرستد:
-#   ۱) کدِ PHP        → روی سرور `deploy-update` + `migrate.php up`
-#   ۲) سرویسِ crm-service (Go) → build، scp، /opt/bmp-crm/apply-crm-binary.sh
-#   ۳) سرویسِ go-api (Go)      → build، scp، /opt/bpm-go-api/apply-go-api.sh
-#      (پیش‌نیازِ یک‌بارهٔ هر سرویس روی سرور: بخشِ «استقرار خودکار» در DEPLOY.mdِ خودش.)
+#   ۱) کد PHP        → روی سرور `deploy-update` + `migrate.php up`
+#   ۲) سرویس crm-service (Go) → build، scp، /opt/bmp-crm/apply-crm-binary.sh
+#   ۳) سرویس go-api (Go)      → build، scp، /opt/bpm-go-api/apply-go-api.sh
+#      (پیش‌نیاز یک‌بارهٔ هر سرویس روی سرور: بخش «استقرار خودکار» در DEPLOY.md خودش.)
 on:
   workflow_dispatch:
 

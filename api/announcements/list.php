@@ -112,7 +112,7 @@ try {
 
     $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // ───── تعداد نخوانده (همان دامنهٔ دیدِ کاربر عادی) ─────
+    // ───── تعداد نخوانده (همان دامنهٔ دید کاربر عادی) ─────
     $unreadSql = "SELECT COUNT(*) AS unread_count
                   FROM announcements a
                   WHERE a.is_active = 1

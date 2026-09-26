@@ -55,8 +55,8 @@ try {
         exit;
     }
 
-    // مجوز: تأییدکنندهٔ فعلی یا مدیرِ همان سازمان
-    // 🔒 خط قرمز: اختیار «مدیر» فقط داخل همان سازمانِ کار معتبر است
+    // مجوز: تأییدکنندهٔ فعلی یا مدیر همان سازمان
+    // 🔒 خط قرمز: اختیار «مدیر» فقط داخل همان سازمان کار معتبر است
     $roleStmt = $db->prepare("SELECT role, organization_id FROM users WHERE id = ?");
     $roleStmt->execute([$user_id]);
     $me = $roleStmt->fetch(PDO::FETCH_ASSOC);
@@ -76,12 +76,12 @@ try {
     $db->beginTransaction();
 
     // اعمال بخشش: اعتبار += باقی‌مانده
-    // ⚠️ last_approved_date این‌جا ست نمی‌شود: رفعِ دوره‌های معوقه یعنی «بخششِ
-    //    دوره‌های گذشته»، نه «تأییدِ دورهٔ امروز». قبلاً این‌جا CURDATE() نوشته
-    //    می‌شد و باعث می‌شد گاردِ فرانت (isLastApprovedDateToday در
-    //    task-detail.php) دکمهٔ «تکمیل» را تا آخرِ همان روز مخفی کند — حتی اگر
-    //    دورهٔ امروز هنوز باز بود. صاحبِ واقعیِ این ستون فقط جریانِ تأییدِ
-    //    تکمیلِ دوره است (TaskManager::approveOrRejectTask).
+    // ⚠️ last_approved_date این‌جا ست نمی‌شود: رفع دوره‌های معوقه یعنی «بخشش
+    //    دوره‌های گذشته»، نه «تأیید دورهٔ امروز». قبلا این‌جا CURDATE() نوشته
+    //    می‌شد و باعث می‌شد گارد فرانت (isLastApprovedDateToday در
+    //    task-detail.php) دکمهٔ «تکمیل» را تا آخر همان روز مخفی کند — حتی اگر
+    //    دورهٔ امروز هنوز باز بود. صاحب واقعی این ستون فقط جریان تأیید
+    //    تکمیل دوره است (TaskManager::approveOrRejectTask).
     $db->prepare("UPDATE tasks
                   SET overdue_forgiven_credit = overdue_forgiven_credit + ?,
                       has_pending_overdue_request = 0,

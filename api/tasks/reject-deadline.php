@@ -13,9 +13,9 @@ require_once '../../includes/TaskManager.php';
 require_once '../../includes/Notification.php';
 
 try {
-    // 🔒 خط قرمز: این فایل قبلاً هیچ احراز هویت یا کنترل دسترسی‌ای نداشت —
-    // هر کاربرِ ناشناس با فقط دانستنِ request_id می‌توانست درخواست تمدید
-    // موعدِ هر کاری، در هر سازمانی را رد کند
+    // 🔒 خط قرمز: این فایل قبلا هیچ احراز هویت یا کنترل دسترسی‌ای نداشت —
+    // هر کاربر ناشناس با فقط دانستن request_id می‌توانست درخواست تمدید
+    // موعد هر کاری، در هر سازمانی را رد کند
     $user_id = requireAuth();
 
     $data = json_decode(file_get_contents('php://input'), true);
@@ -47,7 +47,7 @@ try {
         exit;
     }
 
-    // 🔒 مجوز: تأییدکنندهٔ فعلی، یا مدیرِ همان سازمان (هم‌راستا با approve-deadline.php)
+    // 🔒 مجوز: تأییدکنندهٔ فعلی، یا مدیر همان سازمان (هم‌راستا با approve-deadline.php)
     $roleStmt = $db->prepare("SELECT role, organization_id FROM users WHERE id = ?");
     $roleStmt->execute([$user_id]);
     $me = $roleStmt->fetch(PDO::FETCH_ASSOC);
@@ -86,8 +86,8 @@ try {
     ");
     $request_stmt->execute([$rejection_reason, $request_id]);
 
-    // ✅ ثبت در تاریخچهٔ کار — قبلاً فقط تأیید ثبت می‌شد، نه رد
-    // from_user_id = کسی که این اقدام (رد) را انجام داد؛ نمایش تاریخچه نامِ from_user را به‌عنوان «انجام‌دهنده» نشان می‌دهد
+    // ✅ ثبت در تاریخچهٔ کار — قبلا فقط تأیید ثبت می‌شد، نه رد
+    // from_user_id = کسی که این اقدام (رد) را انجام داد؛ نمایش تاریخچه نام from_user را به‌عنوان «انجام‌دهنده» نشان می‌دهد
     $history_stmt = $db->prepare("
         INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
         VALUES (?, ?, ?, 'deadline_rejected', ?)

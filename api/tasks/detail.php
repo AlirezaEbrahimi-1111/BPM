@@ -32,8 +32,8 @@ try {
 
     $task = $taskManager->getTask($_GET['id']);
 
-    // کارِ ناموجود/حذف‌شده → ۴۰۴ تمیز، نه کرش روی $task === false که بعداً
-    // به‌صورتِ «خطا در ارتباط با سرور» به کاربر می‌رسید.
+    // کار ناموجود/حذف‌شده → ۴۰۴ تمیز، نه کرش روی $task === false که بعدا
+    // به‌صورت «خطا در ارتباط با سرور» به کاربر می‌رسید.
     if (!$task) {
         http_response_code(404);
         echo json_encode(['success' => false, 'message' => 'کاری با این شماره یافت نشد']);
@@ -41,9 +41,9 @@ try {
     }
 
     // بررسی دسترسی — زنجیره‌ی مشترک (سازنده/مسئول/مدیر/تاریخچه/چک‌لیست/بیننده)
-    // از includes/task-access.php میاد؛ فقط قوانینِ تخصصیِ همین صفحه (عضویتِ
-    // مرحله‌ی workflow و عضویتِ سراسریِ واحد برایِ کارهایِ روتین) پایین‌تر
-    // به‌عنوانِ راهِ‌فرارِ اضافی باقی می‌مونن
+    // از includes/task-access.php میاد؛ فقط قوانین تخصصی همین صفحه (عضویت
+    // مرحله‌ی workflow و عضویت سراسری واحد برای کارهای روتین) پایین‌تر
+    // به‌عنوان راه‌فرار اضافی باقی می‌مونن
     $access = taskUserAccess($db, (int) $user_id, $task);
     $hasAccess = $access['has_access'];
     $me = loadUserForPermissions($db, $user_id);
@@ -96,8 +96,8 @@ try {
             $hasAccess = true;
         }
     }
-    // چک‌لیست/بیننده از قبل توسطِ taskUserAccess() بالاتر بررسی شده؛ اگه هنوزم
-    // دسترسی نبود یعنی نه از راهِ اون‌ها نه از راهِ workflow/periodic بالا
+    // چک‌لیست/بیننده از قبل توسط taskUserAccess() بالاتر بررسی شده؛ اگه هنوزم
+    // دسترسی نبود یعنی نه از راه اون‌ها نه از راه workflow/periodic بالا
     $is_checklist_only = $access['is_checklist_only'];
     $is_viewer_only = $access['is_viewer_only'];
     $viewer_can_view_attachments = $access['viewer_can_view_attachments'];
@@ -135,7 +135,7 @@ try {
                 $task['workflow_current_step'] = intval($instance['current_step']);
                 error_log("✅ Workflow current_step: " . $task['workflow_current_step']);
 
-                // ✅ بخش و وضعیتِ مرحلهٔ خودِ این تسک (نه current_step) — لازم برای حالت موازی
+                // ✅ بخش و وضعیت مرحلهٔ خود این تسک (نه current_step) — لازم برای حالت موازی
                 $stmt = $db->prepare("
                     SELECT ws.activity_section, wis.status AS step_status,
                            wis.step_description, wis.deadline AS step_deadline
@@ -153,9 +153,9 @@ try {
                 $task['current_step_section'] = $stepInfo ? $stepInfo['activity_section'] : null;
                 $task['current_step_status']  = $stepInfo ? $stepInfo['step_status'] : null;
                 $task['current_step_description'] = ($stepInfo && isset($stepInfo['step_description'])) ? $stepInfo['step_description'] : null;
-                // 🔒 منبعِ حقیقتِ موعدِ کارهایِ روتین، workflow_instance_steps.deadline
-                // است، نه tasks.deadline — این دو گاهی به‌هم‌نمی‌خورَند (مثلِ تسکِ
-                // ۶۱۵: tasks.deadline خالی مانده بود ولی موعدِ مرحله درست بود) و
+                // 🔒 منبع حقیقت موعد کارهای روتین، workflow_instance_steps.deadline
+                // است، نه tasks.deadline — این دو گاهی به‌هم‌نمی‌خورند (مثل تسک
+                // ۶۱۵: tasks.deadline خالی مانده بود ولی موعد مرحله درست بود) و
                 // نمایش (updateDeadlineDisplay) فقط tasks.deadline را می‌خواند.
                 $task['current_step_deadline'] = ($stepInfo && !empty($stepInfo['step_deadline'])) ? $stepInfo['step_deadline'] : null;
             }
@@ -218,8 +218,8 @@ try {
         }));
     }
 
-    // 🔒 بیننده‌ای که دسترسیِ تاریخچه براش خاموش شده: علاوه بر پنهان‌کردنِ
-    // بخش در فرانت، خودِ داده هم از پاسخ حذف بشه (وگرنه از تبِ Network قابلِ دیدن بود)
+    // 🔒 بیننده‌ای که دسترسی تاریخچه براش خاموش شده: علاوه بر پنهان‌کردن
+    // بخش در فرانت، خود داده هم از پاسخ حذف بشه (وگرنه از تب Network قابل دیدن بود)
     if ($is_viewer_only && !$viewer_can_view_history) {
         $history = [];
     }
@@ -229,8 +229,8 @@ try {
         'task' => $task,
         'history' => $history,
         'is_checklist_only' => $is_checklist_only,
-        'is_viewer_only' => $is_viewer_only, // 🆕 فقط از راهِ task_viewers دسترسی داره — نه ویرایش/اقدام
-        'viewer_can_view_attachments' => $viewer_can_view_attachments, // 🆕 فقط برایِ is_viewer_only معنا داره
+        'is_viewer_only' => $is_viewer_only, // 🆕 فقط از راه task_viewers دسترسی داره — نه ویرایش/اقدام
+        'viewer_can_view_attachments' => $viewer_can_view_attachments, // 🆕 فقط برای is_viewer_only معنا داره
         'viewer_can_view_history' => $viewer_can_view_history,         // 🆕
         'viewer_can_view_checklist' => $viewer_can_view_checklist,     // 🆕
         'can_edit' => $hasAccess && !$is_viewer_only

@@ -283,13 +283,13 @@ class RoutineManager {
     // ============================================================
 
     /**
-     * اعلان «مرحله جدید» به مجریانِ مرحله‌ی جاری
+     * اعلان «مرحله جدید» به مجریان مرحله‌ی جاری
      * الگو: routine_new_stage | متغیرها: {0}=عنوان کار، {1}=شماره مرحله
      */
     private function notifyNewStage($instance_id, $step_order) {
         if (!$this->notif) return;
         try {
-            // کارهای فعالِ این مرحله (روتین‌ها به‌جای فرد، به «واحد فعالیت» تعلق دارند)
+            // کارهای فعال این مرحله (روتین‌ها به‌جای فرد، به «واحد فعالیت» تعلق دارند)
             $sql = "SELECT t.id AS task_id, t.title, t.activity_section, t.organization_id
                     FROM routine_tasks rt
                     JOIN tasks t ON rt.task_id = t.id
@@ -303,7 +303,7 @@ class RoutineManager {
             foreach ($tasks as $task) {
                 if (empty($task['activity_section'])) continue;
 
-                // اعضای واحد فعالیتِ این کار (از جدول اصلی + fallback روی users) — فقط همان سازمان
+                // اعضای واحد فعالیت این کار (از جدول اصلی + fallback روی users) — فقط همان سازمان
                 $uSql = "SELECT user_id FROM user_activity_units uau
                          JOIN users u ON u.id = uau.user_id
                          WHERE uau.activity_unit = ? AND u.organization_id = ?

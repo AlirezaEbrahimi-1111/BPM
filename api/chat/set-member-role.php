@@ -1,13 +1,13 @@
 <?php
 /**
- * API: ارتقا/عزلِ یک عضوِ گروه به/از «مدیر»
+ * API: ارتقا/عزل یک عضو گروه به/از «مدیر»
  * POST /api/chat/set-member-role.php   body: { conversation_id, user_id, role: 'admin'|'member' }
  *
  * دسترسی:
- *   - ارتقا به admin: سازنده یا هر مدیرِ دیگه.
+ *   - ارتقا به admin: سازنده یا هر مدیر دیگه.
  *   - عزل از admin (برگردوندن به member): فقط سازنده — تا مدیرها نتونن
  *     همدیگه رو عزل کنن.
- *   - نقشِ خودِ سازنده تغییرناپذیره (همیشه در سطحِ بالاترِ created_by هست).
+ *   - نقش خود سازنده تغییرناپذیره (همیشه در سطح بالاتر created_by هست).
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -57,7 +57,7 @@ try {
 
     if ($targetUserId === (int) $conv['created_by']) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'نقشِ سازنده‌ی گروه قابلِ‌تغییر نیست']);
+        echo json_encode(['success' => false, 'message' => 'نقش سازنده‌ی گروه قابل‌تغییر نیست']);
         exit;
     }
 
@@ -65,12 +65,12 @@ try {
     $stmt->execute([$conversationId, $targetUserId]);
     if (!$stmt->fetch()) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'این کاربر عضوِ گروه نیست']);
+        echo json_encode(['success' => false, 'message' => 'این کاربر عضو گروه نیست']);
         exit;
     }
 
     if ($role === 'admin') {
-        // 🔒 ارتقا به مدیر: سازنده یا هر مدیرِ دیگه
+        // 🔒 ارتقا به مدیر: سازنده یا هر مدیر دیگه
         if (!chatUserIsGroupManager($db, $conversationId, $user_id)) {
             http_response_code(403);
             error_log("Chat set-member-role (promote) denied | user_id={$user_id} | conversation_id={$conversationId}");
@@ -87,14 +87,14 @@ try {
         }
     }
 
-    // 🔒 هر تغییرِ نقش (ارتقا یا عزل)، اختیاراتِ اختصاصیِ قبلی رو پاک می‌کنه —
-    // اگه بعداً دوباره مدیر بشه، از پیش‌فرضِ «همه‌ی اختیارات» شروع می‌کنه، نه
-    // یک ستِ قدیمیِ سفارشی که ممکنه دیگه ربطی به تصمیمِ سازنده نداشته باشه.
+    // 🔒 هر تغییر نقش (ارتقا یا عزل)، اختیارات اختصاصی قبلی رو پاک می‌کنه —
+    // اگه بعدا دوباره مدیر بشه، از پیش‌فرض «همه‌ی اختیارات» شروع می‌کنه، نه
+    // یک ست قدیمی سفارشی که ممکنه دیگه ربطی به تصمیم سازنده نداشته باشه.
     //
     // 🆕 استثنا: اگه همین درخواست، سازنده‌ی گروه داره یک عضو رو به مدیر ارتقا
     // می‌ده و یک آرایه‌ی permissions هم فرستاده (یعنی از همون لحظه‌ی ارتقا
-    // اختیاراتِ اختصاصی رو انتخاب کرده، نه بعداً جداگانه)، همون آرایه به‌جایِ
-    // NULLِ پیش‌فرض ثبت می‌شه. فقط سازنده — چون تنظیمِ اختیارات همیشه
+    // اختیارات اختصاصی رو انتخاب کرده، نه بعدا جداگانه)، همون آرایه به‌جای
+    // NULL پیش‌فرض ثبت می‌شه. فقط سازنده — چون تنظیم اختیارات همیشه
     // سازنده‌محوره (نه هر مدیری)
     $permissionsToStore = null;
     if ($role === 'admin' && is_array($permissionsInput) && chatUserIsGroupCreator($db, $conversationId, $user_id)) {

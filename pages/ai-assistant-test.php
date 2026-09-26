@@ -43,7 +43,7 @@ if (empty($_SESSION['user_id'])) {
         .console-sources { font-size: .75rem; color: #666; margin-top: 8px; }
         .console-sources li { margin-bottom: 2px; }
 
-        /* رندرِ سبکِ Markdown برایِ جوابِ دستیار — فقط بولد و لیست، بدونِ کتابخانه */
+        /* رندر سبک Markdown برای جواب دستیار — فقط بولد و لیست، بدون کتابخانه */
         .console-msg .answer { white-space: pre-wrap; }
         .console-msg .answer ul { margin: 6px 0; padding-inline-start: 1.4rem; }
         .console-msg .answer li { margin-bottom: 6px; }
@@ -87,9 +87,9 @@ if (empty($_SESSION['user_id'])) {
             return d.innerHTML;
         }
 
-        // رندرِ سبکِ Markdown، فقط دو قابلیت (بدونِ کتابخانه‌یِ بیرونی):
-        // خط‌هایِ شروع‌شده با «- » → آیتمِ لیست، و **متن** → پررنگ.
-        // اول escape می‌کنیم (امنیت در برابرِ XSS)، بعد رویِ همون متنِ
+        // رندر سبک Markdown، فقط دو قابلیت (بدون کتابخانه‌ی بیرونی):
+        // خط‌های شروع‌شده با «- » → آیتم لیست، و **متن** → پررنگ.
+        // اول escape می‌کنیم (امنیت در برابر XSS)، بعد روی همون متن
         // escape‌شده این دو الگو رو با تگ جایگزین می‌کنیم.
         function mdLite(text) {
             var lines = (text == null ? '' : String(text)).split('\n');

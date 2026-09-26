@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// تنظیماتِ فاکتور + سربرگِ فروشنده — هر دو تک‌ردیفی (id=1).
+// تنظیمات فاکتور + سربرگ فروشنده — هر دو تک‌ردیفی (id=1).
 
 type sellerInfo struct {
 	CompanyName  string `json:"company_name"`
@@ -70,20 +70,20 @@ func (s *server) getSettings() (invSettings, error) {
 func (s *server) handleGetSettings(w http.ResponseWriter, r *http.Request) {
 	st, err := s.getSettings()
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "خواندنِ تنظیمات ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "خواندن تنظیمات ناموفق بود")
 		return
 	}
 	writeJSON(w, http.StatusOK, st)
 }
 
-// PUT /crm/api/inv/settings   body: invSettings (کاملاً بازنویسی می‌شود)
+// PUT /crm/api/inv/settings   body: invSettings (کاملا بازنویسی می‌شود)
 func (s *server) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	var in invSettings
 	if !decodeJSON(w, r, &in, 1<<20) {
 		return
 	}
 	if in.VatRate < 0 || in.VatRate > 100 {
-		writeErr(w, http.StatusBadRequest, "نرخِ مالیات باید بینِ ۰ تا ۱۰۰ باشد")
+		writeErr(w, http.StatusBadRequest, "نرخ مالیات باید بین ۰ تا ۱۰۰ باشد")
 		return
 	}
 	if in.Currency == "" {
@@ -118,7 +118,7 @@ func (s *server) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 		nullIfEmpty(se.Province), nullIfEmpty(se.Shahrestan), nullIfEmpty(se.City),
 		nullIfEmpty(se.Address), nullIfEmpty(se.PostalCode), nullIfEmpty(se.Phone),
 		nullIfEmpty(se.IBAN), nullIfEmpty(se.CardNumber), nullIfEmpty(se.BankName)); err != nil {
-		writeErr(w, http.StatusInternalServerError, "ذخیره‌ی سربرگِ فروشنده ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "ذخیره‌ی سربرگ فروشنده ناموفق بود")
 		return
 	}
 

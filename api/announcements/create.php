@@ -35,7 +35,7 @@ $targetSection = null;
 $targetUserId = null;
 
 if ($scope === 'user') {
-    // ارسال به یک شخصِ خاص (فقط مدیر/سوپروایزر)
+    // ارسال به یک شخص خاص (فقط مدیر/سوپروایزر)
     requirePermission($currentUser, 'send_org_announcement');
     $targetUserId = (int) ($input['target_user_id'] ?? 0);
     if ($targetUserId <= 0) {
@@ -44,7 +44,7 @@ if ($scope === 'user') {
         exit;
     }
 
-    // ✅ چکِ امنیتیِ حیاتی: کاربرِ هدف باید در سازمانِ همین مدیر و فعال باشد
+    // ✅ چک امنیتی حیاتی: کاربر هدف باید در سازمان همین مدیر و فعال باشد
     $chk = $db->prepare("SELECT id FROM users WHERE id = ? AND organization_id = ? AND is_deleted = 0 AND is_active = 1 LIMIT 1");
     $chk->execute([$targetUserId, $org]);
     if (!$chk->fetch()) {

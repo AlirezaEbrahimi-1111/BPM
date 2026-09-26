@@ -78,11 +78,11 @@ try {
 
     // بررسی امکان حذف
     $can_delete = false;
-    $burn_quota = false; // مرخصیِ تأییدشدهٔ ماهِ جاری که حذف می‌شود → سهمیه برنمی‌گردد و «می‌سوزد»
+    $burn_quota = false; // مرخصی تأییدشدهٔ ماه جاری که حذف می‌شود → سهمیه برنمی‌گردد و «می‌سوزد»
     $error_message = '';
 
     if ($request_type === 'pass') {
-        // پاس: تا pass_edit_hours «ساعتِ کاری» بعد از ارسال — جمعه/تعطیلات کاملاً
+        // پاس: تا pass_edit_hours «ساعت کاری» بعد از ارسال — جمعه/تعطیلات کاملا
         // نادیده گرفته می‌شوند
         $pass_edit_hours = (int) getSetting($db, 'pass_edit_hours', 24);
         $created_at = new DateTime($request['created_at']);
@@ -121,8 +121,8 @@ try {
         if (!$has_approval) {
             $can_delete = true;
         } elseif ($request_type === 'leave') {
-            // استثنا: مرخصیِ همین ماهِ شمسیِ خودِ کاربر حتی بعد از تأییدِ نهایی هم قابلِ حذف است،
-            // اما سهمیهٔ کسرشدهٔ آن برنمی‌گردد (می‌سوزد). ماه بر اساسِ تاریخِ شروعِ مرخصی سنجیده می‌شود.
+            // استثنا: مرخصی همین ماه شمسی خود کاربر حتی بعد از تأیید نهایی هم قابل حذف است،
+            // اما سهمیهٔ کسرشدهٔ آن برنمی‌گردد (می‌سوزد). ماه بر اساس تاریخ شروع مرخصی سنجیده می‌شود.
             $leave_date = substr($request['start_date'] ?? '', 0, 10);
             if ($leave_date !== '' && jalaliPeriodKey($leave_date) === jalaliPeriodKey(date('Y-m-d'))) {
                 $can_delete = true;
@@ -141,8 +141,8 @@ try {
         exit;
     }
 
-    // ✅ مرخصی/پاسِ حذف‌شده: سهمیه‌ای که موقعِ ثبت کسر شده بود برمی‌گرده
-    //    استثنا: مرخصیِ تأییدشدهٔ ماهِ جاری ($burn_quota) — سهمیه‌اش می‌سوزد و برنمی‌گردد.
+    // ✅ مرخصی/پاس حذف‌شده: سهمیه‌ای که موقع ثبت کسر شده بود برمی‌گرده
+    //    استثنا: مرخصی تأییدشدهٔ ماه جاری ($burn_quota) — سهمیه‌اش می‌سوزد و برنمی‌گردد.
     if (($request_type === 'leave' || $request_type === 'pass') && !$burn_quota) {
         $ded_amount = findLeaveDeduction($db, $request_type, (int) $request_id);
         if ($ded_amount !== null) {

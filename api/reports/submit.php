@@ -58,7 +58,7 @@ try {
         exit;
     }
     
-    // بررسی اینکه قبلاً گزارش برای امروز و این واحد ارسال نشده باشد
+    // بررسی اینکه قبلا گزارش برای امروز و این واحد ارسال نشده باشد
     $checkReport = $db->prepare("
         SELECT id, unique_code FROM reports 
         WHERE user_id = ? AND activity_unit = ? AND report_date = ?

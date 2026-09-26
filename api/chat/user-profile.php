@@ -1,11 +1,11 @@
 <?php
 /**
- * API: اطلاعاتِ نمایشیِ طرفِ مقابل در یک گفتگویِ مستقیم (برایِ دراورِ پروفایل)
+ * API: اطلاعات نمایشی طرف مقابل در یک گفتگوی مستقیم (برای دراور پروفایل)
  * GET /api/chat/user-profile.php?conversation_id=123
  *
- * 🔒 عمداً user_id از کلاینت گرفته نمی‌شه — فقط از رویِ یک گفتگویِ مستقیمِ
- * واقعی که خودِ کاربر توش عضوه، طرفِ مقابل پیدا می‌شه؛ وگرنه می‌شد با یک
- * user_id دلخواه، شمارهٔ موبایلِ هر کاربری رو استعلام گرفت.
+ * 🔒 عمدا user_id از کلاینت گرفته نمی‌شه — فقط از روی یک گفتگوی مستقیم
+ * واقعی که خود کاربر توش عضوه، طرف مقابل پیدا می‌شه؛ وگرنه می‌شد با یک
+ * user_id دلخواه، شمارهٔ موبایل هر کاربری رو استعلام گرفت.
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -41,7 +41,7 @@ try {
         exit;
     }
 
-    // خودِ کاربر باید عضوِ همین گفتگو باشه
+    // خود کاربر باید عضو همین گفتگو باشه
     $stmt = $db->prepare("SELECT user_id FROM chat_participants WHERE conversation_id = ? AND user_id = ?");
     $stmt->execute([$conversationId, $user_id]);
     if (!$stmt->fetch()) {
@@ -50,7 +50,7 @@ try {
         exit;
     }
 
-    // طرفِ مقابل
+    // طرف مقابل
     $stmt = $db->prepare("
         SELECT u.id, u.first_name, u.last_name, u.phone, u.activity_section, u.avatar_path
         FROM chat_participants cp

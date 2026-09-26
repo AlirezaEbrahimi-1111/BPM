@@ -7,12 +7,12 @@
  *  مدل سه‌نقشی:
  *    • supervisor/admin → کل سازمان
  *    • manager          → فقط خودش + زیرمجموعه‌اش (زنجیرهٔ manager_id،
- *                          با هر عمقی — نه فقط زیردستِ مستقیم)
+ *                          با هر عمقی — نه فقط زیردست مستقیم)
  *    • employee         → فقط خودش
  *
  *  ⚠️ برخلاف بقیهٔ تست‌های این پوشه، این فایل به یک PDO (SQLite
  *     درون‌حافظه‌ای) نیاز دارد چون getSubordinateIds() کوئری واقعی
- *     می‌زند. هیچ وابستگی‌ای به دیتابیس/کانفیگِ واقعیِ پروژه ندارد.
+ *     می‌زند. هیچ وابستگی‌ای به دیتابیس/کانفیگ واقعی پروژه ندارد.
  * ═══════════════════════════════════════════════════════════════════
  */
 
@@ -44,7 +44,7 @@ return [
 
     'tests' => [
 
-        'زیردستِ مستقیم' => function (Assert $a) {
+        'زیردست مستقیم' => function (Assert $a) {
             $db = msdb();
             msSeed($db, 1, 'manager', 10);
             msSeed($db, 2, 'employee', 10, 1);
@@ -52,7 +52,7 @@ return [
             $a->equals([2], getSubordinateIds($db, 1), 'فقط کاربر ۲');
         },
 
-        'زنجیرهٔ چندسطحی (نه فقط زیردستِ مستقیم)' => function (Assert $a) {
+        'زنجیرهٔ چندسطحی (نه فقط زیردست مستقیم)' => function (Assert $a) {
             $db = msdb();
             msSeed($db, 1, 'manager', 10);
             msSeed($db, 2, 'manager', 10, 1);
@@ -64,7 +64,7 @@ return [
             $a->equals([2, 3, 4], $subs, 'باید هر سه نسل را شامل شود');
         },
 
-        '🔒 محافظِ حلقه: نباید در حلقهٔ manager_id گیر کند' => function (Assert $a) {
+        '🔒 محافظ حلقه: نباید در حلقهٔ manager_id گیر کند' => function (Assert $a) {
             $db = msdb();
             msSeed($db, 1, 'manager', 10, 2);
             msSeed($db, 2, 'manager', 10, 1); // حلقه
@@ -75,15 +75,15 @@ return [
             $a->equals([2], $subs, 'فقط ۲، نه حلقهٔ بی‌نهایت');
         },
 
-        '🔒 مرزِ سازمان: حتی با manager_id درست، از سازمانِ دیگر رد نمی‌شود' => function (Assert $a) {
+        '🔒 مرز سازمان: حتی با manager_id درست، از سازمان دیگر رد نمی‌شود' => function (Assert $a) {
             $db = msdb();
             msSeed($db, 1, 'manager', 10);
-            msSeed($db, 2, 'employee', 99, 1); // دادهٔ ناهنجار: سازمانِ متفاوت
+            msSeed($db, 2, 'employee', 99, 1); // دادهٔ ناهنجار: سازمان متفاوت
 
-            $a->equals([], getSubordinateIds($db, 1), 'نباید کاربرِ سازمانِ دیگر را برگرداند');
+            $a->equals([], getSubordinateIds($db, 1), 'نباید کاربر سازمان دیگر را برگرداند');
         },
 
-        'کاربرِ حذف‌شده جزوِ زیردستان نیست' => function (Assert $a) {
+        'کاربر حذف‌شده جزو زیردستان نیست' => function (Assert $a) {
             $db = msdb();
             msSeed($db, 1, 'manager', 10);
             msSeed($db, 2, 'employee', 10, 1, 1);
@@ -91,7 +91,7 @@ return [
             $a->equals([], getSubordinateIds($db, 1), 'کاربر حذف‌شده نباید بیاید');
         },
 
-        'سوپرادمین حتی در سازمانِ دیگر هم مجاز است' => function (Assert $a) {
+        'سوپرادمین حتی در سازمان دیگر هم مجاز است' => function (Assert $a) {
             $db = msdb();
             $superIds = getSuperAdminIds();
             msSeed($db, $superIds[0], 'employee', 1);
@@ -105,10 +105,10 @@ return [
             $db = msdb();
             msSeed($db, 5, 'employee', 1);
             $me = ['id' => 5, 'role' => 'employee', 'organization_id' => 1];
-            $a->true(canManageTargetUser($db, $me, 5), 'خودِ کاربر');
+            $a->true(canManageTargetUser($db, $me, 5), 'خود کاربر');
         },
 
-        'supervisor روی کل سازمانِ خودش مجاز است' => function (Assert $a) {
+        'supervisor روی کل سازمان خودش مجاز است' => function (Assert $a) {
             $db = msdb();
             msSeed($db, 10, 'supervisor', 1);
             msSeed($db, 20, 'employee', 1);
@@ -116,7 +116,7 @@ return [
             $a->true(canManageTargetUser($db, $me, 20), 'بدون نیاز به رابطهٔ مدیریتی');
         },
 
-        '🔒 supervisor روی سازمانِ دیگر مجاز نیست' => function (Assert $a) {
+        '🔒 supervisor روی سازمان دیگر مجاز نیست' => function (Assert $a) {
             $db = msdb();
             msSeed($db, 10, 'supervisor', 1);
             msSeed($db, 30, 'employee', 2);
@@ -124,7 +124,7 @@ return [
             $a->false(canManageTargetUser($db, $me, 30), 'باید رد شود');
         },
 
-        'admin (نقشِ قدیمی) دقیقاً مثلِ supervisor رفتار می‌کند' => function (Assert $a) {
+        'admin (نقش قدیمی) دقیقا مثل supervisor رفتار می‌کند' => function (Assert $a) {
             $db = msdb();
             msSeed($db, 11, 'admin', 1);
             msSeed($db, 21, 'employee', 1);
@@ -132,7 +132,7 @@ return [
             $me = ['id' => 11, 'role' => 'admin', 'organization_id' => 1];
 
             $a->true(canManageTargetUser($db, $me, 21), 'admin روی هم‌سازمانی مجاز');
-            $a->false(canManageTargetUser($db, $me, 31), '🔒 admin هم روی سازمانِ دیگر مجاز نیست');
+            $a->false(canManageTargetUser($db, $me, 31), '🔒 admin هم روی سازمان دیگر مجاز نیست');
         },
 
         'manager فقط روی زیرمجموعهٔ خودش مجاز است' => function (Assert $a) {
@@ -144,12 +144,12 @@ return [
 
             $me = ['id' => 40, 'role' => 'manager', 'organization_id' => 1];
 
-            $a->true(canManageTargetUser($db, $me, 41), 'زیردستِ مستقیم');
-            $a->true(canManageTargetUser($db, $me, 42), 'زیردستِ غیرمستقیم (نوه)');
-            $a->false(canManageTargetUser($db, $me, 43), '🔒 هم‌سازمانیِ بی‌ربط: مجاز نیست');
+            $a->true(canManageTargetUser($db, $me, 41), 'زیردست مستقیم');
+            $a->true(canManageTargetUser($db, $me, 42), 'زیردست غیرمستقیم (نوه)');
+            $a->false(canManageTargetUser($db, $me, 43), '🔒 هم‌سازمانی بی‌ربط: مجاز نیست');
         },
 
-        '🔒 employee نمی‌تواند غیرِ خودش را مدیریت کند' => function (Assert $a) {
+        '🔒 employee نمی‌تواند غیر خودش را مدیریت کند' => function (Assert $a) {
             $db = msdb();
             msSeed($db, 50, 'employee', 1);
             msSeed($db, 51, 'employee', 1);
@@ -157,7 +157,7 @@ return [
             $a->false(canManageTargetUser($db, $me, 51), 'کارمند فقط خودش');
         },
 
-        'admin دقیقاً همان اجازه‌های supervisor را دارد' => function (Assert $a) {
+        'admin دقیقا همان اجازه‌های supervisor را دارد' => function (Assert $a) {
             $adminUser = ['id' => 900, 'role' => 'admin', 'organization_id' => 1, 'is_active' => 1, 'is_deleted' => 0];
             $a->true(hasPermission($adminUser, 'manage_users'), 'admin: manage_users');
             $a->true(hasPermission($adminUser, 'view_payroll'), 'admin: view_payroll');
@@ -169,7 +169,7 @@ return [
             $a->true(hasPermission($mgr, 'manage_users'), 'manager: manage_users');
         },
 
-        '🔒 manager هنوز اجازه‌های سطحِ سازمانی را ندارد' => function (Assert $a) {
+        '🔒 manager هنوز اجازه‌های سطح سازمانی را ندارد' => function (Assert $a) {
             $mgr = ['id' => 902, 'role' => 'manager', 'organization_id' => 1, 'is_active' => 1, 'is_deleted' => 0];
             $a->false(hasPermission($mgr, 'view_org_settings'), 'manager: نه');
             $a->false(hasPermission($mgr, 'view_payroll'), 'manager: نه');
@@ -181,7 +181,7 @@ return [
             $a->true(isOrgWideRole(['id' => $superIds[0], 'role' => 'employee']), 'سوپرادمین');
             $a->true(isOrgWideRole(['id' => 1000, 'role' => 'supervisor']), 'supervisor');
             $a->true(isOrgWideRole(['id' => 1001, 'role' => 'admin']), 'admin (قدیمی)');
-            $a->false(isOrgWideRole(['id' => 1002, 'role' => 'manager']), '🔒 manager سطحِ سازمانی نیست');
+            $a->false(isOrgWideRole(['id' => 1002, 'role' => 'manager']), '🔒 manager سطح سازمانی نیست');
             $a->false(isOrgWideRole(['id' => 1003, 'role' => 'employee']), 'employee');
             $a->false(isOrgWideRole(null), 'null');
         },

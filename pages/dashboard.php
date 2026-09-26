@@ -15,8 +15,8 @@ if (!$user_id) {
     exit;
 }
 
-// dashboard.php از این به بعد فقط یک رودایرکتِ نازکه؛ خودِ dashboard-manager.php
-// کاربرانِ غیرِ manager/supervisor رو به dashboard-user.php هدایت می‌کنه، پس
-// نیازی به تکرارِ منطقِ تشخیصِ نقش این‌جا نیست
+// dashboard.php از این به بعد فقط یک رودایرکت نازکه؛ خود dashboard-manager.php
+// کاربران غیر manager/supervisor رو به dashboard-user.php هدایت می‌کنه، پس
+// نیازی به تکرار منطق تشخیص نقش این‌جا نیست
 header('Location: dashboard-manager.php');
 exit;

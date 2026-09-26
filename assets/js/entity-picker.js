@@ -1,26 +1,26 @@
 /**
- * EntityPicker — یک انتخابگرِ تک‌موردیِ جست‌وجوپذیر، مستقل از دامنه.
- * ظاهرش عمداً شبیهِ AssigneePicker است، ولی هیچ وابستگی‌ای به کاربر/واحد ندارد؛
+ * EntityPicker — یک انتخابگر تک‌موردی جست‌وجوپذیر، مستقل از دامنه.
+ * ظاهرش عمدا شبیه AssigneePicker است، ولی هیچ وابستگی‌ای به کاربر/واحد ندارد؛
  * فقط یک آرایه‌ی { id, label, meta } می‌گیرد.
  *
  *   const p = EntityPicker.create({
  *     container:   '#el',                 // سلکتور یا المان
- *     items:       [{ id, label, meta }], // meta = خطِ دومِ اختیاری
+ *     items:       [{ id, label, meta }], // meta = خط دوم اختیاری
  *     placeholder: 'جست‌وجو…',
- *     value:       id,                    // انتخابِ اولیه (اختیاری)
- *     addTitle:    'افزودن مورد جدید',    // اگر ست شود، دکمه‌ی + کنارِ فیلد می‌آید
- *     onAdd:       () => {},              // کلیکِ +
+ *     value:       id,                    // انتخاب اولیه (اختیاری)
+ *     addTitle:    'افزودن مورد جدید',    // اگر ست شود، دکمه‌ی + کنار فیلد می‌آید
+ *     onAdd:       () => {},              // کلیک +
  *     onSelect:    (item | null) => {},   // انتخاب یا پاک‌کردن
- *     freeText:    false,                 // اگر true: متنِ تایپ‌شده که با هیچ موردی
- *                                         //   نمی‌خواند هم مجاز است و در فیلد می‌مانَد
+ *     freeText:    false,                 // اگر true: متن تایپ‌شده که با هیچ موردی
+ *                                         //   نمی‌خواند هم مجاز است و در فیلد می‌ماند
  *   });
  *
  *   p.getValue()        → { id, label, meta } | null
- *   p.getText()         → متنِ کنونیِ فیلد (برای حالتِ freeText)
- *   p.setValue(id)      → انتخابِ برنامه‌ای (اگر id در items باشد)
- *   p.setText(str)      → قراردادنِ متنِ آزاد بدونِ انتخاب (حالتِ freeText)
+ *   p.getText()         → متن کنونی فیلد (برای حالت freeText)
+ *   p.setValue(id)      → انتخاب برنامه‌ای (اگر id در items باشد)
+ *   p.setText(str)      → قراردادن متن آزاد بدون انتخاب (حالت freeText)
  *   p.reset()
- *   p.updateItems(arr)  → جایگزینیِ داده؛ انتخابِ فعلی اگر هنوز معتبر باشد می‌ماند
+ *   p.updateItems(arr)  → جایگزینی داده؛ انتخاب فعلی اگر هنوز معتبر باشد می‌ماند
  *   p.focus()
  */
 const EntityPicker = (() => {
@@ -81,7 +81,7 @@ const EntityPicker = (() => {
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-    // نرمال‌سازیِ رقم‌ها (فارسی/عربی → لاتین) تا جست‌وجوی کد با هر صفحه‌کلیدی کار کند.
+    // نرمال‌سازی رقم‌ها (فارسی/عربی → لاتین) تا جست‌وجوی کد با هر صفحه‌کلیدی کار کند.
     const _norm = s => String(s == null ? '' : s).toLowerCase()
         .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
         .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
@@ -123,7 +123,7 @@ const EntityPicker = (() => {
         });
         _input.addEventListener('input', e => {
             if (freeText) {
-                // ویرایشِ دستی → انتخابِ قبلی (اگر بود) دیگر معتبر نیست
+                // ویرایش دستی → انتخاب قبلی (اگر بود) دیگر معتبر نیست
                 if (_selected && e.target.value !== _selected.label) {
                     _selected = null;
                     if (typeof cfg.onSelect === 'function') cfg.onSelect(null);
@@ -211,7 +211,7 @@ const EntityPicker = (() => {
             _dd.classList.remove('open');
             _open = false;
             if (freeText) {
-                // متنِ تایپ‌شده حفظ می‌شود؛ اگر موردی انتخاب شده، برچسبش.
+                // متن تایپ‌شده حفظ می‌شود؛ اگر موردی انتخاب شده، برچسبش.
                 if (_selected) _input.value = _selected.label;
             } else {
                 _input.value = _selected ? _selected.label : '';

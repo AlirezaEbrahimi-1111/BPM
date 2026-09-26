@@ -24,11 +24,11 @@ try {
     $user = getUserInfo($user_id);
     $org_id = $user['organization_id'];
 
-    // دسترسی: مدیریت/سرپرست همه را می‌بینند؛ بقیه فقط روتین‌هایی که مرحلهٔ فعالشان مالِ واحد اوست.
-    // ⚠️ personal_only=1 این قاعده رو برایِ مدیر/سرپرست/سوپرادمین هم کنار می‌ذاره —
-    // برایِ تبِ «فعالیت‌های اخیر»ِ خودِ کاربر در داشبورد (که نباید کلِ سازمان رو نشون بده)،
-    // برخلافِ صفحه‌ی نظارتِ کاملِ روتین‌ها (workflow-monitor.php) که همون دیدِ کاملِ
-    // مدیریتی رو عمداً می‌خواد و بدونِ این پارامتر صدا می‌زنه.
+    // دسترسی: مدیریت/سرپرست همه را می‌بینند؛ بقیه فقط روتین‌هایی که مرحلهٔ فعالشان مال واحد اوست.
+    // ⚠️ personal_only=1 این قاعده رو برای مدیر/سرپرست/سوپرادمین هم کنار می‌ذاره —
+    // برای تب «فعالیت‌های اخیر» خود کاربر در داشبورد (که نباید کل سازمان رو نشون بده)،
+    // برخلاف صفحه‌ی نظارت کامل روتین‌ها (workflow-monitor.php) که همون دید کامل
+    // مدیریتی رو عمدا می‌خواد و بدون این پارامتر صدا می‌زنه.
     $role         = $user['role'] ?? 'employee';
     $personalOnly = (($_GET['personal_only'] ?? '') === '1');
     $isManager    = !$personalOnly && (in_array((int)$user_id, getSuperAdminIds(), true) || in_array($role, ['management', 'supervisor']));
@@ -36,7 +36,7 @@ try {
     $visibilityCond = '';
     $execParams = ['org_id' => $org_id];
     if (!$isManager) {
-        // 🆕 عضویت در هر یک از واحدهایِ کاربر (چندواحدی) — نه فقط واحدِ اصلی
+        // 🆕 عضویت در هر یک از واحدهای کاربر (چندواحدی) — نه فقط واحد اصلی
         $userSections = us_getUserSections($db, $user_id);
         if (empty($userSections)) {
             $secCond = 'NULL';
@@ -55,27 +55,27 @@ try {
                 JOIN workflow_steps wsV ON wisV.step_id = wsV.id
                 LEFT JOIN tasks tV ON tV.id = wisV.task_id
                 WHERE wisV.instance_id = wi.id
-                  -- 🔒 'active' تنها لحظه‌ی کوتاهیه؛ به‌محضِ گذشتنِ ددلاین، یه
-                  -- کرون (checkDelays در WorkflowManager.php) وضعیتِ مرحله رو
-                  -- برایِ همیشه به 'delayed' تغییر می‌ده. تویِ دیتابیسِ واقعی،
-                  -- تقریباً همه‌ی مراحلِ «در جریان» همین الان delayed هستن، نه
-                  -- active (۶۷ به ۱) — پس هرجا فقط status='active' چک بشه، عملاً
-                  -- تقریباً هیچی رو نمی‌بینه
+                  -- 🔒 'active' تنها لحظه‌ی کوتاهیه؛ به‌محض گذشتن ددلاین، یه
+                  -- کرون (checkDelays در WorkflowManager.php) وضعیت مرحله رو
+                  -- برای همیشه به 'delayed' تغییر می‌ده. توی دیتابیس واقعی،
+                  -- تقریبا همه‌ی مراحل «در جریان» همین الان delayed هستن، نه
+                  -- active (۶۷ به ۱) — پس هرجا فقط status='active' چک بشه، عملا
+                  -- تقریبا هیچی رو نمی‌بینه
                   AND wisV.status IN ('active', 'delayed')
                   AND (
                       wsV.activity_section IN ($secCond)
-                      -- 🆕 مرحله‌ای که مستقیم به یه کاربرِ خاص واگذار شده (نه به یه
-                      -- واحد) هم باید دیده بشه — قبلاً فقط activity_section چک
+                      -- 🆕 مرحله‌ای که مستقیم به یه کاربر خاص واگذار شده (نه به یه
+                      -- واحد) هم باید دیده بشه — قبلا فقط activity_section چک
                       -- می‌شد، پس مرحله‌ای که assignee_type='user' بود (یا با
-                      -- ارجاع، مسئولِ واقعی‌اش عوض شده بود) هیچ‌وقت اینجا دیده
-                      -- نمی‌شد، حتی اگه همین لحظه رویِ میزِ خودِ کاربر بود
+                      -- ارجاع، مسئول واقعی‌اش عوض شده بود) هیچ‌وقت اینجا دیده
+                      -- نمی‌شد، حتی اگه همین لحظه روی میز خود کاربر بود
                       OR COALESCE(tV.assignee_id, CASE WHEN wsV.assignee_type = 'user' THEN wsV.assignee_user_id END) = :ucurrentassignee
                   )
             )
             OR wi.created_by = :ucreator
         )";
-        // 🔒 نه :ucreator با مقدارِ تکراری: این کانکشن با پریپِرهایِ نیتیو
-        // (نه emulated) کار می‌کنه، پس یک نامِ placeholder نمی‌تونه دوبار
+        // 🔒 نه :ucreator با مقدار تکراری: این کانکشن با پریپرهای نیتیو
+        // (نه emulated) کار می‌کنه، پس یک نام placeholder نمی‌تونه دوبار
         // در یک کوئری استفاده بشه — even اگه مقدارش یکی باشه
         $execParams['ucreator'] = $user_id;
         $execParams['ucurrentassignee'] = $user_id;
@@ -128,7 +128,7 @@ try {
                         JOIN workflow_steps ws2 ON wis2.step_id = ws2.id
                         WHERE wis2.instance_id = wi.id
                         AND (
-                            -- 🔒 کرون (checkDelays) وضعیتِ مرحله رو دائمی به
+                            -- 🔒 کرون (checkDelays) وضعیت مرحله رو دائمی به
                             -- 'delayed' تغییر می‌ده — پس اگه همین الان delayed
                             -- هست، دیگه لازم نیست ددلاین رو دوباره زنده محاسبه کنیم
                             wis2.status = 'delayed'
@@ -144,9 +144,9 @@ try {
                     ) THEN 1
                     ELSE 0
                 END as is_delayed,
-                -- 🔒 مسئولِ واقعیِ الان: تسکِ زیرینِ مرحله رو چک می‌کنه (اگه claim یا
-                -- به فردِ دیگه‌ای ارجاع شده، assignee_id واقعیِ اونه)، نه یه کاربرِ
-                -- دلبخواه که واحدش با واحدِ قالب یکی بوده (باگِ قبلی)
+                -- 🔒 مسئول واقعی الان: تسک زیرین مرحله رو چک می‌کنه (اگه claim یا
+                -- به فرد دیگه‌ای ارجاع شده، assignee_id واقعی اونه)، نه یه کاربر
+                -- دلبخواه که واحدش با واحد قالب یکی بوده (باگ قبلی)
                 (SELECT u.first_name
                  FROM workflow_instance_steps wis
                  JOIN workflow_steps ws ON wis.step_id = ws.id
@@ -199,7 +199,7 @@ try {
         if ($workflow['is_delayed'] == 1 && $workflow['status'] == 'in_progress') {
             $workflow['status'] = 'delayed';
         } elseif ($workflow['is_delayed'] == 0 && $workflow['status'] == 'delayed') {
-            // دیگر مرحلهٔ فعالِ تأخیری ندارد → از حالت گلوگاه خارج شود (نمایشی)
+            // دیگر مرحلهٔ فعال تأخیری ندارد → از حالت گلوگاه خارج شود (نمایشی)
             $workflow['status'] = 'in_progress';
         }
         $workflow['priority'] = 'medium';

@@ -12,9 +12,9 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // 🔒 سیستمِ روتینِ قدیمی چندسازمانی نیست (routine_templates ستونِ
-    // organization_id ندارد) و از رابطِ کاربری فراخوانی نمی‌شود. فقط سوپرادمین
-    // تا IDORِ بین‌سازمانی رخ ندهد. (چکِ قبلی activity_section==='management' بود.)
+    // 🔒 سیستم روتین قدیمی چندسازمانی نیست (routine_templates ستون
+    // organization_id ندارد) و از رابط کاربری فراخوانی نمی‌شود. فقط سوپرادمین
+    // تا IDOR بین‌سازمانی رخ ندهد. (چک قبلی activity_section==='management' بود.)
     if (!in_array((int) $admin_id, getSuperAdminIds(), true)) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);

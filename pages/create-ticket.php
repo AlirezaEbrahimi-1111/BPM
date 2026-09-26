@@ -30,7 +30,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             padding: 0 16px;
         }
 
-        /* ───── هدرِ صفحه — قابِ مجزا و بالای صفحه (هم‌سبک با تیکت‌ها/مدیریت کارها) ───── */
+        /* ───── هدر صفحه — قاب مجزا و بالای صفحه (هم‌سبک با تیکت‌ها/مدیریت کارها) ───── */
         .ctkt-head-card {
             background: #fff;
             border-radius: 14px;
@@ -131,7 +131,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
         }
         .file-chip .remove-file:hover { color: #dc2626; }
 
-        /* پیش‌نمایشِ مربعیِ تصاویر — کنارِ هم */
+        /* پیش‌نمایش مربعی تصاویر — کنار هم */
         .file-thumb {
             position: relative;
             width: 74px;
@@ -391,7 +391,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
                         </div>
                     </div>
 
-                    <!-- تسکِ مرتبط (اختیاری) -->
+                    <!-- تسک مرتبط (اختیاری) -->
                     <div class="mb-3">
                         <label class="form-label">تسک مرتبط <small class="text-muted">(اختیاری — برای نمایش به پشتیبانی)</small></label>
                         <div class="task-search-row">
@@ -447,8 +447,8 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             initMessageEnterKey();
         });
 
-        // برخی کیبوردهای موبایل، کلیدِ Enter را به‌جایِ خطِ جدید، به‌عنوانِ
-        // اقدامِ «ارسال» تفسیر می‌کنند. این‌جا صراحتاً خطِ جدید را خودمان درج
+        // برخی کیبوردهای موبایل، کلید Enter را به‌جای خط جدید، به‌عنوان
+        // اقدام «ارسال» تفسیر می‌کنند. این‌جا صراحتا خط جدید را خودمان درج
         // می‌کنیم تا رفتار روی همهٔ کیبوردها یکسان و قابل‌پیش‌بینی باشد.
         function initMessageEnterKey() {
             var ta = document.getElementById('ticketMessage');
@@ -461,10 +461,10 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
                 el.dispatchEvent(new Event('input', { bubbles: true }));
             }
 
-            // beforeinput پوششِ اصلی است: کیبوردهایِ موبایل/IME همیشه یک
-            // keydownِ معمولیِ Enter نمی‌فرستند، ولی این رویداد صرف‌نظر از
-            // روشِ ورودی، نوعِ عمل را با insertType='insertLineBreak' گزارش
-            // می‌دهد — پس مستقل از مدل/برندِ کیبورد کار می‌کند.
+            // beforeinput پوشش اصلی است: کیبوردهای موبایل/IME همیشه یک
+            // keydown معمولی Enter نمی‌فرستند، ولی این رویداد صرف‌نظر از
+            // روش ورودی، نوع عمل را با insertType='insertLineBreak' گزارش
+            // می‌دهد — پس مستقل از مدل/برند کیبورد کار می‌کند.
             ta.addEventListener('beforeinput', function (e) {
                 if (e.inputType === 'insertLineBreak' || e.inputType === 'insertParagraph') {
                     e.preventDefault();
@@ -472,7 +472,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
                 }
             });
 
-            // keydown هم برایِ کیبوردِ فیزیکی/دسکتاپ به‌عنوانِ پشتیبان می‌ماند.
+            // keydown هم برای کیبورد فیزیکی/دسکتاپ به‌عنوان پشتیبان می‌ماند.
             ta.addEventListener('keydown', function (e) {
                 if (e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.metaKey || e.isComposing) return;
                 e.preventDefault();
@@ -556,12 +556,12 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             renderFilePreview();
         }
 
-        var filePreviewUrls = []; // object URLهای ساخته‌شده برای پیش‌نمایش — برای جلوگیری از نشتِ حافظه آزاد می‌شوند
+        var filePreviewUrls = []; // object URLهای ساخته‌شده برای پیش‌نمایش — برای جلوگیری از نشت حافظه آزاد می‌شوند
 
         function renderFilePreview() {
             var el = document.getElementById('filePreview');
 
-            // آزادسازیِ URLهای پیش‌نمایشِ قبلی قبل از بازسازی
+            // آزادسازی URLهای پیش‌نمایش قبلی قبل از بازسازی
             filePreviewUrls.forEach(function(u) { URL.revokeObjectURL(u); });
             filePreviewUrls = [];
 
@@ -594,7 +594,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
             renderFilePreview();
         }
 
-        // ─── چسباندنِ تصویر از کلیپ‌بورد با Ctrl+V ───
+        // ─── چسباندن تصویر از کلیپ‌بورد با Ctrl+V ───
         function initPasteUpload() {
             document.addEventListener('paste', function(e) {
                 var items = (e.clipboardData || window.clipboardData).items;
@@ -604,7 +604,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
                     if (items[i].type.indexOf('image/') === 0) {
                         var file = items[i].getAsFile();
                         if (file) {
-                            // فایل‌های کلیپ‌بورد معمولاً نام ندارند
+                            // فایل‌های کلیپ‌بورد معمولا نام ندارند
                             var ext = (file.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
                             var namedFile = new File([file], 'clipboard-' + Date.now() + '.' + ext, { type: file.type });
                             pastedFiles.push(namedFile);

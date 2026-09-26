@@ -2,10 +2,10 @@
 /**
  * includes/api-bootstrap.php
  * ─────────────────────────────────────────────────────────────────────
- * بوت‌استرپِ مشترکِ همه‌ی endpointهای api/ .
+ * بوت‌استرپ مشترک همه‌ی endpointهای api/ .
  *
- * چرا؟  الان ~۱۴۱ فایلِ api/ همین ۶ خطِ زیر را کپی دارند (و بعدش هم
- * includes/cors.php را require می‌کنند — افزونگیِ محض):
+ * چرا؟  الان ~۱۴۱ فایل api/ همین ۶ خط زیر را کپی دارند (و بعدش هم
+ * includes/cors.php را require می‌کنند — افزونگی محض):
  *     header('Content-Type: application/json; charset=utf-8');
  *     $corsAllowedOrigins = [...];
  *     $corsRequestOrigin  = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -15,10 +15,10 @@
  *
  * از این پس، هر endpoint فقط این یک خط را در ابتدای فایل بگذارد:
  *     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/api-bootstrap.php';
- * و بلوکِ دستیِ بالا + require‌ِ cors.php را حذف کند.
+ * و بلوک دستی بالا + require‌ cors.php را حذف کند.
  *
- * سازگاریِ عقب‌رو: اگر فایلی هنوز بلوکِ دستی + cors.php را هم داشته باشد،
- * چون همه‌ی این‌ها همان هدرها را ست می‌کنند (و مقدارِ نهایی یکی است) هیچ
+ * سازگاری عقب‌رو: اگر فایلی هنوز بلوک دستی + cors.php را هم داشته باشد،
+ * چون همه‌ی این‌ها همان هدرها را ست می‌کنند (و مقدار نهایی یکی است) هیچ
  * مشکلی پیش نمی‌آید. مهاجرت را می‌توان تدریجی و دسته‌به‌دسته انجام داد.
  * ─────────────────────────────────────────────────────────────────────
  */
@@ -33,7 +33,7 @@ define('API_BOOTSTRAP_LOADED', true);
 header('Content-Type: application/json; charset=utf-8');
 
 // ── CORS ──
-// همان سیاستِ includes/cors.php : فقط دامنه‌های خودی، با fallback به دامنه‌ی اصلی.
+// همان سیاست includes/cors.php : فقط دامنه‌های خودی، با fallback به دامنه‌ی اصلی.
 $corsAllowedOrigins = ['https://itmalek.com', 'https://www.itmalek.com', 'https://bpm.itmalek.com'];
 $corsRequestOrigin  = $_SERVER['HTTP_ORIGIN'] ?? '';
 header('Access-Control-Allow-Origin: ' . (
@@ -52,11 +52,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
 }
 
 /**
- * محدودکردنِ endpoint به یک یا چند متدِ HTTP.
+ * محدودکردن endpoint به یک یا چند متد HTTP.
  * اختیاری — هر فایل اگر خواست صدا بزند:
  *     api_require_method('POST');            // فقط POST
  *     api_require_method(['GET', 'POST']);   // یکی از این‌ها
- * در صورتِ عدمِ تطبیق، ۴۰۵ با بدنه‌ی JSON برمی‌گرداند و اجرا را تمام می‌کند.
+ * در صورت عدم تطبیق، ۴۰۵ با بدنه‌ی JSON برمی‌گرداند و اجرا را تمام می‌کند.
  */
 function api_require_method($methods): void
 {
@@ -74,7 +74,7 @@ function api_require_method($methods): void
 }
 
 /**
- * خروجیِ استانداردِ JSON. اختیاری — برای کوتاه‌کردنِ
+ * خروجی استاندارد JSON. اختیاری — برای کوتاه‌کردن
  *     http_response_code(...); echo json_encode([...]); exit;
  * که همه‌جای api/ تکرار شده.
  *     json_out(true, ['tasks' => $rows]);

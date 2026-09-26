@@ -39,7 +39,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // فقط روتینِ حذف‌شدهٔ همین سازمان
+    // فقط روتین حذف‌شدهٔ همین سازمان
     $stmt = $db->prepare("SELECT id FROM workflow_instances
                           WHERE id = :id AND organization_id = :org_id AND is_deleted = 1");
     $stmt->execute(['id' => $instance_id, 'org_id' => $org_id]);
@@ -57,7 +57,7 @@ try {
                           WHERE id = :id AND organization_id = :org_id");
     $stmt->execute(['id' => $instance_id, 'org_id' => $org_id]);
 
-    // ۲) بازگرداندن تسک‌های فرزندِ پنهان‌شده (وضعیت همان‌طور که بوده می‌ماند)
+    // ۲) بازگرداندن تسک‌های فرزند پنهان‌شده (وضعیت همان‌طور که بوده می‌ماند)
     $stmt = $db->prepare("UPDATE tasks
                           SET is_deleted = 0, deleted_at = NULL, deleted_by = NULL
                           WHERE workflow_instance_id = :id

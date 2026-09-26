@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 
-// 🔒 طبقِ درخواستِ صریح — فقط id=1 (نه حتی سوپرادمینِ دیگه) به این صفحه
-// دسترسی داره، دقیقاً مثلِ الگویِ error-log.php/security-log.php
+// 🔒 طبق درخواست صریح — فقط id=1 (نه حتی سوپرادمین دیگه) به این صفحه
+// دسترسی داره، دقیقا مثل الگوی error-log.php/security-log.php
 if ((int) $__me['id'] !== 1) {
     header('Location: /pages/dashboard.php');
     exit;
@@ -23,10 +23,10 @@ if ((int) $__me['id'] !== 1) {
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
 
     <style>
-        /* توضیحِ مبتدی: این استایل‌ها فقط مالِ همین صفحه‌ن. رنگِ اصلیِ سایت
-           (#8e57fe) و رنگِ استانداردِ هاور (feedback_hover_color_standard)
+        /* توضیح مبتدی: این استایل‌ها فقط مال همین صفحه‌ن. رنگ اصلی سایت
+           (#8e57fe) و رنگ استاندارد هاور (feedback_hover_color_standard)
            رعایت شده؛ بقیه‌ی کلاس‌ها (card/table/form-control) از custom.css
-           می‌آن و تمِ تاریک‌شون خودکاره. */
+           می‌آن و تم تاریک‌شون خودکاره. */
         .hk-card {
             margin-bottom: 1.25rem;
         }
@@ -135,12 +135,12 @@ if ((int) $__me['id'] !== 1) {
 
                         <div class="mb-3">
                             <label class="form-label">متن انتهای پیام (اختیاری)</label>
-                            <textarea class="form-control" id="hkClosing" rows="2" placeholder="مثلاً نام سازمان یا یک جمله‌ی ثابت که ته هر پیام بیاید"></textarea>
+                            <textarea class="form-control" id="hkClosing" rows="2" placeholder="مثلا نام سازمان یا یک جمله‌ی ثابت که ته هر پیام بیاید"></textarea>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">شماره‌ی هشدار (اگر ارسال روزانه ناموفق شد، پیامک خطا اینجا می‌آید)</label>
-                            <input type="text" class="form-control" id="hkAlertPhone" placeholder="مثلاً 09121234567" style="max-width:220px;">
+                            <input type="text" class="form-control" id="hkAlertPhone" placeholder="مثلا 09121234567" style="max-width:220px;">
                         </div>
 
                         <button class="btn btn-primary btn-sm" onclick="hkSaveSettings()">
@@ -151,7 +151,7 @@ if ((int) $__me['id'] !== 1) {
 
                 <div class="card hk-card">
                     <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-eye ms-2"></i>پیش‌نمایش پیامِ بعدی</h5>
+                        <h5 class="mb-0"><i class="bi bi-eye ms-2"></i>پیش‌نمایش پیام بعدی</h5>
                     </div>
                     <div class="card-body">
                         <div class="hk-preview-box" id="hkPreviewBox">در حال بارگذاری...</div>
@@ -159,7 +159,7 @@ if ((int) $__me['id'] !== 1) {
                         <hr>
                         <label class="form-label">ارسال آزمایشی به یک شماره</label>
                         <div class="d-flex gap-2 flex-wrap">
-                            <input type="text" class="form-control" id="hkTestPhone" placeholder="مثلاً 09121234567" style="max-width:220px;">
+                            <input type="text" class="form-control" id="hkTestPhone" placeholder="مثلا 09121234567" style="max-width:220px;">
                             <button class="btn btn-outline-secondary btn-sm" onclick="hkTestSend()">
                                 <i class="bi bi-send me-1"></i>ارسال تست (همین پیش‌نمایش)
                             </button>
@@ -167,9 +167,9 @@ if ((int) $__me['id'] !== 1) {
 
                         <div class="mt-3">
                             <button class="btn btn-warning btn-sm" onclick="hkSendNow()">
-                                <i class="bi bi-lightning-charge me-1"></i>ارسال دستیِ همین الان برای همه
+                                <i class="bi bi-lightning-charge me-1"></i>ارسال دستی همین الان برای همه
                             </button>
-                            <div class="form-text">این دکمه واقعاً برای همه‌ی گیرنده‌های فعال پیامک می‌فرستد و جای ارسال خودکار امروز را می‌گیرد (دیگر امروز دوباره خودکار نمی‌فرستد).</div>
+                            <div class="form-text">این دکمه واقعا برای همه‌ی گیرنده‌های فعال پیامک می‌فرستد و جای ارسال خودکار امروز را می‌گیرد (دیگر امروز دوباره خودکار نمی‌فرستد).</div>
                         </div>
                     </div>
                 </div>
@@ -197,7 +197,7 @@ if ((int) $__me['id'] !== 1) {
                         <span class="hk-count-badge" id="hkRecipientsCount">۰ شماره</span>
                     </div>
                     <div class="card-body">
-                        <div class="form-text mb-2">هر شماره را در یک خط بنویس یا پیست کن (مثلاً 09121234567). ذخیره کردن، کل لیست قبلی را جایگزین می‌کند و شماره‌های تکراری/نامعتبر خودکار حذف می‌شوند.</div>
+                        <div class="form-text mb-2">هر شماره را در یک خط بنویس یا پیست کن (مثلا 09121234567). ذخیره کردن، کل لیست قبلی را جایگزین می‌کند و شماره‌های تکراری/نامعتبر خودکار حذف می‌شوند.</div>
                         <textarea class="form-control" id="hkRecipientsText" rows="8" placeholder="09121234567&#10;09131234567&#10;..."></textarea>
                         <button class="btn btn-primary btn-sm mt-2" onclick="hkSaveRecipients()">
                             <i class="bi bi-check-lg me-1"></i>ذخیره‌ی لیست شماره‌ها
@@ -281,7 +281,7 @@ if ((int) $__me['id'] !== 1) {
             const s = hkState.settings;
             document.getElementById('hkEnabled').checked = Number(s.is_enabled) === 1;
             document.getElementById('hkHour').value = String(Number(s.send_hour));
-            // نزدیک‌ترین گزینه‌ی ۵دقیقه‌ای رو انتخاب کن (سلکت فقط مضربِ ۵ داره)
+            // نزدیک‌ترین گزینه‌ی ۵دقیقه‌ای رو انتخاب کن (سلکت فقط مضرب ۵ داره)
             const roundedMin = Math.round(Number(s.send_minute) / 5) * 5 % 60;
             document.getElementById('hkMinute').value = String(roundedMin);
             document.getElementById('hkRotation').value = s.rotation_mode;

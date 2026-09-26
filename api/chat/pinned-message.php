@@ -1,6 +1,6 @@
 <?php
 /**
- * API: دریافتِ پیامِ سنجاق‌شده‌ی یک گفتگو (اگر باشد)
+ * API: دریافت پیام سنجاق‌شده‌ی یک گفتگو (اگر باشد)
  * GET /api/chat/pinned-message.php?conversation_id=1
  */
 
@@ -57,8 +57,8 @@ try {
 
     $canManage = $row && ($row['type'] === 'direct' || chatUserHasGroupPermission($db, $conversationId, $user_id, 'pin'));
 
-    // 🔒 اگر پیامِ سنجاق‌شده بعداً soft-delete شده باشد، sender_id از جوین NULL می‌شود
-    // (نه صرفاً pinned_message_id) — همینجا هم به‌عنوانِ لایه‌ی دومِ محافظت در نظر گرفته می‌شود
+    // 🔒 اگر پیام سنجاق‌شده بعدا soft-delete شده باشد، sender_id از جوین NULL می‌شود
+    // (نه صرفا pinned_message_id) — همینجا هم به‌عنوان لایه‌ی دوم محافظت در نظر گرفته می‌شود
     if (!$row || !$row['pinned_message_id'] || $row['sender_id'] === null) {
         echo json_encode(['success' => true, 'pinned' => null, 'can_manage' => $canManage], JSON_UNESCAPED_UNICODE);
         exit;

@@ -22,7 +22,7 @@ try {
     $db = $database->getConnection();
 
     // 🔒 خط قرمز: روتین باید متعلق به همین سازمان باشد، وگرنه کاربر یک
-    // سازمان می‌تواند روتینِ در حال اجرای سازمان دیگر را لغو کند
+    // سازمان می‌تواند روتین در حال اجرای سازمان دیگر را لغو کند
     $stmt = $db->prepare("SELECT id FROM workflow_instances WHERE id = ? AND organization_id = ?");
     $stmt->execute([$instance_id, $org_id]);
     if (!$stmt->fetch()) {

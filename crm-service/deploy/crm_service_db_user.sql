@@ -1,7 +1,7 @@
--- یوزرِ دیتابیسِ محدود برای سرویسِ Go.
--- روی سرور به‌عنوانِ کاربرِ root/مدیرِ MySQL اجرا شود.
--- `computeryekta_todo_system` را در صورتِ نیاز با نامِ واقعیِ دیتابیس عوض کن.
--- رمز را با یک رشته‌ی تصادفیِ قوی جایگزین کن و همان را در /opt/bmp-crm/config.json بگذار.
+-- یوزر دیتابیس محدود برای سرویس Go.
+-- روی سرور به‌عنوان کاربر root/مدیر MySQL اجرا شود.
+-- `computeryekta_todo_system` را در صورت نیاز با نام واقعی دیتابیس عوض کن.
+-- رمز را با یک رشته‌ی تصادفی قوی جایگزین کن و همان را در /opt/bmp-crm/config.json بگذار.
 
 CREATE USER IF NOT EXISTS 'crm_service'@'localhost' IDENTIFIED BY 'REPLACE_WITH_STRONG_RANDOM_PASSWORD';
 
@@ -18,9 +18,9 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`crm_proform
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`crm_actual_sales`          TO 'crm_service'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`crm_org_accounting_config` TO 'crm_service'@'localhost';
 
--- نوشتن روی جدول‌های ماژولِ فاکتورِ رسمی (inv_*). این بخش با خودِ فایل هم‌قدم
+-- نوشتن روی جدول‌های ماژول فاکتور رسمی (inv_*). این بخش با خود فایل هم‌قدم
 -- نمانده بود — وقتی این جدول‌ها ساخته شدند GRANT‌شان دستی روی سرور زده شد ولی
--- این‌جا ثبت نشد؛ الان کامل شد تا یک استقرارِ تازه هم همین دسترسی را داشته باشد.
+-- این‌جا ثبت نشد؛ الان کامل شد تا یک استقرار تازه هم همین دسترسی را داشته باشد.
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_products`               TO 'crm_service'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_warehouses`             TO 'crm_service'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_stock`                  TO 'crm_service'@'localhost';
@@ -37,7 +37,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_invoice
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_partners`               TO 'crm_service'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_partner_month_share`    TO 'crm_service'@'localhost';
 
--- خواندنِ فقط جدول‌هایی که برای احراز هویت و شناختِ کارشناس/سازمان/بخشِ فعالیت لازم است
+-- خواندن فقط جدول‌هایی که برای احراز هویت و شناخت کارشناس/سازمان/بخش فعالیت لازم است
 GRANT SELECT ON `computeryekta_todo_system`.`users`                  TO 'crm_service'@'localhost';
 GRANT SELECT ON `computeryekta_todo_system`.`organizations`          TO 'crm_service'@'localhost';
 GRANT SELECT ON `computeryekta_todo_system`.`user_activity_units`    TO 'crm_service'@'localhost';
@@ -45,4 +45,4 @@ GRANT SELECT ON `computeryekta_todo_system`.`user_activity_sections` TO 'crm_ser
 
 FLUSH PRIVILEGES;
 
--- نتیجه: حتی اگر کدِ Go باگ داشته باشد، به هیچ جدولِ دیگری (tasks/tickets/...) دست نمی‌زند.
+-- نتیجه: حتی اگر کد Go باگ داشته باشد، به هیچ جدول دیگری (tasks/tickets/...) دست نمی‌زند.

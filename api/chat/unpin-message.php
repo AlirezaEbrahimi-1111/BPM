@@ -1,6 +1,6 @@
 <?php
 /**
- * API: برداشتنِ سنجاقِ پیامِ فعلیِ گفتگو
+ * API: برداشتن سنجاق پیام فعلی گفتگو
  * POST /api/chat/unpin-message.php   body: { conversation_id: 1 }
  */
 

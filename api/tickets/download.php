@@ -12,9 +12,9 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // احراز هویت: اول هدرِ Authorization (فراخوانیِ fetch)، بعد سشنِ مرورگر
-    // (برای <img src> و بازکردنِ تب که هدر نمی‌فرستند). دیگر JWTِ کامل در
-    // query-string نمی‌آید — قبلاً ?token=<JWT> در لاگِ سرور و DOM نشت می‌کرد
+    // احراز هویت: اول هدر Authorization (فراخوانی fetch)، بعد سشن مرورگر
+    // (برای <img src> و بازکردن تب که هدر نمی‌فرستند). دیگر JWT کامل در
+    // query-string نمی‌آید — قبلا ?token=<JWT> در لاگ سرور و DOM نشت می‌کرد
     // و با «به‌خاطر بسپار» تا ۳۰ روز معتبر می‌ماند.
     $auth = new Auth($db);
     $user_id = $auth->getUserFromToken();
@@ -23,7 +23,7 @@ try {
         if (!empty($_SESSION['user_id'])) {
             $user_id = (int) $_SESSION['user_id'];
         }
-        // قفلِ سشن را زود آزاد کن تا لودِ همزمانِ چند تصویر سریال نشود
+        // قفل سشن را زود آزاد کن تا لود همزمان چند تصویر سریال نشود
         if (function_exists('session_write_close')) {
             session_write_close();
         }
@@ -66,7 +66,7 @@ WHERE ta.id = ? AND t.deleted_at IS NULL
     }
 
     // بررسی دسترسی: supervisor کل سازمان، manager فقط زیرمجموعهٔ خودش،
-    // بقیه فقط فایلِ خودشان
+    // بقیه فقط فایل خودشان
     $me = ['id' => $user_id, 'role' => $role, 'organization_id' => $orgId];
     if (!canManageTargetUser($db, $me, (int) $file['created_by'])) {
         http_response_code(403);
@@ -82,9 +82,9 @@ WHERE ta.id = ? AND t.deleted_at IS NULL
         exit;
     }
 
-    // ارسال فایل — فقط تصاویرِ رَستِر می‌توانند inline پیش‌نمایش شوند (برای src=... تگ <img>).
-    // SVG و بقیهٔ نوع‌ها همیشه به‌صورتِ دانلود (attachment) تا فایلِ حاویِ اسکریپت
-    // (مثلِ SVG) روی دامنهٔ ما اجرا نشود.
+    // ارسال فایل — فقط تصاویر رستر می‌توانند inline پیش‌نمایش شوند (برای src=... تگ <img>).
+    // SVG و بقیهٔ نوع‌ها همیشه به‌صورت دانلود (attachment) تا فایل حاوی اسکریپت
+    // (مثل SVG) روی دامنهٔ ما اجرا نشود.
     $SAFE_INLINE = [
         'image/png'  => 'image/png',
         'image/jpeg' => 'image/jpeg',

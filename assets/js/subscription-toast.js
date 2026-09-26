@@ -2,7 +2,7 @@
    فایل: assets/js/subscription-toast.js
    هدف: نمایش toast هشدار انقضای اشتراک سازمان
    
-   کاملاً مستقل — نیازی به alert.js یا هیچ فایل دیگری ندارد
+   کاملا مستقل — نیازی به alert.js یا هیچ فایل دیگری ندارد
    
    منطق:
      - هر بار صفحه لود میشه، API رو چک می‌کنه
@@ -22,7 +22,7 @@
     var TOAST_DURATION   = 60000;                  // 60 ثانیه نمایش
     var API_URL          = '/api/organization/check-subscription.php';
 
-    /* تبدیلِ اعدادِ لاتین به فارسی، برایِ حفظِ اصلِ «مستقل» بودنِ این فایل */
+    /* تبدیل اعداد لاتین به فارسی، برای حفظ اصل «مستقل» بودن این فایل */
     function toFa(n) {
         return String(n).replace(/\d/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; });
     }
@@ -35,7 +35,7 @@
         var authToken = localStorage.getItem('auth_token');
         if (!authToken) return;
 
-        // آیا قبلاً dismiss شده و هنوز 24 ساعت نگذشته؟
+        // آیا قبلا dismiss شده و هنوز 24 ساعت نگذشته؟
         var dismissedAt = localStorage.getItem(STORAGE_KEY);
         if (dismissedAt) {
             var elapsed = Date.now() - parseInt(dismissedAt, 10);
@@ -77,7 +77,7 @@
     }
 
     /* ──────────────────────────────────────────── */
-    /*  نمایش toast (کاملاً مستقل)                   */
+    /*  نمایش toast (کاملا مستقل)                   */
     /* ──────────────────────────────────────────── */
     function showSubscriptionToast(daysRemaining, status) {
 

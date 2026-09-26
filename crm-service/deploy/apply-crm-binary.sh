@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-#  نصبِ باینریِ تازه‌ی crm-service که CI در incoming/ گذاشته + ری‌استارتِ سرویس.
+#  نصب باینری تازه‌ی crm-service که CI در incoming/ گذاشته + ری‌استارت سرویس.
 #
-#  این فایل را فقط root می‌تواند ویرایش کند. کاربرِ `deploy` (که GitHub Actions
-#  با آن SSH می‌زند) از طریقِ یک خطِ /etc/sudoers.d/bmp-crm بدونِ رمز صدایش می‌زند:
+#  این فایل را فقط root می‌تواند ویرایش کند. کاربر `deploy` (که GitHub Actions
+#  با آن SSH می‌زند) از طریق یک خط /etc/sudoers.d/bmp-crm بدون رمز صدایش می‌زند:
 #      deploy ALL=(root) NOPASSWD: /opt/bmp-crm/apply-crm-binary.sh
 #
-#  نصبِ یک‌باره:
+#  نصب یک‌باره:
 #      sudo install -o root -g root -m 0755 apply-crm-binary.sh /opt/bmp-crm/apply-crm-binary.sh
 #      sudo install -o deploy -g deploy -d /opt/bmp-crm/incoming
 #      sudo install -m 0440 sudoers-bmp-crm /etc/sudoers.d/bmp-crm && sudo visudo -c
@@ -21,7 +21,7 @@ if [ ! -f "$SRC" ]; then
     exit 1
 fi
 
-# کپی + مالکیت + مجوزِ اجرا، همه با هم.
+# کپی + مالکیت + مجوز اجرا، همه با هم.
 install -o www-data -g www-data -m 0755 "$SRC" "$DEST"
 rm -f "$SRC"
 

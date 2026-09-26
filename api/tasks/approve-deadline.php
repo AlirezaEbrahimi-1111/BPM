@@ -62,7 +62,7 @@ try {
     error_log("Request info: " . json_encode($request));
 
     // نقش کاربر فعلی (برای اجازهٔ تأیید توسط مدیر)
-    // 🔒 خط قرمز: اختیار «مدیر» فقط داخل همان سازمانِ کار معتبر است
+    // 🔒 خط قرمز: اختیار «مدیر» فقط داخل همان سازمان کار معتبر است
     $roleStmt = $db->prepare("SELECT role, organization_id FROM users WHERE id = ?");
     $roleStmt->execute([$user_id]);
     $me = $roleStmt->fetch(PDO::FETCH_ASSOC);
@@ -96,7 +96,7 @@ try {
         $reqUpd = $db->prepare("UPDATE deadline_requests SET status = 'approved', updated_at = NOW() WHERE id = ?");
         $reqUpd->execute([$request_id]);
 
-        // from_user_id = کسی که این اقدام (تأیید) را انجام داد؛ نمایش تاریخچه نامِ from_user را به‌عنوان «انجام‌دهنده» نشان می‌دهد
+        // from_user_id = کسی که این اقدام (تأیید) را انجام داد؛ نمایش تاریخچه نام from_user را به‌عنوان «انجام‌دهنده» نشان می‌دهد
         $history_stmt = $db->prepare("
             INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
             VALUES (?, ?, ?, 'deadline_extended', ?)
@@ -233,16 +233,16 @@ try {
         // ===== تأیید نهایی: آخرین approver است =====
         error_log("✅ Final approval - updating task deadline");
 
-        // آپدیت deadline کار — این شاخه فقط کارِ مقطعی است (کارِ روتین بالاتر
-        // return شده). due_date را هم هم‌راستا با deadline می‌کنیم چون گیتِ ارجاع
-        // (TaskManager::delegateTask) و فیلتر/مرتب‌سازیِ تاریخ در my-tasks/all-tasks
+        // آپدیت deadline کار — این شاخه فقط کار مقطعی است (کار روتین بالاتر
+        // return شده). due_date را هم هم‌راستا با deadline می‌کنیم چون گیت ارجاع
+        // (TaskManager::delegateTask) و فیلتر/مرتب‌سازی تاریخ در my-tasks/all-tasks
         // مستقیم due_date را می‌خوانند، نه بیشینهٔ سه ستون را.
         //
-        // ⚠️ ولی فقط وقتی تاریخِ جدید گذشته نباشد: تریگرِ
-        // check_task_date_before_update روی جدولِ tasks، هر تغییرِ due_date به
-        // تاریخِ گذشته را با SQLSTATE 45000 رد می‌کند (deadline/original_deadline
-        // را کاری ندارد). درخواستِ تمدیدی که دیر تأیید شده و تاریخش گذشته →
-        // due_date دست‌نخورده می‌ماند تا کلِ تأیید fail نشود.
+        // ⚠️ ولی فقط وقتی تاریخ جدید گذشته نباشد: تریگر
+        // check_task_date_before_update روی جدول tasks، هر تغییر due_date به
+        // تاریخ گذشته را با SQLSTATE 45000 رد می‌کند (deadline/original_deadline
+        // را کاری ندارد). درخواست تمدیدی که دیر تأیید شده و تاریخش گذشته →
+        // due_date دست‌نخورده می‌ماند تا کل تأیید fail نشود.
         $syncDue = substr((string) $new_deadline, 0, 10) >= date('Y-m-d');
         if ($syncDue) {
             $update_stmt = $db->prepare("
@@ -277,7 +277,7 @@ try {
         ");
         $result = $request_stmt->execute([$request_id]);
         // ثبت تاریخچه تمدید موعد
-        // from_user_id = کسی که این اقدام (تأیید) را انجام داد؛ نمایش تاریخچه نامِ from_user را به‌عنوان «انجام‌دهنده» نشان می‌دهد
+        // from_user_id = کسی که این اقدام (تأیید) را انجام داد؛ نمایش تاریخچه نام from_user را به‌عنوان «انجام‌دهنده» نشان می‌دهد
         $history_stmt = $db->prepare("
     INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
     VALUES (?, ?, ?, 'deadline_extended', ?)

@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
-// این گزارش را — علاوه بر تیمِ حسابداری — مدیران و سوپروایزرها هم می‌بینند.
+// این گزارش را — علاوه بر تیم حسابداری — مدیران و سوپروایزرها هم می‌بینند.
 if (!crmReportAllowed($db, (int) $user_id)) {
     header('Location: ../pages/dashboard.php');
     exit;
@@ -76,7 +76,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             letter-spacing: 0;
         }
 
-        /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) */
+        /* هم‌شکل با بج استاندارد پروژه (assets/css/custom.css: .status-badge) */
         .st-badge {
             /* display: inline-block; */
             padding: 7px 10px;
@@ -105,15 +105,15 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             color: #cbd5e1;
         }
 
-        /* کنترل‌های ویرایشِ درجا داخلِ جدول */
+        /* کنترل‌های ویرایش درجا داخل جدول */
         .pm-chk {
             cursor: pointer;
         }
 
-        /* تسویه/مودیان دیگر <select> داخلِ سلول نیستند (کشویی‌شان بیرونِ
-           فضایِ ردیفِ AG-Grid کلیپ می‌شد) — فقط بجِ وضعیت + دکمهٔ ویرایش
-           که مودالِ جداگانه باز می‌کند. */
-        /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) */
+        /* تسویه/مودیان دیگر <select> داخل سلول نیستند (کشویی‌شان بیرون
+           فضای ردیف AG-Grid کلیپ می‌شد) — فقط بج وضعیت + دکمهٔ ویرایش
+           که مودال جداگانه باز می‌کند. */
+        /* هم‌شکل با بج استاندارد پروژه (assets/css/custom.css: .status-badge) */
         .pm-badge {
             /* display: inline-block; */
             padding: 7px 10px;
@@ -173,7 +173,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             background: rgba(142, 87, 254, .18);
         }
 
-        /* ماهِ جاری در ویرایشگرِ درصدها برجسته شود */
+        /* ماه جاری در ویرایشگر درصدها برجسته شود */
         .pm-months .m.m-current input {
             border-color: #8e57fe;
             box-shadow: 0 0 0 .15rem rgba(142, 87, 254, .15);
@@ -210,7 +210,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             flex: 1;
         }
 
-        /* ردیفِ «همکار / + / سالِ شمسی» در مودالِ مدیریت — سه کنترل هم‌ارتفاع */
+        /* ردیف «همکار / + / سال شمسی» در مودال مدیریت — سه کنترل هم‌ارتفاع */
         #pmSelPartner,
         #pmAddBtn,
         #pmSelYear {
@@ -233,8 +233,8 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         body { padding-bottom: 46px; }
         .grid-fill { height: calc(100vh - 400px); min-height: 240px; }
 
-        /* هاورِ استانداردِ سایت (تینتِ بنفشِ نرم) — .btn-outline-secondary اصلاً
-           هاورِ اختصاصی نداشت (پیش‌فرضِ خاکستریِ بوت‌استرپ می‌ماند) */
+        /* هاور استاندارد سایت (تینت بنفش نرم) — .btn-outline-secondary اصلا
+           هاور اختصاصی نداشت (پیش‌فرض خاکستری بوت‌استرپ می‌ماند) */
         .btn-outline-primary:hover,
         .btn-outline-secondary:hover,
         .btn-outline-primary:active,
@@ -320,7 +320,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         <div id="repGrid" class="ag-theme-alpine grid-fill" style="width:100%;"></div>
     </div>
 
-    <!-- ── مودالِ مدیریتِ همکاران و درصدهای ماهانه ── -->
+    <!-- ── مودال مدیریت همکاران و درصدهای ماهانه ── -->
     <div class="modal fade" id="pmModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -369,8 +369,8 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         </div>
     </div>
 
-    <!-- ── مودالِ ویرایشِ وضعیتِ یک فاکتور (تسویه/مودیان) ──
-         عمداً به‌جایِ <select> داخلِ سلولِ جدول: کشوییِ آن داخلِ ردیفِ
+    <!-- ── مودال ویرایش وضعیت یک فاکتور (تسویه/مودیان) ──
+         عمدا به‌جای <select> داخل سلول جدول: کشویی آن داخل ردیف
          AG-Grid کلیپ می‌شد و بخشی از گزینه‌ها دیده نمی‌شد. -->
     <div class="modal fade" id="pmStatusModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -414,15 +414,15 @@ if (!crmReportAllowed($db, (int) $user_id)) {
     <script>
         /* ───────────────────────────────────────────────────────────────
          *  راهنمای مبتدی (لایه‌ها):
-         *   • این صفحه فقط «نمایش» است؛ داده از سرویسِ Go می‌آید:
+         *   • این صفحه فقط «نمایش» است؛ داده از سرویس Go می‌آید:
          *       GET  /crm/api/inv/partner-report      → ردیف‌های گزارش
-         *       GET  /crm/api/inv/partners            → فهرستِ همکاران
-         *       GET/PUT /crm/api/inv/partners/{id}/shares  → درصدِ ماه‌ها
-         *       PATCH /crm/api/inv/invoices/{id}/partner-status → ۳ ستونِ وضعیت
-         *   • «مبلغِ سود» در سرور حساب می‌شود: درصدِ ماهِ صدور × (جمع منهای تخفیف).
-         *     پس با تغییرِ درصدِ یک ماه، سودِ همهٔ فاکتورهای آن ماه عوض می‌شود.
+         *       GET  /crm/api/inv/partners            → فهرست همکاران
+         *       GET/PUT /crm/api/inv/partners/{id}/shares  → درصد ماه‌ها
+         *       PATCH /crm/api/inv/invoices/{id}/partner-status → ۳ ستون وضعیت
+         *   • «مبلغ سود» در سرور حساب می‌شود: درصد ماه صدور × (جمع منهای تخفیف).
+         *     پس با تغییر درصد یک ماه، سود همهٔ فاکتورهای آن ماه عوض می‌شود.
          *   • اگر چیزی نمایش داده نشد: F12 → Console و Network را ببین؛
-         *     پاسخِ ۴۰۳ یعنی دسترسی نداری، ۵۰۰ یعنی خطای سرور.
+         *     پاسخ ۴۰۳ یعنی دسترسی نداری، ۵۰۰ یعنی خطای سرور.
          * ─────────────────────────────────────────────────────────────── */
         const API = '/crm/api';
         const MONTHS = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
@@ -486,7 +486,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             return d;
         }
 
-        // سال و ماهِ شمسیِ امروز
+        // سال و ماه شمسی امروز
         function currentJYM() {
             try {
                 const t = new Date();
@@ -526,7 +526,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             }
         }
 
-        // ───────── ستون‌های ویرایش‌پذیرِ درجا ─────────
+        // ───────── ستون‌های ویرایش‌پذیر درجا ─────────
         function chkCell(p) {
             return `<div class="form-check form-switch mb-0 d-flex justify-content-center">
                 <input class="form-check-input pm-chk" type="checkbox" role="switch"
@@ -544,7 +544,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             registered: 'ثبت شده'
         };
 
-        // فقط نمایش — ویرایش از مودالِ pmStatusModal (pmEditStatus) انجام می‌شود.
+        // فقط نمایش — ویرایش از مودال pmStatusModal (pmEditStatus) انجام می‌شود.
         function settleCell(p) {
             const v = p.value || 'unsettled';
             return `<span class="pm-badge ${v}">${SETTLE_LABEL[v] || v}</span>`;
@@ -717,8 +717,8 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             }
         }
 
-        // ── ویرایشِ تسویه/مودیان از مودال (نه <select> داخلِ سلول — کشوییِ
-        //    آن داخلِ ردیفِ AG-Grid کلیپ می‌شد و بخشی از گزینه‌ها دیده نمی‌شد) ──
+        // ── ویرایش تسویه/مودیان از مودال (نه <select> داخل سلول — کشویی
+        //    آن داخل ردیف AG-Grid کلیپ می‌شد و بخشی از گزینه‌ها دیده نمی‌شد) ──
         let pmStRow = null;
 
         function pmStToggleCode() {
@@ -802,7 +802,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 msg ? `<div class="alert alert-${kind} py-2">${msg}</div>` : '';
         }
 
-        // افزودنِ همکارِ جدید با مودالِ استاندارد؛ فعال‌بودن/درصدها را بعد از انتخاب پایین ویرایش می‌کنی.
+        // افزودن همکار جدید با مودال استاندارد؛ فعال‌بودن/درصدها را بعد از انتخاب پایین ویرایش می‌کنی.
         function pmAddPartner() {
             QuickAdd.partner(async p => {
                 pmAlert('همکار افزوده شد — درصدها را پایین تنظیم کن.', 'success');
@@ -907,7 +907,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             }
 
             yearOptions(document.getElementById('fYear'), CUR_JY - 3, CUR_JY + 1, CUR_JY);
-            // مودال: سالِ جاری پیش‌فرض، فقط سالِ قبل تا سالِ بعد
+            // مودال: سال جاری پیش‌فرض، فقط سال قبل تا سال بعد
             yearOptions(document.getElementById('pmSelYear'), CUR_JY - 1, CUR_JY + 1, CUR_JY);
             const fm = document.getElementById('fMonth');
             for (let m = 1; m <= 12; m++) {

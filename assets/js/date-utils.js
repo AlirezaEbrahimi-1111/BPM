@@ -1,4 +1,4 @@
-// ابزارِ تاریخِ محلی — جایگزینِ امنِ toISOString برای «تاریخِ تقویمی»
+// ابزار تاریخ محلی — جایگزین امن toISOString برای «تاریخ تقویمی»
 // چرا؟ toISOString زمان را به UTC می‌برد و در ایران یک روز عقب می‌اندازد.
 function toLocalYMD(d) {
     const y = d.getFullYear();

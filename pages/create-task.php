@@ -74,7 +74,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         }
         /* چک‌لیست: هر آیتم = ردیف (شماره، عنوان، آیکون‌های توضیحات/حذف در انتها) +
-           یک ناحیه‌ی اختیاریِ تمام‌عرض زیرش برای ویرایش توضیحات */
+           یک ناحیه‌ی اختیاری تمام‌عرض زیرش برای ویرایش توضیحات */
         .cl-item-wrap { margin-bottom: 8px; }
         .cl-item {
             display: flex;
@@ -447,7 +447,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     </div>
                 </div>
 
-                <!-- ستون ۳: دسترسیِ مشاهده برای افراد دیگر (task_viewers) -->
+                <!-- ستون ۳: دسترسی مشاهده برای افراد دیگر (task_viewers) -->
                 <div class="col-lg-4 col-md-12">
                     <div class="card h-100">
                         <div class="card-body">
@@ -514,7 +514,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         let sections = []; // لیست واحدها
         let mainAssigneePickerInst = null;
         let multiAssigneePickerInst = null;
-        let createViewerPickerInst = null; // پیکرِ «دسترسیِ مشاهده برای افراد دیگر»
+        let createViewerPickerInst = null; // پیکر «دسترسی مشاهده برای افراد دیگر»
         let workflowTemplates = [];
         let selectedTemplate = null;
         let userRoutines = [];
@@ -606,7 +606,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         // ═══════════════════════════════════════════════
         //  ویرایش درجای توضیحات آیتم (نسخه‌ی create-task، فقط حافظه)
-        //  ناحیه‌ی ویرایش، تمام‌عرض و زیرِ ردیف آیتم باز می‌شود
+        //  ناحیه‌ی ویرایش، تمام‌عرض و زیر ردیف آیتم باز می‌شود
         // ═══════════════════════════════════════════════
 
         function startEditDescCreate(tempId) {
@@ -642,7 +642,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         // ذخیره‌ی توضیحات (فقط در حافظه، بدون سرور) و بازرسم کل چک‌لیست
-        // (برای به‌روزرسانیِ آیکون و تولتیپ همان آیتم)
+        // (برای به‌روزرسانی آیکون و تولتیپ همان آیتم)
         function saveEditDescCreate(tempId) {
             const ta = document.getElementById('cl-desc-input-' + tempId);
             if (!ta) return;
@@ -848,13 +848,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             applyPrefillFromQuery();
         }
 
-        // پیش‌پرکردنِ عنوان/توضیحات/موعد/مسئول از کوئری‌استرینگ — برایِ لینکِ
-        // «تکمیلِ اطلاعات» تویِ مودالِ «تعریفِ کار از رویِ پیام» در chat.php
+        // پیش‌پرکردن عنوان/توضیحات/موعد/مسئول از کوئری‌استرینگ — برای لینک
+        // «تکمیل اطلاعات» توی مودال «تعریف کار از روی پیام» در chat.php
         function applyPrefillFromQuery() {
             const params = new URLSearchParams(window.location.search);
             const title = params.get('title');
             const description = params.get('description');
-            const dueDate = params.get('due_date'); // فرمتِ میلادی YYYY-MM-DD
+            const dueDate = params.get('due_date'); // فرمت میلادی YYYY-MM-DD
             const assigneeId = params.get('assignee_id');
 
             if (title) document.getElementById('manualTitle').value = title;
@@ -871,7 +871,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 }
             }
 
-            // عنوان همیشه فوکوسِ پیش‌فرضِ صفحه‌ست — چه پرشده باشه چه خالی
+            // عنوان همیشه فوکوس پیش‌فرض صفحه‌ست — چه پرشده باشه چه خالی
             document.getElementById('manualTitle').focus();
         }
 
@@ -992,7 +992,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         onSelect: () => { /* getValue() کافی است */ }
                     });
                     if (document.getElementById('createViewerPicker')) {
-                        // بدونِ sections — دقیقاً مثلِ پیکرِ «افزودنِ دسترسی» در task-detail
+                        // بدون sections — دقیقا مثل پیکر «افزودن دسترسی» در task-detail
                         createViewerPickerInst = AssigneePicker.create({
                             container: '#createViewerPicker',
                             users,
@@ -1006,7 +1006,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }
         }
 
-        // جمع‌آوریِ افرادِ «دسترسیِ مشاهده» + اعمالِ مشترک — برای ارسال به create.php
+        // جمع‌آوری افراد «دسترسی مشاهده» + اعمال مشترک — برای ارسال به create.php
         function collectCreateViewers() {
             if (!createViewerPickerInst) return [];
             const val = createViewerPickerInst.getValue();
@@ -1248,7 +1248,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 assignee_id: assigneeId,
                 group_id: document.getElementById('taskGroupSelect')?.value || null, // ✅ اضافه شد
                 share_history: document.getElementById('shareHistoryToggle')?.checked ? 1 : 0,
-                viewers: collectCreateViewers() // دسترسیِ مشاهده برای افراد دیگر (task_viewers)
+                viewers: collectCreateViewers() // دسترسی مشاهده برای افراد دیگر (task_viewers)
             };
             console.log('111');
             // شرطی کردن فیلدهای تاریخ و دوره بر اساس نوع تسک
@@ -1365,8 +1365,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }
         }
 
-        // ─────────────── واگذاری به «چند نفرِ خاص» — از همون AssigneePicker،
-        // فقط با یک نمونهٔ دومِ multiSelect:true (زیبایی/رفتارِ یکسان با بالا) ───────────────
+        // ─────────────── واگذاری به «چند نفر خاص» — از همون AssigneePicker،
+        // فقط با یک نمونهٔ دوم multiSelect:true (زیبایی/رفتار یکسان با بالا) ───────────────
         function toggleMultiAssigneeMode() {
             const on = document.getElementById('multiAssigneeToggle').checked;
             document.getElementById('assigneePicker').style.display = on ? 'none' : '';
@@ -1491,8 +1491,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
           // تعیین لیست assignee ها
             //  • «همه واحدها» → لیست را فرانت می‌فرستد
-            //  • یک واحد خاص → فقط section_key؛ بک‌اند کاربرانِ همهٔ واحدها را پیدا می‌کند
-            //    (تا کاربرِ چندواحدی که این واحد، واحدِ دومش است هم بیفتد)
+            //  • یک واحد خاص → فقط section_key؛ بک‌اند کاربران همهٔ واحدها را پیدا می‌کند
+            //    (تا کاربر چندواحدی که این واحد، واحد دومش است هم بیفتد)
             let bulkBody = { base_task: baseTask };
 
             if (sectionKey === '__all__') {

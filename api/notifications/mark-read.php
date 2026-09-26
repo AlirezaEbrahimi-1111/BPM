@@ -45,9 +45,9 @@ $database = new Database();
         ");
         $result = $stmt->execute([$user_id, (int)$input['ticket_id']]);
     }
-    // حالت ۴: mark read همه‌ی نوتیفیکیشن‌هایِ یک related_type/related_id
-    // دلخواه — برایِ مواردی مثلِ درخواستِ مرخصی/مأموریت/پاس که related_type
-    // خودشون رشته‌ی نوعِ درخواسته، نه یک کلیدِ ثابتِ task/ticket
+    // حالت ۴: mark read همه‌ی نوتیفیکیشن‌های یک related_type/related_id
+    // دلخواه — برای مواردی مثل درخواست مرخصی/مأموریت/پاس که related_type
+    // خودشون رشته‌ی نوع درخواسته، نه یک کلید ثابت task/ticket
     elseif (!empty($input['related_type']) && !empty($input['related_id'])) {
         $stmt = $db->prepare("
             UPDATE notifications
@@ -56,9 +56,9 @@ $database = new Database();
         ");
         $result = $stmt->execute([$user_id, (int)$input['related_id'], (string)$input['related_type']]);
     }
-    // حالت ۵: mark read همه‌ی نوتیفیکیشن‌هایِ چند related_type (بدونِ id مشخص)
-    // — وقتی کاربر صفحه‌ی مرکزیِ آن نوع درخواست‌ها را باز می‌کند (مثلِ صفحه‌ی
-    // درخواست‌هایِ حضور و غیاب که خودش صفحه‌ی تکیِ یک درخواست ندارد).
+    // حالت ۵: mark read همه‌ی نوتیفیکیشن‌های چند related_type (بدون id مشخص)
+    // — وقتی کاربر صفحه‌ی مرکزی آن نوع درخواست‌ها را باز می‌کند (مثل صفحه‌ی
+    // درخواست‌های حضور و غیاب که خودش صفحه‌ی تکی یک درخواست ندارد).
     elseif (!empty($input['related_types']) && is_array($input['related_types'])) {
         $types = array_values(array_filter(array_map('strval', $input['related_types'])));
         if ($types) {

@@ -1,7 +1,7 @@
 <?php
 /**
  * API: api/admin/hekmat-save-settings.php
- * ذخیره‌ی تنظیماتِ ارسالِ روزانه (ساعت/دقیقه، متنِ پایانی، فعال/غیرفعال، نحوه‌ی چرخش)
+ * ذخیره‌ی تنظیمات ارسال روزانه (ساعت/دقیقه، متن پایانی، فعال/غیرفعال، نحوه‌ی چرخش)
  *
  *   POST /api/admin/hekmat-save-settings.php
  *   body: {send_hour, send_minute, closing_text, is_enabled, rotation_mode}

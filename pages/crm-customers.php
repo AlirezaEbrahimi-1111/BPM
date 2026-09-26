@@ -2,14 +2,14 @@
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 
 
-// فعلاً فقط کاربر id=1 — ماژولِ CRM/فاکتور در حالِ ساخت است و برای بقیه دیده نمی‌شود.
+// فعلا فقط کاربر id=1 — ماژول CRM/فاکتور در حال ساخت است و برای بقیه دیده نمی‌شود.
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
 if (!crmModuleAllowed($db, (int) $user_id)) {
     header('Location: ../pages/dashboard.php');
     exit;
 }
 
-// دسترسیِ نوشتن = دسترسیِ دیدن: هرکسی که این منو را می‌بیند، CRUD کامل دارد.
+// دسترسی نوشتن = دسترسی دیدن: هرکسی که این منو را می‌بیند، CRUD کامل دارد.
 $canWrite = true;
 ?>
 <!DOCTYPE html>
@@ -126,9 +126,9 @@ $canWrite = true;
         .modal .modal-header-custom .modal-title * {
             color: #fff !important;
         }
-        /* فوترِ ثابت ته پنجره (نه sticky) تا همیشه دیده شود و صفحه اسکرول نخورد.
-           جدول دقیقاً فضایِ بینِ تولبار و فوتر را می‌گیرد؛ ردیف‌هایِ زیاد
-           داخلِ خودِ جدول اسکرول می‌شوند، نه کلِ صفحه. */
+        /* فوتر ثابت ته پنجره (نه sticky) تا همیشه دیده شود و صفحه اسکرول نخورد.
+           جدول دقیقا فضای بین تولبار و فوتر را می‌گیرد؛ ردیف‌های زیاد
+           داخل خود جدول اسکرول می‌شوند، نه کل صفحه. */
         .site-footer { position: fixed !important; left: 0; right: 0; bottom: 0; top: auto !important; margin-top: 0 !important; z-index: 80; }
         body { padding-bottom: 46px; }
         .grid-fill { height: calc(100vh - 340px); min-height: 260px; padding-top: 1rem; }
@@ -162,7 +162,7 @@ $canWrite = true;
         <div id="crmGrid" class="ag-theme-alpine grid-fill" style="width:100%;"></div>
     </div>
 
-    <!-- مودالِ افزودن/ویرایش -->
+    <!-- مودال افزودن/ویرایش -->
     <div class="modal fade" id="custModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">

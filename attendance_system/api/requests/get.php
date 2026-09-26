@@ -290,8 +290,8 @@ try {
     $can_delete = false;
 
     if ($request_type === 'pass') {
-        // پاس: تا pass_edit_hours «ساعتِ کاری» بعد از ارسال — جمعه/تعطیلات
-        // کاملاً نادیده گرفته می‌شوند (هم‌راستا با edit.php/delete.php)
+        // پاس: تا pass_edit_hours «ساعت کاری» بعد از ارسال — جمعه/تعطیلات
+        // کاملا نادیده گرفته می‌شوند (هم‌راستا با edit.php/delete.php)
         $pass_edit_hours = (int) getSetting($db, 'pass_edit_hours', 24);
         $created_at = new DateTime($request['created_at']);
         $now = new DateTime();

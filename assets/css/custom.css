@@ -7,10 +7,10 @@
    1. متغیرها
 ======================================== */
 :root {
-    /* رنگ‌های اصلی — فقط سه رنگِ تأییدشده در کلِ پروژه: بنفش #8e57fe،
-       خاکستری #e9e9e9، سبز #1b7b39 (به‌جز گرادیانتِ هدر که استثنایِ
-       تأییدشده‌ست). دیگر سایه‌ی جداگانه‌ای برایِ hover/dark نداریم —
-       بازخوردِ هاور با opacity/transform تأمین می‌شه، نه رنگِ دوم */
+    /* رنگ‌های اصلی — فقط سه رنگ تأییدشده در کل پروژه: بنفش #8e57fe،
+       خاکستری #e9e9e9، سبز #1b7b39 (به‌جز گرادیانت هدر که استثنای
+       تأییدشده‌ست). دیگر سایه‌ی جداگانه‌ای برای hover/dark نداریم —
+       بازخورد هاور با opacity/transform تأمین می‌شه، نه رنگ دوم */
     --primary: #8e57fe;
     --primary-dark: #8e57fe;
     --primary-light: #8e57fe;
@@ -49,19 +49,19 @@
     --radius-sm: 8px;
     --radius-xs: 6px;
     --radius-lg: 16px;
-    /* گردیِ یکپارچه‌ی همه‌ی دکمه‌های پروژه — مبنا: .pm-btn داشبورد */
+    /* گردی یکپارچه‌ی همه‌ی دکمه‌های پروژه — مبنا: .pm-btn داشبورد */
     --radius-btn: 9px;
-    /* گردی و ضخامتِ فونتِ یکپارچه‌ی همه‌ی بج‌های پروژه — تنها منبع */
+    /* گردی و ضخامت فونت یکپارچه‌ی همه‌ی بج‌های پروژه — تنها منبع */
     --badge-radius: 7px;
     --badge-font-weight: 500;
 
     /* ═══════════════════════════════════════════════════
-       توکن‌های معنایی تم (زیرساختِ تم روشن/تاریک)
+       توکن‌های معنایی تم (زیرساخت تم روشن/تاریک)
        ───────────────────────────────────────────────────
        هر صفحه که به تم تاریک مهاجرت می‌کند، باید رنگ‌های
        هاردکدشده‌اش را با این توکن‌ها جایگزین کند، نه با
-       مقادیرِ مستقیم. مقادیرِ تاریک در پایینِ همین فایل،
-       زیرِ ‎:root[data-theme="dark"]‎ تعریف شده‌اند.
+       مقادیر مستقیم. مقادیر تاریک در پایین همین فایل،
+       زیر ‎:root[data-theme="dark"]‎ تعریف شده‌اند.
        ═══════════════════════════════════════════════════ */
     --surface: #ffffff;
     --bg-page: var(--gray-50);
@@ -80,13 +80,13 @@
 }
 
 /* ═══════════════════════════════════════════════════
-   تم تاریک — فقط مقادیرِ توکن‌های بالا override می‌شوند.
-   با کلیکِ دکمهٔ تعویضِ تم در هدر، ‎data-theme="dark"‎ روی
+   تم تاریک — فقط مقادیر توکن‌های بالا override می‌شوند.
+   با کلیک دکمهٔ تعویض تم در هدر، ‎data-theme="dark"‎ روی
    <html> ست می‌شود (assets/js در pages/header.php).
    ═══════════════════════════════════════════════════ */
 :root[data-theme="dark"] {
-    /* به مرورگر می‌گوید عناصر بومی (اسکرول‌بار، فرم‌کنترل‌های سیستمی و...) را با تمِ تاریک رندر کند؛
-       این یک خط، اسکرول‌بارهای پیش‌فرض/بدون استایل‌شخصیِ کل اپ را پوشش می‌دهد */
+    /* به مرورگر می‌گوید عناصر بومی (اسکرول‌بار، فرم‌کنترل‌های سیستمی و...) را با تم تاریک رندر کند؛
+       این یک خط، اسکرول‌بارهای پیش‌فرض/بدون استایل‌شخصی کل اپ را پوشش می‌دهد */
     color-scheme: dark;
     --surface: #1b2130;
     --bg-page: #12151f;
@@ -160,9 +160,9 @@ body .navbar .nav-link:hover i {
     color: #fff !important;
 }
 
-/* بدونِ :hover/.active هم سفید بمونه — وگرنه هنگامِ خروجِ موس، همزمان با
-   جمع‌شدنِ عرضِ زیرخط (transition)، رنگش لحظه‌ای به گرادیانتِ بنفشِ
-   پیش‌فرض برمی‌گرده و یک «فلاشِ» رنگی دیده می‌شه */
+/* بدون :hover/.active هم سفید بمونه — وگرنه هنگام خروج موس، همزمان با
+   جمع‌شدن عرض زیرخط (transition)، رنگش لحظه‌ای به گرادیانت بنفش
+   پیش‌فرض برمی‌گرده و یک «فلاش» رنگی دیده می‌شه */
 body .navbar .nav-link::before {
     background: #fff !important;
 }
@@ -217,7 +217,7 @@ body .mobile-menu-btn .hamburger-line {
     background: var(--text-strong) !important;
 }
 
-/* متن و آیکنِ لینک‌های هدر در تم تاریک — روشن‌تر از --text-muted عمومی،
+/* متن و آیکن لینک‌های هدر در تم تاریک — روشن‌تر از --text-muted عمومی،
    چون آن توکن هنوز در صفحات مهاجرت‌نشده (مثل ticket.css) با پس‌زمینهٔ روشن استفاده می‌شود */
 :root[data-theme="dark"] .navbar .nav-link {
     color: #c9d1de !important;
@@ -232,15 +232,15 @@ body .mobile-menu-btn .hamburger-line {
     color: var(--icon-accent) !important;
 }
 
-/* بدونِ :hover/.active هم — همون دلیلِ نسخهٔ روشن (جلوگیری از فلاشِ رنگ
-   هنگامِ جمع‌شدنِ انیمیشنِ عرض) */
+/* بدون :hover/.active هم — همون دلیل نسخهٔ روشن (جلوگیری از فلاش رنگ
+   هنگام جمع‌شدن انیمیشن عرض) */
 :root[data-theme="dark"] .navbar .nav-link::before {
     background: var(--icon-accent) !important;
 }
 
-/* دراورِ موبایل: dashboard-responsive.css یک رنگ ثابت (#334155) با !important
+/* دراور موبایل: dashboard-responsive.css یک رنگ ثابت (#334155) با !important
    روی #mainNav .nav-link ست کرده که تم را نادیده می‌گیرد؛ اینجا با همان
-   وزنِ اهمیت ولی specificity بالاتر override می‌شود */
+   وزن اهمیت ولی specificity بالاتر override می‌شود */
 :root[data-theme="dark"] #mainNav .nav-link {
     color: #c9d1de !important;
 }
@@ -349,9 +349,9 @@ body .mobile-menu-btn .hamburger-line {
     transform: translateY(-1px);
 }
 
-/* بدونِ این، بوت‌استرپ روی :active/:focus رنگِ آبیِ پیش‌فرضِ خودش رو
+/* بدون این، بوت‌استرپ روی :active/:focus رنگ آبی پیش‌فرض خودش رو
    نشون می‌داد (چون --bs-primary هنوز آبیه، فقط background رو بالا
-   override کردیم) — رویِ کلیک باید همون رنگِ هاور بمونه، نه فلشِ آبی */
+   override کردیم) — روی کلیک باید همون رنگ هاور بمونه، نه فلش آبی */
 .btn-primary:active,
 .btn-primary.active,
 .btn-primary:active:focus,
@@ -480,8 +480,8 @@ body .mobile-menu-btn .hamburger-line {
 /* --- Badge پایه --- */
 .badge {
     padding: 7px 10px !important;
-    /* استانداردِ سراسری، بدونِ راهِ گریز — هم‌اندازهٔ بجِ اولویتِ tickets.php.
-       !important تا هیچ override محلی/مدیا-کوئری/inline بدونِ‌!important از آن فرار نکند. */
+    /* استاندارد سراسری، بدون راه گریز — هم‌اندازهٔ بج اولویت tickets.php.
+       !important تا هیچ override محلی/مدیا-کوئری/inline بدون‌!important از آن فرار نکند. */
     font-size: 0.75rem;
     font-weight: var(--badge-font-weight, 500);
     /* بود: 500 — متن پررنگ‌تر */
@@ -573,8 +573,8 @@ body .mobile-menu-btn .hamburger-line {
     color: #374151;
 }
 
-/* بج‌های خنثیِ خاکستری/سفید — روی پس‌زمینهٔ تیره باید تیره بشن، نه سفید بمونن.
-   بج‌های رنگی (آبی/سبز/قرمز/بنفش/فیروزه‌ای) خودشون کنتراستِ کافی دارن و دست نمی‌خورن */
+/* بج‌های خنثی خاکستری/سفید — روی پس‌زمینهٔ تیره باید تیره بشن، نه سفید بمونن.
+   بج‌های رنگی (آبی/سبز/قرمز/بنفش/فیروزه‌ای) خودشون کنتراست کافی دارن و دست نمی‌خورن */
 :root[data-theme="dark"] .badge.public {
     background: #2b3242;
     color: #c7cfdd;
@@ -590,9 +590,9 @@ body .mobile-menu-btn .hamburger-line {
     color: #b91c1c;
 }
 
-/* نیازمندِ تصمیمِ تمدید — بازهٔ کارِ دوره‌ای تمام شده، تعیین‌تکلیف نشده.
-   بنفشِ برند، تا نه با فیروزه‌ای period_done قاطی بشه نه با قرمزِ overdue —
-   این یه اقدامِ از طرفِ خودِ کاربره، نه یه وضعیتِ منفی */
+/* نیازمند تصمیم تمدید — بازهٔ کار دوره‌ای تمام شده، تعیین‌تکلیف نشده.
+   بنفش برند، تا نه با فیروزه‌ای period_done قاطی بشه نه با قرمز overdue —
+   این یه اقدام از طرف خود کاربره، نه یه وضعیت منفی */
 .status-needs_renewal {
     background: rgba(142, 87, 254, 0.12);
     color: #8e57fe;
@@ -708,14 +708,14 @@ body .mobile-menu-btn .hamburger-line {
 
 /* --- Badge روزها (مهلت) --- */
 .days-badge {
-    /* inline-flex لازم است: عنصرِ inline با padding عمودی داخلِ سلولِ AG Grid
-       (overflow:hidden) از بالا/پایین بریده می‌شد و گوشه‌های گِرد قیچی می‌شدند. */
+    /* inline-flex لازم است: عنصر inline با padding عمودی داخل سلول AG Grid
+       (overflow:hidden) از بالا/پایین بریده می‌شد و گوشه‌های گرد قیچی می‌شدند. */
     /* display: inline-flex; */
     align-items: center;
     font-size: 0.68rem;
     font-weight: var(--badge-font-weight, 500);
     padding: 7px 10px !important;
-    /* هم‌اندازهٔ .badge — ستونِ «مهلت» در tasks.php از این کلاس استفاده می‌کند */
+    /* هم‌اندازهٔ .badge — ستون «مهلت» در tasks.php از این کلاس استفاده می‌کند */
     border-radius: var(--badge-radius, 7px) !important;
 }
 
@@ -1138,14 +1138,14 @@ s-normal {
 .overview-container {
     max-width: 70% !important;
     margin: 0 auto;
-    /* padding-topِ ۲rem تا فاصلهٔ همهٔ صفحات از هدر یکسان شود (مثل tasks.php)
-       و فلشِ سرچِ سراسریِ زیرِ هدر روی محتوا نیفتد. body خودش margin-top:3.5rem
+    /* padding-top ۲rem تا فاصلهٔ همهٔ صفحات از هدر یکسان شود (مثل tasks.php)
+       و فلش سرچ سراسری زیر هدر روی محتوا نیفتد. body خودش margin-top:3.5rem
        دارد؛ ۳.۵rem + ۲rem ≈ همان فاصله‌ای که tasks.php داشت. */
     padding: 2rem 1rem 1rem;
 }
 
-/* فاصلهٔ بالا از padding-topِ کانتینر می‌آید، نه از margin-topِ اولین فرزند
-   (مثلاً .filters-wrapper) — تا روی همهٔ صفحات دقیقاً یک‌اندازه باشد. */
+/* فاصلهٔ بالا از padding-top کانتینر می‌آید، نه از margin-top اولین فرزند
+   (مثلا .filters-wrapper) — تا روی همهٔ صفحات دقیقا یک‌اندازه باشد. */
 .overview-container>*:first-child,
 .main-content>*:first-child {
     margin-top: 0;
@@ -1548,8 +1548,8 @@ s-normal {
 
 /* برخی صفحات (مثل attendance_system/pages/requests.php) هم custom.css را مستقیم لینک می‌کنند
    و هم header.php را include می‌کنند که خودش دوباره custom.css را لود می‌کند؛ چون این include
-   بعد از <style> محلیِ آن صفحه می‌آید، لود دوم customcss (همین‌جا) با هم-تخصیصی روی override
-   محلیِ صفحه می‌برد. برای همین این override باید همین‌جا و با specificity بالاتر باشد */
+   بعد از <style> محلی آن صفحه می‌آید، لود دوم customcss (همین‌جا) با هم-تخصیصی روی override
+   محلی صفحه می‌برد. برای همین این override باید همین‌جا و با specificity بالاتر باشد */
 :root[data-theme="dark"] .stat-card {
     background: var(--surface);
     border-color: var(--border-soft);
@@ -1647,12 +1647,12 @@ s-normal {
 /* ========================================
    AG Grid — تم تاریک (مشترک بین همهٔ صفحاتی که ag-Grid دارند:
    tasks.php، payroll-report.php، superAdmin.php و ...).
-   چه از تم کلاسیکِ CSS (.ag-theme-alpine) استفاده شده باشد چه از
+   چه از تم کلاسیک CSS (.ag-theme-alpine) استفاده شده باشد چه از
    Theming API جدید (agGrid.themeQuartz.withParams در JS)، هر دو
    همین متغیرهای CSS استاندارد را می‌خوانند و از این‌جا override می‌شوند. */
-/* رنگِ «فعال»/انتخابِ AG Grid → بنفشِ سازمانی به‌جایِ آبیِ پیش‌فرضِ تم:
-   کادرِ سلولِ انتخاب/فوکوس‌شده، چک‌باکس‌ها، حاشیهٔ فوکوسِ ورودی‌ها.
-   مشترکِ همهٔ جدول‌ها و هر دو تم (روشن/تاریک). */
+/* رنگ «فعال»/انتخاب AG Grid → بنفش سازمانی به‌جای آبی پیش‌فرض تم:
+   کادر سلول انتخاب/فوکوس‌شده، چک‌باکس‌ها، حاشیهٔ فوکوس ورودی‌ها.
+   مشترک همهٔ جدول‌ها و هر دو تم (روشن/تاریک). */
 .ag-theme-alpine,
 .ag-theme-quartz {
     --ag-alpine-active-color: #8e57fe;
@@ -1663,16 +1663,16 @@ s-normal {
     --ag-range-selection-background-color: rgba(142, 87, 254, 0.10);
     --ag-input-focus-border-color: #8e57fe;
     --ag-checkbox-checked-color: #8e57fe;
-    /* هاورِ ردیف = همان رنگِ استانداردِ هاورِ سایت (dropdown-menu/زیرمنوها) */
+    /* هاور ردیف = همان رنگ استاندارد هاور سایت (dropdown-menu/زیرمنوها) */
     --ag-row-hover-color: rgba(142, 87, 254, 0.12);
 }
 
-/* ریشهٔ «فاصلهٔ زیادِ ارقام» در ستون‌هایِ عددی (مثلِ «مبلغ کل»):
-   تمِ Quartzِ AG Grid رویِ هر سلولِ راست‌چین این را ست می‌کند:
+/* ریشهٔ «فاصلهٔ زیاد ارقام» در ستون‌های عددی (مثل «مبلغ کل»):
+   تم Quartz AG Grid روی هر سلول راست‌چین این را ست می‌کند:
        .ag-right-aligned-cell { font-variant-numeric: tabular-nums }
-   ارقامِ tabularِ فونتِ وزیر عرضِ زیادی دارند → بینِ رقم‌ها فاصله می‌افتد.
-   این‌جا برایِ همهٔ جدول‌هایِ پروژه به حالتِ عادی (متناسب) برمی‌گردانیم —
-   دقیقاً مثلِ ستون‌هایِ غیرِراست‌چین که سالم رندر می‌شوند. */
+   ارقام tabular فونت وزیر عرض زیادی دارند → بین رقم‌ها فاصله می‌افتد.
+   این‌جا برای همهٔ جدول‌های پروژه به حالت عادی (متناسب) برمی‌گردانیم —
+   دقیقا مثل ستون‌های غیرراست‌چین که سالم رندر می‌شوند. */
 .ag-theme-alpine .ag-cell,
 .ag-theme-alpine .ag-cell-value,
 .ag-theme-alpine .ag-right-aligned-cell,
@@ -1690,10 +1690,10 @@ s-normal {
     border-color: #8e57fe !important;
 }
 
-/* ستونِ «مهلت»: بجِ .days-badge طولانی است و تقریباً هم‌عرضِ سلول می‌شود؛
-   overflow:hidden پیش‌فرضِ AG Grid لبه‌های گِردِ آن را می‌بُرد. فقط سلول‌هایی
+/* ستون «مهلت»: بج .days-badge طولانی است و تقریبا هم‌عرض سلول می‌شود؛
+   overflow:hidden پیش‌فرض AG Grid لبه‌های گرد آن را می‌برد. فقط سلول‌هایی
    که این بج را دارند از قیچی‌شدن معاف می‌شوند (بقیهٔ ستون‌ها دست‌نخورده).
-   بدونِ پیشوندِ .ag-theme-* — چون گرید از API جدیدِ تم استفاده می‌کند و آن
+   بدون پیشوند .ag-theme-* — چون گرید از API جدید تم استفاده می‌کند و آن
    کلاس روی DOM نیست؛ .ag-cell و .ag-cell-value در هر دو حالت وجود دارند. */
 .ag-cell:has(.days-badge),
 .ag-cell:has(.days-badge) .ag-cell-value,
@@ -1719,8 +1719,8 @@ s-normal {
     --ag-modal-overlay-background-color: rgba(0, 0, 0, .6);
 }
 
-/* اسکرول‌بارِ داخلیِ AG-Grid — این یک ویجتِ اختصاصیِ خودِ AG-Grid است (نه اسکرول‌بارِ
-   بومیِ مرورگر)، پس color-scheme:dark روش اثر نمی‌گذارد و باید مستقیم override شود */
+/* اسکرول‌بار داخلی AG-Grid — این یک ویجت اختصاصی خود AG-Grid است (نه اسکرول‌بار
+   بومی مرورگر)، پس color-scheme:dark روش اثر نمی‌گذارد و باید مستقیم override شود */
 :root[data-theme="dark"] .ag-theme-alpine .ag-body-vertical-scroll-viewport::-webkit-scrollbar,
 :root[data-theme="dark"] .ag-theme-quartz .ag-body-vertical-scroll-viewport::-webkit-scrollbar,
 :root[data-theme="dark"] .ag-theme-alpine .ag-body-horizontal-scroll-viewport::-webkit-scrollbar,
@@ -1911,8 +1911,8 @@ td:nth-child(2) {
     background: var(--surface);
 }
 
-/* متنِ دلیلِ درخواستِ اتمام — از یوتیلیتیِ bg-light بوت‌استرپ استفاده می‌کند
-   که با تمِ اپ هماهنگ نیست؛ چون !important دارد، اینجا هم !important لازم است */
+/* متن دلیل درخواست اتمام — از یوتیلیتی bg-light بوت‌استرپ استفاده می‌کند
+   که با تم اپ هماهنگ نیست؛ چون !important دارد، اینجا هم !important لازم است */
 :root[data-theme="dark"] #terminationReasonDisplay.bg-light {
     background-color: #232a3a !important;
     color: var(--text-strong) !important;
@@ -2031,7 +2031,7 @@ td:nth-child(2) {
 }
 
 .taskDetail-header {
-    /* بنفشِ یکدستِ تأییدشده — گرادیانتِ دوتایی فقط برایِ هدرِ اصلیِ
+    /* بنفش یکدست تأییدشده — گرادیانت دوتایی فقط برای هدر اصلی
        سایت (.navbar) مجازه، جای دیگه‌ای نه */
     background: #8e57fe;
     color: white;
@@ -2368,8 +2368,8 @@ td:nth-child(2) {
     background: #3a4358;
 }
 
-/* دکمهٔ بستنِ استاندارد بوت‌استرپ (SVG با رنگِ ثابتِ مشکی) — با filter معکوس می‌شود
-   تا بدون دست‌زدن به مارک‌آپِ هر مودال، در تم تاریک هم دیده شود */
+/* دکمهٔ بستن استاندارد بوت‌استرپ (SVG با رنگ ثابت مشکی) — با filter معکوس می‌شود
+   تا بدون دست‌زدن به مارک‌آپ هر مودال، در تم تاریک هم دیده شود */
 :root[data-theme="dark"] .btn-close {
     filter: invert(1) grayscale(1) brightness(1.8);
 }
@@ -2502,7 +2502,7 @@ td:nth-child(2) {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* تقویمِ داخلِ مودال — تم تاریک (هماهنگ با data-theme، همان توکن‌های .persian-datepicker پایه) */
+/* تقویم داخل مودال — تم تاریک (هماهنگ با data-theme، همان توکن‌های .persian-datepicker پایه) */
 :root[data-theme="dark"] .modal .persian-datepicker-input {
     background: var(--surface);
     border-color: var(--border-soft);
@@ -2560,8 +2560,8 @@ td:nth-child(2) {
     color: #4c5567;
 }
 
-/* تقویمِ کتابخانهٔ CDN (persian-datepicker.min.css در dashboard.php/task-detail.php/reports.php)
-   — کلاس‌بندیِ کاملاً متفاوتِ کتابخانهٔ babakhani؛ فایلِ vendor دست‌نخورده می‌ماند،
+/* تقویم کتابخانهٔ CDN (persian-datepicker.min.css در dashboard.php/task-detail.php/reports.php)
+   — کلاس‌بندی کاملا متفاوت کتابخانهٔ babakhani؛ فایل vendor دست‌نخورده می‌ماند،
    این قواعد چون بعد از آن لود می‌شوند override می‌کنند */
 :root[data-theme="dark"] .datepicker-plot-area {
     background-color: var(--surface) !important;
@@ -3266,17 +3266,17 @@ td:nth-child(2) {
     text-align: right !important;
     border: none;
     box-shadow: 0 8px 32px rgba(142, 87, 254, 0.15);
-    /* رنگِ استانداردِ هاورِ کلِ سایت روی هر لیستِ کشویی/دراپ‌داون — همان
-       رنگِ هاورِ زیرمنوهای هدر (.admin-submenu). پیش‌فرضِ بوت‌استرپ یک
-       خاکستریِ کدر بود؛ از این به بعد هر منوی کشویی جدید باید همین رنگ
-       را به‌ارث ببرد، مگر دلیلِ صریحی برای رنگِ دیگری باشد. */
+    /* رنگ استاندارد هاور کل سایت روی هر لیست کشویی/دراپ‌داون — همان
+       رنگ هاور زیرمنوهای هدر (.admin-submenu). پیش‌فرض بوت‌استرپ یک
+       خاکستری کدر بود؛ از این به بعد هر منوی کشویی جدید باید همین رنگ
+       را به‌ارث ببرد، مگر دلیل صریحی برای رنگ دیگری باشد. */
     --bs-dropdown-link-hover-bg: rgba(142, 87, 254, 0.12);
     --bs-dropdown-link-hover-color: #8e57fe;
 }
 
-/* dropdown استاندارد بوت‌استرپ از متغیرهای داخلیِ خودش (--bs-dropdown-bg و...) استفاده می‌کند
-   که با تاگل تمِ اپ (data-theme) هماهنگ نیستند؛ اینجا override می‌شوند — روی همهٔ dropdownهای
-   بوت‌استرپیِ اپ اثر می‌گذارد (مثلاً منوی پروفایل در هدر، admin-submenu و...) */
+/* dropdown استاندارد بوت‌استرپ از متغیرهای داخلی خودش (--bs-dropdown-bg و...) استفاده می‌کند
+   که با تاگل تم اپ (data-theme) هماهنگ نیستند؛ اینجا override می‌شوند — روی همهٔ dropdownهای
+   بوت‌استرپی اپ اثر می‌گذارد (مثلا منوی پروفایل در هدر، admin-submenu و...) */
 :root[data-theme="dark"] .dropdown-menu {
     --bs-dropdown-bg: var(--surface);
     --bs-dropdown-color: var(--text-strong);
@@ -3735,9 +3735,9 @@ td:nth-child(2) {
     background: #8e57fe;
 }
 
-/* ═══ اسکرول‌بارِ سراسری — یک‌شکل و بنفش، مطابقِ پنلِ اعلان‌ها.
-   قواعدِ اختصاصی‌ترِ موجود (AG-Grid، .recent-activities-scroll و ...) به‌خاطرِ
-   specificityِ بالاتر همچنان بر این غالب می‌مانند. ═══ */
+/* ═══ اسکرول‌بار سراسری — یک‌شکل و بنفش، مطابق پنل اعلان‌ها.
+   قواعد اختصاصی‌تر موجود (AG-Grid، .recent-activities-scroll و ...) به‌خاطر
+   specificity بالاتر همچنان بر این غالب می‌مانند. ═══ */
 * {
     scrollbar-width: thin;
     scrollbar-color: #8e57fe rgba(142, 87, 254, 0.08);
@@ -3762,7 +3762,7 @@ td:nth-child(2) {
     background: #7a45e0;
 }
 
-/* ═══ نوارِ جستجو/فیلترِ اعلان‌ها و اطلاعیه‌ها — دقیقاً یکسان برایِ هردو ═══ */
+/* ═══ نوار جستجو/فیلتر اعلان‌ها و اطلاعیه‌ها — دقیقا یکسان برای هردو ═══ */
 .notif-toolbar {
     padding: 10px 16px 6px;
     display: flex;
@@ -3993,8 +3993,8 @@ td:nth-child(2) {
     }
 }
 
-/* منویِ اعلان‌ها/اطلاعیه‌ها عمداً همیشه روشن می‌مونه، صرف‌نظر از
-   تاگلِ تمِ کلیِ سایت — پس دیگه override دارک‌مود نداره */
+/* منوی اعلان‌ها/اطلاعیه‌ها عمدا همیشه روشن می‌مونه، صرف‌نظر از
+   تاگل تم کلی سایت — پس دیگه override دارک‌مود نداره */
 
 /* ======================================== 
            🍞 Toast Notification
@@ -4313,8 +4313,8 @@ td:nth-child(2) {
     font-size: 0.85rem;
 }
 
-/* این بلوک، به‌خاطر ترتیبِ فایل، روی تعریفِ اولِ .form-control/.form-select/.form-label (بخش ۶) غالب است؛
-   قواعدِ دارک هم همینجا اضافه می‌شوند تا مستقل از این تکرار، درست کار کنند */
+/* این بلوک، به‌خاطر ترتیب فایل، روی تعریف اول .form-control/.form-select/.form-label (بخش ۶) غالب است؛
+   قواعد دارک هم همینجا اضافه می‌شوند تا مستقل از این تکرار، درست کار کنند */
 :root[data-theme="dark"] .form-control,
 :root[data-theme="dark"] .form-select {
     background-color: var(--surface);
@@ -4711,7 +4711,7 @@ span.deadline-request-icon.disabled:hover {
     opacity: 0.6;
 }
 
-/* ─── دارک‌مودِ بخشِ پیوست‌ها ─── */
+/* ─── دارک‌مود بخش پیوست‌ها ─── */
 :root[data-theme="dark"] .attachments-section {
     background: linear-gradient(135deg, rgba(116, 76, 164, 0.08) 0%, rgba(101, 122, 231, 0.08) 100%);
     border-color: var(--border-soft);
@@ -5046,10 +5046,10 @@ span.deadline-request-icon.disabled:hover {
         display: none !important;
     }
 
-    /* دکمهٔ حضور/غیاب (ثبت ورود و خروج): مثلِ دسکتاپ کنارِ آیکن‌ها،
-       نه چسبیده به نامِ شرکت. با order، بعد از همبرگر/لوگو و درست کنارِ
-       گروهِ آیکن‌ها می‌نشیند (فاصلهٔ وسط را همان margin-left:auto ِ لوگو
-       می‌سازد) و یک خطِ عمودیِ جداکننده بینِ خودش و آیکن‌ها می‌گیرد. */
+    /* دکمهٔ حضور/غیاب (ثبت ورود و خروج): مثل دسکتاپ کنار آیکن‌ها،
+       نه چسبیده به نام شرکت. با order، بعد از همبرگر/لوگو و درست کنار
+       گروه آیکن‌ها می‌نشیند (فاصلهٔ وسط را همان margin-left:auto  لوگو
+       می‌سازد) و یک خط عمودی جداکننده بین خودش و آیکن‌ها می‌گیرد. */
     #attendanceContainer {
         order: 3;
         display: flex;
@@ -5137,7 +5137,7 @@ span.deadline-request-icon.disabled:hover {
     cursor: pointer;
 }
 
-/* دارکِ کشوی موبایل — چون قواعدِ بالا !important دارند، اینجا هم !important لازم است */
+/* دارک کشوی موبایل — چون قواعد بالا !important دارند، اینجا هم !important لازم است */
 :root[data-theme="dark"] .mobile-drawer {
     background: var(--surface) !important;
 }
@@ -5200,8 +5200,8 @@ body.drawer-body-open {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
 }
 
-/* این override هم چون !important دارد، فیکسِ دارکِ .modal-content (بالاتر در فایل) را خنثی می‌کرد؛
-   نسخهٔ دارکِ همین قاعده هم باید !important داشته باشد */
+/* این override هم چون !important دارد، فیکس دارک .modal-content (بالاتر در فایل) را خنثی می‌کرد؛
+   نسخهٔ دارک همین قاعده هم باید !important داشته باشد */
 :root[data-theme="dark"] .modal-overlay .modal-content {
     background: var(--surface) !important;
 }
@@ -5864,9 +5864,9 @@ body.login-page::after {
     color: var(--gray-400);
 }
 
-/* .footer-9 و متعلقاتش به pages/footer.php منتقل شد (سه مدلِ جایگذاریِ
-   قابلِ‌تعویض: گوشه/درون‌خطی/نوارِ نازک) — تعریفِ اینجا حذف شد که با
-   کلاس‌هایِ جدیدِ footer-style-N تداخل نداشته باشه */
+/* .footer-9 و متعلقاتش به pages/footer.php منتقل شد (سه مدل جایگذاری
+   قابل‌تعویض: گوشه/درون‌خطی/نوار نازک) — تعریف اینجا حذف شد که با
+   کلاس‌های جدید footer-style-N تداخل نداشته باشه */
 
 /* --- ریسپانسیو ورود --- */
 @media (max-width: 480px) {
@@ -6561,8 +6561,8 @@ body.login-page::after {
     }
 }
 
-/* .announcement-badge حذف شد — اطلاعیه از حالا کلاسِ مشترکِ .notification-badge
-   رو استفاده می‌کنه (هم‌راستا با بجِ چت/زنگ) تا هر سه یک‌شکل باشن */
+/* .announcement-badge حذف شد — اطلاعیه از حالا کلاس مشترک .notification-badge
+   رو استفاده می‌کنه (هم‌راستا با بج چت/زنگ) تا هر سه یک‌شکل باشن */
 
 /* ─── آیتم اطلاعیه (همسان با notification-item) ─── */
 .announcement-item {
@@ -6714,10 +6714,10 @@ body.login-page::after {
     font-size: 13px;
 }
 
-/* ─── تمِ تاریک — این بخش تا حالا رنگ‌هایِ هاردکدِ روشن داشت و اصلاً
-   با تاگلِ تمِ سراسری هماهنگ نبود (منویِ زنگولهٔ اطلاعیه در هدر) ─── */
-/* .announcement-item عمداً همیشه روشن می‌مونه، صرف‌نظر از تاگلِ
-   تمِ کلیِ سایت — پس دیگه override دارک‌مود نداره */
+/* ─── تم تاریک — این بخش تا حالا رنگ‌های هاردکد روشن داشت و اصلا
+   با تاگل تم سراسری هماهنگ نبود (منوی زنگولهٔ اطلاعیه در هدر) ─── */
+/* .announcement-item عمدا همیشه روشن می‌مونه، صرف‌نظر از تاگل
+   تم کلی سایت — پس دیگه override دارک‌مود نداره */
 
 :root[data-theme="dark"] .ann-priority-icon.urgent {
     background: rgba(220, 38, 38, .18);
@@ -6765,7 +6765,7 @@ body.login-page::after {
     color: var(--text-muted);
 }
 
-/* ─── چیپِ بیننده‌هایِ تسک (task-detail.php) ─── */
+/* ─── چیپ بیننده‌های تسک (task-detail.php) ─── */
 .viewer-chip {
     display: inline-flex;
     align-items: center;
@@ -7157,7 +7157,7 @@ body.login-page::after {
     border: 2px solid #8e57fe;
 }
 
-/* ─── دارک‌مودِ صفحه‌ی روزهای تعطیل (holidays.php) ─── */
+/* ─── دارک‌مود صفحه‌ی روزهای تعطیل (holidays.php) ─── */
 :root[data-theme="dark"] .calendar-container,
 :root[data-theme="dark"] .holidays-list-container {
     background: var(--surface);

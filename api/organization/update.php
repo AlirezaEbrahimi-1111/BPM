@@ -35,7 +35,7 @@ try {
         exit;
     }
 
-    // ── نقش و سازمانِ کاربر ──
+    // ── نقش و سازمان کاربر ──
     $stmt = $db->prepare("SELECT role, organization_id FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $me = $stmt->fetch(PDO::FETCH_ASSOC);

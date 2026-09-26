@@ -65,7 +65,7 @@ try {
         $priority_id = 3;
     }
 
-    // 🔒 اگر تسکی برای پیوست انتخاب شده، فقط وقتی معتبر است که واقعاً به همین کاربر
+    // 🔒 اگر تسکی برای پیوست انتخاب شده، فقط وقتی معتبر است که واقعا به همین کاربر
     // مرتبط باشد (سازنده یا مسئولش)، وگرنه نادیده گرفته می‌شود (بدون خطا)
     if ($task_id) {
         $tChk = $db->prepare("SELECT id FROM tasks WHERE id = ? AND is_deleted = 0 AND (creator_id = ? OR assignee_id = ?)");
@@ -88,14 +88,14 @@ try {
     $db->beginTransaction();
 
     // ─── تولید شماره تیکت ───
-    $jalaliDate = date('ymd'); // فعلاً میلادی، اگه jdf دارید عوض کنید
+    $jalaliDate = date('ymd'); // فعلا میلادی، اگه jdf دارید عوض کنید
     $stmt = $db->prepare("SELECT COUNT(*) + 1 as seq FROM tickets WHERE organization_id = ?");
     $stmt->execute([$orgId]);
     $seq = (int)$stmt->fetch(PDO::FETCH_ASSOC)['seq'];
     $ticketNumber = 'TKT-' . $jalaliDate . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
 
     // ─── ایجاد تیکت ───
-    // source_type/source_id: ارجاعِ اختیاری به یک تسکِ مرتبط (ستون‌های موجودِ عمومیِ «bpm integration»)
+    // source_type/source_id: ارجاع اختیاری به یک تسک مرتبط (ستون‌های موجود عمومی «bpm integration»)
     $stmt = $db->prepare("
         INSERT INTO tickets (organization_id, ticket_number, subject, status_id, priority_id, category_id, created_by, assigned_to, source_type, source_id)
         VALUES (?, ?, ?, 1, ?, ?, ?, 1, ?, ?)
@@ -143,14 +143,14 @@ try {
             if (!in_array($type, $allowedTypes)) continue;
 
             $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-            // فقط پسوندهایِ امن ذخیره شوند (نه php/phtml/svg/html/js/...)
+            // فقط پسوندهای امن ذخیره شوند (نه php/phtml/svg/html/js/...)
             if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'mp3', 'm4a', 'ogg', 'txt'], true)) continue;
             $storedName = uniqid('tkt_') . '_' . time() . '.' . $ext;
             $destPath = $uploadDir . $storedName;
 
             if (move_uploaded_file($tmpName, $destPath)) {
-                // 🔒 mime_type ذخیره‌شده از رویِ خودِ فایل تشخیص داده می‌شه، نه
-                // از $type (که مرورگر می‌فرسته و قابلِ‌اعتماد نیست) — هم‌راستا
+                // 🔒 mime_type ذخیره‌شده از روی خود فایل تشخیص داده می‌شه، نه
+                // از $type (که مرورگر می‌فرسته و قابل‌اعتماد نیست) — هم‌راستا
                 // با api/tickets/reply.php
                 $detectedMime = detectTicketAttachmentMime($destPath, $ext);
                 $stmt = $db->prepare("
@@ -190,8 +190,8 @@ try {
 
     $db->commit();
 
-    // ─── تماسِ صوتیِ هشدار برایِ تیکتِ «فوری/بحرانی» یا «بالا» (زرین‌کال) ───
-    // 🔴 شماره‌یِ هشدار — فعلاً فقط شماره‌یِ شخصیِ درخواست‌دهنده، هاردکد
+    // ─── تماس صوتی هشدار برای تیکت «فوری/بحرانی» یا «بالا» (زرین‌کال) ───
+    // 🔴 شماره‌ی هشدار — فعلا فقط شماره‌ی شخصی درخواست‌دهنده، هاردکد
     if (in_array($priority_id, [3, 4], true)) {
         VoiceCall::dispatchCriticalTicketCallAsync(['09105255090'], $ticketId);
     }

@@ -36,9 +36,9 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // 🔒 قبلاً این endpoint بدونِ هیچ محدودیتی بود — یعنی می‌شد با امتحان‌کردنِ
-    // پی‌درپیِ شماره‌موبایل‌ها، فهرستِ کاربرانِ ثبت‌شده رو استخراج کرد
-    // (user enumeration). حداکثر ۲۰ درخواست در ۱۵ دقیقه به‌ازایِ هر IP
+    // 🔒 قبلا این endpoint بدون هیچ محدودیتی بود — یعنی می‌شد با امتحان‌کردن
+    // پی‌درپی شماره‌موبایل‌ها، فهرست کاربران ثبت‌شده رو استخراج کرد
+    // (user enumeration). حداکثر ۲۰ درخواست در ۱۵ دقیقه به‌ازای هر IP
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     $rateStmt = $db->prepare("SELECT COUNT(*) FROM check_user_attempts WHERE ip = ? AND checked_at > (NOW() - INTERVAL 15 MINUTE)");
     $rateStmt->execute([$ip]);

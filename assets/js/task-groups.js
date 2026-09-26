@@ -34,8 +34,8 @@
     function api(path) { return '../api/task-groups/' + path; }
     function toFa(n) { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
 
-    // ── ضدِ XSS: نامِ گروه خام داخلِ innerHTML می‌رفت؛ رنگ داخلِ style و آیکن
-    //    داخلِ class attribute ── همه باید پاک‌سازی/اعتبارسنجی شوند.
+    // ── ضد XSS: نام گروه خام داخل innerHTML می‌رفت؛ رنگ داخل style و آیکن
+    //    داخل class attribute ── همه باید پاک‌سازی/اعتبارسنجی شوند.
     function tgEsc(s) {
         return String(s == null ? '' : s)
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-#  نصبِ باینریِ تازه‌ی go-api که CI در incoming/ گذاشته + ری‌استارتِ سرویس.
+#  نصب باینری تازه‌ی go-api که CI در incoming/ گذاشته + ری‌استارت سرویس.
 #
-#  این فایل root-owned است. کاربرِ `deploy` (که GitHub Actions با آن SSH می‌زند)
-#  از طریقِ یک خطِ /etc/sudoers.d/bpm-go-api بدونِ رمز صدایش می‌زند.
+#  این فایل root-owned است. کاربر `deploy` (که GitHub Actions با آن SSH می‌زند)
+#  از طریق یک خط /etc/sudoers.d/bpm-go-api بدون رمز صدایش می‌زند.
 #
-#  نصبِ یک‌باره روی سرور:
+#  نصب یک‌باره روی سرور:
 #      sudo install -o root -g root -m 0755 apply-go-api.sh /opt/bpm-go-api/apply-go-api.sh
 #      sudo install -o deploy -g deploy -d /opt/bpm-go-api/incoming
 #      sudo install -m 0440 sudoers-bpm-go-api /etc/sudoers.d/bpm-go-api && sudo visudo -c

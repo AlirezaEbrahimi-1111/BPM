@@ -33,7 +33,7 @@ function maybeStartNextPeriod($db, &$task, $user_id, $holidays = null, ?array $p
         if (!$state['is_today_done'] && !$state['finished'] && $state['started']) {
 
             // فقط وضعیت را برمی‌گردانیم؛ رکورد تاریخچه ثبت نمی‌شود.
-            // این یک عمل سیستمیِ داخلی است و نمایشش به کاربر گیج‌کننده است
+            // این یک عمل سیستمی داخلی است و نمایشش به کاربر گیج‌کننده است
             // (حس می‌کند کسی با حسابش کار کرده).
             $db->prepare(
                 "UPDATE tasks SET status = 'not_started', updated_at = NOW() WHERE id = ?"

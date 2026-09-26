@@ -1,18 +1,18 @@
 <?php
 /**
  * ═══════════════════════════════════════════════════════════════════
- *  بسترِ دیتابیسِ سیستمِ «فاکتور رسمی» (درون‌سازمانی — فقط سازمانِ ۱).
+ *  بستر دیتابیس سیستم «فاکتور رسمی» (درون‌سازمانی — فقط سازمان ۱).
  * ───────────────────────────────────────────────────────────────────
- *  فقط جدول‌ها + دو ردیفِ seed. هیچ صفحه/APIِ PHPِ جدیدی به این وابسته
- *  نیست. منطق در سرویسِ Go (crm-service/) خواهد بود.
+ *  فقط جدول‌ها + دو ردیف seed. هیچ صفحه/API PHP جدیدی به این وابسته
+ *  نیست. منطق در سرویس Go (crm-service/) خواهد بود.
  *
- *  • مشتری از CRM به‌اشتراک گذاشته می‌شود (crm_customers) — این‌جا جدولِ
- *    مشتریِ جدا ساخته نمی‌شود.
- *  • کالا/انبار جدا از CRM است. دو انبارِ ثابت: official و crm.
- *  • فاکتور فعلاً فقط چاپی (بدونِ ارسال به سامانه‌ی مودیان)؛ ستون‌ها طوری
- *    چیده شده که بعداً اتصالِ مودیان بدونِ تغییرِ اسکیما ممکن باشد.
- *  • واحدِ پول: ریال، ذخیره به‌صورتِ BIGINT.
- *  • اثر روی اپِ فعلی: فقط یک ستونِ جدیدِ users با پیش‌فرضِ ۰.
+ *  • مشتری از CRM به‌اشتراک گذاشته می‌شود (crm_customers) — این‌جا جدول
+ *    مشتری جدا ساخته نمی‌شود.
+ *  • کالا/انبار جدا از CRM است. دو انبار ثابت: official و crm.
+ *  • فاکتور فعلا فقط چاپی (بدون ارسال به سامانه‌ی مودیان)؛ ستون‌ها طوری
+ *    چیده شده که بعدا اتصال مودیان بدون تغییر اسکیما ممکن باشد.
+ *  • واحد پول: ریال، ذخیره به‌صورت BIGINT.
+ *  • اثر روی اپ فعلی: فقط یک ستون جدید users با پیش‌فرض ۰.
  * ═══════════════════════════════════════════════════════════════════
  */
 
@@ -22,22 +22,22 @@ return [
 
     'up' => function (PDO $db) {
 
-        // ── مجوزِ «ثبتِ فاکتور رسمی» ──
+        // ── مجوز «ثبت فاکتور رسمی» ──
         $col = $db->query("SHOW COLUMNS FROM `users` LIKE 'is_create_official_invoice'")->fetch();
         if (!$col) {
             $db->exec("ALTER TABLE `users`
                        ADD COLUMN `is_create_official_invoice` TINYINT(1) NOT NULL DEFAULT 0
-                       COMMENT 'اجازهٔ ساخت و تأییدِ فاکتور رسمی (عملاً فقط اعضایِ سازمانِ ۱)'");
+                       COMMENT 'اجازهٔ ساخت و تأیید فاکتور رسمی (عملا فقط اعضای سازمان ۱)'");
         }
 
-        // ── کاتالوگِ کالا/خدمت ──
+        // ── کاتالوگ کالا/خدمت ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `inv_products` (
                 `id`            INT AUTO_INCREMENT PRIMARY KEY,
                 `organization_id` INT NOT NULL DEFAULT 1,
                 `code`          VARCHAR(60)  NULL,
                 `name`          VARCHAR(255) NOT NULL,
-                `unit`          VARCHAR(30)  NOT NULL DEFAULT 'عدد' COMMENT 'واحدِ سنجش',
+                `unit`          VARCHAR(30)  NOT NULL DEFAULT 'عدد' COMMENT 'واحد سنجش',
                 `unit_price`    BIGINT NOT NULL DEFAULT 0 COMMENT 'ریال',
                 `is_service`    TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'خدمت (باز هم موجودی دارد، فقط برچسب)',
                 `is_tax_exempt` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'معاف از مالیات بر ارزش افزوده',
@@ -50,7 +50,7 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // ── انبارها (دقیقاً دو ردیف) ──
+        // ── انبارها (دقیقا دو ردیف) ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `inv_warehouses` (
                 `id`         INT AUTO_INCREMENT PRIMARY KEY,
@@ -66,7 +66,7 @@ return [
             ('official','انبار فاکتور رسمی','official'),
             ('crm','انبار CRM','crm')");
 
-        // ── موجودیِ کش‌شده به‌ازای (کالا، انبار) ──
+        // ── موجودی کش‌شده به‌ازای (کالا، انبار) ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `inv_stock` (
                 `product_id`   INT NOT NULL,
@@ -77,7 +77,7 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // ── دفترِ حرکتِ انبار (منبعِ حقیقتِ موجودی) ──
+        // ── دفتر حرکت انبار (منبع حقیقت موجودی) ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `inv_stock_moves` (
                 `id`           INT AUTO_INCREMENT PRIMARY KEY,
@@ -115,13 +115,13 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // ── فاکتورِ خرید (تأیید = افزایشِ موجودی) ──
+        // ── فاکتور خرید (تأیید = افزایش موجودی) ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `inv_purchase_invoices` (
                 `id`                  INT AUTO_INCREMENT PRIMARY KEY,
                 `organization_id`     INT NOT NULL DEFAULT 1,
                 `supplier_id`         INT NOT NULL,
-                `supplier_ref_number` VARCHAR(60) NULL COMMENT 'شماره‌ی فاکتورِ خودِ تأمین‌کننده',
+                `supplier_ref_number` VARCHAR(60) NULL COMMENT 'شماره‌ی فاکتور خود تأمین‌کننده',
                 `warehouse_id`        INT NOT NULL,
                 `issue_date`          DATE NULL,
                 `subtotal_amount`     BIGINT NOT NULL DEFAULT 0,
@@ -154,7 +154,7 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // ── سربرگِ فروشنده (یک ردیف — سازمانِ ۱) ──
+        // ── سربرگ فروشنده (یک ردیف — سازمان ۱) ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `inv_seller` (
                 `id`            INT PRIMARY KEY,
@@ -162,7 +162,7 @@ return [
                 `national_id`   VARCHAR(20) NULL COMMENT 'شناسه ملی',
                 `economic_code` VARCHAR(20) NULL COMMENT 'کد اقتصادی',
                 `reg_number`    VARCHAR(30) NULL COMMENT 'شماره ثبت',
-                `branch_code`   VARCHAR(10) NULL COMMENT 'کد شعبه (برای سامانه‌ی مودیان — بعداً)',
+                `branch_code`   VARCHAR(10) NULL COMMENT 'کد شعبه (برای سامانه‌ی مودیان — بعدا)',
                 `address`       TEXT NULL,
                 `postal_code`   VARCHAR(15) NULL,
                 `phone`         VARCHAR(40) NULL,
@@ -176,7 +176,7 @@ return [
         $db->exec("
             CREATE TABLE IF NOT EXISTS `inv_settings` (
                 `id`                  INT PRIMARY KEY,
-                `vat_rate`            DECIMAL(5,2) NOT NULL DEFAULT 10.00 COMMENT 'درصدِ مالیات بر ارزش افزوده',
+                `vat_rate`            DECIMAL(5,2) NOT NULL DEFAULT 10.00 COMMENT 'درصد مالیات بر ارزش افزوده',
                 `currency`            VARCHAR(10) NOT NULL DEFAULT 'IRR',
                 `number_prefix`       VARCHAR(20) NOT NULL DEFAULT '',
                 `invoice_footer_note` TEXT NULL,
@@ -185,13 +185,13 @@ return [
         ");
         $db->exec("INSERT IGNORE INTO `inv_settings` (`id`) VALUES (1)");
 
-        // ── فاکتورِ رسمی ──
+        // ── فاکتور رسمی ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `inv_invoices` (
                 `id`              INT AUTO_INCREMENT PRIMARY KEY,
                 `organization_id` INT NOT NULL DEFAULT 1,
                 `doc_type`        ENUM('official','proforma') NOT NULL DEFAULT 'official',
-                `seq_year`        SMALLINT NULL COMMENT 'سالِ شمسی — مبنایِ ریست شماره',
+                `seq_year`        SMALLINT NULL COMMENT 'سال شمسی — مبنای ریست شماره',
                 `seq_no`          INT NULL COMMENT 'شماره‌ی ترتیبی از ۱ در هر سال',
                 `number`          VARCHAR(40) NULL COMMENT 'شماره‌ی نمایشی',
                 `customer_id`     INT NOT NULL COMMENT 'crm_customers.id',
@@ -199,7 +199,7 @@ return [
                 `issue_date`      DATE NULL,
                 `status`          ENUM('draft','approved','cancelled') NOT NULL DEFAULT 'draft',
                 `source`          ENUM('staff','guest') NOT NULL DEFAULT 'staff',
-                `request_id`      INT NULL COMMENT 'اگر از درخواستِ مهمان تبدیل شده',
+                `request_id`      INT NULL COMMENT 'اگر از درخواست مهمان تبدیل شده',
                 `subtotal_amount` BIGINT NOT NULL DEFAULT 0,
                 `discount_amount` BIGINT NOT NULL DEFAULT 0,
                 `tax_amount`      BIGINT NOT NULL DEFAULT 0,
@@ -219,13 +219,13 @@ return [
             CREATE TABLE IF NOT EXISTS `inv_invoice_items` (
                 `id`            INT AUTO_INCREMENT PRIMARY KEY,
                 `invoice_id`    INT NOT NULL,
-                `product_id`    INT NULL COMMENT 'NULL = قلمِ متنیِ آزاد',
+                `product_id`    INT NULL COMMENT 'NULL = قلم متنی آزاد',
                 `title`         VARCHAR(255) NOT NULL,
                 `qty`           DECIMAL(16,3) NOT NULL DEFAULT 1,
                 `unit_price`    BIGINT NOT NULL DEFAULT 0,
                 `discount`      BIGINT NOT NULL DEFAULT 0,
                 `is_tax_exempt` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'اسنپ‌شات',
-                `tax_rate`      DECIMAL(5,2) NOT NULL DEFAULT 0 COMMENT 'اسنپ‌شاتِ نرخ در لحظه',
+                `tax_rate`      DECIMAL(5,2) NOT NULL DEFAULT 0 COMMENT 'اسنپ‌شات نرخ در لحظه',
                 `tax_amount`    BIGINT NOT NULL DEFAULT 0,
                 `line_total`    BIGINT NOT NULL DEFAULT 0,
                 `sort_order`    INT NOT NULL DEFAULT 0,
@@ -233,12 +233,12 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // ── درخواستِ مهمان (بدونِ لاگین) — فرم بعداً، الان فقط اسکیما ──
+        // ── درخواست مهمان (بدون لاگین) — فرم بعدا، الان فقط اسکیما ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `inv_invoice_requests` (
                 `id`                   INT AUTO_INCREMENT PRIMARY KEY,
                 `status`               ENUM('pending','approved','rejected','converted') NOT NULL DEFAULT 'pending',
-                `customer_id`          INT NULL COMMENT 'اگر مهمان مشتریِ موجود را انتخاب کرد',
+                `customer_id`          INT NULL COMMENT 'اگر مهمان مشتری موجود را انتخاب کرد',
                 `guest_name`           VARCHAR(255) NULL,
                 `guest_phone`          VARCHAR(30) NULL,
                 `guest_national_id`    VARCHAR(20) NULL,

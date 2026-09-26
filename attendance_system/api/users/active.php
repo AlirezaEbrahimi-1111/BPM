@@ -29,7 +29,7 @@ try {
 }
 
 try {
-    // 🔒 خط قرمز: فقط کاربرانِ همین سازمان می‌توانند جانشین انتخاب شوند
+    // 🔒 خط قرمز: فقط کاربران همین سازمان می‌توانند جانشین انتخاب شوند
     $orgStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
     $orgStmt->execute([$current_user_id]);
     $org_id = $orgStmt->fetchColumn();

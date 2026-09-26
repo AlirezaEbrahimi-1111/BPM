@@ -1,11 +1,11 @@
 package core
 
-// تقویمِ شمسی — پورتِ الگوریتمِ استانداردِ jdf که در PHP مرجع است:
-//   - GregorianToJalali  ≡ includes/JalaliHelper.php + attendance_system گِرِگوریِن‌توجلالیِ‌کَلک
+// تقویم شمسی — پورت الگوریتم استاندارد jdf که در PHP مرجع است:
+//   - GregorianToJalali  ≡ includes/JalaliHelper.php + attendance_system گرگورین‌توجلالی‌کلک
 //   - JalaliToGregorian  ≡ نسخهٔ اصلاح‌شدهٔ includes/date_helper.php::jalaliToGregorian
-//     (این جلسه تعمیر شد؛ نسخهٔ قبلی ترمِ «سال» را جا انداخته بود و همیشه ~۱۶۰۰ می‌داد)
+//     (این جلسه تعمیر شد؛ نسخهٔ قبلی ترم «سال» را جا انداخته بود و همیشه ~۱۶۰۰ می‌داد)
 //
-// قفلِ تطبیق: jalali_test.go با همان لنگرهای tests/unit/JalaliTest.php.
+// قفل تطبیق: jalali_test.go با همان لنگرهای tests/unit/JalaliTest.php.
 
 // GregorianToJalali میلادی (y, m=1..12, d) → شمسی (jy, jm=1..12, jd).
 func GregorianToJalali(gy, gm, gd int) (jy, jm, jd int) {

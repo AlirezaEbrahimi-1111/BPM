@@ -23,7 +23,7 @@ if (!$org_id || $max < 1 || $max > 100000) {
 }
 
 try {
-    // اشتراکِ فعالِ سازمان را پیدا کن
+    // اشتراک فعال سازمان را پیدا کن
     $stmt = $db->prepare("
         SELECT id FROM subscriptions
         WHERE organization_id = ? AND is_active = 1

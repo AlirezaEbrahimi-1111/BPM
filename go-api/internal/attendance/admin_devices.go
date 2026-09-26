@@ -8,17 +8,17 @@ import (
 	"bmp/go-api/internal/core"
 )
 
-// Devices — پورتِ جزئیِ api/attendance/devices.php.
+// Devices — پورت جزئی api/attendance/devices.php.
 //
 //	GET  /go/api/attendance/devices
 //	POST /go/api/attendance/devices   body: {action: delete|relabel, ...}
 //
-// 🔒 عمداً پورت نشده: action=approve/reject. هر دو Notification::create()
-// (شاملِ ارسالِ پیامکِ async) را صدا می‌زنند — همان مرزی که در ماژولِ
-// notifications گذاشته شد: منطقِ ساختنِ نوتیف/پیامک اینجا پورت نمی‌شود.
-// اگر این دو action با این endpoint صدا زده شوند، پاسخِ «عملیات نامعتبر»
-// می‌گیرند؛ فرانت‌اند فعلاً به هیچ‌کدام از این Go endpointها وصل نیست، پس
-// این محدودیت هیچ اثری روی رفتارِ زنده ندارد.
+// 🔒 عمدا پورت نشده: action=approve/reject. هر دو Notification::create()
+// (شامل ارسال پیامک async) را صدا می‌زنند — همان مرزی که در ماژول
+// notifications گذاشته شد: منطق ساختن نوتیف/پیامک اینجا پورت نمی‌شود.
+// اگر این دو action با این endpoint صدا زده شوند، پاسخ «عملیات نامعتبر»
+// می‌گیرند؛ فرانت‌اند فعلا به هیچ‌کدام از این Go endpointها وصل نیست، پس
+// این محدودیت هیچ اثری روی رفتار زنده ندارد.
 func Devices(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := core.UserOf(r.Context())

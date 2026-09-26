@@ -1008,7 +1008,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             color: var(--text-strong);
         }
 
-        /* ─── نمودارِ مسیرِ روتین (فاز ۴ — فقط‌خواندنی) ─── */
+        /* ─── نمودار مسیر روتین (فاز ۴ — فقط‌خواندنی) ─── */
         .wfm-chart-wrap {
             border: 1px solid var(--border, #e5e7eb);
             border-radius: 12px;
@@ -1293,9 +1293,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         let _hideCompletedFromUrl = false; // وقتی از داشبورد با template آمده‌ایم
         let currentSection = null; // key واحد انتخاب‌شده
         let onlyMyRoutines = false; // فیلتر: فقط روتین‌های ساخته‌ی من
-        // شناسه و واحدهایِ کاربر جاری (برای تشخیص نقش‌ها) — چندواحدی: فهرستِ
-        // کامل، نه فقط واحدِ اصلی، وگرنه آیکنِ «این روتین مالِ واحدِ شماست» برایِ
-        // واحدِ دومِ کاربرانِ چندواحدی نشون داده نمی‌شه
+        // شناسه و واحدهای کاربر جاری (برای تشخیص نقش‌ها) — چندواحدی: فهرست
+        // کامل، نه فقط واحد اصلی، وگرنه آیکن «این روتین مال واحد شماست» برای
+        // واحد دوم کاربران چندواحدی نشون داده نمی‌شه
         let currentUserId = null;
         let currentUserSections = [];
         try {
@@ -1325,7 +1325,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             }
         }
 
-        // آمار از روی همان دادهٔ لیست (allWorkflows) ساخته می‌شود تا دقیقاً با لیست یکی باشد
+        // آمار از روی همان دادهٔ لیست (allWorkflows) ساخته می‌شود تا دقیقا با لیست یکی باشد
         function loadStats() {
             const list = allWorkflows || [];
             const count = s => list.filter(w => w.status === s).length;
@@ -1410,7 +1410,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             updateResetBtn();
             applyFilter();
         }
-        /* 🆕 خواندن ?search=... از URL (مثلاً کلیک روی یک روتین در سرچ سراسری) —
+        /* 🆕 خواندن ?search=... از URL (مثلا کلیک روی یک روتین در سرچ سراسری) —
            همان عبارت را در کادر جستجو می‌گذارد و فیلتر می‌کند. فقط یک‌بار. */
         let _searchUrlApplied = false;
 
@@ -1438,7 +1438,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 allRoutines.find(r => String(r.id) === String(tpl)) :
                 null;
 
-            // اگر لیست روتین‌ها هنوز نیامده، بعداً دوباره تلاش کن
+            // اگر لیست روتین‌ها هنوز نیامده، بعدا دوباره تلاش کن
             if (!routine) return;
 
             _templateUrlApplied = true;
@@ -1449,7 +1449,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         function applyFilter() {
             let list = allWorkflows;
 
-            // فیلتر وضعیت — تنها مرجعِ لیست/منطق: TF.ROUTINE_INSTANCE_FILTERS در assets/js/task-filters.js
+            // فیلتر وضعیت — تنها مرجع لیست/منطق: TF.ROUTINE_INSTANCE_FILTERS در assets/js/task-filters.js
             if (currentFilter && currentFilter !== 'all') {
                 list = list.filter(w => TF.matchesStatusFilter(w, currentFilter, null, 'instance'));
             }
@@ -1661,7 +1661,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         function renderWorkflows(workflows) {
             const container = document.getElementById('workflowsList');
             if (!workflows?.length) {
-                // اگر اصلاً روتینی برای کاربر نیست → پیامِ اختصاصی؛ اگر فقط فیلتر خالی است → پیامِ فیلتر
+                // اگر اصلا روتینی برای کاربر نیست → پیام اختصاصی؛ اگر فقط فیلتر خالی است → پیام فیلتر
                 const noneAtAll = !(allWorkflows && allWorkflows.length);
                 const msg = noneAtAll ?
                     'هیچ کار روتینی مربوط به واحد یا شخص شما نیست' :
@@ -1683,7 +1683,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                           </span>`;
             }
 
-            // نقش ۲: مسئول مرحله (مرحله‌ی فعال مالِ واحد کاربر است)
+            // نقش ۲: مسئول مرحله (مرحله‌ی فعال مال واحد کاربر است)
             const isStepOwner = currentUserSections.length > 0 &&
                 wf.current_section &&
                 currentUserSections.includes(wf.current_section);
@@ -1890,12 +1890,12 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
         function renderDetailModal(wf, steps) {
             const modeLabel = wf.execution_mode === 'parallel' ? 'موازی' : 'آبشاری';
-            // شناسهٔ روتین پیش از عنوان + گاردِ عنوانِ خالی (روتین‌های قدیمی گاهی title ندارند)
+            // شناسهٔ روتین پیش از عنوان + گارد عنوان خالی (روتین‌های قدیمی گاهی title ندارند)
             document.getElementById('modalTitle').textContent =
                 '#' + wf.id + ' — ' + (wf.title || 'بدون عنوان') + ' — ' + modeLabel;
 
             // روتین‌های ساخته‌شده پیش از قالب‌های مرحله‌ای (چارت/فلوچارت) مرحله‌ای با
-            // step_name/step_order ندارند؛ برای آن‌ها نمودار رسم نمی‌شود (قبلاً «undefined» می‌زد).
+            // step_name/step_order ندارند؛ برای آن‌ها نمودار رسم نمی‌شود (قبلا «undefined» می‌زد).
             const hasFlow = Array.isArray(steps) && steps.length > 0 &&
                 steps.every(s => s.step_name != null && s.stage_sequence != null);
             const progress = parseInt(wf.progress) || 0;
@@ -1907,7 +1907,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     step.status === 'active' ? 'active' :
                     step.status === 'delayed' ? 'delayed' : '';
 
-                // گلوگاه فقط برای مرحلهٔ «فعالِ» از موعد گذشته — مرحلهٔ تکمیل‌شده گلوگاه نیست
+                // گلوگاه فقط برای مرحلهٔ «فعال» از موعد گذشته — مرحلهٔ تکمیل‌شده گلوگاه نیست
                 const activeOverdue = (step.status === 'active') && (step.is_delayed == 1);
                 const completedLate = (step.status === 'completed') && (step.is_delayed == 1);
 
@@ -1932,10 +1932,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     <div class="meta-row">
                         <div>${
                             (step.assignee_first_name || step.assignee_last_name)
-                            // 🔒 اگه یه مسئولِ واقعی برایِ این مرحله resolve شده (چه از
-                            // پیش تعریف‌شده، چه با claim‌کردنِ یه مرحلهٔ سراسرِ واحد، چه
-                            // با ارجاعِ دستی به فردِ دیگه)، همیشه همونو نشون بده — نه
-                            // برچسبِ ثابتِ «بخش: X»یِ قالب که با واقعیتِ فعلی هماهنگ نیست
+                            // 🔒 اگه یه مسئول واقعی برای این مرحله resolve شده (چه از
+                            // پیش تعریف‌شده، چه با claim‌کردن یه مرحلهٔ سراسر واحد، چه
+                            // با ارجاع دستی به فرد دیگه)، همیشه همونو نشون بده — نه
+                            // برچسب ثابت «بخش: X»ی قالب که با واقعیت فعلی هماهنگ نیست
                             ? '<span class="lbl">مسئول: </span>' + `${esc(step.assignee_first_name || '')} ${esc(step.assignee_last_name || '')}`.trim()
                             : step.assignee_type === 'creator'
                             ? '<span class="lbl">مسئول: </span>↩ ایجادکنندهٔ روتین'
@@ -1986,7 +1986,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             if (hasFlow) setTimeout(function () { wfmRenderFlow(steps); }, 120);
         }
 
-        /* ─── نمودارِ فقط‌خواندنیِ مسیرِ روتین (فاز ۴) ─── */
+        /* ─── نمودار فقط‌خواندنی مسیر روتین (فاز ۴) ─── */
         let wfmEditor = null;
         function wfmRenderFlow(steps) {
             const host = document.getElementById('wfmChart');
@@ -2062,7 +2062,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             return String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
         }
 
-        /* برای متنِ آزادِ کاربر (مثل توضیحاتِ تکمیلِ مرحله) قبل از innerHTML */
+        /* برای متن آزاد کاربر (مثل توضیحات تکمیل مرحله) قبل از innerHTML */
         function escHtml(str) {
             const div = document.createElement('div');
             div.textContent = str || '';

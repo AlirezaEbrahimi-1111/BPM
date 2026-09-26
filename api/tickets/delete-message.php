@@ -1,6 +1,6 @@
 <?php
 /**
- * حذفِ منطقیِ یک پیامِ تیکت (soft delete) — فقط کاربر با id = 1
+ * حذف منطقی یک پیام تیکت (soft delete) — فقط کاربر با id = 1
  * (هم‌راستا با api/tickets/delete.php و api/tickets/restore.php)
  * مسیر: api/tickets/delete-message.php
  * POST { message_id: int }

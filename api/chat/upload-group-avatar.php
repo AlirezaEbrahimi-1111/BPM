@@ -1,6 +1,6 @@
 <?php
 /**
- * API: آپلود/تغییرِ عکسِ گروه — سازنده یا هر مدیرِ گروه مجاز است
+ * API: آپلود/تغییر عکس گروه — سازنده یا هر مدیر گروه مجاز است
  * POST /api/chat/upload-group-avatar.php   (multipart/form-data)   fields: conversation_id, avatar
  */
 
@@ -58,8 +58,8 @@ try {
 
     $file = $_FILES['avatar'];
     $maxSize = 3 * 1024 * 1024;
-    // 🔒 نوعِ فایل هرگز از روی $_FILES['type'] یا پسوندِ نامِ اصلیِ فایل تعیین نمی‌شود
-    // — فقط محتوایِ واقعی با getimagesize() بررسی می‌شود (همان الگویِ upload-avatar.php)
+    // 🔒 نوع فایل هرگز از روی $_FILES['type'] یا پسوند نام اصلی فایل تعیین نمی‌شود
+    // — فقط محتوای واقعی با getimagesize() بررسی می‌شود (همان الگوی upload-avatar.php)
     $allowedExtByType = [IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png', IMAGETYPE_GIF => 'gif', IMAGETYPE_WEBP => 'webp'];
 
     if ($file['size'] > $maxSize) {

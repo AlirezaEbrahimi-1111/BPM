@@ -18,10 +18,10 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // نقش و سازمانِ کاربر جاری
-    // ⚠️ عمداً manager را شامل نمی‌شود: بازگردانیِ کاربرِ حذف‌شده یک
-    // عملیاتِ حساس‌تر از مدیریتِ روزمرهٔ زیرمجموعه است، و از طرفی
-    // getSubordinateIds() کاربرانِ حذف‌شده را در زنجیره نمی‌بیند —
+    // نقش و سازمان کاربر جاری
+    // ⚠️ عمدا manager را شامل نمی‌شود: بازگردانی کاربر حذف‌شده یک
+    // عملیات حساس‌تر از مدیریت روزمرهٔ زیرمجموعه است، و از طرفی
+    // getSubordinateIds() کاربران حذف‌شده را در زنجیره نمی‌بیند —
     // پس برای manager قابل‌استفاده هم نبود.
     $stmtMe = $db->prepare('SELECT role, organization_id FROM users WHERE id = ? AND is_active = 1');
     $stmtMe->execute([$user_id]);
@@ -39,7 +39,7 @@ try {
         exit;
     }
 
-    // کاربرِ حذف‌شدهٔ همین سازمان
+    // کاربر حذف‌شدهٔ همین سازمان
     $stmt = $db->prepare('SELECT id, username, phone FROM users
                           WHERE id = ? AND is_deleted = 1 AND organization_id = ?');
     $stmt->execute([$uid, $me['organization_id']]);
@@ -57,7 +57,7 @@ try {
     if (preg_match('/^deleted_(.+)_(\d+)$/', $target['username'], $m)) {
         $orig = $m[1];                 // مقدار بین دو خط‌زیر = موبایل/یوزرنیم اصلی
         $newUsername = $orig;
-        // موبایل را فقط در صورتی بازسازی کن که واقعاً خراب شده باشد
+        // موبایل را فقط در صورتی بازسازی کن که واقعا خراب شده باشد
         if (strpos((string)$target['phone'], 'deleted_') === 0) {
             $newPhone = $orig;
         }
@@ -80,8 +80,8 @@ try {
         }
     }
 
-    // بازگردانی — is_active هم به ۱ برمی‌گردد (طرفِ مقابلِ delete-user.php
-    // که حالا هنگامِ حذف is_active را صفر می‌کند)
+    // بازگردانی — is_active هم به ۱ برمی‌گردد (طرف مقابل delete-user.php
+    // که حالا هنگام حذف is_active را صفر می‌کند)
     $stmt = $db->prepare('UPDATE users
                           SET is_deleted = 0, is_active = 1, deleted_at = NULL, deleted_by = NULL,
                               username = ?, phone = ?

@@ -205,7 +205,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 </div>
                 <div>
                     <label class="form-label">تاریخ</label>
-                    <!-- امکانِ انتخابِ تاریخِ گذشته، مثلِ فاکتورِ فروش (فقط ماژولِ فاکتورِ رسمی) -->
+                    <!-- امکان انتخاب تاریخ گذشته، مثل فاکتور فروش (فقط ماژول فاکتور رسمی) -->
                     <div class="persian-datepicker-wrapper" data-restrict-past="-1">
                         <input type="text" class="persian-datepicker-input form-control" id="f_issue_date" placeholder="۱۴۰۵/۰۶/۱۱" readonly>
                         <div class="persian-datepicker">
@@ -337,8 +337,8 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 msg ? `<div class="alert alert-${kind} py-2">${msg}</div>` : '';
         }
 
-        // فهرستِ نام‌های کاتالوگ برای datalist زیرِ فیلدِ «نامِ کالا» (نامِ کالا
-        // مثلِ فاکتورِ فروش قابلِ تایپ است، نه فقط انتخاب از یک لیستِ کشویی).
+        // فهرست نام‌های کاتالوگ برای datalist زیر فیلد «نام کالا» (نام کالا
+        // مثل فاکتور فروش قابل تایپ است، نه فقط انتخاب از یک لیست کشویی).
         function fillProdDatalist() {
             const dl = document.getElementById('prodNameList');
             if (dl) dl.innerHTML = products.map(p =>
@@ -365,9 +365,9 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <td class="col-stock it-stock small text-muted"></td>
                 <td class="col-total it-linetotal">۰</td>
                 <td class="col-del"><button type="button" class="btn btn-sm btn-link text-danger p-0 it-del">✕</button></td>`;
-            // نامِ کالا: فیلدِ متنِ آزاد (مثلِ فاکتورِ فروش). اگر متنِ تایپ‌شده دقیقاً
+            // نام کالا: فیلد متن آزاد (مثل فاکتور فروش). اگر متن تایپ‌شده دقیقا
             // با یک کالای کاتالوگ یکی بود، قیمت خودکار پر می‌شود و ردیف به آن کالا
-            // گره می‌خورد؛ وگرنه هنگامِ ذخیره یک کالای تازه در کاتالوگ ساخته می‌شود.
+            // گره می‌خورد؛ وگرنه هنگام ذخیره یک کالای تازه در کاتالوگ ساخته می‌شود.
             tr.querySelector('.it-prod-name').addEventListener('change', () => syncProdName(tr));
             tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => {
                 el.addEventListener('input', recalc);
@@ -392,7 +392,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             return tr;
         }
 
-        // فوکوسِ فیلدِ بعدی با زدنِ Enter
+        // فوکوس فیلد بعدی با زدن Enter
         function focusOnEnter(el, nextFn) {
             if (!el) return;
             el.addEventListener('keydown', e => {
@@ -406,7 +406,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             });
         }
 
-        // متنِ نامِ کالا با کاتالوگ هماهنگ شود (تطبیقِ دقیقِ نام).
+        // متن نام کالا با کاتالوگ هماهنگ شود (تطبیق دقیق نام).
         function syncProdName(tr) {
             const v = tr.querySelector('.it-prod-name').value.trim();
             const p = v ? products.find(x => String(x.name || '').trim() === v) : null;

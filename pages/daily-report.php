@@ -424,7 +424,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 return;
             }
 
-            const btn = event.target; // فوراً همین‌جا گرفته می‌شه، چون uiConfirm ناهمگام (async) هست
+            const btn = event.target; // فورا همین‌جا گرفته می‌شه، چون uiConfirm ناهمگام (async) هست
             uiConfirm('آیا از ارسال گزارش اطمینان دارید؟', async function () {
             const originalText = btn.innerHTML;
             btn.disabled = true;
@@ -523,7 +523,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
 
         function getCurrentPersianDate() {
-            // «امروز» از ساعتِ سرور، و فرمت صریحاً به وقتِ تهران
+            // «امروز» از ساعت سرور، و فرمت صریحا به وقت تهران
             return new Intl.DateTimeFormat('fa-IR', {
                 year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', timeZone: 'Asia/Tehran'
             }).format(window.TimeSync ? TimeSync.serverNow() : new Date());
@@ -555,7 +555,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             return String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
         }
 
-        // 🔒 دو مدلِ تأخیر: روتین/فرآیندی (unit==='hours') ساعتی، بقیه روزِ کاری
+        // 🔒 دو مدل تأخیر: روتین/فرآیندی (unit==='hours') ساعتی، بقیه روز کاری
         // — هر دو عدد از سرور (api/reports/get-today-activities.php)
         function overdueLabel(task) {
             if (task.unit === 'hours') {
@@ -564,8 +564,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             return `${toFa(task.days_overdue || 0)} روز کاری تأخیر`;
         }
 
-        // showAlert قبلاً یک پیاده‌سازیِ جداگانه (باکسِ alert بوت‌استرپ) داشت؛
-        // الان فقط یک نام‌مستعارِ نازک برایِ showToastِ مشترکه (از assets/js/alert.js)
+        // showAlert قبلا یک پیاده‌سازی جداگانه (باکس alert بوت‌استرپ) داشت؛
+        // الان فقط یک نام‌مستعار نازک برای showToast مشترکه (از assets/js/alert.js)
         function showAlert(msg, type = 'info') {
             showToast(msg, type);
         }

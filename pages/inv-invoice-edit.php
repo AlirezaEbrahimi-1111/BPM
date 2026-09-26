@@ -148,7 +148,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             letter-spacing: 0;
         }
 
-        /* از ستونِ «تعداد» به بعد، وسط‌چین */
+        /* از ستون «تعداد» به بعد، وسط‌چین */
         table.inv-items td.col-qty,
         table.inv-items td.col-price,
         table.inv-items td.col-disc,
@@ -192,8 +192,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             min-height: 0 !important;
         }
 
-        /* هاورِ استانداردِ سایت (تینتِ بنفشِ نرم) — .btn-outline-secondary اصلاً
-           هاورِ اختصاصی نداشت (پیش‌فرضِ خاکستریِ بوت‌استرپ می‌ماند) */
+        /* هاور استاندارد سایت (تینت بنفش نرم) — .btn-outline-secondary اصلا
+           هاور اختصاصی نداشت (پیش‌فرض خاکستری بوت‌استرپ می‌ماند) */
         .btn-outline-primary:hover,
         .btn-outline-secondary:hover,
         .btn-outline-primary:active,
@@ -246,7 +246,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 </div>
                 <div>
                     <label class="form-label">تاریخ صدور</label>
-                    <!-- data-restrict-past روی خودِ wrapper باید باشه، نه روی input — PersianDatePicker
+                    <!-- data-restrict-past روی خود wrapper باید باشه، نه روی input — PersianDatePicker
                          این مقدار را از element.dataset (یعنی wrapper) می‌خواند نه از فرزندش. -->
                     <div class="persian-datepicker-wrapper" data-restrict-past="-1">
                         <input type="text" class="persian-datepicker-input form-control" id="f_issue_date" placeholder="۱۴۰۵/۰۶/۱۱" readonly>
@@ -358,7 +358,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             return faDigits(String(Math.round(Number(n) || 0).toLocaleString('en-US')));
         }
 
-        // مقدارِ نمایشیِ فیلدِ قیمت/تخفیف: عددِ صحیح با جداکننده‌ی هزارگان و رقمِ فارسی
+        // مقدار نمایشی فیلد قیمت/تخفیف: عدد صحیح با جداکننده‌ی هزارگان و رقم فارسی
         function faMoney(v) {
             const n = parseInt(toEn(String(v == null ? '' : v)).replace(/[^\d-]/g, ''), 10);
             return isNaN(n) ? '' : faDigits(n.toLocaleString('en-US'));
@@ -392,10 +392,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         let customerPicker = null;
         let partnerPicker = null;
         let partners = [];
-        let partnerPercent = 0; // درصدِ سهمِ همکار در ماهِ صدور (زنده — از سرور)
+        let partnerPercent = 0; // درصد سهم همکار در ماه صدور (زنده — از سرور)
         let hasPartner = false;
 
-        // آیتم‌های EntityPicker از فهرستِ مشتریانِ ثبت‌شده (انتخاب اجباری از لیست)
+        // آیتم‌های EntityPicker از فهرست مشتریان ثبت‌شده (انتخاب اجباری از لیست)
         function custItems() {
             return customers.map(c => ({
                 id: c.id,
@@ -432,7 +432,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             } catch (e) {}
         }
 
-        // ماهِ شمسیِ تاریخِ صدور (یا امروز اگر خالی) → {jy, jm}
+        // ماه شمسی تاریخ صدور (یا امروز اگر خالی) → {jy, jm}
         function issueJalaliMonth() {
             const di = document.getElementById('f_issue_date');
             let g = di ? (di.getAttribute('data-date') || '') : '';
@@ -452,7 +452,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             return null;
         }
 
-        // درصدِ سهمِ همکار برای ماهِ صدور را از سرور بگیر، بعد جمع‌ها را بازکش
+        // درصد سهم همکار برای ماه صدور را از سرور بگیر، بعد جمع‌ها را بازکش
         async function refreshPartnerProfit() {
             const p = partnerPicker ? partnerPicker.getValue() : null;
             hasPartner = !!(p && p.id);
@@ -479,7 +479,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             });
         }
 
-        // بعد از انتخابِ مشتری، فوکوس مستقیم برود روی «نامِ کالا»یِ ردیفِ اول
+        // بعد از انتخاب مشتری، فوکوس مستقیم برود روی «نام کالا»ی ردیف اول
         function focusFirstProductName() {
             const el = document.querySelector('#itemsBody .it-prod-name');
             if (el) {
@@ -514,9 +514,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <td class="col-total it-linetax">۰</td>
                 <td class="col-total it-linetotal">۰</td>
                 <td class="col-del"><button type="button" class="btn btn-sm btn-link text-danger p-0 it-del">✕</button></td>`;
-            // نامِ کالا: فیلدِ متنِ آزاد (مثلِ نامِ مشتری). اگر متنِ تایپ‌شده دقیقاً
+            // نام کالا: فیلد متن آزاد (مثل نام مشتری). اگر متن تایپ‌شده دقیقا
             // با یک کالای کاتالوگ یکی بود، قیمت/معافیت خودکار پر می‌شود و ردیف به
-            // آن کالا گره می‌خورد؛ وگرنه هنگامِ ذخیره یک کالای تازه ساخته می‌شود.
+            // آن کالا گره می‌خورد؛ وگرنه هنگام ذخیره یک کالای تازه ساخته می‌شود.
             tr.querySelector('.it-prod-name').addEventListener('change', () => syncProdName(tr));
             tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => {
                 el.addEventListener('input', recalc);
@@ -544,7 +544,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             return tr;
         }
 
-        // فوکوسِ فیلدِ بعدی با زدنِ Enter
+        // فوکوس فیلد بعدی با زدن Enter
         function focusOnEnter(el, nextFn) {
             if (!el) return;
             el.addEventListener('keydown', e => {
@@ -558,7 +558,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             });
         }
 
-        // متنِ نامِ کالا با کاتالوگ هماهنگ شود (تطبیقِ دقیقِ نام).
+        // متن نام کالا با کاتالوگ هماهنگ شود (تطبیق دقیق نام).
         function syncProdName(tr) {
             const v = tr.querySelector('.it-prod-name').value.trim();
             const p = v ? products.find(x => String(x.name || '').trim() === v) : null;
@@ -582,11 +582,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 if (data.product_id) {
                     tr.dataset.productId = data.product_id;
                     tr.querySelector('.it-prod-name').value = p ? (p.name || '') : (data.title || '');
-                    // «شرح» فقط اگر با نامِ کالا فرق داشت (توضیحِ سفارشیِ ردیف)
+                    // «شرح» فقط اگر با نام کالا فرق داشت (توضیح سفارشی ردیف)
                     tr.querySelector('.it-title').value =
                         (data.title && (!p || data.title.trim() !== (p.name || '').trim())) ? data.title : '';
                 } else {
-                    // قلمِ متنیِ آزاد → نام در فیلدِ نامِ کالا
+                    // قلم متنی آزاد → نام در فیلد نام کالا
                     tr.querySelector('.it-prod-name').value = data.title || '';
                 }
                 tr.querySelector('.it-qty').value = faDigits(data.qty ?? 1);
@@ -608,7 +608,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         function updateStockHint(tr) {
             const cell = tr.querySelector('.it-stock');
-            if (!cell) { tr.classList.remove('row-lowstock'); return; } // ستونِ «قابل‌فروش» حذف شده
+            if (!cell) { tr.classList.remove('row-lowstock'); return; } // ستون «قابل‌فروش» حذف شده
             const pid = tr.dataset.productId ? +tr.dataset.productId : 0;
             if (!pid) {
                 cell.textContent = '';
@@ -653,9 +653,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             document.getElementById('t_tax').textContent = money(tax);
             document.getElementById('t_total').textContent = money(subtotal - discount + tax);
 
-            // سهمِ همکار = درصد × (جمعِ کل منهای تخفیف، پیش از مالیات)
-            // فقط موقعِ ساختنِ فاکتورِ جدید نمایش داده بشه، نه موقعِ ویرایشِ
-            // یک فاکتورِ از‌قبل‌ثبت‌شده (INV_ID > 0)
+            // سهم همکار = درصد × (جمع کل منهای تخفیف، پیش از مالیات)
+            // فقط موقع ساختن فاکتور جدید نمایش داده بشه، نه موقع ویرایش
+            // یک فاکتور از‌قبل‌ثبت‌شده (INV_ID > 0)
             const rowPct = document.getElementById('row_partner_pct');
             const rowProfit = document.getElementById('row_partner_profit');
             if (hasPartner && !INV_ID) {
@@ -678,7 +678,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             document.querySelectorAll('#itemsBody tr').forEach(tr => {
                 const name = tr.querySelector('.it-prod-name').value.trim();
                 const desc = tr.querySelector('.it-title').value.trim();
-                // عنوانِ ردیف: «شرح» اگر پر باشد، وگرنه نامِ کالا.
+                // عنوان ردیف: «شرح» اگر پر باشد، وگرنه نام کالا.
                 const title = desc || name;
                 if (!title) return;
                 items.push({
@@ -784,7 +784,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 /* ادامه با VAT=0 */
             }
 
-            // مشتری‌ها — انتخاب اجباری از فهرستِ ثبت‌شده، با دکمهٔ + برای افزودنِ سریع
+            // مشتری‌ها — انتخاب اجباری از فهرست ثبت‌شده، با دکمهٔ + برای افزودن سریع
             await reloadCustomers();
             customerPicker = EntityPicker.create({
                 container: '#customerPicker',
@@ -798,7 +798,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 }),
                 onSelect: () => focusFirstProductName(),
             });
-            // همکار — اختیاری. انتخاب از فهرست، با دکمهٔ + برای افزودنِ سریع.
+            // همکار — اختیاری. انتخاب از فهرست، با دکمهٔ + برای افزودن سریع.
             await reloadPartners();
             partnerPicker = EntityPicker.create({
                 container: '#partnerPicker',
@@ -809,12 +809,12 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 onSelect: () => refreshPartnerProfit(),
             });
 
-            // کالاها — در حالتِ ویرایش، خودِ این فاکتور از محاسبه‌ی رزرو کنار می‌رود.
+            // کالاها — در حالت ویرایش، خود این فاکتور از محاسبه‌ی رزرو کنار می‌رود.
             const exParam = INV_ID ? '&exclude_invoice=' + INV_ID : '';
             await reloadProducts(exParam);
             fillProdDatalist();
 
-            // وقتی از تبِ «مشتریان» یا «کاتالوگ کالا» برگشتی، هر سه فهرست تازه شوند
+            // وقتی از تب «مشتریان» یا «کاتالوگ کالا» برگشتی، هر سه فهرست تازه شوند
             window.addEventListener('focus', async () => {
                 await reloadCustomers();
                 if (customerPicker) customerPicker.updateItems(custItems());
@@ -841,7 +841,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         di.setAttribute('data-date', inv.issue_date);
                         di.value = (typeof convertToJalali === 'function') ? convertToJalali(inv.issue_date) : inv.issue_date;
                     }
-                    // همکار — بعد از ستِ تاریخِ صدور تا درصدِ ماهِ درست خوانده شود
+                    // همکار — بعد از ست تاریخ صدور تا درصد ماه درست خوانده شود
                     if (partnerPicker && inv.partner_id) partnerPicker.setValue(inv.partner_id);
                     (inv.items || []).forEach(addRow);
                 } catch (e) {
@@ -854,7 +854,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             recalc();
             if (typeof window.reinitPersianDatepickers === 'function') window.reinitPersianDatepickers();
 
-            // فاکتورِ جدید: تاریخِ صدور پیش‌فرض = امروز
+            // فاکتور جدید: تاریخ صدور پیش‌فرض = امروز
             if (!INV_ID) {
                 const di = document.getElementById('f_issue_date');
                 if (di && !di.getAttribute('data-date')) {
@@ -865,7 +865,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 }
             }
 
-            // تغییرِ تاریخِ صدور → درصدِ سهمِ همکارِ ماهِ صدور دوباره خوانده شود
+            // تغییر تاریخ صدور → درصد سهم همکار ماه صدور دوباره خوانده شود
             {
                 const di = document.getElementById('f_issue_date');
                 if (di) {
@@ -883,11 +883,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             document.getElementById('btnSave').addEventListener('click', () => save(false));
             document.getElementById('btnSaveBack').addEventListener('click', () => save(true));
 
-            // پیمایش با Enter در سربرگ: تاریخ صدور → نام کالای ردیفِ اول
-            // (فیلدِ مشتری اکنون EntityPicker است و کیبوردِ خودش را دارد)
+            // پیمایش با Enter در سربرگ: تاریخ صدور → نام کالای ردیف اول
+            // (فیلد مشتری اکنون EntityPicker است و کیبورد خودش را دارد)
             focusOnEnter(document.getElementById('f_issue_date'), () => document.querySelector('#itemsBody .it-prod-name'));
 
-            // هنگامِ لود، فوکوس روی انتخابگرِ مشتری
+            // هنگام لود، فوکوس روی انتخابگر مشتری
             if (customerPicker) customerPicker.focus();
         }
 

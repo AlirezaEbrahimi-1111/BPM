@@ -96,7 +96,7 @@ try {
     ]);
 
     // ── بروزرسانی کار: status → in_progress، assignee → creator، موعد پاک می‌شود ──
-    // (فقط برایِ کارِ مقطعیِ غیرروتین معنی داره — دقیقاً همون شرطی که دکمه رو نشون می‌ده)
+    // (فقط برای کار مقطعی غیرروتین معنی داره — دقیقا همون شرطی که دکمه رو نشون می‌ده)
     $clearDueDate = ($task['task_type'] === 'periodic' && empty($task['is_workflow_task']));
     $sql = "
         UPDATE tasks

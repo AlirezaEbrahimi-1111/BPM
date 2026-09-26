@@ -31,7 +31,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // تسکِ حذف‌شدهٔ همین سازمان
+    // تسک حذف‌شدهٔ همین سازمان
     $stmt = $db->prepare("SELECT creator_id FROM tasks
                           WHERE id = ? AND is_deleted = 1 AND organization_id = ?");
     $stmt->execute([$task_id, $org_id]);

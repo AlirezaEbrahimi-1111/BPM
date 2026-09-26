@@ -29,8 +29,8 @@ try {
         $stmt->execute([$target_user]);
         $target = $stmt->fetch();
 
-        // 🔒 خط قرمز: مسئول فقط روی کاربرانِ همان سازمانِ خودش این اختیار را دارد،
-        // وگرنه یک supervisor می‌تواند مرخصی/مأموریتِ کاربران سازمان دیگر را ببیند
+        // 🔒 خط قرمز: مسئول فقط روی کاربران همان سازمان خودش این اختیار را دارد،
+        // وگرنه یک supervisor می‌تواند مرخصی/مأموریت کاربران سازمان دیگر را ببیند
         $sameOrg = $target && (int)$target['organization_id'] === (int)$current_user['organization_id'];
 
         if (!$target || ($target['manager_id'] != $user_id && !($current_user['is_supervisor'] && $sameOrg))) {

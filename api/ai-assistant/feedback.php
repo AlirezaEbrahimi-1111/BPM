@@ -1,9 +1,9 @@
 <?php
 /**
- * API دستیارِ هوش‌مصنوعی: ثبتِ بازخوردِ 👍/👎 برایِ یک پاسخ
+ * API دستیار هوش‌مصنوعی: ثبت بازخورد 👍/👎 برای یک پاسخ
  * POST /api/ai-assistant/feedback.php   body: { log_id, rating: 'up'|'down', comment? }
  *
- * طبقِ بندِ ۱۷ سندِ docs/ai-assistant/spec-v1.md.
+ * طبق بند ۱۷ سند docs/ai-assistant/spec-v1.md.
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -41,7 +41,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // 🔒 کاربر فقط می‌تواند به پاسخِ خودش بازخورد بدهد
+    // 🔒 کاربر فقط می‌تواند به پاسخ خودش بازخورد بدهد
     $stmt = $db->prepare("SELECT id FROM ai_query_logs WHERE id = ? AND user_id = ?");
     $stmt->execute([$logId, $user_id]);
     if (!$stmt->fetch()) {

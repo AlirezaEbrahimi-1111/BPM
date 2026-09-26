@@ -81,8 +81,8 @@ try {
     $error_message = '';
 
     if ($request_type === 'pass') {
-        // پاس: تا pass_edit_hours «ساعتِ کاری» بعد از ارسال — جمعه/تعطیلات کاملاً
-        // نادیده گرفته می‌شوند (نه فقط از تنظیمات خونده بشه، بلکه واقعاً کاری باشه)
+        // پاس: تا pass_edit_hours «ساعت کاری» بعد از ارسال — جمعه/تعطیلات کاملا
+        // نادیده گرفته می‌شوند (نه فقط از تنظیمات خونده بشه، بلکه واقعا کاری باشه)
         $pass_edit_hours = (int) getSetting($db, 'pass_edit_hours', 24);
         $created_at = new DateTime($request['created_at']);
         $now = new DateTime();
@@ -154,7 +154,7 @@ try {
         list($start_date, $start_time) = explode(' ', $start_datetime);
         list($end_date, $end_time) = explode(' ', $end_datetime);
 
-        // ✅ چون تاریخ ممکنه عوض بشه، سقفِ روزهایِ متوالی رو دوباره چک می‌کنیم
+        // ✅ چون تاریخ ممکنه عوض بشه، سقف روزهای متوالی رو دوباره چک می‌کنیم
         $new_days = (int) ((strtotime($end_date) - strtotime($start_date)) / 86400) + 1;
 
         $leave_max_consecutive = (int) getSetting($db, 'leave_max_consecutive', 20);
@@ -166,14 +166,14 @@ try {
             exit;
         }
 
-        // ✅ سهمیهٔ مشترکِ مرخصی+پاس (بر‌حسبِ دقیقه) — مقدارِ کسرشدهٔ قبلی رو
-        // پیدا می‌کنیم تا موجودیِ «واقعیِ قابلِ‌استفاده» درست حساب بشه
+        // ✅ سهمیهٔ مشترک مرخصی+پاس (بر‌حسب دقیقه) — مقدار کسرشدهٔ قبلی رو
+        // پیدا می‌کنیم تا موجودی «واقعی قابل‌استفاده» درست حساب بشه
         $daily_work_minutes = getUserDailyWorkMinutes($db, $user_id);
         $new_minutes = computeLeaveRequestMinutes($start_date, $start_time, $end_date, $end_time, $daily_work_minutes);
         $old_deduction = findLeaveDeduction($db, 'leave', (int) $request_id); // منفیه یا null
 
         ensureMonthlyLeaveAccrual($db, $user_id);
-        $available_balance = getLeaveBalance($db, $user_id) + abs($old_deduction ?? 0); // کسرِ قبلی هنوز ثبته، برمی‌گردونیمش به حساب
+        $available_balance = getLeaveBalance($db, $user_id) + abs($old_deduction ?? 0); // کسر قبلی هنوز ثبته، برمی‌گردونیمش به حساب
         if ($new_minutes > $available_balance) {
             echo json_encode([
                 'success' => false,
@@ -183,7 +183,7 @@ try {
         }
 
         if ($old_deduction !== null) {
-            $adjustment = abs($old_deduction) - $new_minutes; // مثبت=بازگشتِ مازاد، منفی=کسرِ اضافه
+            $adjustment = abs($old_deduction) - $new_minutes; // مثبت=بازگشت مازاد، منفی=کسر اضافه
             $stmt = $db->prepare("
                 INSERT INTO leave_balance_transactions (user_id, type, amount, related_request_id, related_request_type, note)
                 VALUES (?, 'manual_adjustment', ?, ?, 'leave', 'اصلاح سهمیه به‌دلیل ویرایش تاریخ درخواست')
@@ -207,7 +207,7 @@ try {
             exit;
         }
 
-        // ✅ سهمیهٔ مشترکِ مرخصی+پاس — همون منطقِ اصلاحِ بخشِ مرخصی
+        // ✅ سهمیهٔ مشترک مرخصی+پاس — همون منطق اصلاح بخش مرخصی
         $daily_work_minutes = getUserDailyWorkMinutes($db, $user_id);
         $new_minutes = computeLeaveRequestMinutes($pass_date, $start_time, $pass_date, $end_time, $daily_work_minutes);
         $old_deduction = findLeaveDeduction($db, 'pass', (int) $request_id);

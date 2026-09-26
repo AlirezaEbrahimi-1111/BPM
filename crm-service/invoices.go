@@ -24,8 +24,8 @@ type invoiceItemIn struct {
 type invoiceIn struct {
 	DocType      string          `json:"doc_type"`
 	CustomerID   int64           `json:"customer_id"`
-	CustomerName string          `json:"customer_name"` // اگر شناسه نبود، از این نام یک مشتریِ «حقیقی» ساخته می‌شود
-	PartnerID    int64           `json:"partner_id"`    // همکار — ۰ یعنی «فاکتورِ خودِ شرکت»
+	CustomerName string          `json:"customer_name"` // اگر شناسه نبود، از این نام یک مشتری «حقیقی» ساخته می‌شود
+	PartnerID    int64           `json:"partner_id"`    // همکار — ۰ یعنی «فاکتور خود شرکت»
 	IssueDate    string          `json:"issue_date"`    // "YYYY-MM-DD" یا ""
 	PaymentType  string          `json:"payment_type"`  // "cash" | "credit" | ""
 	Note         string          `json:"note"`
@@ -59,31 +59,31 @@ type invoiceItemOut struct {
 }
 
 type invoiceOut struct {
-	ID             int64            `json:"id"`
-	DocType        string           `json:"doc_type"`
-	Number         string           `json:"number"`
-	SeqYear        *int             `json:"seq_year"`
-	SeqNo          *int             `json:"seq_no"`
-	CustomerID     int64            `json:"customer_id"`
-	CustomerName   string           `json:"customer_name"`
-	IssueDate      string           `json:"issue_date"`
-	Status         string           `json:"status"`
-	Source         string           `json:"source"`
-	PaymentType    string           `json:"payment_type"`
-	Subtotal       int64            `json:"subtotal_amount"`
-	DiscountAmount int64            `json:"discount_amount"`
-	TaxAmount      int64            `json:"tax_amount"`
-	TotalAmount    int64            `json:"total_amount"`
-	Note           string           `json:"note"`
-	CreatedAt      string           `json:"created_at"`
-	ApprovedAt     string           `json:"approved_at"`
-	ConvertedToID  *int64           `json:"converted_to_id"`
+	ID             int64  `json:"id"`
+	DocType        string `json:"doc_type"`
+	Number         string `json:"number"`
+	SeqYear        *int   `json:"seq_year"`
+	SeqNo          *int   `json:"seq_no"`
+	CustomerID     int64  `json:"customer_id"`
+	CustomerName   string `json:"customer_name"`
+	IssueDate      string `json:"issue_date"`
+	Status         string `json:"status"`
+	Source         string `json:"source"`
+	PaymentType    string `json:"payment_type"`
+	Subtotal       int64  `json:"subtotal_amount"`
+	DiscountAmount int64  `json:"discount_amount"`
+	TaxAmount      int64  `json:"tax_amount"`
+	TotalAmount    int64  `json:"total_amount"`
+	Note           string `json:"note"`
+	CreatedAt      string `json:"created_at"`
+	ApprovedAt     string `json:"approved_at"`
+	ConvertedToID  *int64 `json:"converted_to_id"`
 
-	// همکار (اگر فاکتور به‌درخواستِ یک همکار صادر شده)
+	// همکار (اگر فاکتور به‌درخواست یک همکار صادر شده)
 	PartnerID             *int64  `json:"partner_id"`
 	PartnerName           string  `json:"partner_name"`
-	PartnerPercent        float64 `json:"partner_percent"`         // درصدِ سهمِ ماهِ صدور (زنده)
-	PartnerProfitAmount   int64   `json:"partner_profit_amount"`   // percent × (subtotal - discount)
+	PartnerPercent        float64 `json:"partner_percent"`       // درصد سهم ماه صدور (زنده)
+	PartnerProfitAmount   int64   `json:"partner_profit_amount"` // percent × (subtotal - discount)
 	PartnerProfitRecorded bool    `json:"partner_profit_recorded"`
 	SettlementStatus      string  `json:"settlement_status"`
 	MoadianStatus         string  `json:"moadian_status"`
@@ -101,7 +101,7 @@ type computedLine struct {
 	lineTotal int64
 }
 
-// محاسبه‌ی ردیف‌ها و جمع‌ها. مالیات فقط روی ردیف‌های غیرمعاف، با نرخِ اسنپ‌شات.
+// محاسبه‌ی ردیف‌ها و جمع‌ها. مالیات فقط روی ردیف‌های غیرمعاف، با نرخ اسنپ‌شات.
 func computeInvoice(items []invoiceItemIn, vatRate float64) (lines []computedLine, subtotal, discount, tax, total int64) {
 	for _, it := range items {
 		gross := int64(math.Round(it.Qty * float64(it.UnitPrice)))
@@ -188,8 +188,8 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	// درصدِ همکار به‌ازای (همکار، ماهِ شمسی) — یک‌بار برایِ کلِ صفحه کش می‌شود
-	// تا برایِ ردیف‌هایِ هم‌ماهِ یک همکار، partnerPercent چندبار کوئری نزند.
+	// درصد همکار به‌ازای (همکار، ماه شمسی) — یک‌بار برای کل صفحه کش می‌شود
+	// تا برای ردیف‌های هم‌ماه یک همکار، partnerPercent چندبار کوئری نزند.
 	pctCache := map[[3]int]float64{}
 
 	items := []invoiceOut{}
@@ -343,7 +343,7 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 		o.Items = append(o.Items, it)
 	}
 
-	// اطلاعاتِ کاملِ خریدار برای بلوکِ «مشخصات خریدار» در چاپ.
+	// اطلاعات کامل خریدار برای بلوک «مشخصات خریدار» در چاپ.
 	var cust map[string]any
 	{
 		var name, phone, mobile, nid, ec, pv, city, pcode, addr sql.NullString
@@ -378,7 +378,7 @@ func normalizeDocType(t string) string {
 
 func (in *invoiceIn) validate() string {
 	if in.CustomerID == 0 && strings.TrimSpace(in.CustomerName) == "" {
-		return "نامِ مشتری را وارد کنید"
+		return "نام مشتری را وارد کنید"
 	}
 	valid := 0
 	for _, it := range in.Items {
@@ -386,17 +386,17 @@ func (in *invoiceIn) validate() string {
 			continue
 		}
 		if it.Qty <= 0 {
-			return "تعدادِ هر ردیف باید بزرگ‌تر از صفر باشد"
+			return "تعداد هر ردیف باید بزرگ‌تر از صفر باشد"
 		}
 		valid++
 	}
 	if valid == 0 {
-		return "حداقل یک ردیفِ کالا لازم است"
+		return "حداقل یک ردیف کالا لازم است"
 	}
 	return ""
 }
 
-// برای «فاکتور رسمی» به یک مشتریِ حقوقی (شرکت)، شناسه‌ی ملی و کد پستی و آدرس الزامی است.
+// برای «فاکتور رسمی» به یک مشتری حقوقی (شرکت)، شناسه‌ی ملی و کد پستی و آدرس الزامی است.
 func (s *server) officialCustomerErr(customerID int64, docType string) string {
 	if docType != "official" {
 		return ""
@@ -422,7 +422,7 @@ func (s *server) officialCustomerErr(customerID int64, docType string) string {
 		missing = append(missing, "آدرس")
 	}
 	if len(missing) > 0 {
-		return "برای فاکتور رسمیِ این شرکت، ابتدا این اطلاعاتِ مشتری را کامل کنید: " + strings.Join(missing, "، ")
+		return "برای فاکتور رسمی این شرکت، ابتدا این اطلاعات مشتری را کامل کنید: " + strings.Join(missing, "، ")
 	}
 	return ""
 }
@@ -440,7 +440,7 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 	u := userOf(r.Context())
 	st, err := s.getSettings()
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "خواندنِ تنظیمات ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "خواندن تنظیمات ناموفق بود")
 		return
 	}
 
@@ -459,11 +459,11 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	// مشتری: اگر شناسه نداشتیم، از نامِ تایپ‌شده یک مشتریِ «حقیقی» تازه می‌سازیم
-	// (بدونِ حذفِ تکراری، بدونِ اجبارِ کامل‌بودنِ اطلاعات).
+	// مشتری: اگر شناسه نداشتیم، از نام تایپ‌شده یک مشتری «حقیقی» تازه می‌سازیم
+	// (بدون حذف تکراری، بدون اجبار کامل‌بودن اطلاعات).
 	custID, createdCust, err := resolveCustomer(tx, u.OrgID, u.ID, in.CustomerID, in.CustomerName)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "ثبتِ مشتری ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "ثبت مشتری ناموفق بود")
 		return
 	}
 	if !createdCust {
@@ -473,7 +473,7 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if in.PartnerID > 0 && !s.ownsPartner(in.PartnerID, u.OrgID) {
-		writeErr(w, http.StatusBadRequest, "همکارِ انتخاب‌شده معتبر نیست")
+		writeErr(w, http.StatusBadRequest, "همکار انتخاب‌شده معتبر نیست")
 		return
 	}
 
@@ -485,13 +485,13 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 		u.OrgID, docType, custID, nullableID(in.PartnerID), s.officialWarehouseID, issueNS,
 		normalizePaymentType(in.PaymentType), sub, disc, tax, total, nullIfEmpty(in.Note), u.ID)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "درجِ فاکتور ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "درج فاکتور ناموفق بود")
 		return
 	}
 	invID, _ := res.LastInsertId()
 
 	if err := insertItems(tx, u.OrgID, u.ID, invID, lines); err != nil {
-		writeErr(w, http.StatusInternalServerError, "درجِ ردیف‌ها ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "درج ردیف‌ها ناموفق بود")
 		return
 	}
 	if err := tx.Commit(); err != nil {
@@ -525,7 +525,7 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if status != "draft" {
-		writeErr(w, http.StatusConflict, "فقط فاکتورِ پیش‌نویس قابلِ ویرایش است")
+		writeErr(w, http.StatusConflict, "فقط فاکتور پیش‌نویس قابل ویرایش است")
 		return
 	}
 
@@ -545,11 +545,11 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	// مشتری: اگر نامِ تازه‌ای تایپ شده (یا شناسه‌ای نبود) یک مشتریِ «حقیقی» نو
-	// می‌سازیم؛ اگر نام تغییری نکرده، همان مشتریِ فعلی می‌مانَد.
+	// مشتری: اگر نام تازه‌ای تایپ شده (یا شناسه‌ای نبود) یک مشتری «حقیقی» نو
+	// می‌سازیم؛ اگر نام تغییری نکرده، همان مشتری فعلی می‌ماند.
 	custID, createdCust, err := resolveCustomer(tx, u.OrgID, u.ID, in.CustomerID, in.CustomerName)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "ثبتِ مشتری ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "ثبت مشتری ناموفق بود")
 		return
 	}
 	if !createdCust {
@@ -559,7 +559,7 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if in.PartnerID > 0 && !s.ownsPartner(in.PartnerID, u.OrgID) {
-		writeErr(w, http.StatusBadRequest, "همکارِ انتخاب‌شده معتبر نیست")
+		writeErr(w, http.StatusBadRequest, "همکار انتخاب‌شده معتبر نیست")
 		return
 	}
 
@@ -578,7 +578,7 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := insertItems(tx, u.OrgID, u.ID, id, lines); err != nil {
-		writeErr(w, http.StatusInternalServerError, "درجِ ردیف‌ها ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "درج ردیف‌ها ناموفق بود")
 		return
 	}
 	if err := tx.Commit(); err != nil {
@@ -611,11 +611,11 @@ func (s *server) approveInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if status != "draft" {
-		writeErr(w, http.StatusConflict, "این فاکتور قبلاً از حالتِ پیش‌نویس خارج شده")
+		writeErr(w, http.StatusConflict, "این فاکتور قبلا از حالت پیش‌نویس خارج شده")
 		return
 	}
 
-	// سالِ شمسی بر مبنایِ تاریخِ صدور (یا امروز اگر خالی)
+	// سال شمسی بر مبنای تاریخ صدور (یا امروز اگر خالی)
 	var jy int
 	if _, t := parseIssueDate(issueDate); !t.IsZero() {
 		jy = jalaliYearOf(t)
@@ -627,7 +627,7 @@ func (s *server) approveInvoice(w http.ResponseWriter, r *http.Request) {
 	if err := tx.QueryRow(
 		"SELECT COALESCE(MAX(seq_no),0)+1 FROM inv_invoices WHERE seq_year = ? FOR UPDATE", jy).
 		Scan(&nextNo); err != nil {
-		writeErr(w, http.StatusInternalServerError, "تعیینِ شماره‌ی فاکتور ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "تعیین شماره‌ی فاکتور ناموفق بود")
 		return
 	}
 
@@ -640,16 +640,16 @@ func (s *server) approveInvoice(w http.ResponseWriter, r *http.Request) {
 		SET status = 'approved', seq_year = ?, seq_no = ?, number = ?, approved_by = ?, approved_at = NOW()
 		WHERE id = ?`, jy, nextNo, number, u.ID, id); err != nil {
 		if strings.Contains(err.Error(), "1062") {
-			writeErr(w, http.StatusConflict, "تداخلِ شماره‌ی فاکتور — دوباره تلاش کنید")
+			writeErr(w, http.StatusConflict, "تداخل شماره‌ی فاکتور — دوباره تلاش کنید")
 			return
 		}
 		writeErr(w, http.StatusInternalServerError, "تأیید ناموفق بود")
 		return
 	}
 
-	// کسرِ موجودی فقط برای «فاکتورِ رسمی». پیش‌فاکتور فقط رزرو می‌کند (که در
-	// listProducts محاسبه می‌شود) و با تأیید هم موجودیِ فیزیکی را کم نمی‌کند.
-	// کمبودِ موجودی هرگز بلاک نمی‌کند.
+	// کسر موجودی فقط برای «فاکتور رسمی». پیش‌فاکتور فقط رزرو می‌کند (که در
+	// listProducts محاسبه می‌شود) و با تأیید هم موجودی فیزیکی را کم نمی‌کند.
+	// کمبود موجودی هرگز بلاک نمی‌کند.
 	if docType == "official" {
 		rows, err := tx.Query(
 			"SELECT product_id, qty FROM inv_invoice_items WHERE invoice_id = ? AND product_id IS NOT NULL", id)
@@ -674,7 +674,7 @@ func (s *server) approveInvoice(w http.ResponseWriter, r *http.Request) {
 		rows.Close()
 		for _, m := range moves {
 			if err := addStock(tx, m.pid, s.officialWarehouseID, -m.qty, "invoice", "invoice", id, u.ID); err != nil {
-				writeErr(w, http.StatusInternalServerError, "ثبتِ حرکتِ انبار ناموفق بود")
+				writeErr(w, http.StatusInternalServerError, "ثبت حرکت انبار ناموفق بود")
 				return
 			}
 		}
@@ -710,12 +710,12 @@ func (s *server) cancelInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if status == "cancelled" {
-		writeErr(w, http.StatusConflict, "این فاکتور قبلاً باطل شده")
+		writeErr(w, http.StatusConflict, "این فاکتور قبلا باطل شده")
 		return
 	}
 
 	if status == "approved" {
-		// برگرداندنِ موجودی: عکسِ همه‌ی حرکت‌هایِ این فاکتور.
+		// برگرداندن موجودی: عکس همه‌ی حرکت‌های این فاکتور.
 		rows, err := tx.Query(
 			"SELECT product_id, warehouse_id, qty FROM inv_stock_moves WHERE ref_type = 'invoice' AND ref_id = ?", id)
 		if err != nil {
@@ -739,7 +739,7 @@ func (s *server) cancelInvoice(w http.ResponseWriter, r *http.Request) {
 		rows.Close()
 		for _, m := range rev {
 			if err := addStock(tx, m.pid, m.wh, -m.qty, "return", "invoice", id, u.ID); err != nil {
-				writeErr(w, http.StatusInternalServerError, "برگرداندنِ موجودی ناموفق بود")
+				writeErr(w, http.StatusInternalServerError, "برگرداندن موجودی ناموفق بود")
 				return
 			}
 		}
@@ -779,7 +779,7 @@ func (s *server) deleteInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if status != "draft" {
-		writeErr(w, http.StatusConflict, "فقط فاکتورِ پیش‌نویس حذف می‌شود؛ فاکتورِ تأییدشده را «باطل» کنید")
+		writeErr(w, http.StatusConflict, "فقط فاکتور پیش‌نویس حذف می‌شود؛ فاکتور تأییدشده را «باطل» کنید")
 		return
 	}
 	if _, err := tx.Exec("DELETE FROM inv_invoice_items WHERE invoice_id = ?", id); err != nil {
@@ -798,8 +798,8 @@ func (s *server) deleteInvoice(w http.ResponseWriter, r *http.Request) {
 }
 
 // POST /crm/api/inv/invoices/{id}/to-official
-// از یک پیش‌فاکتور، یک فاکتورِ رسمیِ «پیش‌نویسِ» تازه می‌سازد (با همان مشتری و
-// ردیف‌ها، به‌صورتِ اسنپ‌شات). پیش‌فاکتورِ مبدأ با converted_to_id به فاکتورِ
+// از یک پیش‌فاکتور، یک فاکتور رسمی «پیش‌نویس» تازه می‌سازد (با همان مشتری و
+// ردیف‌ها، به‌صورت اسنپ‌شات). پیش‌فاکتور مبدأ با converted_to_id به فاکتور
 // تازه پیوند می‌خورد و دیگر موجودی رزرو نمی‌کند.
 func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 	id := idParam(r)
@@ -836,11 +836,11 @@ func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if status == "cancelled" {
-		writeErr(w, http.StatusConflict, "پیش‌فاکتورِ باطل قابلِ تبدیل نیست")
+		writeErr(w, http.StatusConflict, "پیش‌فاکتور باطل قابل تبدیل نیست")
 		return
 	}
 	if convertedTo.Valid {
-		writeErr(w, http.StatusConflict, "این پیش‌فاکتور قبلاً به فاکتور رسمی تبدیل شده")
+		writeErr(w, http.StatusConflict, "این پیش‌فاکتور قبلا به فاکتور رسمی تبدیل شده")
 		return
 	}
 	if msg := s.officialCustomerErr(customerID, "official"); msg != "" {
@@ -870,7 +870,7 @@ func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 		u.OrgID, customerID, partnerVal, warehouseID, nullIfEmpty(issueDate),
 		normalizePaymentType(paymentType), subtotal, discount, tax, total, newNote, u.ID)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "ساختِ فاکتورِ رسمی ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "ساخت فاکتور رسمی ناموفق بود")
 		return
 	}
 	newID, _ := res.LastInsertId()
@@ -880,12 +880,12 @@ func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 		  (invoice_id, product_id, title, qty, unit_price, discount, is_tax_exempt, tax_rate, tax_amount, line_total, sort_order)
 		SELECT ?, product_id, title, qty, unit_price, discount, is_tax_exempt, tax_rate, tax_amount, line_total, sort_order
 		FROM inv_invoice_items WHERE invoice_id = ?`, newID, id); err != nil {
-		writeErr(w, http.StatusInternalServerError, "کپیِ ردیف‌ها ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "کپی ردیف‌ها ناموفق بود")
 		return
 	}
 
 	if _, err := tx.Exec("UPDATE inv_invoices SET converted_to_id = ? WHERE id = ?", newID, id); err != nil {
-		writeErr(w, http.StatusInternalServerError, "پیوندِ پیش‌فاکتور ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "پیوند پیش‌فاکتور ناموفق بود")
 		return
 	}
 
@@ -915,14 +915,14 @@ func keepFilledItems(items []invoiceItemIn) []invoiceItemIn {
 	return out
 }
 
-// resolveCustomer شناسه‌ی مشتریِ فاکتور را برمی‌گرداند.
-//   - اگر customerID داده شده و نامِ تایپ‌شده خالی یا برابرِ نامِ فعلیِ همان
-//     مشتری باشد → همان customerID (بدونِ ساختِ رکوردِ تازه).
-//   - در غیرِ این صورت (نامِ تازه، یا مشتریِ ناموجود) → یک مشتریِ «حقیقی» نو
-//     با همان نام ساخته می‌شود؛ عمداً بدونِ حذفِ تکراری و بدونِ اجبارِ
-//     کامل‌بودنِ اطلاعات (شناسه‌ی ملی/تلفن/آدرس بعداً در صفحه‌ی مشتریان).
+// resolveCustomer شناسه‌ی مشتری فاکتور را برمی‌گرداند.
+//   - اگر customerID داده شده و نام تایپ‌شده خالی یا برابر نام فعلی همان
+//     مشتری باشد → همان customerID (بدون ساخت رکورد تازه).
+//   - در غیر این صورت (نام تازه، یا مشتری ناموجود) → یک مشتری «حقیقی» نو
+//     با همان نام ساخته می‌شود؛ عمدا بدون حذف تکراری و بدون اجبار
+//     کامل‌بودن اطلاعات (شناسه‌ی ملی/تلفن/آدرس بعدا در صفحه‌ی مشتریان).
 //
-// بولِ دوم یعنی «همین حالا ساخته شد».
+// بول دوم یعنی «همین حالا ساخته شد».
 func resolveCustomer(tx *sql.Tx, orgID, userID, customerID int64, customerName string) (int64, bool, error) {
 	name := strings.TrimSpace(customerName)
 	if customerID > 0 {
@@ -933,13 +933,13 @@ func resolveCustomer(tx *sql.Tx, orgID, userID, customerID int64, customerName s
 			if name == "" || strings.TrimSpace(cur) == name {
 				return customerID, false, nil
 			}
-			// نام عوض شده → پایین یک مشتریِ تازه می‌سازیم
+			// نام عوض شده → پایین یک مشتری تازه می‌سازیم
 		} else if err != sql.ErrNoRows {
 			return 0, false, err
 		}
 	}
 	if name == "" {
-		return 0, false, fmt.Errorf("نامِ مشتری خالی است")
+		return 0, false, fmt.Errorf("نام مشتری خالی است")
 	}
 	res, err := tx.Exec(
 		"INSERT INTO crm_customers (organization_id, type, name, created_by) VALUES (?, 'individual', ?, ?)",
@@ -966,8 +966,8 @@ func insertItems(tx *sql.Tx, orgID, userID, invID int64, lines []computedLine) e
 		if ln.in.ProductID != nil && *ln.in.ProductID != 0 {
 			pid = *ln.in.ProductID
 		} else if title != "" {
-			// قلمِ متنیِ آزاد → یک کالای تازه در کاتالوگ ثبت کن و همین ردیف را
-			// به آن گره بزن (بدونِ حذفِ تکراری).
+			// قلم متنی آزاد → یک کالای تازه در کاتالوگ ثبت کن و همین ردیف را
+			// به آن گره بزن (بدون حذف تکراری).
 			pr, e := tx.Exec(
 				"INSERT INTO inv_products (organization_id, name, unit_price, is_tax_exempt, created_by) VALUES (?, ?, ?, ?, ?)",
 				orgID, title, ln.in.UnitPrice, ln.in.IsTaxExempt, userID)

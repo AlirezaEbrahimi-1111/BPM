@@ -38,7 +38,7 @@ try {
             $has_permission = true;
         }
 
-        // 🔒 خط قرمز: آیا مسئولِ همان سازمان است؟ (نه سازمان دیگر)
+        // 🔒 خط قرمز: آیا مسئول همان سازمان است؟ (نه سازمان دیگر)
         if (
             $target && $current_user['is_supervisor']
             && (int)$target['organization_id'] === (int)$current_user['organization_id']

@@ -333,7 +333,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             gap: 8px;
         }
 
-        /* حالتِ مشاهده: عناصرِ ویرایش/جابه‌جایی پنهان شوند */
+        /* حالت مشاهده: عناصر ویرایش/جابه‌جایی پنهان شوند */
         #templateModal.view-mode .btn-remove-step,
         #templateModal.view-mode .drag-hint,
         #templateModal.view-mode .btn-add-step,
@@ -350,15 +350,15 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             opacity: .85;
         }
 
-        /* فاز ۴: پنلِ انشعابِ فاز ۳ به‌عنوانِ لایهٔ دادهٔ مخفی نگه داشته می‌شود؛
-           ویرایشِ دیداری روی بومِ Drawflow انجام می‌شود */
+        /* فاز ۴: پنل انشعاب فاز ۳ به‌عنوان لایهٔ دادهٔ مخفی نگه داشته می‌شود؛
+           ویرایش دیداری روی بوم Drawflow انجام می‌شود */
         .sr-decision-toggle,
         .step-decision-body,
         #execPreview {
             display: none !important;
         }
 
-        /* ─── انشعابِ شرطیِ مرحله (فاز ۳) ─── */
+        /* ─── انشعاب شرطی مرحله (فاز ۳) ─── */
         .sr-decision-toggle {
             background: none;
             border: 1px solid var(--border);
@@ -420,7 +420,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             opacity: .85;
         }
 
-        /* ─── بومِ مسیر و انشعاب (فاز ۴ — Drawflow) ─── */
+        /* ─── بوم مسیر و انشعاب (فاز ۴ — Drawflow) ─── */
         .wf-canvas-wrap {
             margin-top: 14px;
             border: 1px solid var(--border);
@@ -485,7 +485,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             padding: 1px 0;
         }
 
-        /* تمام‌صفحه برای بومِ انشعاب */
+        /* تمام‌صفحه برای بوم انشعاب */
         .wf-canvas-wrap.wf-canvas-fs {
             position: fixed;
             inset: 0;
@@ -551,7 +551,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             text-align: left;
         }
 
-        /* فاز ۴: پنلِ فاز ۳ + چک‌باکسِ «به ایجادکننده» مخفی (ادیتور روی بوم است) */
+        /* فاز ۴: پنل فاز ۳ + چک‌باکس «به ایجادکننده» مخفی (ادیتور روی بوم است) */
         .sr-creator-check {
             display: none !important;
         }
@@ -571,7 +571,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             background: #8e57fe;
         }
 
-        /* دایره‌های خروجیِ یک «نقطهٔ تصمیم»: بالا سبز (تأیید)، پایین قرمز (رد) */
+        /* دایره‌های خروجی یک «نقطهٔ تصمیم»: بالا سبز (تأیید)، پایین قرمز (رد) */
         #wfCanvas .drawflow-node.wf-decision .outputs .output_1 {
             background: #16a34a;
         }
@@ -826,7 +826,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             margin-top: 10px;
         }
 
-        /* ─── چیدمانِ یک‌خطیِ هر مرحله ─── */
+        /* ─── چیدمان یک‌خطی هر مرحله ─── */
         .step-item.step-row {
             display: flex;
             flex-wrap: wrap;
@@ -877,7 +877,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             flex: 0 0 auto;
         }
 
-        /* جمع‌وجور کردنِ پیکر مسئول در ردیف */
+        /* جمع‌وجور کردن پیکر مسئول در ردیف */
         .step-row .sr-assignee .form-control,
         .step-row .sr-assignee input {
             font-size: 0.8rem;
@@ -885,7 +885,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             padding-right: 30px !important;
         }
 
-        /* ── چک‌لیستِ مرحله ── */
+        /* ── چک‌لیست مرحله ── */
         .sr-checklist-toggle {
             flex: 0 0 auto;
             display: inline-flex;
@@ -915,7 +915,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             border-top: 1px dashed var(--border);
         }
 
-        /* آیتم‌های چک‌لیست — کپی از الگوی create-task.php برای یکدستیِ ظاهری */
+        /* آیتم‌های چک‌لیست — کپی از الگوی create-task.php برای یکدستی ظاهری */
         .cl-item-wrap { margin-bottom: 8px; }
         .cl-item {
             display: flex;
@@ -1246,7 +1246,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
 
                         <div id="execPreview" class="exec-preview"></div>
 
-                        <!-- بومِ مسیر و انشعاب (فاز ۴) -->
+                        <!-- بوم مسیر و انشعاب (فاز ۴) -->
                         <div class="wf-canvas-wrap" id="wfCanvasWrap">
                             <div class="wf-canvas-toolbar">
                                 <b><i class="bi bi-diagram-2"></i>مسیردهی روتین</b>
@@ -1498,7 +1498,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                     addStep();
                 }
 
-                // فقط‌خواندنی کردن کلِ فرم + پنهان‌کردن دکمهٔ ذخیره
+                // فقط‌خواندنی کردن کل فرم + پنهان‌کردن دکمهٔ ذخیره
                 setTemplateModalReadonly(true);
 
                 new bootstrap.Modal(document.getElementById('templateModal')).show();
@@ -1508,14 +1508,14 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             }
         }
 
-        // فعال/غیرفعال‌کردنِ حالتِ فقط‌خواندنیِ مودال
+        // فعال/غیرفعال‌کردن حالت فقط‌خواندنی مودال
         function setTemplateModalReadonly(readonly) {
             const modal = document.getElementById('templateModal');
 
-            // کلاسِ view-mode برای کنترلِ نمایش با CSS (حذف مرحله، جابه‌جایی، افزودن مرحله، ذخیره)
+            // کلاس view-mode برای کنترل نمایش با CSS (حذف مرحله، جابه‌جایی، افزودن مرحله، ذخیره)
             modal.classList.toggle('view-mode', !!readonly);
 
-            // ورودی‌ها و دکمه‌های داخلِ فرم را غیرفعال کن
+            // ورودی‌ها و دکمه‌های داخل فرم را غیرفعال کن
             modal.querySelectorAll('input, select, textarea, button').forEach(el => {
                 if (el.classList.contains('btn-close') ||
                     el.classList.contains('btn-cancel') ||
@@ -1523,7 +1523,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 el.disabled = readonly;
             });
 
-            // غیرفعال‌کردنِ کشیدن (drag) روی مراحل در حالت مشاهده
+            // غیرفعال‌کردن کشیدن (drag) روی مراحل در حالت مشاهده
             modal.querySelectorAll('.step-item').forEach(el => {
                 if (readonly) el.removeAttribute('draggable');
                 else el.setAttribute('draggable', 'true');
@@ -1573,7 +1573,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             }
         }
         // ─── بازتعریف (ساخت نسخهٔ جدید از روی قالب) ──────────
-        let redefineSourceId = null; // آیدیِ قالبِ مبدأ برای غیرفعال‌سازی پس از ذخیره
+        let redefineSourceId = null; // آیدی قالب مبدأ برای غیرفعال‌سازی پس از ذخیره
 
         async function redefineTemplate(templateId) {
             try {
@@ -1594,12 +1594,12 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 setTemplateModalReadonly(false);
 
                 document.getElementById('modalTitle').innerHTML = '<i class="bi bi-arrow-repeat"></i> بازتعریف کار روتین';
-                document.getElementById('templateId').value = ''; // خالی → ساختِ نسخهٔ جدید
+                document.getElementById('templateId').value = ''; // خالی → ساخت نسخهٔ جدید
                 document.getElementById('templateName').value = (t.name || '') + ' (نسخهٔ جدید)';
                 document.getElementById('templateDescription').value = t.description || '';
                 document.getElementById('templateActive').checked = true;
 
-                // تیکِ «قالب قبلی غیرفعال شود» را نمایش بده و پیش‌فرض خاموش
+                // تیک «قالب قبلی غیرفعال شود» را نمایش بده و پیش‌فرض خاموش
                 const wrap = document.getElementById('deactivateOldWrap');
                 if (wrap) wrap.style.display = 'block';
                 const chk = document.getElementById('deactivateOldChk');
@@ -1743,7 +1743,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
 
             document.getElementById('stepsList').insertAdjacentHTML('beforeend', html);
 
-            // 🆕 چک‌لیستِ این مرحله (عنوان + توضیحات، هر دو اختیاری در ورودی اما عنوان الزامی برای ثبت)
+            // 🆕 چک‌لیست این مرحله (عنوان + توضیحات، هر دو اختیاری در ورودی اما عنوان الزامی برای ثبت)
             stepChecklists[stepId] = (stepData && Array.isArray(stepData.checklist_items)) ?
                 stepData.checklist_items.map(it => ({
                     tempId: Date.now() + Math.random(),
@@ -1768,7 +1768,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 if (cb) toggleCreatorMode(stepId, cb);
             }
 
-            // 🆕 فاز ۳: تنظیماتِ انشعاب (اگر از قبل داشت) — روی المان ذخیره می‌شود و
+            // 🆕 فاز ۳: تنظیمات انشعاب (اگر از قبل داشت) — روی المان ذخیره می‌شود و
             // در refreshDecisionTargets() اعمال می‌شود (چون گزینه‌های select هنوز ساخته نشده‌اند)
             const stepEl = document.querySelector(`.step-item[data-step-id="${stepId}"]`);
             if (stepEl && stepData && Number(stepData.is_decision) === 1) {
@@ -1786,12 +1786,12 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             updateStepNumbers();   // ← refreshDecisionTargets() هم از این‌جا صدا زده می‌شود
             initDragAndDrop();
 
-            // فاز ۴: افزودنِ تعاملیِ یک مرحله → بومِ Drawflow را همگام کن
-            // (حالتِ bulk/restore با رویدادِ shown.bs.modal همگام می‌شود)
+            // فاز ۴: افزودن تعاملی یک مرحله → بوم Drawflow را همگام کن
+            // (حالت bulk/restore با رویداد shown.bs.modal همگام می‌شود)
             if (!stepData && typeof wfSyncFromForm === 'function') wfSyncFromForm();
         }
 
-        // ─── انشعابِ شرطیِ مرحله (فاز ۳) ─────────────────────────────
+        // ─── انشعاب شرطی مرحله (فاز ۳) ─────────────────────────────
         function toggleStepDecision(stepId) {
             const body = document.getElementById('dec-body-' + stepId);
             if (!body) return;
@@ -1831,7 +1831,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             if (lbl) lbl.textContent = on.checked ? 'انشعاب فعال' : 'انشعاب';
         }
 
-        // گزینه‌های dropdownِ همهٔ مراحلِ تصمیم را از ترتیبِ فعلیِ مراحل بازمی‌سازد
+        // گزینه‌های dropdown همهٔ مراحل تصمیم را از ترتیب فعلی مراحل بازمی‌سازد
         function refreshDecisionTargets() {
             const items = [...document.querySelectorAll('.step-item')];
             const opts = items.map((el, i) => {
@@ -1846,7 +1846,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 const rejectSel = document.getElementById('dec-reject-' + stepId);
                 if (!approveSel || !rejectSel) return;
 
-                // اعمالِ pending (فقط یک‌بار، بعد از ساختِ گزینه‌ها)
+                // اعمال pending (فقط یک‌بار، بعد از ساخت گزینه‌ها)
                 const pending = el._pendingBranch;
 
                 const prevApprove = pending ? String(pending.on_approve_step_order ?? '') : approveSel.value;
@@ -1857,7 +1857,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 const buildOptions = (includeDefault) => {
                     let h = includeDefault ? '<option value="">مرحلهٔ بعدی (پیش‌فرض)</option>' : '<option value="">— انتخاب مرحله —</option>';
                     opts.forEach(o => {
-                        if (o.pos === selfPos) return; // خودِ مرحله را نگذار
+                        if (o.pos === selfPos) return; // خود مرحله را نگذار
                         h += `<option value="${o.pos}">${toFa(o.pos)} - ${escHtml(o.name)}</option>`;
                     });
                     return h;
@@ -1877,14 +1877,14 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           فاز ۴ — بومِ تعاملیِ «مسیر و انشعاب» با Drawflow.
-           مدلِ داده همان عناصرِ مخفیِ فاز ۳ است (dec-on/dec-approve/dec-rkind/
-           dec-reject در هر ردیفِ مرحله). بوم آن‌ها را می‌خواند و می‌نویسد؛
+           فاز ۴ — بوم تعاملی «مسیر و انشعاب» با Drawflow.
+           مدل داده همان عناصر مخفی فاز ۳ است (dec-on/dec-approve/dec-rkind/
+           dec-reject در هر ردیف مرحله). بوم آن‌ها را می‌خواند و می‌نویسد؛
            saveTemplate بدون تغییر می‌ماند.
-           ─ گرهِ مرحله: ورودی ۱، خروجی ۱ (یا ۲ اگر «نقطهٔ تصمیم» تیک باشد:
+           ─ گره مرحله: ورودی ۱، خروجی ۱ (یا ۲ اگر «نقطهٔ تصمیم» تیک باشد:
              output_1 = تأیید/بعدی، output_2 = رد).
-           ─ گرهِ ثابتِ «شروع» و «تعریف‌کننده».
-           ─ جای عمودیِ گره‌ها → ترتیبِ اجرا (step_order).
+           ─ گره ثابت «شروع» و «تعریف‌کننده».
+           ─ جای عمودی گره‌ها → ترتیب اجرا (step_order).
            ═══════════════════════════════════════════════════════════════ */
         let wfEditor = null;
         let wfStartId = null, wfCreatorId = null;
@@ -1893,7 +1893,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
         let wfNodeIdByStepId = {};    // stepId → drawflow node id
         let wfPatchTimers = {};
 
-        // برچسبِ مسئولِ یک مرحله برای نمایش در گوشهٔ گره
+        // برچسب مسئول یک مرحله برای نمایش در گوشهٔ گره
         function wfStepAssigneeLabel(stepId) {
             const row = document.querySelector(`.step-item[data-step-id="${stepId}"]`);
             if (!row) return '—';
@@ -1917,7 +1917,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             return '—';
         }
 
-        // به‌روزرسانیِ درجایِ نام/مسئولِ یک گره (بدونِ بازسازیِ کلِ بوم)
+        // به‌روزرسانی درجای نام/مسئول یک گره (بدون بازسازی کل بوم)
         function wfPatchNode(stepId) {
             const nid = wfNodeIdByStepId[stepId];
             if (!nid) return;
@@ -1943,7 +1943,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             const el = document.getElementById('wfCanvas');
             if (!el || typeof Drawflow === 'undefined' || wfEditor) return;
             wfEditor = new Drawflow(el);
-            wfEditor.reroute = true;             // دوبار کلیک روی خط → افزودنِ نقطهٔ خم
+            wfEditor.reroute = true;             // دوبار کلیک روی خط → افزودن نقطهٔ خم
             wfEditor.reroute_fix_curvature = true;
             wfEditor.force_first_input = false;
             wfEditor.start();
@@ -1952,7 +1952,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             wfEditor.on('connectionRemoved', () => { if (!wfSyncing) wfScheduleCanvasToForm(); });
             wfEditor.on('nodeMoved', () => { if (!wfSyncing) wfScheduleCanvasToForm(); });
 
-            // تیکِ «نقطهٔ تصمیم» داخلِ گره‌ها (delegation)
+            // تیک «نقطهٔ تصمیم» داخل گره‌ها (delegation)
             el.addEventListener('change', function (e) {
                 if (wfSyncing || !e.target.classList.contains('wf-dec-chk')) return;
                 const nodeEl = e.target.closest('.drawflow-node');
@@ -1962,7 +1962,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 wfScheduleCanvasToForm();
             });
 
-            // کلیک راست روی یک خط → حذفِ آن خط
+            // کلیک راست روی یک خط → حذف آن خط
             el.addEventListener('contextmenu', function (e) {
                 const conn = e.target.closest('.connection');
                 if (!conn) return;
@@ -1976,12 +1976,12 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 }
             });
 
-            // Escape → فقط خروج از تمام‌صفحه‌یِ نمودار، نه بستنِ کلِ مودالِ
-            // «تعریفِ روتینِ جدید» (که #templateModal یه مودالِ Bootstrapه و
-            // خودِ Bootstrap هم یه listenerِ Escape داره که با هر Escape کلِ
-            // مودال رو می‌بنده و اطلاعاتِ واردشده رو می‌پرونه). این‌جا با
-            // capture:true زودتر از listenerِ Bootstrap اجرا می‌شه و با
-            // stopPropagation جلویِ رسیدنِ رویداد به اون رو می‌گیره — پس
+            // Escape → فقط خروج از تمام‌صفحه‌ی نمودار، نه بستن کل مودال
+            // «تعریف روتین جدید» (که #templateModal یه مودال Bootstrapه و
+            // خود Bootstrap هم یه listener Escape داره که با هر Escape کل
+            // مودال رو می‌بنده و اطلاعات واردشده رو می‌پرونه). این‌جا با
+            // capture:true زودتر از listener Bootstrap اجرا می‌شه و با
+            // stopPropagation جلوی رسیدن رویداد به اون رو می‌گیره — پس
             // Escape وقتی نمودار تمام‌صفحه‌ست، فقط از تمام‌صفحه خارج می‌کنه.
             document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape' && document.getElementById('wfCanvasWrap')?.classList.contains('wf-canvas-fs')) {
@@ -1991,15 +1991,15 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 }
             }, true);
 
-            // 🆕 زوم با چرخِ وسطِ موس — خودِ Drawflow از قبل فقط با
-            // Ctrl+چرخ زوم می‌کنه (zoom_enter داخلِ کتابخونه)؛ این‌جا حالتِ
-            // بدونِ Ctrl رو هم اضافه می‌کنیم تا اسکرولِ سادهٔ چرخِ موس هم
-            // زوم/بک‌زوم کنه، هم توی حالتِ عادی هم تمام‌صفحه (چون این
-            // لیسنر رویِ خودِ #wfCanvas هست، نه رویِ wrapperِ تمام‌صفحه).
+            // 🆕 زوم با چرخ وسط موس — خود Drawflow از قبل فقط با
+            // Ctrl+چرخ زوم می‌کنه (zoom_enter داخل کتابخونه)؛ این‌جا حالت
+            // بدون Ctrl رو هم اضافه می‌کنیم تا اسکرول سادهٔ چرخ موس هم
+            // زوم/بک‌زوم کنه، هم توی حالت عادی هم تمام‌صفحه (چون این
+            // لیسنر روی خود #wfCanvas هست، نه روی wrapper تمام‌صفحه).
             // passive:false لازمه وگرنه مرورگر e.preventDefault() رو
             // نادیده می‌گیره و صفحه هم اسکرول می‌کنه.
             el.addEventListener('wheel', function (e) {
-                if (e.ctrlKey || !wfEditor) return; // حالتِ Ctrl رو خودِ Drawflow هندل می‌کنه
+                if (e.ctrlKey || !wfEditor) return; // حالت Ctrl رو خود Drawflow هندل می‌کنه
                 e.preventDefault();
                 if (e.deltaY > 0) wfEditor.zoom_out(); else wfEditor.zoom_in();
             }, { passive: false });
@@ -2026,7 +2026,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             </div>`;
         }
 
-        // فهرستِ مراحلِ فرم به‌ترتیبِ فعلی
+        // فهرست مراحل فرم به‌ترتیب فعلی
         function wfFormSteps() {
             return [...document.querySelectorAll('.step-item')].map((el, i) => {
                 const stepId = el.dataset.stepId;
@@ -2044,7 +2044,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             });
         }
 
-        // توضیحِ متنیِ چگونگیِ اجرای روتین — از شروع تا پایان. با هر تغییری به‌روز می‌شود.
+        // توضیح متنی چگونگی اجرای روتین — از شروع تا پایان. با هر تغییری به‌روز می‌شود.
         function wfBuildNarrative() {
             const box = document.getElementById('wfNarrative');
             if (!box) return;
@@ -2086,7 +2086,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             box.innerHTML = lines.map((l, i) => `<div><b>${toFa(i + 1)}.</b> ${escHtml(l)}</div>`).join('');
         }
 
-        // بازسازیِ کاملِ بوم از روی فهرستِ مراحل
+        // بازسازی کامل بوم از روی فهرست مراحل
         function wfSyncFromForm() {
             wfInit();
             if (!wfEditor) return;
@@ -2163,7 +2163,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             wfCanvasToFormTimer = setTimeout(wfCanvasToForm, 200);
         }
 
-        // نوشتنِ وضعیتِ بوم به عناصرِ مخفیِ فرم + بازچینشِ ردیف‌ها بر اساسِ جای عمودی
+        // نوشتن وضعیت بوم به عناصر مخفی فرم + بازچینش ردیف‌ها بر اساس جای عمودی
         function wfCanvasToForm() {
             if (!wfEditor) return;
             let data;
@@ -2176,7 +2176,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             const orderByNodeId = {};
             nodes.forEach((n, i) => { orderByNodeId[n.id] = i + 1; });
 
-            // بازچینشِ DOMِ فهرستِ مراحل
+            // بازچینش DOM فهرست مراحل
             const list = document.getElementById('stepsList');
             nodes.forEach(n => {
                 const row = document.querySelector(`.step-item[data-step-id="${n.data.stepId}"]`);
@@ -2184,7 +2184,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             });
             updateStepNumbers(); // شماره‌ها + refreshDecisionTargets
 
-            // انشعابِ هر مرحله از روی یال‌ها
+            // انشعاب هر مرحله از روی یال‌ها
             nodes.forEach(n => {
                 const stepId = n.data.stepId;
                 const decOn = document.getElementById('dec-on-' + stepId);
@@ -2244,7 +2244,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             if (typeof wfSyncFromForm === 'function') wfSyncFromForm();
         }
 
-        // ─── چک‌لیستِ مرحله ────────────────────────────────
+        // ─── چک‌لیست مرحله ────────────────────────────────
         function toggleStepChecklist(stepId) {
             const body = document.getElementById('scl-body-' + stepId);
             if (!body) return;
@@ -2366,7 +2366,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             if (typeof wfBuildNarrative === 'function') wfBuildNarrative();
         }
 
-        // ── انتخاب حالتِ یک مرحله ──
+        // ── انتخاب حالت یک مرحله ──
         function setStepMode(btn, mode) {
             const wrap = btn.closest('.step-mode-toggle');
             wrap.dataset.mode = mode;
@@ -2382,7 +2382,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             updateExecPreview();
         }
 
-        // ── ست‌کردنِ همهٔ مراحل با یک کلیک ──
+        // ── ست‌کردن همهٔ مراحل با یک کلیک ──
         function setAllModes(mode) {
             document.querySelectorAll('.step-mode-toggle').forEach(wrap => {
                 wrap.dataset.mode = mode;
@@ -2392,7 +2392,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             updateExecPreview();
         }
 
-        // ── پیش‌نمایشِ زنده ──
+        // ── پیش‌نمایش زنده ──
         function updateExecPreview() {
             const box = document.getElementById('execPreview');
             if (!box) return;
@@ -2467,7 +2467,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 return;
             }
 
-            // فاز ۴: آخرین وضعیتِ بوم را (بدون منتظرِ debounce) در فرم بنویس
+            // فاز ۴: آخرین وضعیت بوم را (بدون منتظر debounce) در فرم بنویس
             clearTimeout(wfCanvasToFormTimer);
             if (typeof wfCanvasToForm === 'function' && wfEditor) wfCanvasToForm();
 
@@ -2487,7 +2487,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
 
                 const sMode = item.querySelector('.step-mode-toggle')?.dataset.mode === 'parallel' ? 'parallel' : 'cascade';
 
-                // 🆕 چک‌لیستِ این مرحله — فقط آیتم‌هایی که عنوان دارند
+                // 🆕 چک‌لیست این مرحله — فقط آیتم‌هایی که عنوان دارند
                 const stepChecklistItems = (stepChecklists[stepId] || [])
                     .filter(it => it.title && it.title.trim())
                     .map(it => ({
@@ -2495,7 +2495,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                         description: (it.description || '').trim()
                     }));
 
-                // 🆕 فاز ۳: تنظیماتِ انشعابِ شرطی (فقط برای آبشاری)
+                // 🆕 فاز ۳: تنظیمات انشعاب شرطی (فقط برای آبشاری)
                 const decOn = document.getElementById('dec-on-' + stepId);
                 const branch = { is_decision: 0, on_approve_step_order: null, on_reject_mode: null, on_reject_step_order: null };
                 if (sMode === 'cascade' && decOn && decOn.checked) {
@@ -2590,7 +2590,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 const data = await res.json();
 
                 if (data.success) {
-                    // اگر بازتعریف بود و تیکِ غیرفعال‌سازیِ قالب قبلی زده شده بود
+                    // اگر بازتعریف بود و تیک غیرفعال‌سازی قالب قبلی زده شده بود
                     const deact = document.getElementById('deactivateOldChk');
                     if (redefineSourceId && deact && deact.checked) {
                         try {
@@ -2655,7 +2655,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
 
         // ─── Toast ────────────────────────────────────────
         // showToast از assets/js/alert.js (لودشده در header.php) استفاده می‌شود —
-        // قبلاً اینجا یک نسخهٔ محلیِ جداگانه بازتعریف می‌شد که آن را می‌پوشاند
+        // قبلا اینجا یک نسخهٔ محلی جداگانه بازتعریف می‌شد که آن را می‌پوشاند
 
         // ─── Utils ────────────────────────────────────────
         function escHtml(str) {
@@ -2666,7 +2666,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             return String(str || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
-        // ─── بارگذاریِ مستقلِ کاربران و واحدها برای Pickerِ مسئولِ هر مرحله ───
+        // ─── بارگذاری مستقل کاربران و واحدها برای Picker مسئول هر مرحله ───
         let wfUsers = [];
         let wfSections = [];
         let wfSectionMap = {};
@@ -2710,7 +2710,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             await loadSectionMap(); // در init صفحه
             await loadUsersAndSectionsForPicker();
 
-            // فاز ۴: هر بار مودالِ قالب کامل نمایش داده شد، بومِ مسیر را از فهرستِ مراحل بساز
+            // فاز ۴: هر بار مودال قالب کامل نمایش داده شد، بوم مسیر را از فهرست مراحل بساز
             const tm = document.getElementById('templateModal');
             if (tm) tm.addEventListener('shown.bs.modal', function () {
                 setTimeout(function () { if (typeof wfSyncFromForm === 'function') wfSyncFromForm(); }, 60);

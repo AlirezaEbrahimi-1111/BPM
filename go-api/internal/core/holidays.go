@@ -5,15 +5,15 @@ import (
 	"time"
 )
 
-// HolidaySet — پورتِ getHolidaySet() در includes/working-days-helper.php.
-// orgID == nil یعنی همون‌چیزی که فراخوانیِ PHP بدونِ آرگومان می‌داد: چون
+// HolidaySet — پورت getHolidaySet() در includes/working-days-helper.php.
+// orgID == nil یعنی همون‌چیزی که فراخوانی PHP بدون آرگومان می‌داد: چون
 // PHP وقتی $organizationId=null باشه، `organization_id = :org_id` با
-// NULL هرگز true نمی‌شه، در عمل فقط ردیف‌هایِ globalِ `organization_id
-// IS NULL` برمی‌گردن. اینجا هم با orgID=nil همون رفتار عیناً تکرار می‌شه.
+// NULL هرگز true نمی‌شه، در عمل فقط ردیف‌های global `organization_id
+// IS NULL` برمی‌گردن. اینجا هم با orgID=nil همون رفتار عینا تکرار می‌شه.
 //
-// برخلافِ نسخهٔ PHP (که با static cache در طولِ یک اجرای اسکریپت کش
-// می‌شود)، اینجا کش نمی‌شود: go-api یک فرآیندِ درازمدت است، پس یک کشِ
-// سطحِ پکیج می‌توانست بعد از تغییرِ جدولِ holidays بیات بماند.
+// برخلاف نسخهٔ PHP (که با static cache در طول یک اجرای اسکریپت کش
+// می‌شود)، اینجا کش نمی‌شود: go-api یک فرآیند درازمدت است، پس یک کش
+// سطح پکیج می‌توانست بعد از تغییر جدول holidays بیات بماند.
 func HolidaySet(db *sql.DB, orgID *int64) (map[string]bool, error) {
 	rows, err := db.Query(`
 		SELECT holiday_date FROM holidays
@@ -36,8 +36,8 @@ func HolidaySet(db *sql.DB, orgID *int64) (map[string]bool, error) {
 	return set, rows.Err()
 }
 
-// RecurringHolidayWeekdays — پورتِ getRecurringHolidayWeekdays(). مقادیر بر
-// اساسِ همان شماره‌گذاریِ PHP (date('w')): ۰=یکشنبه ... ۶=شنبه — که دقیقاً
+// RecurringHolidayWeekdays — پورت getRecurringHolidayWeekdays(). مقادیر بر
+// اساس همان شماره‌گذاری PHP (date('w')): ۰=یکشنبه ... ۶=شنبه — که دقیقا
 // با time.Weekday() در Go یکی است (Sunday=0 ... Saturday=6)، پس هیچ
 // تبدیلی لازم نیست.
 func RecurringHolidayWeekdays(db *sql.DB, orgID *int64) (map[int]bool, error) {
@@ -62,7 +62,7 @@ func RecurringHolidayWeekdays(db *sql.DB, orgID *int64) (map[int]bool, error) {
 	return days, rows.Err()
 }
 
-// IsWorkingDay — پورتِ دقیقِ isWorkingDay() در working-days-helper.php.
+// IsWorkingDay — پورت دقیق isWorkingDay() در working-days-helper.php.
 func IsWorkingDay(t time.Time, holidays map[string]bool, recurring map[int]bool) bool {
 	dow := int(t.Weekday())
 	if dow == 5 { // جمعه
@@ -77,12 +77,12 @@ func IsWorkingDay(t time.Time, holidays map[string]bool, recurring map[int]bool)
 	return true
 }
 
-// CalcPeriodicDelayWorkingDays — پورتِ دقیقِ calcPeriodicDelayWorkingDays()
-// در working-days-helper.php: تعدادِ روزِ کاریِ تأخیر، از due+1 تا today.
+// CalcPeriodicDelayWorkingDays — پورت دقیق calcPeriodicDelayWorkingDays()
+// در working-days-helper.php: تعداد روز کاری تأخیر، از due+1 تا today.
 //
-// عمداً recurring را نمی‌گیرد: نسخهٔ PHP خودش isWorkingDay() را با
-// آرگومانِ سوم را خالی صدا می‌زند (پیش‌فرضِ تابع)، یعنی این محاسبه فقط
-// جمعه + تعطیلاتِ یک‌روزه را کم می‌کند، نه تعطیلاتِ هفتگیِ تکرارشونده —
+// عمدا recurring را نمی‌گیرد: نسخهٔ PHP خودش isWorkingDay() را با
+// آرگومان سوم را خالی صدا می‌زند (پیش‌فرض تابع)، یعنی این محاسبه فقط
+// جمعه + تعطیلات یک‌روزه را کم می‌کند، نه تعطیلات هفتگی تکرارشونده —
 // حتی اگر این ناهماهنگی به‌نظر برسد، پاریتی با PHP اولویت دارد.
 func CalcPeriodicDelayWorkingDays(dueDateStr, todayStr string, holidays map[string]bool) int {
 	due, err1 := time.Parse("2006-01-02", dueDateStr[:10])
@@ -105,7 +105,7 @@ func CalcPeriodicDelayWorkingDays(dueDateStr, todayStr string, holidays map[stri
 	return delay
 }
 
-// CalcHourDelay — پورتِ دقیقِ calcHourDelay() در working-days-helper.php.
+// CalcHourDelay — پورت دقیق calcHourDelay() در working-days-helper.php.
 func CalcHourDelay(deadline, now string) int {
 	d, err1 := time.Parse("2006-01-02 15:04:05", deadline)
 	n, err2 := time.Parse("2006-01-02 15:04:05", now)
@@ -115,7 +115,7 @@ func CalcHourDelay(deadline, now string) int {
 	return int(n.Sub(d).Hours())
 }
 
-// CalcHourRemaining — پورتِ دقیقِ calcHourRemaining().
+// CalcHourRemaining — پورت دقیق calcHourRemaining().
 func CalcHourRemaining(deadline, now string) int {
 	d, err1 := time.Parse("2006-01-02 15:04:05", deadline)
 	n, err2 := time.Parse("2006-01-02 15:04:05", now)

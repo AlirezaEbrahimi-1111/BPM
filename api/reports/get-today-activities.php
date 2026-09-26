@@ -85,23 +85,23 @@ try {
     // =====================================
     // 2. کارهای معوقه
     // =====================================
-    // 🔒 دو مدلِ تأخیر: روتین/فرآیندی (is_workflow_task=1) ساعتی، بقیه
-    // روزِ کاری — و موعدِ مؤثر (نه due_dateِ خام) چون تمدیدِ موعد فقط
+    // 🔒 دو مدل تأخیر: روتین/فرآیندی (is_workflow_task=1) ساعتی، بقیه
+    // روز کاری — و موعد مؤثر (نه due_date خام) چون تمدید موعد فقط
     // deadline رو آپدیت می‌کنه (هم‌راستا با api/reports/top-delayed-users.php)
-    // 🔒 effective_deadline (با ساعت) هم اضافه شد — قبلاً شاخه‌یِ ساعتی فقط
+    // 🔒 effective_deadline (با ساعت) هم اضافه شد — قبلا شاخه‌ی ساعتی فقط
     // با «is_workflow_task && !empty(deadline)» انتخاب می‌شد، با این فرض که
-    // deadline برایِ کارِ روتین همیشه پره. این فرض همیشه درست نبود: چندتا
-    // کارِ روتینِ واقعی پیدا شدن که deadline‌شون خالی بود ولی due_date پر
-    // بود (و ماه‌ها گذشته) — این‌ها به‌جایِ شاخه‌یِ ساعتی، بی‌سروصدا می‌رفتن
-    // شاخه‌یِ روزِ کاری، برخلافِ قاعده‌یِ «روتین همیشه ساعتی». الان شاخه‌یِ
-    // ساعتی از effective_deadline (GREATEST، با فرضِ ۲۳:۵۹:۵۹ برایِ
-    // due_date/original_deadlineِ بدونِ ساعت) استفاده می‌کنه، هم‌راستا با
-    // فیکسِ مشابه در top-delayed-users.php و includes/task-dates-helper.php.
-    // 🔒 CAST(...AS DATETIME) لازمه — بدونِ این، به‌خاطرِ ناهماهنگیِ
-    // collationِ due_date/deadline/original_deadline (همون مشکلِ قدیمیِ
+    // deadline برای کار روتین همیشه پره. این فرض همیشه درست نبود: چندتا
+    // کار روتین واقعی پیدا شدن که deadline‌شون خالی بود ولی due_date پر
+    // بود (و ماه‌ها گذشته) — این‌ها به‌جای شاخه‌ی ساعتی، بی‌سروصدا می‌رفتن
+    // شاخه‌ی روز کاری، برخلاف قاعده‌ی «روتین همیشه ساعتی». الان شاخه‌ی
+    // ساعتی از effective_deadline (GREATEST، با فرض ۲۳:۵۹:۵۹ برای
+    // due_date/original_deadline بدون ساعت) استفاده می‌کنه، هم‌راستا با
+    // فیکس مشابه در top-delayed-users.php و includes/task-dates-helper.php.
+    // 🔒 CAST(...AS DATETIME) لازمه — بدون این، به‌خاطر ناهماهنگی
+    // collation due_date/deadline/original_deadline (همون مشکل قدیمی
     // اسکیما که effective_due پایین‌تر هم با CAST AS DATE ازش دور می‌زنه)،
-    // خطایِ «Illegal mix of collations» (1267) می‌ده — رویِ دیتایِ واقعی
-    // تستِ محلی گرفت.
+    // خطای «Illegal mix of collations» (1267) می‌ده — روی دیتای واقعی
+    // تست محلی گرفت.
     $overdue_sql = "
         SELECT
             t.id, t.title, t.priority, t.task_type, t.is_workflow_task,

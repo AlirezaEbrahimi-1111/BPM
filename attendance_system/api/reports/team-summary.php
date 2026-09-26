@@ -17,10 +17,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
 $auth = new Auth($db);
 
-// 🔒 ضریبِ کسری و مبنایِ گردکردنِ حقوق باید از تنظیماتِ سازمان خونده بشن،
-// نه ثابت — قبلاً اینجا × ۲ و گردکردنِ ۱۰۰٬۰۰۰ به‌صورتِ hardcode بودن، درحالی
+// 🔒 ضریب کسری و مبنای گردکردن حقوق باید از تنظیمات سازمان خونده بشن،
+// نه ثابت — قبلا اینجا × ۲ و گردکردن ۱۰۰٬۰۰۰ به‌صورت hardcode بودن، درحالی
 // که requests.php/team-report.php از همین app_settings می‌خونن؛ یعنی اگر
-// مدیری این دو مقدار رو عوض می‌کرد، این گزارش هنوز با مقادیرِ پیش‌فرض حساب
+// مدیری این دو مقدار رو عوض می‌کرد، این گزارش هنوز با مقادیر پیش‌فرض حساب
 // می‌کرد.
 $app_settings = loadSettings($db);
 
@@ -65,7 +65,7 @@ if (!$user_id) {
 error_log("🔍 Final User ID: " . $user_id);
 
 // ============================================
-// بررسی دسترسی مدیریتی - دقیقاً مثل team-report.php
+// بررسی دسترسی مدیریتی - دقیقا مثل team-report.php
 // ============================================
 $stmt = $db->prepare("SELECT id, role, is_manager, is_supervisor, organization_id  FROM users WHERE id = ? AND is_deleted = 0");
 $stmt->execute([$user_id]);
@@ -179,7 +179,7 @@ error_log("📅 Period: $start_date to $end_date (Jalali: $jalali_year/$jalali_m
 
 // ============================================
 // دریافت لیست پرسنل بر اساس نقش
-// دقیقاً مثل team-report.php ولی با اضافه کردن کاربر جاری
+// دقیقا مثل team-report.php ولی با اضافه کردن کاربر جاری
 // ============================================
 
 $all_user_ids = [];
@@ -491,8 +491,8 @@ foreach ($users as $user_item) {
                 $delay = timeToMinutes($shift1_in) - timeToMinutes($shift_start);
                 $shortage_slots[] = ['start' => $shift_start, 'end' => $shift1_in, 'minutes' => $delay];
             }
-            // خروج زودهنگام — اگر قبل از شروعِ شیفت باشد، بازه از شروعِ شیفت
-            // حساب شود نه از خودِ خروج
+            // خروج زودهنگام — اگر قبل از شروع شیفت باشد، بازه از شروع شیفت
+            // حساب شود نه از خود خروج
             if ($shift1_out && $shift1_out < $shift_end) {
                 $early_start = max($shift1_out, $shift_start);
                 $early = timeToMinutes($shift_end) - timeToMinutes($early_start);
@@ -531,7 +531,7 @@ foreach ($users as $user_item) {
         // کسری پوشش نشده
         $uncovered = max(0, $initial_shortage - $total_covered);
         
-        // کسری نهایی = ضریبِ جریمه (طبق تنظیماتِ سازمان، مثلِ requests.php)
+        // کسری نهایی = ضریب جریمه (طبق تنظیمات سازمان، مثل requests.php)
         $final_shortage = $uncovered * $app_settings['shortage_multiplier'];
         
         // اضافه به کل کسری
@@ -545,7 +545,7 @@ foreach ($users as $user_item) {
         $current_date->modify('+1 day');
     }
     
-    // گرد کردن کسری ریالی طبقِ تنظیماتِ سازمان (طبق requests.php)
+    // گرد کردن کسری ریالی طبق تنظیمات سازمان (طبق requests.php)
     $round_to = max(1, (int) $app_settings['salary_round_to']);
     $shortage_money = floor($shortage_money / $round_to) * $round_to;
     
@@ -555,7 +555,7 @@ foreach ($users as $user_item) {
     // حقوق دریافتی (طبق requests.php)
     $net_salary = max(0, $user_item['monthly_salary'] - $shortage_money);
     
-    // گرد کردن حقوق نهایی طبقِ همان تنظیم
+    // گرد کردن حقوق نهایی طبق همان تنظیم
     $net_salary = floor($net_salary / $round_to) * $round_to;
     
     $team_data[] = [

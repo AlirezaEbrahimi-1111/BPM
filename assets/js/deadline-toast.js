@@ -33,7 +33,7 @@
     ──────────────────────────────────────────── */
     var _activeRequestId  = null;
     var _activeToastEl    = null;     // ارجاع به DOM المان toast
-    var _remindTimer      = null;     // تایمر "بعداً یادآوری کن"
+    var _remindTimer      = null;     // تایمر "بعدا یادآوری کن"
 
     /* ────────────────────────────────────────────
        ۳. تابع اصلی: نمایش toast
@@ -47,7 +47,7 @@
     ──────────────────────────────────────────── */
     window.showDeadlineExtensionToast = function (request) {
 
-        // اگر قبلاً همین درخواست نمایش داده شده، دوباره نشان نده
+        // اگر قبلا همین درخواست نمایش داده شده، دوباره نشان نده
         if (_activeRequestId === request.id) return;
 
         // بستن toast قبلی (اگر وجود دارد)

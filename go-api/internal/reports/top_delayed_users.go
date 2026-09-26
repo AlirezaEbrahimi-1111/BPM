@@ -9,9 +9,9 @@ import (
 	"bmp/go-api/internal/core"
 )
 
-// delayBucket — یک سطرِ انباشتگرِ $acc در PHP.
-// RefID عمداً `any` است: برایِ کاربر عددِ شناسه و برایِ واحد نامِ رشته‌ایِ
-// واحد است — دقیقاً مثلِ PHP.
+// delayBucket — یک سطر انباشتگر $acc در PHP.
+// RefID عمدا `any` است: برای کاربر عدد شناسه و برای واحد نام رشته‌ای
+// واحد است — دقیقا مثل PHP.
 type delayBucket struct {
 	Kind       string `json:"kind"`
 	RefID      any    `json:"ref_id"`
@@ -24,15 +24,15 @@ type delayBucket struct {
 	Total      int    `json:"total"`
 }
 
-// TopDelayedUsers — پورتِ دقیقِ api/reports/top-delayed-users.php
+// TopDelayedUsers — پورت دقیق api/reports/top-delayed-users.php
 //
 //	GET /go/api/reports/top-delayed-users
 //	→ {"success":true,"users":[...]}
 //
-// هر سه نوعِ کارِ تأخیردار (مقطعی / دوره‌ای / روتین) شمرده می‌شود و تأخیر
-// یا پایِ کاربرِ مسئول یا — اگر مسئولی نباشد — پایِ واحدِ سازمانی نوشته
-// می‌شود. 🔒 کارِ متعلق به کاربرِ غیرفعال/حذف‌شده کاملاً نادیده گرفته
-// می‌شود (نه نمایش، نه احتسابِ تأخیر) — هم‌راستا با فیکسِ همینِ منطق در
+// هر سه نوع کار تأخیردار (مقطعی / دوره‌ای / روتین) شمرده می‌شود و تأخیر
+// یا پای کاربر مسئول یا — اگر مسئولی نباشد — پای واحد سازمانی نوشته
+// می‌شود. 🔒 کار متعلق به کاربر غیرفعال/حذف‌شده کاملا نادیده گرفته
+// می‌شود (نه نمایش، نه احتساب تأخیر) — هم‌راستا با فیکس همین منطق در
 // api/reports/top-delayed-users.php.
 func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 	const qPeriodic = `
@@ -104,7 +104,7 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// ── نگاشتِ شناسه‌ی کاربر → نام — فقط کاربرانِ فعال و حذف‌نشده ──
+		// ── نگاشت شناسه‌ی کاربر → نام — فقط کاربران فعال و حذف‌نشده ──
 		userNames := map[int64]string{}
 		{
 			rows, err := db.Query(`
@@ -128,15 +128,15 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 			}
 		}
 
-		// انباشتگر — ترتیبِ درج باید حفظ شود (PHP آرایه‌ی انجمنی را به
-		// ترتیبِ درج نگه می‌دارد و مرتب‌سازیِ نهایی در تساوی همین را
+		// انباشتگر — ترتیب درج باید حفظ شود (PHP آرایه‌ی انجمنی را به
+		// ترتیب درج نگه می‌دارد و مرتب‌سازی نهایی در تساوی همین را
 		// حفظ می‌کند).
 		order := []string{}
 		acc := map[string]*delayBucket{}
 
-		// bucket — معادلِ کلوژرِ $bucket در PHP. اگه assignee_id متعلق به
-		// کاربرِ غیرفعال/حذف‌شده باشه (تویِ userNames نیست)، nil برمی‌گردونه
-		// — یعنی صدازننده باید کلِ اون کار رو نادیده بگیره
+		// bucket — معادل کلوژر $bucket در PHP. اگه assignee_id متعلق به
+		// کاربر غیرفعال/حذف‌شده باشه (توی userNames نیست)، nil برمی‌گردونه
+		// — یعنی صدازننده باید کل اون کار رو نادیده بگیره
 		bucket := func(assigneeID any, section any) *delayBucket {
 			// PHP: `!empty($assignee_id)` — empty() هم NULL و هم 0/"0" را رد می‌کند.
 			if aid := core.ToInt64(assigneeID); aid != 0 {
@@ -168,7 +168,7 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 			return b
 		}
 
-		// ══ ۱) کارهای مقطعیِ تأخیردار ══
+		// ══ ۱) کارهای مقطعی تأخیردار ══
 		{
 			rows, err := db.Query(qPeriodic, orgID, today)
 			if err != nil {
@@ -195,7 +195,7 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 			}
 		}
 
-		// ══ ۲) کارهای دوره‌ایِ تأخیردار (از موتورِ مشترک) ══
+		// ══ ۲) کارهای دوره‌ای تأخیردار (از موتور مشترک) ══
 		{
 			rows, err := db.Query(qContinuous, orgID)
 			if err != nil {
@@ -229,7 +229,7 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 			}
 		}
 
-		// ══ ۳) کارهای روتینِ تأخیردار — ساعتی، نه روزِ کاری ══
+		// ══ ۳) کارهای روتین تأخیردار — ساعتی، نه روز کاری ══
 		{
 			rows, err := db.Query(qWorkflow, orgID)
 			if err != nil {
@@ -259,7 +259,7 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 			if b.DelayDays <= 0 && b.DelayHours <= 0 {
 				continue
 			}
-			b.Total = b.DelayDays // سازگاریِ عقب‌رو با مصرف‌کننده‌هایِ قدیمی
+			b.Total = b.DelayDays // سازگاری عقب‌رو با مصرف‌کننده‌های قدیمی
 			result = append(result, b)
 		}
 

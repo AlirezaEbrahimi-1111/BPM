@@ -7,12 +7,12 @@ import (
 	"strings"
 )
 
-// فاکتورِ خرید — با «تأیید» موجودیِ انبارِ رسمی زیاد می‌شود.
-// جدول‌ها: inv_purchase_invoices + inv_purchase_items (هر ردیف حتماً کالا دارد).
+// فاکتور خرید — با «تأیید» موجودی انبار رسمی زیاد می‌شود.
+// جدول‌ها: inv_purchase_invoices + inv_purchase_items (هر ردیف حتما کالا دارد).
 
 type purchaseItemIn struct {
 	ProductID *int64  `json:"product_id"`
-	Title     string  `json:"title"` // نامِ تایپ‌شده وقتی با هیچ کالای کاتالوگ مطابقت نداشت
+	Title     string  `json:"title"` // نام تایپ‌شده وقتی با هیچ کالای کاتالوگ مطابقت نداشت
 	Qty       float64 `json:"qty"`
 	UnitPrice int64   `json:"unit_price"`
 	Discount  int64   `json:"discount"`
@@ -55,8 +55,8 @@ type purchaseOut struct {
 }
 
 // dbQuerier: هم *sql.DB هم *sql.Tx این را دارند — برای این‌که یک تابع بتواند
-// چه داخلِ تراکنش، چه بیرونش کوئری بزند (لازم برای دیدنِ کالاهایی که همین حالا،
-// در همین تراکنش، برای یک ردیفِ متنیِ آزاد تازه ساخته شده‌اند).
+// چه داخل تراکنش، چه بیرونش کوئری بزند (لازم برای دیدن کالاهایی که همین حالا،
+// در همین تراکنش، برای یک ردیف متنی آزاد تازه ساخته شده‌اند).
 type dbQuerier interface {
 	Query(query string, args ...any) (*sql.Rows, error)
 }
@@ -120,8 +120,8 @@ func computePurchase(items []purchaseItemIn, exempt map[int64]bool, vatRate floa
 }
 
 // cleanPurchaseItems: ردیفی نگه داشته می‌شود که یا شناسهٔ کالای معتبر دارد،
-// یا نامِ تایپ‌شده (که هنگامِ درج، کالای تازه‌ای برایش ساخته می‌شود) — مثلِ
-// قلمِ متنیِ آزادِ فاکتورِ فروش.
+// یا نام تایپ‌شده (که هنگام درج، کالای تازه‌ای برایش ساخته می‌شود) — مثل
+// قلم متنی آزاد فاکتور فروش.
 func cleanPurchaseItems(items []purchaseItemIn) []purchaseItemIn {
 	out := make([]purchaseItemIn, 0, len(items))
 	for _, it := range items {
@@ -143,13 +143,13 @@ func cleanPurchaseItems(items []purchaseItemIn) []purchaseItemIn {
 	return out
 }
 
-// resolvePurchaseItems: برای هر ردیفِ بدونِ شناسهٔ کالا (یعنی متنِ تایپ‌شده با
-// هیچ کالایِ کاتالوگی — سمتِ کلاینت — یکی نشد)، یک کالای تازه در کاتالوگ
-// می‌سازد و ردیف را به آن گره می‌زند — دقیقاً مثلِ قلمِ متنیِ آزادِ فاکتورِ
-// فروش (invoices.go: insertItems)، عمداً بدونِ حذفِ تکراریِ سمتِ سرور؛ تطبیقِ
-// نام با کاتالوگ کارِ کلاینت است (rowTemplate → syncProdName).
-// باید با همان tx-یی صدا زده شود که درجِ خودِ فاکتور هم در آن انجام می‌شود،
-// چون کالاهای تازه‌ساز تا commit برای کوئری‌های بیرونِ تراکنش دیده نمی‌شوند.
+// resolvePurchaseItems: برای هر ردیف بدون شناسهٔ کالا (یعنی متن تایپ‌شده با
+// هیچ کالای کاتالوگی — سمت کلاینت — یکی نشد)، یک کالای تازه در کاتالوگ
+// می‌سازد و ردیف را به آن گره می‌زند — دقیقا مثل قلم متنی آزاد فاکتور
+// فروش (invoices.go: insertItems)، عمدا بدون حذف تکراری سمت سرور؛ تطبیق
+// نام با کاتالوگ کار کلاینت است (rowTemplate → syncProdName).
+// باید با همان tx-یی صدا زده شود که درج خود فاکتور هم در آن انجام می‌شود،
+// چون کالاهای تازه‌ساز تا commit برای کوئری‌های بیرون تراکنش دیده نمی‌شوند.
 func resolvePurchaseItems(tx *sql.Tx, orgID, userID int64, items []purchaseItemIn) ([]purchaseItemIn, error) {
 	out := make([]purchaseItemIn, len(items))
 	copy(out, items)
@@ -175,10 +175,10 @@ func resolvePurchaseItems(tx *sql.Tx, orgID, userID int64, items []purchaseItemI
 
 func (in *purchaseIn) validate() string {
 	if in.SupplierID == 0 {
-		return "انتخابِ تأمین‌کننده الزامی است"
+		return "انتخاب تأمین‌کننده الزامی است"
 	}
 	if len(cleanPurchaseItems(in.Items)) == 0 {
-		return "حداقل یک ردیفِ کالا با تعدادِ معتبر لازم است"
+		return "حداقل یک ردیف کالا با تعداد معتبر لازم است"
 	}
 	return ""
 }
@@ -259,7 +259,7 @@ func (s *server) getPurchase(w http.ResponseWriter, r *http.Request) {
 		Scan(&o.ID, &o.SupplierID, &o.SupplierName, &o.SupplierRefNumber, &o.IssueDate, &o.Status,
 			&o.Subtotal, &o.DiscountAmount, &o.TaxAmount, &o.TotalAmount, &o.Note, &o.CreatedAt, &o.ConfirmedAt)
 	if err == sql.ErrNoRows {
-		writeErr(w, http.StatusNotFound, "فاکتورِ خرید یافت نشد")
+		writeErr(w, http.StatusNotFound, "فاکتور خرید یافت نشد")
 		return
 	}
 	if err != nil {
@@ -290,7 +290,7 @@ func (s *server) getPurchase(w http.ResponseWriter, r *http.Request) {
 }
 
 // buildPurchaseLines: items باید از قبل با resolvePurchaseItems حل شده باشند
-// (یعنی همه‌شان product_id دارند). حتماً با همان tx صدا زده شود.
+// (یعنی همه‌شان product_id دارند). حتما با همان tx صدا زده شود.
 func (s *server) buildPurchaseLines(tx *sql.Tx, items []purchaseItemIn, vatRate float64) ([]computedPLine, int64, int64, int64, int64, error) {
 	ids := make([]int64, 0, len(items))
 	for _, it := range items {
@@ -341,7 +341,7 @@ func (s *server) createPurchase(w http.ResponseWriter, r *http.Request) {
 	u := userOf(r.Context())
 	st, err := s.getSettings()
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "خواندنِ تنظیمات ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "خواندن تنظیمات ناموفق بود")
 		return
 	}
 	issueNS, _ := parseIssueDate(in.IssueDate)
@@ -355,7 +355,7 @@ func (s *server) createPurchase(w http.ResponseWriter, r *http.Request) {
 
 	resolved, err := resolvePurchaseItems(tx, u.OrgID, u.ID, cleanPurchaseItems(in.Items))
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "ثبتِ کالا ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "ثبت کالا ناموفق بود")
 		return
 	}
 	lines, sub, disc, tax, total, err := s.buildPurchaseLines(tx, resolved, st.VatRate)
@@ -372,12 +372,12 @@ func (s *server) createPurchase(w http.ResponseWriter, r *http.Request) {
 		u.OrgID, in.SupplierID, nullIfEmpty(strings.TrimSpace(in.SupplierRefNumber)), s.officialWarehouseID,
 		issueNS, sub, disc, tax, total, nullIfEmpty(strings.TrimSpace(in.Note)), u.ID)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "درجِ فاکتورِ خرید ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "درج فاکتور خرید ناموفق بود")
 		return
 	}
 	pid, _ := res.LastInsertId()
 	if err := insertPurchaseItems(tx, pid, lines); err != nil {
-		writeErr(w, http.StatusInternalServerError, "درجِ ردیف‌ها ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "درج ردیف‌ها ناموفق بود")
 		return
 	}
 	if err := tx.Commit(); err != nil {
@@ -404,20 +404,20 @@ func (s *server) updatePurchase(w http.ResponseWriter, r *http.Request) {
 	if err := s.db.QueryRow(
 		"SELECT status FROM inv_purchase_invoices WHERE id = ? AND organization_id = ?", id, u.OrgID).
 		Scan(&status); err == sql.ErrNoRows {
-		writeErr(w, http.StatusNotFound, "فاکتورِ خرید یافت نشد")
+		writeErr(w, http.StatusNotFound, "فاکتور خرید یافت نشد")
 		return
 	} else if err != nil {
 		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
 	}
 	if status != "draft" {
-		writeErr(w, http.StatusConflict, "فقط فاکتورِ خریدِ پیش‌نویس قابلِ ویرایش است")
+		writeErr(w, http.StatusConflict, "فقط فاکتور خرید پیش‌نویس قابل ویرایش است")
 		return
 	}
 
 	st, err := s.getSettings()
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "خواندنِ تنظیمات ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "خواندن تنظیمات ناموفق بود")
 		return
 	}
 	issueNS, _ := parseIssueDate(in.IssueDate)
@@ -431,7 +431,7 @@ func (s *server) updatePurchase(w http.ResponseWriter, r *http.Request) {
 
 	resolved, err := resolvePurchaseItems(tx, u.OrgID, u.ID, cleanPurchaseItems(in.Items))
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "ثبتِ کالا ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "ثبت کالا ناموفق بود")
 		return
 	}
 	lines, sub, disc, tax, total, err := s.buildPurchaseLines(tx, resolved, st.VatRate)
@@ -455,7 +455,7 @@ func (s *server) updatePurchase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := insertPurchaseItems(tx, id, lines); err != nil {
-		writeErr(w, http.StatusInternalServerError, "درجِ ردیف‌ها ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "درج ردیف‌ها ناموفق بود")
 		return
 	}
 	if err := tx.Commit(); err != nil {
@@ -482,14 +482,14 @@ func (s *server) confirmPurchase(w http.ResponseWriter, r *http.Request) {
 	if err := tx.QueryRow(
 		"SELECT status, warehouse_id FROM inv_purchase_invoices WHERE id = ? AND organization_id = ? FOR UPDATE",
 		id, u.OrgID).Scan(&status, &whID); err == sql.ErrNoRows {
-		writeErr(w, http.StatusNotFound, "فاکتورِ خرید یافت نشد")
+		writeErr(w, http.StatusNotFound, "فاکتور خرید یافت نشد")
 		return
 	} else if err != nil {
 		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
 	}
 	if status != "draft" {
-		writeErr(w, http.StatusConflict, "این فاکتورِ خرید قبلاً از حالتِ پیش‌نویس خارج شده")
+		writeErr(w, http.StatusConflict, "این فاکتور خرید قبلا از حالت پیش‌نویس خارج شده")
 		return
 	}
 
@@ -516,7 +516,7 @@ func (s *server) confirmPurchase(w http.ResponseWriter, r *http.Request) {
 
 	for _, m := range moves {
 		if err := addStock(tx, m.pid, whID, m.qty, "purchase", "purchase", id, u.ID); err != nil {
-			writeErr(w, http.StatusInternalServerError, "افزودنِ موجودی ناموفق بود")
+			writeErr(w, http.StatusInternalServerError, "افزودن موجودی ناموفق بود")
 			return
 		}
 	}
@@ -549,14 +549,14 @@ func (s *server) cancelPurchase(w http.ResponseWriter, r *http.Request) {
 	if err := tx.QueryRow(
 		"SELECT status FROM inv_purchase_invoices WHERE id = ? AND organization_id = ? FOR UPDATE", id, u.OrgID).
 		Scan(&status); err == sql.ErrNoRows {
-		writeErr(w, http.StatusNotFound, "فاکتورِ خرید یافت نشد")
+		writeErr(w, http.StatusNotFound, "فاکتور خرید یافت نشد")
 		return
 	} else if err != nil {
 		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
 	}
 	if status == "cancelled" {
-		writeErr(w, http.StatusConflict, "این فاکتورِ خرید قبلاً باطل شده")
+		writeErr(w, http.StatusConflict, "این فاکتور خرید قبلا باطل شده")
 		return
 	}
 
@@ -584,7 +584,7 @@ func (s *server) cancelPurchase(w http.ResponseWriter, r *http.Request) {
 		rows.Close()
 		for _, m := range rev {
 			if err := addStock(tx, m.pid, m.wh, -m.qty, "return", "purchase", id, u.ID); err != nil {
-				writeErr(w, http.StatusInternalServerError, "برگرداندنِ موجودی ناموفق بود")
+				writeErr(w, http.StatusInternalServerError, "برگرداندن موجودی ناموفق بود")
 				return
 			}
 		}
@@ -617,14 +617,14 @@ func (s *server) deletePurchase(w http.ResponseWriter, r *http.Request) {
 	if err := tx.QueryRow(
 		"SELECT status FROM inv_purchase_invoices WHERE id = ? AND organization_id = ?", id, u.OrgID).
 		Scan(&status); err == sql.ErrNoRows {
-		writeErr(w, http.StatusNotFound, "فاکتورِ خرید یافت نشد")
+		writeErr(w, http.StatusNotFound, "فاکتور خرید یافت نشد")
 		return
 	} else if err != nil {
 		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
 	}
 	if status != "draft" {
-		writeErr(w, http.StatusConflict, "فقط فاکتورِ خریدِ پیش‌نویس حذف می‌شود؛ فاکتورِ تأییدشده را «باطل» کنید")
+		writeErr(w, http.StatusConflict, "فقط فاکتور خرید پیش‌نویس حذف می‌شود؛ فاکتور تأییدشده را «باطل» کنید")
 		return
 	}
 	if _, err := tx.Exec("DELETE FROM inv_purchase_items WHERE purchase_invoice_id = ?", id); err != nil {

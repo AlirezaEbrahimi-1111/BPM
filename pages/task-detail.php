@@ -59,8 +59,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             color: var(--icon-accent, #8e57fe);
         }
 
-        /* در پیکرِ افزودنِ دسترسی، hintِ زیرِ فیلد هیچ‌وقت پر نمی‌شه (فقط تویِ حالتِ
-           واگذاریِ تک‌نفره پر می‌شه) — فضایِ خالیِ رزروشده‌اش رو جمع می‌کنیم */
+        /* در پیکر افزودن دسترسی، hint زیر فیلد هیچ‌وقت پر نمی‌شه (فقط توی حالت
+           واگذاری تک‌نفره پر می‌شه) — فضای خالی رزروشده‌اش رو جمع می‌کنیم */
         #addViewerPicker .ap-hint {
             display: none;
         }
@@ -189,7 +189,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             border-color: #8e57fe;
         }
 
-        /* ردیفِ واحد: پیوستِ فایل (۵۰٪) + انصراف/بدون‌یادداشت/ثبت (۵۰٪) */
+        /* ردیف واحد: پیوست فایل (۵۰٪) + انصراف/بدون‌یادداشت/ثبت (۵۰٪) */
         .chk-note-row {
             display: flex;
             align-items: center;
@@ -205,10 +205,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             direction: ltr !important;
         }
 
-        /* شبیهِ ظاهرِ استانداردِ فایل‌پیکرِ مرورگرها (Choose file | Browse) —
-           یک کادرِ مستطیلیِ واحد، سمتِ متن‌نما (نامِ فایل/پیش‌فرض) کشیده و
-           بخشِ دکمه‌ای (انتخاب فایل) ثابت؛ کلیک روی هرجایِ کادر فایل‌پیکر رو
-           باز می‌کنه چون همه‌چیز داخلِ همون <label for=...> است */
+        /* شبیه ظاهر استاندارد فایل‌پیکر مرورگرها (Choose file | Browse) —
+           یک کادر مستطیلی واحد، سمت متن‌نما (نام فایل/پیش‌فرض) کشیده و
+           بخش دکمه‌ای (انتخاب فایل) ثابت؛ کلیک روی هرجای کادر فایل‌پیکر رو
+           باز می‌کنه چون همه‌چیز داخل همون <label for=...> است */
         .chk-file-input-box {
             display: flex;
             align-items: stretch;
@@ -369,9 +369,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             color: var(--warning);
         }
 
-        /* آیکن‌های کنارِ «موعد انجام» (تمدید موعد / حذفِ موعد / یادآوری):
-           پیش‌فرض طوسیِ روشن، هاور = رنگِ معناییِ خودشان. بدونِ margin تا
-           فاصله‌ی بینشان فقط از gap-2ِ ظرف بیاید و spanِ مخفی جا نگیرد. */
+        /* آیکن‌های کنار «موعد انجام» (تمدید موعد / حذف موعد / یادآوری):
+           پیش‌فرض طوسی روشن، هاور = رنگ معنایی خودشان. بدون margin تا
+           فاصله‌ی بینشان فقط از gap-2 ظرف بیاید و span مخفی جا نگیرد. */
         #requestDeadlineBtn.deadline-request-icon,
         #clearDueDateBtn.deadline-request-icon,
         #remindAssigneeBtn.deadline-request-icon {
@@ -400,11 +400,11 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             box-shadow: none !important;
         }
 
-        /* در این صفحه فوتر ثابت نباشد — بعد از «تاریخچه» در جریانِ عادیِ
-           صفحه بنشیند. فقط به‌اندازهٔ نوارِ عملیاتِ ثابتِ پایین (.TDaction-buttons)
-           فاصله می‌گذاریم تا فوتر زیرِ آن نیفتد.
-           .site-footer-shadow لایهٔ بیرونیِ سایه است (footer.php) که پیش‌فرض
-           position:fixed دارد — این‌جا آن را هم غیرِثابت و بی‌سایه می‌کنیم. */
+        /* در این صفحه فوتر ثابت نباشد — بعد از «تاریخچه» در جریان عادی
+           صفحه بنشیند. فقط به‌اندازهٔ نوار عملیات ثابت پایین (.TDaction-buttons)
+           فاصله می‌گذاریم تا فوتر زیر آن نیفتد.
+           .site-footer-shadow لایهٔ بیرونی سایه است (footer.php) که پیش‌فرض
+           position:fixed دارد — این‌جا آن را هم غیرثابت و بی‌سایه می‌کنیم. */
         .site-footer-shadow,
         .site-footer {
             position: static !important;
@@ -418,8 +418,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             padding-bottom: 84px !important;
         }
 
-        /* دکمهٔ «بازگشت» — هاورِ بنفشِ استانداردِ سایت به‌جای خاکستریِ بوت‌استرپ
-           (rgba(142,87,254,.12) روشن / .18 تیره، مثلِ هاورِ منوها و ردیف‌ها) */
+        /* دکمهٔ «بازگشت» — هاور بنفش استاندارد سایت به‌جای خاکستری بوت‌استرپ
+           (rgba(142,87,254,.12) روشن / .18 تیره، مثل هاور منوها و ردیف‌ها) */
         .TDaction-buttons .td-back-btn:hover,
         .TDaction-buttons .td-back-btn:focus-visible {
             background: rgba(142, 87, 254, .12);
@@ -528,7 +528,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 <div id="checklistDetailItems"></div>
 
                 <!-- 🆕 چرا دکمه‌ی «تکمیل کار» نیست؟ تا این پیام نبود، کاربر فقط می‌دید
-                     دکمه غیب شده، بدونِ اینکه بدونه علتش همین چک‌لیستِ ناتمومه -->
+                     دکمه غیب شده، بدون اینکه بدونه علتش همین چک‌لیست ناتمومه -->
                 <div id="checklistCompleteGateNote" style="display:none; margin-top:8px; padding:8px 12px; background:var(--warning-box-bg); border:1px solid #fcd34d; border-radius:8px; font-size:0.8rem; color:var(--warning-box-text);">
                     <i class="bi bi-info-circle-fill me-1"></i>
                     <span id="checklistCompleteGateNoteText"></span>
@@ -645,7 +645,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                             <label class="form-label">ارجاع به کاربر</label>
                             <div id="delegatePicker"></div>
                         </div>
-                        <!-- ✅ این کار موعد نداره (خودی بوده) — برایِ ارجاع باید موعد تعیین بشه -->
+                        <!-- ✅ این کار موعد نداره (خودی بوده) — برای ارجاع باید موعد تعیین بشه -->
                         <div class="mb-3" id="delegateDueDateContainer" style="display:none;">
                             <label class="form-label required">موعد انجام</label>
                             <div class="persian-datepicker-wrapper" data-restrict-past="0">
@@ -1144,7 +1144,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             </div>
         </div>
 
-        <!-- Modal بررسیِ درخواستِ تمدیدِ دوره -->
+        <!-- Modal بررسی درخواست تمدید دوره -->
         <div id="reviewRenewalModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -1303,10 +1303,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
         <script src="<?= asset('/assets/js/task-filters.js') ?>"></script>
         <script>
-            // کاربرِ چندواحدی: به‌جایِ مقایسه با فقط واحدِ اصلی (user.activity_section)،
-            // عضویت در فهرستِ کاملِ واحدها رو چک می‌کنه. اگه user_info قدیمی (قبل از
-            // اضافه‌شدنِ activity_sections) هنوز تویِ localStorage باشه، fallback به
-            // همون یک واحدِ قدیمی می‌زنه — بدونِ نیاز به لاگین‌ِ مجدد.
+            // کاربر چندواحدی: به‌جای مقایسه با فقط واحد اصلی (user.activity_section)،
+            // عضویت در فهرست کامل واحدها رو چک می‌کنه. اگه user_info قدیمی (قبل از
+            // اضافه‌شدن activity_sections) هنوز توی localStorage باشه، fallback به
+            // همون یک واحد قدیمی می‌زنه — بدون نیاز به لاگین‌ مجدد.
             function userInSection(user, section) {
                 if (!user || !section) return false;
                 const list = Array.isArray(user.activity_sections) && user.activity_sections.length
@@ -1340,7 +1340,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             /* ─── حفظ آدرس صفحه‌ی مبدأ (مقاوم در برابر رفرش) ─── */
             (function rememberBackUrl() {
                 const ref = document.referrer;
-                // فقط اگر مبدأ خودِ task-detail نیست، ذخیره کن
+                // فقط اگر مبدأ خود task-detail نیست، ذخیره کن
                 if (ref && !ref.includes('task-detail.php')) {
                     sessionStorage.setItem('taskDetailBackUrl', ref);
                 }
@@ -1413,7 +1413,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     return result;
                 }
 
-                // تبدیل میلادی→شمسی — با time-sync.js (نه toLocaleDateString که به تایم‌زونِ دستگاه و locale وابسته است)
+                // تبدیل میلادی→شمسی — با time-sync.js (نه toLocaleDateString که به تایم‌زون دستگاه و locale وابسته است)
                 function gregorianToJalali(gDate) {
                     try {
                         if (window.TimeSync) {
@@ -1787,24 +1787,24 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             let checklistCanEdit = false;
             let checklistUsers = []; // لیست کاربران برای منوی ارجاع چک‌لیست
             let currentChecklistItems = []; // آخرین آیتم‌های لودشده (برای مودال ویرایش)
-            // 🔒 قفلِ چک‌لیست: تا زمانی که همهٔ آیتم‌ها تیک نخورده باشند، دکمهٔ «تکمیل کار»
+            // 🔒 قفل چک‌لیست: تا زمانی که همهٔ آیتم‌ها تیک نخورده باشند، دکمهٔ «تکمیل کار»
             // (چه برای کار معمولی، چه برای مرحلهٔ روتین که از همین دکمه استفاده می‌کند) مخفی می‌ماند
             let checklistGateState = { total: 0, done: 0 };
-            // آیا منطقِ کسب‌وکارِ setupActionButtons (بدون درنظرگرفتنِ چک‌لیست) تصمیم گرفته
+            // آیا منطق کسب‌وکار setupActionButtons (بدون درنظرگرفتن چک‌لیست) تصمیم گرفته
             // completeBtn نشان داده شود؟ applyChecklistGate روی همین پرچم (نه روی style.display
-            // فعلیِ دکمه) تصمیم نهایی را می‌گیرد تا به ترتیبِ اجرای توابعِ async وابسته نباشد
+            // فعلی دکمه) تصمیم نهایی را می‌گیرد تا به ترتیب اجرای توابع async وابسته نباشد
             let completeBtnEligible = false;
             let myUserId = null;
             let delegateTargetId = '';
             async function loadChecklist() {
-                // 🆕 قبلاً چک‌لیست فقط برای کار عادی نمایش داده می‌شد؛ حالا مراحل روتین هم
-                // می‌توانند چک‌لیستِ الگو داشته باشند (کپی‌شده هنگام شروع روتین) و باید همینجا دیده شوند
+                // 🆕 قبلا چک‌لیست فقط برای کار عادی نمایش داده می‌شد؛ حالا مراحل روتین هم
+                // می‌توانند چک‌لیست الگو داشته باشند (کپی‌شده هنگام شروع روتین) و باید همینجا دیده شوند
                 if (!taskData) {
                     document.getElementById('checklistDetailSection').style.display = 'none';
                     checklistGateState = { total: 0, done: 0 };
                     return;
                 }
-                // 🔒 بیننده‌ای که دسترسیِ چک‌لیست براش خاموش شده: کل بخش پنهان
+                // 🔒 بیننده‌ای که دسترسی چک‌لیست براش خاموش شده: کل بخش پنهان
                 if (window._isViewerOnly && !window._viewerCanViewChecklist) {
                     const section = document.getElementById('checklistDetailSection');
                     if (section) section.style.display = 'none';
@@ -1819,7 +1819,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     });
                     const data = await res.json();
                     if (!data.success) {
-                        // شکستِ API را باز (بدون قفل) در نظر می‌گیریم؛ قفلِ واقعی سمتِ سرور است
+                        // شکست API را باز (بدون قفل) در نظر می‌گیریم؛ قفل واقعی سمت سرور است
                         checklistGateState = { total: 0, done: 0 };
                         applyChecklistGate();
                         return;
@@ -1857,12 +1857,12 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 }
             }
 
-            // 🔒 اجرای واقعیِ قفل: نمایشِ نهاییِ completeBtn را همیشه از رویِ دو منبع
-            // مستقل دوباره محاسبه می‌کند — completeBtnEligible (تصمیمِ setupActionButtons،
-            // بدون درنظرگرفتنِ چک‌لیست) و checklistGateState (وضعیتِ چک‌لیست). چون نتیجه
-            // هربار از صفر ساخته می‌شود (نه بر مبنایِ display فعلیِ دکمه)، به ترتیبِ اجرای
-            // توابعِ async وابسته نیست: هم از setupActionButtons و هم از loadChecklist (بعد
-            // از هر تیک) صدا زده می‌شود؛ هرکدام دیرتر اجرا شود، تصمیمِ نهایی را می‌گیرد.
+            // 🔒 اجرای واقعی قفل: نمایش نهایی completeBtn را همیشه از روی دو منبع
+            // مستقل دوباره محاسبه می‌کند — completeBtnEligible (تصمیم setupActionButtons،
+            // بدون درنظرگرفتن چک‌لیست) و checklistGateState (وضعیت چک‌لیست). چون نتیجه
+            // هربار از صفر ساخته می‌شود (نه بر مبنای display فعلی دکمه)، به ترتیب اجرای
+            // توابع async وابسته نیست: هم از setupActionButtons و هم از loadChecklist (بعد
+            // از هر تیک) صدا زده می‌شود؛ هرکدام دیرتر اجرا شود، تصمیم نهایی را می‌گیرد.
             function applyChecklistGate() {
                 const completeBtn = document.getElementById('completeBtn');
                 if (!completeBtn) return;
@@ -1870,8 +1870,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 const incomplete = checklistGateState.total > 0 && checklistGateState.done < checklistGateState.total;
                 completeBtn.style.display = (completeBtnEligible && !incomplete) ? 'inline-block' : 'none';
 
-                // 🆕 وقتی دکمه صرفاً به‌خاطرِ چک‌لیستِ ناتموم مخفیه (نه به دلایلِ دیگه‌یِ
-                // نقش/وضعیت)، صریح بگو چرا — قبلاً کاربر فقط می‌دید دکمه نیست
+                // 🆕 وقتی دکمه صرفا به‌خاطر چک‌لیست ناتموم مخفیه (نه به دلایل دیگه‌ی
+                // نقش/وضعیت)، صریح بگو چرا — قبلا کاربر فقط می‌دید دکمه نیست
                 const gateNote = document.getElementById('checklistCompleteGateNote');
                 if (gateNote) {
                     if (completeBtnEligible && incomplete) {
@@ -1901,7 +1901,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     console.error('refreshHistory error:', e);
                 }
             }
-            // تولید برچسب ارجاعِ یک آیتم چک‌لیست برای نمایش (برای همه کاربران)
+            // تولید برچسب ارجاع یک آیتم چک‌لیست برای نمایش (برای همه کاربران)
             function renderChecklistAssigneeBadge(item) {
                 if (!item.assignee_type) return ''; // بدون ارجاع → چیزی نشان نده
 
@@ -2150,7 +2150,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 refreshDescZone(itemId);
             }
 
-            // بازسازی ناحیه‌ی توضیحاتِ یک آیتم (بدون رندر کل لیست)
+            // بازسازی ناحیه‌ی توضیحات یک آیتم (بدون رندر کل لیست)
 
             function refreshDescZone(itemId) {
                 const zone = document.getElementById('chk-desc-zone-' + itemId);
@@ -2208,9 +2208,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 setTimeout(() => document.getElementById('chk-note-' + itemId)?.focus(), 50);
             }
 
-            /* نمایشِ نامِ فایلِ انتخاب‌شده — چون خودِ input[type=file] مخفی است
-               (متنِ انگلیسیِ نیتیوِ Choose File/No file chosen قابلِ فارسی‌سازی
-               نبود)، این span جایگزینِ نمایشیِ آن است */
+            /* نمایش نام فایل انتخاب‌شده — چون خود input[type=file] مخفی است
+               (متن انگلیسی نیتیو Choose File/No file chosen قابل فارسی‌سازی
+               نبود)، این span جایگزین نمایشی آن است */
             function onChkFileChosen(itemId) {
                 const fileInput = document.getElementById('chk-file-' + itemId);
                 const nameEl = document.getElementById('chk-file-name-' + itemId);
@@ -2229,7 +2229,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 if (nameEl) nameEl.textContent = 'فایلی انتخاب نشده';
             }
 
-            /* ثبت نهایی — با یادداشت یا بدون آن، و فایلِ پیوستِ اختیاری */
+            /* ثبت نهایی — با یادداشت یا بدون آن، و فایل پیوست اختیاری */
             function saveDoneNote(itemId, withNote) {
                 const box = document.getElementById('chk-note-' + itemId);
                 const note = (withNote && box) ? box.value.trim() : '';
@@ -2238,9 +2238,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 toggleChecklistItem(itemId, true, note, file);
             }
 
-            /* آپلودِ فایلِ ضمیمه‌شده موقعِ تأییدِ یک آیتمِ چک‌لیست — بعدِ موفقیتِ
-               تیک‌زدن صدا زده می‌شه، جدا از خودِ toggle، تا اگه آپلود خطا داد
-               حداقل خودِ «انجام‌شد» ثبت‌شده باقی بمونه */
+            /* آپلود فایل ضمیمه‌شده موقع تأیید یک آیتم چک‌لیست — بعد موفقیت
+               تیک‌زدن صدا زده می‌شه، جدا از خود toggle، تا اگه آپلود خطا داد
+               حداقل خود «انجام‌شد» ثبت‌شده باقی بمونه */
             async function uploadChecklistItemFile(itemId, file) {
                 try {
                     const fd = new FormData();
@@ -2284,7 +2284,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         loadChecklist();
                         return;
                     }
-                    // 🆕 تیک موفق بود؛ اگه موقعِ تأیید فایلی هم انتخاب شده بود، همین الان پیوستش کن
+                    // 🆕 تیک موفق بود؛ اگه موقع تأیید فایلی هم انتخاب شده بود، همین الان پیوستش کن
                     if (isDone && file) {
                         await uploadChecklistItemFile(itemId, file);
                     }
@@ -2292,9 +2292,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         showToast('همه آیتم‌ها تکمیل شدند. کار طبق روال ادامه یافت.', 'success');
                         setTimeout(() => location.reload(), 1200);
                     } else {
-                        // 🆕 اولین تیک، کار را (سمتِ سرور) به in_progress می‌برد — همین‌جا هم
-                        // taskData را هماهنگ کن و دکمه‌ها را دوباره بساز تا «شروع کار» فوراً
-                        // مخفی شود، بدون نیاز به رفرشِ صفحه
+                        // 🆕 اولین تیک، کار را (سمت سرور) به in_progress می‌برد — همین‌جا هم
+                        // taskData را هماهنگ کن و دکمه‌ها را دوباره بساز تا «شروع کار» فورا
+                        // مخفی شود، بدون نیاز به رفرش صفحه
                         if (isDone && taskData && ['not_started', 'delegated', 'rejected'].includes(taskData.status)) {
                             taskData.status = 'in_progress';
                             setupActionButtons(taskData);
@@ -2347,7 +2347,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             }
             // باز کردن مودال ویرایش (به‌جای prompt قدیمی)
             let clTarget = null,
-                clTouched = false; // انتخابِ پیکرِ ارجاع چک‌لیست
+                clTouched = false; // انتخاب پیکر ارجاع چک‌لیست
             // باز کردن مودال در حالت «افزودن آیتم جدید»
             function openAddChecklistModal() {
                 // خالی کردن فیلدها
@@ -2437,7 +2437,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     placeholder: 'ارجاع فعلی: ' + _curLabel + ' — برای تغییر جستجو کنید...',
                     onSelect: (type, value) => {
                         clTouched = true;
-                        // گزینه‌های گروهیِ «همه...» برای آیتم چک‌لیست نامعتبرند
+                        // گزینه‌های گروهی «همه...» برای آیتم چک‌لیست نامعتبرند
                         if (!type || value === '__all__' || value === '__all_users__') {
                             clTarget = null;
                             return;
@@ -2662,7 +2662,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 if (!cell) return;
 
                 const isOwner = (currentUser && currentUser.id == task.creator_id);
-                // حذف‌شده/کنسل‌شده/متوقف‌شده/تکمیل‌شده → دیگه قابلِ تغییر نیست
+                // حذف‌شده/کنسل‌شده/متوقف‌شده/تکمیل‌شده → دیگه قابل تغییر نیست
                 const isTerminal = task.is_deleted == 1 ||
                     ['completed', 'approved', 'stopped', 'rejected'].includes(task.status);
 
@@ -2676,7 +2676,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     return '<span class="text-muted">بدون گروه</span>';
                 }
 
-                // اگر تعریف‌کننده نیست یا کار در وضعیتِ پایانی/غیرفعاله، فقط نمایش
+                // اگر تعریف‌کننده نیست یا کار در وضعیت پایانی/غیرفعاله، فقط نمایش
                 if (!isOwner || isTerminal) {
                     cell.innerHTML = badgeHtml();
                     return;
@@ -2738,7 +2738,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 }
             }
 
-            // ─────────────── بیننده‌هایِ کار (task_viewers) ───────────────
+            // ─────────────── بیننده‌های کار (task_viewers) ───────────────
             let addViewerPickerInst = null;
 
             async function renderTaskViewers(task) {
@@ -2755,9 +2755,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 } catch {
                     return;
                 }
-                // این بخش صرفاً یک ابزارِ مدیریتیه (اضافه/حذف/ویرایشِ دسترسیِ
-                // دیگران)؛ خودِ بینندگان نباید فهرستِ سایرِ بینندگان و دسترسی‌شون
-                // رو ببینن، حتی به‌صورتِ غیرفعال — پس برایِ غیرِ مدیر، کلاً مخفی می‌مونه
+                // این بخش صرفا یک ابزار مدیریتیه (اضافه/حذف/ویرایش دسترسی
+                // دیگران)؛ خود بینندگان نباید فهرست سایر بینندگان و دسترسی‌شون
+                // رو ببینن، حتی به‌صورت غیرفعال — پس برای غیر مدیر، کلا مخفی می‌مونه
                 if (!data.success || !data.can_manage) {
                     if (item) item.style.display = 'none';
                     return;
@@ -2766,7 +2766,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 renderViewersCell(task.id, data.viewers, !!data.can_manage);
             }
 
-            // یک سوییچِ کوچکِ دسترسی برایِ ردیفِ یک بیننده — سه‌بار (پیوست/تاریخچه/چک‌لیست) صدا زده می‌شه
+            // یک سوییچ کوچک دسترسی برای ردیف یک بیننده — سه‌بار (پیوست/تاریخچه/چک‌لیست) صدا زده می‌شه
             function viewerSwitchHtml(inputId, checked, labelText, disabled) {
                 return `<div class="form-check form-switch mb-0" style="display:flex; align-items:center; gap:5px; padding:0; margin:0;">
                     <input class="form-check-input" type="checkbox" role="switch" id="${inputId}" ${checked ? 'checked' : ''} ${disabled ? 'disabled' : ''} style="margin:0; flex-shrink:0;">
@@ -2774,9 +2774,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 </div>`;
             }
 
-            // بازکردن/بستنِ ردیفِ یک بیننده — پیش‌فرض فقط نام دیده می‌شه؛ با
-            // کلیک، جزئیاتِ دسترسی (سوییچ‌ها/اعمال/حذف) باز می‌شه — برایِ
-            // نگه‌داشتنِ طراحیِ خلوت به‌جایِ نمایشِ همیشگیِ همه‌چیز
+            // بازکردن/بستن ردیف یک بیننده — پیش‌فرض فقط نام دیده می‌شه؛ با
+            // کلیک، جزئیات دسترسی (سوییچ‌ها/اعمال/حذف) باز می‌شه — برای
+            // نگه‌داشتن طراحی خلوت به‌جای نمایش همیشگی همه‌چیز
             function toggleViewerRow(userId) {
                 const detail = document.getElementById(`viewerDetail-${userId}`);
                 const chevron = document.getElementById(`viewerChevron-${userId}`);
@@ -2784,9 +2784,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 const isOpen = detail.style.display !== 'none';
                 detail.style.display = isOpen ? 'none' : 'flex';
                 if (chevron) {
-                    // فلشِ افقی — باید با حالتِ نهاییِ ردیف هماهنگ باشه (هم بعدِ کلیک،
-                    // هم در رندرِ اولیه‌یِ پیش‌فرض که پایین‌تر «بسته» ساخته می‌شه):
-                    // باز → سمتِ راست، بسته → سمتِ چپ (همون آیکنِ پیش‌فرض)
+                    // فلش افقی — باید با حالت نهایی ردیف هماهنگ باشه (هم بعد کلیک،
+                    // هم در رندر اولیه‌ی پیش‌فرض که پایین‌تر «بسته» ساخته می‌شه):
+                    // باز → سمت راست، بسته → سمت چپ (همون آیکن پیش‌فرض)
                     chevron.classList.toggle('bi-chevron-left', isOpen);
                     chevron.classList.toggle('bi-chevron-right', !isOpen);
                 }
@@ -2804,13 +2804,13 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     </button>`;
                 }
 
-                // فرمِ افزودنِ دسترسیِ جدید: بالایِ فهرستِ کاربرانِ دسترسی‌داده‌شده
+                // فرم افزودن دسترسی جدید: بالای فهرست کاربران دسترسی‌داده‌شده
                 if (canManage) {
                     // align-items:flex-start (نه center) چون وقتی کاربری از پیکر
-                    // انتخاب می‌شه، یک ردیفِ چیپ زیرِ فیلدِ جستجو اضافه می‌شه و
-                    // ارتفاعِ اون بلوک بیشتر از دکمه/سوییچ‌ها می‌شه؛ با center
-                    // دکمه‌یِ افزودن و سوییچ‌ها به‌جایِ هم‌ردیف‌بودن با فیلدِ جستجو،
-                    // به وسطِ ارتفاعِ کلی می‌رفتن و توازنِ ردیف به‌هم می‌خورد
+                    // انتخاب می‌شه، یک ردیف چیپ زیر فیلد جستجو اضافه می‌شه و
+                    // ارتفاع اون بلوک بیشتر از دکمه/سوییچ‌ها می‌شه؛ با center
+                    // دکمه‌ی افزودن و سوییچ‌ها به‌جای هم‌ردیف‌بودن با فیلد جستجو،
+                    // به وسط ارتفاع کلی می‌رفتن و توازن ردیف به‌هم می‌خورد
                     html += `<div id="addViewerWrap" style="display:none; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:8px;">
                         <div style="display:flex; align-items:flex-start; gap:6px; flex:1; min-width:220px;">
                             <div id="addViewerPicker" style="flex:1; min-width:0;"></div>
@@ -2902,7 +2902,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     const data = await res.json();
                     if (data.success) {
                         showToast('دسترسی اضافه شد', 'success');
-                        addViewerPickerInst = null; // نمونهٔ بعدی از نو با داده‌یِ تازه ساخته بشه
+                        addViewerPickerInst = null; // نمونهٔ بعدی از نو با داده‌ی تازه ساخته بشه
                         renderTaskViewers(taskData);
                     } else {
                         showToast(data.message || 'خطا در افزودن دسترسی', 'error');
@@ -2912,9 +2912,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 }
             }
 
-            // ویرایشِ دسترسیِ یک بیننده‌ی از قبل‌موجود — دقیقاً همون اندپوینتِ
-            // افزودن رو با یک‌نفره و پرچم‌هایِ به‌روزشده دوباره صدا می‌زنه
-            // (ON DUPLICATE KEY UPDATE سمتِ سرور، سطرِ موجود رو جای‌گزین می‌کنه)
+            // ویرایش دسترسی یک بیننده‌ی از قبل‌موجود — دقیقا همون اندپوینت
+            // افزودن رو با یک‌نفره و پرچم‌های به‌روزشده دوباره صدا می‌زنه
+            // (ON DUPLICATE KEY UPDATE سمت سرور، سطر موجود رو جای‌گزین می‌کنه)
             async function applyViewerPermission(taskId, userId) {
                 const canAttachments = document.getElementById(`viewerRowAtt-${userId}`).checked;
                 const canHistory = document.getElementById(`viewerRowHist-${userId}`).checked;
@@ -2986,7 +2986,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             `;
                 document.getElementById('taskMeta').innerHTML = metaHTML;
 
-                // دوره بعدی — از سرور (period-engine) که موعد پایان و لنگرِ روزِ ماه را درست لحاظ می‌کند
+                // دوره بعدی — از سرور (period-engine) که موعد پایان و لنگر روز ماه را درست لحاظ می‌کند
                 const nextDueDate = task.next_due_date;
 
                 // ستون اول: اطلاعات عمومی
@@ -3205,25 +3205,25 @@ ${task.overdue_periods > 0 ? `
                 isCreator = (task.creator_id === userId);
                 isAssignee = (task.assignee_id === userId);
 
-                // #deadlineValue فقط برای کارِ «مقطعی» رندر می‌شود؛ برای کارِ
-                // «دوره‌ای» اصلاً وجود ندارد — پس حتماً null-check.
+                // #deadlineValue فقط برای کار «مقطعی» رندر می‌شود؛ برای کار
+                // «دوره‌ای» اصلا وجود ندارد — پس حتما null-check.
                 const deadlineElement = document.getElementById('deadlineValue');
                 if (deadlineElement) {
                     if (task.is_workflow_task == 1) {
-                        // کارِ روتین: موعدِ ساعتی. منبعِ حقیقت workflow_instance_steps.deadline
+                        // کار روتین: موعد ساعتی. منبع حقیقت workflow_instance_steps.deadline
                         // است (current_step_deadline)؛ tasks.deadline گاهی با آن هم‌خوان
-                        // نیست (مثلِ تسکِ ۶۱۵ که ستونِ tasks.deadline خالی مانده بود ولی
-                        // موعدِ مرحله درست محاسبه شده بود) — پس هر دو را با هم چک کن.
+                        // نیست (مثل تسک ۶۱۵ که ستون tasks.deadline خالی مانده بود ولی
+                        // موعد مرحله درست محاسبه شده بود) — پس هر دو را با هم چک کن.
                         const wfDeadline = task.deadline || task.current_step_deadline;
                         deadlineElement.textContent = wfDeadline
                             ? formatDateTime(wfDeadline)
                             : 'بدون موعد';
                     } else {
-                        // کارِ مقطعی: «موعد انجام» = جدیدترین از میان
-                        // due_date / deadline / original_deadline. تمدیدِ موعد ممکن
+                        // کار مقطعی: «موعد انجام» = جدیدترین از میان
+                        // due_date / deadline / original_deadline. تمدید موعد ممکن
                         // است فقط یکی از این سه را جلو ببرد؛ سرور بیشینه را در
-                        // next_due_date می‌دهد (enrichTaskDates) — همان ملاکِ
-                        // «مهلتِ باقی‌مانده/تأخیر» هم هست.
+                        // next_due_date می‌دهد (enrichTaskDates) — همان ملاک
+                        // «مهلت باقی‌مانده/تأخیر» هم هست.
                         const eff = task.next_due_date || task.deadline;
                         deadlineElement.textContent = eff
                             ? formatDateTime(eff).split(' - ')[0]
@@ -3231,7 +3231,7 @@ ${task.overdue_periods > 0 ? `
                     }
                 }
 
-                // ✅ کار روتین: آیکن تمدید ساعتی برای مسئولِ مرحله (کاربرِ مشخص یا اعضای واحد)
+                // ✅ کار روتین: آیکن تمدید ساعتی برای مسئول مرحله (کاربر مشخص یا اعضای واحد)
                 if (task.is_workflow_task == 1) {
                     const inSection = currentUser && (task.assignee_id ?
                         currentUser.id == task.assignee_id :
@@ -3272,8 +3272,8 @@ ${task.overdue_periods > 0 ? `
                     }
                 }
 
-                // 🔔 آیکنِ یادآوری کنارِ موعد: فقط برای تعریف‌کننده‌ای که خودش
-                // مسئولِ کار نیست (کار را واگذار کرده) و کار هنوز باز است.
+                // 🔔 آیکن یادآوری کنار موعد: فقط برای تعریف‌کننده‌ای که خودش
+                // مسئول کار نیست (کار را واگذار کرده) و کار هنوز باز است.
                 const remindBtn = document.getElementById('remindAssigneeBtn');
                 if (remindBtn) {
                     const openStatus = !['completed', 'approved', 'rejected'].includes(task.status);
@@ -3284,8 +3284,8 @@ ${task.overdue_periods > 0 ? `
                     }
                 }
 
-                // 🗑 آیکنِ «حذفِ موعد» — فقط برایِ کارِ مقطعیِ خودی (تعریف‌کننده و
-                // مسئولِ انجام یک نفر) که فعلاً موعد دارد و هنوز تمام نشده.
+                // 🗑 آیکن «حذف موعد» — فقط برای کار مقطعی خودی (تعریف‌کننده و
+                // مسئول انجام یک نفر) که فعلا موعد دارد و هنوز تمام نشده.
                 const clearBtn = document.getElementById('clearDueDateBtn');
                 if (clearBtn) {
                     const sameOwner = task.creator_id && task.assignee_id && task.creator_id === task.assignee_id;
@@ -3316,7 +3316,7 @@ ${task.overdue_periods > 0 ? `
                         .then(function (d) {
                             showToast(d.message || (d.success ? 'موعد حذف شد' : 'خطا'), d.success ? 'success' : 'error');
                             if (d.success) {
-                                // به‌روزرسانیِ فوریِ UI (منتظرِ رفت‌وبرگشتِ کاملِ صفحه نمی‌مانیم)
+                                // به‌روزرسانی فوری UI (منتظر رفت‌وبرگشت کامل صفحه نمی‌مانیم)
                                 var dv = document.getElementById('deadlineValue');
                                 if (dv) dv.textContent = 'بدون موعد';
                                 var cb = document.getElementById('clearDueDateBtn');
@@ -4034,7 +4034,7 @@ ${task.overdue_periods > 0 ? `
                     return; // خروج از تابع — نیازی به ادامه نیست
                 }
 
-                // 🆕 بیننده‌یِ صرف (فقط از راهِ task_viewers دسترسی داره) — هیچ دکمهٔ
+                // 🆕 بیننده‌ی صرف (فقط از راه task_viewers دسترسی داره) — هیچ دکمهٔ
                 // اقدامی نباید ببینه، فقط جزئیات رو مشاهده می‌کنه
                 if (window._isViewerOnly) {
                     [startBtn, completeBtn, addDiscBtn, delegateBtn, editBtn, deleteBtn, redefineBtn, approveBtn, rejectBtn].forEach(btn => {
@@ -4076,7 +4076,7 @@ ${task.overdue_periods > 0 ? `
                         }
                     }
 
-                    // دکمه "تأیید و نگهداری" → فقط برای کارهای مقطعیِ غیرروتین، و فقط برای creator
+                    // دکمه "تأیید و نگهداری" → فقط برای کارهای مقطعی غیرروتین، و فقط برای creator
                     if (isCreator && task.task_type === 'periodic' && !isWorkflow) {
                         const approveAndKeepBtn = document.getElementById('approveAndKeepBtn');
                         if (approveAndKeepBtn) {
@@ -4091,11 +4091,11 @@ ${task.overdue_periods > 0 ? `
                 // ✅ منطق جدید workflow tasks
                 if (isWorkflow) {
 
-                    // ✅ چک 1: مسئولِ این مرحله (کاربرِ مشخص یا عضوِ واحد) باشد
-                    // اگر تسک صراحتاً assignee دارد (تعریف/ارجاع/claim شده)، همان کافی است —
-                    // به current_step_status گره نمی‌زنیم چون ممکن است از وضعیتِ واقعیِ تسک
-                    // عقب بماند (مثلاً بعد از ارجاع) و دکمه‌های عملیات را برای مسئولِ واقعی مخفی کند.
-                    // فقط برای تسکِ هنوز تخصیص‌نیافته (سراسرِ واحد) به «فعال بودنِ مرحله» نیاز داریم.
+                    // ✅ چک 1: مسئول این مرحله (کاربر مشخص یا عضو واحد) باشد
+                    // اگر تسک صراحتا assignee دارد (تعریف/ارجاع/claim شده)، همان کافی است —
+                    // به current_step_status گره نمی‌زنیم چون ممکن است از وضعیت واقعی تسک
+                    // عقب بماند (مثلا بعد از ارجاع) و دکمه‌های عملیات را برای مسئول واقعی مخفی کند.
+                    // فقط برای تسک هنوز تخصیص‌نیافته (سراسر واحد) به «فعال بودن مرحله» نیاز داریم.
                     const stepActive = (task.current_step_status === 'active');
                     const inSection = currentUser && (task.assignee_id ?
                         isAssignee :
@@ -4152,9 +4152,9 @@ ${task.overdue_periods > 0 ? `
                 }
 
                 const completedCount = task.completed_count || 0;
-                // ✅ نمایش دکمه بازتعریف فقط برای creator — طبقِ درخواستِ صریح، دیگه
-                // وضعیتِ پایانیِ کار (تکمیل/کنسل/متوقف/رد) مانعِ بازتعریف نیست؛
-                // تعریف‌کننده باید بتونه حتی بعدِ اتمامِ کار هم یه نسخه‌ی جدید بسازه
+                // ✅ نمایش دکمه بازتعریف فقط برای creator — طبق درخواست صریح، دیگه
+                // وضعیت پایانی کار (تکمیل/کنسل/متوقف/رد) مانع بازتعریف نیست؛
+                // تعریف‌کننده باید بتونه حتی بعد اتمام کار هم یه نسخه‌ی جدید بسازه
                 if (isCreator) {
                     redefineBtn.style.display = 'inline-block';
                 } else {
@@ -4182,7 +4182,7 @@ ${task.overdue_periods > 0 ? `
                     } else {
                         // ✅ از can_complete محاسبه‌شده‌ی سرور (period-engine.php::pe_state)
                         // استفاده می‌کنیم — نه canCompleteNow قدیمی که با completed_count
-                        // خامِ کل عمرِ کار (که با تمدید دوره صفر نمی‌شه) مقایسه می‌کرد و
+                        // خام کل عمر کار (که با تمدید دوره صفر نمی‌شه) مقایسه می‌کرد و
                         // بعد از هر تمدید، دکمه رو برای همیشه مخفی نگه می‌داشت
                         const canComplete = !!task.can_complete;
                         if (!canComplete) {
@@ -4238,8 +4238,8 @@ ${task.overdue_periods > 0 ? `
                     // به جای calculateStrictlyOverduePeriods که تعطیلات رو نمی‌شناسه.
                     // task.overdue_periods (پیرو period-engine.php::pe_state) از قبل
                     // هم دوره‌های تکمیل‌شده هم overdue_forgiven_credit رو کسر کرده —
-                    // کسرِ دوباره‌ی completed_count/forgiven این‌جا باعث می‌شد عدد
-                    // منفی بشه و دکمه برایِ هر تسکی که حداقل یک‌بار تکمیل شده
+                    // کسر دوباره‌ی completed_count/forgiven این‌جا باعث می‌شد عدد
+                    // منفی بشه و دکمه برای هر تسکی که حداقل یک‌بار تکمیل شده
                     // (حتی با معوقه‌ی واقعی) همیشه مخفی بمونه
                     const _overdue = task.overdue_periods || 0;
                     const _remaining = Math.max(0, _overdue);
@@ -4264,7 +4264,7 @@ ${task.overdue_periods > 0 ? `
                 applyChecklistGate();
             }
 
-            // ✅ منطق نمایشِ دکمه/بجِ تمدید دوره
+            // ✅ منطق نمایش دکمه/بج تمدید دوره
             function setupRenewalButton(task) {
                 const actionBtn = document.getElementById('renewalActionBtn');
                 const actionBtnText = document.getElementById('renewalActionBtnText');
@@ -4307,10 +4307,10 @@ ${task.overdue_periods > 0 ? `
                     return false;
                 }
 
-                // ⚠️ «امروز» باید از ساعتِ سرور (تهران) بیاید، نه new Date() که ساعت/
-                //    تایم‌زونِ دستگاهِ کاربر است. اگر ساعتِ کاربر عقب باشد و روی همان
-                //    روزِ last_approved_date بیفتد، این گارد اشتباهاً دکمهٔ «تکمیل» را
-                //    مخفی می‌کرد (کارِ #۱۰۵۵). اگر TimeSync در دسترس نبود، مخفی نکن —
+                // ⚠️ «امروز» باید از ساعت سرور (تهران) بیاید، نه new Date() که ساعت/
+                //    تایم‌زون دستگاه کاربر است. اگر ساعت کاربر عقب باشد و روی همان
+                //    روز last_approved_date بیفتد، این گارد اشتباها دکمهٔ «تکمیل» را
+                //    مخفی می‌کرد (کار #۱۰۵۵). اگر TimeSync در دسترس نبود، مخفی نکن —
                 //    سرور خودش با can_complete گارد دارد (api/tasks/complete-recurring.php).
                 if (!(window.TimeSync && TimeSync.serverToday)) {
                     return false;
@@ -4355,8 +4355,8 @@ ${task.overdue_periods > 0 ? `
 
                 return Math.max(periods, today >= startDate ? 1 : 0);
             }
-            // ✅ برخلاف calculateOverduePeriods، این تابع دوره‌ی جاری (هنوز بازِ) را
-            // به‌عنوان معوقه حساب نمی‌کند؛ فقط دوره‌هایی که واقعاً سررسیدشان گذشته است.
+            // ✅ برخلاف calculateOverduePeriods، این تابع دوره‌ی جاری (هنوز باز) را
+            // به‌عنوان معوقه حساب نمی‌کند؛ فقط دوره‌هایی که واقعا سررسیدشان گذشته است.
             function calculateStrictlyOverduePeriods(task) {
                 if (task.task_type !== 'continuous') return 0;
 
@@ -4386,7 +4386,7 @@ ${task.overdue_periods > 0 ? `
 
             function displayHistory(history) {
                 // 🔒 کاربری که فقط آیتم چک‌لیست به او ارجاع شده، یا بیننده‌ای که
-                // دسترسیِ تاریخچه براش خاموش شده: کل بخش تاریخچه پنهان
+                // دسترسی تاریخچه براش خاموش شده: کل بخش تاریخچه پنهان
                 if (window._isChecklistOnly || (window._isViewerOnly && !window._viewerCanViewHistory)) {
                     const hs = document.getElementById('historySection');
                     if (hs) hs.style.display = 'none';
@@ -4513,8 +4513,8 @@ ${task.overdue_periods > 0 ? `
                     `<div class="minimal-list">${html}</div>`;
             }
 
-            // اگر کاربر مستقیماً (نه از طریقِ کلیک روی خودِ اعلان) وارد این کار
-            // شده، اعلانِ مربوط به همین کار هم باید خوانده‌شده حساب شود.
+            // اگر کاربر مستقیما (نه از طریق کلیک روی خود اعلان) وارد این کار
+            // شده، اعلان مربوط به همین کار هم باید خوانده‌شده حساب شود.
             function markTaskNotificationsRead() {
                 if (!taskId) return;
                 fetch('/go/api/notifications/mark-read', {
@@ -4531,8 +4531,8 @@ ${task.overdue_periods > 0 ? `
                     .catch(() => {});
             }
 
-            // ─── ستاره‌دار کردن (منتخب) — همان تنظیمِ روزانه‌یِ داشبورد،
-            // فقط این‌جا هم قابلِ تغییر است. کلید: هم‌فرمت با dashboard-manager.php ───
+            // ─── ستاره‌دار کردن (منتخب) — همان تنظیم روزانه‌ی داشبورد،
+            // فقط این‌جا هم قابل تغییر است. کلید: هم‌فرمت با dashboard-manager.php ───
             async function initTaskStar() {
                 try {
                     const res = await fetch('../api/dashboard/prefs-get.php', {
@@ -4734,11 +4734,11 @@ ${task.overdue_periods > 0 ? `
                 if (wrap) wrap.style.display = isCreator ? 'block' : 'none';
                 if (chk && t) chk.checked = (parseInt(t.share_history) !== 0);
 
-                // ✅ اگه کارِ مقطعیِ خودی (بدونِ موعد) داره ارجاع می‌شه، تعیینِ موعد الزامیه.
-                // ⚠️ باگِ قبلی: فقط t.due_date چک می‌شد؛ اما «تمدید موعد» موعد را در
-                // ستونِ deadline می‌گذارد، نه due_date. t.next_due_date از سمتِ سرور
+                // ✅ اگه کار مقطعی خودی (بدون موعد) داره ارجاع می‌شه، تعیین موعد الزامیه.
+                // ⚠️ باگ قبلی: فقط t.due_date چک می‌شد؛ اما «تمدید موعد» موعد را در
+                // ستون deadline می‌گذارد، نه due_date. t.next_due_date از سمت سرور
                 // (enrichTaskDates) بیشینهٔ هر سه ستون است — اگر آن پر باشد یعنی کار
-                // موعد دارد و دیگر نباید موقعِ ارجاع دوباره موعد بخواهیم.
+                // موعد دارد و دیگر نباید موقع ارجاع دوباره موعد بخواهیم.
                 const dueContainer = document.getElementById('delegateDueDateContainer');
                 const hasAnyDeadline = !!(t && (t.next_due_date || t.due_date || t.deadline || t.original_deadline));
                 const needsDueDate = !!(t && t.task_type === 'periodic' && !hasAnyDeadline);
@@ -4763,7 +4763,7 @@ ${task.overdue_periods > 0 ? `
                     return;
                 }
 
-                // ✅ اگه این کار موعد نداشت، انتخابِ موعد الزامیه
+                // ✅ اگه این کار موعد نداشت، انتخاب موعد الزامیه
                 const dueContainer = document.getElementById('delegateDueDateContainer');
                 let delegateDueDate = null;
                 if (dueContainer && dueContainer.style.display !== 'none') {
@@ -4799,8 +4799,8 @@ ${task.overdue_periods > 0 ? `
                     const data = await response.json();
 
                     if (!data.success && data.code === 'overdue_periodic') {
-                        // 🆕 موعدِ کار گذشته — به‌جایِ فقط اطلاع‌دادن، مستقیماً راهِ
-                        // تمدیدِ موعد رو هم جلوی کاربر می‌ذاریم
+                        // 🆕 موعد کار گذشته — به‌جای فقط اطلاع‌دادن، مستقیما راه
+                        // تمدید موعد رو هم جلوی کاربر می‌ذاریم
                         bootstrap.Modal.getInstance(document.getElementById('delegateModal'))?.hide();
                         showToast(data.message, 'warning', {
                             buttons: [
@@ -4917,21 +4917,21 @@ ${task.overdue_periods > 0 ? `
             }
 
             function getStatusLabel(status, assigneeId) {
-                // status='delegated' وقتی از دیدِ خودِ assigneeِ جدید (کاربرِ
-                // فعلی) دیده بشه، دیگه «ارجاع شد» معنی نداره — نوبتِ خودشه که
-                // شروعش کنه، دقیقاً هم‌ردیفِ not_started (مطابقِ همون منطقی که
-                // برایِ بجِ داشبورد در assets/js/task-filters.js اضافه شد)
+                // status='delegated' وقتی از دید خود assignee جدید (کاربر
+                // فعلی) دیده بشه، دیگه «ارجاع شد» معنی نداره — نوبت خودشه که
+                // شروعش کنه، دقیقا هم‌ردیف not_started (مطابق همون منطقی که
+                // برای بج داشبورد در assets/js/task-filters.js اضافه شد)
                 if (status === 'delegated' && currentUser && Number(assigneeId) === Number(currentUser.id)) {
                     return 'شروع نشده';
                 }
-                // برچسبِ وضعیت از assets/js/task-filters.js (تنها مرجع) —
-                // قبلاً اینجا یک جدولِ محلیِ جداگانه بود که rejected رو با
-                // برچسبِ اشتباهِ «متوقف شده» (که مالِ stopped هست) نشون می‌داد
+                // برچسب وضعیت از assets/js/task-filters.js (تنها مرجع) —
+                // قبلا اینجا یک جدول محلی جداگانه بود که rejected رو با
+                // برچسب اشتباه «متوقف شده» (که مال stopped هست) نشون می‌داد
                 return TF.statusLabel(status);
             }
 
-            // 🔒 دو مدلِ تأخیر/مهلت: روتین/فرآیندی (is_workflow_task=1) ساعتی،
-            // بقیه (کارهایِ معمولیِ مقطعی) روزِ کاری — هر دو عدد از سرور
+            // 🔒 دو مدل تأخیر/مهلت: روتین/فرآیندی (is_workflow_task=1) ساعتی،
+            // بقیه (کارهای معمولی مقطعی) روز کاری — هر دو عدد از سرور
             // (enrichTaskDates: hours_delayed/hours_remaining/working_days_delayed/days_remaining)
             function buildPeriodicDelayBadge(task) {
                 const isWf = task.is_workflow_task == 1;
@@ -4980,10 +4980,10 @@ ${task.overdue_periods > 0 ? `
                 return labels[period] || period;
             }
 
-            // 🔒 getActionLabel/actionBadgeClassِ محلی حذف شدن — الان
+            // 🔒 getActionLabel/actionBadgeClass محلی حذف شدن — الان
             // TF.actionLabel/TF.actionClass (assets/js/task-filters.js)
-            // تنها مرجعن؛ قبلاً این‌جا، دو داشبورد، هرکدوم یه نسخه‌یِ جدا و
-            // ناهماهنگ داشتن که با هر رویدادِ جدید (مثلِ تمدیدِ دوره) از
+            // تنها مرجعن؛ قبلا این‌جا، دو داشبورد، هرکدوم یه نسخه‌ی جدا و
+            // ناهماهنگ داشتن که با هر رویداد جدید (مثل تمدید دوره) از
             // هم عقب می‌موندن
 
             function formatPersianDate(dateString) {
@@ -5220,8 +5220,8 @@ ${task.overdue_periods > 0 ? `
             // نمایش modal بازتعریف
             let redefineTargetId = '';
 
-            // اولین تاریخِ دورهٔ بعدی بعد از امروز (با حفظِ روزِ ماه/هفته) —
-            // پیش‌فرضِ فیلدِ «تاریخ شروع دورهٔ جدید» و fallbackِ ثبت.
+            // اولین تاریخ دورهٔ بعدی بعد از امروز (با حفظ روز ماه/هفته) —
+            // پیش‌فرض فیلد «تاریخ شروع دورهٔ جدید» و fallback ثبت.
             function redefineComputeNextStart() {
                 if (!(taskData.task_type === 'continuous' && taskData.period_type && taskData.start_date)) return '';
                 const [year, month, day] = taskData.start_date.split('-').map(Number);
@@ -5305,14 +5305,14 @@ ${task.overdue_periods > 0 ? `
                         initPersianDatepickerForModal('redefineDueDate', dateString);
                     }, 100);
                 } else if (taskData.task_type === 'continuous') {
-                    // کار دوره‌ای: تاریخِ شروعِ دورهٔ جدید قابلِ تعریف است
+                    // کار دوره‌ای: تاریخ شروع دورهٔ جدید قابل تعریف است
                     dueDateContainer.style.display = 'block';
                     if (dueDateLabel) dueDateLabel.textContent = 'تاریخ شروع دورهٔ جدید';
                     if (periodInfo && periodLabelEl) {
                         periodLabelEl.textContent = getPeriodLabel(taskData.period_type);
                         periodInfo.style.display = 'block';
                     }
-                    // پیش‌فرض = اولین دورهٔ بعدی (با حفظِ روزِ ماه) — اگر کاربر تغییرش دهد، همان ملاک است
+                    // پیش‌فرض = اولین دورهٔ بعدی (با حفظ روز ماه) — اگر کاربر تغییرش دهد، همان ملاک است
                     const nextStart = redefineComputeNextStart();
                     if (nextStart) {
                         setTimeout(() => {
@@ -5454,9 +5454,9 @@ ${task.overdue_periods > 0 ? `
                         requestBody.due_date = dueDate;
                     }
 
-                    // ✅ برای continuous: تاریخِ شروعِ دورهٔ جدید از datepicker
+                    // ✅ برای continuous: تاریخ شروع دورهٔ جدید از datepicker
                     // (پیش‌فرضش همان «اولین دورهٔ بعدی» است؛ کاربر می‌تواند تغییرش دهد
-                    //  تا مثلاً کارِ ماهانهٔ «۵ ام» به «۱۰ ام» تبدیل شود)
+                    //  تا مثلا کار ماهانهٔ «۵ ام» به «۱۰ ام» تبدیل شود)
                     if (taskData.task_type === 'continuous' && taskData.period_type) {
                         const picked = document.getElementById('redefineDueDate').getAttribute('data-date');
                         const startDate = picked || redefineComputeNextStart();
@@ -5504,7 +5504,7 @@ ${task.overdue_periods > 0 ? `
                 try {
                     if (!taskId) return;
 
-                    // 🔒 بیننده‌ای که دسترسیِ پیوست براش خاموش شده: کل بخش پنهان
+                    // 🔒 بیننده‌ای که دسترسی پیوست براش خاموش شده: کل بخش پنهان
                     if (window._isViewerOnly && !window._viewerCanViewAttachments) {
                         const section = document.getElementById('attachmentsSection');
                         if (section) section.style.display = 'none';
@@ -5717,13 +5717,13 @@ ${task.overdue_periods > 0 ? `
             }
 
             // آپلود فایل
-            // ⚠️ قبلاً این تابع async بود ولی درونش فقط XMLHttpRequest با addEventListener
-            // صدا می‌زد، بدون اینکه یک Promise واقعی به اتمامِ آپلود گره بخوره — یعنی
-            // await uploadFile(file) عملاً تقریباً فوری resolve می‌شد، نه بعدِ تمومِ آپلودِ
-            // واقعی. جایی مثلِ submitAddDiscWithFiles() که بعدِ حلقهٔ await، با فاصلهٔ کوتاه
-            // (۱.۵ ثانیه) صفحه رو reload می‌کرد، اگه آپلودِ واقعی (شبکه/سرور) از اون فاصله
-            // بیشتر طول می‌کشید، reload درخواستِ نیمه‌تمام رو قطع می‌کرد و فایل هیچ‌وقت
-            // واقعاً ذخیره نمی‌شد — با اینکه تویِ UI انتخاب‌شده به‌نظر می‌رسید
+            // ⚠️ قبلا این تابع async بود ولی درونش فقط XMLHttpRequest با addEventListener
+            // صدا می‌زد، بدون اینکه یک Promise واقعی به اتمام آپلود گره بخوره — یعنی
+            // await uploadFile(file) عملا تقریبا فوری resolve می‌شد، نه بعد تموم آپلود
+            // واقعی. جایی مثل submitAddDiscWithFiles() که بعد حلقهٔ await، با فاصلهٔ کوتاه
+            // (۱.۵ ثانیه) صفحه رو reload می‌کرد، اگه آپلود واقعی (شبکه/سرور) از اون فاصله
+            // بیشتر طول می‌کشید، reload درخواست نیمه‌تمام رو قطع می‌کرد و فایل هیچ‌وقت
+            // واقعا ذخیره نمی‌شد — با اینکه توی UI انتخاب‌شده به‌نظر می‌رسید
             function uploadFile(file) {
                 return new Promise((resolve, reject) => {
                     const formData = new FormData();
@@ -5853,7 +5853,7 @@ ${task.overdue_periods > 0 ? `
                 });
             }
 
-            // تابع showAlert (اگر قبلاً وجود نداره)
+            // تابع showAlert (اگر قبلا وجود نداره)
             function showAlert(message, type = 'info') {
                 const map = {
                     danger: 'warning',
@@ -6054,7 +6054,7 @@ ${task.overdue_periods > 0 ? `
                 if (!isAssignee) return false;
                 if (!['not_started', 'in_progress'].includes(task.status)) return false;
 
-                // بررسی: کار مستقیماً از تعریف‌کننده دریافت شده (نه از طریق ارجاع)
+                // بررسی: کار مستقیما از تعریف‌کننده دریافت شده (نه از طریق ارجاع)
                 const receivedViaDelegation = taskHistory.some(h =>
                     h.action === 'delegated' &&
                     parseInt(h.to_user_id) === currentUser.id
@@ -6109,9 +6109,9 @@ ${task.overdue_periods > 0 ? `
                 }
             }
 
-            // ─── آلارمِ پایانِ دورهٔ کارِ دوره‌ای (تمدید لازم است) ──────────
-            // needs_renewal_decision از سمتِ سرور (enrichTaskDates) روی خودِ
-            // تسک محاسبه شده — نیازی به فراخوانیِ جداگانه نیست
+            // ─── آلارم پایان دورهٔ کار دوره‌ای (تمدید لازم است) ──────────
+            // needs_renewal_decision از سمت سرور (enrichTaskDates) روی خود
+            // تسک محاسبه شده — نیازی به فراخوانی جداگانه نیست
             function showRenewalAlarmIfNeeded(task) {
                 if (!task || !task.needs_renewal_decision) return;
                 if (!isCreator && !isAssignee) return;
@@ -6544,7 +6544,7 @@ ${task.overdue_periods > 0 ? `
                     });
             }
 
-            // بررسی اینکه آیا درخواستِ تمدیدِ دورهٔ در‌جریان مربوط به کاربر جاری است
+            // بررسی اینکه آیا درخواست تمدید دورهٔ در‌جریان مربوط به کاربر جاری است
             function fetchPendingRenewalRequest(taskId) {
                 fetch('../api/tasks/get-pending-renewal.php?task_id=' + taskId, {
                         headers: {

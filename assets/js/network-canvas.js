@@ -75,8 +75,8 @@
         }
     });
 
-    // showAlert قبلاً یک پیاده‌سازیِ جداگانه (با آیکن‌هایِ SVG دستی) داشت؛
-    // الان فقط یک نام‌مستعارِ نازک برایِ showToastِ مشترکه (از assets/js/alert.js)
+    // showAlert قبلا یک پیاده‌سازی جداگانه (با آیکن‌های SVG دستی) داشت؛
+    // الان فقط یک نام‌مستعار نازک برای showToast مشترکه (از assets/js/alert.js)
     function showAlert(message, type) {
         showToast(message, type === 'danger' ? 'error' : type);
     }

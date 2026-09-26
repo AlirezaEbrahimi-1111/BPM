@@ -1,9 +1,9 @@
 """
-طبقه‌بندیِ نیت + مسیریابی (بندِ ۲.۱/۴/۶ سند) — قلبِ ai-service.
+طبقه‌بندی نیت + مسیریابی (بند ۲.۱/۴/۶ سند) — قلب ai-service.
 
-نکته‌ی حیاتی (بندِ ۶): این ماژول یک Agentِ عمومی نیست. بر اساسِ نیتِ
-طبقه‌بندی‌شده، فقط یکی از اندپوینت‌هایِ *ثابتِ* data/ را با پارامترهایِ
-استخراج‌شده صدا می‌زند — مدل هرگز اندپوینتِ جدید نمی‌سازد یا پارامترِ
+نکته‌ی حیاتی (بند ۶): این ماژول یک Agent عمومی نیست. بر اساس نیت
+طبقه‌بندی‌شده، فقط یکی از اندپوینت‌های *ثابت* data/ را با پارامترهای
+استخراج‌شده صدا می‌زند — مدل هرگز اندپوینت جدید نمی‌سازد یا پارامتر
 دلخواه تعیین نمی‌کند.
 """
 
@@ -23,9 +23,9 @@ logger = logging.getLogger("ai-service.orchestrator")
 
 async def fetch_task_summary(auth_token: str) -> dict[str, Any] | None:
     """
-    فراخوانیِ api/ai-assistant/data/task-summary.php با توکنِ رله‌شده
-    (بندِ ۶ سند — دقیقاً همان مسیرِ Auth/RBACِ استانداردِ BPM، بدونِ
-    لایه‌ی احرازِ موازی).
+    فراخوانی api/ai-assistant/data/task-summary.php با توکن رله‌شده
+    (بند ۶ سند — دقیقا همان مسیر Auth/RBAC استاندارد BPM، بدون
+    لایه‌ی احراز موازی).
     """
     async with httpx.AsyncClient(timeout=5.0) as client:
         try:
@@ -35,15 +35,15 @@ async def fetch_task_summary(auth_token: str) -> dict[str, Any] | None:
             )
             data = resp.json()
             return data if data.get("success") else None
-        except Exception as e:  # noqa: BLE001 — هر خطایِ شبکه/پارس باید graceful باشد
+        except Exception as e:  # noqa: BLE001 — هر خطای شبکه/پارس باید graceful باشد
             logger.warning("fetch_task_summary failed: %s", e)
             return None
 
 
 async def handle_question(payload) -> dict[str, Any]:
     """
-    ورودی: AskPayload (main.py) — خروجی دقیقاً همان شکلی که ask.php
-    (سمتِ PHP) انتظار دارد: {status, answer, sources}.
+    ورودی: AskPayload (main.py) — خروجی دقیقا همان شکلی که ask.php
+    (سمت PHP) انتظار دارد: {status, answer, sources}.
     """
     try:
         intent = await classify_intent(payload.question, payload.history)
@@ -54,39 +54,39 @@ async def handle_question(payload) -> dict[str, Any]:
     context_parts: list[str] = []
     sources: list[dict[str, Any]] = []
 
-    # ─── مسیرِ عملیاتی — طبقِ بندِ ۶: فقط ماژولِ کارها در فازِ ۱ ───
+    # ─── مسیر عملیاتی — طبق بند ۶: فقط ماژول کارها در فاز ۱ ───
     if intent in ("operational", "combined"):
         task_data = await fetch_task_summary(payload.auth_token)
         if task_data:
             stats = task_data["stats"]
             due_today_or_earlier = task_data.get("due_today_or_earlier_count", stats.get("today"))
-            # 🔒 overdue_count (نه stats['overdue']) — چون از رویِ همین فهرستِ
-            # ریزِ پایین جمع زده شده، همیشه با اون هم‌خونه؛ stats['overdue'] از
-            # TaskManager::getTaskStats میاد که قاعده‌یِ متفاوتی داره (کارهایِ
-            # فرآیندی رو نمی‌بینه، تمدیدِ مهلت رو لحاظ نمی‌کنه) و می‌تونه با
-            # فهرستِ ریز اختلاف داشته باشه
+            # 🔒 overdue_count (نه stats['overdue']) — چون از روی همین فهرست
+            # ریز پایین جمع زده شده، همیشه با اون هم‌خونه؛ stats['overdue'] از
+            # TaskManager::getTaskStats میاد که قاعده‌ی متفاوتی داره (کارهای
+            # فرآیندی رو نمی‌بینه، تمدید مهلت رو لحاظ نمی‌کنه) و می‌تونه با
+            # فهرست ریز اختلاف داشته باشه
             overdue_count = task_data.get("overdue_count", stats.get("overdue"))
             context_parts.append(
-                "خلاصه‌ی وضعیتِ کارها (لحظه‌ای): "
-                f"کارهایِ بازِ فعلی={stats['total']}، تکمیل‌شده={stats['completed']}، "
+                "خلاصه‌ی وضعیت کارها (لحظه‌ای): "
+                f"کارهای باز فعلی={stats['total']}، تکمیل‌شده={stats['completed']}، "
                 f"معوقه (موعدش گذشته، هنوز باز)={overdue_count}. "
-                f"«کارهایِ امروز» طبقِ تعریفِ این سازمان یعنی امروز + معوقه‌ها روی‌هم — "
-                f"تعدادِ دقیقِ آن {due_today_or_earlier} است (عددِ جداگانه‌یِ stats.today را که فقط "
-                "کارهایِ با موعدِ دقیقاً امروز را می‌شمارد نادیده بگیر، مگر صریحاً پرسیده شود). "
-                "فهرستِ ریزِ زیر، همینِ دو دسته (معوقه / امروز) رو به‌شکلِ صریح و به‌ازایِ هر کار مشخص کرده — "
-                "برایِ سؤالاتِ «کدام کارها معوقه‌اند» یا «چندتا»، مستقیماً از رویِ همون برچسب‌ها بشمار."
+                f"«کارهای امروز» طبق تعریف این سازمان یعنی امروز + معوقه‌ها روی‌هم — "
+                f"تعداد دقیق آن {due_today_or_earlier} است (عدد جداگانه‌ی stats.today را که فقط "
+                "کارهای با موعد دقیقا امروز را می‌شمارد نادیده بگیر، مگر صریحا پرسیده شود). "
+                "فهرست ریز زیر، همین دو دسته (معوقه / امروز) رو به‌شکل صریح و به‌ازای هر کار مشخص کرده — "
+                "برای سؤالات «کدام کارها معوقه‌اند» یا «چندتا»، مستقیما از روی همون برچسب‌ها بشمار."
             )
 
-            # ریزِ کارها — بدونِ این، مدل نمی‌تواند به سؤالاتی مثلِ «کدام کارها
-            # مالِ من است» یا «عنوانِ کارِ معوقه‌ام چیست» جواب بدهد (فقط شمارش
-            # کافی نیست). قاعده‌یِ اینکه کدام کارها این‌جا هستند را خودِ
-            # task-summary.php پیاده کرده (تعریف‌کننده/ارجاع‌دهنده‌یِ فعال/
-            # مسئولِ فعلی، فقط سازمانِ خودش، بدونِ حذف‌شده‌ها).
+            # ریز کارها — بدون این، مدل نمی‌تواند به سؤالاتی مثل «کدام کارها
+            # مال من است» یا «عنوان کار معوقه‌ام چیست» جواب بدهد (فقط شمارش
+            # کافی نیست). قاعده‌ی اینکه کدام کارها این‌جا هستند را خود
+            # task-summary.php پیاده کرده (تعریف‌کننده/ارجاع‌دهنده‌ی فعال/
+            # مسئول فعلی، فقط سازمان خودش، بدون حذف‌شده‌ها).
             #
-            # 🔒 قبلاً فقط یک پرچمِ ترکیبیِ «امروز-یا-زودتر» بود که مدل رو در یک
-            # تستِ واقعی گیج کرد (نمی‌تونست از رویِ اون تشخیص بده کدوم دقیقاً
-            # «معوقه»‌ست، پس به‌جایِ حدس‌زدن، جوابِ ناقص داد) — حالا صریحاً
-            # «معوقه» یا «سررسیدِ امروز» می‌نویسیم، نه یک پرچمِ مبهم
+            # 🔒 قبلا فقط یک پرچم ترکیبی «امروز-یا-زودتر» بود که مدل رو در یک
+            # تست واقعی گیج کرد (نمی‌تونست از روی اون تشخیص بده کدوم دقیقا
+            # «معوقه»‌ست، پس به‌جای حدس‌زدن، جواب ناقص داد) — حالا صریحا
+            # «معوقه» یا «سررسید امروز» می‌نویسیم، نه یک پرچم مبهم
             tasks = task_data.get("tasks") or []
             if tasks:
                 lines = []
@@ -99,9 +99,9 @@ async def handle_question(payload) -> dict[str, Any]:
                         due_flag = ""
                     lines.append(
                         f"- «{t['title']}» (شناسه {t['id']}) — وضعیت: {t['status']} — "
-                        f"نقشِ کاربر: {t['role']} — مهلت: {t['due_date'] or 'نامشخص'}{due_flag}"
+                        f"نقش کاربر: {t['role']} — مهلت: {t['due_date'] or 'نامشخص'}{due_flag}"
                     )
-                context_parts.append("فهرستِ ریزِ کارهایِ مرتبط با این کاربر:\n" + "\n".join(lines))
+                context_parts.append("فهرست ریز کارهای مرتبط با این کاربر:\n" + "\n".join(lines))
 
             sources.append({
                 "type": "database",
@@ -110,7 +110,7 @@ async def handle_question(payload) -> dict[str, Any]:
                 "as_of": "اکنون",
             })
 
-    # ─── مسیرِ سندی — طبقِ بندِ ۳/۵: هنوز Qdrant مستقر نشده (بندِ ۲۱) ───
+    # ─── مسیر سندی — طبق بند ۳/۵: هنوز Qdrant مستقر نشده (بند ۲۱) ───
     if intent in ("document", "combined"):
         chunks = await retrieve(payload.question, payload.organization_id, payload.role)
         for c in chunks:
@@ -122,7 +122,7 @@ async def handle_question(payload) -> dict[str, Any]:
                 "page": c.get("page_or_sheet"),
             })
 
-    # ─── قانونِ بندِ ۷: بدونِ Context، حدس نزن ───
+    # ─── قانون بند ۷: بدون Context، حدس نزن ───
     if not context_parts:
         return {
             "status": "no_info",

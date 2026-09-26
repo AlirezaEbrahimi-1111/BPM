@@ -22,12 +22,12 @@
  *   ]
  * });
  */
-// وقتی toastِ فعلی دکمه داره، کلیدِ Enter باید دکمهٔ پیش‌فرض (primary) رو
-// اجرا کنه — این listener سطحِ ماژوله تا موقعِ جایگزینی/بستنِ toast پاک بشه
-// ⚠️ عمداً var نه let: چندین صفحه (مثلِ task-detail.php و requests.php)
+// وقتی toast فعلی دکمه داره، کلید Enter باید دکمهٔ پیش‌فرض (primary) رو
+// اجرا کنه — این listener سطح ماژوله تا موقع جایگزینی/بستن toast پاک بشه
+// ⚠️ عمدا var نه let: چندین صفحه (مثل task-detail.php و requests.php)
 // alert.js رو دوبار لود می‌کنن (یک‌بار از header.php، یک‌بار مستقیم خودشون).
-// let/const با تکرارِ خودش تویِ همون scope هم SyntaxError می‌ده و کلِ اسکریپت
-// (و در نتیجه کلِ صفحه) رو می‌شکنه؛ var در برابرِ لودِ دوباره امنه
+// let/const با تکرار خودش توی همون scope هم SyntaxError می‌ده و کل اسکریپت
+// (و در نتیجه کل صفحه) رو می‌شکنه؛ var در برابر لود دوباره امنه
 var _toastEnterHandler = null;
 
 function showToast(message, type = 'success', options = {}) {
@@ -162,7 +162,7 @@ function showToast(message, type = 'success', options = {}) {
 
         toast.appendChild(btnRow);
 
-        // ─── Enterِ صفحه‌کلید = کلیکِ دکمهٔ پیش‌فرض ─────────────
+        // ─── Enter صفحه‌کلید = کلیک دکمهٔ پیش‌فرض ─────────────
         // اگه هیچ دکمه‌ای style:'primary' نداشت، اولین دکمه پیش‌فرض حساب می‌شه
         const defaultBtnEl = primaryBtnEl || btnRow.firstElementChild;
         if (defaultBtnEl) {
@@ -240,18 +240,18 @@ function showToast(message, type = 'success', options = {}) {
 }
 
 /**
- * showInlineError — نمایشِ خطای پایدار داخلِ یک بخش از صفحه
+ * showInlineError — نمایش خطای پایدار داخل یک بخش از صفحه
  *
- * برخلافِ showToast (که گذراست و برایِ نتیجهٔ یک عملیات مناسبه)، این تابع
- * برایِ وقتیه که بارگذاریِ یک لیست/جدول/بخش شکست می‌خوره: محتوایِ همون
- * بخش با یک پیغامِ خطا جایگزین می‌شه و تا تلاشِ بعدی همون‌جا می‌مونه —
- * چون اگه فقط toast نشون بدیم، خودِ بخش خالی/نصفه می‌مونه بدونِ توضیح.
+ * برخلاف showToast (که گذراست و برای نتیجهٔ یک عملیات مناسبه)، این تابع
+ * برای وقتیه که بارگذاری یک لیست/جدول/بخش شکست می‌خوره: محتوای همون
+ * بخش با یک پیغام خطا جایگزین می‌شه و تا تلاش بعدی همون‌جا می‌مونه —
+ * چون اگه فقط toast نشون بدیم، خود بخش خالی/نصفه می‌مونه بدون توضیح.
  *
  * @param {string}          containerId    - id المانی که innerHTML‌ش جایگزین می‌شه
- * @param {string}          message        - متنِ خطا (خودکار escape می‌شه، برایِ جلوگیری از XSS)
+ * @param {string}          message        - متن خطا (خودکار escape می‌شه، برای جلوگیری از XSS)
  * @param {Object}          [opts]
- * @param {Function|string} [opts.onRetry]   - تابع یا نامِ تابعِ سراسری برایِ دکمهٔ «تلاش مجدد»؛ اگر ندید، دکمه نمایش داده نمی‌شه
- * @param {boolean}         [opts.asTableRow=false] - اگر true، به‌جایِ div یک <tr><td> می‌سازه (برایِ tbody)
+ * @param {Function|string} [opts.onRetry]   - تابع یا نام تابع سراسری برای دکمهٔ «تلاش مجدد»؛ اگر ندید، دکمه نمایش داده نمی‌شه
+ * @param {boolean}         [opts.asTableRow=false] - اگر true، به‌جای div یک <tr><td> می‌سازه (برای tbody)
  * @param {number}          [opts.colspan=1] - فقط وقتی asTableRow=true
  *
  * @example

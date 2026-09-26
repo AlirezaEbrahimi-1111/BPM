@@ -34,7 +34,7 @@ try {
     $target_user_id = $input['user_id'];
 
     // خواندن وضعیت فعلی کاربر
-    // 🔒 خط قرمز: supervisor/admin فقط در سازمانِ خودشان، manager فقط
+    // 🔒 خط قرمز: supervisor/admin فقط در سازمان خودشان، manager فقط
     // روی زیرمجموعهٔ خودش (زنجیرهٔ manager_id) — نه فراتر
     $getUser = $db->prepare("SELECT is_active FROM users WHERE id = ?");
     $getUser->execute([$target_user_id]);
@@ -47,8 +47,8 @@ try {
     }
 
     // معکوس کردن وضعیت — token_version هم بالا می‌ره تا در غیرفعال‌سازی،
-    // توکنِ از‌قبل‌صادرشده‌یِ این کاربر فوراً باطل بشه (نه این‌که تا انقضایِ
-    // طبیعیِ توکن، که می‌تونه تا ۳۰ روز باشه، بازم کار کنه)
+    // توکن از‌قبل‌صادرشده‌ی این کاربر فورا باطل بشه (نه این‌که تا انقضای
+    // طبیعی توکن، که می‌تونه تا ۳۰ روز باشه، بازم کار کنه)
     $newStatus = $targetUser['is_active'] == 1 ? 0 : 1;
 
     $updateStmt = $db->prepare("UPDATE users SET is_active = ?, token_version = token_version + 1 WHERE id = ?");

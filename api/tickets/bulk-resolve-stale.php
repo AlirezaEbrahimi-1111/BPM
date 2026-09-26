@@ -1,7 +1,7 @@
 <?php
 /**
- * تغییرِ دسته‌جمعیِ وضعیتِ تیکت‌هایِ «در انتظارِ پاسخِ کاربر» که از آخرین پیامشان
- * ۲۱ روز گذشته → «حل شده». فقط برایِ مدیرِ اصلیِ سیستم (user_id = 1).
+ * تغییر دسته‌جمعی وضعیت تیکت‌های «در انتظار پاسخ کاربر» که از آخرین پیامشان
+ * ۲۱ روز گذشته → «حل شده». فقط برای مدیر اصلی سیستم (user_id = 1).
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -31,7 +31,7 @@ try {
         exit;
     }
 
-    // 🔒 فقط مدیرِ اصلیِ سیستم
+    // 🔒 فقط مدیر اصلی سیستم
     if ((int) $user_id !== 1) {
         http_response_code(403);
         error_log("bulk-resolve-stale denied | user_id={$user_id}");
@@ -39,7 +39,7 @@ try {
         exit;
     }
 
-    // شناسهٔ وضعیت‌هایِ مبدأ/مقصد
+    // شناسهٔ وضعیت‌های مبدأ/مقصد
     $stmt = $db->prepare("SELECT id, name, label FROM ticket_statuses WHERE name IN ('waiting_reply','resolved')");
     $stmt->execute();
     $statuses = [];
@@ -53,8 +53,8 @@ try {
     $resolvedId    = (int) $statuses['resolved']['id'];
     $resolvedLabel = $statuses['resolved']['label'];
 
-    // تیکت‌هایِ واجدِ شرایط: وضعیت = waiting_reply و آخرین فعالیت (آخرین پیام،
-    // یا اگر پیامی نبود تاریخِ ساختِ تیکت) دستِ‌کم ۲۱ روزِ پیش بوده.
+    // تیکت‌های واجد شرایط: وضعیت = waiting_reply و آخرین فعالیت (آخرین پیام،
+    // یا اگر پیامی نبود تاریخ ساخت تیکت) دست‌کم ۲۱ روز پیش بوده.
     $sql = "
         SELECT t.id, t.ticket_number, t.subject, t.created_by, t.assigned_to
         FROM tickets t

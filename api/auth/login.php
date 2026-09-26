@@ -22,9 +22,9 @@ require_once __DIR__ . '/../../includes/audit-log.php';
 require_once __DIR__ . '/../../includes/user-sections.php';
 
 // ------------------- توابع کمکی (قبلی) -------------------
-// 🔒 قبلاً فقط بر اساسِ IP محدود می‌شد — مهاجمی با چند IP/پراکسیِ مختلف
-// می‌تونست رويِ یک حسابِ مشخص بدونِ محدودیت brute-force کنه. الان هم IP
-// هم خودِ نامِ کاربری جداگانه چک می‌شن؛ عبور از هرکدوم کافیه برایِ بلاک
+// 🔒 قبلا فقط بر اساس IP محدود می‌شد — مهاجمی با چند IP/پراکسی مختلف
+// می‌تونست روي یک حساب مشخص بدون محدودیت brute-force کنه. الان هم IP
+// هم خود نام کاربری جداگانه چک می‌شن؛ عبور از هرکدوم کافیه برای بلاک
 function checkRateLimit($ip, $db, $username = null)
 {
     $stmt = $db->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND attempted_at > (NOW() - INTERVAL 15 MINUTE)");
@@ -224,14 +224,14 @@ try {
         logSecurityEvent($user['id'], 'login_success', null, ['method' => 'otp']);
 
         unset($user['password']);
-        // 🆕 فهرستِ کاملِ واحدهایِ کاربر (نه فقطِ واحدِ اصلی) — بدونِ این، کاربرانِ
-        // چندواحدی (مثلاً هم انبار هم فنی) تویِ صفحاتِ سمتِ کلاینت (مثلِ جزئیاتِ
-        // تسک) فقط با واحدِ اصلی‌شون تشخیص داده می‌شن و دکمه‌هایِ اقدام برایِ
-        // واحدِ دومشون نمایش داده نمی‌شه — even though سرور خودش (TaskManager،
+        // 🆕 فهرست کامل واحدهای کاربر (نه فقط واحد اصلی) — بدون این، کاربران
+        // چندواحدی (مثلا هم انبار هم فنی) توی صفحات سمت کلاینت (مثل جزئیات
+        // تسک) فقط با واحد اصلی‌شون تشخیص داده می‌شن و دکمه‌های اقدام برای
+        // واحد دومشون نمایش داده نمی‌شه — even though سرور خودش (TaskManager،
         // us_userInSection) از قبل چندواحدی رو درست چک می‌کنه.
         $user['activity_sections'] = us_getUserSections($db, $user['id']);
-        // 🔒 نامِ سازمان هم تویِ خودِ جوابِ لاگین — تا localStorage.user_info
-        // این رو داشته باشه و هدر دیگه فقط به $_SESSION (که با انقضایِ زودتر
+        // 🔒 نام سازمان هم توی خود جواب لاگین — تا localStorage.user_info
+        // این رو داشته باشه و هدر دیگه فقط به $_SESSION (که با انقضای زودتر
         // از JWT، خالی می‌مونه و «کاربر جاری» نشون می‌ده) وابسته نباشه
         $user['organization_name'] = $_SESSION['organization_name'];
         echo json_encode([
@@ -257,8 +257,8 @@ try {
     $password = $data['password'];
     $remember_me = $data['remember_me'] ?? false;
 
-    // اعتبارسنجیِ ورودی قبل از چکِ rate limit انجام شد تا $username برایِ
-    // چکِ محدودیتِ حساب‌محور (نه فقط IP) در دسترس باشه
+    // اعتبارسنجی ورودی قبل از چک rate limit انجام شد تا $username برای
+    // چک محدودیت حساب‌محور (نه فقط IP) در دسترس باشه
     checkRateLimit($ip, $db, $username);
 
     $auth = new Auth();
@@ -282,15 +282,15 @@ try {
             $_SESSION['organization_name'] = 'یکتا همراهان ملک';
         }
 
-        // 🔒 نامِ سازمان هم تویِ خودِ جوابِ لاگین — دلیل: بالاتر توضیح داده شد
+        // 🔒 نام سازمان هم توی خود جواب لاگین — دلیل: بالاتر توضیح داده شد
         $result['user']['organization_name'] = $_SESSION['organization_name'];
 
         logSecurityEvent($result['user']['id'], 'login_success', null, ['method' => 'password']);
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
     } else {
         recordFailedLogin($ip, $db, $username);
-        // user_id عمداً null است — کاربرِ ناموفق هنوز شناسایی‌نشده؛ نامِ
-        // واردشده (نه رمز، هرگز) برایِ بررسیِ بعدی توی details ثبت می‌شه
+        // user_id عمدا null است — کاربر ناموفق هنوز شناسایی‌نشده؛ نام
+        // واردشده (نه رمز، هرگز) برای بررسی بعدی توی details ثبت می‌شه
         logSecurityEvent(null, 'login_failed', null, ['method' => 'password', 'username_attempted' => $username]);
         http_response_code(401);
         echo json_encode($result, JSON_UNESCAPED_UNICODE);

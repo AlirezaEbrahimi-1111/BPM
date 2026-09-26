@@ -215,7 +215,7 @@ class PersianDatePicker {
         }
     }
 
-    // تغییر در متد prevMonth برای جلوگیری از رفتن به ماه‌های کاملاً غیرفعال
+    // تغییر در متد prevMonth برای جلوگیری از رفتن به ماه‌های کاملا غیرفعال
     prevMonth() {
         const prevMonth = this.currentMonth - 1;
         const prevYear = this.currentMonth === 1 ? this.currentYear - 1 : this.currentYear;

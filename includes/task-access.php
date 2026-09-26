@@ -1,13 +1,13 @@
 <?php
 /**
- * قاعده‌ی مشترکِ «آیا این کاربر به این کار دسترسی داره؟» — قبلاً به‌طورِ
+ * قاعده‌ی مشترک «آیا این کاربر به این کار دسترسی داره؟» — قبلا به‌طور
  * مستقل در detail.php، get-attachments.php، و upload-attachment.php کپی
- * شده بود و به‌مرورِ زمان از هم واگرا شده بود (مثلاً upload-attachment.php
- * نه قانونِ task_viewers رو داشت نه قانونِ چک‌لیستِ چندواحدی رو). این فایل
- * تنها منبعِ حقیقتِ زنجیره‌یِ اصلیِ دسترسیه؛ قوانینِ تخصصیِ خودِ detail.php
- * (عضویتِ مرحله‌ی workflow، عضویتِ سراسریِ واحد برایِ کارهایِ روتین) همچنان
- * جداگانه در خودِ detail.php می‌مونن چون مخصوصِ نمایشِ کاملِ جزئیاتن، نه
- * لیست‌کردن/آپلودِ پیوست.
+ * شده بود و به‌مرور زمان از هم واگرا شده بود (مثلا upload-attachment.php
+ * نه قانون task_viewers رو داشت نه قانون چک‌لیست چندواحدی رو). این فایل
+ * تنها منبع حقیقت زنجیره‌ی اصلی دسترسیه؛ قوانین تخصصی خود detail.php
+ * (عضویت مرحله‌ی workflow، عضویت سراسری واحد برای کارهای روتین) همچنان
+ * جداگانه در خود detail.php می‌مونن چون مخصوص نمایش کامل جزئیاتن، نه
+ * لیست‌کردن/آپلود پیوست.
  *
  * $task باید حداقل این کلیدها رو داشته باشه: id, creator_id, assignee_id, organization_id
  */
@@ -26,32 +26,32 @@ function taskUserAccess(PDO $db, int $userId, array $task): array
         'viewer_can_view_checklist' => true,
     ];
 
-    // ۱. سازنده یا مسئولِ فعلی
+    // ۱. سازنده یا مسئول فعلی
     if ((int) $task['creator_id'] === $userId || (int) $task['assignee_id'] === $userId) {
         $result['has_access'] = true;
         return $result;
     }
 
-    // سوپرادمین یا supervisor/adminِ هم‌سازمانِ این کار
+    // سوپرادمین یا supervisor/admin هم‌سازمان این کار
     $me = loadUserForPermissions($db, $userId);
     if (hasPermission($me, 'view_all_org_tasks') && isSameOrganization($me, $task['organization_id'] ?? 0)) {
         $result['has_access'] = true;
         return $result;
     }
 
-    // managerِ فقط اگر سازنده/مسئولِ این کار زیرمجموعهٔ خودش باشد (نه هر «مدیر»ی در سازمان)
+    // manager فقط اگر سازنده/مسئول این کار زیرمجموعهٔ خودش باشد (نه هر «مدیر»ی در سازمان)
     if (canManageTargetUser($db, $me, (int) $task['creator_id'])
         || canManageTargetUser($db, $me, (int) $task['assignee_id'])) {
         $result['has_access'] = true;
         return $result;
     }
 
-    // بیننده‌هایِ صریحاً اضافه‌شده (فقط مشاهده — task_viewers) — این چک باید
-    // زودتر از قانونِ «شرکت‌کننده در تاریخچه» و «مسئولِ چک‌لیست» بررسی بشه:
-    // کسی که به‌عنوانِ بیننده اضافه می‌شه، تقریباً همیشه قبلاً یک ردِ پایی هم
-    // در تاریخچه‌یِ همون کار داره (ارجاع/تخصیصِ قبلی)، پس اگر آن قانون‌ها زودتر
-    // اجرا می‌شدند، همیشه دسترسیِ کامل و نامحدود برمی‌گردوندن و محدودیت‌هایِ
-    // صریحاً تنظیم‌شده (مثلاً غیرفعال‌کردنِ تاریخچه) هیچ‌وقت واقعاً اعمال نمی‌شد
+    // بیننده‌های صریحا اضافه‌شده (فقط مشاهده — task_viewers) — این چک باید
+    // زودتر از قانون «شرکت‌کننده در تاریخچه» و «مسئول چک‌لیست» بررسی بشه:
+    // کسی که به‌عنوان بیننده اضافه می‌شه، تقریبا همیشه قبلا یک رد پایی هم
+    // در تاریخچه‌ی همون کار داره (ارجاع/تخصیص قبلی)، پس اگر آن قانون‌ها زودتر
+    // اجرا می‌شدند، همیشه دسترسی کامل و نامحدود برمی‌گردوندن و محدودیت‌های
+    // صریحا تنظیم‌شده (مثلا غیرفعال‌کردن تاریخچه) هیچ‌وقت واقعا اعمال نمی‌شد
     $stmt = $db->prepare("SELECT can_view_attachments, can_view_history, can_view_checklist FROM task_viewers WHERE task_id = ? AND user_id = ?");
     $stmt->execute([$taskId, $userId]);
     $viewerRow = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -64,7 +64,7 @@ function taskUserAccess(PDO $db, int $userId, array $task): array
         return $result;
     }
 
-    // افرادی که در زنجیره‌ی ارجاعاتِ کار بوده‌اند (تاریخچه)
+    // افرادی که در زنجیره‌ی ارجاعات کار بوده‌اند (تاریخچه)
     $stmt = $db->prepare("
         SELECT COUNT(*) as count
         FROM task_history
@@ -80,7 +80,7 @@ function taskUserAccess(PDO $db, int $userId, array $task): array
         return $result;
     }
 
-    // مسئولِ حداقل یک آیتم چک‌لیست (کاربر مستقیم، یا هر یک از واحدهایش)
+    // مسئول حداقل یک آیتم چک‌لیست (کاربر مستقیم، یا هر یک از واحدهایش)
     $orgStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
     $orgStmt->execute([$userId]);
     $userOrg = $orgStmt->fetchColumn();

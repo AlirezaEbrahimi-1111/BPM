@@ -2,14 +2,14 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
-// آیا این کاربر منوی «فروش / فاکتور» را ببیند؟ (ماژول در حالِ ساخت، دسترسیِ محدود)
+// آیا این کاربر منوی «فروش / فاکتور» را ببیند؟ (ماژول در حال ساخت، دسترسی محدود)
 $__crmUid  = (int) ($_SESSION['user_id'] ?? $user_id ?? 0);
 $__crmMenu = isset($db) && ($db instanceof PDO) && crmModuleAllowed($db, $__crmUid);
-// «گزارش همکاران» را مدیران و سوپروایزرها هم می‌بینند (حتی بدونِ منوی فاکتور).
+// «گزارش همکاران» را مدیران و سوپروایزرها هم می‌بینند (حتی بدون منوی فاکتور).
 $__crmReportMenu = isset($db) && ($db instanceof PDO)
     && function_exists('crmReportAllowed') && crmReportAllowed($db, $__crmUid);
 ?>
-<!-- 🌗 تم روشن/تاریک — اعمال فوری از localStorage، پیش از رندرِ هدر (جلوگیریِ فلاش) -->
+<!-- 🌗 تم روشن/تاریک — اعمال فوری از localStorage، پیش از رندر هدر (جلوگیری فلاش) -->
 <script>
     function bpmGetTheme() {
         try { return localStorage.getItem('bpm_theme') || 'light'; }
@@ -38,33 +38,33 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
 <link rel="stylesheet" href="<?= asset('/assets/fonts/Vazirmatn-font-face.css') ?>">
 
 <style>
-    /* یکدست‌سازیِ بجِ زنگِ اعلان/مگافونِ اطلاعیه/چت: هر سه از حالا کلاسِ
-       .notification-badge رو مشترک استفاده می‌کنن (تعریفِ اصلی در custom.css،
-       سمتِ راست، سایزِ ۲۰px) — این بلاک قبلاً یک نسخهٔ دوم و ناقص از همون
+    /* یکدست‌سازی بج زنگ اعلان/مگافون اطلاعیه/چت: هر سه از حالا کلاس
+       .notification-badge رو مشترک استفاده می‌کنن (تعریف اصلی در custom.css،
+       سمت راست، سایز ۲۰px) — این بلاک قبلا یک نسخهٔ دوم و ناقص از همون
        استایل بود که با !important روی بعضی از خاصیت‌ها (نه همه) با نسخهٔ
-       custom.css قاطی می‌شد و باعثِ ناهماهنگیِ بجِ اطلاعیه (که کلاسِ جداگانهٔ
+       custom.css قاطی می‌شد و باعث ناهماهنگی بج اطلاعیه (که کلاس جداگانهٔ
        announcement-badge داشت) می‌شد */
     .notification-badge.hidden {
         display: none !important;
     }
 
-    /* آیکنِ پروفایل مثل بقیه‌ی آیکن‌های هدر (زنگ/مگافون) بدون فلشِ dropdown دیده شود */
+    /* آیکن پروفایل مثل بقیه‌ی آیکن‌های هدر (زنگ/مگافون) بدون فلش dropdown دیده شود */
     #profileDropdown.dropdown-toggle::after {
         display: none;
     }
 
-    /* پروفایل، آخرین آیکنِ سمت چپِ هدر است؛ کلاس‌های start/end بوت‌استرپ باعث می‌شدند
-       منو از لبهٔ چپِ صفحه بیرون بزند. اینجا صریحاً لبهٔ چپِ منو را به لبهٔ آیکن می‌چسبانیم
-       تا منو فقط به سمت راست (داخلِ صفحه) باز شود، نه به چپ (بیرونِ صفحه) */
+    /* پروفایل، آخرین آیکن سمت چپ هدر است؛ کلاس‌های start/end بوت‌استرپ باعث می‌شدند
+       منو از لبهٔ چپ صفحه بیرون بزند. اینجا صریحا لبهٔ چپ منو را به لبهٔ آیکن می‌چسبانیم
+       تا منو فقط به سمت راست (داخل صفحه) باز شود، نه به چپ (بیرون صفحه) */
     #profileDropdownMenu {
         left: 0 !important;
         right: auto !important;
         margin: 0 !important;
     }
 
-    /* نام و نام‌خانوادگیِ کاربرِ جاری، کنارِ نامِ شرکت — کمی ریزتر.
-       عمداً خارجِ تگِ <a> (نه داخلش) قرار گرفته تا هاور/کلیک‌پذیریِ
-       navbar-brand را به ارث نبرد — فقط متنِ ساده است. */
+    /* نام و نام‌خانوادگی کاربر جاری، کنار نام شرکت — کمی ریزتر.
+       عمدا خارج تگ <a> (نه داخلش) قرار گرفته تا هاور/کلیک‌پذیری
+       navbar-brand را به ارث نبرد — فقط متن ساده است. */
     #headerUserFullName {
         font-size: .8em;
         font-weight: 500;
@@ -73,9 +73,9 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         cursor: default;
     }
 
-    /* خطِ عمودیِ جداکنندهٔ نامِ شرکت و نامِ کاربر. span است ولی چون فرزندِ
-       مستقیمِ فلکسِ .container-fluid است بلوکی می‌شود و width/height می‌گیرد.
-       نمایشش را JS فقط وقتی نامِ کاربر موجود باشد روشن می‌کند. */
+    /* خط عمودی جداکنندهٔ نام شرکت و نام کاربر. span است ولی چون فرزند
+       مستقیم فلکس .container-fluid است بلوکی می‌شود و width/height می‌گیرد.
+       نمایشش را JS فقط وقتی نام کاربر موجود باشد روشن می‌کند. */
     .header-name-divider {
         width: 1px;
         height: 22px;
@@ -89,7 +89,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         background: var(--border-soft);
     }
 
-    /* موبایل/تبلت (≤۱۰۹۹): نامِ کاربر و خطِ جداکننده در نوارِ باریک جا
+    /* موبایل/تبلت (≤۱۰۹۹): نام کاربر و خط جداکننده در نوار باریک جا
        نمی‌شوند → حذف. */
     @media (max-width: 1099px) {
 
@@ -99,11 +99,11 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         }
     }
 
-    /* لپ‌تاپ (۱۱۰۰–۱۳۹۹): نام‌ونام‌خانوادگیِ کاربرِ جاری کنارِ نامِ شرکت،
-       بعد از خطِ عمودی — مثلِ دسکتاپ. با order:2 چسبیده به .navbar-brand
-       (آن هم order:2) می‌نشیند؛ فاصلهٔ وسطِ هدر از «بعد از لوگو» به «بعد
-       از نام» منتقل می‌شود تا لوگو + خط + نام کنارِ هم بمانند و گروهِ
-       آیکن‌ها + دکمهٔ حضور همچنان سمتِ چپ باشند. */
+    /* لپ‌تاپ (۱۱۰۰–۱۳۹۹): نام‌ونام‌خانوادگی کاربر جاری کنار نام شرکت،
+       بعد از خط عمودی — مثل دسکتاپ. با order:2 چسبیده به .navbar-brand
+       (آن هم order:2) می‌نشیند؛ فاصلهٔ وسط هدر از «بعد از لوگو» به «بعد
+       از نام» منتقل می‌شود تا لوگو + خط + نام کنار هم بمانند و گروه
+       آیکن‌ها + دکمهٔ حضور همچنان سمت چپ باشند. */
     @media (min-width: 1100px) and (max-width: 1399px) {
 
         #headerNameDivider,
@@ -111,9 +111,9 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             order: 2;
         }
 
-        /* تنها منبعِ فاصلهٔ وسطِ هدر: بعد از نامِ کاربر. (قبلاً یک
+        /* تنها منبع فاصلهٔ وسط هدر: بعد از نام کاربر. (قبلا یک
            margin-left:auto دومی هم روی #attendanceContainer بود که فضا را
-           نصف می‌کرد و دکمهٔ حضور را وسطِ هدر معلق می‌گذاشت.) */
+           نصف می‌کرد و دکمهٔ حضور را وسط هدر معلق می‌گذاشت.) */
         #headerUserFullName {
             margin-left: auto;
         }
@@ -123,7 +123,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         }
     }
 
-    /* ═══ سرچ سراسری — فلشِ زیرِ هدر + کادرِ کشویی ═══ */
+    /* ═══ سرچ سراسری — فلش زیر هدر + کادر کشویی ═══ */
     .gs-toggle {
         position: fixed;
         top: 3.5rem;
@@ -216,7 +216,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         border-color: #8e57fe;
     }
 
-    /* دکمه‌ی پاک‌کردنِ سرچ سراسری — سمتِ چپ، مقابلِ آیکنِ ذره‌بین؛ فقط وقتی متنی تایپ شده نشون داده می‌شه */
+    /* دکمه‌ی پاک‌کردن سرچ سراسری — سمت چپ، مقابل آیکن ذره‌بین؛ فقط وقتی متنی تایپ شده نشون داده می‌شه */
     .gs-search-box .gs-search-clear {
         position: absolute;
         left: 12px;
@@ -360,7 +360,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         }
     }
 
-    /* «خواندن همه» به‌شکلِ لینک، نه دکمه */
+    /* «خواندن همه» به‌شکل لینک، نه دکمه */
     .mark-all-link {
         background: none;
         border: none;
@@ -385,7 +385,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         text-decoration: none;
     }
 
-    /* ═══ پنلِ ادغام‌شدهٔ هدر: تب‌ها + پِین‌ها ═══ */
+    /* ═══ پنل ادغام‌شدهٔ هدر: تب‌ها + پین‌ها ═══ */
     #hdrPanelMenu .hdr-tabs {
         display: flex;
         border-bottom: 1px solid rgba(142, 87, 254, 0.12);
@@ -416,7 +416,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         font-size: 15px;
     }
 
-    /* بجِ «تعدادِ خوانده/دیده‌نشده» کنارِ عنوانِ هر تب */
+    /* بج «تعداد خوانده/دیده‌نشده» کنار عنوان هر تب */
     #hdrPanelMenu .hdr-tab-badge {
         min-width: 16px;
         height: 16px;
@@ -448,8 +448,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         display: none;
     }
 
-    /* پِین به‌صورتِ ستونِ فلکس: هدر/نوارِ جستجو ثابت، لیست خودش اسکرول
-       می‌خورد، فوترِ «مشاهده همه» همیشه پایینِ پنل و دیده می‌ماند — قبلاً
+    /* پین به‌صورت ستون فلکس: هدر/نوار جستجو ثابت، لیست خودش اسکرول
+       می‌خورد، فوتر «مشاهده همه» همیشه پایین پنل و دیده می‌ماند — قبلا
        با max-height ثابت روی لیست، هر وقت محتوا زیاد می‌شد فوتر از پنل
        بیرون می‌افتاد و پنهان می‌شد. */
     #hdrPanelMenu .hdr-pane.active {
@@ -471,12 +471,12 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         overflow-y: auto;
     }
 
-    /* جا شدنِ تب‌بار + پِینِ فعال با هم */
+    /* جا شدن تب‌بار + پین فعال با هم */
     #hdrPanelMenu.notification-dropdown {
         max-height: 560px !important;
     }
 
-    /* حالتِ تاریکِ پنلِ ادغام‌شده (سه تب) */
+    /* حالت تاریک پنل ادغام‌شده (سه تب) */
     :root[data-theme="dark"] #hdrPanelMenu.notification-dropdown {
         background: var(--surface) !important;
         box-shadow: 0 12px 48px rgba(0, 0, 0, .5);
@@ -500,16 +500,16 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         border-bottom-color: #b492ff;
     }
 
-    /* پنلِ اعلان‌ها کمی عریض‌تر تا هر سه تب راحت جا شوند (موقعیتِ افقی‌اش
-       در setupHdrPanel به‌صورتِ پویا زیرِ آیکنِ زنگوله تنظیم می‌شود)، و
-       چسبیده‌تر به هدر (فاصله‌ی کمتر از پایینِ نوار). */
+    /* پنل اعلان‌ها کمی عریض‌تر تا هر سه تب راحت جا شوند (موقعیت افقی‌اش
+       در setupHdrPanel به‌صورت پویا زیر آیکن زنگوله تنظیم می‌شود)، و
+       چسبیده‌تر به هدر (فاصله‌ی کمتر از پایین نوار). */
     #hdrPanelMenu.notification-dropdown {
         width: 440px !important;
         top: 60px !important;
     }
 
-    /* «مشاهدهٔ همه…» در هر سه تب: کارتِ حاشیه‌دار خودش کاملاً ثابت است
-       (بدونِ هاور)؛ فقط متنِ داخلش هنگامِ هاور زیرخط می‌گیرد. */
+    /* «مشاهدهٔ همه…» در هر سه تب: کارت حاشیه‌دار خودش کاملا ثابت است
+       (بدون هاور)؛ فقط متن داخلش هنگام هاور زیرخط می‌گیرد. */
     #hdrPanelMenu .ann-dropdown-footer {
         padding: 10px 12px 12px;
         border-top: 1px solid rgba(142, 87, 254, 0.12);
@@ -553,7 +553,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         vertical-align: middle;
     }
 
-    /* ردیفِ تیکت در پِینِ تیکت‌ها — بدونِ خطِ جداکننده (مثلِ اطلاعیه‌ها) */
+    /* ردیف تیکت در پین تیکت‌ها — بدون خط جداکننده (مثل اطلاعیه‌ها) */
     .hdr-ticket-item {
         display: block;
         padding: 11px 16px;
@@ -633,7 +633,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         color: #b492ff;
     }
 
-    /* ورود/خروج — خوانایی روی هدرِ بنفش (override قواعدِ کم‌کنتراستِ custom.css) */
+    /* ورود/خروج — خوانایی روی هدر بنفش (override قواعد کم‌کنتراست custom.css) */
     #attendanceContainer .attendance-complete {
         background: rgba(255, 255, 255, 0.95);
         color: #059669;
@@ -649,7 +649,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         color: #fff;
     }
 
-    /* ── کادرِ کلیکیِ حضوروغیاب (رفتار مشابهِ کادرِ نوتیفیکیشن) ── */
+    /* ── کادر کلیکی حضوروغیاب (رفتار مشابه کادر نوتیفیکیشن) ── */
     #attendanceContainer {
         position: relative;
     }
@@ -723,7 +723,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
     :root[data-theme="dark"] .att-abs-row:hover { background: rgba(142, 87, 254, .18); }
     .att-abs-row .name { font-weight: 600; }
 
-    /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) */
+    /* هم‌شکل با بج استاندارد پروژه (assets/css/custom.css: .status-badge) */
     .att-abs-badge {
         flex-shrink: 0;
         font-size: 0.7rem;
@@ -771,18 +771,18 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         <span class="header-name-divider" id="headerNameDivider" style="display:none;"></span>
         <span id="headerUserFullName" style="display:none;"></span>
         <script>
-            /* نام‌ونام‌خانوادگیِ کاربر از localStorage.user_info (نه سشنِ سرور) —
-               چون این مقدار همون لحظه‌یِ لاگین پر می‌شه و نیازی به لاگینِ
-               مجدد نداره (بر خلافِ $_SESSION که فقط موقعِ لاگین ست می‌شه) */
+            /* نام‌ونام‌خانوادگی کاربر از localStorage.user_info (نه سشن سرور) —
+               چون این مقدار همون لحظه‌ی لاگین پر می‌شه و نیازی به لاگین
+               مجدد نداره (بر خلاف $_SESSION که فقط موقع لاگین ست می‌شه) */
             (function () {
                 try {
                     var u = JSON.parse(localStorage.getItem('user_info') || '{}');
 
-                    // 🔒 نامِ سازمان: اگه localStorage.user_info مقدارش رو داشته
-                    // باشه (لاگین‌هایِ جدید، بعدِ این اصلاح)، جایگزینِ همونی می‌شه
-                    // که PHP از رویِ $_SESSION رندر کرده — چون $_SESSION زودتر از
-                    // JWT منقضی می‌شه و رویِ سشن‌هایِ قدیمی، هدر «کاربر جاری»
-                    // نشون می‌داد با اینکه کاربر هنوز (طبقِ JWT) لاگین بود
+                    // 🔒 نام سازمان: اگه localStorage.user_info مقدارش رو داشته
+                    // باشه (لاگین‌های جدید، بعد این اصلاح)، جایگزین همونی می‌شه
+                    // که PHP از روی $_SESSION رندر کرده — چون $_SESSION زودتر از
+                    // JWT منقضی می‌شه و روی سشن‌های قدیمی، هدر «کاربر جاری»
+                    // نشون می‌داد با اینکه کاربر هنوز (طبق JWT) لاگین بود
                     if (u.organization_name) {
                         var orgEl = document.getElementById('userName');
                         if (orgEl) orgEl.textContent = u.organization_name;
@@ -843,20 +843,20 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                     </a>
                 </li>
                 <?php
-                // 🔒 ریشه‌یِ باگِ «گاهی این گزینه دیده نمی‌شه»: قبلاً فقط از
+                // 🔒 ریشه‌ی باگ «گاهی این گزینه دیده نمی‌شه»: قبلا فقط از
                 // $_SESSION['organization_id'] خونده می‌شد — ولی این مقدار
-                // فقط لحظه‌ی لاگین (api/auth/login.php) نوشته می‌شه، جایِ
-                // دیگه‌ای هیچ‌وقت دوباره ست نمی‌شه. سشنِ PHP عمرِ کوتاهی داره
-                // (gc_maxlifetime) در حالی که JWT طولانی‌مدته — همون کلاس‌باگیِ
-                // قبلیِ پیش‌نمایشِ عکس‌ها (ست‌نشدنِ سشن). اگه سشنِ کاربر بینِ
-                // این صفحه و لاگینِ قبلی‌ش منقضی/بازسازی شده باشه (ولی خودِ
+                // فقط لحظه‌ی لاگین (api/auth/login.php) نوشته می‌شه، جای
+                // دیگه‌ای هیچ‌وقت دوباره ست نمی‌شه. سشن PHP عمر کوتاهی داره
+                // (gc_maxlifetime) در حالی که JWT طولانی‌مدته — همون کلاس‌باگی
+                // قبلی پیش‌نمایش عکس‌ها (ست‌نشدن سشن). اگه سشن کاربر بین
+                // این صفحه و لاگین قبلی‌ش منقضی/بازسازی شده باشه (ولی خود
                 // JWT هنوز معتبره، پس کاربر همچنان لاگین‌شده به‌نظر می‌رسه)،
-                // این کلید اصلاً وجود نداره و === 1 همیشه false می‌شه، حتی
-                // برایِ کاربرِ واقعیِ سازمانِ ۱. الان اول $__me['organization_id']
+                // این کلید اصلا وجود نداره و === 1 همیشه false می‌شه، حتی
+                // برای کاربر واقعی سازمان ۱. الان اول $__me['organization_id']
                 // رو امتحان می‌کنیم — همون‌ که page-bootstrap.php با شناسه‌ی
-                // کاربرِ *واقعاً*‌حل‌شده (سشن یا JWT یا کوکی، هرکدوم معتبر بود)
-                // تازه از دیتابیس می‌خونه، پس مستقل از عمرِ سشنه. session فقط
-                // fallbackِ آخره، برایِ صفحاتی که شاید $__me نداشته باشن.
+                // کاربر *واقعا*‌حل‌شده (سشن یا JWT یا کوکی، هرکدوم معتبر بود)
+                // تازه از دیتابیس می‌خونه، پس مستقل از عمر سشنه. session فقط
+                // fallback آخره، برای صفحاتی که شاید $__me نداشته باشن.
                 $__orgIdForMenu = (int) ($__me['organization_id'] ?? $_SESSION['organization_id'] ?? 0);
                 ?>
                 <?php if ($__orgIdForMenu === 1): ?>
@@ -938,7 +938,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                         </li>
                         <li id="errorLogMenuItem" style="display:none;">
                             <a class="dropdown-item" href="../../pages/error-log.php">
-                                <i class="bi bi-terminal ms-2"></i>مشاهده‌ی لاگِ خطا
+                                <i class="bi bi-terminal ms-2"></i>مشاهده‌ی لاگ خطا
                             </a>
                         </li>
                         <li id="hekmatBroadcastMenuItem" style="display:none;">
@@ -967,7 +967,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                     </ul>
                 </li>
                 <?php if (!empty($__crmMenu)): ?>
-                    <!-- منوی فروش/فاکتور — دسترسیِ محدود، ببین includes/crm_access.php (در حالِ ساخت) -->
+                    <!-- منوی فروش/فاکتور — دسترسی محدود، ببین includes/crm_access.php (در حال ساخت) -->
                     <li class="nav-item dropdown" id="navSalesInvoice">
                         <a class="nav-link dropdown-toggle" href="#" id="salesInvoiceDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -1021,7 +1021,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                     </li>
                 <?php endif; ?>
                 <?php if (!empty($__crmReportMenu) && empty($__crmMenu)): ?>
-                    <!-- مدیر/سوپروایزر بدونِ دسترسیِ کاملِ ماژول — فقط گزارش همکاران -->
+                    <!-- مدیر/سوپروایزر بدون دسترسی کامل ماژول — فقط گزارش همکاران -->
                     <li class="nav-item">
                         <a class="nav-link" href="/pages/inv-partner-report.php">
                             <i class="bi bi-people me-2"></i>گزارش همکاران
@@ -1057,14 +1057,14 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                 </a>
             </div>
 
-            <!-- آیکنِ دستیارِ هوش‌مصنوعی موقتاً مخفی — صفحه هنوز در حالِ توسعه/تسته -->
+            <!-- آیکن دستیار هوش‌مصنوعی موقتا مخفی — صفحه هنوز در حال توسعه/تسته -->
             <div class="nav-item" style="display:none;">
                 <a class="nav-link settings-btn" href="../../pages/ai-assistant-test.php" title="دستیار هوش‌مصنوعی">
                     <i class="bi bi-stars" style="font-size:1.2rem;color:var(--icon-accent);"></i>
                 </a>
             </div>
 
-            <!-- زنگوله: پنلِ ادغام‌شدهٔ اعلان‌ها / اطلاعیه‌های سازمانی / تیکت‌ها -->
+            <!-- زنگوله: پنل ادغام‌شدهٔ اعلان‌ها / اطلاعیه‌های سازمانی / تیکت‌ها -->
             <div class="dropdown" style="position: relative;">
                 <a href="#" class="nav-link position-relative settings-btn" id="notificationDropdown"
                     aria-expanded="false" style="display: inline-flex; align-items: center;">
@@ -1092,7 +1092,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                     </button>
                 </div>
 
-                <!-- پِینِ اعلان‌ها -->
+                <!-- پین اعلان‌ها -->
                 <div class="hdr-pane active" id="notificationDropdownMenu">
                     <div class="notification-header">
                         <span>اعلان‌ها</span>
@@ -1121,7 +1121,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                     </div>
                 </div>
 
-                <!-- پِینِ اطلاعیه‌های سازمانی -->
+                <!-- پین اطلاعیه‌های سازمانی -->
                 <div class="hdr-pane" id="announcementDropdownMenu">
                     <div class="notification-header">
                         <span>اطلاعیه‌های سازمانی</span>
@@ -1150,7 +1150,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                     </div>
                 </div>
 
-                <!-- پِینِ تیکت‌ها -->
+                <!-- پین تیکت‌ها -->
                 <div class="hdr-pane" id="hdrTicketsPane">
                     <div class="notification-header">
                         <span>تیکت‌ها</span>
@@ -1229,7 +1229,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
 </div>
 <?php $__st = new DateTime('now', new DateTimeZone('Asia/Tehran')); ?>
 <script>
-    /* زمانِ سرور — درون‌خطی تا کلاینت بدونِ round-trip با ساعتِ سرور هم‌کوک شود */
+    /* زمان سرور — درون‌خطی تا کلاینت بدون round-trip با ساعت سرور هم‌کوک شود */
     window.__SERVER_TIME__ = {
         epoch_ms: <?= (int) round(microtime(true) * 1000) ?>,
         offset_minutes: <?= (int) ($__st->getOffset() / 60) ?>,
@@ -1250,9 +1250,9 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
     var unreadCount = 0;
     var lastNotificationId = 0;
     let annUnreadCount = 0;
-    let annCache = {}; // ذخیرهٔ کاملِ اطلاعیه‌ها برای نمایش در مودال
+    let annCache = {}; // ذخیرهٔ کامل اطلاعیه‌ها برای نمایش در مودال
 
-    // ─── وضعیتِ فیلتر/جستجویِ لیستِ اعلان‌ها و اطلاعیه‌ها (هردو یکسان) ───
+    // ─── وضعیت فیلتر/جستجوی لیست اعلان‌ها و اطلاعیه‌ها (هردو یکسان) ───
     let annAllItems = [];
     let annFilterMode = 'all'; // 'all' | 'unread'
     let annSearchQuery = '';
@@ -1260,7 +1260,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
     let notifFilterMode = 'all';
     let notifSearchQuery = '';
 
-    /** برچسبِ گروهِ روز — «امروز»/«دیروز»/«قدیمی‌تر»، مبنا: امروزِ سرور (تهران) */
+    /** برچسب گروه روز — «امروز»/«دیروز»/«قدیمی‌تر»، مبنا: امروز سرور (تهران) */
     function bpmDayGroupLabel(dateStr) {
         if (window.TimeSync) {
             const df = TimeSync.daysFromToday(dateStr); // ۰ = امروز، ‑۱ = دیروز
@@ -1277,7 +1277,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         return 'قدیمی‌تر';
     }
 
-    /** items رو بر اساسِ روز (امروز/دیروز/قدیمی‌تر) گروه‌بندی می‌کنه، با همون ترتیبِ ورودی (که از قبل created_at DESC هست) */
+    /** items رو بر اساس روز (امروز/دیروز/قدیمی‌تر) گروه‌بندی می‌کنه، با همون ترتیب ورودی (که از قبل created_at DESC هست) */
     function bpmGroupByDay(items, dateField) {
         const order = ['امروز', 'دیروز', 'قدیمی‌تر'];
         const groups = {};
@@ -1324,10 +1324,10 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         hdrRefreshBellBadge();
     }
 
-    // تعدادِ تیکت‌هایی که پیامِ دیده‌نشده دارند (از loadHdrTickets پر می‌شود)
+    // تعداد تیکت‌هایی که پیام دیده‌نشده دارند (از loadHdrTickets پر می‌شود)
     var hdrTicketsUnseen = 0;
 
-    // بجِ کوچکِ کنارِ عنوانِ یک تب
+    // بج کوچک کنار عنوان یک تب
     function hdrSetTabBadge(tab, count) {
         var el = document.querySelector('#hdrPanelMenu .hdr-tab-badge[data-badge="' + tab + '"]');
         if (!el) return;
@@ -1339,7 +1339,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         }
     }
 
-    // بجِ زنگوله = مجموعِ سه تب؛ و هر تب بجِ جداگانهٔ خودش را می‌گیرد
+    // بج زنگوله = مجموع سه تب؛ و هر تب بج جداگانهٔ خودش را می‌گیرد
     function hdrRefreshBellBadge() {
         hdrSetTabBadge('notif', unreadCount || 0);
         hdrSetTabBadge('ann', annUnreadCount || 0);
@@ -1362,9 +1362,9 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
     // ============================================
     // بارگذاری اعلان‌ها
     // ============================================
-    // preData: اگه از قبل fetch شده باشه (مثلاً از باندلِ header/bootstrap.php
-    // در بارگذاریِ اولیه‌ی صفحه)، همون استفاده می‌شه؛ وگرنه (رفرش‌هایِ دوره‌ای
-    // با setInterval) مثلِ قبل مستقیم fetch می‌کنه.
+    // preData: اگه از قبل fetch شده باشه (مثلا از باندل header/bootstrap.php
+    // در بارگذاری اولیه‌ی صفحه)، همون استفاده می‌شه؛ وگرنه (رفرش‌های دوره‌ای
+    // با setInterval) مثل قبل مستقیم fetch می‌کنه.
     async function loadNotifications(preData) {
         const listContainer = document.getElementById('notificationList');
 
@@ -1433,7 +1433,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         renderNotificationList();
     }
 
-    /** خواندنِ همه‌ی اعلان‌های خوانده‌نشده — سراسری (نه فقط موارد بارگذاری‌شده/یک روز) */
+    /** خواندن همه‌ی اعلان‌های خوانده‌نشده — سراسری (نه فقط موارد بارگذاری‌شده/یک روز) */
     async function notifMarkAllRead() {
         const btn = document.getElementById('notifMarkAllBtn');
         if (btn && btn.disabled) return;
@@ -1456,7 +1456,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         }
     }
 
-    // ─── رندر لیست (از notifAllItems، با فیلتر/جستجویِ فعلی) ───
+    // ─── رندر لیست (از notifAllItems، با فیلتر/جستجوی فعلی) ───
     function renderNotificationList() {
         const listContainer = document.getElementById('notificationList');
         if (!listContainer) return;
@@ -1573,7 +1573,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         renderAnnouncementList();
     }
 
-    /** خواندنِ همه‌ی اطلاعیه‌های خوانده‌نشده — سراسری (نه فقط موارد بارگذاری‌شده/یک روز) */
+    /** خواندن همه‌ی اطلاعیه‌های خوانده‌نشده — سراسری (نه فقط موارد بارگذاری‌شده/یک روز) */
     async function annMarkAllRead() {
         const btn = document.getElementById('annMarkAllBtn');
         if (btn && btn.disabled) return;
@@ -1599,7 +1599,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         }
     }
 
-    // ─── رندر لیست (از annAllItems، با فیلتر/جستجویِ فعلی) ───
+    // ─── رندر لیست (از annAllItems، با فیلتر/جستجوی فعلی) ───
     function renderAnnouncementList() {
         const listContainer = document.getElementById('announcementList');
         if (!listContainer) return;
@@ -1664,11 +1664,11 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             });
         });
 
-        // footerِ «مشاهده همه» به‌شکلِ استاتیک در markupِ پِین است (خارج از این کانتینر)
+        // footer «مشاهده همه» به‌شکل استاتیک در markup پین است (خارج از این کانتینر)
         listContainer.innerHTML = html;
     }
 
-    // ─── کلیک روی اطلاعیه ⟵ باز کردنِ مودالِ جزئیات ───
+    // ─── کلیک روی اطلاعیه ⟵ باز کردن مودال جزئیات ───
     function handleAnnouncementClick(ev, annId) {
         if (ev) {
             ev.preventDefault();
@@ -1678,18 +1678,18 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         // علامت خوانده‌شده
         markAnnouncementRead(annId);
 
-        // بستن پنلِ ادغام‌شده
+        // بستن پنل ادغام‌شده
         const menu = document.getElementById('hdrPanelMenu');
         if (menu) menu.classList.remove('show');
 
-        // باز کردنِ مودالِ جزئیات
+        // باز کردن مودال جزئیات
         const ann = annCache[annId];
         if (ann) openAnnouncementModal(ann);
     }
 
-    // ─── مودالِ جزئیاتِ اطلاعیه ───
+    // ─── مودال جزئیات اطلاعیه ───
     function openAnnouncementModal(ann) {
-        closeAnnouncementModal(); // اگر مودالِ قبلی باز بود
+        closeAnnouncementModal(); // اگر مودال قبلی باز بود
 
         const priority = ann.priority || 'normal';
         const prMap = {
@@ -1755,7 +1755,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
 
     // ─── علامت خوانده شده (تک) ───
     async function markAnnouncementRead(annId) {
-        // annAllItems رو هم به‌روز کن — وگرنه رندرِ بعدی (جستجو/فیلتر) دوباره «نخوانده» نشونش می‌ده
+        // annAllItems رو هم به‌روز کن — وگرنه رندر بعدی (جستجو/فیلتر) دوباره «نخوانده» نشونش می‌ده
         const cached = annAllItems.find(a => Number(a.id) === Number(annId));
         if (cached && (cached.is_read === false || cached.is_read === 0)) {
             cached.is_read = true;
@@ -1784,7 +1784,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         }
     }
 
-    // ═══ پنلِ ادغام‌شدهٔ هدر (اعلان‌ها / اطلاعیه‌ها / تیکت‌ها) ═══
+    // ═══ پنل ادغام‌شدهٔ هدر (اعلان‌ها / اطلاعیه‌ها / تیکت‌ها) ═══
     var hdrActiveTab = 'notif';
 
     function hdrSwitchTab(tab) {
@@ -1856,7 +1856,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             if (!q) return true;
             return ((t.subject || '') + ' ' + (t.ticket_number || '')).toLowerCase().indexOf(q) > -1;
         });
-        // تیکت‌هایی که «توپ در زمینِ کاربر است» بالایِ لیست
+        // تیکت‌هایی که «توپ در زمین کاربر است» بالای لیست
         items.sort(function(a, b) {
             var ua = Number(a.awaiting_you) > 0 ? 1 : 0;
             var ub = Number(b.awaiting_you) > 0 ? 1 : 0;
@@ -1884,9 +1884,9 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         }).join('');
     }
 
-    // منوی پروفایل (Bootstrap dropdown) را ببند — وقتی اعلان/اطلاعیه/سرچِ سراسری
+    // منوی پروفایل (Bootstrap dropdown) را ببند — وقتی اعلان/اطلاعیه/سرچ سراسری
     // باز می‌شود. لازم است چون آن toggleها e.stopPropagation() می‌زنند و در نتیجه
-    // مکانیزمِ «کلیک بیرون» بوت‌استرپ برای بستنِ منوی پروفایل هیچ‌وقت اجرا نمی‌شود.
+    // مکانیزم «کلیک بیرون» بوت‌استرپ برای بستن منوی پروفایل هیچ‌وقت اجرا نمی‌شود.
     function closeHeaderProfileDropdown() {
         const menu = document.getElementById('profileDropdownMenu');
         if (!menu || !menu.classList.contains('show')) return;
@@ -1896,7 +1896,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         else menu.classList.remove('show');
     }
 
-    // برعکس: وقتی منوی پروفایل باز می‌شود، پنلِ ادغام‌شده و سرچ بسته شوند
+    // برعکس: وقتی منوی پروفایل باز می‌شود، پنل ادغام‌شده و سرچ بسته شوند
     function setupProfileDropdownSync() {
         const toggle = document.getElementById('profileDropdown');
         if (!toggle) return;
@@ -1907,7 +1907,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         });
     }
 
-    // ─── راه‌اندازیِ زنگوله/پنلِ ادغام‌شده ───
+    // ─── راه‌اندازی زنگوله/پنل ادغام‌شده ───
     function setupHdrPanel() {
         const toggle = document.getElementById('notificationDropdown');
         const menu = document.getElementById('hdrPanelMenu');
@@ -1923,8 +1923,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                 menu.classList.remove('show');
             } else {
                 menu.classList.add('show');
-                // لبهٔ چپِ پنل دقیقاً زیرِ آیکنِ زنگوله (نه گوشهٔ صفحه).
-                // روی موبایل به همان چیدمانِ تمام‌عرضِ CSS واگذار می‌کنیم.
+                // لبهٔ چپ پنل دقیقا زیر آیکن زنگوله (نه گوشهٔ صفحه).
+                // روی موبایل به همان چیدمان تمام‌عرض CSS واگذار می‌کنیم.
                 if (window.innerWidth > 768) {
                     var br = toggle.getBoundingClientRect();
                     menu.style.setProperty('left', Math.max(12, Math.round(br.left)) + 'px', 'important');
@@ -1964,7 +1964,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
 
     // ─── توابع کمکی ───
     function getSmartAnnTime(dateString) {
-        // زمانِ نسبی از منبعِ یگانه (ساعتِ سرور، نه دستگاه) — time-sync.js
+        // زمان نسبی از منبع یگانه (ساعت سرور، نه دستگاه) — time-sync.js
         return window.TimeSync ? TimeSync.timeAgo(dateString) : '';
     }
 
@@ -2051,7 +2051,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         if (!authToken) return;
         try {
             // ✅ از go-api سرو می‌شود؛ برگشت = این را به '/api/notifications/new.php' برگردان.
-            // (تفاوتِ آگاهانه: اینجا bypass_self_filter را درست‌تر از PHP اعمال می‌کند)
+            // (تفاوت آگاهانه: اینجا bypass_self_filter را درست‌تر از PHP اعمال می‌کند)
             const apiUrl = '/go/api/notifications/new' + '?since=' + lastNotificationId;
             const response = await fetch(apiUrl, {
                 headers: {
@@ -2069,7 +2069,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         }
     }
     // ============================================
-    // ✅ نشانگرِ پیام‌های خوانده‌نشدهٔ چت (هدر)
+    // ✅ نشانگر پیام‌های خوانده‌نشدهٔ چت (هدر)
     // ============================================
     async function updateChatUnreadBadge(preData) {
         if (!authToken) return;
@@ -2088,7 +2088,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                 data = await response.json();
             }
             if (!data.success) return;
-            // گفتگوهای بی‌صداشده در شمارشِ زنگوله‌ی کلیِ هدر حساب نمی‌شوند
+            // گفتگوهای بی‌صداشده در شمارش زنگوله‌ی کلی هدر حساب نمی‌شوند
             const total = (data.conversations || []).reduce((sum, c) => sum + (c.is_muted ? 0 : (c.unread_count || 0)), 0);
             if (total > 0) {
                 badge.textContent = total > 99 ? '۹۹+' : toFa(total);
@@ -2117,9 +2117,9 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             if (preData) {
                 data = preData;
             } else {
-                // ✅ از go-api سرو می‌شود (پورتِ api/attendance/today-status.php). خروجی
-                // بایت‌به‌بایت برابر است و با تستِ سایه‌ای روی پروداکشن تأیید شده.
-                // فایلِ PHP دست‌نخورده می‌ماند به‌عنوانِ fallback؛ برگشت = این را به
+                // ✅ از go-api سرو می‌شود (پورت api/attendance/today-status.php). خروجی
+                // بایت‌به‌بایت برابر است و با تست سایه‌ای روی پروداکشن تأیید شده.
+                // فایل PHP دست‌نخورده می‌ماند به‌عنوان fallback؛ برگشت = این را به
                 // getApiUrl('attendance/today-status.php') برگردان.
                 const apiUrl = '/go/api/attendance/today-status';
 
@@ -2131,7 +2131,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                     },
                     cache: 'no-store',
                     // 🔒 اگه درخواست به هر دلیلی (تداخل با درخواست‌های دیگه، شبکه، ...) خیلی طول
-                    // بکشه، به‌جای گیرکردنِ ابدیِ اسپینر، بعد از ۸ ثانیه لغو و مخفی می‌شه
+                    // بکشه، به‌جای گیرکردن ابدی اسپینر، بعد از ۸ ثانیه لغو و مخفی می‌شه
                     signal: AbortSignal.timeout(8000)
                 });
 
@@ -2167,7 +2167,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                     container.appendChild(button);
                 });
             } else if (data.window_message) {
-                // بازه‌ی بینِ دو شیفت ⟵ پیامِ «الان زمانِ ثبت ورود نیست»
+                // بازه‌ی بین دو شیفت ⟵ پیام «الان زمان ثبت ورود نیست»
                 const waiting = document.createElement('span');
                 waiting.className = 'attendance-complete';
                 waiting.innerHTML = '<i class="bi bi-clock-history"></i>';
@@ -2181,8 +2181,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                 container.appendChild(complete);
             }
 
-            // آیکنِ اطلاعات → کادرِ کلیکیِ حضوروغیاب: ساعتِ خلاصهٔ خودت +
-            // لیستِ غایبینِ امروزِ سازمان. برای همهٔ کاربران، نه فقط مدیر.
+            // آیکن اطلاعات → کادر کلیکی حضوروغیاب: ساعت خلاصهٔ خودت +
+            // لیست غایبین امروز سازمان. برای همهٔ کاربران، نه فقط مدیر.
             _attTodayData = data;
             const infoBtn = document.createElement('button');
             infoBtn.className = 'attendance-info-btn';
@@ -2204,7 +2204,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             container.appendChild(panel);
             renderAttendancePanel();
 
-            // تازه‌سازیِ لیستِ غایبین در هر بارگذاری/رفرشِ صفحه
+            // تازه‌سازی لیست غایبین در هر بارگذاری/رفرش صفحه
             loadAbsentToday();
 
         } catch (error) {
@@ -2214,15 +2214,15 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
     }
 
     // ============================================
-    //  کادرِ کلیکیِ حضوروغیاب (رفتار مشابهِ کادرِ نوتیفیکیشن)
+    //  کادر کلیکی حضوروغیاب (رفتار مشابه کادر نوتیفیکیشن)
     // ============================================
-    let _attTodayData = null;   // آخرین پاسخِ today-status.php
-    let _attAbsData   = null;   // آخرین پاسخِ absent-today.php
+    let _attTodayData = null;   // آخرین پاسخ today-status.php
+    let _attAbsData   = null;   // آخرین پاسخ absent-today.php
     let _attPanelOpen = false;
 
     function _attFa(v) { return (typeof toFa === 'function' ? toFa(v) : String(v == null ? '' : v)); }
 
-    // ساعتِ خلاصه: ورود۱ | خروج۱ | ورود۲ | خروج۲ — nullها حذف، تعدادِ فرد = هنوز داخلی
+    // ساعت خلاصه: ورود۱ | خروج۱ | ورود۲ | خروج۲ — nullها حذف، تعداد فرد = هنوز داخلی
     function buildMyTimeCompact(data) {
         if (!data) return null;
         const parts = [
@@ -2290,7 +2290,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         panel.hidden = !_attPanelOpen;
         if (_attPanelOpen) {
             renderAttendancePanel();
-            loadAbsentToday();             // تازه‌سازی هنگامِ باز شدن
+            loadAbsentToday();             // تازه‌سازی هنگام باز شدن
         }
     }
 
@@ -2334,13 +2334,13 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         return lines.length > 0 ? lines.join('<br>') : null;
     }
     // ============================================
-    // شناسهٔ پایدارِ دستگاه — یک کدِ تصادفیِ یک‌بارساخته (نه محاسبه‌شده از
-    // مشخصاتِ مرورگر). نسخهٔ قبلی از User-Agent/canvas/اندازهٔ صفحه هش
-    // می‌ساخت که با هر آپدیتِ مرورگر یا رندرِ متفاوتِ فونت/GPU عوض می‌شد و
-    // کاربر را هر چند روز یک‌بار دوباره «در انتظارِ تأیید» می‌کرد. این کد
-    // فقط یک‌بار (اولین بازدید) تصادفی ساخته و برایِ همیشه همان می‌ماند —
-    // هم در localStorage هم در یک کوکیِ بلندمدت، تا از دستِ‌رفتنِ یکی از
-    // این دو (مثلاً پاک‌شدنِ localStorage توسطِ ITPِ سافاری) مشکلی پیش نیاد
+    // شناسهٔ پایدار دستگاه — یک کد تصادفی یک‌بارساخته (نه محاسبه‌شده از
+    // مشخصات مرورگر). نسخهٔ قبلی از User-Agent/canvas/اندازهٔ صفحه هش
+    // می‌ساخت که با هر آپدیت مرورگر یا رندر متفاوت فونت/GPU عوض می‌شد و
+    // کاربر را هر چند روز یک‌بار دوباره «در انتظار تأیید» می‌کرد. این کد
+    // فقط یک‌بار (اولین بازدید) تصادفی ساخته و برای همیشه همان می‌ماند —
+    // هم در localStorage هم در یک کوکی بلندمدت، تا از دست‌رفتن یکی از
+    // این دو (مثلا پاک‌شدن localStorage توسط ITP سافاری) مشکلی پیش نیاد
     // ============================================
     function getDeviceFingerprint() {
         try {
@@ -2380,8 +2380,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         } catch (e) {}
     }
 
-    // هش ساده (FNV-1a 32بیت → رشتهٔ هگز ۱۶ کاراکتری) — فقط به‌عنوانِ راهِ
-    // پشتیبان اگه crypto.randomUUID در دسترس نبود (مرورگرهایِ خیلی قدیمی)
+    // هش ساده (FNV-1a 32بیت → رشتهٔ هگز ۱۶ کاراکتری) — فقط به‌عنوان راه
+    // پشتیبان اگه crypto.randomUUID در دسترس نبود (مرورگرهای خیلی قدیمی)
     function simpleHash(str) {
         let h1 = 0x811c9dc5,
             h2 = 0x1000193;
@@ -2475,11 +2475,11 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
     //     }, 2500);
     // }
 
-    // بازنویسیِ سراسریِ alert→toast قبلاً اینجا بود (به‌عنوانِ یک لایهٔ ایمنیِ
-    // پنهان با یک قاعدهٔ حدسی برایِ تشخیصِ موفق/خطا که پیغام‌هایِ خطا رو هم
-    // با رنگِ warning نشون می‌داد، نه error). حالا که همهٔ فراخوانی‌هایِ
-    // alert()/confirm() توی کدِ پروژه مستقیماً به showToast()/uiConfirm()
-    // تبدیل شدن، این بازنویسیِ سراسری دیگه لازم نیست
+    // بازنویسی سراسری alert→toast قبلا اینجا بود (به‌عنوان یک لایهٔ ایمنی
+    // پنهان با یک قاعدهٔ حدسی برای تشخیص موفق/خطا که پیغام‌های خطا رو هم
+    // با رنگ warning نشون می‌داد، نه error). حالا که همهٔ فراخوانی‌های
+    // alert()/confirm() توی کد پروژه مستقیما به showToast()/uiConfirm()
+    // تبدیل شدن، این بازنویسی سراسری دیگه لازم نیست
 
     // ── مودال تأیید (جایگزین confirm) ──
     function uiConfirm(message, onYes, opts = {}) {
@@ -2673,17 +2673,17 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         const user = JSON.parse(userInfo);
         const isManager = (user.role === 'management' || user.role === 'supervisor');
         const isFullAdmin = (user.role === 'supervisor');
-        // روزهای تعطیل: هر سوپروایزر می‌تونه تعطیلیِ سازمانِ خودش رو مدیریت کنه
-        // (تعطیلیِ سراسری همچنان فقط با id=1 قابلِ‌ساختنه، ولی خودِ صفحه باید
-        // برایِ همهٔ سوپروایزرها باز بشه)
+        // روزهای تعطیل: هر سوپروایزر می‌تونه تعطیلی سازمان خودش رو مدیریت کنه
+        // (تعطیلی سراسری همچنان فقط با id=1 قابل‌ساختنه، ولی خود صفحه باید
+        // برای همهٔ سوپروایزرها باز بشه)
         const holidaysItem = document.getElementById('holidaysMenuItem');
         if (holidaysItem) {
             holidaysItem.style.display = isFullAdmin ? 'block' : 'none';
         }
-        // 🔒 فقط سوپرادمین (هم‌راستا با getSuperAdminIds سمتِ سرور: ۱ و ۱۹) —
-        // این فقط نمایش/مخفی‌بودنِ لینکه، مرزِ امنیتیِ واقعی سمتِ سرورِ
+        // 🔒 فقط سوپرادمین (هم‌راستا با getSuperAdminIds سمت سرور: ۱ و ۱۹) —
+        // این فقط نمایش/مخفی‌بودن لینکه، مرز امنیتی واقعی سمت سرور
         // security-log.php خودش با isSuperAdmin چک می‌شه
-        // 🔒 «رصد امنیتی» و «مشاهده‌ی لاگِ خطا» — طبقِ درخواستِ صریح، فقط
+        // 🔒 «رصد امنیتی» و «مشاهده‌ی لاگ خطا» — طبق درخواست صریح، فقط
         // id=1 (نه ۱۹) این دوتا رو توی منو می‌بینه.
         const securityLogItem = document.getElementById('securityLogMenuItem');
         if (securityLogItem) {
@@ -2720,16 +2720,16 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         const user = JSON.parse(userInfo);
         const isManager = (parseInt(user.id) === 1) || ['management', 'supervisor'].includes(user.role);
         if (isManager) return; // مدیران کل منوی نظارت را از قبل می‌بینند
-        // کاربرِ واحد: همیشه «نظارت بر روتین‌های فعال» نمایش داده شود (بدون شرطِ داشتن روتین)
+        // کاربر واحد: همیشه «نظارت بر روتین‌های فعال» نمایش داده شود (بدون شرط داشتن روتین)
         const overviewMenu = document.getElementById('navOverview');
         if (overviewMenu) overviewMenu.style.display = 'block';
         const tasksItem = document.getElementById('overviewTasksItem');
         if (tasksItem) tasksItem.style.display = 'none'; // فقط زیرمنوی روتین‌ها برای کاربر واحد
     }
-    // (بازِ/بستهٔ زنگوله حالا در setupHdrPanel مدیریت می‌شود — پنلِ ادغام‌شده)
+    // (باز/بستهٔ زنگوله حالا در setupHdrPanel مدیریت می‌شود — پنل ادغام‌شده)
 
     // ============================================
-    // سرچ سراسری (فلشِ زیرِ هدر)
+    // سرچ سراسری (فلش زیر هدر)
     // ============================================
     var gsSearchTimer = null;
     var gsLastQuery = '';
@@ -2765,7 +2765,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             return;
         }
 
-        // بستن پنلِ ادغام‌شده و منوی پروفایل اگه باز بودن
+        // بستن پنل ادغام‌شده و منوی پروفایل اگه باز بودن
         var hdrPanel = document.getElementById('hdrPanelMenu');
         if (hdrPanel) hdrPanel.classList.remove('show');
         closeHeaderProfileDropdown();
@@ -2820,7 +2820,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                // اگه کاربر تا وقتِ برگشتِ پاسخ چیزِ دیگه‌ای تایپ کرده، این پاسخِ قدیمی رو نادیده بگیر
+                // اگه کاربر تا وقت برگشت پاسخ چیز دیگه‌ای تایپ کرده، این پاسخ قدیمی رو نادیده بگیر
                 if (q !== gsLastQuery) return;
                 if (!data.success) {
                     box.innerHTML = '<div class="gs-hint">خطا در جستجو</div>';
@@ -2860,8 +2860,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         }).join('');
     }
 
-    /** کلیک روی نتیجه — اطلاعیه: بازکردنِ همون مودالِ آشنا (بدونِ رفتن به صفحه‌ی جدید)؛
-        نوتیفیکیشن: علامتِ خوانده‌شده + رفتن به آیتمِ مرتبط (اگه لینکی داشت) */
+    /** کلیک روی نتیجه — اطلاعیه: بازکردن همون مودال آشنا (بدون رفتن به صفحه‌ی جدید)؛
+        نوتیفیکیشن: علامت خوانده‌شده + رفتن به آیتم مرتبط (اگه لینکی داشت) */
     function gsResultClick(idx, ev) {
         var r = gsResultsCache[idx];
         if (!r) return;
@@ -2898,7 +2898,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             }
             return;
         }
-        // بقیه‌ی انواع: لینکِ ساده (رفتارِ پیش‌فرضِ <a> کافیه)
+        // بقیه‌ی انواع: لینک ساده (رفتار پیش‌فرض <a> کافیه)
     }
 
     document.addEventListener('click', function(e) {
@@ -2980,14 +2980,14 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             });
         }
 
-        // بارگذاریِ اولیه‌یِ ۴ فراخوانیِ سطحِ هدر (اعلان‌ها، پیام‌ها، وضعیتِ
-        // حضور، چت) با یک درخواستِ باندل‌شده به‌جایِ ۴ فراخوانیِ هم‌زمانِ جدا —
-        // رفرش‌هایِ دوره‌ای (setInterval پایین) همچنان جدا fetch می‌کنن چون
-        // فاصله‌ی زمانیِ متفاوتی دارن و هم‌زمان نیستن.
-        // نشستِ نامعتبر: توکن هست ولی سرور ۴۰۱ می‌دهد (سشنِ قدیمی/منقضی).
-        // در این حالت به‌جایِ ماندن روی صفحهٔ خالی، توکن را پاک و به لاگین
-        // ریدایرکت می‌کنیم. فقط رویِ ۴۰۱ِ صریح از اندپوینتِ احرازدارِ هدر —
-        // نه خطایِ شبکه/۵۰۰ — تا اشتباهی ریدایرکت نشود.
+        // بارگذاری اولیه‌ی ۴ فراخوانی سطح هدر (اعلان‌ها، پیام‌ها، وضعیت
+        // حضور، چت) با یک درخواست باندل‌شده به‌جای ۴ فراخوانی هم‌زمان جدا —
+        // رفرش‌های دوره‌ای (setInterval پایین) همچنان جدا fetch می‌کنن چون
+        // فاصله‌ی زمانی متفاوتی دارن و هم‌زمان نیستن.
+        // نشست نامعتبر: توکن هست ولی سرور ۴۰۱ می‌دهد (سشن قدیمی/منقضی).
+        // در این حالت به‌جای ماندن روی صفحهٔ خالی، توکن را پاک و به لاگین
+        // ریدایرکت می‌کنیم. فقط روی ۴۰۱ صریح از اندپوینت احرازدار هدر —
+        // نه خطای شبکه/۵۰۰ — تا اشتباهی ریدایرکت نشود.
         var hdrAuthFailed = false;
         function hdrHandleAuthFailure() {
             if (hdrAuthFailed) return;
@@ -2996,8 +2996,8 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('user_info');
             } catch (e) {}
-            // ضدِ حلقه: اگر همین چند ثانیهٔ پیش از لاگین برگشتیم و باز ۴۰۱ شد،
-            // دوباره ریدایرکت نکن (احتمالاً مشکلِ دیگری است، نه توکن).
+            // ضد حلقه: اگر همین چند ثانیهٔ پیش از لاگین برگشتیم و باز ۴۰۱ شد،
+            // دوباره ریدایرکت نکن (احتمالا مشکل دیگری است، نه توکن).
             var now = Date.now(), last = 0;
             try { last = parseInt(sessionStorage.getItem('hdrAuthRedirectTs') || '0', 10); } catch (e) {}
             if (now - last < 4000) return;
@@ -3027,15 +3027,15 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             }
         }
 
-        // 🔒 چند اندپوینت (دانلودِ فایلِ چت، تیکت) چون امکانِ فرستادنِ هدرِ
-        // Authorization ندارن (باز شدن در تبِ جدید یا <img src>)، به‌جایِ توکنِ
-        // JWT توی URL (که قبلاً امنیتی نبود — نشتِ توکن در لاگ/DOM)، به فالبکِ
-        // $_SESSION تکیه می‌کنن. اما این سشن با gc_maxlifetime پیش‌فرضِ PHP (~۲۴
-        // دقیقه) منقضی می‌شه، در حالی که JWT ساعت‌ها/روزها معتبره — یعنی بعدِ
-        // مدتی استفاده‌ی مداوم از یک صفحه (بدون رفرشِ کامل)، سشن خاموش خاموش
-        // می‌شه و دانلود/پیش‌نمایشِ عکس با «عدم احراز هویت» شکست می‌خوره، با
-        // اینکه کاربر هنوز کاملاً لاگین هست. این تازه‌سازیِ دوره‌ای سشن رو با
-        // همون JWTِ جاری زنده نگه می‌داره تا هیچ‌وقت این‌قدر بی‌کار نمونه.
+        // 🔒 چند اندپوینت (دانلود فایل چت، تیکت) چون امکان فرستادن هدر
+        // Authorization ندارن (باز شدن در تب جدید یا <img src>)، به‌جای توکن
+        // JWT توی URL (که قبلا امنیتی نبود — نشت توکن در لاگ/DOM)، به فالبک
+        // $_SESSION تکیه می‌کنن. اما این سشن با gc_maxlifetime پیش‌فرض PHP (~۲۴
+        // دقیقه) منقضی می‌شه، در حالی که JWT ساعت‌ها/روزها معتبره — یعنی بعد
+        // مدتی استفاده‌ی مداوم از یک صفحه (بدون رفرش کامل)، سشن خاموش خاموش
+        // می‌شه و دانلود/پیش‌نمایش عکس با «عدم احراز هویت» شکست می‌خوره، با
+        // اینکه کاربر هنوز کاملا لاگین هست. این تازه‌سازی دوره‌ای سشن رو با
+        // همون JWT جاری زنده نگه می‌داره تا هیچ‌وقت این‌قدر بی‌کار نمونه.
         function refreshServerSession() {
             if (!authToken) return;
             fetch('/api/auth/set-session.php', {
@@ -3051,7 +3051,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
             setupNavDropdowns();
             if (authToken) {
                 loadHeaderBundle();
-                loadHdrTickets(); // تا بجِ «تیکتِ دیده‌نشده» قبل از بازکردنِ پنل هم دیده شود
+                loadHdrTickets(); // تا بج «تیکت دیده‌نشده» قبل از بازکردن پنل هم دیده شود
                 refreshServerSession();
 
                 // بررسی هر 30 ثانیه
@@ -3071,9 +3071,9 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         }
 
         // 🔒 وقتی صفحه از bfcache مرورگر (دکمه‌ی back/forward) برمی‌گرده، اسکریپت از
-        // نو اجرا نمی‌شه — DOM دقیقاً با همون وضعیتِ قبلی (مثلاً بجِ خوانده‌نشده‌ی
+        // نو اجرا نمی‌شه — DOM دقیقا با همون وضعیت قبلی (مثلا بج خوانده‌نشده‌ی
         // قدیمی) فریز می‌مونه تا تایمرهای قبلی به‌طور طبیعی برسن و اصلاحش کنن. برای
-        // اینکه بجِ چت/اعلان‌ها و آیکنِ حضور بلافاصله به‌روز باشن، همین‌جا دوباره صدا زده می‌شن.
+        // اینکه بج چت/اعلان‌ها و آیکن حضور بلافاصله به‌روز باشن، همین‌جا دوباره صدا زده می‌شن.
         window.addEventListener('pageshow', function (event) {
             if (event.persisted && authToken) {
                 updateChatUnreadBadge();

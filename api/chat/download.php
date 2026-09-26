@@ -1,6 +1,6 @@
 <?php
 /**
- * API: دانلود/پیش‌نمایشِ فایلِ پیوستِ چت
+ * API: دانلود/پیش‌نمایش فایل پیوست چت
  * GET /api/chat/download.php?id=123&token=...&view=1
  */
 
@@ -11,9 +11,9 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // احراز هویت: اول هدرِ Authorization (فراخوانیِ fetch)، بعد سشنِ مرورگر
-    // (برای <img src> که هدر نمی‌فرستد). دیگر JWTِ کامل در query-string نمی‌آید —
-    // قبلاً ?token=<JWT> در لاگِ سرور و DOM نشت می‌کرد.
+    // احراز هویت: اول هدر Authorization (فراخوانی fetch)، بعد سشن مرورگر
+    // (برای <img src> که هدر نمی‌فرستد). دیگر JWT کامل در query-string نمی‌آید —
+    // قبلا ?token=<JWT> در لاگ سرور و DOM نشت می‌کرد.
     $auth = new Auth($db);
     $user_id = $auth->getUserFromToken();
     if (!$user_id) {
@@ -62,7 +62,7 @@ try {
         exit;
     }
 
-    // فقط تصاویرِ رَستِر inline پیش‌نمایش می‌شوند؛ SVG و بقیه همیشه دانلود.
+    // فقط تصاویر رستر inline پیش‌نمایش می‌شوند؛ SVG و بقیه همیشه دانلود.
     $SAFE_INLINE = [
         'image/png'  => 'image/png',
         'image/jpeg' => 'image/jpeg',

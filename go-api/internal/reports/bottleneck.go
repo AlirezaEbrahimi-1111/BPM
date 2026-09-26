@@ -26,17 +26,17 @@ type bottleneckGroup struct {
 	Severity        float64              `json:"severity"`
 	Instances       []bottleneckInstance `json:"instances"`
 
-	totalDelay int64 // داخلی — در JSON نمی‌آید (دقیقاً مثلِ PHP که total_delay را در خروجی نمی‌گذارد)
+	totalDelay int64 // داخلی — در JSON نمی‌آید (دقیقا مثل PHP که total_delay را در خروجی نمی‌گذارد)
 }
 
-// Bottleneck — پورتِ دقیقِ api/reports/bottleneck-report.php
+// Bottleneck — پورت دقیق api/reports/bottleneck-report.php
 //
 //	GET /go/api/reports/bottleneck-report
 //	→ {"success":true,"summary":{...},"bottlenecks":[...]}
 //
-// همان کوئری (مراحلِ active/delayedِ از موعد گذشته)، همان گروه‌بندی بر
-// اساسِ «قالب::نامِ مرحله»، همان محاسبه‌ی شدت (count × میانگینِ تأخیر) و
-// همان مرتب‌سازیِ نزولی.
+// همان کوئری (مراحل active/delayed از موعد گذشته)، همان گروه‌بندی بر
+// اساس «قالب::نام مرحله»، همان محاسبه‌ی شدت (count × میانگین تأخیر) و
+// همان مرتب‌سازی نزولی.
 func Bottleneck(db *sql.DB) http.HandlerFunc {
 	const q = `
         SELECT
@@ -97,9 +97,9 @@ func Bottleneck(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// گروه‌بندی — ترتیبِ کلیدها باید مثلِ PHP حفظ شود (PHP آرایه‌ی
-		// انجمنی را به ترتیبِ درج نگه می‌دارد)، چون مرتب‌سازیِ نهایی
-		// پایدار است و در تساویِ severity همین ترتیب تعیین‌کننده می‌شود.
+		// گروه‌بندی — ترتیب کلیدها باید مثل PHP حفظ شود (PHP آرایه‌ی
+		// انجمنی را به ترتیب درج نگه می‌دارد)، چون مرتب‌سازی نهایی
+		// پایدار است و در تساوی severity همین ترتیب تعیین‌کننده می‌شود.
 		order := []string{}
 		groups := map[string]*bottleneckGroup{}
 
@@ -114,7 +114,7 @@ func Bottleneck(db *sql.DB) http.HandlerFunc {
 			g, ok := groups[key]
 			if !ok {
 				// PHP: `$r['template_id'] ? (int) $r['template_id'] : null`
-				// — شرطِ truthy است، پس هم NULL و هم 0 به null تبدیل می‌شود.
+				// — شرط truthy است، پس هم NULL و هم 0 به null تبدیل می‌شود.
 				var templateID any
 				if tid := core.ToInt64(templateIDRaw); tid != 0 {
 					templateID = tid

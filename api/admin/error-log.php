@@ -1,14 +1,14 @@
 <?php
 /**
  * API: api/admin/error-log.php
- * مشاهده‌ی error_logِ خودِ اپلیکیشنِ BPM (نه فروشگاه/WooCommerce) —
- * فقط برایِ سوپرادمین (user id = 1)، چون این فایل ممکنه اطلاعاتِ
- * فنیِ حساس (مسیرهای سرور، پیام‌های خطایِ داخلی) داشته باشه.
+ * مشاهده‌ی error_log خود اپلیکیشن BPM (نه فروشگاه/WooCommerce) —
+ * فقط برای سوپرادمین (user id = 1)، چون این فایل ممکنه اطلاعات
+ * فنی حساس (مسیرهای سرور، پیام‌های خطای داخلی) داشته باشه.
  *
  *   GET /api/admin/error-log.php?q=&from=&to=&limit=
  *   → {"success":true,"entries":[{timestamp,level,message}],"truncated":bool}
  *
- * مسیرِ فایل عمداً ثابت و هاردکدشده‌ست (نه از ورودیِ کاربر) — تا هیچ‌جور
+ * مسیر فایل عمدا ثابت و هاردکدشده‌ست (نه از ورودی کاربر) — تا هیچ‌جور
  * path traversal ممکن نباشه.
  */
 
@@ -17,13 +17,13 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/middleware.php';
 
-// همون الگویِ error log که Apache روی پروداکشن برایِ vhostِ bpm.itmalek.com
-// می‌سازه. لوکال معمولاً این فایل رو نداره — پایین‌تر با یه پیامِ روشن
+// همون الگوی error log که Apache روی پروداکشن برای vhost bpm.itmalek.com
+// می‌سازه. لوکال معمولا این فایل رو نداره — پایین‌تر با یه پیام روشن
 // handle می‌شه، نه کرش.
 const BPM_ERROR_LOG_PATH = '/var/log/apache2/bpm-itmalek-ssl-error.log';
 
 // اگه فایل از این بزرگ‌تر بود، فقط همین مقدار از انتهاش خونده می‌شه —
-// برایِ جلوگیری از پرشدنِ حافظه با یه لاگِ خیلی بزرگ (بعد از ماه‌ها).
+// برای جلوگیری از پرشدن حافظه با یه لاگ خیلی بزرگ (بعد از ماه‌ها).
 const MAX_READ_BYTES = 8 * 1024 * 1024; // 8MB
 
 try {
@@ -44,7 +44,7 @@ try {
             'success'   => true,
             'entries'   => [],
             'truncated' => false,
-            'message'   => 'فایلِ لاگ در این محیط در دسترس نیست (این endpoint فقط روی پروداکشن کار می‌کند).',
+            'message'   => 'فایل لاگ در این محیط در دسترس نیست (این endpoint فقط روی پروداکشن کار می‌کند).',
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
@@ -67,10 +67,10 @@ try {
 }
 
 /**
- * فایلِ لاگِ Apache رو می‌خونه، به رکورد تقسیم می‌کنه (هر رکورد با
+ * فایل لاگ Apache رو می‌خونه، به رکورد تقسیم می‌کنه (هر رکورد با
  * «[Day Mon DD HH:MM:SS YYYY]» شروع می‌شه؛ خط‌هایی که این الگو رو ندارن
- * ادامه‌ی رکوردِ قبلی‌ان — مثلاً یک stack traceِ چندخطی)، فیلترِ
- * متن/بازه‌یِ تاریخ رو اعمال می‌کنه، و جدیدترین‌ها رو اول برمی‌گردونه.
+ * ادامه‌ی رکورد قبلی‌ان — مثلا یک stack trace چندخطی)، فیلتر
+ * متن/بازه‌ی تاریخ رو اعمال می‌کنه، و جدیدترین‌ها رو اول برمی‌گردونه.
  */
 function readErrorLog(string $path, int $limit, string $q, ?int $fromTs, ?int $toTs): array
 {
@@ -82,7 +82,7 @@ function readErrorLog(string $path, int $limit, string $q, ?int $fromTs, ?int $t
         fseek($fp, $fileSize - MAX_READ_BYTES);
         $content = fread($fp, MAX_READ_BYTES);
         fclose($fp);
-        // اولین خط احتمالاً بریده‌ست (وسطِ یک رکورد شروع کردیم) — دورش می‌ریزیم.
+        // اولین خط احتمالا بریده‌ست (وسط یک رکورد شروع کردیم) — دورش می‌ریزیم.
         $nl = strpos($content, "\n");
         $content = $nl !== false ? substr($content, $nl + 1) : '';
         $truncatedByCap = true;
@@ -91,10 +91,10 @@ function readErrorLog(string $path, int $limit, string $q, ?int $fromTs, ?int $t
     }
 
     $lines = explode("\n", $content);
-    // 🔒 ثانیه‌ها ممکنه میکروثانیه هم داشته باشن (فرمتِ واقعیِ همین vhost:
-    // «19:20:04.958029»، نه فقط «19:20:04» مثلِ فرمتِ کلاسیکِ Apache) — این
-    // بخش عمداً اختیاریه (`(?:\.\d+)?`) تا هر دو فرمت رو بپوشونه. سالِ ۴رقمی
-    // رو جدا capture می‌کنیم تا برایِ strtotime یه رشته‌ی تمیز (بدونِ
+    // 🔒 ثانیه‌ها ممکنه میکروثانیه هم داشته باشن (فرمت واقعی همین vhost:
+    // «19:20:04.958029»، نه فقط «19:20:04» مثل فرمت کلاسیک Apache) — این
+    // بخش عمدا اختیاریه (`(?:\.\d+)?`) تا هر دو فرمت رو بپوشونه. سال ۴رقمی
+    // رو جدا capture می‌کنیم تا برای strtotime یه رشته‌ی تمیز (بدون
     // میکروثانیه) بسازیم.
     $datePattern = '/^\[(\w+ \w+ +\d+ \d+:\d+:\d+)(?:\.\d+)? (\d+)\]/';
 

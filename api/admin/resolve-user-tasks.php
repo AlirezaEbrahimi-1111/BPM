@@ -1,6 +1,6 @@
 <?php
 /**
- * API: رسیدگیِ دستیِ کارهایِ بازِ یک کاربر، درست قبل از غیرفعال‌سازیِ او
+ * API: رسیدگی دستی کارهای باز یک کاربر، درست قبل از غیرفعال‌سازی او
  * POST /api/admin/resolve-user-tasks.php
  *   body: {
  *     user_id,
@@ -9,13 +9,13 @@
  *     ]
  *   }
  *
- * هر سه اکشن اینجا عمداً از مسیرِ عادیِ TaskManager::updateTaskStatus/
- * delegateTask رد نمی‌شن — این یک override اداریه (مدیر دارد کارهایِ یک
- * کاربرِ در‌حالِ‌غیرفعال‌شدن رو جمع‌وجور می‌کنه)، نه یک اقدامِ عادیِ
- * assignee/creator، پس قفل‌هایی مثلِ «چک‌لیستِ ناتمام»/«زنجیره‌ی تأیید»/
- * «کارِ عقب‌افتاده قابلِ ارجاع نیست» اینجا معنی ندارن.
+ * هر سه اکشن اینجا عمدا از مسیر عادی TaskManager::updateTaskStatus/
+ * delegateTask رد نمی‌شن — این یک override اداریه (مدیر دارد کارهای یک
+ * کاربر در‌حال‌غیرفعال‌شدن رو جمع‌وجور می‌کنه)، نه یک اقدام عادی
+ * assignee/creator، پس قفل‌هایی مثل «چک‌لیست ناتمام»/«زنجیره‌ی تأیید»/
+ * «کار عقب‌افتاده قابل ارجاع نیست» اینجا معنی ندارن.
  *
- * بعد از رسیدگیِ موفقِ همه‌ی کارها، خودِ کاربر هم غیرفعال می‌شه — یعنی
+ * بعد از رسیدگی موفق همه‌ی کارها، خود کاربر هم غیرفعال می‌شه — یعنی
  * دیگه لازم نیست toggle-user-status.php جداگانه صدا زده بشه.
  */
 
@@ -59,7 +59,7 @@ try {
         exit;
     }
 
-    // نامِ کاربرِ در‌حالِ‌غیرفعال‌شدن — برایِ متنِ توضیح/تاریخچه/نوتیف
+    // نام کاربر در‌حال‌غیرفعال‌شدن — برای متن توضیح/تاریخچه/نوتیف
     $stmt = $db->prepare("SELECT CONCAT(first_name,' ',last_name) FROM users WHERE id = ?");
     $stmt->execute([$target_user_id]);
     $targetUserName = trim($stmt->fetchColumn() ?: '') ?: 'کاربر';
@@ -78,7 +78,7 @@ try {
         $tStmt = $db->prepare("SELECT id, title, task_type, is_workflow_task, assignee_id, organization_id FROM tasks WHERE id = ? AND assignee_id = ? AND is_deleted = 0");
         $tStmt->execute([$taskId, $target_user_id]);
         $task = $tStmt->fetch(PDO::FETCH_ASSOC);
-        if (!$task) continue; // یا قبلاً رسیدگی شده، یا مالِ این کاربر نیست — رد شو
+        if (!$task) continue; // یا قبلا رسیدگی شده، یا مال این کاربر نیست — رد شو
 
         $noteSuffix = $reason !== '' ? (' — ' . $reason) : '';
 
@@ -86,7 +86,7 @@ try {
             $toUserId = (int) ($r['to_user_id'] ?? 0);
             if (!$toUserId) continue;
 
-            // 🔒 مقصد باید کاربرِ فعالِ همون سازمان باشه
+            // 🔒 مقصد باید کاربر فعال همون سازمان باشه
             $uStmt = $db->prepare("SELECT id FROM users WHERE id = ? AND organization_id = ? AND is_active = 1 AND is_deleted = 0");
             $uStmt->execute([$toUserId, $task['organization_id']]);
             if (!$uStmt->fetch()) continue;
@@ -95,13 +95,13 @@ try {
                 ->execute([$toUserId, $taskId]);
 
             $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes) VALUES (?, ?, ?, 'delegated', ?)")
-                ->execute([$taskId, $user_id, $toUserId, 'ارجاعِ خودکار به‌خاطرِ غیرفعال‌سازیِ ' . $targetUserName . $noteSuffix]);
+                ->execute([$taskId, $user_id, $toUserId, 'ارجاع خودکار به‌خاطر غیرفعال‌سازی ' . $targetUserName . $noteSuffix]);
 
             try {
                 $notif->create([
                     'to_user_id' => $toUserId,
                     'title' => 'کار جدید ارجاع شده',
-                    'message' => 'کار «' . $task['title'] . '» به‌خاطرِ غیرفعال‌سازیِ ' . $targetUserName . ' به شما ارجاع داده شد' . ($reason !== '' ? "\n\nتوضیحات: " . $reason : ''),
+                    'message' => 'کار «' . $task['title'] . '» به‌خاطر غیرفعال‌سازی ' . $targetUserName . ' به شما ارجاع داده شد' . ($reason !== '' ? "\n\nتوضیحات: " . $reason : ''),
                     'type' => 'warning',
                     'related_type' => 'task',
                     'related_id' => $taskId,
@@ -112,13 +112,13 @@ try {
             }
 
         } elseif ($action === 'complete') {
-            // 🔒 تکمیلِ اداری — بدونِ نیاز به تأییدِ زنجیره یا تکمیلِ چک‌لیست
+            // 🔒 تکمیل اداری — بدون نیاز به تأیید زنجیره یا تکمیل چک‌لیست
             $newStatus = ((int) $task['is_workflow_task'] === 1) ? 'approved' : 'completed';
             $db->prepare("UPDATE tasks SET status = ?, is_pending_approval = 0, updated_at = NOW() WHERE id = ?")
                 ->execute([$newStatus, $taskId]);
 
             $db->prepare("INSERT INTO task_history (task_id, from_user_id, action, notes) VALUES (?, ?, 'completed', ?)")
-                ->execute([$taskId, $user_id, 'تکمیلِ اداری به‌خاطرِ غیرفعال‌سازیِ ' . $targetUserName . $noteSuffix]);
+                ->execute([$taskId, $user_id, 'تکمیل اداری به‌خاطر غیرفعال‌سازی ' . $targetUserName . $noteSuffix]);
 
         } elseif ($action === 'cancel') {
             $newStatus = ((int) $task['is_workflow_task'] === 1) ? 'stopped' : 'rejected';
@@ -126,13 +126,13 @@ try {
                 ->execute([$newStatus, $taskId]);
 
             $db->prepare("INSERT INTO task_history (task_id, from_user_id, action, notes) VALUES (?, ?, 'rejected', ?)")
-                ->execute([$taskId, $user_id, 'لغوِ اداری به‌خاطرِ غیرفعال‌سازیِ ' . $targetUserName . $noteSuffix]);
+                ->execute([$taskId, $user_id, 'لغو اداری به‌خاطر غیرفعال‌سازی ' . $targetUserName . $noteSuffix]);
         }
     }
 
-    // همه‌ی کارهایِ باقی‌مانده رسیدگی شدن؟ اگه هنوز کاری بدونِ تصمیم مونده
-    // (مثلاً فرانت‌اند یک تسک رو جا انداخته)، غیرفعال‌سازی رو متوقف کن —
-    // وگرنه دقیقاً همون مشکلی پیش میاد که این فیچر قراره جلوش رو بگیره
+    // همه‌ی کارهای باقی‌مانده رسیدگی شدن؟ اگه هنوز کاری بدون تصمیم مونده
+    // (مثلا فرانت‌اند یک تسک رو جا انداخته)، غیرفعال‌سازی رو متوقف کن —
+    // وگرنه دقیقا همون مشکلی پیش میاد که این فیچر قراره جلوش رو بگیره
     $remainStmt = $db->prepare("
         SELECT COUNT(*) FROM tasks
         WHERE assignee_id = ? AND is_deleted = 0
@@ -142,11 +142,11 @@ try {
     if ((int) $remainStmt->fetchColumn() > 0) {
         $db->rollBack();
         http_response_code(409);
-        echo json_encode(['success' => false, 'message' => 'هنوز کارهای بازِ رسیدگی‌نشده وجود دارد']);
+        echo json_encode(['success' => false, 'message' => 'هنوز کارهای باز رسیدگی‌نشده وجود دارد']);
         exit;
     }
 
-    // غیرفعال‌سازیِ خودِ کاربر — دقیقاً همون منطقِ toggle-user-status.php
+    // غیرفعال‌سازی خود کاربر — دقیقا همون منطق toggle-user-status.php
     $db->prepare("UPDATE users SET is_active = 0, token_version = token_version + 1 WHERE id = ?")
         ->execute([$target_user_id]);
 

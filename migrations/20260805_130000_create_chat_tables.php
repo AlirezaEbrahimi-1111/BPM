@@ -1,12 +1,12 @@
 <?php
 /**
  * ═══════════════════════════════════════════════════════════════════
- *  مهاجرت: ساخت جداول پایه‌ی چتِ داخلیِ سازمان (فاز اول: یک‌به‌یک)
+ *  مهاجرت: ساخت جداول پایه‌ی چت داخلی سازمان (فاز اول: یک‌به‌یک)
  *  تاریخ: ۱۴۰۵/۰۵/۱۴
  * ───────────────────────────────────────────────────────────────────
  *  مدل «مکالمه + شرکت‌کننده» به‌جای «فرستنده/گیرنده روی هر پیام»،
- *  تا در فازهای بعدی (گروه/کانال) نیازی به تغییرِ اسکیما نباشد —
- *  فقط type در chat_conversations مقدارِ دیگری می‌گیرد و تعدادِ
+ *  تا در فازهای بعدی (گروه/کانال) نیازی به تغییر اسکیما نباشد —
+ *  فقط type در chat_conversations مقدار دیگری می‌گیرد و تعداد
  *  ردیف‌های chat_participants برای همان conversation بیشتر می‌شود.
  * ═══════════════════════════════════════════════════════════════════
  */
@@ -26,7 +26,7 @@ return [
                 `created_by`      INT NOT NULL,
                 `created_at`      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 `updated_at`      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-                    COMMENT 'برای مرتب‌سازیِ لیستِ مکالمه‌ها بر اساسِ آخرین فعالیت',
+                    COMMENT 'برای مرتب‌سازی لیست مکالمه‌ها بر اساس آخرین فعالیت',
                 INDEX `idx_chat_conv_org` (`organization_id`, `type`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_persian_ci
         ");
@@ -39,7 +39,7 @@ return [
                 `joined_at`             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 `last_read_message_id`  INT NULL,
                 `is_archived`           TINYINT(1) NOT NULL DEFAULT 0
-                    COMMENT 'بایگانیِ شخصی — فقط برای همین کاربر، بدون اثر روی طرفِ مقابل',
+                    COMMENT 'بایگانی شخصی — فقط برای همین کاربر، بدون اثر روی طرف مقابل',
                 `archived_at`           TIMESTAMP NULL,
                 UNIQUE KEY `uq_chat_participant` (`conversation_id`, `user_id`),
                 INDEX `idx_chat_participant_user` (`user_id`),
@@ -66,7 +66,7 @@ return [
             CREATE TABLE IF NOT EXISTS `chat_attachments` (
                 `id`              INT AUTO_INCREMENT PRIMARY KEY,
                 `message_id`      INT NOT NULL,
-                `conversation_id` INT NOT NULL COMMENT 'دنرمالایز شده تا چکِ دسترسی بدونِ JOIN به پیام انجام شود',
+                `conversation_id` INT NOT NULL COMMENT 'دنرمالایز شده تا چک دسترسی بدون JOIN به پیام انجام شود',
                 `user_id`         INT NOT NULL,
                 `original_name`   VARCHAR(255) NOT NULL,
                 `stored_name`     VARCHAR(255) NOT NULL,

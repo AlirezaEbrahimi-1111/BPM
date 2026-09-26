@@ -23,7 +23,7 @@ try {
 
     $target_user_id = $_GET['user_id'];
 
-    // 🔒 خط قرمز: supervisor/admin فقط در سازمانِ خودشان، manager فقط
+    // 🔒 خط قرمز: supervisor/admin فقط در سازمان خودشان، manager فقط
     // روی زیرمجموعهٔ خودش (زنجیرهٔ manager_id) — نه فراتر
     if (!canManageTargetUser($db, $currentUser, (int) $target_user_id)) {
         http_response_code(404);

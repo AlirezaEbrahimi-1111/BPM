@@ -44,8 +44,8 @@ $task = $stmt->fetch(PDO::FETCH_ASSOC);
         exit;
     }
 
-    // چک دسترسی — زنجیره‌ی مشترک از includes/task-access.php؛ فقط قانونِ
-    // تخصصیِ عضویتِ مرحله‌ی workflow پایین‌تر جداگانه باقی می‌مونه
+    // چک دسترسی — زنجیره‌ی مشترک از includes/task-access.php؛ فقط قانون
+    // تخصصی عضویت مرحله‌ی workflow پایین‌تر جداگانه باقی می‌مونه
     $access = taskUserAccess($db, (int) $user_id, $task);
     $hasAccess = $access['has_access'];
     $is_checklist_only = $access['is_checklist_only'];
@@ -71,8 +71,8 @@ $task = $stmt->fetch(PDO::FETCH_ASSOC);
         }
     }
 
-    // 🆕 بیننده‌هایِ صریحاً اضافه‌شده — از قبل توسطِ taskUserAccess() بررسی شده؛
-    // فقط اگه can_view_attachments روشن باشه، دسترسیِ بیننده‌بودن معتبره
+    // 🆕 بیننده‌های صریحا اضافه‌شده — از قبل توسط taskUserAccess() بررسی شده؛
+    // فقط اگه can_view_attachments روشن باشه، دسترسی بیننده‌بودن معتبره
     if ($access['is_viewer_only'] && !$access['viewer_can_view_attachments']) {
         $hasAccess = false;
     }
@@ -216,7 +216,7 @@ if ($is_checklist_only) {
         // آیا بعد از آپلود این فایل ارجاعی بوده؟
         $delegated_after_upload = false;
         if ($first_delegation_at !== null) {
-            // اگر اصلاً ارجاعی وجود داره، چک کن آیا بعد از آپلود این فایل بوده
+            // اگر اصلا ارجاعی وجود داره، چک کن آیا بعد از آپلود این فایل بوده
             $stmt2 = $db->prepare("
             SELECT COUNT(*) as cnt 
             FROM task_history 

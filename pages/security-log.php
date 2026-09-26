@@ -26,8 +26,8 @@ if (!$user_id) {
     exit;
 }
 
-// 🔒 فقط مدیر کل (superadmin) — دقیقاً همون معیاری که در کلِ پروژه
-// برایِ تشخیصِ سوپرادمین استفاده می‌شه، نه یه چکِ جداگانه‌یِ id===1
+// 🔒 فقط مدیر کل (superadmin) — دقیقا همون معیاری که در کل پروژه
+// برای تشخیص سوپرادمین استفاده می‌شه، نه یه چک جداگانه‌ی id===1
 if (!in_array((int) $user_id, getSuperAdminIds(), true)) {
     header('Location: dashboard-manager.php');
     exit;
@@ -58,7 +58,7 @@ if ($actionFilter !== '' && isset($validActions[$actionFilter])) {
 }
 $whereSql = implode(' AND ', $where);
 
-/* ───────── کارت‌های آماری (۲۴ ساعتِ اخیر) ───────── */
+/* ───────── کارت‌های آماری (۲۴ ساعت اخیر) ───────── */
 $stat = $db->query("
     SELECT
         SUM(action = 'login_success') AS logins_ok,
@@ -242,7 +242,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php else: foreach ($rows as $r): ?>
           <?php
             // 🔧 match() فقط PHP 8+ هست ولی سرور PHP 7.4 داره — به‌جاش
-            // یه نگاشتِ ساده استفاده می‌کنیم
+            // یه نگاشت ساده استفاده می‌کنیم
             $action = $r['action'];
             $pillClassMap = [
                 'login_success'    => 'ok',

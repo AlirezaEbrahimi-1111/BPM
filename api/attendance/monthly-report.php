@@ -156,11 +156,11 @@ try {
         throw new Exception('کاربر یافت نشد');
 
     // بازه ماه شمسی
-    $today = date('Y-m-d'); // همیشه امروزِ واقعی (برای تشخیصِ گذشته/آینده در ادامه)
+    $today = date('Y-m-d'); // همیشه امروز واقعی (برای تشخیص گذشته/آینده در ادامه)
     list($g_y, $g_m, $g_d) = explode('-', $today);
     list($cur_j_y, $cur_j_m, $cur_j_d) = gregorianToJalali($g_y, $g_m, $g_d);
 
-    // ✅ ماهِ هدف: از querystring (مرورِ ماه‌های قبل) یا پیش‌فرض ماهِ جاری
+    // ✅ ماه هدف: از querystring (مرور ماه‌های قبل) یا پیش‌فرض ماه جاری
     $j_y = isset($_GET['jy']) ? (int) $_GET['jy'] : (int) $cur_j_y;
     $j_m = isset($_GET['jm']) ? (int) $_GET['jm'] : (int) $cur_j_m;
     if ($j_m < 1 || $j_m > 12)
@@ -170,7 +170,7 @@ try {
 
     list($g_start_y, $g_start_m, $g_start_d) = jalaliToGregorian($j_y, $j_m, 1);
     $start_of_month = sprintf('%04d-%02d-%02d', $g_start_y, $g_start_m, $g_start_d);
-    // ✅ آخرین روزِ ماهِ شمسی (مستقل از تابع تبدیل) — بر اساس طول ماه‌های شمسی
+    // ✅ آخرین روز ماه شمسی (مستقل از تابع تبدیل) — بر اساس طول ماه‌های شمسی
     $__jy = (int) $j_y;
     $__jm = (int) $j_m;
     if ($__jm <= 6) {
@@ -295,8 +295,8 @@ try {
         $day_records = $records_by_date[$date_str] ?? [];
         $shift1_in = $shift1_out = $shift2_in = $shift2_out = null;
 
-        // تطبیقِ هوشمندِ شیفت بر اساسِ ساعتِ ورود (قانون گزینه ۳)
-        // ورودِ بعد از پایانِ شیفت ۱ ⟵ متعلق به شیفت ۲، در غیر این صورت شیفت ۱
+        // تطبیق هوشمند شیفت بر اساس ساعت ورود (قانون گزینه ۳)
+        // ورود بعد از پایان شیفت ۱ ⟵ متعلق به شیفت ۲، در غیر این صورت شیفت ۱
         $mr_has_two_shifts = ($user['shift_count'] >= 2 && $user['shift_2_start'] && $user['shift_2_end']);
         $mr_shift1_end_hm = $user['shift_1_end'] ? substr($user['shift_1_end'], 0, 5) : null;
 
@@ -304,7 +304,7 @@ try {
             $rec_in = $rec['check_in'] ? substr($rec['check_in'], 11, 5) : null;
             $rec_out = $rec['check_out'] ? substr($rec['check_out'], 11, 5) : null;
 
-            // تعیینِ شیفتِ مقصد بر اساسِ ساعتِ ورود
+            // تعیین شیفت مقصد بر اساس ساعت ورود
             $target = 1;
             if ($mr_has_two_shifts && $rec_in !== null && $mr_shift1_end_hm !== null && $rec_in >= $mr_shift1_end_hm) {
                 $target = 2;

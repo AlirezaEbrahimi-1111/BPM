@@ -269,7 +269,7 @@ function gToJalali(gy, gm, gd) {
   return [jy, jm, jd];
 }
 
-/* هر تاریخی را شمسی + عددِ فارسی می‌کند (اگر میلادی بود تبدیل می‌کند) */
+/* هر تاریخی را شمسی + عدد فارسی می‌کند (اگر میلادی بود تبدیل می‌کند) */
 function faDate(s) {
   if (s === null || s === undefined || s === '') return '—';
   s = String(s);
@@ -281,7 +281,7 @@ function faDate(s) {
   return faNum(s);
 }
 
-/* معادلِ فارسیِ نوع پلن */
+/* معادل فارسی نوع پلن */
 function planFa(p) {
   if (!p) return '—';
   const map = { trial:'آزمایشی', monthly:'ماهانه', yearly:'سالانه', free:'رایگان', basic:'پایه', pro:'حرفه‌ای', enterprise:'سازمانی' };
@@ -320,7 +320,7 @@ async function loadAll() {
 }
 
 // showError از showInlineError مشترک (assets/js/alert.js) استفاده می‌کنه —
-// خودِ آن تابع پیغام رو escape می‌کنه، پس نیازی به esc() دستی اینجا نیست
+// خود آن تابع پیغام رو escape می‌کنه، پس نیازی به esc() دستی اینجا نیست
 function showError(msg) {
   document.getElementById('coLoading').style.display = 'none';
   document.getElementById('coError').style.display = 'block';

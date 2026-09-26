@@ -1,6 +1,6 @@
 <?php
 /**
- * API: بایگانی/بازگردانیِ یک گفتگو (شخصی، فقط برای کاربرِ جاری)
+ * API: بایگانی/بازگردانی یک گفتگو (شخصی، فقط برای کاربر جاری)
  * POST /api/chat/archive.php   body: { conversation_id, archived: true|false }
  */
 

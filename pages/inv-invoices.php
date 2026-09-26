@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 
-// فعلاً فقط کاربر id=1 — ماژولِ فاکتور در حالِ ساخت است.
+// فعلا فقط کاربر id=1 — ماژول فاکتور در حال ساخت است.
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
 if (!crmModuleAllowed($db, (int) $user_id)) {
     header('Location: ../pages/dashboard.php');
@@ -86,7 +86,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             color: #0f7a57;
         }
 
-        /* هر ردیفِ فاکتور با کلیک باز می‌شود (به‌جز کلیک روی دکمه‌های عملیات) */
+        /* هر ردیف فاکتور با کلیک باز می‌شود (به‌جز کلیک روی دکمه‌های عملیات) */
         .ag-theme-alpine .ag-row {
             cursor: pointer;
         }
@@ -101,8 +101,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             background: rgba(142, 87, 254, .18);
         }
 
-        /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) —
-           فقط رنگ‌ها مخصوصِ وضعیتِ فاکتور هستند، شکل/اندازه یکسان شد */
+        /* هم‌شکل با بج استاندارد پروژه (assets/css/custom.css: .status-badge) —
+           فقط رنگ‌ها مخصوص وضعیت فاکتور هستند، شکل/اندازه یکسان شد */
         .st-badge {
             /* display: inline-block; */
             padding: 7px 10px;
@@ -137,10 +137,10 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             color: #cbd5e1;
         }
 
-        /* بجِ وضعیتِ تسویه/مودیان — فقط نمایش؛ ویرایش از مودالِ جداگانه
-           (نه <select> داخلِ سلولِ جدول، چون کشویی‌اش داخلِ ردیفِ AG-Grid
+        /* بج وضعیت تسویه/مودیان — فقط نمایش؛ ویرایش از مودال جداگانه
+           (نه <select> داخل سلول جدول، چون کشویی‌اش داخل ردیف AG-Grid
            کلیپ می‌شود و بخشی از گزینه‌ها دیده نمی‌شود). */
-        /* هم‌شکل با بجِ استانداردِ پروژه (assets/css/custom.css: .status-badge) */
+        /* هم‌شکل با بج استاندارد پروژه (assets/css/custom.css: .status-badge) */
         .pm-badge {
             /* display: inline-block; */
             padding: 7px 10px;
@@ -185,9 +185,9 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         .crm-toolbar .sb-trigger {
             height: 38px !important;
         }
-        /* فوترِ ثابت ته پنجره (نه sticky) تا همیشه دیده شود و صفحه اسکرول نخورد.
-           جدول دقیقاً فضایِ بینِ تولبار و فوتر را می‌گیرد؛ ردیف‌هایِ زیاد
-           داخلِ خودِ جدول اسکرول می‌شوند، نه کلِ صفحه. */
+        /* فوتر ثابت ته پنجره (نه sticky) تا همیشه دیده شود و صفحه اسکرول نخورد.
+           جدول دقیقا فضای بین تولبار و فوتر را می‌گیرد؛ ردیف‌های زیاد
+           داخل خود جدول اسکرول می‌شوند، نه کل صفحه. */
         .site-footer { position: fixed !important; left: 0; right: 0; bottom: 0; top: auto !important; margin-top: 0 !important; z-index: 80; }
         body { padding-bottom: 46px; }
         .grid-fill { height: calc(100vh - 340px); min-height: 260px; padding-top: 1rem; }
@@ -221,7 +221,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         <div id="invGrid" class="ag-theme-alpine grid-fill" style="width:100%;"></div>
     </div>
 
-    <!-- ── مودالِ ویرایشِ وضعیتِ تسویه/مودیان (نه <select> داخلِ سلولِ جدول) ── -->
+    <!-- ── مودال ویرایش وضعیت تسویه/مودیان (نه <select> داخل سلول جدول) ── -->
     <div class="modal fade" id="stModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -275,7 +275,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             };
         }
 
-        // تاریخِ میلادیِ "YYYY-MM-DD" → شمسی با رقمِ فارسی
+        // تاریخ میلادی "YYYY-MM-DD" → شمسی با رقم فارسی
         function jDate(g) {
             if (!g) return '—';
             try {
@@ -480,8 +480,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             paginationPageSizeSelector: [20, 50, 100],
             onPaginationChanged: () => AgGridFa.persianizePaging(),
             onRowClicked: (e) => {
-                // کلیک روی دکمه‌های ستونِ «عملیات» یا هر کنترلِ فرمی (مثلِ سوئیچِ
-                // «ثبتِ سود») نباید صفحه را عوض کند — فقط خودِ همان کنترل کار کند
+                // کلیک روی دکمه‌های ستون «عملیات» یا هر کنترل فرمی (مثل سوئیچ
+                // «ثبت سود») نباید صفحه را عوض کند — فقط خود همان کنترل کار کند
                 if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn, input, .form-check')) return;
                 // اگر کاربر متنی را انتخاب کرده، رهایش کن
                 if (window.getSelection && String(window.getSelection()).length > 0) return;
@@ -588,8 +588,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             }
         }
 
-        // ── ویرایشِ تسویه/مودیان از مودال (نه <select> داخلِ سلول — کشوییِ
-        //    آن داخلِ ردیفِ AG-Grid کلیپ می‌شد و بخشی از گزینه‌ها دیده نمی‌شد) ──
+        // ── ویرایش تسویه/مودیان از مودال (نه <select> داخل سلول — کشویی
+        //    آن داخل ردیف AG-Grid کلیپ می‌شد و بخشی از گزینه‌ها دیده نمی‌شد) ──
         let stRow = null;
 
         function stToggleCode() {

@@ -219,7 +219,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             word-wrap: break-word;
         }
 
-        /* عکسِ داخلِ حبابِ پیام — بزرگ‌تر از تامب‌نیلِ پیوست‌ها، برای وضوح */
+        /* عکس داخل حباب پیام — بزرگ‌تر از تامب‌نیل پیوست‌ها، برای وضوح */
         .msg-images {
             display: flex;
             flex-wrap: wrap;
@@ -268,7 +268,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
         .att-chip:hover { background: rgba(142, 87, 254, 0.1); }
 
-        /* پیش‌نمایشِ مربعیِ تصاویرِ پیوست‌شده */
+        /* پیش‌نمایش مربعی تصاویر پیوست‌شده */
         .att-thumb {
             width: 84px;
             height: 84px;
@@ -282,12 +282,12 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         .att-thumb:hover { border-color: #8e57fe; transform: scale(1.03); }
         .att-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-        /* ── مودالِ پیش‌نمایشِ تصویر ──
-           نکته: قبلاً .modal-content عرضِ کاملِ .modal-lg را می‌گرفت (پیش‌فرضِ بوت‌استرپ:
-           width:100%)، در حالی‌که تصویرِ کوچک فقط وسطِ آن یک‌جا می‌نشست — نتیجه: دکمه‌های
-           گوشه (دانلود/بستن) که به‌همان .modal-content چسبیده بودند، از خودِ تصویر فاصله
-           می‌گرفتند. با auto/inline-block کردنِ عرض، .modal-content دقیقاً هم‌اندازهٔ
-           تصویرِ رندرشده می‌شود و دکمه‌ها همیشه (چه تصویر کوچک، چه بزرگ) به لبهٔ آن می‌چسبند. */
+        /* ── مودال پیش‌نمایش تصویر ──
+           نکته: قبلا .modal-content عرض کامل .modal-lg را می‌گرفت (پیش‌فرض بوت‌استرپ:
+           width:100%)، در حالی‌که تصویر کوچک فقط وسط آن یک‌جا می‌نشست — نتیجه: دکمه‌های
+           گوشه (دانلود/بستن) که به‌همان .modal-content چسبیده بودند، از خود تصویر فاصله
+           می‌گرفتند. با auto/inline-block کردن عرض، .modal-content دقیقا هم‌اندازهٔ
+           تصویر رندرشده می‌شود و دکمه‌ها همیشه (چه تصویر کوچک، چه بزرگ) به لبهٔ آن می‌چسبند. */
         #imgPreviewModal .modal-dialog {
             display: flex;
             align-items: center;
@@ -336,7 +336,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
         .img-preview-close:hover { background: #fff; }
 
-        /* ── تسکِ پیوست‌شده ── */
+        /* ── تسک پیوست‌شده ── */
         .linked-task-chip {
             display: inline-flex;
             align-items: center;
@@ -355,13 +355,13 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
         .linked-task-chip a:hover { text-decoration: underline; }
 
-        /* ── کارتِ گفتگو (تاریخچه + پاسخ در یک قاب، شبیه پیام‌رسان) ── */
+        /* ── کارت گفتگو (تاریخچه + پاسخ در یک قاب، شبیه پیام‌رسان) ── */
         .tkt-chat-card {
             display: flex;
             flex-direction: column;
         }
 
-        /* پیش‌نمایشِ فایل‌های در حالِ پیوست (چه با کلیکِ آیکن، چه با Ctrl+V) */
+        /* پیش‌نمایش فایل‌های در حال پیوست (چه با کلیک آیکن، چه با Ctrl+V) */
         .file-preview {
             display: flex;
             flex-wrap: wrap;
@@ -769,7 +769,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
     </div>
 
-    <!-- مودالِ پیش‌نمایشِ تصویر پیوست -->
+    <!-- مودال پیش‌نمایش تصویر پیوست -->
     <div class="modal fade" id="imgPreviewModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -784,7 +784,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         </div>
     </div>
 
-    <!-- مودالِ ساخت/ویرایشِ پاسخِ آماده -->
+    <!-- مودال ساخت/ویرایش پاسخ آماده -->
     <div class="modal fade" id="cannedEditModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -796,10 +796,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     <input type="hidden" id="cannedEditId">
                     <label class="form-label" style="font-size:.82rem;">عنوان</label>
                     <input type="text" class="form-control form-control-sm mb-3" id="cannedEditTitleInput"
-                           placeholder="مثلاً: بازنشانی رمز عبور" maxlength="150">
-                    <label class="form-label" style="font-size:.82rem;">متنِ پاسخ</label>
+                           placeholder="مثلا: بازنشانی رمز عبور" maxlength="150">
+                    <label class="form-label" style="font-size:.82rem;">متن پاسخ</label>
                     <textarea class="form-control form-control-sm" id="cannedEditBody" rows="5"
-                              placeholder="متنی که با یک کلیک در کادرِ پاسخ درج می‌شود..."></textarea>
+                              placeholder="متنی که با یک کلیک در کادر پاسخ درج می‌شود..."></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">انصراف</button>
@@ -822,8 +822,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     },
                     body: JSON.stringify({ ticket_id: parseInt(ticketId) })
                 });
-                // پنلِ زنگوله را تازه کن تا اعلانِ همین تیکت از حالتِ خوانده‌نشده
-                // خارج شود (شمارنده و نمایِ «خوانده‌نشده» بلافاصله به‌روز شوند)
+                // پنل زنگوله را تازه کن تا اعلان همین تیکت از حالت خوانده‌نشده
+                // خارج شود (شمارنده و نمای «خوانده‌نشده» بلافاصله به‌روز شوند)
                 if (typeof loadNotifications === 'function') loadNotifications();
             } catch (e) {
                 // خطا مهم نیست، فقط لاگ کن
@@ -853,10 +853,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             loadDetail();
             markTicketNotificationsRead(ticketId);
 
-            // ── پیوستِ فایل — یک مسیرِ واحد برای هر دو راه: کلیکِ آیکن، و Ctrl+V ──
+            // ── پیوست فایل — یک مسیر واحد برای هر دو راه: کلیک آیکن، و Ctrl+V ──
             document.getElementById('replyFileInput').addEventListener('change', function() {
                 addReplyFiles(this.files);
-                this.value = ''; // برای این‌که انتخابِ دوبارهٔ همان فایل هم رویداد change بدهد
+                this.value = ''; // برای این‌که انتخاب دوبارهٔ همان فایل هم رویداد change بدهد
             });
 
             document.getElementById('replyMsg').addEventListener('paste', function(e) {
@@ -873,24 +873,24 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     }
                 }
                 if (pasted.length > 0) {
-                    e.preventDefault(); // از چسباندنِ نشانیِ فایل به‌عنوان متن جلوگیری می‌کند
+                    e.preventDefault(); // از چسباندن نشانی فایل به‌عنوان متن جلوگیری می‌کند
                     addReplyFiles(pasted);
                     showToast('تصویر به پیوست‌ها اضافه شد', 'success');
                 }
             });
 
-            // ── کادرِ پیام: رشدِ خودکارِ ارتفاع + ارسال با Enter (Shift+Enter یا Alt+Enter = خط جدید) ──
-            // این رفتار فقط رویِ دستگاهِ با ورودیِ اصلیِ ماوس/تراک‌پد (دسکتاپ) است؛
-            // رویِ گوشی/تبلت (pointer: coarse) نگه‌داشتنِ Shift هنگامِ تایپ عملاً
-            // ناممکن است، پس آن‌جا Enter همیشه فقط خطِ جدید درج می‌کند و ارسال
-            // منحصراً با دکمه انجام می‌شود.
+            // ── کادر پیام: رشد خودکار ارتفاع + ارسال با Enter (Shift+Enter یا Alt+Enter = خط جدید) ──
+            // این رفتار فقط روی دستگاه با ورودی اصلی ماوس/تراک‌پد (دسکتاپ) است؛
+            // روی گوشی/تبلت (pointer: coarse) نگه‌داشتن Shift هنگام تایپ عملا
+            // ناممکن است، پس آن‌جا Enter همیشه فقط خط جدید درج می‌کند و ارسال
+            // منحصرا با دکمه انجام می‌شود.
             var replyMsgEl = document.getElementById('replyMsg');
             var isTouchPrimary = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
             replyMsgEl.addEventListener('input', function() { autoGrowComposer(this); });
             replyMsgEl.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && e.altKey) {
-                    // Alt+Enter برخلافِ Shift+Enter، به‌صورتِ پیش‌فرض توسطِ مرورگر
-                    // به‌عنوانِ خطِ‌جدید در textarea شناخته نمی‌شه — دستی درج می‌کنیم
+                    // Alt+Enter برخلاف Shift+Enter، به‌صورت پیش‌فرض توسط مرورگر
+                    // به‌عنوان خط‌جدید در textarea شناخته نمی‌شه — دستی درج می‌کنیم
                     e.preventDefault();
                     var start = this.selectionStart, end = this.selectionEnd;
                     this.value = this.value.slice(0, start) + '\n' + this.value.slice(end);
@@ -898,7 +898,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     autoGrowComposer(this);
                     return;
                 }
-                if (isTouchPrimary) return; // گوشی/تبلت: Enter = خطِ جدید (رفتارِ پیش‌فرض)
+                if (isTouchPrimary) return; // گوشی/تبلت: Enter = خط جدید (رفتار پیش‌فرض)
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     sendReply();
@@ -906,15 +906,15 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             });
         });
 
-        // رشدِ خودکارِ کادرِ پیام تا سقفِ max-height (در CSS)، بعد از آن اسکرول داخلی
+        // رشد خودکار کادر پیام تا سقف max-height (در CSS)، بعد از آن اسکرول داخلی
         function autoGrowComposer(el) {
             el.style.height = 'auto';
             el.style.height = el.scrollHeight + 'px';
         }
 
-        // ─── فایل‌های در حالِ پیوست به پاسخِ در حالِ نگارش ───
-        // (چه از کلیکِ آیکنِ پیوست، چه از Ctrl+V — هر دو همین آرایه را پر می‌کنند
-        //  و فقط لحظهٔ ارسال، همراهِ پیام واقعاً به سرور می‌روند)
+        // ─── فایل‌های در حال پیوست به پاسخ در حال نگارش ───
+        // (چه از کلیک آیکن پیوست، چه از Ctrl+V — هر دو همین آرایه را پر می‌کنند
+        //  و فقط لحظهٔ ارسال، همراه پیام واقعا به سرور می‌روند)
         var selectedReplyFiles = [];
         var replyFilePreviewUrls = [];
 
@@ -1048,7 +1048,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 return;
             }
 
-            // ✅ عکس‌های هر پیام، همان‌جا داخل حبابِ خودش نمایش داده شوند (نه فقط در کارتِ پیوست‌ها)
+            // ✅ عکس‌های هر پیام، همان‌جا داخل حباب خودش نمایش داده شوند (نه فقط در کارت پیوست‌ها)
             var token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
             var imagesByMessage = {};
             (attachments || []).forEach(function(a) {
@@ -1060,8 +1060,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             var html = '';
             for (var i = 0; i < messages.length; i++) {
                 var m = messages[i];
-                // ✅ فرستنده = خودِ ایجادکنندهٔ تیکت → «کاربر»؛ هرکسِ دیگری که پاسخ داده → «پشتیبانی»
-                // (نه بر اساس نقشِ سازمانیِ کلی، چون یک مدیر/سرپرست ممکن است خودش صاحبِ تیکت باشد)
+                // ✅ فرستنده = خود ایجادکنندهٔ تیکت → «کاربر»؛ هرکس دیگری که پاسخ داده → «پشتیبانی»
+                // (نه بر اساس نقش سازمانی کلی، چون یک مدیر/سرپرست ممکن است خودش صاحب تیکت باشد)
                 var isFromCreator = (ticketData && m.user_id == ticketData.created_by);
                 var cls = isFromCreator ? 'msg-user' : 'msg-admin';
 
@@ -1099,7 +1099,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             el.scrollTop = el.scrollHeight; // ✅ همیشه آخرین پیام نمایش داده شود
         }
 
-        // ─── حذفِ منطقیِ یک پیام (فقط کاربر id=1) ───
+        // ─── حذف منطقی یک پیام (فقط کاربر id=1) ───
         function deleteMessage(messageId) {
             uiConfirm('این پیام برای همیشه حذف می‌شود. مطمئنید؟', function () {
                 fetch('../api/tickets/delete-message.php', {
@@ -1145,8 +1145,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 '<i class="bi bi-download" style="color:#8e57fe;"></i></div>';
         }
 
-        // ✅ تفکیکِ پیوست‌ها بر اساس فرستنده — همان قاعده‌ی رنگ‌بندیِ پیام‌ها
-        // (user_id پیوست == created_by تیکت → از طرفِ ارسال‌کننده، وگرنه پشتیبانی)
+        // ✅ تفکیک پیوست‌ها بر اساس فرستنده — همان قاعده‌ی رنگ‌بندی پیام‌ها
+        // (user_id پیوست == created_by تیکت → از طرف ارسال‌کننده، وگرنه پشتیبانی)
         function renderAttachments(atts) {
             if (!atts || atts.length === 0) return;
             document.getElementById('attCard').style.display = '';
@@ -1222,7 +1222,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             }
         }
 
-        // ─── پاسخ‌هایِ آماده (canned responses) ───
+        // ─── پاسخ‌های آماده (canned responses) ───
         var cannedList = [];
         var cannedCanManage = false;
         var cannedLoaded = false;
@@ -1247,7 +1247,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             var html = '';
 
             if (!cannedList.length) {
-                html += '<div class="canned-panel-empty">هنوز پاسخِ آماده‌ای ثبت نشده است</div>';
+                html += '<div class="canned-panel-empty">هنوز پاسخ آماده‌ای ثبت نشده است</div>';
             } else {
                 html += cannedList.map(function (c) {
                     var manageBtns = cannedCanManage
@@ -1268,7 +1268,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 html += '<div class="canned-panel-footer">' +
                     '<div class="canned-item" onclick="openCannedEditor(0)">' +
                         '<i class="bi bi-plus-circle" style="color:#8e57fe;"></i>' +
-                        '<span class="canned-item-title">افزودنِ پاسخِ آماده</span>' +
+                        '<span class="canned-item-title">افزودن پاسخ آماده</span>' +
                     '</div></div>';
             }
 
@@ -1299,7 +1299,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             if (!panel.contains(e.target) && btn && !btn.contains(e.target)) closeCannedPanel();
         });
 
-        // درج در کادرِ پاسخ — اگه از قبل متنی نوشته شده، پشتش اضافه می‌شه
+        // درج در کادر پاسخ — اگه از قبل متنی نوشته شده، پشتش اضافه می‌شه
         // (نه جایگزین)، تا چیزی که کاربر تایپ کرده از بین نره
         function insertCannedResponse(id) {
             var item = cannedList.find(function (c) { return Number(c.id) === Number(id); });
@@ -1317,7 +1317,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             document.getElementById('cannedEditId').value = item ? item.id : '';
             document.getElementById('cannedEditTitleInput').value = item ? item.title : '';
             document.getElementById('cannedEditBody').value = item ? item.body : '';
-            document.getElementById('cannedEditTitle').textContent = item ? 'ویرایشِ پاسخِ آماده' : 'پاسخ آماده‌ی جدید';
+            document.getElementById('cannedEditTitle').textContent = item ? 'ویرایش پاسخ آماده' : 'پاسخ آماده‌ی جدید';
             if (!cannedEditModalInst) {
                 cannedEditModalInst = new bootstrap.Modal(document.getElementById('cannedEditModal'));
             }
@@ -1354,7 +1354,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
 
         function deleteCannedResponse(id) {
-            uiConfirm('این پاسخِ آماده حذف شود؟', async function () {
+            uiConfirm('این پاسخ آماده حذف شود؟', async function () {
                 try {
                     var res = await fetch('../api/tickets/canned-responses.php', {
                         method: 'POST',
@@ -1471,7 +1471,7 @@ function downloadFile(id) {
     window.open('../api/tickets/download.php?id=' + id, '_blank');
 }
 
-// ─── پیش‌نمایشِ تصویر در مودال ───
+// ─── پیش‌نمایش تصویر در مودال ───
 function openImagePreview(id) {
     var token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
     document.getElementById('imgPreviewImg').src = '../api/tickets/download.php?id=' + id + '&view=1';

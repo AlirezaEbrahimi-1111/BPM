@@ -1,10 +1,10 @@
 <?php
 /**
- * API: اعطایِ سهمیهٔ تشویقیِ مرخصی/پاس به یک کارمند (فقط مدیر/سرپرست)
- * POST { user_id, amount, note? }   — amount بر‌حسبِ دقیقه
+ * API: اعطای سهمیهٔ تشویقی مرخصی/پاس به یک کارمند (فقط مدیر/سرپرست)
+ * POST { user_id, amount, note? }   — amount بر‌حسب دقیقه
  *
- * amount می‌تونه منفی هم باشه (اصلاحِ دستی/کسر) — ولی خودِ کارمند
- * نمی‌تونه برایِ خودش ثبت کنه، فقط مدیر/سرپرستِ بالادستش
+ * amount می‌تونه منفی هم باشه (اصلاح دستی/کسر) — ولی خود کارمند
+ * نمی‌تونه برای خودش ثبت کنه، فقط مدیر/سرپرست بالادستش
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -34,7 +34,7 @@ try {
 
     $me = loadUserForPermissions($db, $user_id);
 
-    // خودِ کاربر نمی‌تونه برایِ خودش ثبت کنه — فقط مدیر/سرپرستِ واقعی
+    // خود کاربر نمی‌تونه برای خودش ثبت کنه — فقط مدیر/سرپرست واقعی
     if ($targetUserId === $user_id || !canManageTargetUser($db, $me, $targetUserId)) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);

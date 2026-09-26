@@ -1,7 +1,7 @@
 <?php
 if (!headers_sent()) {
     header("Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://computeryekta.com; font-src 'self' data:; connect-src 'self' https://api.ipify.org; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self';");
-    // بخشِ بی‌ریسکِ CSP به‌صورتِ واقعی (enforcing) — توضیح در includes/session_start.php
+    // بخش بی‌ریسک CSP به‌صورت واقعی (enforcing) — توضیح در includes/session_start.php
     header("Content-Security-Policy: object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self';");
 }
 ?>
@@ -12,8 +12,8 @@ if (!headers_sent()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سیستم BPM</title>
-    <!-- 🌗 اعمالِ فوریِ تمِ ذخیره‌شده (همون کلیدِ localStorage که header.php روی
-         صفحاتِ بعدِ لاگین استفاده می‌کنه) — قبل از رندر، تا از فلشِ روشن جلوگیری بشه.
+    <!-- 🌗 اعمال فوری تم ذخیره‌شده (همون کلید localStorage که header.php روی
+         صفحات بعد لاگین استفاده می‌کنه) — قبل از رندر، تا از فلش روشن جلوگیری بشه.
          این صفحه header.php رو include نمی‌کنه، پس این بخش این‌جا تکرار شده -->
 
     <script>
@@ -372,10 +372,10 @@ if (!headers_sent()) {
             box-shadow: 0 4px 20px rgba(142, 87, 254, 0.35);
         }
 
-        /* ⚠️ custom.css یک کلاسِ عمومیِ .loading (بدون ربط به این دکمه) با padding:3rem
-           داره که چون این دکمه هم موقعِ لودینگ کلاسِ loading می‌گیره، بهش اعمال می‌شد
-           و باعثِ بزرگ‌شدنِ دکمه می‌شد. برای اینکه custom.css دست‌نخورده بمونه، همین‌جا
-           با سلکتورِ ترکیبیِ .btn-login.loading (specificity بالاتر) override می‌شود */
+        /* ⚠️ custom.css یک کلاس عمومی .loading (بدون ربط به این دکمه) با padding:3rem
+           داره که چون این دکمه هم موقع لودینگ کلاس loading می‌گیره، بهش اعمال می‌شد
+           و باعث بزرگ‌شدن دکمه می‌شد. برای اینکه custom.css دست‌نخورده بمونه، همین‌جا
+           با سلکتور ترکیبی .btn-login.loading (specificity بالاتر) override می‌شود */
         .btn-login.loading {
             padding: 0;
         }
@@ -409,7 +409,7 @@ if (!headers_sent()) {
         }
 
 
-        /* ===== سوییچِ روشِ ورود (رمز عبور / کد یکبارمصرف) ===== */
+        /* ===== سوییچ روش ورود (رمز عبور / کد یکبارمصرف) ===== */
         .method-switch {
             position: relative;
             display: flex;
@@ -558,7 +558,7 @@ if (!headers_sent()) {
             opacity: 0.75;
         }
 
-        /* ===== دکمهٔ ثبت‌نامِ سازمان (ثانویه) ===== */
+        /* ===== دکمهٔ ثبت‌نام سازمان (ثانویه) ===== */
         .register-cta {
             margin-top: 24px;
             padding-top: 20px;
@@ -594,7 +594,7 @@ if (!headers_sent()) {
             flex-shrink: 0;
         }
 
-        /* جداکنندهٔ «یا» — فقط در چیدمانِ موبایل نمایش داده می‌شود */
+        /* جداکنندهٔ «یا» — فقط در چیدمان موبایل نمایش داده می‌شود */
         .or-divider {
             display: none;
         }
@@ -663,7 +663,7 @@ if (!headers_sent()) {
             }
         }
 
-        /* ===== تمِ تاریک ===== */
+        /* ===== تم تاریک ===== */
         :root[data-theme="dark"] body {
             background: var(--bg-page);
         }
@@ -990,8 +990,8 @@ if (!headers_sent()) {
                                    .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
             }
 
-            // ✅ به‌جای پیش‌بینیِ اینکه فیلد کِی/چطور پر می‌شه (تایپ دستی، autofill مرورگر،
-            // افزونهٔ پسورد منیجر، ...) — که تشخیصِ همه‌ی حالت‌هاش قابل‌اعتماد نیست —
+            // ✅ به‌جای پیش‌بینی اینکه فیلد کی/چطور پر می‌شه (تایپ دستی، autofill مرورگر،
+            // افزونهٔ پسورد منیجر، ...) — که تشخیص همه‌ی حالت‌هاش قابل‌اعتماد نیست —
             // دکمه همیشه قابل‌کلیک می‌مونه و اعتبارسنجی فقط لحظهٔ کلیک انجام می‌شه.
             // این‌طوری مهم نیست مقدار از کجا اومده، چون .value همیشه لحظهٔ کلیک خونده می‌شه.
             continueBtn.removeAttribute('disabled');
@@ -1190,8 +1190,8 @@ if (!headers_sent()) {
                 }
             });
 
-            // showAlert قبلاً یک پیاده‌سازیِ جداگانه داشت؛ الان فقط یک
-            // نام‌مستعارِ نازک برایِ showToastِ مشترکه (از assets/js/alert.js)
+            // showAlert قبلا یک پیاده‌سازی جداگانه داشت؛ الان فقط یک
+            // نام‌مستعار نازک برای showToast مشترکه (از assets/js/alert.js)
             function showAlert(msg, type) {
                 showToast(msg, type === 'danger' ? 'error' : type);
             }

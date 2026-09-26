@@ -1,7 +1,7 @@
-// Package tasks — پورتِ api/tasks/my-tasks.php (فقط این یکی از ۴
-// endpointِ لیستِ کارها؛ all-tasks.php/overview.php/delegated-tasks.php
-// عمداً پورت نشدن، طبقِ تصمیمِ صریح، چون هرکدوم قاعده‌ی دسترسیِ مستقل و
-// ناهماهنگِ خودشون رو دارن).
+// Package tasks — پورت api/tasks/my-tasks.php (فقط این یکی از ۴
+// endpoint لیست کارها؛ all-tasks.php/overview.php/delegated-tasks.php
+// عمدا پورت نشدن، طبق تصمیم صریح، چون هرکدوم قاعده‌ی دسترسی مستقل و
+// ناهماهنگ خودشون رو دارن).
 package tasks
 
 import (
@@ -45,9 +45,9 @@ func boolOf(m map[string]any, key string) bool {
 	return int64Of(m, key) != 0
 }
 
-// EnrichTaskDates — پورتِ دقیقِ enrichTaskDates() در
-// includes/task-dates-helper.php. تسک را (به‌عنوانِ map، هم‌ارزِ آرایه‌ی
-// انجمنیِ PHP) با فیلدهایِ محاسبه‌شده پر می‌کند.
+// EnrichTaskDates — پورت دقیق enrichTaskDates() در
+// includes/task-dates-helper.php. تسک را (به‌عنوان map، هم‌ارز آرایه‌ی
+// انجمنی PHP) با فیلدهای محاسبه‌شده پر می‌کند.
 func EnrichTaskDates(task map[string]any, db *sql.DB, holidays map[string]bool, today string, preloadedCompletionMap map[int64][]string) {
 	task["overdue_periods"] = int64(0)
 	task["next_due_date"] = nil
@@ -144,8 +144,8 @@ func min(a, b int) int {
 	return b
 }
 
-// daysBetween — معادلِ (int) $current->diff($max)->format('%r%a') برایِ دو
-// تاریخِ 'Y-m-d': مثبت اگر maxDate جلوتر باشد، منفی اگر گذشته باشد.
+// daysBetween — معادل (int) $current->diff($max)->format('%r%a') برای دو
+// تاریخ 'Y-m-d': مثبت اگر maxDate جلوتر باشد، منفی اگر گذشته باشد.
 func daysBetween(today, maxDate string) int {
 	t, err1 := parseDate(today)
 	m, err2 := parseDate(maxDate)

@@ -80,7 +80,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         .overview-container { max-width: 100% !important; }
         .ann-head-card h1 { font-size: 1.15rem; }
 
-        /* مودالِ «اطلاعیهٔ جدید» روی موبایل: هدر/فوتر ثابت، بدنه اسکرول‌شونده
+        /* مودال «اطلاعیهٔ جدید» روی موبایل: هدر/فوتر ثابت، بدنه اسکرول‌شونده
            تا دکمه‌های پایین همیشه در دسترس باشند */
         #annModal .modal-dialog { margin: .5rem; height: calc(100% - 1rem); }
         #annModal .modal-content { max-height: 100%; overflow: hidden; display: flex; flex-direction: column; }

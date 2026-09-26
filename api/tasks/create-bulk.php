@@ -93,8 +93,8 @@ try {
     $creator_name    = trim(($creator['first_name'] ?? '') . ' ' . ($creator['last_name'] ?? ''));
     if (empty($creator_name)) $creator_name = $creator['phone'] ?? 'کاربر';
 
-    // 🆕 اگر section_key آمده، کاربرانِ همهٔ واحدها را بک‌اند پیدا می‌کند
-    //    (شاملِ کاربرانی که این واحد، واحدِ دومشان است)
+    // 🆕 اگر section_key آمده، کاربران همهٔ واحدها را بک‌اند پیدا می‌کند
+    //    (شامل کاربرانی که این واحد، واحد دومشان است)
     if (!empty($section_key)) {
         $assignee_ids = us_getSectionUserIds($db, $section_key, $organization_id);
         if (empty($assignee_ids)) {
@@ -124,11 +124,11 @@ try {
         exit;
     }
 
-    // 🔒 موعد فقط وقتی الزامیه که کار به کسِ دیگه‌ای ارجاع داده بشه — همان
-    // قانونِ api/tasks/create.php. این‌جا TaskManager::createTask() به آن
-    // لایه اعتماد می‌کند و خودش این قانون را چک نمی‌کند (نگاه کن به کامنتِ
-    // بالای createTask)، پس این endpoint هم باید مثلِ create.php چک کند —
-    // وگرنه واگذاریِ گروهی/واحدی می‌تواند بدونِ موعد ثبت شود (باگِ تسکِ ۶۱۵).
+    // 🔒 موعد فقط وقتی الزامیه که کار به کس دیگه‌ای ارجاع داده بشه — همان
+    // قانون api/tasks/create.php. این‌جا TaskManager::createTask() به آن
+    // لایه اعتماد می‌کند و خودش این قانون را چک نمی‌کند (نگاه کن به کامنت
+    // بالای createTask)، پس این endpoint هم باید مثل create.php چک کند —
+    // وگرنه واگذاری گروهی/واحدی می‌تواند بدون موعد ثبت شود (باگ تسک ۶۱۵).
     $hasOtherAssignee = false;
     foreach ($validIds as $vid) {
         if ((int) $vid !== (int) $user_id) {
@@ -143,7 +143,7 @@ try {
         exit;
     }
 
-    // 🔒 واگذاریِ چندواحدی («همه واحدها/همه کاربران») فقط برای سرپرست
+    // 🔒 واگذاری چندواحدی («همه واحدها/همه کاربران») فقط برای سرپرست
     $ph2 = implode(',', array_fill(0, count($validIds), '?'));
     $stmt = $db->prepare("SELECT COUNT(DISTINCT activity_section) FROM users WHERE id IN ($ph2)");
     $stmt->execute(array_map('intval', $validIds));

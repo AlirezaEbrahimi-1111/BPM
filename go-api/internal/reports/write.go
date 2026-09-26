@@ -10,7 +10,7 @@ import (
 	"bmp/go-api/internal/core"
 )
 
-// ─── Submit — پورتِ دقیقِ api/reports/submit.php ──────────────────────
+// ─── Submit — پورت دقیق api/reports/submit.php ──────────────────────
 //
 //	POST /go/api/reports/submit   body: {activity_unit, content, report_date?}
 //	→ 201 {"success":true,"message":"...","report_code":"...","report_id":N}
@@ -30,8 +30,8 @@ func Submit(db *sql.DB) http.HandlerFunc {
 			return
 		}
 		content := strings.TrimSpace(body.Content)
-		// len() روی رشتهٔ Go طولِ بایت است — دقیقاً معادلِ strlen() در PHP
-		// (نه طولِ کاراکتر/رون)، پس آستانهٔ ۵۰ برای متنِ فارسی هم یکسان می‌ماند.
+		// len() روی رشتهٔ Go طول بایت است — دقیقا معادل strlen() در PHP
+		// (نه طول کاراکتر/رون)، پس آستانهٔ ۵۰ برای متن فارسی هم یکسان می‌ماند.
 		if content == "" || len(content) < 50 {
 			core.WriteErr(w, http.StatusBadRequest, "محتوای گزارش باید حداقل 50 کاراکتر باشد")
 			return
@@ -98,9 +98,9 @@ func Submit(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-// generateUniqueReportCode — پورتِ generateUniqueReportCode() در submit.php
-// (فرمتِ RPT + سالِ دو رقمی + ماه + روز (به‌وقتِ تهران) + ۴ رقمِ تصادفی،
-// حداکثر ۱۰ تلاش، سپس افتادن به کدِ مبتنی‌بر timestamp).
+// generateUniqueReportCode — پورت generateUniqueReportCode() در submit.php
+// (فرمت RPT + سال دو رقمی + ماه + روز (به‌وقت تهران) + ۴ رقم تصادفی،
+// حداکثر ۱۰ تلاش، سپس افتادن به کد مبتنی‌بر timestamp).
 func generateUniqueReportCode(db *sql.DB) (string, error) {
 	now := core.TehranNow()
 	for attempt := 0; attempt < 10; attempt++ {

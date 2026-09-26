@@ -1,11 +1,11 @@
-// Package core — هستهٔ مشترکِ مهاجرتِ PHP → Go.
+// Package core — هستهٔ مشترک مهاجرت PHP → Go.
 //
-// این پکیج «کِرنِل» است: پیکربندی، اتصالِ دیتابیس، احراز هویتِ JWT (دقیقاً
-// برابرِ includes/auth.php)، منطقِ دسترسی (برابرِ includes/permissions.php) و
-// تقویمِ شمسی. هر ماژولِ بعدیِ Go (گزارش‌ها، اعلان‌ها، …) این را import می‌کند.
+// این پکیج «کرنل» است: پیکربندی، اتصال دیتابیس، احراز هویت JWT (دقیقا
+// برابر includes/auth.php)، منطق دسترسی (برابر includes/permissions.php) و
+// تقویم شمسی. هر ماژول بعدی Go (گزارش‌ها، اعلان‌ها، …) این را import می‌کند.
 //
-// اصلِ عدم‌شکنندگی: نسخهٔ PHP تا پایانِ مهاجرت «مرجع» است؛ این پکیج فقط باید
-// «عیناً» همان رفتار را بدهد و با تستِ تطبیقی قفل می‌شود.
+// اصل عدم‌شکنندگی: نسخهٔ PHP تا پایان مهاجرت «مرجع» است؛ این پکیج فقط باید
+// «عینا» همان رفتار را بدهد و با تست تطبیقی قفل می‌شود.
 package core
 
 import (
@@ -14,7 +14,7 @@ import (
 	"os"
 )
 
-// Config — همان مقادیرِ config/config.php که این سرویس نیاز دارد.
+// Config — همان مقادیر config/config.php که این سرویس نیاز دارد.
 type Config struct {
 	Port      string `json:"port"`
 	DBHost    string `json:"db_host"`
@@ -22,18 +22,18 @@ type Config struct {
 	DBName    string `json:"db_name"`
 	DBUser    string `json:"db_user"`
 	DBPass    string `json:"db_pass"`
-	JWTSecret string `json:"jwt_secret"` // باید دقیقاً برابرِ jwt_secret در config/config.php باشد
+	JWTSecret string `json:"jwt_secret"` // باید دقیقا برابر jwt_secret در config/config.php باشد
 
-	// برایِ اکشن‌هایی که عمداً به Go پورت نمی‌شن (مثلِ Notification::create() —
-	// نگاه کن به internal/attendance/admin_devices.go) ولی Go بعد از انجامِ
-	// کارِ اصلیِ خودش باید یک تماسِ داخلیِ HTTP به PHP بزنه.
-	GoInternalSecret string `json:"go_internal_secret"` // باید دقیقاً برابرِ go_internal_secret در config/config.php باشد
-	BaseURL          string `json:"base_url"`           // مثلاً https://bpm.itmalek.com — برایِ همون تماس‌هایِ داخلی
+	// برای اکشن‌هایی که عمدا به Go پورت نمی‌شن (مثل Notification::create() —
+	// نگاه کن به internal/attendance/admin_devices.go) ولی Go بعد از انجام
+	// کار اصلی خودش باید یک تماس داخلی HTTP به PHP بزنه.
+	GoInternalSecret string `json:"go_internal_secret"` // باید دقیقا برابر go_internal_secret در config/config.php باشد
+	BaseURL          string `json:"base_url"`           // مثلا https://bpm.itmalek.com — برای همون تماس‌های داخلی
 }
 
-// LoadConfig ابتدا فایلِ JSON (پیش‌فرض config.json، یا مسیرِ GOAPI_CONFIG) را
-// می‌خواند، سپس متغیرهای محیطیِ GOAPI_* هر مقدارِ موجود را بازنویسی می‌کنند
-// (مناسب برای اجرا زیرِ systemd روی سرور، بدونِ فایلِ رمز روی دیسک).
+// LoadConfig ابتدا فایل JSON (پیش‌فرض config.json، یا مسیر GOAPI_CONFIG) را
+// می‌خواند، سپس متغیرهای محیطی GOAPI_* هر مقدار موجود را بازنویسی می‌کنند
+// (مناسب برای اجرا زیر systemd روی سرور، بدون فایل رمز روی دیسک).
 func LoadConfig() Config {
 	c := Config{Port: "8091", DBHost: "127.0.0.1", DBPort: "3306"}
 
@@ -43,7 +43,7 @@ func LoadConfig() Config {
 	}
 	if b, err := os.ReadFile(path); err == nil {
 		if err := json.Unmarshal(b, &c); err != nil {
-			log.Fatalf("config: خواندنِ %s ناموفق بود: %v", path, err)
+			log.Fatalf("config: خواندن %s ناموفق بود: %v", path, err)
 		}
 	}
 

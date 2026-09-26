@@ -1,6 +1,6 @@
 <?php
 /**
- * API: لیستِ گفتگوهای کاربرِ جاری
+ * API: لیست گفتگوهای کاربر جاری
  * GET /api/chat/conversations.php?archived=0|1
  */
 
@@ -10,7 +10,7 @@ $corsRequestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
 header('Access-Control-Allow-Origin: ' . (in_array($corsRequestOrigin, $corsAllowedOrigins, true) ? $corsRequestOrigin : 'https://itmalek.com'));
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Cache-Control: no-store, no-cache, must-revalidate'); // تعدادِ خوانده‌نشده مدام تغییر می‌کند، نباید کش شود
+header('Cache-Control: no-store, no-cache, must-revalidate'); // تعداد خوانده‌نشده مدام تغییر می‌کند، نباید کش شود
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
@@ -31,7 +31,7 @@ try {
 
     $archived = !empty($_GET['archived']) ? 1 : 0;
 
-    // ─── لیستِ گفتگوها + طرفِ مقابل (فقط برای direct) + آخرین پیام ───
+    // ─── لیست گفتگوها + طرف مقابل (فقط برای direct) + آخرین پیام ───
     // 🔒 op/ou فقط وقتی c.type='direct' جوین می‌شوند — وگرنه برای گروه با چند
     // شرکت‌کننده‌ی دیگر، همین یک گفتگو چندین بار (یکی به‌ازای هر عضو) تکرار می‌شد
     $stmt = $db->prepare("
@@ -66,22 +66,22 @@ try {
         )
         LEFT JOIN users lmu ON lmu.id = lm.user_id
         WHERE cp.user_id = ? AND cp.is_archived = ?
-          -- گفتگویِ یک‌به‌یکی که هیچ پیامِ واقعی‌ای توش رد‌وبدل نشده (چه هیچ‌وقت
-          -- پیامی فرستاده نشده — مثلِ انتخابِ کاربر و بعد انصراف، چه تنها پیامش
-          -- حذف شده) نباید توی لیست دیده بشه؛ lm از قبل فقط پیام‌هایِ
-          -- غیرحذف‌شده رو در نظر می‌گیره، پس لبِ NULLـش دقیقاً همین حالته
+          -- گفتگوی یک‌به‌یکی که هیچ پیام واقعی‌ای توش رد‌وبدل نشده (چه هیچ‌وقت
+          -- پیامی فرستاده نشده — مثل انتخاب کاربر و بعد انصراف، چه تنها پیامش
+          -- حذف شده) نباید توی لیست دیده بشه؛ lm از قبل فقط پیام‌های
+          -- غیرحذف‌شده رو در نظر می‌گیره، پس لب NULLـش دقیقا همین حالته
           AND (c.type != 'direct' OR lm.created_at IS NOT NULL)
         ORDER BY c.updated_at DESC
     ");
     $stmt->execute([$user_id, $user_id, $user_id, $archived]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 🔒 دو کوئریِ زیر فقط وقتی گفتگویی هست اجرا می‌شن — چون با $rows خالی،
-    // «IN ()» خالی تولید می‌شد که SQL نامعتبره. (قبلاً این حالت با یک
+    // 🔒 دو کوئری زیر فقط وقتی گفتگویی هست اجرا می‌شن — چون با $rows خالی،
+    // «IN ()» خالی تولید می‌شد که SQL نامعتبره. (قبلا این حالت با یک
     // exit زودهنگام کنار گذاشته می‌شد؛ همون رفتار حالا با unreadMap/
-    // typingSet خالی و ادامه‌ی طبیعیِ اجرا تا echoِ انتهایِ فایل حفظ شده —
-    // چون این فایل هم مستقل صدا زده می‌شه هم از api/dashboard و هدرِ
-    // مشترک include می‌شه، و include نمی‌تونه با exit وسطِ فایل کنار بیاد.)
+    // typingSet خالی و ادامه‌ی طبیعی اجرا تا echo انتهای فایل حفظ شده —
+    // چون این فایل هم مستقل صدا زده می‌شه هم از api/dashboard و هدر
+    // مشترک include می‌شه، و include نمی‌تونه با exit وسط فایل کنار بیاد.)
     $unreadMap = [];
     $typingSet = [];
 
@@ -89,7 +89,7 @@ try {
         $convIds = array_column($rows, 'conversation_id');
         $placeholders = implode(',', array_fill(0, count($convIds), '?'));
 
-        // ─── تعدادِ پیام‌های خوانده‌نشده + اولین پیامِ خوانده‌نشده، به‌ازای هر گفتگو ───
+        // ─── تعداد پیام‌های خوانده‌نشده + اولین پیام خوانده‌نشده، به‌ازای هر گفتگو ───
         $stmt = $db->prepare("
             SELECT m.conversation_id, COUNT(*) AS unread, MIN(m.id) AS first_unread_id
             FROM chat_messages m
@@ -110,7 +110,7 @@ try {
             ];
         }
 
-        // ─── آیا طرفِ مقابلِ هر گفتگو الان در حالِ تایپ است (یک کوئریِ دسته‌ای) ───
+        // ─── آیا طرف مقابل هر گفتگو الان در حال تایپ است (یک کوئری دسته‌ای) ───
         $stmt = $db->prepare("
             SELECT conversation_id FROM chat_participants
             WHERE conversation_id IN ($placeholders) AND user_id != ? AND typing_until > NOW()

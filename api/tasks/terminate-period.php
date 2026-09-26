@@ -61,7 +61,7 @@ try {
         exit;
     }
 
-    // کار نباید قبلاً تکمیل یا تأیید شده باشد
+    // کار نباید قبلا تکمیل یا تأیید شده باشد
     if (in_array($task['status'], ['completed', 'approved'])) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'این کار قبلا تکمیل شده است']);

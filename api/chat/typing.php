@@ -1,10 +1,10 @@
 <?php
 /**
- * API: اعلامِ «در حالِ تایپ» در یک گفتگو
+ * API: اعلام «در حال تایپ» در یک گفتگو
  * POST /api/chat/typing.php   body: { conversation_id }
  *
  *   هر بار کاربر تایپ می‌کند، این endpoint صدا زده می‌شود (throttle‌شده در
- *   سمتِ کلاینت). typing_until به NOW()+۵ثانیه ست می‌شود؛ طرفِ مقابل با
+ *   سمت کلاینت). typing_until به NOW()+۵ثانیه ست می‌شود؛ طرف مقابل با
  *   polling (api/chat/conversations.php یا یک چک سبک‌تر) می‌فهمد.
  */
 

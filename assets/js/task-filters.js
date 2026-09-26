@@ -7,11 +7,11 @@
  *  تا امروز، منطق «کار امروز است؟»، «کار عقب‌افتاده است؟» و جدول
  *  برچسب وضعیت‌ها در ۵-۶ فایل جداگانه تکرار شده بود. هر بار که یک
  *  وضعیت یا قانون جدید اضافه می‌شد، باید همه‌جا دستی عوض می‌شد و
- *  معمولاً یکی از قلم می‌افتاد.
+ *  معمولا یکی از قلم می‌افتاد.
  *
  *  از این به بعد: هر تغییری در این قوانین، فقط همین‌جا انجام می‌شود.
  * ───────────────────────────────────────────────────────────────────
- *  نحوهٔ استفاده در هر صفحه (قبل از اسکریپت خودِ صفحه):
+ *  نحوهٔ استفاده در هر صفحه (قبل از اسکریپت خود صفحه):
  *      <script src="../assets/js/task-filters.js"></script>
  *
  *  سپس:
@@ -28,7 +28,7 @@ window.TF = (function () {
        ۱) کمکی‌های تاریخ
        ═══════════════════════════════════════════════════ */
 
-    /** تاریخ امروز 'YYYY-MM-DD' — از ساعتِ سرور (تهران)، نه دستگاه. time-sync.js */
+    /** تاریخ امروز 'YYYY-MM-DD' — از ساعت سرور (تهران)، نه دستگاه. time-sync.js */
     function today() {
         if (window.TimeSync) return TimeSync.serverToday();
         const d = new Date();
@@ -78,16 +78,16 @@ window.TF = (function () {
     }
 
     /**
-     * مثلِ effectiveDue، ولی برایِ کارهایِ روتین/فرآیندی لحظه‌یِ کاملِ موعد
-     * (میلی‌ثانیه، با ساعت‌وددقیقه‌یِ دقیق) رو برمی‌گردونه، نه فقط تاریخِ
-     * خالص. isOverdue برایِ این نوع باید ساعتی حساب کنه (هم‌راستا با
-     * calcHourDelay سمتِ سرور)، نه روزِ تقویمی — وگرنه کاری که موعدش مثلاً
+     * مثل effectiveDue، ولی برای کارهای روتین/فرآیندی لحظه‌ی کامل موعد
+     * (میلی‌ثانیه، با ساعت‌وددقیقه‌ی دقیق) رو برمی‌گردونه، نه فقط تاریخ
+     * خالص. isOverdue برای این نوع باید ساعتی حساب کنه (هم‌راستا با
+     * calcHourDelay سمت سرور)، نه روز تقویمی — وگرنه کاری که موعدش مثلا
      * ۲۳:۵۰ دیشب بوده، همین که نیمه‌شب رد بشه «تأخیردار» می‌شد با اینکه
-     * هنوز یک ساعتِ کامل هم نگذشته.
+     * هنوز یک ساعت کامل هم نگذشته.
      *
-     * حتماً با TimeSync.parseServerTime پارس می‌شه، نه new Date خام —
-     * چون رشته‌یِ خامِ سرور وقتِ تهرانه، نه وقتِ دستگاه؛ new Date روی یه
-     * رشته‌یِ بدونِ آفست، با تایم‌زونِ خودِ مرورگر تفسیرش می‌کنه که می‌تونه
+     * حتما با TimeSync.parseServerTime پارس می‌شه، نه new Date خام —
+     * چون رشته‌ی خام سرور وقت تهرانه، نه وقت دستگاه؛ new Date روی یه
+     * رشته‌ی بدون آفست، با تایم‌زون خود مرورگر تفسیرش می‌کنه که می‌تونه
      * با تهران فرق داشته باشه.
      */
     function effectiveDueMs(t) {
@@ -98,10 +98,10 @@ window.TF = (function () {
             ? TimeSync.parseServerTime
             : function (s) { const d = new Date(String(s).replace(' ', 'T')); return isNaN(d.getTime()) ? null : d; };
         const ts = raw
-            // 🔒 اگه فقط تاریخ بود (بدونِ ساعت، مثلِ due_date)، انتهایِ همون
-            // روز (۲۳:۵۹:۵۹) فرض می‌شه — دقیقاً هم‌راستا با همین قاعده‌یِ
-            // سمتِ سرور (enrichTaskDates)، وگرنه اینجا نیمه‌شبِ همون روز و
-            // سرور انتهایِ روز حساب می‌کرد و دو تا عددِ متفاوت می‌دادن
+            // 🔒 اگه فقط تاریخ بود (بدون ساعت، مثل due_date)، انتهای همون
+            // روز (۲۳:۵۹:۵۹) فرض می‌شه — دقیقا هم‌راستا با همین قاعده‌ی
+            // سمت سرور (enrichTaskDates)، وگرنه اینجا نیمه‌شب همون روز و
+            // سرور انتهای روز حساب می‌کرد و دو تا عدد متفاوت می‌دادن
             .map(v => (String(v).length <= 10 ? v + ' 23:59:59' : v))
             .map(v => { const d = parse(v); return d ? d.getTime() : NaN; })
             .filter(n => !isNaN(n));
@@ -125,8 +125,8 @@ window.TF = (function () {
     }
 
     /**
-     * آیا این کارِ دوره‌ای نیازمندِ تصمیمِ تمدید است؟ — از قبل توسطِ
-     * enrichTaskDates() سمتِ سرور (بر پایه‌یِ ساعتِ سرور) رویِ کار محاسبه
+     * آیا این کار دوره‌ای نیازمند تصمیم تمدید است؟ — از قبل توسط
+     * enrichTaskDates() سمت سرور (بر پایه‌ی ساعت سرور) روی کار محاسبه
      * شده؛ این‌جا فقط خونده می‌شه
      */
     function needsRenewalDecision(t) {
@@ -154,7 +154,7 @@ window.TF = (function () {
      * آیا این کار امروز نیاز به اقدام دارد؟
      *
      * ⚠️ نکتهٔ مهم: «امروز» با «عقب‌افتاده» فرق دارد.
-     *    کار دوره‌ای که دوره‌اش دقیقاً امروز سررسید شده (ولی هنوز
+     *    کار دوره‌ای که دوره‌اش دقیقا امروز سررسید شده (ولی هنوز
      *    عقب نیفتاده) هم باید در «امروز» دیده شود. این همان باگی بود
      *    که کارهای دوره‌ای پس از «رفع معوقه» ناپدید می‌شدند.
      */
@@ -188,7 +188,7 @@ window.TF = (function () {
             // ۱) دورهٔ معوقه دارد
             if ((t.overdue_periods || 0) > 0) return true;
 
-            // ۲) دورهٔ بعدی دقیقاً امروز سررسید شده
+            // ۲) دورهٔ بعدی دقیقا امروز سررسید شده
             if (effectiveDue(t) === td) return true;
 
             return false;
@@ -214,38 +214,38 @@ window.TF = (function () {
 
         if (isDone(t)) return false;
 
-        // منتظر تأیید من، و از قبلِ امروز منتظر مانده
+        // منتظر تأیید من، و از قبل امروز منتظر مانده
         if (isWaitingMyApproval(t, user) &&
             t.last_pending_date &&
             dateOnly(t.last_pending_date) < td) {
             return true;
         }
 
-        // درخواست تمدید موعد که از قبلِ امروز منتظر مانده
+        // درخواست تمدید موعد که از قبل امروز منتظر مانده
         if (isWaitingMyDeadline(t, user) &&
             t.deadline_request_date &&
             dateOnly(t.deadline_request_date) < td) {
             return true;
         }
 
-        // کار فرآیندی — ساعتی حساب می‌شه (هم‌راستا با calcHourDelay سمتِ
-        // سرور)، نه روزِ تقویمی؛ وگرنه کاری که موعدش مثلاً ۲۳:۵۰ دیشب بوده،
-        // همین که نیمه‌شب رد بشه «تأخیردار» می‌شد با اینکه هنوز یک ساعتِ
-        // کامل هم نگذشته (و بجِ ساعتِ تأخیرش هم «۰ ساعت» نشون می‌داد —
-        // دقیقاً همین ناهماهنگی گزارش شد). طبقِ تأیید: فقط ساعت (floor)،
-        // دقیقه لازم نیست — همون granularityِ calcHourDelay.
+        // کار فرآیندی — ساعتی حساب می‌شه (هم‌راستا با calcHourDelay سمت
+        // سرور)، نه روز تقویمی؛ وگرنه کاری که موعدش مثلا ۲۳:۵۰ دیشب بوده،
+        // همین که نیمه‌شب رد بشه «تأخیردار» می‌شد با اینکه هنوز یک ساعت
+        // کامل هم نگذشته (و بج ساعت تأخیرش هم «۰ ساعت» نشون می‌داد —
+        // دقیقا همین ناهماهنگی گزارش شد). طبق تأیید: فقط ساعت (floor)،
+        // دقیقه لازم نیست — همون granularity calcHourDelay.
         //
         // 🔒 اینجا باید return (نه فقط return true وقتی شرط برقراره) باشه —
-        // چون task_type این کارها هم زیرِ پوست همیشه 'periodic'ه (طبقِ
-        // کامنتِ enrichTaskDates)، اگه شرطِ بالا false بشه و ادامه بدیم، به
-        // شاخه‌ی «کار مقطعی» پایین‌تر می‌رسه که هنوز effectiveDue (تاریخِ
+        // چون task_type این کارها هم زیر پوست همیشه 'periodic'ه (طبق
+        // کامنت enrichTaskDates)، اگه شرط بالا false بشه و ادامه بدیم، به
+        // شاخه‌ی «کار مقطعی» پایین‌تر می‌رسه که هنوز effectiveDue (تاریخ
         // خالص، نه ساعت) رو چک می‌کنه — یعنی همون باگی که همین الان با
-        // فیلترِ ساعتی رفعش کردیم، از پشت‌درِ شاخه‌ی مقطعی دوباره برمی‌گشت.
-        // این دقیقاً چیزی بود که کاربر بعد از دیپلویِ فیکسِ اول گزارش داد
-        // (سه موردِ «۰ ساعت» که هنوز توی لیستِ تأخیردار بودن). وضعیت‌هایِ
-        // مجاز هم عیناً همون سه‌تاییِ شاخه‌ی مقطعیه (نه فقط isDone که
-        // stopped/rejected رو پوشش نمی‌ده) — تا با حذفِ fallthrough چیزی
-        // که قبلاً درست فیلتر می‌شد، رگرسیون نگیره.
+        // فیلتر ساعتی رفعش کردیم، از پشت‌در شاخه‌ی مقطعی دوباره برمی‌گشت.
+        // این دقیقا چیزی بود که کاربر بعد از دیپلوی فیکس اول گزارش داد
+        // (سه مورد «۰ ساعت» که هنوز توی لیست تأخیردار بودن). وضعیت‌های
+        // مجاز هم عینا همون سه‌تایی شاخه‌ی مقطعیه (نه فقط isDone که
+        // stopped/rejected رو پوشش نمی‌ده) — تا با حذف fallthrough چیزی
+        // که قبلا درست فیلتر می‌شد، رگرسیون نگیره.
         if (t.is_workflow_task == 1) {
             if (t.status !== 'not_started' && t.status !== 'in_progress' && t.status !== 'delegated') return false;
             const dueMs = effectiveDueMs(t);
@@ -263,11 +263,11 @@ window.TF = (function () {
         // ── کار مقطعی ────────────────────────────────
         if (t.task_type === 'periodic') {
             const due = effectiveDue(t);
-            // 🔒 وضعیتِ 'delegated' هم باید اینجا حساب بشه: بعد از ارجاع (حتی
-            // ارجاعِ برگشتی به خودِ تعریف‌کننده)، status در دیتابیس همچنان
-            // 'delegated' می‌مونه — اگه اینجا لحاظ نشه، کارِ عقب‌افتاده‌ای که
-            // الان واقعاً مسئولش کاربرِ جاریه، به‌جایِ «عقب افتاده»، همچنان
-            // برچسبِ نامربوطِ «ارجاع شده» رو نشون می‌ده
+            // 🔒 وضعیت 'delegated' هم باید اینجا حساب بشه: بعد از ارجاع (حتی
+            // ارجاع برگشتی به خود تعریف‌کننده)، status در دیتابیس همچنان
+            // 'delegated' می‌مونه — اگه اینجا لحاظ نشه، کار عقب‌افتاده‌ای که
+            // الان واقعا مسئولش کاربر جاریه، به‌جای «عقب افتاده»، همچنان
+            // برچسب نامربوط «ارجاع شده» رو نشون می‌ده
             return !!due && due < td &&
                    (t.status === 'not_started' || t.status === 'in_progress' || t.status === 'delegated');
         }
@@ -291,11 +291,11 @@ window.TF = (function () {
         completed:             { label: 'تکمیل شده',         cls: 'status-completed',             icon: 'check-circle' },
         approved:              { label: 'تأیید شده',         cls: 'status-approved',              icon: 'check-circle-fill' },
         delegated:             { label: 'ارجاع شده',         cls: 'status-delegated',             icon: 'arrow-left-right' },
-        // 🆕 rejected/stopped عمداً از هم متمایز شدن — قبلاً «متوقف»/«متوقف شده»
-        // بودن که تقریباً یک‌کلمه‌ای به‌نظر می‌رسیدن با اینکه دو معنیِ کاملاً
-        // متفاوت دارن: rejected = تعریف‌کننده دستی یک کارِ دوره‌ای رو زودتر
+        // 🆕 rejected/stopped عمدا از هم متمایز شدن — قبلا «متوقف»/«متوقف شده»
+        // بودن که تقریبا یک‌کلمه‌ای به‌نظر می‌رسیدن با اینکه دو معنی کاملا
+        // متفاوت دارن: rejected = تعریف‌کننده دستی یک کار دوره‌ای رو زودتر
         // از موعد تمام کرده؛ stopped = کار بخشی از یک فرآیند/روتین بوده که
-        // کلِ اون فرآیند قبل از پایان، متوقف شده
+        // کل اون فرآیند قبل از پایان، متوقف شده
         rejected:              { label: 'متوقف شده(کارهای عادی)', cls: 'status-rejected',          icon: 'pause-circle' },
         stopped:               { label: 'متوقف شده(فرآیندها)',    cls: 'status-stopped',           icon: 'stop-circle' },
         period_done:           { label: 'دوره انجام شد',     cls: 'status-period_done',           icon: 'calendar-check' },
@@ -312,7 +312,7 @@ window.TF = (function () {
         return (statusCfg[status] && statusCfg[status].cls) || 'status-not_started';
     }
 
-    /** آیکنِ بوت‌استرپ‌آیکنزِ یک وضعیت (بدونِ پیشوندِ bi-) */
+    /** آیکن بوت‌استرپ‌آیکنز یک وضعیت (بدون پیشوند bi-) */
     function statusIcon(status) {
         return (statusCfg[status] && statusCfg[status].icon) || 'circle';
     }
@@ -320,10 +320,10 @@ window.TF = (function () {
     /**
      * HTML آمادهٔ برچسب وضعیت.
      * اگر کار عقب‌افتاده باشد، برچسب «عقب افتاده» اولویت دارد — به‌جز وقتی
-     * وضعیت «در انتظار تأیید» است: مثلاً وقتی خودِ کاربرِ جاری تأییدکننده است
+     * وضعیت «در انتظار تأیید» است: مثلا وقتی خود کاربر جاری تأییدکننده است
      * و دیر در تأییدکردن است، isOverdue() هم true برمی‌گردد؛ ولی چیزی که
-     * الان واقعاً باید به کاربر گفته بشه اینه که باید تأیید کنه، نه صرفاً
-     * اینکه کار «عقب افتاده»— پس «در انتظار تأیید» اولویتِ بالاتری داره
+     * الان واقعا باید به کاربر گفته بشه اینه که باید تأیید کنه، نه صرفا
+     * اینکه کار «عقب افتاده»— پس «در انتظار تأیید» اولویت بالاتری داره
      */
     function statusBadge(t, user) {
         if (needsRenewalDecision(t)) {
@@ -332,27 +332,27 @@ window.TF = (function () {
         if (t.status === 'pending_approval') {
             return `<span class="status-badge ${statusClass(t.status)}">${statusLabel(t.status)}</span>`;
         }
-        // مثلِ pending_approval بالا: وقتی کاربرِ جاری تأییدکننده‌ی یک
-        // درخواستِ تمدیدِ موعد است، این چیزیه که واقعاً باید ببینه —
-        // نه وضعیتِ خامِ کار (که ممکنه «عقب افتاده» یا هرچیزِ دیگه باشه)
+        // مثل pending_approval بالا: وقتی کاربر جاری تأییدکننده‌ی یک
+        // درخواست تمدید موعد است، این چیزیه که واقعا باید ببینه —
+        // نه وضعیت خام کار (که ممکنه «عقب افتاده» یا هرچیز دیگه باشه)
         if (isWaitingMyDeadline(t, user)) {
             return '<span class="status-badge status-pending_approval">درخواست تمدید موعد</span>';
         }
         if (isOverdue(t, user)) {
             return '<span class="status-badge status-overdue">عقب افتاده</span>';
         }
-        // status='delegated' یعنی این کار به یه assigneeِ جدید ارجاع شده — ولی
-        // از نگاهِ خودِ همون assigneeِ جدید (کاربرِ فعلی)، دیگه «ارجاع‌شده» معنی
-        // نداره: نوبتِ خودشه که شروعش کنه، نه این‌که منتظرِ کسِ دیگه‌ای باشه.
-        // بقیه‌ی سیستم (شروعِ خودکار با تیکِ چک‌لیست، دکمه‌ی «شروع کار» در
-        // task-detail.php) هم دقیقاً delegated رو هم‌ردیفِ not_started می‌دونه،
+        // status='delegated' یعنی این کار به یه assignee جدید ارجاع شده — ولی
+        // از نگاه خود همون assignee جدید (کاربر فعلی)، دیگه «ارجاع‌شده» معنی
+        // نداره: نوبت خودشه که شروعش کنه، نه این‌که منتظر کس دیگه‌ای باشه.
+        // بقیه‌ی سیستم (شروع خودکار با تیک چک‌لیست، دکمه‌ی «شروع کار» در
+        // task-detail.php) هم دقیقا delegated رو هم‌ردیف not_started می‌دونه،
         // پس برچسب هم باید همین رفتار رو داشته باشه
         if (t.status === 'delegated' && user && Number(t.assignee_id) === Number(user.id)) {
             return `<span class="status-badge ${statusClass('not_started')}">${statusLabel('not_started')}</span>`;
         }
-        // کارِ دوره‌ای که دورهٔ قبلی‌اش بسته شده ولی دورهٔ جدید (امروز) هنوز انجام نشده
+        // کار دوره‌ای که دورهٔ قبلی‌اش بسته شده ولی دورهٔ جدید (امروز) هنوز انجام نشده
         // → «شروع نشده» است، نه «دوره انجام شد». (اگر عقب‌افتاده بود، بالاتر با
-        //  isOverdue به «عقب افتاده» رفته؛ اگر نیازمندِ تمدید بود، ابتدای تابع.)
+        //  isOverdue به «عقب افتاده» رفته؛ اگر نیازمند تمدید بود، ابتدای تابع.)
         if (t.task_type === 'continuous' && t.status === 'period_done' &&
             t.is_today_done === false && !isDone(t)) {
             return `<span class="status-badge ${statusClass('not_started')}">${statusLabel('not_started')}</span>`;
@@ -363,17 +363,17 @@ window.TF = (function () {
 
 
     /* ═══════════════════════════════════════════════════
-       ۷) رویدادهایِ تاریخچه (task_history.action)
+       ۷) رویدادهای تاریخچه (task_history.action)
        ───────────────────────────────────────────────────
-       تنها مرجع — قبلاً سه‌جا (task-detail.php، dashboard-manager.php،
+       تنها مرجع — قبلا سه‌جا (task-detail.php، dashboard-manager.php،
        dashboard-user.php) این جدول رو جدا و ناهماهنگ نگه می‌داشتن؛ هر
-       رویدادِ جدید (مثلاً تمدیدِ دوره) باید تویِ هر سه جا دستی اضافه می‌شد
-       و معمولاً یکی جا می‌افتاد — نتیجه‌ش نمایشِ کلیدِ خامِ انگلیسی
-       (مثلاً «renewal_applied») به‌جایِ برچسبِ فارسی بود.
-       دو شکلِ برچسب داریم چون دو جا با سبکِ متفاوت نمایش می‌دن:
-         • label: اسم/عبارتِ کوتاه — برایِ بجِ کوچیکِ تاریخچه‌یِ خودِ کار
-         • verb:  فعلِ کامل («... شد») — برایِ ردیفِ روایت‌گونه‌یِ
-                  «فعالیت‌های اخیر» («(نام) - VERB: عنوانِ کار»)
+       رویداد جدید (مثلا تمدید دوره) باید توی هر سه جا دستی اضافه می‌شد
+       و معمولا یکی جا می‌افتاد — نتیجه‌ش نمایش کلید خام انگلیسی
+       (مثلا «renewal_applied») به‌جای برچسب فارسی بود.
+       دو شکل برچسب داریم چون دو جا با سبک متفاوت نمایش می‌دن:
+         • label: اسم/عبارت کوتاه — برای بج کوچیک تاریخچه‌ی خود کار
+         • verb:  فعل کامل («... شد») — برای ردیف روایت‌گونه‌ی
+                  «فعالیت‌های اخیر» («(نام) - VERB: عنوان کار»)
        ═══════════════════════════════════════════════════ */
     const actionCfg = {
         created:               { label: 'ایجاد',                        verb: 'ایجاد شد',                          cls: 'ab-created' },
@@ -404,33 +404,33 @@ window.TF = (function () {
         not_started:            { label: 'شروع نشده',                    verb: 'به حالت شروع‌نشده بازگشت',          cls: 'ab-pending' }
     };
 
-    /** برچسبِ کوتاه (اسمی) یک رویداد — برایِ بجِ تاریخچه */
+    /** برچسب کوتاه (اسمی) یک رویداد — برای بج تاریخچه */
     function actionLabel(action) {
         return (actionCfg[action] && actionCfg[action].label) || action || '—';
     }
 
-    /** برچسبِ فعلی (جمله‌ای، «... شد») یک رویداد — برایِ ردیفِ روایت‌گونه */
+    /** برچسب فعلی (جمله‌ای، «... شد») یک رویداد — برای ردیف روایت‌گونه */
     function actionVerb(action) {
         return (actionCfg[action] && actionCfg[action].verb) || action || '';
     }
 
-    /** کلاسِ CSSِ بجِ یک رویداد */
+    /** کلاس CSS بج یک رویداد */
     function actionClass(action) {
         return (actionCfg[action] && actionCfg[action].cls) || 'ab-updated';
     }
 
 
     /* ═══════════════════════════════════════════════════
-       ۸) فیلترِ وضعیت — لیستِ مشترکِ همهٔ صفحات
+       ۸) فیلتر وضعیت — لیست مشترک همهٔ صفحات
        ───────────────────────────────────────────────────
-       تنها مرجعِ «چه گزینه‌هایی در dropdownِ فیلترِ وضعیت باشد» و
-       «هر ردیف از یک فیلترِ خاص رد می‌شود؟». برای تغییرِ لیست فقط
+       تنها مرجع «چه گزینه‌هایی در dropdown فیلتر وضعیت باشد» و
+       «هر ردیف از یک فیلتر خاص رد می‌شود؟». برای تغییر لیست فقط
        همین دو آرایه ویرایش می‌شوند و همهٔ صفحات به‌روز می‌شوند.
 
        نکته: بعضی گزینه‌ها «مشتق»‌اند (overdue / renewal_needed / …) و
-       مقدارِ متناظری در دیتابیس ندارند — منطقشان در match() است.
-       کلیدهای خامِ قدیمی (in_progress، completed، delegated، …) و
-       پارامترهای URLِ داشبورد در matchesStatusFilter() سازگار می‌مانند.
+       مقدار متناظری در دیتابیس ندارند — منطقشان در match() است.
+       کلیدهای خام قدیمی (in_progress، completed، delegated، …) و
+       پارامترهای URL داشبورد در matchesStatusFilter() سازگار می‌مانند.
        ═══════════════════════════════════════════════════ */
 
     var _wf = function (t) { return Number(t.is_workflow_task) === 1; };
@@ -442,8 +442,8 @@ window.TF = (function () {
     };
 
     /**
-     * «کلیدِ وضعیتِ نمایشی» یک کار — همان اولویتِ statusBadge()، ولی
-     * به‌شکلِ کلید (نه HTML). فیلتر و بج همیشه هم‌خوان می‌مانند.
+     * «کلید وضعیت نمایشی» یک کار — همان اولویت statusBadge()، ولی
+     * به‌شکل کلید (نه HTML). فیلتر و بج همیشه هم‌خوان می‌مانند.
      */
     function effectiveStatus(t, user) {
         if (needsRenewalDecision(t)) return 'renewal_needed';
@@ -455,7 +455,7 @@ window.TF = (function () {
         return t.status || 'not_started';
     }
 
-    // ── لیستِ صفحاتِ کار (روی ردیفِ tasks) ──
+    // ── لیست صفحات کار (روی ردیف tasks) ──
     var STATUS_FILTERS = [
         { key: 'all',     label: 'همه',        group: null,     match: function () { return true; } },
         { key: 'open',     label: 'باز',        group: 'عمومی',  match: function (t) { return ['completed', 'approved', 'rejected', 'stopped'].indexOf(t.status) === -1; } },
@@ -483,7 +483,7 @@ window.TF = (function () {
         { key: 'wf_stopped',     label: 'فرآیند متوقف‌شده',              group: 'روتین', match: function (t) { return _wf(t) && t.status === 'stopped'; } }
     ];
 
-    // ── لیستِ صفحهٔ مانیتورینگِ روتین‌ها (روی ردیفِ workflow_instances) ──
+    // ── لیست صفحهٔ مانیتورینگ روتین‌ها (روی ردیف workflow_instances) ──
     var ROUTINE_INSTANCE_FILTERS = [
         { key: 'all',         label: 'همه',         match: function () { return true; } },
         { key: 'in_progress', label: 'در حال اجرا', match: function (w) { return w.status === 'in_progress'; } },
@@ -498,10 +498,10 @@ window.TF = (function () {
     }
 
     /**
-     * آیا این ردیف از فیلترِ انتخاب‌شده رد می‌شود؟
-     * @param {object} row   ردیفِ کار — یا نمونهٔ روتین وقتی list='instance'
-     * @param {string} key   کلیدِ فیلترِ انتخاب‌شده (نو یا قدیمی)
-     * @param {object} user  کاربرِ جاری
+     * آیا این ردیف از فیلتر انتخاب‌شده رد می‌شود؟
+     * @param {object} row   ردیف کار — یا نمونهٔ روتین وقتی list='instance'
+     * @param {string} key   کلید فیلتر انتخاب‌شده (نو یا قدیمی)
+     * @param {object} user  کاربر جاری
      * @param {string} list  'task' (پیش‌فرض) | 'instance'
      */
     function matchesStatusFilter(row, key, user, list) {
@@ -509,21 +509,21 @@ window.TF = (function () {
         var arr = list === 'instance' ? ROUTINE_INSTANCE_FILTERS : STATUS_FILTERS;
         var f = _byKey(arr, key);
         if (f) { try { return !!f.match(row, user); } catch (e) { return true; } }
-        // ── سازگاریِ عقب‌رو: کلیدهای قدیمی / پارامترهای داشبورد ──
+        // ── سازگاری عقب‌رو: کلیدهای قدیمی / پارامترهای داشبورد ──
         if (key === 'today') return isDueToday(row, user);
         if (key === 'open') return ['completed', 'approved', 'rejected', 'stopped'].indexOf(row.status) === -1;
         if (key === 'overdue' || key === 'delayed') return isOverdue(row, user);
         if (key === 'done') return row.status === 'completed' || row.status === 'approved';
         if (key === 'renewal' || key === 'renewal_needed') return needsRenewalDecision(row);
-        return row.status === key; // کلیدِ خامِ enum، هر نوع کار
+        return row.status === key; // کلید خام enum، هر نوع کار
     }
 
     /**
-     * پر کردنِ یک <select> با گزینه‌های فیلترِ وضعیت (با <optgroup>).
+     * پر کردن یک <select> با گزینه‌های فیلتر وضعیت (با <optgroup>).
      * @param {HTMLSelectElement} selectEl
      * @param {object} opts  { list:'task'|'instance', selected:'all' }
      */
-    // فقط عنوانِ گروه‌ها (عمومی/کارِ عادی/روتین) با خط‌تیرهٔ قرینه از دو طرف — وسط‌چین دیده می‌شوند
+    // فقط عنوان گروه‌ها (عمومی/کار عادی/روتین) با خط‌تیرهٔ قرینه از دو طرف — وسط‌چین دیده می‌شوند
     var STATUS_FILTER_SEP = '─────'; // ─────
     function _decorateFilterLabel(txt) {
         return STATUS_FILTER_SEP + ' ' + txt + ' ' + STATUS_FILTER_SEP;
@@ -544,7 +544,7 @@ window.TF = (function () {
                 if (g) { html += '<optgroup label="' + _decorateFilterLabel(g) + '">'; groupOpen = true; }
                 curGroup = g;
             }
-            var label = f.label; // «همه» بدونِ خط‌تیره؛ فقط optgroupها متمایز می‌شوند
+            var label = f.label; // «همه» بدون خط‌تیره؛ فقط optgroupها متمایز می‌شوند
             html += '<option value="' + f.key + '"' + (f.key === sel ? ' selected' : '') + '>' + label + '</option>';
         });
         if (groupOpen) html += '</optgroup>';
@@ -581,13 +581,13 @@ window.TF = (function () {
         statusIcon,
         statusBadge,
 
-        // رویدادهایِ تاریخچه
+        // رویدادهای تاریخچه
         actionCfg,
         actionLabel,
         actionVerb,
         actionClass,
 
-        // فیلترِ وضعیتِ مشترک
+        // فیلتر وضعیت مشترک
         STATUS_FILTERS,
         ROUTINE_INSTANCE_FILTERS,
         effectiveStatus,

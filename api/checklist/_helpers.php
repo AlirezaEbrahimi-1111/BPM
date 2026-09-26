@@ -7,10 +7,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-access.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
 
 /**
- * گرفتن کار + بررسی دسترسی (زنجیره‌ی مشترکِ taskUserAccess: سازنده/مسئول/
- * مدیر/تاریخچه/چک‌لیست/بیننده — همان منبعِ حقیقتی که detail.php و
+ * گرفتن کار + بررسی دسترسی (زنجیره‌ی مشترک taskUserAccess: سازنده/مسئول/
+ * مدیر/تاریخچه/چک‌لیست/بیننده — همان منبع حقیقتی که detail.php و
  * get-attachments.php هم استفاده می‌کنند، تا بیننده‌ای که با task_viewers
- * دسترسیِ چک‌لیست براش صریحاً روشن/خاموش شده، اینجا هم واقعاً رعایت بشه)
+ * دسترسی چک‌لیست براش صریحا روشن/خاموش شده، اینجا هم واقعا رعایت بشه)
  * خروجی: آرایه task یا null
  */
 function getTaskForChecklist($db, $task_id, $user_id)
@@ -22,17 +22,17 @@ function getTaskForChecklist($db, $task_id, $user_id)
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$task) return null;
 
-    // 🔒 همون خودترمیمیِ status که detail.php/my-tasks.php/overview.php/... از
-    // قبل دارن (برگشت از period_done به حالتِ فعال اگه دوره‌ی بعدی رسیده باشه) —
-    // این‌جا هم لازمه، وگرنه اگه کاربر مستقیم/فقط چک‌لیست رو باز کنه (بدونِ
+    // 🔒 همون خودترمیمی status که detail.php/my-tasks.php/overview.php/... از
+    // قبل دارن (برگشت از period_done به حالت فعال اگه دوره‌ی بعدی رسیده باشه) —
+    // این‌جا هم لازمه، وگرنه اگه کاربر مستقیم/فقط چک‌لیست رو باز کنه (بدون
     // اینکه یکی از اون endpointها قبلش صدا زده شده باشه)، status هنوز
-    // 'period_done'ِ کهنه می‌مونه و isChecklistLocked() اشتباهاً قفلش می‌کنه
+    // 'period_done' کهنه می‌مونه و isChecklistLocked() اشتباها قفلش می‌کنه
     maybeStartNextPeriod($db, $task, $user_id);
 
     $access = taskUserAccess($db, (int) $user_id, $task);
 
-    // بیننده‌ای که صریحاً دسترسیِ چک‌لیست براش خاموش شده، حتی اگر از راهِ
-    // دیگه‌ای (مثلاً مسئولِ یک آیتم) هم واجدِ شرایط بود، دسترسی نداره
+    // بیننده‌ای که صریحا دسترسی چک‌لیست براش خاموش شده، حتی اگر از راه
+    // دیگه‌ای (مثلا مسئول یک آیتم) هم واجد شرایط بود، دسترسی نداره
     if ($access['is_viewer_only'] && !$access['viewer_can_view_checklist']) {
         return null;
     }
@@ -40,16 +40,16 @@ function getTaskForChecklist($db, $task_id, $user_id)
 
     $task['_is_creator']            = ((int) $task['creator_id']  === (int) $user_id);
     $task['_is_assignee']           = ((int) $task['assignee_id'] === (int) $user_id);
-    $task['_is_checklist_assignee'] = $access['is_checklist_only'];  // مسئولِ صرفِ یک/چند آیتم → دیدِ محدود
-    $task['_is_pure_viewer']        = $access['is_viewer_only'];     // 🆕 بیننده‌یِ task_viewers → دیدِ کامل، فقط مشاهده
+    $task['_is_checklist_assignee'] = $access['is_checklist_only'];  // مسئول صرف یک/چند آیتم → دید محدود
+    $task['_is_pure_viewer']        = $access['is_viewer_only'];     // 🆕 بیننده‌ی task_viewers → دید کامل، فقط مشاهده
     return $task;
 }
 
 /**
- * آیا این کاربر مجاز به عمل‌کردن (تیک‌زدن یا پیوست‌کردنِ فایل موقعِ تأیید)
- * رویِ این آیتمِ چک‌لیستِ خاصه؟ منبعِ حقیقتِ مشترک برایِ toggle.php و
- * upload-attachment.php — قانون: آیتمِ ارجاع‌شده → فقط مسئولش (کاربر یا
- * عضوِ واحد)؛ آیتمِ بدون ارجاع → فقط مسئولِ فعلیِ کار.
+ * آیا این کاربر مجاز به عمل‌کردن (تیک‌زدن یا پیوست‌کردن فایل موقع تأیید)
+ * روی این آیتم چک‌لیست خاصه؟ منبع حقیقت مشترک برای toggle.php و
+ * upload-attachment.php — قانون: آیتم ارجاع‌شده → فقط مسئولش (کاربر یا
+ * عضو واحد)؛ آیتم بدون ارجاع → فقط مسئول فعلی کار.
  * $item باید assignee_type/assignee_value داشته باشد؛ $task باید _is_assignee داشته باشد.
  */
 function canActOnChecklistItem($db, array $item, array $task, $user_id): bool
@@ -71,7 +71,7 @@ function isChecklistLocked($task)
     $lockedStatuses = ['completed', 'approved', 'stopped', 'cancelled', 'period_done'];
     $status = $task['status'] ?? '';
     $result = in_array($status, $lockedStatuses, true);
-    // خط تست موقت — نشان می‌دهد این نسخه‌ی فایل واقعاً اجرا می‌شود
+    // خط تست موقت — نشان می‌دهد این نسخه‌ی فایل واقعا اجرا می‌شود
     return $result;
 }
 
@@ -87,7 +87,7 @@ function notifyChecklistAssignee($db, $assignee_type, $assignee_value, $task, $a
     if ($assignee_type === 'user') {
         $recipients[] = (int)$assignee_value;
     } elseif ($assignee_type === 'section') {
-        // 🆕 همه‌ی اعضای آن واحد (شاملِ کسانی که این واحد، واحدِ دومشان است)
+        // 🆕 همه‌ی اعضای آن واحد (شامل کسانی که این واحد، واحد دومشان است)
         $orgStmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
         $orgStmt->execute([$actor_id]);
         $actor_org = $orgStmt->fetchColumn();
@@ -98,7 +98,7 @@ function notifyChecklistAssignee($db, $assignee_type, $assignee_value, $task, $a
     $taskId    = $task['id'];
 
     foreach ($recipients as $uid) {
-        // به خودِ ارجاع‌دهنده اعلان نده
+        // به خود ارجاع‌دهنده اعلان نده
         if ($uid === (int)$actor_id) continue;
 
         $title = 'ارجاع آیتم چک‌لیست';
@@ -130,7 +130,7 @@ function notifyChecklistItemDone($db, $item, $task, $doer_id)
     $creator_id = (int)($item['created_by'] ?? 0);
     if (!$creator_id) return;
 
-    // اگر خودِ سازنده تیک زده، نیازی به اعلان نیست
+    // اگر خود سازنده تیک زده، نیازی به اعلان نیست
     if ($creator_id === (int)$doer_id) return;
 
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
@@ -161,9 +161,9 @@ function notifyChecklistItemDone($db, $item, $task, $doer_id)
     ]);
 }
 /**
- * 🔒 خط قرمز: کسی که فقط مسئولِ یک/چند آیتمِ چک‌لیست است (نه سازنده، نه
- * مسئولِ کل کار)، فقط باید همان آیتم‌های ارجاع‌شده به خودش (یا واحدش) را
- * ببیند — نه کل چک‌لیست را. برای سازنده/مسئولِ کار، لیست بدون تغییر برمی‌گردد.
+ * 🔒 خط قرمز: کسی که فقط مسئول یک/چند آیتم چک‌لیست است (نه سازنده، نه
+ * مسئول کل کار)، فقط باید همان آیتم‌های ارجاع‌شده به خودش (یا واحدش) را
+ * ببیند — نه کل چک‌لیست را. برای سازنده/مسئول کار، لیست بدون تغییر برمی‌گردد.
  * $items هر عضو باید کلیدهای assignee_type و assignee_value داشته باشد.
  */
 function filterChecklistItemsForViewer(array $items, bool $onlyChecklistAssignee, $user_id, array $userSections): array
@@ -179,7 +179,7 @@ function filterChecklistItemsForViewer(array $items, bool $onlyChecklistAssignee
         if ($type === 'section') {
             return in_array($value, $userSections, true);
         }
-        return false; // آیتمِ بدون ارجاع، به مسئولِ صرفِ یک آیتمِ دیگر ربطی ندارد
+        return false; // آیتم بدون ارجاع، به مسئول صرف یک آیتم دیگر ربطی ندارد
     }));
 }
 
@@ -201,8 +201,8 @@ function checklistProgress($db, $task_id)
 
 /**
  * محاسبهٔ پیشرفت روی یک آرایهٔ از آیتم‌های از پیش واکشی‌شده (نه کل چک‌لیست).
- * برای مسئولِ صرفِ یک/چند آیتم استفاده می‌شود تا درصد فقط روی آیتم‌های
- * قابل‌دیدنِ او حساب شود، نه کل چک‌لیستِ کار.
+ * برای مسئول صرف یک/چند آیتم استفاده می‌شود تا درصد فقط روی آیتم‌های
+ * قابل‌دیدن او حساب شود، نه کل چک‌لیست کار.
  */
 function checklistProgressFromItems(array $items): array
 {
@@ -215,13 +215,13 @@ function checklistProgressFromItems(array $items): array
 }
 
 /**
- * ⚠️ عمداً غیرفعال شده (طبقِ درخواستِ صریح): تیک‌زدنِ آخرین آیتمِ چک‌لیست
- * دیگر هیچ‌وقت خودش کار را completed/period_done نمی‌کند — حتی برایِ
- * تسکِ خودمسئولی (creator == assignee) که قبلاً بدونِ هیچ تأییدِ اضافه‌ای
- * مستقیم finalize می‌شد. تیک‌کاملِ چک‌لیست فقط قفلِ دکمهٔ «تکمیلِ کار» را
- * باز می‌کند (این قفل از قبل در TaskManager::updateTaskStatus هست)؛ خودِ
- * تکمیل همیشه باید با کلیکِ صریحِ کاربر روی همون دکمه انجام بشه — که
- * برایِ کارهایِ واگذارشده، طبقِ همون منطقِ موجود، نیازمندِ تأییدِ نهاییِ
+ * ⚠️ عمدا غیرفعال شده (طبق درخواست صریح): تیک‌زدن آخرین آیتم چک‌لیست
+ * دیگر هیچ‌وقت خودش کار را completed/period_done نمی‌کند — حتی برای
+ * تسک خودمسئولی (creator == assignee) که قبلا بدون هیچ تأیید اضافه‌ای
+ * مستقیم finalize می‌شد. تیک‌کامل چک‌لیست فقط قفل دکمهٔ «تکمیل کار» را
+ * باز می‌کند (این قفل از قبل در TaskManager::updateTaskStatus هست)؛ خود
+ * تکمیل همیشه باید با کلیک صریح کاربر روی همون دکمه انجام بشه — که
+ * برای کارهای واگذارشده، طبق همون منطق موجود، نیازمند تأیید نهایی
  * تعریف‌کننده (pending_approval) خواهد بود.
  */
 function maybeAutoComplete($db, $task, $user_id)
@@ -232,9 +232,9 @@ function maybeAutoComplete($db, $task, $user_id)
 /**
  * ثبت یک دوره‌ی انجام‌شده برای تسک دوره‌ای.
  *
- * ⚠️ رفع باگ: قبلاً این تابع بدون توجه به اینکه سازنده و انجام‌دهنده
+ * ⚠️ رفع باگ: قبلا این تابع بدون توجه به اینکه سازنده و انجام‌دهنده
  * یکی هستند یا نه، همیشه مستقیم status='period_done' می‌گذاشت — یعنی
- * زنجیرهٔ تأیید را کامل دور می‌زد (برخلاف مسیر عادیِ تکمیل در
+ * زنجیرهٔ تأیید را کامل دور می‌زد (برخلاف مسیر عادی تکمیل در
  * TaskManager::updateTaskStatus که اگر creator ≠ assignee باشد، کار
  * را برای تأیید نزد تعریف‌کننده می‌فرستد). حالا همان قاعده اینجا هم
  * رعایت می‌شود.
@@ -249,8 +249,8 @@ function registerRecurringPeriod($db, $task, $user_id)
     try {
         $db->beginTransaction();
 
-        // ۱) ثبت دوره در تاریخچه — با تاریخ واقعیِ همین لحظه
-        //    (روزی که چک‌لیست واقعاً کامل شد، نه روزِ تأییدِ احتمالیِ بعدی)
+        // ۱) ثبت دوره در تاریخچه — با تاریخ واقعی همین لحظه
+        //    (روزی که چک‌لیست واقعا کامل شد، نه روز تأیید احتمالی بعدی)
         $hist = $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
                               VALUES (?, ?, ?, 'completed', ?)");
         $hist->execute([
@@ -268,7 +268,7 @@ function registerRecurringPeriod($db, $task, $user_id)
 
         if ($needsApproval) {
             // ✅ سازنده ≠ انجام‌دهنده → نباید خودکار تمام شود؛ باید مثل مسیر
-            // عادیِ تکمیل، منتظر تأیید تعریف‌کننده بماند
+            // عادی تکمیل، منتظر تأیید تعریف‌کننده بماند
             $upd = $db->prepare("UPDATE tasks
                                  SET status = 'pending_approval',
                                      is_pending_approval = TRUE,
@@ -358,7 +358,7 @@ function addChecklistEvent($db, $task_id, $action, $from_user_id, $to_user_id, $
         ->execute([$task_id, $from_user_id, $to_user_id, $section, $action, $note]);
 }
 /**
- * ثبت یک رکورد تاریخچه برای تغییر وضعیتِ ناشی از چک‌لیست.
+ * ثبت یک رکورد تاریخچه برای تغییر وضعیت ناشی از چک‌لیست.
  * action را 'updated' می‌گذاریم تا با اکشن‌های اصلی قاطی نشود،
  * و توضیح را در notes می‌نویسیم.
  */

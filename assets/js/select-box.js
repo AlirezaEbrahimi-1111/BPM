@@ -1,13 +1,13 @@
 /**
- * SelectBox — جایگزینِ ظاهریِ <select> بومی با یک منوی DOM‌ای که هاورش
- * بنفشِ استانداردِ پروژه است (rgba(142,87,254,.12) / .18 تاریک).
+ * SelectBox — جایگزین ظاهری <select> بومی با یک منوی DOM‌ای که هاورش
+ * بنفش استاندارد پروژه است (rgba(142,87,254,.12) / .18 تاریک).
  *
- * روشِ کار: «بهبودِ تدریجی» — خودِ <select> در DOM می‌ماند (فقط از دید پنهان
- * می‌شود)، یک تریگر + منو رویش سوار می‌شود، و هر انتخاب مقدارِ <select> را ست
- * و رویدادِ change/input پخش می‌کند. پس هر کدِ صفحه که .value می‌خواند یا به
- * change گوش می‌دهد، بدونِ تغییر کار می‌کند.
+ * روش کار: «بهبود تدریجی» — خود <select> در DOM می‌ماند (فقط از دید پنهان
+ * می‌شود)، یک تریگر + منو رویش سوار می‌شود، و هر انتخاب مقدار <select> را ست
+ * و رویداد change/input پخش می‌کند. پس هر کد صفحه که .value می‌خواند یا به
+ * change گوش می‌دهد، بدون تغییر کار می‌کند.
  *
- * راه‌اندازیِ خودکار: به‌محضِ لود، همه‌ی <select>های عادی (نه multiple، نه
+ * راه‌اندازی خودکار: به‌محض لود، همه‌ی <select>های عادی (نه multiple، نه
  * [data-no-enhance]) بهبود می‌یابند؛ یک observer روی body، selectهای بعدی
  * (مودال‌ها، ردیف‌های پویا) را هم می‌گیرد.
  */
@@ -97,12 +97,12 @@
         injectStyle();
         select.dataset.sbDone = '1';
 
-        // اندازه/چیدمانِ طبیعیِ selectِ اصلی را قبل از پنهان‌کردن اسنپ‌شات می‌گیریم
-        // (getComputedStyle زنده است و بعدِ افزودنِ .sb-native مقدارها ۱px می‌شوند).
+        // اندازه/چیدمان طبیعی select اصلی را قبل از پنهان‌کردن اسنپ‌شات می‌گیریم
+        // (getComputedStyle زنده است و بعد افزودن .sb-native مقدارها ۱px می‌شوند).
         var live = window.getComputedStyle(select);
-        // پدینگِ افقی را عمداً کپی نمی‌کنیم — .form-select برای فلشِ خودش
-        // padding-left بزرگ دارد که فاصله‌ی فلشِ ما را زیاد می‌کرد؛ padding
-        // خودِ .sb-trigger کافی است.
+        // پدینگ افقی را عمدا کپی نمی‌کنیم — .form-select برای فلش خودش
+        // padding-left بزرگ دارد که فاصله‌ی فلش ما را زیاد می‌کرد؛ padding
+        // خود .sb-trigger کافی است.
         var geom = ['borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
             'borderStyle', 'borderRadius', 'fontSize', 'fontFamily', 'fontWeight',
             'height', 'minHeight', 'lineHeight', 'maxWidth', 'minWidth', 'display'];
@@ -125,14 +125,14 @@
             wrap.style.display = 'inline-block';
             if (natW) wrap.style.width = natW + 'px';
         }
-        // قیدهای عرض که روی خودِ select بودند باید روی wrapper بیایند
+        // قیدهای عرض که روی خود select بودند باید روی wrapper بیایند
         ['maxWidth', 'minWidth'].forEach(function (p) {
             var v = cs[p];
             if (v && v !== 'none' && v !== '0px') wrap.style[p] = v;
         });
         if (select.style.flex) wrap.style.flex = select.style.flex;
 
-        // آرشیوِ «▼»ی که صفحه خودش با ::after می‌کشد (مثلِ .filter-item) —
+        // آرشیو «▼»ی که صفحه خودش با ::after می‌کشد (مثل .filter-item) —
         // وگرنه دو فلش دیده می‌شود.
         var fi = select.closest('.filter-item');
         if (fi) fi.classList.add('no-arrow');
@@ -151,9 +151,9 @@
         trigger.setAttribute('aria-expanded', 'false');
         trigger.innerHTML = '<span class="sb-label"></span><span class="sb-caret"></span>';
 
-        // هندسه‌ی selectِ اصلی را می‌گیریم تا تریگر دقیقاً هم‌اندازه/هم‌شکلِ
+        // هندسه‌ی select اصلی را می‌گیریم تا تریگر دقیقا هم‌اندازه/هم‌شکل
         // همان چیزی باشد که صفحه استایل کرده بود (رنگ‌ها را نمی‌بریم تا
-        // تمِ تاریک همچنان کار کند).
+        // تم تاریک همچنان کار کند).
         ['paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight',
             'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
             'borderStyle', 'borderRadius', 'fontSize', 'fontFamily', 'fontWeight',
@@ -281,28 +281,28 @@
             }
         });
 
-        // تغییرِ بیرونی مقدار
+        // تغییر بیرونی مقدار
         select.addEventListener('change', syncLabel);
         select.addEventListener('sb:refresh', refresh);
 
-        // تغییرِ لیستِ گزینه‌ها از بیرون (کدِ صفحه)
+        // تغییر لیست گزینه‌ها از بیرون (کد صفحه)
         var mo = new MutationObserver(function () { refresh(); });
         mo.observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
 
         refresh();
-        // یک همگام‌سازیِ تأخیری برای وقتی صفحه بعدِ enhance مقدار را بی‌صدا ست می‌کند
+        // یک همگام‌سازی تأخیری برای وقتی صفحه بعد enhance مقدار را بی‌صدا ست می‌کند
         setTimeout(refresh, 400);
     }
 
     function enhanceAll(root) {
         (root || document).querySelectorAll('select:not([data-sb-done])').forEach(function (s) {
-            try { enhance(s); } catch (e) { /* یک selectِ خراب کلِ صفحه را نباید بشکند */ }
+            try { enhance(s); } catch (e) { /* یک select خراب کل صفحه را نباید بشکند */ }
         });
     }
 
     function boot() {
         enhanceAll(document);
-        // selectهایی که بعداً به DOM اضافه می‌شوند (مودال، ردیفِ پویا)
+        // selectهایی که بعدا به DOM اضافه می‌شوند (مودال، ردیف پویا)
         new MutationObserver(function (muts) {
             for (var i = 0; i < muts.length; i++) {
                 var added = muts[i].addedNodes;

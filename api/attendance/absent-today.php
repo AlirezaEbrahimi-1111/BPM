@@ -2,22 +2,22 @@
 /**
  * api/attendance/absent-today.php
  * ─────────────────────────────────────────────────────────────
- * لیستِ پرسنلِ «سازمانِ کاربرِ جاری» که امروز هنوز ثبتِ ورود ندارند.
+ * لیست پرسنل «سازمان کاربر جاری» که امروز هنوز ثبت ورود ندارند.
  * برای همهٔ کاربران باز است (نه فقط مدیر).
  *
  * قواعد:
- *   • فقط کاربرانِ فعالِ همان سازمان که حضوروغیاب برایشان واقعاً تعریف شده:
- *     shift_count >= 1 و shift_1_start پر (نه فقط پیش‌فرضِ فرمِ ویرایش) و
- *     حقوقِ ماهانه‌ی مشخص (monthly_salary > 0) — یعنی کسی که هنوز شیفت/حقوقش
- *     ثبت نشده، اصلاً وارد این محاسبه نمی‌شود. سرپرست‌ها و خودِ کاربرِ جاری نه.
+ *   • فقط کاربران فعال همان سازمان که حضوروغیاب برایشان واقعا تعریف شده:
+ *     shift_count >= 1 و shift_1_start پر (نه فقط پیش‌فرض فرم ویرایش) و
+ *     حقوق ماهانه‌ی مشخص (monthly_salary > 0) — یعنی کسی که هنوز شیفت/حقوقش
+ *     ثبت نشده، اصلا وارد این محاسبه نمی‌شود. سرپرست‌ها و خود کاربر جاری نه.
  *   • «حاضر» = حداقل یک check_in امروز (هر شیفتی) → در لیست نمی‌آید.
- *   • مرخصیِ تأییدشده که امروز را پوشش می‌دهد → بجِ «مرخصی».
- *   • پاسِ امروز و «همین حالا داخلِ بازهٔ پاس» → در لیست نمی‌آید.
- *   • در غیرِ این‌صورت (نزده و بیرونِ بازهٔ پاس) → بجِ «غایب».
- *   • روزِ تعطیل (جمعه/تعطیلِ رسمی/هفتگی) → لیستِ خالی.
+ *   • مرخصی تأییدشده که امروز را پوشش می‌دهد → بج «مرخصی».
+ *   • پاس امروز و «همین حالا داخل بازهٔ پاس» → در لیست نمی‌آید.
+ *   • در غیر این‌صورت (نزده و بیرون بازهٔ پاس) → بج «غایب».
+ *   • روز تعطیل (جمعه/تعطیل رسمی/هفتگی) → لیست خالی.
  *
- * بدونِ آستانهٔ زمانی: هر بار که صفحه رفرش شود دوباره محاسبه می‌شود،
- * پس هر کس بعداً ورود بزند از لیست برداشته می‌شود.
+ * بدون آستانهٔ زمانی: هر بار که صفحه رفرش شود دوباره محاسبه می‌شود،
+ * پس هر کس بعدا ورود بزند از لیست برداشته می‌شود.
  */
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
@@ -68,7 +68,7 @@ try {
     $today = date('Y-m-d');
     $now_t = date('H:i:s');
 
-    // ── روزِ تعطیل → لیستِ خالی ──
+    // ── روز تعطیل → لیست خالی ──
     $holidays  = getHolidaySet($db, $org_id);
     $recurring = getRecurringHolidayWeekdays($db, $org_id);
     if (!isWorkingDay(new DateTime($today), $holidays, $recurring)) {
@@ -76,7 +76,7 @@ try {
         exit;
     }
 
-    // ── کاربرانِ واجدِ شرایطِ لیست ──
+    // ── کاربران واجد شرایط لیست ──
     $uStmt = $db->prepare("
         SELECT id, first_name, last_name
         FROM users
@@ -107,12 +107,12 @@ try {
     $aStmt->execute(array_merge($ids, [$today]));
     $present = array_fill_keys(array_map('intval', array_column($aStmt->fetchAll(PDO::FETCH_ASSOC), 'user_id')), true);
 
-    // مرخصیِ تأییدشده که امروز را پوشش می‌دهد
+    // مرخصی تأییدشده که امروز را پوشش می‌دهد
     $lStmt = $db->prepare("SELECT DISTINCT user_id FROM leave_requests WHERE user_id IN ($ph) AND status = 'approved' AND start_date <= ? AND end_date >= ?");
     $lStmt->execute(array_merge($ids, [$today, $today]));
     $on_leave = array_fill_keys(array_map('intval', array_column($lStmt->fetchAll(PDO::FETCH_ASSOC), 'user_id')), true);
 
-    // پاسِ امروزِ لغونشده — با بازهٔ ساعتی
+    // پاس امروز لغونشده — با بازهٔ ساعتی
     $pStmt = $db->prepare("SELECT user_id, start_time, end_time FROM pass_requests WHERE user_id IN ($ph) AND pass_date = ? AND (status IS NULL OR status <> 'cancelled')");
     $pStmt->execute(array_merge($ids, [$today]));
     $pass_by_user = [];
@@ -133,7 +133,7 @@ try {
             continue;
         }
 
-        // همین حالا داخلِ بازهٔ یک پاس؟ → در لیست نیاور
+        // همین حالا داخل بازهٔ یک پاس؟ → در لیست نیاور
         $in_pass_now = false;
         if (!empty($pass_by_user[$uid])) {
             foreach ($pass_by_user[$uid] as $pw) {

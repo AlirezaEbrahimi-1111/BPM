@@ -65,7 +65,7 @@ function loadAndDisplayPersonnel() {
         return;
     }
 
-    // escapeِ HTML — نامِ پرسنل خام داخلِ innerHTML و attributeِ onclick می‌رفت (XSS)
+    // escape HTML — نام پرسنل خام داخل innerHTML و attribute onclick می‌رفت (XSS)
     const pfEsc = s => String(s == null ? '' : s)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');

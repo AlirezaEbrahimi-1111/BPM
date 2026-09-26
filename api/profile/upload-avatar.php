@@ -1,6 +1,6 @@
 <?php
 /**
- * API: آپلود/تغییرِ عکسِ پروفایلِ کاربرِ جاری
+ * API: آپلود/تغییر عکس پروفایل کاربر جاری
  * POST /api/profile/upload-avatar.php   (multipart/form-data)   field: avatar
  */
 
@@ -29,9 +29,9 @@ try {
 
     $file = $_FILES['avatar'];
     $maxSize = 3 * 1024 * 1024;
-    // 🔒 نوعِ فایل هرگز از روی $_FILES['type'] (هدرِ کلاینت، به‌سادگی قابلِ جعل) یا
-    // پسوندِ نامِ اصلیِ فایل تعیین نمی‌شود — فقط محتوایِ واقعی با getimagesize() بررسی
-    // می‌شود، تا امکانِ آپلودِ فایلِ اجراشدنی (مثلاً .php) با Content-Type جعلی نباشد
+    // 🔒 نوع فایل هرگز از روی $_FILES['type'] (هدر کلاینت، به‌سادگی قابل جعل) یا
+    // پسوند نام اصلی فایل تعیین نمی‌شود — فقط محتوای واقعی با getimagesize() بررسی
+    // می‌شود، تا امکان آپلود فایل اجراشدنی (مثلا .php) با Content-Type جعلی نباشد
     $allowedExtByType = [IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png', IMAGETYPE_GIF => 'gif', IMAGETYPE_WEBP => 'webp'];
 
     if ($file['size'] > $maxSize) {

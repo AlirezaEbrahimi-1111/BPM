@@ -1,12 +1,12 @@
 <?php
 /**
- * API: تنظیمِ اختیاراتِ اختصاصیِ یک مدیرِ گروه
+ * API: تنظیم اختیارات اختصاصی یک مدیر گروه
  * POST /api/chat/set-member-permissions.php
  *   body: { conversation_id, user_id, permissions: ['pin','add_member',...] }
  *
- * دسترسی: فقط سازنده‌ی گروه — تا خودِ مدیرها نتونن اختیاراتِ همدیگه رو
+ * دسترسی: فقط سازنده‌ی گروه — تا خود مدیرها نتونن اختیارات همدیگه رو
  * دست‌کاری کنن. permissions می‌تونه آرایه‌ی خالی باشه (یعنی این مدیر
- * فعلاً هیچ اختیارِ اختصاصی‌ای نداره، فقط عنوانِ «مدیر» رو داره).
+ * فعلا هیچ اختیار اختصاصی‌ای نداره، فقط عنوان «مدیر» رو داره).
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -44,7 +44,7 @@ try {
         exit;
     }
 
-    // 🔒 فقط کلیدهایِ شناخته‌شده قبول می‌شن — هرچیزِ دیگه‌ای بی‌سروصدا کنار گذاشته می‌شه
+    // 🔒 فقط کلیدهای شناخته‌شده قبول می‌شن — هرچیز دیگه‌ای بی‌سروصدا کنار گذاشته می‌شه
     $cleanPermissions = array_values(array_intersect(array_unique($permissions), CHAT_GROUP_ADMIN_PERMISSIONS));
 
     $stmt = $db->prepare("SELECT type, created_by FROM chat_conversations WHERE id = ?");
@@ -56,24 +56,24 @@ try {
         exit;
     }
 
-    // 🔒 فقط سازنده — نه خودِ مدیرها
+    // 🔒 فقط سازنده — نه خود مدیرها
     if (!chatUserIsGroupCreator($db, $conversationId, $user_id)) {
         http_response_code(403);
         error_log("Chat set-member-permissions denied | user_id={$user_id} | conversation_id={$conversationId}");
-        echo json_encode(['success' => false, 'message' => 'فقط سازنده‌ی گروه می‌تواند اختیاراتِ مدیران را تنظیم کند']);
+        echo json_encode(['success' => false, 'message' => 'فقط سازنده‌ی گروه می‌تواند اختیارات مدیران را تنظیم کند']);
         exit;
     }
 
     if ($targetUserId === (int) $conv['created_by']) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'اختیاراتِ سازنده‌ی گروه قابلِ‌تغییر نیست — همیشه همه‌ی اختیارات را دارد']);
+        echo json_encode(['success' => false, 'message' => 'اختیارات سازنده‌ی گروه قابل‌تغییر نیست — همیشه همه‌ی اختیارات را دارد']);
         exit;
     }
 
     $targetRole = chatMemberRole($db, $conversationId, $targetUserId);
     if ($targetRole !== 'admin') {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'این کاربر مدیرِ گروه نیست']);
+        echo json_encode(['success' => false, 'message' => 'این کاربر مدیر گروه نیست']);
         exit;
     }
 

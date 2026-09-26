@@ -40,8 +40,8 @@ class WorkflowManager
         }
     }
     /**
-     * فاز ۳: تنظیماتِ انشعابِ یک مرحله را نرمال می‌کند.
-     * انشعاب فقط برای مراحلِ آبشاری؛ اگر پیکربندی ناقص بود، پیش‌فرضِ امن
+     * فاز ۳: تنظیمات انشعاب یک مرحله را نرمال می‌کند.
+     * انشعاب فقط برای مراحل آبشاری؛ اگر پیکربندی ناقص بود، پیش‌فرض امن
      * (رد → بازگشت به تعریف‌کننده).
      * @return array [is_decision(int), on_approve_step_order(?int), on_reject_mode(?string), on_reject_step_order(?int)]
      */
@@ -60,7 +60,7 @@ class WorkflowManager
         if ($mode === 'step') {
             $onRejectStep = $toInt($step_data['on_reject_step_order'] ?? null);
             if ($onRejectStep === null) {
-                $mode = 'creator'; // هدفِ ردِ مشخص نشده → پیش‌فرضِ امن
+                $mode = 'creator'; // هدف رد مشخص نشده → پیش‌فرض امن
             }
         }
         return [1, $onApprove, $mode, $onRejectStep];
@@ -121,7 +121,7 @@ class WorkflowManager
 
         if ($assignee_type === 'user' && !empty($step_data['assignee_value'])) {
             $assignee_user_id = (int)$step_data['assignee_value'];
-            // واحدِ فعلیِ همان کاربر به‌صورتِ خودکار به‌عنوانِ بازگشتِ پیش‌فرض ذخیره می‌شود
+            // واحد فعلی همان کاربر به‌صورت خودکار به‌عنوان بازگشت پیش‌فرض ذخیره می‌شود
             $stmt = $this->db->prepare("SELECT activity_section FROM users WHERE id = ?");
             $stmt->execute([$assignee_user_id]);
             $u = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -137,7 +137,7 @@ class WorkflowManager
 
         $execution_mode = (($step_data['execution_mode'] ?? 'cascade') === 'parallel') ? 'parallel' : 'cascade';
 
-        // 🆕 فاز ۳: انشعابِ شرطی — فقط برای مراحلِ آبشاری معنی دارد
+        // 🆕 فاز ۳: انشعاب شرطی — فقط برای مراحل آبشاری معنی دارد
         [$isDecision, $onApprove, $onRejectMode, $onRejectStep] = $this->normalizeBranchConfig($step_data, $execution_mode);
 
         $stmt = $this->db->prepare("INSERT INTO workflow_steps (template_id, step_order, step_name, activity_section, time_limit_hours, assignee_type, assignee_user_id, execution_mode, is_decision, on_approve_step_order, on_reject_mode, on_reject_step_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -164,7 +164,7 @@ class WorkflowManager
         return $ok;
     }
 
-    // ذخیرهٔ آیتم‌های چک‌لیستِ الگو برای یک مرحله (فقط عنوان + توضیحات)
+    // ذخیرهٔ آیتم‌های چک‌لیست الگو برای یک مرحله (فقط عنوان + توضیحات)
     private function saveStepChecklistItems($step_id, array $items)
     {
         $stmt = $this->db->prepare("
@@ -243,8 +243,8 @@ class WorkflowManager
             $stmt->execute([$is_active ? 1 : 0, $template_id, $organization_id]);
 
             if ($stmt->rowCount() === 0) {
-                // یا قالب وجود ندارد، یا متعلق به سازمانِ دیگری است، یا مقدار تغییری نکرده
-                // برای اطمینان، وجودِ قالب را چک می‌کنیم
+                // یا قالب وجود ندارد، یا متعلق به سازمان دیگری است، یا مقدار تغییری نکرده
+                // برای اطمینان، وجود قالب را چک می‌کنیم
                 $chk = $this->db->prepare("SELECT COUNT(*) FROM workflow_templates WHERE id = ? AND organization_id = ?");
                 $chk->execute([$template_id, $organization_id]);
                 if ((int)$chk->fetchColumn() === 0) {
@@ -285,7 +285,7 @@ class WorkflowManager
             $stmt->execute([$template_id]);
             $template['steps'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // ✅ چک‌لیستِ الگوی هر مرحله (برای نمایش/بازتعریف در ادیتور)
+            // ✅ چک‌لیست الگوی هر مرحله (برای نمایش/بازتعریف در ادیتور)
             $clStmt = $this->db->prepare("
                 SELECT id, title, description
                 FROM workflow_step_checklist_items
@@ -307,14 +307,14 @@ class WorkflowManager
     public function updateTemplate($template_id, $data)
     {
         try {
-            // 🔒 قفلِ دائمی: ویرایش/جابه‌جاییِ قالب پس از ایجاد ممنوع است. برای تغییر، از «بازتعریف» استفاده کنید.
+            // 🔒 قفل دائمی: ویرایش/جابه‌جایی قالب پس از ایجاد ممنوع است. برای تغییر، از «بازتعریف» استفاده کنید.
             return [
                 'success' => false,
                 'locked'  => true,
                 'message' => 'ویرایش یا جابه‌جایی مراحل قالب امکان‌پذیر نیست. برای تغییر، از «بازتعریف» یک نسخهٔ جدید بسازید.'
             ];
 
-            // ⬇️ کدِ قدیمی غیرفعال شد (هرگز اجرا نمی‌شود)
+            // ⬇️ کد قدیمی غیرفعال شد (هرگز اجرا نمی‌شود)
             $this->db->beginTransaction();
 
             // بروزرسانی template
@@ -329,12 +329,12 @@ class WorkflowManager
 
             $newSteps = array_values($data['steps'] ?? []);
 
-            // idهای مراحلِ فعلی (به‌ترتیب) — برای حفظِ id و جلوگیری از یتیم‌شدنِ روتین‌های در حال اجرا
+            // idهای مراحل فعلی (به‌ترتیب) — برای حفظ id و جلوگیری از یتیم‌شدن روتین‌های در حال اجرا
             $stmt = $this->db->prepare("SELECT id FROM workflow_steps WHERE template_id = ? ORDER BY step_order ASC, id ASC");
             $stmt->execute([$template_id]);
             $existingIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-            // مراحلِ موجود را با همان id به‌روزرسانی کن؛ مرحله‌های جدید را اضافه کن
+            // مراحل موجود را با همان id به‌روزرسانی کن؛ مرحله‌های جدید را اضافه کن
             foreach ($newSteps as $i => $step) {
                 if (isset($existingIds[$i])) {
                     $this->updateStep($existingIds[$i], $step, $i + 1);
@@ -344,7 +344,7 @@ class WorkflowManager
                 }
             }
 
-            // اگر تعداد مراحل کم شده، فقط مرحله‌های اضافیِ قدیمی را حذف کن
+            // اگر تعداد مراحل کم شده، فقط مرحله‌های اضافی قدیمی را حذف کن
             if (count($existingIds) > count($newSteps)) {
                 $toDelete = array_slice($existingIds, count($newSteps));
                 $ph = implode(',', array_fill(0, count($toDelete), '?'));
@@ -364,13 +364,13 @@ class WorkflowManager
     public function deleteTemplate($template_id, $organization_id)
     {
         try {
-            // 🔒 قفلِ دائمی: حذفِ قالب ممنوع است. به‌جای حذف، قالب را «غیرفعال» کنید.
+            // 🔒 قفل دائمی: حذف قالب ممنوع است. به‌جای حذف، قالب را «غیرفعال» کنید.
             return [
                 'success' => false,
                 'locked'  => true,
                 'message' => 'حذف قالب امکان‌پذیر نیست. برای کنار گذاشتن یک قالب، آن را «غیرفعال» کنید.'
             ];
-            // ↓↓↓ کدِ قدیمی دیگر اجرا نمی‌شود ↓↓↓
+            // ↓↓↓ کد قدیمی دیگر اجرا نمی‌شود ↓↓↓
 
             // حذف الگو (مراحل به صورت خودکار حذف می‌شوند به دلیل CASCADE)
             $stmt = $this->db->prepare("DELETE FROM workflow_templates WHERE id = ? AND organization_id = ?");
@@ -400,8 +400,8 @@ class WorkflowManager
             }
 
             // 🔒 خط قرمز: قالب باید متعلق به همین سازمان باشد، وگرنه یک سازمان
-            // می‌تواند با حدسِ template_id، از ساختار/مراحلِ قالبِ خصوصیِ سازمان
-            // دیگر برای ساختن یک نمونهٔ اجراییِ خودش استفاده کند
+            // می‌تواند با حدس template_id، از ساختار/مراحل قالب خصوصی سازمان
+            // دیگر برای ساختن یک نمونهٔ اجرایی خودش استفاده کند
             $tmplCheck = $this->db->prepare("SELECT id FROM workflow_templates WHERE id = ? AND organization_id = ?");
             $tmplCheck->execute([$template_id, $organization_id]);
             if (!$tmplCheck->fetch()) {
@@ -432,7 +432,7 @@ class WorkflowManager
             // ✅ ایجاد task و رکورد در workflow_instance_steps برای همه مراحل
             $first_task_id = null;
 
-            // 🆕 اولین مرحلهٔ آبشاری را پیدا کن (چون بر اساس step_order مرتب است، اولین موردِ cascade)
+            // 🆕 اولین مرحلهٔ آبشاری را پیدا کن (چون بر اساس step_order مرتب است، اولین مورد cascade)
             $firstCascadeOrder = null;
             foreach ($steps as $s) {
                 if (($s['execution_mode'] ?? 'cascade') === 'cascade') {
@@ -452,10 +452,10 @@ class WorkflowManager
                 // محاسبه deadline
                 $deadline = date('Y-m-d H:i:s', strtotime("+{$step['time_limit_hours']} hours"));
 
-                // ✅ تشخیص مسئولِ واقعیِ این مرحله (کاربرِ مشخص، ایجادکننده، یا بازگشت به واحد)
+                // ✅ تشخیص مسئول واقعی این مرحله (کاربر مشخص، ایجادکننده، یا بازگشت به واحد)
                 $resolved_assignee_id = null;
                 if (($step['assignee_type'] ?? 'section') === 'user' && !empty($step['assignee_user_id'])) {
-                    // 🔒 خط قرمز: مسئولِ ثابتِ مرحله هم باید از همین سازمان باشد
+                    // 🔒 خط قرمز: مسئول ثابت مرحله هم باید از همین سازمان باشد
                     $checkStmt = $this->db->prepare("SELECT id FROM users WHERE id = ? AND is_active = 1 AND organization_id = ?");
                     $checkStmt->execute([$step['assignee_user_id'], $organization_id]);
                     if ($checkStmt->fetch()) {
@@ -466,8 +466,8 @@ class WorkflowManager
                     $resolved_assignee_id = $creator_id;
                 }
 
-                // 🆕 فاز ۲: ساختِ تنبلِ تسک — تسک فقط برای مراحلِ «فعالِ همین‌الان» ساخته می‌شود.
-                // مراحلِ pending، task_id = NULL می‌مانند تا موقعِ نوبتشان در activateInstanceStep ساخته شوند
+                // 🆕 فاز ۲: ساخت تنبل تسک — تسک فقط برای مراحل «فعال همین‌الان» ساخته می‌شود.
+                // مراحل pending، task_id = NULL می‌مانند تا موقع نوبتشان در activateInstanceStep ساخته شوند
                 // (یا اگر پرش خفته‌شان کند، هیچ‌وقت). این‌طوری نه نوتیفیکیشن می‌رود نه چیزی به مسئول نمایش داده می‌شود.
                 $task_id = null;
                 if ($is_active_now) {
@@ -495,7 +495,7 @@ class WorkflowManager
                         $first_task_id = $task_id;
                     }
 
-                    // کپیِ چک‌لیستِ الگوی همین مرحله
+                    // کپی چک‌لیست الگوی همین مرحله
                     $clStmt = $this->db->prepare("
                         SELECT title, description, sort_order
                         FROM workflow_step_checklist_items
@@ -515,7 +515,7 @@ class WorkflowManager
                     }
                 }
 
-                // ✅ ایجاد رکورد در workflow_instance_steps (task_id برای مراحلِ pending می‌تواند NULL باشد)
+                // ✅ ایجاد رکورد در workflow_instance_steps (task_id برای مراحل pending می‌تواند NULL باشد)
                 $stmt = $this->db->prepare("
                     INSERT INTO workflow_instance_steps (
                         instance_id, step_id, task_id, step_order, status, deadline, started_at
@@ -541,7 +541,7 @@ class WorkflowManager
                     ");
                     $stmt->execute([$task_id, $creator_id]);
                     // ✅ ارسال نوتیفیکیشن به اعضای واحد این مرحله
-                    // ✅ ارسال نوتیفیکیشن به مسئولِ مرحلهٔ اول (کاربرِ مشخص یا اعضای واحد)
+                    // ✅ ارسال نوتیفیکیشن به مسئول مرحلهٔ اول (کاربر مشخص یا اعضای واحد)
                     try {
                         if ($resolved_assignee_id) {
                             $this->createNotification(
@@ -612,11 +612,11 @@ class WorkflowManager
                 throw new Exception('مرحله یافت نشد');
             }
 
-            // 🆕 فاز ۲: اگر این مرحله «نقطهٔ تصمیم» است، «تکمیل» = «تأیید» → منطقِ انشعاب
+            // 🆕 فاز ۲: اگر این مرحله «نقطهٔ تصمیم» است، «تکمیل» = «تأیید» → منطق انشعاب
             $decStmt = $this->db->prepare("SELECT is_decision FROM workflow_steps WHERE id = ?");
             $decStmt->execute([$current_step['step_id']]);
             if ((int) ($decStmt->fetchColumn() ?: 0) === 1) {
-                $this->db->commit(); // ترنزکشنِ خالی را ببند تا resolveStepDecision ترنزکشنِ خودش را بگیرد
+                $this->db->commit(); // ترنزکشن خالی را ببند تا resolveStepDecision ترنزکشن خودش را بگیرد
                 return $this->resolveStepDecision($task_id, $user_id, 'approve', $notes);
             }
 
@@ -625,8 +625,8 @@ class WorkflowManager
                 throw new Exception('این مرحله قابل تکمیل نیست (وضعیت: ' . $current_step['status'] . ')');
             }
 
-            // 🔒 قفلِ چک‌لیست: تا تیک‌نخوردنِ همهٔ آیتم‌ها، این مرحله تکمیل نمی‌شود
-            // (همان چکِ بک‌اندی که برای تسکِ معمولی هم در TaskManager::updateTaskStatus هست —
+            // 🔒 قفل چک‌لیست: تا تیک‌نخوردن همهٔ آیتم‌ها، این مرحله تکمیل نمی‌شود
+            // (همان چک بک‌اندی که برای تسک معمولی هم در TaskManager::updateTaskStatus هست —
             //  اینجا لازم است چون فرانت را می‌شود دور زد)
             $clCheck = $this->db->prepare("SELECT COUNT(*) FROM task_checklist_items WHERE task_id = ? AND is_done = 0");
             $clCheck->execute([$task_id]);
@@ -644,7 +644,7 @@ class WorkflowManager
             ");
             $stmt->execute([$task_id]);
 
-            // 2. علامت‌گذاری مرحله به عنوان تکمیل شده (+ توضیحاتِ انجام‌دهنده، اگر وارد کرده باشد)
+            // 2. علامت‌گذاری مرحله به عنوان تکمیل شده (+ توضیحات انجام‌دهنده، اگر وارد کرده باشد)
             $stmt = $this->db->prepare("
                 UPDATE workflow_instance_steps
                 SET status = 'completed', completed_at = NOW(), completed_by = ?, completion_notes = ?
@@ -659,13 +659,13 @@ class WorkflowManager
             ");
             $stmt->execute([$task_id, $user_id, ($notes !== '' ? $notes : 'مرحله تکمیل شد')]);
 
-            // 🆕 per-step: حالتِ اجرای «همین مرحله» را از workflow_steps بخوان
+            // 🆕 per-step: حالت اجرای «همین مرحله» را از workflow_steps بخوان
             $stmt = $this->db->prepare("SELECT execution_mode FROM workflow_steps WHERE id = ?");
             $stmt->execute([$current_step['step_id']]);
             $current_mode = $stmt->fetchColumn() ?: 'cascade';
 
             // 3. مرحلهٔ بعدی فقط وقتی فعال می‌شود که «همین مرحله آبشاری» باشد
-            //    بعدی = نزدیک‌ترین مرحلهٔ «آبشاریِ» بعدی که هنوز در انتظار (pending) است
+            //    بعدی = نزدیک‌ترین مرحلهٔ «آبشاری» بعدی که هنوز در انتظار (pending) است
             $next_step = null;
             if ($current_mode === 'cascade') {
                 $stmt = $this->db->prepare("
@@ -684,15 +684,15 @@ class WorkflowManager
             }
 
             if ($next_step) {
-                // 🆕 فاز ۲: فعال‌سازیِ مرحلهٔ بعدی از طریقِ helper مشترک
-                // (ساختِ تنبلِ تسک اگر task_id خالی باشد + موعدِ تازه + تاریخچه + نوتیفیکیشن + یادداشتِ مرحلهٔ قبل)
+                // 🆕 فاز ۲: فعال‌سازی مرحلهٔ بعدی از طریق helper مشترک
+                // (ساخت تنبل تسک اگر task_id خالی باشد + موعد تازه + تاریخچه + نوتیفیکیشن + یادداشت مرحلهٔ قبل)
                 $this->activateInstanceStep($next_step['id'], $user_id, $notes);
                 $this->db->prepare("UPDATE workflow_instances SET current_step = ? WHERE id = ?")
                     ->execute([$next_step['step_order'], $instance_id]);
                 $message = 'مرحله تکمیل شد و به مرحله بعدی منتقل شد';
             } else {
-                // هیچ مرحلهٔ آبشاریِ بعدی نمانده — آیا مرحلهٔ فعال/در انتظارِ دیگری هست؟
-                // (مراحلِ dormant مانع پایان نیستند؛ در completeInstance کنسل می‌شوند)
+                // هیچ مرحلهٔ آبشاری بعدی نمانده — آیا مرحلهٔ فعال/در انتظار دیگری هست؟
+                // (مراحل dormant مانع پایان نیستند؛ در completeInstance کنسل می‌شوند)
                 $remStmt = $this->db->prepare("
                     SELECT COUNT(*) FROM workflow_instance_steps
                     WHERE instance_id = ? AND status IN ('pending', 'active')
@@ -716,13 +716,13 @@ class WorkflowManager
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    //  فاز ۲ — انشعابِ شرطیِ مراحل: «مرحلهٔ تصمیم»، پرشِ تأیید/رد،
-    //  مراحلِ خفته (dormant)، و ساختِ تنبلِ تسک.
+    //  فاز ۲ — انشعاب شرطی مراحل: «مرحلهٔ تصمیم»، پرش تأیید/رد،
+    //  مراحل خفته (dormant)، و ساخت تنبل تسک.
     //  همه چیز additive است: اگر هیچ مرحله‌ای is_decision نباشد و هیچ
-    //  on_approve/on_reject ست نشده باشد، رفتار دقیقاً مثلِ قبل است.
+    //  on_approve/on_reject ست نشده باشد، رفتار دقیقا مثل قبل است.
     // ═══════════════════════════════════════════════════════════════════
 
-    /** ردیفِ workflow_instance_steps بر اساسِ step_order در همین نمونه */
+    /** ردیف workflow_instance_steps بر اساس step_order در همین نمونه */
     private function getInstanceStepByOrder($instance_id, $step_order)
     {
         $stmt = $this->db->prepare("
@@ -736,9 +736,9 @@ class WorkflowManager
 
     /**
      * یک مرحله را «زنده» می‌کند:
-     *  - اگر task_id خالی است، همین‌جا تسک + چک‌لیست را می‌سازد (ساختِ تنبل)
-     *  - وضعیتِ مرحله را active، موعدِ تازه، started_at
-     *  - تاریخچه + نوتیفیکیشن به مسئول + یادداشتِ مرحلهٔ قبل (اگر داده شده)
+     *  - اگر task_id خالی است، همین‌جا تسک + چک‌لیست را می‌سازد (ساخت تنبل)
+     *  - وضعیت مرحله را active، موعد تازه، started_at
+     *  - تاریخچه + نوتیفیکیشن به مسئول + یادداشت مرحلهٔ قبل (اگر داده شده)
      * روی نمونه‌های قدیمی که از قبل تسک دارند هم درست کار می‌کند.
      */
     private function activateInstanceStep($instance_step_id, $acting_user_id, $prev_notes = '')
@@ -761,7 +761,7 @@ class WorkflowManager
         $deadline = date('Y-m-d H:i:s', strtotime("+{$hours} hours"));
         $title = $row['instance_title'] . ' - ' . $row['step_name'];
 
-        // مسئولِ مرحله
+        // مسئول مرحله
         $assignee_id = null;
         if (($row['assignee_type'] ?? 'section') === 'user' && !empty($row['assignee_user_id'])) {
             $c = $this->db->prepare("SELECT id FROM users WHERE id = ? AND is_active = 1 AND organization_id = ?");
@@ -773,7 +773,7 @@ class WorkflowManager
 
         $task_id = $row['task_id'];
         if (empty($task_id)) {
-            // ساختِ تنبلِ تسک
+            // ساخت تنبل تسک
             $ins = $this->db->prepare("
                 INSERT INTO tasks (workflow_instance_id, organization_id, is_workflow_task, title, description,
                     creator_id, activity_section, assignee_id, task_type, priority, deadline, status, current_stage_id)
@@ -839,7 +839,7 @@ class WorkflowManager
         return $task_id;
     }
 
-    /** پرشِ رو به جلو: مراحلِ pendingِ بازهٔ بازِ (from, to) را خفته می‌کند */
+    /** پرش رو به جلو: مراحل pending بازهٔ باز (from, to) را خفته می‌کند */
     private function markStepsDormant($instance_id, $from_order_excl, $to_order_excl)
     {
         $this->db->prepare("
@@ -849,7 +849,7 @@ class WorkflowManager
         ")->execute([$instance_id, $from_order_excl, $to_order_excl]);
     }
 
-    /** پرشِ رو به عقب: مراحلِ [from, to) دوباره pending تا مسیر از نو طی شود */
+    /** پرش رو به عقب: مراحل [from, to) دوباره pending تا مسیر از نو طی شود */
     private function reopenStepsRange($instance_id, $from_order, $to_order_excl)
     {
         $stmt = $this->db->prepare("
@@ -871,7 +871,7 @@ class WorkflowManager
         }
     }
 
-    /** پایانِ نمونه: مراحلِ باقی‌مانده کنسل، نوتیفِ ایجادکننده */
+    /** پایان نمونه: مراحل باقی‌مانده کنسل، نوتیف ایجادکننده */
     private function completeInstance($instance_id, $completed_by = null)
     {
         $stmt = $this->db->prepare("
@@ -906,7 +906,7 @@ class WorkflowManager
     }
 
     /**
-     * تصمیمِ یک «مرحلهٔ تصمیم»: 'approve' یا 'reject'.
+     * تصمیم یک «مرحلهٔ تصمیم»: 'approve' یا 'reject'.
      * فقط تعریف‌کنندهٔ نمونه (workflow_instances.created_by) مجاز است.
      */
     public function resolveStepDecision($task_id, $user_id, $decision, $notes = '')
@@ -943,7 +943,7 @@ class WorkflowManager
                 throw new Exception('این مرحله در وضعیت قابل تصمیم نیست (' . $cur['status'] . ')');
             }
 
-            // قفلِ چک‌لیست فقط برای «تأیید»
+            // قفل چک‌لیست فقط برای «تأیید»
             if ($decision === 'approve') {
                 $cl = $this->db->prepare("SELECT COUNT(*) FROM task_checklist_items WHERE task_id = ? AND is_done = 0");
                 $cl->execute([$task_id]);
@@ -952,7 +952,7 @@ class WorkflowManager
                 }
             }
 
-            // بستنِ تسک/مرحلهٔ فعلی
+            // بستن تسک/مرحلهٔ فعلی
             $this->db->prepare("UPDATE tasks SET status = ?, updated_at = NOW() WHERE id = ?")
                 ->execute([$decision === 'approve' ? 'completed' : 'rejected', $task_id]);
             $this->db->prepare("
@@ -971,7 +971,7 @@ class WorkflowManager
                 ($notes !== '' ? $notes : ($decision === 'approve' ? 'مرحله تأیید شد' : 'مرحله رد شد'))
             ]);
 
-            // تعیینِ هدف
+            // تعیین هدف
             $targetOrder = null;
             $returnToCreator = false;
 
@@ -979,7 +979,7 @@ class WorkflowManager
                 if ($cur['on_approve_step_order'] !== null) {
                     $targetOrder = (int) $cur['on_approve_step_order'];
                 } else {
-                    // پیش‌فرض: مرحلهٔ بعدیِ آبشاریِ pending (رفتارِ خطی)
+                    // پیش‌فرض: مرحلهٔ بعدی آبشاری pending (رفتار خطی)
                     $n = $this->db->prepare("
                         SELECT wis.step_order FROM workflow_instance_steps wis
                         JOIN workflow_steps ws ON ws.id = wis.step_id
@@ -998,13 +998,13 @@ class WorkflowManager
                 } elseif ($mode === 'step' && $cur['on_reject_step_order'] !== null) {
                     $targetOrder = (int) $cur['on_reject_step_order'];
                 } else {
-                    // پیکربندی ناقص → پیش‌فرضِ امن: بازگشت به تعریف‌کننده
+                    // پیکربندی ناقص → پیش‌فرض امن: بازگشت به تعریف‌کننده
                     $returnToCreator = true;
                 }
             }
 
             if ($returnToCreator) {
-                // مرحلهٔ تصمیم دوباره باز می‌شود، این‌بار روی میزِ تعریف‌کننده برای اصلاح
+                // مرحلهٔ تصمیم دوباره باز می‌شود، این‌بار روی میز تعریف‌کننده برای اصلاح
                 $this->db->prepare("
                     UPDATE workflow_instance_steps
                     SET status = 'active', started_at = NOW(),
@@ -1036,7 +1036,7 @@ class WorkflowManager
                 if ($targetOrder > $curOrder) {
                     $this->markStepsDormant($instance_id, $curOrder, $targetOrder);
                 } elseif ($targetOrder <= $curOrder) {
-                    // پرشِ رو به عقب (یا خودش) → مراحلِ [target, cur] از نو
+                    // پرش رو به عقب (یا خودش) → مراحل [target, cur] از نو
                     $this->reopenStepsRange($instance_id, $targetOrder, $curOrder + 1);
                 }
                 $this->activateInstanceStep($target['id'], $user_id, $notes);
@@ -1061,7 +1061,7 @@ class WorkflowManager
             $where_conditions = ["wi.status IN ('in_progress', 'delayed')"];
             $params = [];
 
-            // امنیت: فقط workflowهای سازمانِ کاربر
+            // امنیت: فقط workflowهای سازمان کاربر
             if ($org_id !== null) {
                 $where_conditions[] = "wi.organization_id = ?";
                 $params[] = $org_id;
@@ -1121,7 +1121,7 @@ class WorkflowManager
             ";
             $params = [$instance_id];
 
-            // امنیت: محدودسازی به سازمانِ کاربر
+            // امنیت: محدودسازی به سازمان کاربر
             if ($org_id !== null) {
                 $sql .= " AND wi.organization_id = ?";
                 $params[] = $org_id;
@@ -1212,7 +1212,7 @@ class WorkflowManager
     // سیستم نوتیفیکیشن
     // ====================================
 
-    // ارسال نوتیفیکیشن به اعضای یک واحد (فقط اعضای همان سازمانِ workflow instance)
+    // ارسال نوتیفیکیشن به اعضای یک واحد (فقط اعضای همان سازمان workflow instance)
     private function notifySectionMembers($section, $type, $title, $message, $link, $related_id)
     {
         try {
@@ -1223,7 +1223,7 @@ class WorkflowManager
             $stmt->execute([$related_id]);
             $organization_id = $stmt->fetchColumn();
 
-            // 🆕 همه‌ی اعضای واحد (شاملِ کسانی که این واحد، واحدِ دومشان است)
+            // 🆕 همه‌ی اعضای واحد (شامل کسانی که این واحد، واحد دومشان است)
             $userIds = us_getSectionUserIds($this->db, $section, $organization_id);
 
             foreach ($userIds as $uid) {
@@ -1243,7 +1243,7 @@ class WorkflowManager
         }
     }
 
-    // ارسال نوتیفیکیشن به مدیران (فقط مدیرانِ همان سازمانِ workflow instance)
+    // ارسال نوتیفیکیشن به مدیران (فقط مدیران همان سازمان workflow instance)
     private function notifyManagers($type, $title, $message, $link, $related_id)
     {
         try {
@@ -1384,7 +1384,7 @@ class WorkflowManager
             ");
             $stmt->execute();
 
-            // دریافت لیست workflow های جدیداً تأخیر خورده
+            // دریافت لیست workflow های جدیدا تأخیر خورده
             $stmt = $this->db->query("
                 SELECT DISTINCT wi.id, wi.title, wi.created_by
                 FROM workflow_instances wi
@@ -1396,7 +1396,7 @@ class WorkflowManager
             $delayed_workflows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // ارسال نوتیفیکیشن برای workflow های تأخیر داشته
-            // 🔒 هر آیتم جدا try/catch می‌شود تا خطای نوتیفیکیشنِ یک workflow،
+            // 🔒 هر آیتم جدا try/catch می‌شود تا خطای نوتیفیکیشن یک workflow،
             // ارسال نوتیف بقیه‌ی workflowهای این اجرای کرون را متوقف نکند
             foreach ($delayed_workflows as $workflow) {
                 try {
@@ -1432,9 +1432,9 @@ class WorkflowManager
 }
 
 /**
- * 🔒 هم‌راستا با چک‌لیست: کسی که فقط عضوِ واحدِ یک/چند مرحله از این
- * workflow است (نه سازنده، نه نقشِ سازمانی‌ِ کل‌بین)، فقط باید همان
- * مرحله‌هایی را ببیند که واحدش مسئولِ آن‌هاست — نه کل مراحل را.
+ * 🔒 هم‌راستا با چک‌لیست: کسی که فقط عضو واحد یک/چند مرحله از این
+ * workflow است (نه سازنده، نه نقش سازمانی‌ کل‌بین)، فقط باید همان
+ * مرحله‌هایی را ببیند که واحدش مسئول آن‌هاست — نه کل مراحل را.
  * $hasFullAccess=true یعنی بدون فیلتر، همه‌ی مراحل برگردانده شود.
  */
 function filterWorkflowStepsForViewer(array $steps, bool $hasFullAccess, string $user_section): array
@@ -1447,7 +1447,7 @@ function filterWorkflowStepsForViewer(array $steps, bool $hasFullAccess, string 
 }
 
 /**
- * محاسبهٔ آمارِ پیشرفت روی یک آرایه از مراحل (کل یا فیلترشده).
+ * محاسبهٔ آمار پیشرفت روی یک آرایه از مراحل (کل یا فیلترشده).
  */
 function computeWorkflowProgress(array $steps): array
 {

@@ -1,19 +1,19 @@
 <?php
 /**
- * API دستیارِ هوش‌مصنوعی: تنها نقطه‌ای که مرورگر می‌بیند
+ * API دستیار هوش‌مصنوعی: تنها نقطه‌ای که مرورگر می‌بیند
  * POST /api/ai-assistant/ask.php   body: { question: string, conversation_id?: int }
  *
- * طبقِ بندِ ۲.۱/۶/۱۰/۱۶ سندِ docs/ai-assistant/spec-v1.md:
- *  ۱) JWT را با همان Auth موجود اعتبارسنجی می‌کند (بدونِ اعتماد به ورودیِ کاربر
- *     برایِ user_id/organization_id — طبقِ بندِ ۱۳).
- *  ۲) گفتگو را resolve/create می‌کند (حافظه‌ی کوتاه‌مدت، بندِ ۱۰ — انقضا بعدِ ۹۰ دقیقه).
- *  ۳) با یک HMACِ سرور-به-سرور به ai-service وصل می‌شود (بندِ ۲.۱).
- *  ۴) هر پرسش را در ai_query_logs ثبت می‌کند (بندِ ۱۶) — چه موفق چه خطا.
+ * طبق بند ۲.۱/۶/۱۰/۱۶ سند docs/ai-assistant/spec-v1.md:
+ *  ۱) JWT را با همان Auth موجود اعتبارسنجی می‌کند (بدون اعتماد به ورودی کاربر
+ *     برای user_id/organization_id — طبق بند ۱۳).
+ *  ۲) گفتگو را resolve/create می‌کند (حافظه‌ی کوتاه‌مدت، بند ۱۰ — انقضا بعد ۹۰ دقیقه).
+ *  ۳) با یک HMAC سرور-به-سرور به ai-service وصل می‌شود (بند ۲.۱).
+ *  ۴) هر پرسش را در ai_query_logs ثبت می‌کند (بند ۱۶) — چه موفق چه خطا.
  *
  * ⚠️ نسخه‌ی فعلی synchronous است (نه SSE). چون ai-service هنوز مستقر نشده،
- * پیاده‌سازیِ استریم غیرِقابلِ‌آزمایش بود؛ وقتی ai-service بالا آمد و اتصال
- * تأیید شد، این فایل به SSE (بندِ ۱۵) ارتقا پیدا می‌کند — منطقِ Auth/حافظه/لاگ
- * همان می‌ماند، فقط لایه‌ی ارسالِ پاسخ عوض می‌شود.
+ * پیاده‌سازی استریم غیرقابل‌آزمایش بود؛ وقتی ai-service بالا آمد و اتصال
+ * تأیید شد، این فایل به SSE (بند ۱۵) ارتقا پیدا می‌کند — منطق Auth/حافظه/لاگ
+ * همان می‌ماند، فقط لایه‌ی ارسال پاسخ عوض می‌شود.
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -32,10 +32,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 const CONVERSATION_IDLE_MINUTES = 90;
 const CONVERSATION_HISTORY_TURNS = 8;
 const RATE_LIMIT_PER_MINUTE = 20;
-// طبقِ تستِ واقعی با AvalAI: اولین درخواست (احتمالاً به‌خاطرِ گرم‌شدنِ
-// اتصال) حدودِ ۹۰ ثانیه طول کشید، ولی درخواست‌هایِ بعدی حدودِ ۱۴ ثانیه —
-// هنوز بالاترِ بودجه‌ی ایده‌آلِ بندِ ۱۵ (۱۰ ثانیه)، ولی نه نزدیکِ ۹۰. یک
-// حاشیه‌ی امنِ معقول گذاشته شده؛ اگر Gateway کندتر شد باید بازبینی شود.
+// طبق تست واقعی با AvalAI: اولین درخواست (احتمالا به‌خاطر گرم‌شدن
+// اتصال) حدود ۹۰ ثانیه طول کشید، ولی درخواست‌های بعدی حدود ۱۴ ثانیه —
+// هنوز بالاتر بودجه‌ی ایده‌آل بند ۱۵ (۱۰ ثانیه)، ولی نه نزدیک ۹۰. یک
+// حاشیه‌ی امن معقول گذاشته شده؛ اگر Gateway کندتر شد باید بازبینی شود.
 const AI_SERVICE_TIMEOUT_SECONDS = 30;
 
 try {
@@ -63,7 +63,7 @@ try {
         exit;
     }
 
-    // 🔒 محدودیتِ نرخ — طبقِ بندِ ۱۴ (حدودِ ۲۰ پرسش/دقیقه به‌ازایِ هر کاربر)
+    // 🔒 محدودیت نرخ — طبق بند ۱۴ (حدود ۲۰ پرسش/دقیقه به‌ازای هر کاربر)
     $stmt = $db->prepare("SELECT COUNT(*) FROM ai_query_logs WHERE user_id = ? AND created_at > (NOW() - INTERVAL 1 MINUTE)");
     $stmt->execute([$user_id]);
     if ((int) $stmt->fetchColumn() >= RATE_LIMIT_PER_MINUTE) {
@@ -72,7 +72,7 @@ try {
         exit;
     }
 
-    // ─── Resolve/create conversation (حافظه‌ی کوتاه‌مدت، بندِ ۱۰) ───
+    // ─── Resolve/create conversation (حافظه‌ی کوتاه‌مدت، بند ۱۰) ───
     $conversation = null;
     if ($conversationId) {
         $stmt = $db->prepare("
@@ -91,7 +91,7 @@ try {
         $db->prepare("UPDATE ai_conversations SET last_active_at = NOW() WHERE id = ?")->execute([$conversationId]);
     }
 
-    // ─── آخرین چند پیامِ همین گفتگو، برایِ حلِ ارجاعِ سؤالاتِ دنباله‌دار ───
+    // ─── آخرین چند پیام همین گفتگو، برای حل ارجاع سؤالات دنباله‌دار ───
     $stmt = $db->prepare("
         SELECT role, content FROM ai_conversation_messages
         WHERE conversation_id = ?
@@ -105,10 +105,10 @@ try {
 
     $startedAt = microtime(true);
 
-    // یک JWTِ کوتاه‌مدت برایِ ai-service تا با همان مسیرِ استانداردِ Authِ خودِ
-    // BPM (requireAuth) به اندپوینت‌هایِ data/ برگردد — بدونِ نیاز به یک لایه‌ی
-    // احرازِ موازی/جدید برایِ آن اندپوینت‌ها؛ کدِ آن‌ها دقیقاً همان می‌ماند که
-    // در بندِ ۶ تست و تأیید شد. این توکن هرگز به مرورگر برنمی‌گردد.
+    // یک JWT کوتاه‌مدت برای ai-service تا با همان مسیر استاندارد Auth خود
+    // BPM (requireAuth) به اندپوینت‌های data/ برگردد — بدون نیاز به یک لایه‌ی
+    // احراز موازی/جدید برای آن اندپوینت‌ها؛ کد آن‌ها دقیقا همان می‌ماند که
+    // در بند ۶ تست و تأیید شد. این توکن هرگز به مرورگر برنمی‌گردد.
     $auth = new Auth($db);
     $serviceToken = $auth->generateJWTToken($user_id, null, $user['organization_id']);
 
@@ -174,9 +174,9 @@ try {
 }
 
 /**
- * فراخوانیِ سرور-به-سرورِ ai-service با HMAC (بندِ ۲.۱) — هرگز از مرورگر قابلِ‌دسترسی نیست.
- * هویتِ کاربر (user_id/organization_id/role) همیشه از اینجا (سمتِ PHP) می‌آید، نه از بدنه‌یِ
- * ورودیِ کاربر — این دقیقاً کنترلِ «دورزدنِ سطحِ دسترسی»یِ بندِ ۱۴ است.
+ * فراخوانی سرور-به-سرور ai-service با HMAC (بند ۲.۱) — هرگز از مرورگر قابل‌دسترسی نیست.
+ * هویت کاربر (user_id/organization_id/role) همیشه از اینجا (سمت PHP) می‌آید، نه از بدنه‌ی
+ * ورودی کاربر — این دقیقا کنترل «دورزدن سطح دسترسی»ی بند ۱۴ است.
  */
 function callAiService(array $config, array $payload): array
 {

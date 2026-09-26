@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// ──────────────── ورودیِ JSON ────────────────
+// ──────────────── ورودی JSON ────────────────
 
 // decodeJSON بدنهٔ درخواست را در dst می‌ریزد؛ حجم را هم محدود می‌کند.
 func decodeJSON(w http.ResponseWriter, r *http.Request, dst any, maxBytes int64) bool {
@@ -47,11 +47,11 @@ func parsePage(r *http.Request) pageParams {
 // ──────────────── دسترسی ────────────────
 
 // requireFlags یک هندلر را فقط برای کاربری اجازه می‌دهد که «حداقل یکی» از
-// ستون‌های بولیِ داده‌شده روی users برایش ۱ باشد. برای مسیرهای نوشتنی.
+// ستون‌های بولی داده‌شده روی users برایش ۱ باشد. برای مسیرهای نوشتنی.
 func (s *server) requireFlags(cols []string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := userOf(r.Context())
-		// نام ستون‌ها از کدِ خودمان می‌آید، نه از ورودیِ کاربر — امن برای درج در کوئری.
+		// نام ستون‌ها از کد خودمان می‌آید، نه از ورودی کاربر — امن برای درج در کوئری.
 		sel := make([]string, len(cols))
 		for i, c := range cols {
 			sel[i] = "`" + c + "`"
@@ -76,12 +76,12 @@ func (s *server) requireFlags(cols []string, next http.HandlerFunc) http.Handler
 	}
 }
 
-// requireCRMAccess: نوشتن در ماژولِ فاکتور برای هر کسی که «دیدنِ ماژول» را دارد —
-// دقیقاً همان مجموعه‌ی crmModuleAllowed در includes/crm_access.php (سوپرادمین
-// id 1/19، شماره‌موبایل‌هایِ EXTRA_PHONES، یا عضوِ فعالِ تیمِ حسابداریِ سازمانِ ۱).
-// طبقِ تصمیمِ صریح: «دیدنِ منو = دسترسیِ کاملِ CRUD»، بدونِ محدودیتِ ریزتر —
-// فلگ‌هایِ is_create_official_invoice/is_sales_manager دیگر شرطِ لازم نیستند
-// (قبلاً کسانی که فقط از راهِ EXTRA_PHONES می‌دیدند، منو را داشتند ولی هر
+// requireCRMAccess: نوشتن در ماژول فاکتور برای هر کسی که «دیدن ماژول» را دارد —
+// دقیقا همان مجموعه‌ی crmModuleAllowed در includes/crm_access.php (سوپرادمین
+// id 1/19، شماره‌موبایل‌های EXTRA_PHONES، یا عضو فعال تیم حسابداری سازمان ۱).
+// طبق تصمیم صریح: «دیدن منو = دسترسی کامل CRUD»، بدون محدودیت ریزتر —
+// فلگ‌های is_create_official_invoice/is_sales_manager دیگر شرط لازم نیستند
+// (قبلا کسانی که فقط از راه EXTRA_PHONES می‌دیدند، منو را داشتند ولی هر
 // نوشتنی ۴۰۳ می‌گرفت؛ همین ناهماهنگی گزارش شد).
 func (s *server) requireCRMAccess(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -114,7 +114,7 @@ func (s *server) requireCRMAccess(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// requireReportAccess: دیدنِ «گزارشِ همکاران» برای مدیران، سوپروایزرها و تیمِ
+// requireReportAccess: دیدن «گزارش همکاران» برای مدیران، سوپروایزرها و تیم
 // حسابداری. یعنی هر کسی که requireCRMAccess را دارد، به‌علاوهٔ نقش‌های
 // سازمانی (supervisor/admin/manager/management) و is_supervisor = 1.
 func (s *server) requireReportAccess(next http.HandlerFunc) http.HandlerFunc {
@@ -151,7 +151,7 @@ func (s *server) requireReportAccess(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// ──────────────── ابزارِ کوچک ────────────────
+// ──────────────── ابزار کوچک ────────────────
 
 // nullableID: شناسه‌ی مثبت را همان‌طور برمی‌گرداند، ۰ و منفی را NULL می‌کند.
 func nullableID(v int64) any {
@@ -196,7 +196,7 @@ func truthy(v any) bool {
 	return false
 }
 
-// customerType: «حقیقی»→individual، «حقوقی»→legal، مقادیرِ انگلیسی هم پذیرفته می‌شوند.
+// customerType: «حقیقی»→individual، «حقوقی»→legal، مقادیر انگلیسی هم پذیرفته می‌شوند.
 func customerType(v any) string {
 	s := strings.ToLower(strings.TrimSpace(toStr(v)))
 	switch s {

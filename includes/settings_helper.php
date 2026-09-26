@@ -6,7 +6,7 @@
  * استفاده در هر فایل:
  *   require_once 'includes/settings_helper.php';
  *   $settings = loadSettings($db);
- *   $multiplier = $settings['shortage_multiplier']; // مثلاً 2
+ *   $multiplier = $settings['shortage_multiplier']; // مثلا 2
  */
 
 function loadSettings($db)

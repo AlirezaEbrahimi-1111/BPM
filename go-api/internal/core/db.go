@@ -9,11 +9,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// OpenDB یک استخرِ اتصالِ MariaDB باز می‌کند (همان دیتابیسِ اپِ اصلی).
+// OpenDB یک استخر اتصال MariaDB باز می‌کند (همان دیتابیس اپ اصلی).
 //
-// عمداً parseTime نداریم: ستون‌های DATE/DATETIME/TIMESTAMP به‌صورتِ رشتهٔ خامِ
-// MySQL ("2026-09-08" / "2026-09-08 12:38:47") خوانده می‌شوند — دقیقاً همان
-// چیزی که PDOِ اپِ PHP برمی‌گرداند (STRINGIFY_FETCHES=false، ولی زمان‌ها باز
+// عمدا parseTime نداریم: ستون‌های DATE/DATETIME/TIMESTAMP به‌صورت رشتهٔ خام
+// MySQL ("2026-09-08" / "2026-09-08 12:38:47") خوانده می‌شوند — دقیقا همان
+// چیزی که PDO اپ PHP برمی‌گرداند (STRINGIFY_FETCHES=false، ولی زمان‌ها باز
 // هم رشته‌اند). این برای «parity» با endpointهای PHP لازم است.
 func OpenDB(c Config) *sql.DB {
 	dsn := fmt.Sprintf(

@@ -1,11 +1,11 @@
 <?php
 /**
- * API: حذفِ یک پیامِ چت
+ * API: حذف یک پیام چت
  * POST /api/chat/delete-message.php   body: { message_id, for_everyone: true|false }
  *
- *   for_everyone=true  → فرستنده‌ی خودِ پیام، یا (در گروه) سازنده‌ی گروه؛
- *                         پیام واقعاً برای هر دو طرف حذف می‌شود (chat_messages.is_deleted=1)
- *   for_everyone=false → فقط از دیدِ همین کاربر پنهان می‌شود (chat_message_hidden)
+ *   for_everyone=true  → فرستنده‌ی خود پیام، یا (در گروه) سازنده‌ی گروه؛
+ *                         پیام واقعا برای هر دو طرف حذف می‌شود (chat_messages.is_deleted=1)
+ *   for_everyone=false → فقط از دید همین کاربر پنهان می‌شود (chat_message_hidden)
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -63,7 +63,7 @@ try {
     }
 
     if ($forEveryone) {
-        // 🔒 حذف برای همه: فرستنده‌ی خودِ پیام، یا سازنده‌ی گروه (برای هر پیامی در گروه)
+        // 🔒 حذف برای همه: فرستنده‌ی خود پیام، یا سازنده‌ی گروه (برای هر پیامی در گروه)
         $isSender = (int) $message['user_id'] === $user_id;
         $isGroupCreator = !$isSender && chatUserIsGroupCreator($db, (int) $message['conversation_id'], $user_id);
         if (!$isSender && !$isGroupCreator) {
@@ -74,7 +74,7 @@ try {
         }
         $db->prepare("UPDATE chat_messages SET is_deleted = 1 WHERE id = ?")->execute([$messageId]);
 
-        // ⚠️ حذف اینجا soft-delete است (is_deleted=1)، نه حذفِ واقعیِ ردیف — پس
+        // ⚠️ حذف اینجا soft-delete است (is_deleted=1)، نه حذف واقعی ردیف — پس
         // ON DELETE SET NULL روی pinned_message_id فعال نمی‌شود؛ باید دستی برداریم
         $db->prepare("UPDATE chat_conversations SET pinned_message_id = NULL WHERE id = ? AND pinned_message_id = ?")
             ->execute([$message['conversation_id'], $messageId]);

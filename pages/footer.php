@@ -4,23 +4,23 @@ require_once '../includes/version.php';
 <!-- توجه: custom.css/dashboard-responsive.css/فونت اینجا دوباره لینک نمی‌شوند —
      همهٔ صفحاتی که footer.php را include می‌کنند، header.php را هم include کرده‌اند
      که همین فایل‌ها را از قبل لود می‌کند. لود دوم اینجا (که آخر از همه اجرا می‌شد)
-     باعث می‌شد قواعد قدیمی/بدون تم‌تاریکِ custom.css روی override محلیِ هر صفحه غالب شود. -->
+     باعث می‌شد قواعد قدیمی/بدون تم‌تاریک custom.css روی override محلی هر صفحه غالب شود. -->
 
 <style>
-    /* فوترِ ثابت (فریز) در همهٔ صفحات — حالا به شکلِ «زبانه» (rounded tab):
-       وسط‌چین، چسبیده به کفِ پنجره، عرضش دقیقاً به‌اندازهٔ متنِ داخلش
-       (width:fit-content). رنگِ پس‌زمینه همان رنگِ قبلی (var(--surface)) است؛
-       فقط فُرم تغییر کرده. تکنیک: border-radius بیضوی + ماسکِ radial-gradient
-       برای «گوشِ» مقعرِ پایین‌چپ/پایین‌راست. */
+    /* فوتر ثابت (فریز) در همهٔ صفحات — حالا به شکل «زبانه» (rounded tab):
+       وسط‌چین، چسبیده به کف پنجره، عرضش دقیقا به‌اندازهٔ متن داخلش
+       (width:fit-content). رنگ پس‌زمینه همان رنگ قبلی (var(--surface)) است؛
+       فقط فرم تغییر کرده. تکنیک: border-radius بیضوی + ماسک radial-gradient
+       برای «گوش» مقعر پایین‌چپ/پایین‌راست. */
     body {
         min-height: calc(100vh - 3.5rem);
         padding-bottom: 40px;
     }
 
-    /* لایهٔ بیرونی فقط برای «سایه»: چون خودِ .site-footer ماسک دارد و ماسک هر
-       چیزی بیرونِ padding-box (از جمله drop-shadow) را می‌بُرد، سایه باید روی یک
-       عنصرِ بی‌ماسک باشد. drop-shadow روی این والدِ بی‌ماسک، سایه را دقیقاً به
-       شکلِ زبانهٔ ماسک‌شدهٔ فرزند (با گوش‌های مقعر) می‌اندازد. */
+    /* لایهٔ بیرونی فقط برای «سایه»: چون خود .site-footer ماسک دارد و ماسک هر
+       چیزی بیرون padding-box (از جمله drop-shadow) را می‌برد، سایه باید روی یک
+       عنصر بی‌ماسک باشد. drop-shadow روی این والد بی‌ماسک، سایه را دقیقا به
+       شکل زبانهٔ ماسک‌شدهٔ فرزند (با گوش‌های مقعر) می‌اندازد. */
     .site-footer-shadow {
         position: fixed;
         left: 0;
@@ -29,7 +29,7 @@ require_once '../includes/version.php';
         z-index: 80;
         display: flex;
         justify-content: center;
-        pointer-events: none;   /* نوارِ نامرئیِ تمام‌عرض جلوی کلیکِ محتوای صفحه را نگیرد */
+        pointer-events: none;   /* نوار نامرئی تمام‌عرض جلوی کلیک محتوای صفحه را نگیرد */
         filter:
             drop-shadow(0 -1px 2px rgba(0, 0, 0, .01))
             drop-shadow(0 -1px 10px rgba(0, 0, 0, .01))
@@ -47,7 +47,7 @@ require_once '../includes/version.php';
         width: fit-content;
         margin-inline: auto;
 
-        --r: 16px;              /* شعاعِ انحنا */
+        --r: 16px;              /* شعاع انحنا */
         line-height: 2.4;       /* ارتفاع را کنترل می‌کند */
         padding-inline: 1.1em;
         border-inline: var(--r) solid transparent;
@@ -60,7 +60,7 @@ require_once '../includes/version.php';
             radial-gradient(var(--r) at var(--r) 0, #0000 98%, #000 101%)
                 calc(-1 * var(--r)) 100% / 100% var(--r) repeat-x,
             conic-gradient(#000 0 0) padding-box;
-        /* ته‌رنگِ فیلیِ خیلی ملایم تا از پس‌زمینهٔ سفیدِ صفحه متمایز بماند */
+        /* ته‌رنگ فیلی خیلی ملایم تا از پس‌زمینهٔ سفید صفحه متمایز بماند */
         background: color-mix(in srgb, var(--surface, #fff) 94%, #6b6472) border-box;
 
         display: flex;
@@ -74,8 +74,8 @@ require_once '../includes/version.php';
         background: color-mix(in srgb, var(--surface, #1b2130) 90%, #ffffff) border-box;
     }
 
-    /* صفحاتی که خودشان یک نوارِ عملیاتِ ثابتِ پایین دارند (مثلِ task-detail.php):
-       زبانه بالایِ آن نوار بنشیند، نه رویش. */
+    /* صفحاتی که خودشان یک نوار عملیات ثابت پایین دارند (مثل task-detail.php):
+       زبانه بالای آن نوار بنشیند، نه رویش. */
     body:has(.TDaction-buttons) .site-footer-shadow {
         bottom: 58px;
     }

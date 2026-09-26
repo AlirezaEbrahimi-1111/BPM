@@ -29,7 +29,7 @@ if (empty($input['first_name']) || empty($input['last_name'])) {
     echo json_encode(['success' => false, 'message' => 'نام و نام خانوادگی اجباری است']);
     exit;
 }
-// نام نباید کاراکترهای خطرناکِ HTML/کنترلی داشته باشد (رقم/نقطه/پرانتز مجاز)
+// نام نباید کاراکترهای خطرناک HTML/کنترلی داشته باشد (رقم/نقطه/پرانتز مجاز)
 if (preg_match('/[<>"\'`\x00-\x1F]/', $input['first_name'] . $input['last_name'])) {
     echo json_encode(['success' => false, 'message' => 'نام یا نام خانوادگی شامل کاراکترهای غیرمجاز است']);
     exit;
@@ -39,7 +39,7 @@ if (!preg_match('/^09[0-9]{9}$/', $input['phone'] ?? '')) {
     exit;
 }
 
-// 🔒 خط قرمز: supervisor/admin فقط در سازمانِ خودشان، manager فقط روی
+// 🔒 خط قرمز: supervisor/admin فقط در سازمان خودشان، manager فقط روی
 // زیرمجموعهٔ خودش (زنجیرهٔ manager_id) — وگرنه اطلاعات (از جمله رمز
 // عبور) کاربری خارج از دامنهٔ مجاز تغییر می‌کند
 if (!canManageTargetUser($db, $me, $uid)) {
@@ -47,11 +47,11 @@ if (!canManageTargetUser($db, $me, $uid)) {
     exit;
 }
 
-// 🔒 جلوگیری از بالا بردنِ سطحِ دسترسی از راهِ فیلدهای درخواست:
-//  - نقش فقط از لیستِ مجاز
-//  - کسی نمی‌تواند نقشی بالاتر از نقشِ خودش به دیگری بدهد
+// 🔒 جلوگیری از بالا بردن سطح دسترسی از راه فیلدهای درخواست:
+//  - نقش فقط از لیست مجاز
+//  - کسی نمی‌تواند نقشی بالاتر از نقش خودش به دیگری بدهد
 //  - کسی نمی‌تواند نقش/فلگ‌های خودش را ارتقا دهد
-//  - فلگ‌های is_manager/is_supervisor فقط با نقشِ سازمان‌گستر (supervisor/admin)
+//  - فلگ‌های is_manager/is_supervisor فقط با نقش سازمان‌گستر (supervisor/admin)
 $roleRank = ['employee' => 0, 'manager' => 1, 'supervisor' => 2, 'admin' => 2];
 $tgtStmt = $db->prepare('SELECT role, is_manager, is_supervisor FROM users WHERE id = ?');
 $tgtStmt->execute([$uid]);
@@ -63,9 +63,9 @@ $orgWide   = isOrgWideRole($me);
 
 $wantRole = $input['role'] ?? $tgt['role'];
 if (!isset($roleRank[$wantRole])) {
-    $wantRole = $tgt['role'];                          // نقشِ نامعتبر → بدون تغییر
+    $wantRole = $tgt['role'];                          // نقش نامعتبر → بدون تغییر
 } elseif ($isSelf || ($roleRank[$wantRole] > $actorRank)) {
-    $wantRole = $tgt['role'];                          // ارتقاءِ خود / بالاتر از خود ممنوع
+    $wantRole = $tgt['role'];                          // ارتقاء خود / بالاتر از خود ممنوع
 }
 $input['role'] = $wantRole;
 
@@ -77,19 +77,19 @@ if ($isSelf || !$orgWide) {
 try {
     $db->beginTransaction();
 
-    // مقادیرِ فعلیِ کاربر — پایه‌یِ «هر ستونی که در درخواست نیامده، دست‌نخورده بماند».
+    // مقادیر فعلی کاربر — پایه‌ی «هر ستونی که در درخواست نیامده، دست‌نخورده بماند».
     $stmtOld = $db->prepare('SELECT * FROM users WHERE id = ?');
     $stmtOld->execute([$uid]);
     $oldData = $stmtOld->fetch(PDO::FETCH_ASSOC) ?: [];
 
-    // 🐞 رفعِ باگِ داده‌رفت: قبلاً این آرایه برای هر فیلد از الگوی
-    // «$input['x'] ?? <پیش‌فرضِ ثابت>» استفاده می‌کرد و کلِ ردیفِ users را
-    // بازنویسی می‌کرد. فرمِ «ویرایش کاربر» بعضی ستون‌ها را اصلاً نمی‌فرستد
+    // 🐞 رفع باگ داده‌رفت: قبلا این آرایه برای هر فیلد از الگوی
+    // «$input['x'] ?? <پیش‌فرض ثابت>» استفاده می‌کرد و کل ردیف users را
+    // بازنویسی می‌کرد. فرم «ویرایش کاربر» بعضی ستون‌ها را اصلا نمی‌فرستد
     // (shift_count, daily_salary, priority, official_code, manager_code)،
     // پس هر بار که فقط نام/موبایل عوض می‌شد، shift_count به ۱ و
-    // daily_salary به ۰ و ... ری‌ست می‌شد — کاربرِ دوشیفته یک‌شیفته می‌شد.
-    // حالا: اگر کلید در $input نبود، مقدارِ فعلیِ دیتابیس نگه داشته می‌شود؛
-    // اگر بود (حتی null، مثلِ پاک‌کردنِ عمدیِ شیفتِ ۲) همان اعمال می‌شود.
+    // daily_salary به ۰ و ... ری‌ست می‌شد — کاربر دوشیفته یک‌شیفته می‌شد.
+    // حالا: اگر کلید در $input نبود، مقدار فعلی دیتابیس نگه داشته می‌شود؛
+    // اگر بود (حتی null، مثل پاک‌کردن عمدی شیفت ۲) همان اعمال می‌شود.
     $keep = fn(string $k, $default = null) =>
         array_key_exists($k, $input) ? $input[$k] : ($oldData[$k] ?? $default);
 
@@ -128,9 +128,9 @@ try {
     ];
 
     // shift_count همیشه از shift_type مشتق شود تا این دو ستون هیچ‌وقت واگرا
-    // نشوند. فرمِ ویرایشِ کاربر فقط shift_type (single/double) را می‌فرستد؛
-    // سیستمِ حضور و غیاب اما از shift_count می‌خواند. پس هر بار روی همین یک
-    // منبعِ حقیقت هم‌ترازشان می‌کنیم.
+    // نشوند. فرم ویرایش کاربر فقط shift_type (single/double) را می‌فرستد؛
+    // سیستم حضور و غیاب اما از shift_count می‌خواند. پس هر بار روی همین یک
+    // منبع حقیقت هم‌ترازشان می‌کنیم.
     $fields['shift_count'] = ($fields['shift_type'] === 'double') ? 2 : 1;
 
     // رمز عبور (اختیاری)
@@ -144,7 +144,7 @@ try {
         $fields['password'] = password_hash($input['password'], PASSWORD_BCRYPT);
     }
 
-    // $oldData بالاتر (قبل از ساختِ $fields) خوانده شد و برای لاگِ تغییرات هم همان به‌کار می‌رود.
+    // $oldData بالاتر (قبل از ساخت $fields) خوانده شد و برای لاگ تغییرات هم همان به‌کار می‌رود.
 
     $setParts = array_map(fn($k) => "`$k` = :$k", array_keys($fields));
     $sql = 'UPDATE users SET ' . implode(', ', $setParts) . ' WHERE id = :__id';
@@ -172,7 +172,7 @@ try {
         }
     }
 
-    // ─── ۲.۵ واحدهای فعالیتِ BPM (جدا از units گزارش‌ها) ─────
+    // ─── ۲.۵ واحدهای فعالیت BPM (جدا از units گزارش‌ها) ─────
     // (بلوک sections به بعد از commit منتقل شد)
 
     // ثبت لاگ تغییرات

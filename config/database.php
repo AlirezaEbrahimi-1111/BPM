@@ -45,9 +45,9 @@ if (!class_exists('Database')) {
                 $this->conn->exec("SET CHARACTER SET utf8mb4");
                 
             } catch (PDOException $e) {
-                // 🔒 قبلاً DSN/یوزرنیمِ دیتابیس + پیامِ خامِ PDOException مستقیم
-                // echo می‌شد (حتی قبل از احرازِ هویت) — الان جزئیات فقط توی
-                // لاگِ سرور ثبت می‌شه، پاسخِ کاربر یه پیامِ عمومیه
+                // 🔒 قبلا DSN/یوزرنیم دیتابیس + پیام خام PDOException مستقیم
+                // echo می‌شد (حتی قبل از احراز هویت) — الان جزئیات فقط توی
+                // لاگ سرور ثبت می‌شه، پاسخ کاربر یه پیام عمومیه
                 error_log("Database connection error: " . $e->getMessage());
                 http_response_code(500);
                 header('Content-Type: application/json; charset=utf-8');

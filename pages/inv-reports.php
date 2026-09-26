@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 
-// فعلاً فقط کاربر id=1 — ماژولِ فاکتور در حالِ ساخت است.
+// فعلا فقط کاربر id=1 — ماژول فاکتور در حال ساخت است.
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
 if (!crmModuleAllowed($db, (int) $user_id)) {
     header('Location: ../pages/dashboard.php');
@@ -194,7 +194,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             font-size: 12.5px;
         }
 
-        /* جدولِ ساده‌ی کالاهای رو به اتمام */
+        /* جدول ساده‌ی کالاهای رو به اتمام */
         .rpt-lowstock {
             list-style: none;
             margin: 0;
@@ -280,8 +280,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             }
         }
 
-        /* هاورِ استانداردِ سایت (تینتِ بنفشِ نرم) — .btn-outline-secondary اصلاً
-           هاورِ اختصاصی نداشت (پیش‌فرضِ خاکستریِ بوت‌استرپ می‌ماند) */
+        /* هاور استاندارد سایت (تینت بنفش نرم) — .btn-outline-secondary اصلا
+           هاور اختصاصی نداشت (پیش‌فرض خاکستری بوت‌استرپ می‌ماند) */
         .btn-outline-primary:hover,
         .btn-outline-secondary:hover,
         .btn-outline-primary:active,
@@ -422,8 +422,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
     <script>
         const API = '/crm/api';
 
-        // پالتِ اعتبارسنجی‌شده (dataviz skill): جفتِ فروش/خرید و جفتِ وضعیت،
-        // هر دو با اسکریپتِ validate_palette.js چک شدند (ΔE کافی برای کوررنگی).
+        // پالت اعتبارسنجی‌شده (dataviz skill): جفت فروش/خرید و جفت وضعیت،
+        // هر دو با اسکریپت validate_palette.js چک شدند (ΔE کافی برای کوررنگی).
         const COLOR = {
             sales: '#8e57fe',
             purchase: '#f59e0b',
@@ -500,7 +500,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         let range = {
             from: null,
             to: null
-        }; // میلادیِ YYYY-MM-DD یا null = بدونِ محدودیت
+        }; // میلادی YYYY-MM-DD یا null = بدون محدودیت
 
         function inRange(dateStr) {
             if (!dateStr) return false;
@@ -509,8 +509,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             return true;
         }
 
-        // یک نمونه از تقویمِ شمسیِ خودِ سایت (assets/js/persian-datepicker.js) برایِ
-        // تبدیل‌های میلادی↔شمسی؛ متدهایش نسبت به وضعیتِ آن ورودیِ خاص مستقل‌اند.
+        // یک نمونه از تقویم شمسی خود سایت (assets/js/persian-datepicker.js) برای
+        // تبدیل‌های میلادی↔شمسی؛ متدهایش نسبت به وضعیت آن ورودی خاص مستقل‌اند.
         function getDP() {
             const wrap = document.getElementById('dateFromWrap');
             return wrap && wrap.datepickerInstance;
@@ -528,7 +528,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             }
         }
 
-        const J_MONTHS = FA_MONTHS; // مرجعِ یگانه در common-bundle.js
+        const J_MONTHS = FA_MONTHS; // مرجع یگانه در common-bundle.js
 
         function jLabel(key) {
             const [y, m] = key.split('-');
@@ -997,13 +997,13 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             } [c]));
         }
 
-        /* ── بازهٔ تاریخ — همان انتخابگرِ شمسیِ استانداردِ سایت ── */
+        /* ── بازهٔ تاریخ — همان انتخابگر شمسی استاندارد سایت ── */
         function fmtISO(o) {
             return o.year + '-' + String(o.month).padStart(2, '0') + '-' + String(o.day).padStart(2, '0');
         }
 
-        // مقدارِ یک فیلدِ تاریخ را برنامه‌ای تنظیم می‌کند — با فراخوانیِ خودِ
-        // selectDate روی نمونهٔ همان ویجت، دقیقاً مثلِ کلیکِ کاربر روی یک روز
+        // مقدار یک فیلد تاریخ را برنامه‌ای تنظیم می‌کند — با فراخوانی خود
+        // selectDate روی نمونهٔ همان ویجت، دقیقا مثل کلیک کاربر روی یک روز
         // (skipConfirm=true تا تأییدیهٔ «جمعه/تعطیل» را نپرسد).
         function setDateField(inputId, wrapId, gregStr) {
             const input = document.getElementById(inputId);
@@ -1066,8 +1066,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         });
         document.getElementById('btnRefresh').addEventListener('click', boot);
 
-        // انتخابِ دستیِ روز از تقویم: خودِ ویجت رویداد change را با data-date
-        // (میلادیِ YYYY-MM-DD) روی ورودی می‌فرستد.
+        // انتخاب دستی روز از تقویم: خود ویجت رویداد change را با data-date
+        // (میلادی YYYY-MM-DD) روی ورودی می‌فرستد.
         document.getElementById('dateFrom').addEventListener('change', function () {
             document.querySelectorAll('#presets .rpt-pill').forEach(b => b.classList.remove('active'));
             range.from = this.dataset.date || null;
@@ -1079,7 +1079,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             render();
         });
 
-        /* هماهنگیِ نمودارها با تغییرِ حالتِ روشن/تاریک، بدونِ رفرشِ صفحه */
+        /* هماهنگی نمودارها با تغییر حالت روشن/تاریک، بدون رفرش صفحه */
         new MutationObserver(() => render()).observe(document.documentElement, {
             attributes: true,
             attributeFilter: ['data-theme']
@@ -1097,10 +1097,10 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     fetchAll('/inv/purchases'),
                     fetchAll('/inv/products'),
                 ]);
-                // برخی سندها (مثلاً فاکتورِ رسمیِ ساخته‌شده از تبدیلِ پیش‌فاکتوری که
-                // خودش تاریخِ صدور نداشته) issue_date خالی دارند. اگر این را نادیده
+                // برخی سندها (مثلا فاکتور رسمی ساخته‌شده از تبدیل پیش‌فاکتوری که
+                // خودش تاریخ صدور نداشته) issue_date خالی دارند. اگر این را نادیده
                 // می‌گرفتیم، آن سند از همهٔ گزارش‌ها به‌طور کامل ناپدید می‌شد. به‌جایش
-                // تاریخِ ثبتِ سند (created_at) را جایگزین می‌کنیم.
+                // تاریخ ثبت سند (created_at) را جایگزین می‌کنیم.
                 invoices.forEach(i => {
                     i._effDate = i.issue_date || (i.created_at || '').slice(0, 10);
                 });

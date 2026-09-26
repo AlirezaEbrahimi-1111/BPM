@@ -69,8 +69,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             min-height: 0 !important;
         }
 
-        /* هاورِ استانداردِ سایت (تینتِ بنفشِ نرم) — .btn-outline-secondary اصلاً
-           هاورِ اختصاصی نداشت (پیش‌فرضِ خاکستریِ بوت‌استرپ می‌ماند) */
+        /* هاور استاندارد سایت (تینت بنفش نرم) — .btn-outline-secondary اصلا
+           هاور اختصاصی نداشت (پیش‌فرض خاکستری بوت‌استرپ می‌ماند) */
         .btn-outline-primary:hover,
         .btn-outline-secondary:hover,
         .btn-outline-primary:active,

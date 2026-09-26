@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// یک ردیفِ کالا در پاسخِ لیست/ساخت.
+// یک ردیف کالا در پاسخ لیست/ساخت.
 type productOut struct {
 	ID          int64   `json:"id"`
 	Code        string  `json:"code"`
@@ -15,12 +15,12 @@ type productOut struct {
 	UnitPrice   int64   `json:"unit_price"`
 	IsService   bool    `json:"is_service"`
 	IsTaxExempt bool    `json:"is_tax_exempt"`
-	Stock       float64 `json:"stock"`     // موجودیِ فیزیکیِ انبارِ «فاکتور رسمی»
-	Reserved    float64 `json:"reserved"`  // مجموعِ اقلامِ فاکتورهایی که هنوز موجودی را کم نکرده‌اند
+	Stock       float64 `json:"stock"`     // موجودی فیزیکی انبار «فاکتور رسمی»
+	Reserved    float64 `json:"reserved"`  // مجموع اقلام فاکتورهایی که هنوز موجودی را کم نکرده‌اند
 	Available   float64 `json:"available"` // stock − reserved
 }
 
-// ورودیِ ساخت/ویرایشِ کالا.
+// ورودی ساخت/ویرایش کالا.
 type productIn struct {
 	Code         string   `json:"code"`
 	Name         string   `json:"name"`
@@ -28,7 +28,7 @@ type productIn struct {
 	UnitPrice    int64    `json:"unit_price"`
 	IsService    bool     `json:"is_service"`
 	IsTaxExempt  bool     `json:"is_tax_exempt"`
-	OpeningStock *float64 `json:"opening_stock"` // فقط هنگامِ ساخت — nil = صفر
+	OpeningStock *float64 `json:"opening_stock"` // فقط هنگام ساخت — nil = صفر
 }
 
 func (p *productIn) normalize() {
@@ -43,7 +43,7 @@ func (p *productIn) normalize() {
 	}
 }
 
-// در کاتالوگ، «کد کالا» و «قیمت واحد» هم مثلِ «نام» اجباری‌اند.
+// در کاتالوگ، «کد کالا» و «قیمت واحد» هم مثل «نام» اجباری‌اند.
 func (p *productIn) validate() string {
 	if p.Name == "" {
 		return "نام کالا الزامی است"
@@ -59,10 +59,10 @@ func (p *productIn) validate() string {
 
 // GET /crm/api/inv/products?q=&page=&per=&exclude_invoice=
 //
-// «رزرو» = مجموعِ اقلامِ فاکتورهایی که هنوز موجودیِ فیزیکی را کم نکرده‌اند:
-// یعنی وضعیت ≠ باطل، و «فاکتورِ رسمیِ تأییدشده» نیست (آن یکی قبلاً از stock کم شده).
+// «رزرو» = مجموع اقلام فاکتورهایی که هنوز موجودی فیزیکی را کم نکرده‌اند:
+// یعنی وضعیت ≠ باطل، و «فاکتور رسمی تأییدشده» نیست (آن یکی قبلا از stock کم شده).
 // پس پیش‌نویس‌ها و پیش‌فاکتورها (چه پیش‌نویس چه تأییدشده) رزرو حساب می‌شوند.
-// exclude_invoice: هنگامِ ویرایشِ یک فاکتور، خودِ آن فاکتور از رزرو کنار گذاشته می‌شود.
+// exclude_invoice: هنگام ویرایش یک فاکتور، خود آن فاکتور از رزرو کنار گذاشته می‌شود.
 func (s *server) listProducts(w http.ResponseWriter, r *http.Request) {
 	pg := parsePage(r)
 	u := userOf(r.Context())
@@ -159,14 +159,14 @@ func (s *server) createProduct(w http.ResponseWriter, r *http.Request) {
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 		u.OrgID, nullIfEmpty(in.Code), in.Name, in.Unit, in.UnitPrice, in.IsService, in.IsTaxExempt, u.ID)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "درجِ کالا ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "درج کالا ناموفق بود")
 		return
 	}
 	pid, _ := res.LastInsertId()
 
 	if in.OpeningStock != nil && *in.OpeningStock != 0 {
 		if err := addStock(tx, pid, s.officialWarehouseID, *in.OpeningStock, "opening", "", 0, u.ID); err != nil {
-			writeErr(w, http.StatusInternalServerError, "ثبتِ موجودیِ اولیه ناموفق بود")
+			writeErr(w, http.StatusInternalServerError, "ثبت موجودی اولیه ناموفق بود")
 			return
 		}
 	}
@@ -208,7 +208,7 @@ func (s *server) updateProduct(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
 }
 
-// DELETE /crm/api/inv/products/{id}  — حذفِ نرم.
+// DELETE /crm/api/inv/products/{id}  — حذف نرم.
 func (s *server) deleteProduct(w http.ResponseWriter, r *http.Request) {
 	id := idParam(r)
 	u := userOf(r.Context())
@@ -267,7 +267,7 @@ func (s *server) importProducts(w http.ResponseWriter, r *http.Request) {
 		pid, _ := res.LastInsertId()
 		if row.OpeningStock != nil && *row.OpeningStock != 0 {
 			if e := addStock(tx, pid, s.officialWarehouseID, *row.OpeningStock, "opening", "", 0, u.ID); e != nil {
-				errs = append(errs, map[string]any{"row": i + 1, "message": "موجودیِ اولیه ثبت نشد"})
+				errs = append(errs, map[string]any{"row": i + 1, "message": "موجودی اولیه ثبت نشد"})
 			}
 		}
 		inserted++

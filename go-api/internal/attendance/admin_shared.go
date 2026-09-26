@@ -7,14 +7,14 @@ import (
 	"bmp/go-api/internal/core"
 )
 
-// canManageAttendanceConfig — همون قاعده‌ی تکرارشده در سه فایلِ
+// canManageAttendanceConfig — همون قاعده‌ی تکرارشده در سه فایل
 // allowed-ips.php/devices.php/denied-log.php:
 //
 //	in_array($user_id, getSuperAdminIds()) || in_array($role, ['supervisor','management'])
 //
-// عمداً از core.IsSuperAdmin/HasPermission استفاده نمی‌کند چون خودِ PHP هم
-// اینجا مستقیماً از ماتریسِ اجازه‌ها استفاده نمی‌کرده، همین چکِ ad-hoc را
-// تکرار کرده — برایِ پاریتی، همان‌جا عیناً نگه داشته شده.
+// عمدا از core.IsSuperAdmin/HasPermission استفاده نمی‌کند چون خود PHP هم
+// اینجا مستقیما از ماتریس اجازه‌ها استفاده نمی‌کرده، همین چک ad-hoc را
+// تکرار کرده — برای پاریتی، همان‌جا عینا نگه داشته شده.
 func canManageAttendanceConfig(userID int64, role string) bool {
 	for _, id := range core.SuperAdminIDs {
 		if id == userID {
@@ -24,7 +24,7 @@ func canManageAttendanceConfig(userID int64, role string) bool {
 	return role == "supervisor" || role == "management"
 }
 
-// loadOrgRole — سازمان و نقشِ کاربرِ جاری (معادلِ getUserInfo() برایِ همین سه فایل).
+// loadOrgRole — سازمان و نقش کاربر جاری (معادل getUserInfo() برای همین سه فایل).
 func loadOrgRole(db *sql.DB, userID int64) (orgID int64, role string, err error) {
 	var orgN sql.NullInt64
 	var roleN sql.NullString
@@ -39,7 +39,7 @@ func loadOrgRole(db *sql.DB, userID int64) (orgID int64, role string, err error)
 	return orgN.Int64, role, nil
 }
 
-// requireAttendanceManager — گاردِ مشترکِ هر سه endpoint. اگر اجازه نبود،
+// requireAttendanceManager — گارد مشترک هر سه endpoint. اگر اجازه نبود،
 // خودش ۴۰۳ می‌نویسد و false برمی‌گرداند.
 func requireAttendanceManager(w http.ResponseWriter, db *sql.DB, userID int64) (orgID int64, ok bool) {
 	orgID, role, err := loadOrgRole(db, userID)

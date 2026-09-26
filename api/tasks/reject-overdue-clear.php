@@ -46,7 +46,7 @@ try {
         exit;
     }
 
-    // 🔒 خط قرمز: اختیار «مدیر» فقط داخل همان سازمانِ کار معتبر است
+    // 🔒 خط قرمز: اختیار «مدیر» فقط داخل همان سازمان کار معتبر است
     $roleStmt = $db->prepare("SELECT role, organization_id FROM users WHERE id = ?");
     $roleStmt->execute([$user_id]);
     $me = $roleStmt->fetch(PDO::FETCH_ASSOC);
@@ -69,7 +69,7 @@ try {
                   WHERE id = ?")
        ->execute([$reason, $user_id, $request_id]);
 
-    // آزاد کردن قفل تا کاربر بتواند بعداً دوباره درخواست دهد
+    // آزاد کردن قفل تا کاربر بتواند بعدا دوباره درخواست دهد
     $db->prepare("UPDATE tasks SET has_pending_overdue_request = 0, updated_at = NOW() WHERE id = ?")
        ->execute([$task_id]);
 

@@ -11,7 +11,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// AuthUser — کاربرِ احرازشده در context.
+// AuthUser — کاربر احرازشده در context.
 type AuthUser struct {
 	ID    int64
 	OrgID int64
@@ -25,20 +25,20 @@ func withUser(ctx context.Context, u AuthUser) context.Context {
 	return context.WithValue(ctx, userKey, u)
 }
 
-// UserOf کاربرِ احرازشده را از context برمی‌گرداند (بعد از AuthMiddleware).
+// UserOf کاربر احرازشده را از context برمی‌گرداند (بعد از AuthMiddleware).
 func UserOf(ctx context.Context) AuthUser {
 	u, _ := ctx.Value(userKey).(AuthUser)
 	return u
 }
 
-// AuthMiddleware — پورتِ دقیقِ includes/auth.php::validateToken:
+// AuthMiddleware — پورت دقیق includes/auth.php::validateToken:
 //
 //	۱) امضای HS256 با jwt_secret  (کتابخانه بررسی می‌کند)
 //	۲) exp لازم و گذشته نباشد     (کتابخانه بررسی می‌کند)
 //	۳) SELECT is_active, token_version FROM users WHERE id = user_id
 //	   → is_active === 1  و  token_version === claim "tv"
 //
-// payloadِ توکنِ اپ: {user_id, organization_id, tv, iat, exp}
+// payload توکن اپ: {user_id, organization_id, tv, iat, exp}
 func AuthMiddleware(db *sql.DB, secret string) func(http.HandlerFunc) http.HandlerFunc {
 	key := []byte(secret)
 	return func(next http.HandlerFunc) http.HandlerFunc {
@@ -88,9 +88,9 @@ func AuthMiddleware(db *sql.DB, secret string) func(http.HandlerFunc) http.Handl
 	}
 }
 
-// extractToken — هم‌راستا با includes/auth.php::extractToken: هدرِ Authorization،
-// و در صورتِ ریدایرکتِ Apache هدرِ REDIRECT_HTTP_AUTHORIZATION (که پشتِ پروکسی
-// معمولاً همان Authorization می‌رسد، ولی برای اطمینان هر دو را می‌بینیم).
+// extractToken — هم‌راستا با includes/auth.php::extractToken: هدر Authorization،
+// و در صورت ریدایرکت Apache هدر REDIRECT_HTTP_AUTHORIZATION (که پشت پروکسی
+// معمولا همان Authorization می‌رسد، ولی برای اطمینان هر دو را می‌بینیم).
 func extractToken(r *http.Request) string {
 	h := r.Header.Get("Authorization")
 	if h == "" {
@@ -99,7 +99,7 @@ func extractToken(r *http.Request) string {
 	return strings.TrimSpace(strings.TrimPrefix(h, "Bearer "))
 }
 
-// ToInt64 — کلایم‌های JSON در Go معمولاً float64 دیکود می‌شوند.
+// ToInt64 — کلایم‌های JSON در Go معمولا float64 دیکود می‌شوند.
 func ToInt64(v any) int64 {
 	switch n := v.(type) {
 	case float64:

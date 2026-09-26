@@ -254,7 +254,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         ];
 
         const gridOptions = {
-            theme: AgGridFa.theme({ rowHoverColor: '#f0f7ff' }), // پایهٔ مشترک؛ هاورِ فعلیِ همین صفحه حفظ شد
+            theme: AgGridFa.theme({ rowHoverColor: '#f0f7ff' }), // پایهٔ مشترک؛ هاور فعلی همین صفحه حفظ شد
             columnDefs: columnDefs,
             rowData: [],
             enableRtl: true,
@@ -360,7 +360,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
             currentUser = JSON.parse(localStorage.getItem('user_info') || '{}');
 
-            // گزینه‌های فیلترِ وضعیت از فایلِ مشترک (assets/js/task-filters.js)
+            // گزینه‌های فیلتر وضعیت از فایل مشترک (assets/js/task-filters.js)
             TF.renderStatusFilter(document.getElementById('filterStatus'), { selected: 'open' });
             document.getElementById('filterStatus').value = 'open';
 
@@ -581,7 +581,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 // 🆕 فیلتر گروه
                 if (gr === '__none__' && t.group_id) return false;
                 else if (gr && gr !== '__none__' && t.group_id != gr) return false;
-                // فیلترِ وضعیت — تنها مرجع: assets/js/task-filters.js
+                // فیلتر وضعیت — تنها مرجع: assets/js/task-filters.js
                 if (st && st !== 'all' && !TF.matchesStatusFilter(t, st, currentUser)) return false;
 
                 if (statFilter === 'today') {
@@ -634,7 +634,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             continuous: ['دوره‌ای', 'arrow-repeat']
         };
 
-        // برچسب/آیکن/رنگِ وضعیت — از assets/js/task-filters.js (تنها مرجع)
+        // برچسب/آیکن/رنگ وضعیت — از assets/js/task-filters.js (تنها مرجع)
         function statusBadge(s) {
             return `<span class="badge ${TF.statusClass(s)}"><i class="bi bi-${TF.statusIcon(s)}"></i>${TF.statusLabel(s)}</span>`;
         }
@@ -649,15 +649,15 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             return `<span class="badge type-${t}"><i class="bi bi-${i}"></i>${l}</span>`;
         }
 
-        // 🔒 دو مدلِ تأخیر/مهلت: روتین/فرآیندی (is_workflow_task=1) ساعتی،
-        // بقیه روزِ کاری — هر دو عدد از سرور (enrichTaskDates)، نه از new Date()
+        // 🔒 دو مدل تأخیر/مهلت: روتین/فرآیندی (is_workflow_task=1) ساعتی،
+        // بقیه روز کاری — هر دو عدد از سرور (enrichTaskDates)، نه از new Date()
         function daysLeft(d, status, task) {
             if (status === 'completed' || status === 'approved') return '<span class="badge days-badge days-normal">تکمیل</span>';
 
-            // 🔒 کارِ دوره‌ای: تأخیرِ واقعی یعنی دوره‌هایِ معوقه، نه اختلافِ
-            // تقویمیِ next_due_date — چون next_due_date همیشه نزدیکِ امروزه
+            // 🔒 کار دوره‌ای: تأخیر واقعی یعنی دوره‌های معوقه، نه اختلاف
+            // تقویمی next_due_date — چون next_due_date همیشه نزدیک امروزه
             // (حتی وقتی ده‌ها دوره معوقه داره)، محاسبه‌ی رو‌به‌پایین می‌تونست
-            // «امروز»/«N روز دیگر» نشون بده و تأخیرِ واقعی رو کاملاً پنهان کنه
+            // «امروز»/«N روز دیگر» نشون بده و تأخیر واقعی رو کاملا پنهان کنه
             if (task && task.task_type === 'continuous') {
                 const op = task.overdue_periods || 0;
                 if (op > 0) {
@@ -693,7 +693,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
 
         function relTime(d) {
-            // زمانِ نسبی از منبعِ یگانه (ساعتِ سرور، نه دستگاه) — time-sync.js
+            // زمان نسبی از منبع یگانه (ساعت سرور، نه دستگاه) — time-sync.js
             return window.TimeSync ? TimeSync.timeAgo(d) : '';
         }
 
@@ -743,7 +743,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             window.location.href = `task-detail.php?id=${id}`;
         }
 
-        // قبلاً فقط console.error می‌زد و هیچ پیغامی به کاربر نشون داده نمی‌شد
+        // قبلا فقط console.error می‌زد و هیچ پیغامی به کاربر نشون داده نمی‌شد
         function showError(msg) {
             console.error(msg);
             if (gridApi) gridApi.setGridOption('rowData', []);

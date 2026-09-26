@@ -44,10 +44,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         /* body در custom.css مقدار margin-top: 3.5rem دارد (نوار ثابت).
-           ارتفاعِ ثابت این‌جا (نه رویِ .dash-wrap) تعریف می‌شه و body
-           خودش flex-column می‌شه تا فوتر (آخرین فرزندِ body) به‌جایِ
-           بیرون‌افتادن از ویوپورتِ ثابت، فضایِ خودش رو از .dash-wrap
-           (که flex:1 گرفته) بگیره — بدونِ نیازِ ارتفاعِ حدسیِ فوتر */
+           ارتفاع ثابت این‌جا (نه روی .dash-wrap) تعریف می‌شه و body
+           خودش flex-column می‌شه تا فوتر (آخرین فرزند body) به‌جای
+           بیرون‌افتادن از ویوپورت ثابت، فضای خودش رو از .dash-wrap
+           (که flex:1 گرفته) بگیره — بدون نیاز ارتفاع حدسی فوتر */
         body {
             display: flex;
             flex-direction: column;
@@ -57,8 +57,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         .dash-wrap {
             max-width: 70%;
             margin: 0 auto;
-            /* padding-topِ بیشتر تا فلشِ سرچِ سراسریِ زیرِ هدر روی «برنامه کاری» نیفتد
-               (مثلِ بقیهٔ صفحات که .overview-container این فاصله را دارند) */
+            /* padding-top بیشتر تا فلش سرچ سراسری زیر هدر روی «برنامه کاری» نیفتد
+               (مثل بقیهٔ صفحات که .overview-container این فاصله را دارند) */
             padding: 28px 14px 14px;
             flex: 1;
             min-height: 0;
@@ -312,10 +312,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             align-items: center;
         }
 
-        /* wrapperِ ۴ تب (برایِ اسکرولِ افقیِ موبایل اضافه شد) — روی
+        /* wrapper ۴ تب (برای اسکرول افقی موبایل اضافه شد) — روی
            دسکتاپ هم باید flex بمونه، وگرنه چون هر .dash-tab خودش
-           display:flex داره (یعنی block-level)، بدونِ این قانون
-           به‌جایِ کنارِ هم، زیرِ هم می‌افتن */
+           display:flex داره (یعنی block-level)، بدون این قانون
+           به‌جای کنار هم، زیر هم می‌افتن */
         .dash-tabs-scroll {
             display: flex;
             align-items: center;
@@ -417,8 +417,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             font-weight: 600;
         }
 
-        /* پشتِ متنِ دکمه (خارج از جریانِ فلکس) تا حضورش وسط‌چین‌شدنِ متن
-           را جابه‌جا نکند — فقط روی هاورِ خودِ دکمه نمایان می‌شود */
+        /* پشت متن دکمه (خارج از جریان فلکس) تا حضورش وسط‌چین‌شدن متن
+           را جابه‌جا نکند — فقط روی هاور خود دکمه نمایان می‌شود */
         .filter-pin {
             position: absolute;
             left: 4px;
@@ -574,10 +574,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             display: flex;
             align-items: center;
             gap: 8px;
-            /* بدونِ این، ردیف‌هایِ تبِ «تاریخچه فعالیت» (که نه دکمه‌ی ستاره دارن
-               نه بجِ وضعیت/دکمه‌ی عملیات) کوتاه‌تر از ردیف‌هایِ بقیه‌ی تب‌ها
-               به‌نظر می‌رسیدن — این ارتفاع رو با بلندترین المانِ ردیف‌هایِ
-               دیگه (بجِ وضعیت، ۲۴~px) یکی می‌کنه */
+            /* بدون این، ردیف‌های تب «تاریخچه فعالیت» (که نه دکمه‌ی ستاره دارن
+               نه بج وضعیت/دکمه‌ی عملیات) کوتاه‌تر از ردیف‌های بقیه‌ی تب‌ها
+               به‌نظر می‌رسیدن — این ارتفاع رو با بلندترین المان ردیف‌های
+               دیگه (بج وضعیت، ۲۴~px) یکی می‌کنه */
             min-height: 28px;
         }
 
@@ -603,7 +603,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             padding: 2px;
             flex-shrink: 0;
             opacity: 1;
-            /* قبل از انتخاب هم دیده شود — خاکستریِ کم‌رنگ، مثلِ آیکنِ زنگوله */
+            /* قبل از انتخاب هم دیده شود — خاکستری کم‌رنگ، مثل آیکن زنگوله */
             transition: opacity .15s, color .15s, transform .12s;
         }
 
@@ -642,7 +642,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             display: inline-block;
         }
 
-        /* یکسان با منوی سه‌نقطهٔ مودالِ هفته/روز (.pm-kebab) */
+        /* یکسان با منوی سه‌نقطهٔ مودال هفته/روز (.pm-kebab) */
         .row-kebab {
             background: none;
             border: none;
@@ -662,12 +662,12 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         .row-menu {
             display: none;
             position: fixed;
-            /* ← مختصات را JS حساب می‌کند، دقیقاً مثلِ .pm-menu — تا برایِ
-               ردیف‌هایِ پایینیِ جدول، منو بیرون از ویوپورت باز نشه */
+            /* ← مختصات را JS حساب می‌کند، دقیقا مثل .pm-menu — تا برای
+               ردیف‌های پایینی جدول، منو بیرون از ویوپورت باز نشه */
             z-index: 3000;
             min-width: 150px;
             margin-top: 4px;
-            /* پس‌زمینه/متن مثلِ زیرمنویِ «مدیریت» هدر (.admin-submenu) */
+            /* پس‌زمینه/متن مثل زیرمنوی «مدیریت» هدر (.admin-submenu) */
             background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
             border: none;
             border-radius: 12px;
@@ -920,7 +920,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             opacity: .5;
         }
 
-        /* حالت یکسانِ «در حال بارگذاری» برای همهٔ کارت‌های داشبورد */
+        /* حالت یکسان «در حال بارگذاری» برای همهٔ کارت‌های داشبورد */
         .dash-loading {
             display: flex;
             align-items: center;
@@ -939,11 +939,11 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             color: var(--pm-purple);
         }
 
-        /* .task-table td{color:#000} اسپسیفیسیتیِ بالاتری از .dash-loading دارد،
+        /* .task-table td{color:#000} اسپسیفیسیتی بالاتری از .dash-loading دارد،
            برای همین رنگ را اینجا دوباره خاکستری می‌کنیم. همچنین display:flex
            روی <td colspan> باعث می‌شود مرورگر colspan را نادیده بگیرد و سلول
-           فقط به‌اندازهٔ ستون اول عرض بگیرد؛ پس مستقیماً table-cell + text-align
-           نگه داشته می‌شود تا واقعاً وسط کل جدول بیفتد */
+           فقط به‌اندازهٔ ستون اول عرض بگیرد؛ پس مستقیما table-cell + text-align
+           نگه داشته می‌شود تا واقعا وسط کل جدول بیفتد */
         .task-table td.dash-loading {
             display: table-cell;
             text-align: center;
@@ -1007,9 +1007,9 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             .dash-wrap {
                 max-width: 100%;
                 flex: none;
-                /* 150px+150px پدینگِ دسکتاپ رويِ موبایل عملاً کلِ محتوا رو
-                   به یه ستونِ ~60-90 پیکسلی فشار می‌داد — دلیلِ اصلیِ
-                   بهم‌ریختگیِ کلِ صفحه، نه فقط یه ویجتِ خاص */
+                /* 150px+150px پدینگ دسکتاپ روي موبایل عملا کل محتوا رو
+                   به یه ستون ~60-90 پیکسلی فشار می‌داد — دلیل اصلی
+                   بهم‌ریختگی کل صفحه، نه فقط یه ویجت خاص */
                 padding: 14px 12px 14px 12px;
             }
 
@@ -1026,14 +1026,14 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         /* ═══ لپ‌تاپ‌های کم‌ارتفاع (نمونهٔ رایج: ۱۳۶۶×۷۶۸) ═══
-           قالبِ «کلِ داشبورد در یک نمای بدونِ اسکرول» روی صفحه‌هایی که
-           ارتفاعِ مفیدشان کم است، هر سه ردیف را چنان فشرده می‌کرد که
-           جدولِ «کارها» فقط یکی‌دو ردیف نشان می‌داد. این‌جا:
-             ۱) ارتفاعِ ثابتِ body آزاد می‌شود ⇒ صفحه اسکرول می‌گیرد
-             ۲) هر دو ردیفِ کارت (کارها/فرآیندها و ردیفِ پایین) یک
-                حداقل‌ارتفاعِ یکسان می‌گیرند تا اندازهٔ همهٔ بخش‌ها برابر شود
-           عرضِ .dash-wrap دست‌نخورده می‌ماند (همان ۷۰٪ ⇒ هم‌عرض با بقیهٔ صفحات).
-           شرط بر اساسِ ارتفاعِ خودِ پنجرهٔ مرورگر است؛ روی مانیتورهای
+           قالب «کل داشبورد در یک نمای بدون اسکرول» روی صفحه‌هایی که
+           ارتفاع مفیدشان کم است، هر سه ردیف را چنان فشرده می‌کرد که
+           جدول «کارها» فقط یکی‌دو ردیف نشان می‌داد. این‌جا:
+             ۱) ارتفاع ثابت body آزاد می‌شود ⇒ صفحه اسکرول می‌گیرد
+             ۲) هر دو ردیف کارت (کارها/فرآیندها و ردیف پایین) یک
+                حداقل‌ارتفاع یکسان می‌گیرند تا اندازهٔ همهٔ بخش‌ها برابر شود
+           عرض .dash-wrap دست‌نخورده می‌ماند (همان ۷۰٪ ⇒ هم‌عرض با بقیهٔ صفحات).
+           شرط بر اساس ارتفاع خود پنجرهٔ مرورگر است؛ روی مانیتورهای
            بلندتر (۱۰۸۰p و بالاتر) هیچ اثری ندارد. */
         @media (max-height: 820px) {
 
@@ -1055,17 +1055,17 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 min-height: 0;
             }
 
-            /* هر دو ردیف، ارتفاعِ ثابتِ یکسان. کارت‌های ردیفِ پایین دیگر
-               برای «نمایشِ همهٔ محتوا» بلند نمی‌شوند — محتوای اضافه داخلِ
-               خودِ کارت (.dash-card-body با overflow-y:auto) اسکرول می‌خورد. */
+            /* هر دو ردیف، ارتفاع ثابت یکسان. کارت‌های ردیف پایین دیگر
+               برای «نمایش همهٔ محتوا» بلند نمی‌شوند — محتوای اضافه داخل
+               خود کارت (.dash-card-body با overflow-y:auto) اسکرول می‌خورد. */
             .tasks-row,
             .bottom-row {
                 height: 330px;
                 overflow: hidden;
             }
 
-            /* سقفِ ارتفاعِ بدنهٔ هر کارت — هم دارک هم لایت (این بلوک به تم
-               وابسته نیست). محتوای بیشتر داخلِ خودِ بدنه اسکرول می‌خورد. */
+            /* سقف ارتفاع بدنهٔ هر کارت — هم دارک هم لایت (این بلوک به تم
+               وابسته نیست). محتوای بیشتر داخل خود بدنه اسکرول می‌خورد. */
             .dash-card-body {
                 max-height: 300px !important;
             }
@@ -1090,10 +1090,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             --success: #1b7b39;
             --success-dark: #1b7b39;
 
-            /* توکن‌های محلیِ تم برای این صفحه — چون مودال‌ها (planModal/weekModal/...)
+            /* توکن‌های محلی تم برای این صفحه — چون مودال‌ها (planModal/weekModal/...)
                بیرون از .dash-wrap در DOM هستند، این متغیرها روی :root تعریف می‌شوند
-               تا هم در .dash-wrap و هم داخل مودال‌ها در دسترس باشند. مقدارِ پیش‌فرض
-               همان رنگ‌های هاردکدشدهٔ روشنِ فعلی است؛ فقط زیرِ data-theme="dark" پایین
+               تا هم در .dash-wrap و هم داخل مودال‌ها در دسترس باشند. مقدار پیش‌فرض
+               همان رنگ‌های هاردکدشدهٔ روشن فعلی است؛ فقط زیر data-theme="dark" پایین
                همین بلوک بازتعریف می‌شوند */
             --dm-ink: #000;
             --dm-head-bg: #e9e9e9;
@@ -1150,41 +1150,41 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             line-height: 1;
         }
 
-        /* ریشه‌یِ اصلیِ اسکرولِ همیشگی: یک ruleِ عمومیِ ".modal-content" توی
-           custom.css (متعلق به یک سیستمِ modal قدیمی‌تر/دیگه) با
+        /* ریشه‌ی اصلی اسکرول همیشگی: یک rule عمومی ".modal-content" توی
+           custom.css (متعلق به یک سیستم modal قدیمی‌تر/دیگه) با
            position:fixed + max-height:90vh + overflow-y:auto روی *همه*ی
-           modal-content ها از جمله همین مودالِ بوت‌استرپی اعمال می‌شه — یعنی
-           صرف‌نظر از هر محاسبه‌ای که تویِ JS برایِ modal-body انجام بدیم،
-           خودِ modal-content مستقل بهش سقف/اسکرول تحمیل می‌کرد. اینجا فقط
-           برایِ همین مودال خنثی‌ش می‌کنیم تا رفتارِ نرمالِ بوت‌استرپ برگرده */
+           modal-content ها از جمله همین مودال بوت‌استرپی اعمال می‌شه — یعنی
+           صرف‌نظر از هر محاسبه‌ای که توی JS برای modal-body انجام بدیم،
+           خود modal-content مستقل بهش سقف/اسکرول تحمیل می‌کرد. اینجا فقط
+           برای همین مودال خنثی‌ش می‌کنیم تا رفتار نرمال بوت‌استرپ برگرده */
         #monthModal .modal-content {
             position: relative;
             top: auto;
             left: auto;
             transform: none;
-            /* سقفِ واقعی = ویوپورت منهایِ حاشیهٔ ۲۵px بالا/پایینِ modal-dialog؛
-               بدونِ این سقف، هر وقت گرید کاملاً جا نمی‌شد، rapper بیرونیِ
+            /* سقف واقعی = ویوپورت منهای حاشیهٔ ۲۵px بالا/پایین modal-dialog؛
+               بدون این سقف، هر وقت گرید کاملا جا نمی‌شد، rapper بیرونی
                بوت‌استرپ (.modal که خودش overflow-y:auto پیش‌فرض داره) هم
-               اسکرول می‌شد — یعنی هم‌زمان دو ناحیه‌ی اسکرولِ تودرتو (خودِ
+               اسکرول می‌شد — یعنی هم‌زمان دو ناحیه‌ی اسکرول تودرتو (خود
                مودال + modal-body) که تجربه‌ی دوگانه/گیج‌کننده می‌ساخت.
-               با این سقف + overflow:hidden، مودالِ بیرونی هیچ‌وقت نیاز به
-               اسکرول پیدا نمی‌کنه و تنها ناحیه‌ی اسکرول، خودِ modal-body است */
+               با این سقف + overflow:hidden، مودال بیرونی هیچ‌وقت نیاز به
+               اسکرول پیدا نمی‌کنه و تنها ناحیه‌ی اسکرول، خود modal-body است */
             max-height: calc(100vh - 50px);
             overflow: hidden;
         }
 
-        /* قبلاً چون modal-content با position:fixed از جریانِ عادی خارج بود،
-           محدودیتِ عرضِ پیش‌فرضِ بوت‌استرپ روی modal-dialog (بدونِ کلاسِ
-           modal-lg/modal-xl، فقط ۵۰۰px) اصلاً اثر نداشت — با رفعِ position:fixed
-           بالا، این محدودیت آشکار شد و باید صریحاً بازش کنیم */
+        /* قبلا چون modal-content با position:fixed از جریان عادی خارج بود،
+           محدودیت عرض پیش‌فرض بوت‌استرپ روی modal-dialog (بدون کلاس
+           modal-lg/modal-xl، فقط ۵۰۰px) اصلا اثر نداشت — با رفع position:fixed
+           بالا، این محدودیت آشکار شد و باید صریحا بازش کنیم */
         #monthModal .modal-dialog {
             max-width: 1300px;
             margin: 25px auto !important;
         }
 
-        /* طوری‌که همه‌ی روزهایِ ماه بدونِ اسکرول در یک نگاه دیده بشن — فضایِ
-           عمودیِ هدر/فوتر رو تا حدِ ممکن پس می‌گیریم (ارتفاعِ واقعیِ ردیف‌ها
-           هم به‌صورتِ پویا در JS، بر اساسِ همین فضایِ آزادشده، محاسبه می‌شه) */
+        /* طوری‌که همه‌ی روزهای ماه بدون اسکرول در یک نگاه دیده بشن — فضای
+           عمودی هدر/فوتر رو تا حد ممکن پس می‌گیریم (ارتفاع واقعی ردیف‌ها
+           هم به‌صورت پویا در JS، بر اساس همین فضای آزادشده، محاسبه می‌شه) */
         #monthModal .modal-header {
             padding-top: 0;
             padding-bottom: 8px;
@@ -1539,8 +1539,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             min-width: 0;
         }
 
-        /* .wk-col فقط یک ستونِ شفاف است — سرستون و جعبهٔ کارت‌ها هرکدام
-           کادر و رنگِ خودشان را دارند (مثلِ مودالِ ماه). */
+        /* .wk-col فقط یک ستون شفاف است — سرستون و جعبهٔ کارت‌ها هرکدام
+           کادر و رنگ خودشان را دارند (مثل مودال ماه). */
         .wk-col {
             background: transparent;
             border: none;
@@ -1563,8 +1563,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             opacity: 1;
         }
 
-        /* سرستونِ روز/تاریخ — بیرون از کارتِ تسک‌ها، با همان بنفشِ کم‌رنگِ
-           مودالِ ماه (.mo-weekday). کادرِ بنفش فقط برایِ روزِ جاری. */
+        /* سرستون روز/تاریخ — بیرون از کارت تسک‌ها، با همان بنفش کم‌رنگ
+           مودال ماه (.mo-weekday). کادر بنفش فقط برای روز جاری. */
         .wk-col-head {
             text-align: center;
             padding: 7px 4px;
@@ -1595,7 +1595,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             margin-top: 2px;
         }
 
-        /* جعبهٔ کارت‌های تسک — رنگش بر اساسِ تراکمِ کار (مثلِ مودالِ ماه) */
+        /* جعبهٔ کارت‌های تسک — رنگش بر اساس تراکم کار (مثل مودال ماه) */
         .wk-cards {
             display: flex;
             flex-direction: column;
@@ -1731,7 +1731,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             border: none;
         }
 
-        /* رنگِ زمینه بر اساسِ تعدادِ کارهایِ روز (تراکم) */
+        /* رنگ زمینه بر اساس تعداد کارهای روز (تراکم) */
         .mo-cell.mo-d1 { background: #ECE3FF; border-color: #ddd0f7; }
         .mo-cell.mo-d2 { background: #CCB4FF; border-color: #bda2f2; }
         .mo-cell.mo-d3 { background: #8E57FE; border-color: #7d47ec; }
@@ -1752,16 +1752,16 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             font-size: .95rem;
             font-weight: 800;
             color: var(--dm-ink);
-            align-self: flex-start;   /* RTL → گوشهٔ راست‌بالایِ سلول */
+            align-self: flex-start;   /* RTL → گوشهٔ راست‌بالای سلول */
             flex-shrink: 0;
             line-height: 1.35;
             padding: 0 2px;
         }
 
-        /* روزِ جمعه (و هر تعطیلی) — عددِ قرمز */
+        /* روز جمعه (و هر تعطیلی) — عدد قرمز */
         .mo-cell.mo-fri .mo-cell-date { color: #e11d48; }
 
-        /* روزِ جاری — دایرهٔ بنفش دورِ عدد */
+        /* روز جاری — دایرهٔ بنفش دور عدد */
         .mo-today .mo-cell-date {
             width: 1.7rem;
             height: 1.7rem;
@@ -1787,7 +1787,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             gap: 2px;
             overflow-y: auto;
             min-height: 0;
-            direction: ltr;   /* اسکرول‌بار سمتِ راستِ سلول */
+            direction: ltr;   /* اسکرول‌بار سمت راست سلول */
         }
 
         .mo-cell-tasks > * {
@@ -1807,7 +1807,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             background: transparent;
         }
 
-        /* کادرِ عنوانِ تسک در مودالِ ماه = flex؛ متن + سه‌نقطهٔ عملیات داخلِ همین کادر */
+        /* کادر عنوان تسک در مودال ماه = flex؛ متن + سه‌نقطهٔ عملیات داخل همین کادر */
         .mo-task-title {
             font-size: .576rem;
             color: var(--dm-ink);
@@ -2247,7 +2247,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             max-width: none !important;
         }
 
-        /* راهنمای خالیِ AssigneePicker، فضای بیهوده می‌گیرد */
+        /* راهنمای خالی AssigneePicker، فضای بیهوده می‌گیرد */
         #planModal .ap-hint:empty {
             display: none !important;
         }
@@ -2349,15 +2349,15 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         /* ═══════════════════════════════════════════════════
-           تم تاریک — قواعدِ افزوده (نه جایگزین) برای رنگ‌های
-           خاکستریِ خنثی/بوردرها/پس‌زمینه‌هایی که معادلِ سراسریِ
+           تم تاریک — قواعد افزوده (نه جایگزین) برای رنگ‌های
+           خاکستری خنثی/بوردرها/پس‌زمینه‌هایی که معادل سراسری
            مستقیم ندارند (gray-50/100/300/400/600/700 یا هگزهای
-           ثابتِ مشابه). چون این قواعد زیرِ data-theme="dark"
-           هستند و specificity بالاتری دارند، قوانینِ پایهٔ بالا
-           (تمِ روشن) دست‌نخورده می‌مانند.
+           ثابت مشابه). چون این قواعد زیر data-theme="dark"
+           هستند و specificity بالاتری دارند، قوانین پایهٔ بالا
+           (تم روشن) دست‌نخورده می‌مانند.
            ═══════════════════════════════════════════════════ */
 
-        /* بوردرهای دورتادورِ خیلی روشن */
+        /* بوردرهای دورتادور خیلی روشن */
         :root[data-theme="dark"] .row-menu,
         :root[data-theme="dark"] .pm-row,
         :root[data-theme="dark"] .pm-menu,
@@ -2376,7 +2376,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             border-color: var(--border-soft);
         }
 
-        /* بوردرِ فقط-پایین یا فقط-بالا */
+        /* بوردر فقط-پایین یا فقط-بالا */
         :root[data-theme="dark"] #planModal .modal-header,
         :root[data-theme="dark"] #weekModal .modal-header,
         :root[data-theme="dark"] .task-table thead th,
@@ -2393,7 +2393,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             border-top-color: var(--border-soft);
         }
 
-        /* پس‌زمینه‌های خیلی روشن (کارت/ردیف/تراکِ نوار پیشرفت/هاور) */
+        /* پس‌زمینه‌های خیلی روشن (کارت/ردیف/تراک نوار پیشرفت/هاور) */
         :root[data-theme="dark"] .wk-cards,
         :root[data-theme="dark"] .mo-cell,
         :root[data-theme="dark"] .st-not_started,
@@ -2408,7 +2408,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             background: var(--info-box-bg);
         }
 
-        /* هاورِ ردیف‌های لیست/جدول — همان بنفشِ استانداردِ هاورِ سایت
+        /* هاور ردیف‌های لیست/جدول — همان بنفش استاندارد هاور سایت
            (نه var(--info-box-bg) که برای تیره خیلی محو بود) */
         :root[data-theme="dark"] .bottleneck-row:hover,
         :root[data-theme="dark"] .td-user-row:hover,
@@ -2442,7 +2442,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             color: var(--text-muted);
         }
 
-        /* متن‌های تیره‌ترِ خاکستری (gray-600/700 یا هگزهایی مثل #374151/#4b5563/#2d2d3a) که باید در تم تاریک روشن شوند */
+        /* متن‌های تیره‌تر خاکستری (gray-600/700 یا هگزهایی مثل #374151/#4b5563/#2d2d3a) که باید در تم تاریک روشن شوند */
         :root[data-theme="dark"] .tab-pin:hover,
         :root[data-theme="dark"] .pm-kebab:hover,
         :root[data-theme="dark"] .pm-title,
@@ -2453,9 +2453,9 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             color: var(--text-strong);
         }
 
-        /* آیکون‌های شاخصِ رنگی (بج‌های ماه/هفته/فردا و آیکونِ سرِ مودال) —
-           به‌جای پس‌زمینهٔ پاستلیِ تخت (که روی سطحِ تیره کدر/نامفهوم می‌شود)،
-           از رنگِ خودِ آیکون با شفافیتِ کم استفاده می‌شود تا هویتِ رنگی حفظ شود */
+        /* آیکون‌های شاخص رنگی (بج‌های ماه/هفته/فردا و آیکون سر مودال) —
+           به‌جای پس‌زمینهٔ پاستلی تخت (که روی سطح تیره کدر/نامفهوم می‌شود)،
+           از رنگ خود آیکون با شفافیت کم استفاده می‌شود تا هویت رنگی حفظ شود */
         :root[data-theme="dark"] .plan-icon.month,
         :root[data-theme="dark"] .pm-head-icon {
             background: color-mix(in srgb, #7e55b3 25%, transparent);
@@ -2469,10 +2469,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             background: color-mix(in srgb, #2563eb 25%, transparent);
         }
 
-        /* رنگ/آیکون‌هایِ سفیدِ هدر اکنون یک قاعدهٔ سراسری در custom.css است
-           (برایِ همهٔ صفحات، نه فقط داشبورد) — این بلاک دیگه لازم نیست. */
+        /* رنگ/آیکون‌های سفید هدر اکنون یک قاعدهٔ سراسری در custom.css است
+           (برای همهٔ صفحات، نه فقط داشبورد) — این بلاک دیگه لازم نیست. */
 
-        /* دکمه‌ی شناورِ + (کار جدید) — فقط در همین صفحه، هم‌رنگ با گرادیانتِ
+        /* دکمه‌ی شناور + (کار جدید) — فقط در همین صفحه، هم‌رنگ با گرادیانت
            هدر (نه --primary-gradient که در بقیه‌ی صفحات هم استفاده می‌شه) */
         .fab {
             background: #8e57fe !important;
@@ -2802,9 +2802,9 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         let tasksDataReady = false; // تا وقتی داده‌های واقعی نیامده، renderTasks نباید حالت خالی نشان بدهد
 
         // 🆕 دیگه در localStorage نیستن — از bootstrap.php (dashboardPrefs)
-        // می‌آن و با CURDATE()ِ سرور هر روز خودکار ریست می‌شن، نه با مقایسه‌ی
-        // تاریخِ ساعتِ سیستمِ کلاینت (کاربرهایی با ساعتِ سیستمِ نادرست هیچ‌وقت
-        // ریست‌شدنِ localStorage رو نمی‌دیدن)
+        // می‌آن و با CURDATE() سرور هر روز خودکار ریست می‌شن، نه با مقایسه‌ی
+        // تاریخ ساعت سیستم کلاینت (کاربرهایی با ساعت سیستم نادرست هیچ‌وقت
+        // ریست‌شدن localStorage رو نمی‌دیدن)
         let starredList = [];
         let defaultTab = '';
         let defaultFilter = '';
@@ -2844,8 +2844,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             return toJalali(d.getFullYear(), d.getMonth() + 1, d.getDate());
         }
 
-        /* «امروز» = روزِ تقویمیِ سرور (تهران)، به‌صورتِ Date با ۰۰:۰۰ محلی —
-           تا محاسباتِ هفته/ماه/تقویم به ساعت/تایم‌زونِ دستگاه وابسته نباشد */
+        /* «امروز» = روز تقویمی سرور (تهران)، به‌صورت Date با ۰۰:۰۰ محلی —
+           تا محاسبات هفته/ماه/تقویم به ساعت/تایم‌زون دستگاه وابسته نباشد */
         function todayLocal() {
             if (window.TimeSync) {
                 const p = TimeSync.serverParts();
@@ -2876,10 +2876,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             return d;
         }
 
-        /* ───────── ذخیره‌ی تنظیماتِ روزانه‌ی داشبورد در سرور (نه localStorage) ─────────
-           user_dashboard_prefs با pref_date=CURDATE() ذخیره می‌شه؛ فردا (طبقِ
-           تاریخِ سرور) bootstrap.php دیگه این ردیف رو برنمی‌گردونه — یعنی ریست
-           خودکاره و به ساعتِ سیستمِ کلاینت وابسته نیست */
+        /* ───────── ذخیره‌ی تنظیمات روزانه‌ی داشبورد در سرور (نه localStorage) ─────────
+           user_dashboard_prefs با pref_date=CURDATE() ذخیره می‌شه؛ فردا (طبق
+           تاریخ سرور) bootstrap.php دیگه این ردیف رو برنمی‌گردونه — یعنی ریست
+           خودکاره و به ساعت سیستم کلاینت وابسته نیست */
         function saveDashboardPref(prefKey, prefValue) {
             fetch('../api/dashboard/prefs-set.php', {
                 method: 'POST',
@@ -2915,7 +2915,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             if (currentTab === 'starred') renderTasks();
         }
 
-        /* ───────── تب پیش‌فرض (پین) — فقط تا پایانِ همون روز معتبره (روزِ سرور) ───────── */
+        /* ───────── تب پیش‌فرض (پین) — فقط تا پایان همون روز معتبره (روز سرور) ───────── */
         function getDefaultTab() {
             return defaultTab || 'mine';
         }
@@ -2937,7 +2937,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             });
         }
 
-        /* ───────── فیلترِ پیش‌فرض (پین) — فقط تا پایانِ همون روز معتبره (روزِ سرور) ───────── */
+        /* ───────── فیلتر پیش‌فرض (پین) — فقط تا پایان همون روز معتبره (روز سرور) ───────── */
         function getDefaultFilter() {
             return defaultFilter || 'all';
         }
@@ -3001,9 +3001,9 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 loadSectionMap().then(() => renderTopDelayed());
             }
 
-            // ۵ فراخوانیِ جدا قبلاً این‌جا با Promise.all انجام می‌شد — با
-            // یک درخواستِ باندل‌شده جایگزین شد تا صفِ اتصالِ HTTP/1.1 کم بشه
-            // (بدونِ تغییرِ منطقِ خودِ هر بخش، فقط جمع‌شدنِ درخواست‌ها)
+            // ۵ فراخوانی جدا قبلا این‌جا با Promise.all انجام می‌شد — با
+            // یک درخواست باندل‌شده جایگزین شد تا صف اتصال HTTP/1.1 کم بشه
+            // (بدون تغییر منطق خود هر بخش، فقط جمع‌شدن درخواست‌ها)
             const bundle = await apiGet('../api/dashboard/bootstrap.php');
             const {
                 mine, delegated, recent, activityLog, activityScopeDefault, routines, topDelayed,
@@ -3013,26 +3013,26 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
             store.mine = pickList(mine);
             store.delegated = pickList(delegated);
-            // 🆕 store.recent (فرآیندهایِ در‌جریان) هنوز برایِ fallback ویجتِ
-            // گلوگاه‌ها لازمه؛ تبِ «فعالیت‌های اخیر» از store.activityLog می‌خونه
+            // 🆕 store.recent (فرآیندهای در‌جریان) هنوز برای fallback ویجت
+            // گلوگاه‌ها لازمه؛ تب «فعالیت‌های اخیر» از store.activityLog می‌خونه
             store.recent = pickList(recent);
             store.activityLog = pickList(activityLog);
-            // 🆕 نطاقِ پیش‌فرض رو سرور تعیین می‌کنه (مدیر/سرپرست → سازمانی) —
-            // دکمه‌یِ فعال رو هم باهاش هماهنگ کن، نه فقط با پیش‌فرضِ هاردکدِ HTML
+            // 🆕 نطاق پیش‌فرض رو سرور تعیین می‌کنه (مدیر/سرپرست → سازمانی) —
+            // دکمه‌ی فعال رو هم باهاش هماهنگ کن، نه فقط با پیش‌فرض هاردکد HTML
             activityScope = activityScopeDefault || 'org';
             document.querySelectorAll('.activity-scope-chip').forEach(c =>
                 c.classList.toggle('active', c.dataset.scope === activityScope));
             store.topDelayed = (topDelayed && topDelayed.users) ? topDelayed.users : [];
-            // 🆕 برایِ مدیرانی که مجوزِ دیدنِ کلِ سازمان دارن، این دو ویجت باید
+            // 🆕 برای مدیرانی که مجوز دیدن کل سازمان دارن، این دو ویجت باید
             // سازمانی باشن نه فقط شخصی — null یعنی «مجوز نداره، از دادهٔ شخصی
-            // استفاده کن» (نه اینکه سازمان واقعاً خالیه)
+            // استفاده کن» (نه اینکه سازمان واقعا خالیه)
             store.orgDelegated = canViewOrgTasks ? pickList(orgDelegated) : null;
             store.orgBottlenecks = canMonitorAllWorkflows
                 ? ((orgBottlenecks && orgBottlenecks.bottlenecks) || [])
                 : null;
 
-            // 🆕 تنظیماتِ روزانه‌ی داشبورد (ستاره‌ها + تبِ/فیلترِ پیش‌فرض) — از
-            // سرور می‌آد، نه localStorage؛ باید قبلِ اولین renderTasks اعمال بشه
+            // 🆕 تنظیمات روزانه‌ی داشبورد (ستاره‌ها + تب/فیلتر پیش‌فرض) — از
+            // سرور می‌آد، نه localStorage؛ باید قبل اولین renderTasks اعمال بشه
             starredList = (dashboardPrefs && Array.isArray(dashboardPrefs.starred_tasks)) ? dashboardPrefs.starred_tasks : [];
             defaultTab = (dashboardPrefs && dashboardPrefs.default_tab) || '';
             defaultFilter = (dashboardPrefs && dashboardPrefs.default_filter) || '';
@@ -3078,7 +3078,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 const d = dateOnly(TF.effectiveDue(t));
                 if (!d) return;
 
-                // این ماه = همان ماهِ شمسیِ جاری (شامل روزهای گذشته‌ی همین ماه)
+                // این ماه = همان ماه شمسی جاری (شامل روزهای گذشته‌ی همین ماه)
                 const [jy, jm] = jalaliOf(d);
                 if (jy === tjy && jm === tjm) cMonth++;
 
@@ -3097,7 +3097,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             return `${src === 'recent' ? 'wf' : 'task'}:${t.id}`;
         }
 
-        // بارگذاریِ لاگِ فعالیت با نطاقِ دلخواه (شخصی/کل‌سازمان) — تبِ
+        // بارگذاری لاگ فعالیت با نطاق دلخواه (شخصی/کل‌سازمان) — تب
         // «فعالیت‌های اخیر» فقط وقتی خودش فعاله این رو صدا می‌زنه
         async function loadActivityLog(scope) {
             const data = await apiGet('../api/dashboard/recent-activity.php?scope=' + encodeURIComponent(scope));
@@ -3130,7 +3130,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     return true;
                 });
             }
-            // 🆕 «فعالیت‌های اخیر» دیگه فرآیندها نیست — لاگِ تاریخچه‌ایِ خودِ
+            // 🆕 «فعالیت‌های اخیر» دیگه فرآیندها نیست — لاگ تاریخچه‌ای خود
             // کاربره (store.activityLog، نه store.recent)
             if (currentTab === 'recent') {
                 return store.activityLog.map(t => ({ ...t, _src: 'recent' }));
@@ -3145,12 +3145,12 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         function applyFilter(list) {
-            // 🔒 فیلترهایِ امروز/عقب‌افتاده برایِ تبِ «فعالیت‌های اخیر» معنا
-            // ندارن — آیتم‌هایِ این تب (لاگِ تاریخچه) فیلدهایِ task_type/
-            // due_date/status ندارن، پس TF.isDueToday/isOverdue برایِ همه‌شون
-            // false برمی‌گردوند و کلِ لیست خالی می‌شد؛ بدونِ خطا، بدونِ ردی.
-            // اگه کاربر تويِ تبِ دیگه‌ای «امروز»/«عقب افتاده» رو انتخاب کرده
-            // باشه (یا این فیلترِ پیش‌فرضِ ذخیره‌شده‌ش باشه) و بعد بیاد اینجا،
+            // 🔒 فیلترهای امروز/عقب‌افتاده برای تب «فعالیت‌های اخیر» معنا
+            // ندارن — آیتم‌های این تب (لاگ تاریخچه) فیلدهای task_type/
+            // due_date/status ندارن، پس TF.isDueToday/isOverdue برای همه‌شون
+            // false برمی‌گردوند و کل لیست خالی می‌شد؛ بدون خطا، بدون ردی.
+            // اگه کاربر توي تب دیگه‌ای «امروز»/«عقب افتاده» رو انتخاب کرده
+            // باشه (یا این فیلتر پیش‌فرض ذخیره‌شده‌ش باشه) و بعد بیاد اینجا،
             // currentFilter دست‌نخورده می‌مونه چون switchTab فقط چیپ‌هاش رو
             // مخفی می‌کنه، ریست‌شون نمی‌کنه
             if (currentTab === 'recent') return list;
@@ -3193,14 +3193,14 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             }
 
             tbody.innerHTML = list.map(t => {
-                // ── ردیف فعالیت اخیر: لاگِ تاریخچه‌ای (بدونِ ستاره/عملیات؛
-                // خودِ رویداده، نه یه کارِ بازِ قابل‌اقدام) ──
+                // ── ردیف فعالیت اخیر: لاگ تاریخچه‌ای (بدون ستاره/عملیات؛
+                // خود رویداده، نه یه کار باز قابل‌اقدام) ──
                 if (currentTab === 'recent') {
                     const link = `task-detail.php?id=${t.task_id}`;
                     const itemTitle = t.item_title ? esc(t.item_title) : '';
                     const mainTitle = itemTitle || esc(t.title) || '—';
                     const who = t.actor_name ? `(${esc(t.actor_name)})` : '';
-                    // action ممکنه تویِ دیتایِ قدیمی خالی باشه — اگه خالی بود،
+                    // action ممکنه توی دیتای قدیمی خالی باشه — اگه خالی بود،
                     // دیگه «- :» یا «:» بی‌مصرف قبل از عنوان نمیاریم
                     const verb = TF.actionVerb(t.action);
                     let label;
@@ -3224,8 +3224,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 const link = `task-detail.php?id=${t.id}`;
                 const safe = esc(t.title || '');
                 const acts = pmActions(t);
-                // آیکنِ یادآوری فقط در تبِ «کارهای واگذار شده»، وقتی مسئولِ
-                // کار شخصِ دیگری‌ست و کار هنوز باز است
+                // آیکن یادآوری فقط در تب «کارهای واگذار شده»، وقتی مسئول
+                // کار شخص دیگری‌ست و کار هنوز باز است
                 const remWho = esc([t.assignee_first_name, t.assignee_last_name].filter(Boolean).join(' '));
                 const canRemind = currentTab === 'delegated'
                     && t.assignee_id
@@ -3253,9 +3253,9 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             }).join('');
         }
 
-        // 🔒 activityLabelِ محلی حذف شد — TF.actionVerb (assets/js/
-        // task-filters.js) تنها مرجعه؛ همینِ فایل، dashboard-user.php، و
-        // task-detail.php هرکدوم نسخه‌یِ جدایِ خودشون رو داشتن که با هم
+        // 🔒 activityLabel محلی حذف شد — TF.actionVerb (assets/js/
+        // task-filters.js) تنها مرجعه؛ همین فایل، dashboard-user.php، و
+        // task-detail.php هرکدوم نسخه‌ی جدای خودشون رو داشتن که با هم
         // ناهماهنگ بودن
 
         /* منوی سه‌نقطهٔ جدول اصلی */
@@ -3275,9 +3275,9 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             </div>`;
         }
 
-        /* باز/بسته کردن منوی جدول — همون الگویِ pmToggleMenu/pmCloseMenus:
-           منو به body منتقل می‌شه (position:fixed) تا برایِ ردیف‌هایِ
-           پایینیِ جدول هم کاملاً داخلِ ویوپورت بمونه، لازم نباشه اسکرول کرد */
+        /* باز/بسته کردن منوی جدول — همون الگوی pmToggleMenu/pmCloseMenus:
+           منو به body منتقل می‌شه (position:fixed) تا برای ردیف‌های
+           پایینی جدول هم کاملا داخل ویوپورت بمونه، لازم نباشه اسکرول کرد */
         function rowToggleMenu(taskId, ev) {
             ev.stopPropagation();
 
@@ -3479,10 +3479,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 box.innerHTML = `<div class="ra-user-empty">کاربری یافت نشد</div>`;
                 return;
             }
-            // 🔒 قبلاً نامِ کاربر مستقیم توی innerHTML و توی رشته‌ی onclick
-            // تزریق می‌شد (هم XSS از طریقِ <span>، هم شکستنِ اتریبیوتِ
-            // onclick با یک نامِ حاویِ نقل‌قول) — با ساختِ عنصر و
-            // addEventListener، نام هیچ‌وقت به‌عنوانِ HTML/کدِ اجراشدنی
+            // 🔒 قبلا نام کاربر مستقیم توی innerHTML و توی رشته‌ی onclick
+            // تزریق می‌شد (هم XSS از طریق <span>، هم شکستن اتریبیوت
+            // onclick با یک نام حاوی نقل‌قول) — با ساخت عنصر و
+            // addEventListener، نام هیچ‌وقت به‌عنوان HTML/کد اجراشدنی
             // پارس نمی‌شه، صرف‌نظر از این‌که چه کاراکترهایی داشته باشه
             box.innerHTML = '';
             list.slice(0, 50).forEach(u => {
@@ -3574,8 +3574,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 });
                 const data = await res.json();
 
-                // 🆕 موعدِ کار گذشته — به‌جایِ فقط اطلاع‌دادن، دکمهٔ «تمدید موعد» رو
-                // هم می‌ذاریم که مستقیم همون تسک رو تویِ همین مودال به حالتِ تمدید ببره
+                // 🆕 موعد کار گذشته — به‌جای فقط اطلاع‌دادن، دکمهٔ «تمدید موعد» رو
+                // هم می‌ذاریم که مستقیم همون تسک رو توی همین مودال به حالت تمدید ببره
                 if (!data.success && data.code === 'overdue_periodic') {
                     if (rowModal) rowModal.hide();
                     showToast(data.message, 'warning', {
@@ -3645,17 +3645,17 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 if (u.workflow > 0) parts.push(`${toFa(u.workflow)} روتین`);
                 const breakdown = parts.join(' • ');
 
-                // 🔒 دو مدلِ تأخیر: مقطعی/دوره‌ای روزِ کاری، روتین/فرآیندی ساعتی —
+                // 🔒 دو مدل تأخیر: مقطعی/دوره‌ای روز کاری، روتین/فرآیندی ساعتی —
                 // قاطی نمی‌شن، جدا جدا نشون داده می‌شن (اگه هر دو باشن، هر دو دیده
-                // می‌شن). طبقِ اصلاحیه‌یِ صریح: دو بج قبلی (مقطعی/دوره‌ای جدا از
-                // روتین) تلفیق شدن به یک عددِ واحد — مقطعی/دوره‌ای (روزِ کاری)
+                // می‌شن). طبق اصلاحیه‌ی صریح: دو بج قبلی (مقطعی/دوره‌ای جدا از
+                // روتین) تلفیق شدن به یک عدد واحد — مقطعی/دوره‌ای (روز کاری)
                 // به ساعت تبدیل و با روتین (ساعت) جمع می‌شه، بعد کلش با
                 // formatHourDelay به روز‌وساعت نمایش داده می‌شه.
                 const combinedHours = (u.delay_days || 0) * 24 + (u.delay_hours || 0);
                 const countText = combinedHours > 0 ? formatHourDelay(combinedHours) : '۰ روز';
 
-                // 🆕 تعدادِ کل کارهایِ تأخیردار (مقطعی+دوره‌ای+روتین) — بجِ دومِ جدا،
-                // کنارِ بجِ روز/ساعتِ تأخیر
+                // 🆕 تعداد کل کارهای تأخیردار (مقطعی+دوره‌ای+روتین) — بج دوم جدا،
+                // کنار بج روز/ساعت تأخیر
                 const totalTasks = (u.periodic || 0) + (u.continuous || 0) + (u.workflow || 0);
 
                 return `
@@ -3693,9 +3693,9 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
             const colors = ['#dc2626', '#ea580c', '#d97706', '#ca8a04', '#8e57fe'];
 
-            // 🆕 مدیرِ دارایِ مجوزِ monitor_all_workflows → مستقیماً از
+            // 🆕 مدیر دارای مجوز monitor_all_workflows → مستقیما از
             // api/reports/bottleneck-report.php (سازمانی، از قبل گروه‌بندی‌شده
-            // بر اساسِ قالب+مرحله) — نه از لیستِ شخصیِ فعالیت‌هایِ اخیر
+            // بر اساس قالب+مرحله) — نه از لیست شخصی فعالیت‌های اخیر
             if (store.orgBottlenecks !== null) {
                 const groups = store.orgBottlenecks; // [{step_name, template_id, count, ...}]
                 if (!groups.length) {
@@ -3719,7 +3719,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 return;
             }
 
-            // مسیرِ قبلی (بدونِ مجوزِ سازمانی) — از رویِ فعالیت‌هایِ شخصیِ اخیر
+            // مسیر قبلی (بدون مجوز سازمانی) — از روی فعالیت‌های شخصی اخیر
             const activeRoutines = (store.recent || []).filter(w =>
                 w.status !== 'completed' && w.status !== 'cancelled'
             );
@@ -3834,16 +3834,16 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         /* ───────── کارهای واگذار تأخیردار ─────────
-           🔒 دو مدلِ تأخیر: روتین/فرآیندی (is_workflow_task=1) ساعتی،
-           بقیه روزِ کاری — هر دو عدد از سرور (enrichTaskDates) */
+           🔒 دو مدل تأخیر: روتین/فرآیندی (is_workflow_task=1) ساعتی،
+           بقیه روز کاری — هر دو عدد از سرور (enrichTaskDates) */
         function daysLate(t) {
             if (t.is_workflow_task == 1) {
                 return formatHourDelay(t.hours_delayed || 0);
             }
-            // 🔒 کارِ دوره‌ای: working_days_delayed فقط تأخیرِ دوره‌ی جاریه (که
-            // معمولاً ۰ست چون next_due_date همیشه نزدیکِ امروزه) — معیارِ درستِ
-            // تأخیر برای این نوع، تعدادِ دوره‌های معوقه‌ست (هم‌راستا با
-            // بجِ «X دوره معوقه» در task-detail.php)
+            // 🔒 کار دوره‌ای: working_days_delayed فقط تأخیر دوره‌ی جاریه (که
+            // معمولا ۰ست چون next_due_date همیشه نزدیک امروزه) — معیار درست
+            // تأخیر برای این نوع، تعداد دوره‌های معوقه‌ست (هم‌راستا با
+            // بج «X دوره معوقه» در task-detail.php)
             if (t.task_type === 'continuous') {
                 const op = t.overdue_periods || 0;
                 return op > 0 ? `${toFa(op)} دوره معوقه` : '';
@@ -3860,8 +3860,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         function renderDelayed() {
             const box = document.getElementById('delayedList');
-            // 🆕 مدیرِ دارایِ مجوزِ view_all_org_tasks → کارهایِ واگذارشده‌ی
-            // تأخیردارِ کلِ سازمان، نه فقط کارهایی که خودش شخصاً واگذار کرده
+            // 🆕 مدیر دارای مجوز view_all_org_tasks → کارهای واگذارشده‌ی
+            // تأخیردار کل سازمان، نه فقط کارهایی که خودش شخصا واگذار کرده
             const source = store.orgDelegated !== null ? store.orgDelegated : store.delegated;
             const list = source.filter(t => TF.isOverdue(t, currentUser));
 
@@ -3932,8 +3932,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             document.querySelectorAll('.dash-tab').forEach(b =>
                 b.classList.toggle('active', b.dataset.tab === tab));
 
-            // فیلترها در تب فعالیت‌های اخیر معنا ندارند → مخفی؛ برعکسش برایِ
-            // فیلترِ شخصی/سازمانیِ همون تب صادقه
+            // فیلترها در تب فعالیت‌های اخیر معنا ندارند → مخفی؛ برعکسش برای
+            // فیلتر شخصی/سازمانی همون تب صادقه
             const filters = document.querySelector('.dash-filters');
             if (filters) {
                 filters.style.display = (tab === 'recent') ? 'none' : '';
@@ -3994,9 +3994,9 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 });
             });
 
-            // پین‌ها/تبِ پیش‌فرض/فیلترِ پیش‌فرض دیگه اینجا اعمال نمی‌شن — چون
+            // پین‌ها/تب پیش‌فرض/فیلتر پیش‌فرض دیگه اینجا اعمال نمی‌شن — چون
             // از سرور می‌آن (loadAll → bootstrap.php → dashboardPrefs)، نه از
-            // localStorageِ همیشه‌در‌دسترس؛ اعمال‌شدنشون داخلِ خودِ loadAll است
+            // localStorage همیشه‌در‌دسترس؛ اعمال‌شدنشون داخل خود loadAll است
             loadAll();
         });
 
@@ -4043,7 +4043,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         /**
          * آیا موعد این کار در بازهٔ انتخابی است؟
-         * منطق دقیقاً همان کارت‌های آماری است تا عدد و لیست همخوان باشند.
+         * منطق دقیقا همان کارت‌های آماری است تا عدد و لیست همخوان باشند.
          */
         function pmInScope(t, scope) {
             if (TF.isDone(t)) return false;
@@ -4097,7 +4097,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             const myId = Number(currentUser.id);
 
             // حذف‌شده/کنسل‌شده(rejected)/متوقف‌شده/تکمیل‌شده → دیگه هیچ اکشنی
-            // (ازجمله تمدیدِ موعد) روی این کار معنا نداره
+            // (ازجمله تمدید موعد) روی این کار معنا نداره
             const isTerminal = t.is_deleted == 1 ||
                 ['completed', 'approved', 'stopped', 'rejected'].includes(t.status);
             if (isTerminal) return [];
@@ -4240,7 +4240,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             if (wasOpen) return;
 
             // 🔑 کلید حل مشکل:
-            // منو را به <body> منتقل می‌کنیم تا از «مبدأ مختصاتِ» مودال آزاد شود.
+            // منو را به <body> منتقل می‌کنیم تا از «مبدأ مختصات» مودال آزاد شود.
             // (مودال Bootstrap برای انیمیشن از transform استفاده می‌کند و این
             //  باعث می‌شود position:fixed نسبت به مودال حساب شود، نه پنجره)
             document.body.appendChild(menu);
@@ -4396,7 +4396,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             const place = () => {
                 if (!drop.classList.contains('open')) return;
 
-                // 🔑 انتقال به body — از مبدأ مختصاتِ مودال آزاد شو
+                // 🔑 انتقال به body — از مبدأ مختصات مودال آزاد شو
                 if (drop.parentElement !== document.body) {
                     document.body.appendChild(drop);
                 }
@@ -4411,12 +4411,12 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     r.bottom + 4;
                 if (top < 8) top = 8;
 
-                // افقی (RTL): لبهٔ راستِ فهرست با لبهٔ راستِ کادر هم‌تراز
+                // افقی (RTL): لبهٔ راست فهرست با لبهٔ راست کادر هم‌تراز
                 let left = r.right - dw;
                 if (left < 8) left = 8;
                 if (left + dw > window.innerWidth - 8) left = window.innerWidth - dw - 8;
 
-                // اولویت inline + important — تا استایلِ inject‌شدهٔ کتابخانه
+                // اولویت inline + important — تا استایل inject‌شدهٔ کتابخانه
                 // (که right:0 دارد) نتواند با ما بجنگد
                 drop.style.setProperty('right', 'auto', 'important');
                 drop.style.setProperty('bottom', 'auto', 'important');
@@ -4592,7 +4592,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 <i class="bi bi-calendar-plus" style="color:#ea580c"></i> تمدید موعد
             </div>
 
-            <!-- ساختار انتخابگر تاریخ، دقیقاً مانند create-task.php -->
+            <!-- ساختار انتخابگر تاریخ، دقیقا مانند create-task.php -->
             <div class="persian-datepicker-wrapper" style="margin-bottom:8px;">
                 <input type="text" class="persian-datepicker-input form-control"
                        id="pmDate-${taskId}" placeholder="انتخاب موعد جدید..." readonly>
@@ -4726,8 +4726,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 });
                 const data = await res.json();
 
-                // 🆕 موعدِ کار گذشته — دکمهٔ «تمدید موعد» رو هم می‌ذاریم که مستقیم
-                // همون ردیف رو به فرمِ تمدید سوییچ کنه
+                // 🆕 موعد کار گذشته — دکمهٔ «تمدید موعد» رو هم می‌ذاریم که مستقیم
+                // همون ردیف رو به فرم تمدید سوییچ کنه
                 if (!data.success && data.code === 'overdue_periodic') {
                     showToast(data.message, 'warning', {
                         buttons: [
@@ -4882,7 +4882,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             document.getElementById('wkLabel').textContent = label;
 
             const dayNames = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'];
-            const months = FA_MONTHS; // مرجعِ یگانه در common-bundle.js
+            const months = FA_MONTHS; // مرجع یگانه در common-bundle.js
 
             let html = '';
             const wkToday = todayLocal();
@@ -4926,7 +4926,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     cards = `<div class="wk-col-empty">—</div>`;
                 }
 
-                // تراکمِ کار — دقیقاً مثلِ مودالِ ماه: ۰ سفید، ۱–۵ کم‌کار،
+                // تراکم کار — دقیقا مثل مودال ماه: ۰ سفید، ۱–۵ کم‌کار،
                 // ۶–۱۰ متوسط، ۱۱+ پرکار
                 const n = dayTasks.length;
                 const densCls = n === 0 ? '' : (n <= 5 ? 'wk-d1' : (n <= 10 ? 'wk-d2' : 'wk-d3'));
@@ -4945,7 +4945,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             document.getElementById('wkGrid').innerHTML = html;
         }
 
-        /* ساعت کار، فقط اگر واقعاً وجود داشت (نه 00:00) */
+        /* ساعت کار، فقط اگر واقعا وجود داشت (نه 00:00) */
         function wkTimeOf(t) {
             const raw = t.deadline || '';
             if (!raw || raw.indexOf(' ') === -1) return '';
@@ -4960,7 +4960,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         let moOffset = 0; // 0 = این ماه، -1 = قبل، +1 = بعد
         let moModal = null;
-        let moHolidaySet = null; // Set از 'YYYY-MM-DD'؛ روزهایِ تعطیلِ جدولِ holidays
+        let moHolidaySet = null; // Set از 'YYYY-MM-DD'؛ روزهای تعطیل جدول holidays
 
         function moLoadHolidays() {
             if (moHolidaySet) return Promise.resolve();
@@ -4979,8 +4979,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             moOffset = 0;
             if (!moModal) {
                 moModal = new bootstrap.Modal(document.getElementById('monthModal'));
-                // موقعِ show()، مودال هنوز کاملاً چیده نشده و clientHeight درست نیست؛
-                // بعدِ اتمامِ ترنزیشنِ نمایش، یک‌بار دیگه با ارتفاعِ واقعی بازمحاسبه می‌کنیم
+                // موقع show()، مودال هنوز کاملا چیده نشده و clientHeight درست نیست؛
+                // بعد اتمام ترنزیشن نمایش، یک‌بار دیگه با ارتفاع واقعی بازمحاسبه می‌کنیم
                 document.getElementById('monthModal').addEventListener('shown.bs.modal', moReapplyRowPx);
             }
             moModal.show();
@@ -4995,7 +4995,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             moRender();
         }
 
-        /* اولِ ماهِ شمسیِ جاری، به گرگوری */
+        /* اول ماه شمسی جاری، به گرگوری */
         function moTodayMonthStart() {
             const today = todayLocal();
             const jd = jalaliOf(today)[2];
@@ -5016,7 +5016,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             return count;
         }
 
-        /* اولِ ماهِ هدف (بر اساس افست از ماه جاری)، به گرگوری */
+        /* اول ماه هدف (بر اساس افست از ماه جاری)، به گرگوری */
         function moMonthStartOf(offset) {
             let d = moTodayMonthStart();
             if (offset > 0) {
@@ -5046,23 +5046,23 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
         }
 
-        /* ─── هاور: بزرگ‌شدنِ کلِ ردیف + کلِ ستونِ سلولِ هاورشده (به‌جای زوم خودِ سلول) ─── */
-        let MO_ROW_PX = 100; // ارتفاعِ پایهٔ هر ردیف (px) — قبلِ هر render، پویا بازمحاسبه می‌شود
-        const MO_ROW_PX_MIN = 44; // زیرِ این مقدار سلول‌ها غیرِقابلِ‌استفاده می‌شوند؛ در این حالتِ نادر، اسکرولِ modal-body به‌عنوانِ راهِ‌فرار باقی می‌ماند
-        // ⚠️ ۴۴ به‌جایِ ۵۶ عمداً پایین‌تره: روی لپ‌تاپ‌هایِ ۱۳۶۶×۷۶۸ (به‌خصوص با
-        // scaleِ ۱۲۵٪/۱۵۰٪ ویندوز که فضایِ واقعیِ CSS رو کمتر می‌کنه)، ماه‌هایِ
-        // ۶ردیفی با کفِ ۵۶ از پایینِ مودال بیرون می‌زدن و نیاز به اسکرول داشتن
-        const MO_ROW_PX_MAX = 100; // سقفِ ایمنی — حتی اگر تخمینِ فضایِ آزاد کمی خوش‌بینانه باشه، ردیف‌ها هیچ‌وقت بزرگ‌تر از این نمی‌شن
-        const MO_HEADER_ROW_PX = 26; // ارتفاعِ تقریبیِ ردیفِ نام‌روزها (auto) — از رویِ CSSِ ثابتِ .mo-weekday
-        const MO_GRID_GAP_PX = 6; // باید با gap در CSSِ .mo-grid یکی باشد
-        const MO_COL_GROW = 1.4; // ضریب بزرگ‌شدنِ عرض سلولِ هاورشده (۴۰٪ بیشتر)
-        const MO_ROW_GROW = 2.0; // ضریب بزرگ‌شدنِ ارتفاع سلولِ هاورشده (۱۰۰٪ بیشتر)
+        /* ─── هاور: بزرگ‌شدن کل ردیف + کل ستون سلول هاورشده (به‌جای زوم خود سلول) ─── */
+        let MO_ROW_PX = 100; // ارتفاع پایهٔ هر ردیف (px) — قبل هر render، پویا بازمحاسبه می‌شود
+        const MO_ROW_PX_MIN = 44; // زیر این مقدار سلول‌ها غیرقابل‌استفاده می‌شوند؛ در این حالت نادر، اسکرول modal-body به‌عنوان راه‌فرار باقی می‌ماند
+        // ⚠️ ۴۴ به‌جای ۵۶ عمدا پایین‌تره: روی لپ‌تاپ‌های ۱۳۶۶×۷۶۸ (به‌خصوص با
+        // scale ۱۲۵٪/۱۵۰٪ ویندوز که فضای واقعی CSS رو کمتر می‌کنه)، ماه‌های
+        // ۶ردیفی با کف ۵۶ از پایین مودال بیرون می‌زدن و نیاز به اسکرول داشتن
+        const MO_ROW_PX_MAX = 100; // سقف ایمنی — حتی اگر تخمین فضای آزاد کمی خوش‌بینانه باشه، ردیف‌ها هیچ‌وقت بزرگ‌تر از این نمی‌شن
+        const MO_HEADER_ROW_PX = 26; // ارتفاع تقریبی ردیف نام‌روزها (auto) — از روی CSS ثابت .mo-weekday
+        const MO_GRID_GAP_PX = 6; // باید با gap در CSS .mo-grid یکی باشد
+        const MO_COL_GROW = 1.4; // ضریب بزرگ‌شدن عرض سلول هاورشده (۴۰٪ بیشتر)
+        const MO_ROW_GROW = 2.0; // ضریب بزرگ‌شدن ارتفاع سلول هاورشده (۱۰۰٪ بیشتر)
         let moTotalRows = 0;
 
-        /* گامِ اول: تخمینِ تحلیلی، تا modal-body به‌اندازه‌ی فضایِ واقعاً موجود رشد
-           کنه (بدونِ این گام، اگر رندرِ اول به‌خاطرِ کلمپِ حداقلی کوچیک شروع بشه،
-           دیگه هیچ‌وقت به فضایِ واقعی رشد نمی‌کنه چون overflowِ گامِ دوم صفر
-           می‌مونه و دلیلی برایِ بزرگ‌شدن پیدا نمی‌شه). */
+        /* گام اول: تخمین تحلیلی، تا modal-body به‌اندازه‌ی فضای واقعا موجود رشد
+           کنه (بدون این گام، اگر رندر اول به‌خاطر کلمپ حداقلی کوچیک شروع بشه،
+           دیگه هیچ‌وقت به فضای واقعی رشد نمی‌کنه چون overflow گام دوم صفر
+           می‌مونه و دلیلی برای بزرگ‌شدن پیدا نمی‌شه). */
         function moFitModalBody() {
             const dialog = document.querySelector('#monthModal .modal-dialog');
             const header = document.querySelector('#monthModal .modal-header');
@@ -5085,15 +5085,15 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             return Math.min(MO_ROW_PX_MAX, Math.max(MO_ROW_PX_MIN, rowPx));
         }
 
-        /* بازمحاسبه‌ی ارتفاعِ ردیف‌ها بعدِ اتمامِ ترنزیشنِ نمایشِ مودال (وقتی
-           اندازه‌گیری‌هایِ واقعی در دسترسه) — بدونِ رندرِ دوباره‌ی HTML، فقط
-           ارتفاعِ modal-body و grid-template-rows به‌روزرسانی می‌شه.
-           گامِ دوم (اصلاح): چون الان modal-content سقفِ CSSِ خودش رو داره
+        /* بازمحاسبه‌ی ارتفاع ردیف‌ها بعد اتمام ترنزیشن نمایش مودال (وقتی
+           اندازه‌گیری‌های واقعی در دسترسه) — بدون رندر دوباره‌ی HTML، فقط
+           ارتفاع modal-body و grid-template-rows به‌روزرسانی می‌شه.
+           گام دوم (اصلاح): چون الان modal-content سقف CSS خودش رو داره
            (overflow:hidden + max-height)، دیگه هیچ‌وقت از ویوپورت بیرون
-           نمی‌زنه — یعنی مقایسه‌یِ قبلیِ «پایینِ dialog با پایینِ ویوپورت»
-           همیشه صفر می‌شد و اصلاً سرریزِ واقعی رو تشخیص نمی‌داد. اینجا مستقیم
-           scrollHeightِ خودِ گرید رو با clientHeightِ modal-body مقایسه
-           می‌کنیم — دقیقاً همون‌جایی که سرریز واقعاً اتفاق می‌افته */
+           نمی‌زنه — یعنی مقایسه‌ی قبلی «پایین dialog با پایین ویوپورت»
+           همیشه صفر می‌شد و اصلا سرریز واقعی رو تشخیص نمی‌داد. اینجا مستقیم
+           scrollHeight خود گرید رو با clientHeight modal-body مقایسه
+           می‌کنیم — دقیقا همون‌جایی که سرریز واقعا اتفاق می‌افته */
         function moReapplyRowPx() {
             if (moTotalRows <= 0) return;
             moFitModalBody();
@@ -5143,11 +5143,11 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             };
         }
 
-        /* ─── هاورِ گروهی روی کل گرید (نه تک‌تک سلول‌ها) ───
-           چون موس معمولاً از یک سلول مستقیم به سلول مجاور می‌رود، اگر enter/leave
+        /* ─── هاور گروهی روی کل گرید (نه تک‌تک سلول‌ها) ───
+           چون موس معمولا از یک سلول مستقیم به سلول مجاور می‌رود، اگر enter/leave
            جدا روی هر سلول باشد، بین دو رویداد لحظه‌ای به حالت پایه برمی‌گردد و
-           چشمک/تیک ایجاد می‌کند. اینجا فقط وقتی سلولِ هاورشده واقعاً عوض شود
-           (یا موس کلاً از گرید خارج شود) قالب گرید را تغییر می‌دهیم. */
+           چشمک/تیک ایجاد می‌کند. اینجا فقط وقتی سلول هاورشده واقعا عوض شود
+           (یا موس کلا از گرید خارج شود) قالب گرید را تغییر می‌دهیم. */
         let moHoveredCell = null;
 
         function moApplyHover(cell) {
@@ -5201,14 +5201,14 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             const monthStart = moMonthStartOf(moOffset);
             const [jy, jm] = jalaliOf(monthStart);
             const daysCount = moDaysInMonth(monthStart);
-            const months = FA_MONTHS; // مرجعِ یگانه در common-bundle.js
+            const months = FA_MONTHS; // مرجع یگانه در common-bundle.js
             document.getElementById('moLabel').textContent = moOffset === 0 ? 'این ماه' : (months[jm - 1] + ' ' + toFa(jy));
             document.getElementById('moSeeAllBtn').href = 'my-tasks.php?filter=month&jy=' + jy + '&jm=' + jm;
 
             const dayNames = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'];
             let html = dayNames.map(n => `<div class="mo-weekday">${n}</div>`).join('');
 
-            // چیدمانِ تقویمی: خانه‌های خالیِ ابتدای ماه تا روز هفتهٔ درست
+            // چیدمان تقویمی: خانه‌های خالی ابتدای ماه تا روز هفتهٔ درست
             const firstWeekday = (monthStart.getDay() + 1) % 7; // شنبه=۰
             let cellIdx = 0;
             for (let i = 0; i < firstWeekday; i++) {
@@ -5256,10 +5256,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 const isToday = d.getTime() === todayTime;
                 const r = Math.floor(cellIdx / 7),
                     c = cellIdx % 7;
-                // تراکمِ کار: ۰ سفید، ۱–۵ کم‌کار، ۶–۱۰ متوسط، ۱۱+ پرکار
+                // تراکم کار: ۰ سفید، ۱–۵ کم‌کار، ۶–۱۰ متوسط، ۱۱+ پرکار
                 const n = dayTasks.length;
                 const densCls = n === 0 ? '' : (n <= 5 ? 'mo-d1' : (n <= 10 ? 'mo-d2' : 'mo-d3'));
-                // عددِ قرمز برای جمعه (ستونِ آخر) یا هر روزِ تعطیلِ جدولِ holidays
+                // عدد قرمز برای جمعه (ستون آخر) یا هر روز تعطیل جدول holidays
                 const isHoliday = c === 6 || (moHolidaySet && moHolidaySet.has(moYMD(d)));
                 const friCls = isHoliday ? 'mo-fri' : '';
                 html += `

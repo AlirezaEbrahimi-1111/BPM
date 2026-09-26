@@ -365,13 +365,13 @@ class RequestManager {
                 $params[] = $user_id;
             }
 
-            // اگر مسئول است (فقط درخواست‌های سازمانِ خودش)
+            // اگر مسئول است (فقط درخواست‌های سازمان خودش)
             if ($user['role'] == 'supervisor') {
                 $conditions[] = "(r.status = 'waiting_supervisor' AND requester.organization_id = ?)";
                 $params[] = $user['organization_id'];
             }
 
-            // اگر مسئول IT است (فقط درخواست‌های سازمانِ خودش)
+            // اگر مسئول IT است (فقط درخواست‌های سازمان خودش)
             if ($user['role'] == 'it_manager') {
                 $conditions[] = "(r.status = 'waiting_it' AND requester.organization_id = ?)";
                 $params[] = $user['organization_id'];

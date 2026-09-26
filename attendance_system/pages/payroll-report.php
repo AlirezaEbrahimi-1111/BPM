@@ -25,9 +25,9 @@ if (!$user_id) {
     exit;
 }
 
-// اطلاعاتِ کاربر + گیتِ دسترسی — قبلاً اینجا activity_section هم چک می‌شد
-// («واحدِ مدیریت») که طبقِ اصلِ permissions.php هرگز نباید برایِ دسترسی
-// چک بشه؛ الان فقط بر اساسِ role (از طریقِ اجازهٔ view_payroll که فقط
+// اطلاعات کاربر + گیت دسترسی — قبلا اینجا activity_section هم چک می‌شد
+// («واحد مدیریت») که طبق اصل permissions.php هرگز نباید برای دسترسی
+// چک بشه؛ الان فقط بر اساس role (از طریق اجازهٔ view_payroll که فقط
 // supervisor داره) + سوپرادمین تصمیم گرفته می‌شه
 $me = loadUserForPermissions($db, (int) $user_id);
 

@@ -71,7 +71,7 @@ function getNotificationIcon(type) {
     return icons[type] || 'bell';
 }
 
-// زمان نسبی — از منبعِ یگانه (ساعتِ سرور، نه دستگاه) — time-sync.js
+// زمان نسبی — از منبع یگانه (ساعت سرور، نه دستگاه) — time-sync.js
 function formatTime(dateString) {
     return window.TimeSync ? TimeSync.timeAgo(dateString) : '';
 }

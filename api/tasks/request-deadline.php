@@ -60,7 +60,7 @@ try {
         throw new Exception('کار یافت نشد');
     }
 
-    // کارِ حذف‌شده/کنسل‌شده/متوقف‌شده/تکمیل‌شده دیگه قابلِ تمدیدِ موعد نیست
+    // کار حذف‌شده/کنسل‌شده/متوقف‌شده/تکمیل‌شده دیگه قابل تمدید موعد نیست
     if ((int) $task['is_deleted'] === 1 || in_array($task['status'], ['completed', 'approved', 'stopped', 'rejected'], true)) {
         http_response_code(400);
         throw new Exception('این کار در وضعیت پایانی است و موعدش قابل تمدید نیست');
@@ -72,8 +72,8 @@ try {
 
     // آیا درخواست‌دهنده اجازهٔ تأیید تمدید موعد را دارد؟
     // (پیش از این «management» و «admin» چک می‌شدند که هیچ‌کدام نقش معتبر نیستند)
-    // 🔒 خط قرمز: این اختیار فقط داخل همان سازمانِ کار معتبر است، وگرنه مدیرِ
-    // یک سازمان می‌تواند برای کارِ روتینِ سازمان دیگر درخواست تمدید بدهد/تأیید خودکار بگیرد
+    // 🔒 خط قرمز: این اختیار فقط داخل همان سازمان کار معتبر است، وگرنه مدیر
+    // یک سازمان می‌تواند برای کار روتین سازمان دیگر درخواست تمدید بدهد/تأیید خودکار بگیرد
     $me = loadUserForPermissions($db, $user_id);
     $requester_is_manager = hasPermission($me, 'approve_deadline_request')
         && isSameOrganization($me, $task['organization_id'] ?? 0);
@@ -148,7 +148,7 @@ try {
         }
     }
 
-    // ===== بررسی 4: آیا قبلاً درخواست منتظر دارد؟ =====
+    // ===== بررسی 4: آیا قبلا درخواست منتظر دارد؟ =====
     $stmt = $db->prepare("
         SELECT id FROM deadline_requests 
         WHERE task_id = ? AND status = 'pending'
@@ -294,11 +294,11 @@ try {
 
     // ✅ تأیید خودکار؟
     //   - کار مقطعی: سازنده و مسئول یکی باشند
-    //   - کار روتین: درخواست‌دهنده خودِ سازندهٔ روتین یا مدیر باشد
+    //   - کار روتین: درخواست‌دهنده خود سازندهٔ روتین یا مدیر باشد
     $auto_approve = (!$is_workflow && $task['creator_id'] == $task['assignee_id'])
                  || ($is_workflow && ($user_id == $task['creator_id'] || $requester_is_manager));
 
-    // نوتیفیکیشن فقط وقتی واقعاً نیاز به تأیید است (نه در حالت تأیید خودکار)
+    // نوتیفیکیشن فقط وقتی واقعا نیاز به تأیید است (نه در حالت تأیید خودکار)
     if (!$auto_approve) {
         error_log("📧 Sending notification to user $current_approver_id");
 
@@ -328,7 +328,7 @@ try {
         $approve_stmt->execute([$request_id]);
 
         if ($is_workflow) {
-            // کارِ روتین: موعد ساعتی است و فقط در ستونِ deadline نگهداری می‌شود؛
+            // کار روتین: موعد ساعتی است و فقط در ستون deadline نگهداری می‌شود؛
             // due_date/original_deadline برای این‌ها خالی می‌ماند و نباید دست بخورد.
             $update_task = $db->prepare("
                 UPDATE tasks
@@ -340,17 +340,17 @@ try {
             $sync = $db->prepare("UPDATE workflow_instance_steps SET deadline = ? WHERE task_id = ?");
             $sync->execute([$new_deadline, $task_id]);
         } else {
-            // کارِ مقطعی: هر سه ستونِ تاریخ به موعدِ جدید می‌آیند.
-            // «موعدِ مؤثرِ» کار در کلِ سیستم = max(due_date, deadline,
+            // کار مقطعی: هر سه ستون تاریخ به موعد جدید می‌آیند.
+            // «موعد مؤثر» کار در کل سیستم = max(due_date, deadline,
             // original_deadline) است (enrichTaskDates، my-tasks، گزارش‌ها،
             // overview). اگر «تمدید موعد» فقط deadline را عوض کند، وقتی موعد
-            // را کوتاه‌تر/اصلاح کرده باشیم (کارِ ۲۳۵۱: از ۲۷/۰۹ به ۲۷/۰۸)،
-            // due_date/original_deadlineِ قدیمیِ بزرگ‌تر در max() برنده می‌شوند و
-            // «۳۷۵ روز» اشتباه نمایش داده می‌شود. با هم‌راستا کردنِ هر سه، max
-            // دقیقاً همان موعدِ توافق‌شده می‌شود — چه جلوتر رفته باشد چه عقب‌تر.
-            // (این دقیقاً همان کاری است که approve-deadline.php در تأییدِ نهایی
-            // می‌کند.) due_date فقط اگر گذشته نباشد — تریگرِ
-            // check_task_date_before_update تغییرِ due_date به گذشته را رد می‌کند.
+            // را کوتاه‌تر/اصلاح کرده باشیم (کار ۲۳۵۱: از ۲۷/۰۹ به ۲۷/۰۸)،
+            // due_date/original_deadline قدیمی بزرگ‌تر در max() برنده می‌شوند و
+            // «۳۷۵ روز» اشتباه نمایش داده می‌شود. با هم‌راستا کردن هر سه، max
+            // دقیقا همان موعد توافق‌شده می‌شود — چه جلوتر رفته باشد چه عقب‌تر.
+            // (این دقیقا همان کاری است که approve-deadline.php در تأیید نهایی
+            // می‌کند.) due_date فقط اگر گذشته نباشد — تریگر
+            // check_task_date_before_update تغییر due_date به گذشته را رد می‌کند.
             if (substr((string) $new_deadline, 0, 10) >= date('Y-m-d')) {
                 $update_task = $db->prepare("
                     UPDATE tasks

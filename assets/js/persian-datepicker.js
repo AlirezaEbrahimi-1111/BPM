@@ -13,30 +13,30 @@ class PersianDatePicker {
         this.restrictPastDays = parseInt(element.dataset.restrictPast) || 0; // 0 یعنی بدون محدودیت
         this.holidays = [];        // لیست تاریخ‌های تعطیل (فرمت: 'YYYY-MM-DD' میلادی)
         this.holidayTitles = {};   // نگاشت تاریخ → عنوان تعطیل
-        // فاصله‌ی ساعتِ سرور با ساعتِ سیستمِ کلاینت (میلی‌ثانیه) — تا وقتی
-        // loadHolidays() جواب بده، صفره (یعنی موقتاً به ساعتِ کلاینت متکی‌ایم)
+        // فاصله‌ی ساعت سرور با ساعت سیستم کلاینت (میلی‌ثانیه) — تا وقتی
+        // loadHolidays() جواب بده، صفره (یعنی موقتا به ساعت کلاینت متکی‌ایم)
         this.serverOffset = 0;
         this.init();
     }
 
-    /** «الان»یِ واقعی — بر پایه‌ی ساعتِ سرور، نه ساعتِ (احتمالاً دستکاری‌شده‌ی) سیستمِ کلاینت */
+    /** «الان»ی واقعی — بر پایه‌ی ساعت سرور، نه ساعت (احتمالا دستکاری‌شده‌ی) سیستم کلاینت */
     _now() {
         return new Date(Date.now() + this.serverOffset);
     }
 
     init() {
-        // وقتی این تقویم داخلِ یک مودالِ بوت‌استرپی باز می‌شه، حتی با
-        // position:fixed هم ممکنه ناقص دیده بشه، چون overflow:hidden رویِ
-        // .modal-content هر فرزندی رو (صرف‌نظر از position) در مرزِ خودش
-        // کلیپ می‌کنه. برایِ فرار از این کلیپ‌شدن، خودِ تقویم رو مستقیماً
-        // زیرِ body می‌بریم؛ چون position:fixed viewport-centered هست، جابه‌جاییِ
-        // parent هیچ تأثیری رویِ محلِ نمایشش نداره
+        // وقتی این تقویم داخل یک مودال بوت‌استرپی باز می‌شه، حتی با
+        // position:fixed هم ممکنه ناقص دیده بشه، چون overflow:hidden روی
+        // .modal-content هر فرزندی رو (صرف‌نظر از position) در مرز خودش
+        // کلیپ می‌کنه. برای فرار از این کلیپ‌شدن، خود تقویم رو مستقیما
+        // زیر body می‌بریم؛ چون position:fixed viewport-centered هست، جابه‌جایی
+        // parent هیچ تأثیری روی محل نمایشش نداره
         if (this.calendar.parentElement !== document.body) {
             document.body.appendChild(this.calendar);
         }
 
-        // پیش‌فرضِ اولیه با ساعتِ کلاینت — تا وقتی loadHolidays() ساعتِ
-        // سرور رو برگردونه (پایینِ همین تابع)، جایگزین می‌شه
+        // پیش‌فرض اولیه با ساعت کلاینت — تا وقتی loadHolidays() ساعت
+        // سرور رو برگردونه (پایین همین تابع)، جایگزین می‌شه
         const today = this.gregorianToJalali(new Date());
         this.currentYear = today.year;
         this.currentMonth = today.month;
@@ -59,7 +59,7 @@ class PersianDatePicker {
 
         this.loadHolidays().then(() => {
             // حالا که serverOffset مشخص شده، اگه کاربر تا این لحظه ماه رو
-            // عوض نکرده، ماهِ نمایش‌داده‌شده رو با «امروز»ِ واقعی هماهنگ کن
+            // عوض نکرده، ماه نمایش‌داده‌شده رو با «امروز» واقعی هماهنگ کن
             const today = this.gregorianToJalali(this._now());
             this.currentYear = today.year;
             this.currentMonth = today.month;
@@ -86,7 +86,7 @@ class PersianDatePicker {
                     this.holidayTitles[h.holiday_date] = h.title;
                 });
             }
-            // 🆕 لنگرِ «الان»ِ واقعی — تفاوتِ ساعتِ سرور با ساعتِ سیستمِ کلاینت
+            // 🆕 لنگر «الان» واقعی — تفاوت ساعت سرور با ساعت سیستم کلاینت
             if (data.success && typeof data.server_time === 'number') {
                 this.serverOffset = data.server_time - Date.now();
             }
@@ -97,10 +97,10 @@ class PersianDatePicker {
 
     show() {
         // ⚠️ .persian-datepicker خودش position:fixed و z-index بالا داره تا
-        // همیشه بالایِ هر مودالی (حتی وقتی این تقویم داخلِ یک مودالِ بوت‌استرپی
-        // باز شده) بشینه — ولی بدونِ یک بک‌دراپِ مشخص، از دیدِ کاربر معلوم
-        // نبود که این یک لایه‌ی مستقل و بالاتره، نه بخشی از خودِ مودال؛ این‌جا
-        // یک بک‌دراپِ مشترک (برایِ کلِ صفحه، نه هر instance جداگانه) رو نشون می‌دیم
+        // همیشه بالای هر مودالی (حتی وقتی این تقویم داخل یک مودال بوت‌استرپی
+        // باز شده) بشینه — ولی بدون یک بک‌دراپ مشخص، از دید کاربر معلوم
+        // نبود که این یک لایه‌ی مستقل و بالاتره، نه بخشی از خود مودال؛ این‌جا
+        // یک بک‌دراپ مشترک (برای کل صفحه، نه هر instance جداگانه) رو نشون می‌دیم
         PersianDatePicker._showBackdrop(() => this.hide());
         this.calendar.classList.add('show');
     }
@@ -111,8 +111,8 @@ class PersianDatePicker {
     }
 
     handleOutsideClick(e) {
-        // چون تقویم دیگه زیرِ this.element نیست (به body منتقل شده)، باید
-        // جداگانه هم چک کنیم که کلیکِ روی خودِ تقویم باعثِ بسته‌شدنش نشه
+        // چون تقویم دیگه زیر this.element نیست (به body منتقل شده)، باید
+        // جداگانه هم چک کنیم که کلیک روی خود تقویم باعث بسته‌شدنش نشه
         if (!this.element.contains(e.target) && !this.calendar.contains(e.target)) {
             this.hide();
         }
@@ -402,8 +402,8 @@ class PersianDatePicker {
         this.render();
     }
 
-    // یک بک‌دراپِ مشترک برایِ کلِ صفحه (نه یکی به‌ازایِ هر instance) — همیشه
-    // پشتِ همون تقویمی می‌مونه که همین لحظه بازه، حتی وقتی داخلِ یک مودالِ
+    // یک بک‌دراپ مشترک برای کل صفحه (نه یکی به‌ازای هر instance) — همیشه
+    // پشت همون تقویمی می‌مونه که همین لحظه بازه، حتی وقتی داخل یک مودال
     // دیگه‌ست، و با کلیک روش، همون تقویم بسته می‌شه
     static _showBackdrop(onClose) {
         let bd = document.getElementById('sharedDatepickerBackdrop');

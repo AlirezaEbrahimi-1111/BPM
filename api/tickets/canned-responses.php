@@ -1,15 +1,15 @@
 <?php
 /**
- * API: پاسخ‌هایِ آماده‌ی تیکت (canned responses)
+ * API: پاسخ‌های آماده‌ی تیکت (canned responses)
  *
- *   GET  /api/tickets/canned-responses.php            → لیستِ سازمانِ کاربر
+ *   GET  /api/tickets/canned-responses.php            → لیست سازمان کاربر
  *   POST /api/tickets/canned-responses.php
  *        body: { action: 'create'|'update'|'delete', id?, title?, body? }
  *
  * دسترسی:
- *   - خواندن: هر کاربرِ احرازشده (چون هرکسی که به تیکت پاسخ می‌ده لازمش داره)
+ *   - خواندن: هر کاربر احرازشده (چون هرکسی که به تیکت پاسخ می‌ده لازمش داره)
  *   - نوشتن (ساخت/ویرایش/حذف): فقط supervisor/management یا سوپرادمین —
- *     همون قاعده‌ی ad-hoc که بقیه‌ی بخش‌هایِ مدیریتیِ این اپ استفاده می‌کنن
+ *     همون قاعده‌ی ad-hoc که بقیه‌ی بخش‌های مدیریتی این اپ استفاده می‌کنن
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -99,7 +99,7 @@ try {
             echo json_encode(['success' => false, 'message' => 'ورودی نامعتبر است']);
             exit;
         }
-        // 🔒 فقط داخلِ سازمانِ خودِ کاربر — تا با حدسِ id نشه پاسخِ سازمانِ دیگه رو ویرایش کرد
+        // 🔒 فقط داخل سازمان خود کاربر — تا با حدس id نشه پاسخ سازمان دیگه رو ویرایش کرد
         $db->prepare("UPDATE ticket_canned_responses SET title = ?, body = ? WHERE id = ? AND organization_id = ?")
             ->execute([$title, $body, $id, $orgId]);
 

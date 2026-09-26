@@ -26,12 +26,12 @@ class Notification
             error_log("Related Type: " . ($data['related_type'] ?? 'NULL'));
             error_log("Related ID: " . ($data['related_id'] ?? 'NULL'));
 
-            // ✅ چک کردن task — این چک روی وضعیتِ *زنده‌یِ فعلیِ* تسک انجام
-            // می‌شه، نه وضعیتِ قبل از این اکشن. برایِ نوتیف‌هایی که caller
+            // ✅ چک کردن task — این چک روی وضعیت *زنده‌ی فعلی* تسک انجام
+            // می‌شه، نه وضعیت قبل از این اکشن. برای نوتیف‌هایی که caller
             // درست قبل از این فراخوانی خودش assignee_id رو به to_user_id
-            // آپدیت کرده (مثلِ ارجاع)، این شرط همیشه true می‌شه چون همین
-            // الان همون مقدار رو ست کردیم — نه چون واقعاً creator داره به
-            // خودش نوتیف می‌فرسته. برایِ همین caller هایی مثلِ ارجاع، صریحاً
+            // آپدیت کرده (مثل ارجاع)، این شرط همیشه true می‌شه چون همین
+            // الان همون مقدار رو ست کردیم — نه چون واقعا creator داره به
+            // خودش نوتیف می‌فرسته. برای همین caller هایی مثل ارجاع، صریحا
             // با skip_self_check این چک رو دور می‌زنن
             if (
                 empty($data['skip_self_check']) &&
@@ -361,8 +361,8 @@ private function resolveSMSTemplate($data): array
      */
     private function shouldShowNotification($notification, $user_id)
     {
-        // نوتیف‌هایی که caller صراحتاً از چکِ self-notification معاف کرده
-        // (مثلِ ارجاعِ تسک به خودِ creator) — همیشه نشون داده بشن
+        // نوتیف‌هایی که caller صراحتا از چک self-notification معاف کرده
+        // (مثل ارجاع تسک به خود creator) — همیشه نشون داده بشن
         if (!empty($notification['bypass_self_filter'])) {
             return true;
         }

@@ -15,7 +15,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // امنیت: سازمانِ کاربرِ جاری (از دیتابیس، مطمئن‌تر از توکن)
+    // امنیت: سازمان کاربر جاری (از دیتابیس، مطمئن‌تر از توکن)
     $stmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $org_id = (int) $stmt->fetchColumn();

@@ -1,8 +1,8 @@
-// Package notifications — پورتِ api/notifications/*.php + بخشِ خواندنیِ
-// includes/Notification.php (فیلترها، لیست، شمارشِ خوانده‌نشده، خواندن/حذف).
-// ساختنِ نوتیفیکیشن (Notification::create، شاملِ ارسالِ پیامک) عمداً پورت
-// نشده — آن منطق فقط از داخلِ خودِ PHP و از دهها جایِ دیگر صدا زده می‌شود،
-// نه یک endpointِ سرراستِ قابلِ‌مصرف برایِ کلاینت.
+// Package notifications — پورت api/notifications/*.php + بخش خواندنی
+// includes/Notification.php (فیلترها، لیست، شمارش خوانده‌نشده، خواندن/حذف).
+// ساختن نوتیفیکیشن (Notification::create، شامل ارسال پیامک) عمدا پورت
+// نشده — آن منطق فقط از داخل خود PHP و از دهها جای دیگر صدا زده می‌شود،
+// نه یک endpoint سرراست قابل‌مصرف برای کلاینت.
 package notifications
 
 import (
@@ -17,8 +17,8 @@ import (
 
 var namePattern = regexp.MustCompile(`توسط\s*"([^"]+)"`)
 
-// toInt64 — کلایم‌های JSON در Go به‌صورتِ float64 دیکود می‌شوند؛ رشته‌ها هم
-// (اگر کلاینت به‌جایِ عدد رشته بفرستد) پشتیبانی می‌شوند.
+// toInt64 — کلایم‌های JSON در Go به‌صورت float64 دیکود می‌شوند؛ رشته‌ها هم
+// (اگر کلاینت به‌جای عدد رشته بفرستد) پشتیبانی می‌شوند.
 func toInt64(v any) int64 {
 	switch n := v.(type) {
 	case float64:
@@ -51,8 +51,8 @@ func truthy(v any) bool {
 	return false
 }
 
-// passesTaskSelfFilter — پورتِ Notification::shouldShowNotification():
-// نوتیفیکیشنِ مربوط به تسکی که هم creator هم assignee‌اش خودِ کاربر است
+// passesTaskSelfFilter — پورت Notification::shouldShowNotification():
+// نوتیفیکیشن مربوط به تسکی که هم creator هم assignee‌اش خود کاربر است
 // مخفی می‌شود، مگر bypass_self_filter فعال باشد.
 func passesTaskSelfFilter(db *sql.DB, n map[string]any, userID int64) bool {
 	if truthy(n["bypass_self_filter"]) {
@@ -67,7 +67,7 @@ func passesTaskSelfFilter(db *sql.DB, n map[string]any, userID int64) bool {
 	err := db.QueryRow("SELECT creator_id, assignee_id FROM tasks WHERE id = ?", relatedID).
 		Scan(&creatorID, &assigneeID)
 	if err != nil {
-		return true // مثلِ نسخهٔ PHP: خطا در چک → نمایش داده شود
+		return true // مثل نسخهٔ PHP: خطا در چک → نمایش داده شود
 	}
 	if creatorID.Valid && assigneeID.Valid && creatorID.Int64 == userID && assigneeID.Int64 == userID {
 		return false
@@ -75,8 +75,8 @@ func passesTaskSelfFilter(db *sql.DB, n map[string]any, userID int64) bool {
 	return true
 }
 
-// passesMessageNameFilter — پورتِ چکِ اضافیِ خودِ list.php/new.php (نه
-// چیزی از داخلِ کلاسِ Notification): اگر متنِ پیام «توسط "نامِ خودِ من"»
+// passesMessageNameFilter — پورت چک اضافی خود list.php/new.php (نه
+// چیزی از داخل کلاس Notification): اگر متن پیام «توسط "نام خود من"»
 // باشد، یعنی خودم انجامش داده‌ام، نشان داده نشود.
 func passesMessageNameFilter(db *sql.DB, message string, userID int64) bool {
 	if !strings.Contains(message, "توسط") {
@@ -96,7 +96,7 @@ func passesMessageNameFilter(db *sql.DB, message string, userID int64) bool {
 	return performerName != fullName.String
 }
 
-// filterList — ترکیبِ هر دو فیلتر، برایِ list.php.
+// filterList — ترکیب هر دو فیلتر، برای list.php.
 func filterList(db *sql.DB, rows []map[string]any, userID int64) []map[string]any {
 	out := make([]map[string]any, 0, len(rows))
 	for _, n := range rows {
@@ -112,18 +112,18 @@ func filterList(db *sql.DB, rows []map[string]any, userID int64) []map[string]an
 	return out
 }
 
-// passesTaskSelfFilterStrict — پورتِ دقیقِ چکِ تکراریِ خودِ
-// api/notifications/new.php (نه کلاسِ Notification::shouldShowNotification).
+// passesTaskSelfFilterStrict — پورت دقیق چک تکراری خود
+// api/notifications/new.php (نه کلاس Notification::shouldShowNotification).
 //
-// 🔒 این یک اینکانسیستنسیِ واقعی و موجودِ خودِ PHP است، عمداً بازتولید
-// شده تا new_count دقیقاً با new.php برابر باشد: new.php روی خروجیِ
+// 🔒 این یک اینکانسیستنسی واقعی و موجود خود PHP است، عمدا بازتولید
+// شده تا new_count دقیقا با new.php برابر باشد: new.php روی خروجی
 // getNewNotifications() (که از قبل bypass_self_filter را رعایت کرده)
-// یک بارِ دیگر creator==assignee==خودم را چک می‌کند، اما این‌بار
-// bypass_self_filter را اصلاً نمی‌بیند — پس نوتیفیکیشنی که عمداً با
-// bypass_self_filter=1 ساخته شده تا نشان داده شود، اگر روی تسکِ خودِ
-// کاربر باشد، همچنان همین‌جا پنهان می‌شود. list.php همین چکِ تکراری را
-// دارد ولی برخلافِ new.php، اول bypass_self_filter را چک می‌کند — یعنی
-// این باگ فقط مخصوصِ new.php است.
+// یک بار دیگر creator==assignee==خودم را چک می‌کند، اما این‌بار
+// bypass_self_filter را اصلا نمی‌بیند — پس نوتیفیکیشنی که عمدا با
+// bypass_self_filter=1 ساخته شده تا نشان داده شود، اگر روی تسک خود
+// کاربر باشد، همچنان همین‌جا پنهان می‌شود. list.php همین چک تکراری را
+// دارد ولی برخلاف new.php، اول bypass_self_filter را چک می‌کند — یعنی
+// این باگ فقط مخصوص new.php است.
 func passesTaskSelfFilterStrict(db *sql.DB, n map[string]any, userID int64) bool {
 	relatedType, _ := n["related_type"].(string)
 	relatedID := toInt64(n["related_id"])
@@ -142,9 +142,9 @@ func passesTaskSelfFilterStrict(db *sql.DB, n map[string]any, userID int64) bool
 	return true
 }
 
-// filterNew — همانِ filterList به‌علاوه‌یِ لایه‌ی تکراریِ بدونِ-بای‌پسِ
-// بالا، مخصوصِ new.php. دو لایه عمداً جدا نگه داشته شده‌اند (نه یک تابعِ
-// مشترک) چون در PHP هم دو فایلِ متفاوت‌اند با دو رفتارِ واقعاً متفاوت.
+// filterNew — همان filterList به‌علاوه‌ی لایه‌ی تکراری بدون-بای‌پس
+// بالا، مخصوص new.php. دو لایه عمدا جدا نگه داشته شده‌اند (نه یک تابع
+// مشترک) چون در PHP هم دو فایل متفاوت‌اند با دو رفتار واقعا متفاوت.
 func filterNew(db *sql.DB, rows []map[string]any, userID int64) []map[string]any {
 	out := make([]map[string]any, 0, len(rows))
 	for _, n := range rows {
@@ -163,10 +163,10 @@ func filterNew(db *sql.DB, rows []map[string]any, userID int64) []map[string]any
 	return out
 }
 
-// List — پورتِ دقیقِ api/notifications/list.php
+// List — پورت دقیق api/notifications/list.php
 //
 //	GET /go/api/notifications/list?limit=&unread_only=1
-//	→ {"success":true,"notifications":[...همه‌ی ستون‌هایِ جدول...],"unread_count":N}
+//	→ {"success":true,"notifications":[...همه‌ی ستون‌های جدول...],"unread_count":N}
 func List(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := core.UserOf(r.Context())
@@ -182,8 +182,8 @@ func List(db *sql.DB) http.HandlerFunc {
 		}
 		unreadOnly := r.URL.Query().Get("unread_only") == "1"
 
-		// همون الگویِ getUserNotifications(): سه‌برابرِ limit می‌گیریم چون
-		// بعداً فیلتر می‌شه، سپس به limit اصلی برش می‌خوریم.
+		// همون الگوی getUserNotifications(): سه‌برابر limit می‌گیریم چون
+		// بعدا فیلتر می‌شه، سپس به limit اصلی برش می‌خوریم.
 		where := "user_id = ?"
 		if unreadOnly {
 			where += " AND is_read = 0"
@@ -219,8 +219,8 @@ func List(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-// unreadCount — پورتِ Notification::getUnreadCount(): همه‌ی is_read=0 را
-// می‌خواند، فقط با فیلترِ تسکِ خودی (بدونِ فیلترِ نامِ داخلِ متن).
+// unreadCount — پورت Notification::getUnreadCount(): همه‌ی is_read=0 را
+// می‌خواند، فقط با فیلتر تسک خودی (بدون فیلتر نام داخل متن).
 func unreadCount(db *sql.DB, userID int64) (int, error) {
 	rows, err := db.Query("SELECT * FROM notifications WHERE user_id = ? AND is_read = 0", userID)
 	if err != nil {
@@ -240,7 +240,7 @@ func unreadCount(db *sql.DB, userID int64) (int, error) {
 	return count, nil
 }
 
-// New — پورتِ دقیقِ api/notifications/new.php (پولینگِ لحظه‌ای)
+// New — پورت دقیق api/notifications/new.php (پولینگ لحظه‌ای)
 //
 //	GET /go/api/notifications/new?since=ID
 //	→ {"success":true,"new_count":N,"notifications":[...],"latest_id":?,"latest_notification":?}
@@ -276,7 +276,7 @@ func New(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-// MarkRead — پورتِ دقیقِ api/notifications/mark-read.php (هر ۵ حالت)
+// MarkRead — پورت دقیق api/notifications/mark-read.php (هر ۵ حالت)
 //
 //	POST /go/api/notifications/mark-read   body: {id} یا {task_id} یا
 //	     {ticket_id} یا {related_type,related_id} یا {related_types:[...]}
@@ -325,7 +325,7 @@ func MarkRead(db *sql.DB) http.HandlerFunc {
 				}
 			}
 			if len(types) == 0 {
-				ok = false // مثلِ نسخهٔ PHP: بعدِ فیلتر چیزی نموند → $result = false
+				ok = false // مثل نسخهٔ PHP: بعد فیلتر چیزی نموند → $result = false
 			} else {
 				placeholders := strings.TrimSuffix(strings.Repeat("?,", len(types)), ",")
 				args := make([]any, 0, len(types)+1)
@@ -351,7 +351,7 @@ func MarkRead(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-// MarkAllRead — پورتِ دقیقِ api/notifications/mark-all-read.php
+// MarkAllRead — پورت دقیق api/notifications/mark-all-read.php
 //
 //	POST /go/api/notifications/mark-all-read
 func MarkAllRead(db *sql.DB) http.HandlerFunc {
@@ -367,13 +367,13 @@ func MarkAllRead(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-// Delete — پورتِ دقیقِ api/notifications/delete.php
+// Delete — پورت دقیق api/notifications/delete.php
 //
 //	POST /go/api/notifications/delete   body: {id}
 //
-// نکته‌ی هم‌ارزیِ عمدی با نسخه‌ی PHP: وقتی id خالی باشد، نسخه‌ی PHP یک
-// Exception می‌اندازد که در catch عمومی به HTTP 500 + پیامِ ژنریک تبدیل
-// می‌شود (نه 400 با پیامِ واقعی) — همین رفتار این‌جا هم عیناً حفظ شده.
+// نکته‌ی هم‌ارزی عمدی با نسخه‌ی PHP: وقتی id خالی باشد، نسخه‌ی PHP یک
+// Exception می‌اندازد که در catch عمومی به HTTP 500 + پیام ژنریک تبدیل
+// می‌شود (نه 400 با پیام واقعی) — همین رفتار این‌جا هم عینا حفظ شده.
 func Delete(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := core.UserOf(r.Context())

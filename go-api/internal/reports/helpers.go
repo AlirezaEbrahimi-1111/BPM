@@ -6,18 +6,18 @@ import (
 	"strconv"
 )
 
-// round1 — معادلِ round($x, 1) در PHP.
+// round1 — معادل round($x, 1) در PHP.
 //
-// نکته‌ی سازگاری: PHP با serialize_precision=-1 مقدارِ float(5.0) را «5»
-// چاپ می‌کند نه «5.0» — یعنی دقیقاً همان کاری که encoding/json در Go
-// می‌کند. پس این‌جا نیازی به نوعِ سفارشی برایِ Marshal نیست.
+// نکته‌ی سازگاری: PHP با serialize_precision=-1 مقدار float(5.0) را «5»
+// چاپ می‌کند نه «5.0» — یعنی دقیقا همان کاری که encoding/json در Go
+// می‌کند. پس این‌جا نیازی به نوع سفارشی برای Marshal نیست.
 func round1(v float64) float64 {
 	return math.Round(v*10) / 10
 }
 
-// fmtAny — ساختِ همان کلیدِ رشته‌ایِ گروه‌بندی که PHP می‌سازد.
-// در PHP مقدارها از PDO رشته‌اند و با «.» به هم چسبانده می‌شوند؛ درایورِ
-// MySQL در Go برایِ ستونِ INT مقدارِ int64 می‌دهد، پس هر دو حالت پوشش
+// fmtAny — ساخت همان کلید رشته‌ای گروه‌بندی که PHP می‌سازد.
+// در PHP مقدارها از PDO رشته‌اند و با «.» به هم چسبانده می‌شوند؛ درایور
+// MySQL در Go برای ستون INT مقدار int64 می‌دهد، پس هر دو حالت پوشش
 // داده می‌شود.
 func fmtAny(v any) string {
 	switch t := v.(type) {
@@ -35,7 +35,7 @@ func fmtAny(v any) string {
 	return fmt.Sprint(v)
 }
 
-// mStr / mInt — خواندنِ یک کلید از ردیفِ ScanRowsToMaps، هم‌ارزِ
+// mStr / mInt — خواندن یک کلید از ردیف ScanRowsToMaps، هم‌ارز
 // `$row['key'] ?? ”` و `(int) $row['key']` در PHP.
 func mStr(m map[string]any, key string) string {
 	v, ok := m[key]

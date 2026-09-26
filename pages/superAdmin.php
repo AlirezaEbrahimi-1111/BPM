@@ -73,7 +73,7 @@ foreach ($orgs as $org) {
     ];
 }
 
-// ── کاربرانِ فعالِ هر سازمان، برای نمایشِ درختیِ زیرردیف ──
+// ── کاربران فعال هر سازمان، برای نمایش درختی زیرردیف ──
 $ustmt = $db->query("
     SELECT organization_id, first_name, last_name, phone
     FROM users
@@ -197,7 +197,7 @@ foreach ($ustmt->fetchAll(PDO::FETCH_ASSOC) as $u) {
       .admin-search input { width: 100%; }
     }
 
-    /* دکمهٔ باز/بستنِ زیرردیفِ کاربران */
+    /* دکمهٔ باز/بستن زیرردیف کاربران */
     .og .exp {
       width: 26px; height: 26px; border-radius: 8px;
       border: 1px solid #e9e9e9; background: #fff; color: #8e57fe;
@@ -208,7 +208,7 @@ foreach ($ustmt->fetchAll(PDO::FETCH_ASSOC) as $u) {
     .og .exp:hover { background: rgba(142, 87, 254, .12); }
     .og .exp.open { transform: rotate(-90deg); background: rgba(142, 87, 254, .14); }
 
-    /* زیرردیفِ درختیِ کاربرانِ سازمان (full-width row) */
+    /* زیرردیف درختی کاربران سازمان (full-width row) */
     .ut-wrap {
       padding: 11px 24px 15px;
       background: linear-gradient(180deg, #faf9ff, #f4f0ff);
@@ -230,7 +230,7 @@ foreach ($ustmt->fetchAll(PDO::FETCH_ASSOC) as $u) {
     }
     .ut-item:hover { background: rgba(142, 87, 254, .10); }
     .ut-item + .ut-item { border-top: 1px dashed #e7e0fb; }
-    /* خطوطِ درختی */
+    /* خطوط درختی */
     .ut-branch { position: absolute; right: 0; top: 0; bottom: 0; width: 15px; border-right: 2px solid #d8ccf7; }
     .ut-item:last-child .ut-branch { bottom: calc(50% - 1px); }
     .ut-branch::after {
@@ -334,10 +334,10 @@ const USERS_BY_ORG = <?= json_encode($usersByOrg, JSON_UNESCAPED_UNICODE) ?>;
 const byId = {};
 ORGS.forEach(o => byId[o.id] = o);
 
-/* سازمان‌هایی که زیرردیفِ کاربرانشان باز است */
+/* سازمان‌هایی که زیرردیف کاربرانشان باز است */
 const expanded = new Set();
 
-/* rowDataِ گرید = سازمان‌ها + بعد از هر سازمانِ باز، یک ردیفِ full-widthِ «detail» */
+/* rowData گرید = سازمان‌ها + بعد از هر سازمان باز، یک ردیف full-width «detail» */
 function buildRows() {
   const out = [];
   ORGS.forEach(o => {
@@ -376,7 +376,7 @@ function cOrg(p) {
     </div>`;
 }
 
-/* رندرِ زیرردیفِ درختیِ کاربرانِ یک سازمان */
+/* رندر زیرردیف درختی کاربران یک سازمان */
 function cDetail(p) {
   const oid = p.data.orgId;
   const org = byId[oid];
@@ -459,12 +459,12 @@ const gridApi = agGrid.createGrid(document.getElementById('orgGrid'), {
   ],
   rowData: buildRows(),
   overlayNoRowsTemplate: '<div style="padding:2rem;color:#718096;font-weight:600;">سازمانی یافت نشد</div>',
-  // با تغییرِ مرتب‌سازی، زیرردیف‌ها جمع می‌شوند تا از سازمانِ خود جدا نیفتند
+  // با تغییر مرتب‌سازی، زیرردیف‌ها جمع می‌شوند تا از سازمان خود جدا نیفتند
   onSortChanged: () => { if (expanded.size) { expanded.clear(); gridApi.setGridOption('rowData', buildRows()); } }
 });
 
 document.getElementById('orgSearch').addEventListener('input', function () {
-  // هنگام جستجو زیرردیف‌های باز جمع می‌شوند تا ردیفِ detailِ بی‌صاحب نماند
+  // هنگام جستجو زیرردیف‌های باز جمع می‌شوند تا ردیف detail بی‌صاحب نماند
   if (expanded.size) { expanded.clear(); gridApi.setGridOption('rowData', buildRows()); }
   gridApi.setGridOption('quickFilterText', this.value);
 });

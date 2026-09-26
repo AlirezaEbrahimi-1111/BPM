@@ -73,11 +73,11 @@ try {
 
     $db->beginTransaction();
 
-    // 🔒 قفلِ ایمنی در برابر ارسالِ هم‌زمانِ دو درخواست (دابل‌کلیک یا دو تب):
-    // اول رکوردِ درخواست را با شرطِ status='pending' آپدیت می‌کنیم؛ فقط اولین
-    // درخواست rowCount()=1 می‌گیرد. بقیه rollback و خروج. بدونِ این، هر دو
-    // درخواست وضعیتِ tasks را عوض می‌کردند و دو رکوردِ task_history می‌ساختند
-    // (در حالتِ رد حتی می‌شد کار را به وضعیتِ اشتباه برگرداند).
+    // 🔒 قفل ایمنی در برابر ارسال هم‌زمان دو درخواست (دابل‌کلیک یا دو تب):
+    // اول رکورد درخواست را با شرط status='pending' آپدیت می‌کنیم؛ فقط اولین
+    // درخواست rowCount()=1 می‌گیرد. بقیه rollback و خروج. بدون این، هر دو
+    // درخواست وضعیت tasks را عوض می‌کردند و دو رکورد task_history می‌ساختند
+    // (در حالت رد حتی می‌شد کار را به وضعیت اشتباه برگرداند).
     if ($action === 'approve') {
         $guard = $db->prepare("UPDATE task_termination_requests SET status = 'approved', reviewed_at = NOW() WHERE id = ? AND status = 'pending'");
         $guard->execute([$request_id]);
@@ -134,7 +134,7 @@ try {
         $stmt = $db->prepare("UPDATE tasks SET status = ? WHERE id = ?");
         $stmt->execute([$previousStatus, $request['task_id']]);
 
-        // وضعیتِ رکوردِ درخواست + دلیلِ رد بالاتر (در قفلِ ایمنی) ثبت شد.
+        // وضعیت رکورد درخواست + دلیل رد بالاتر (در قفل ایمنی) ثبت شد.
 
         // تاریخچه
         $stmt = $db->prepare("

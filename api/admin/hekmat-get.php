@@ -1,7 +1,7 @@
 <?php
 /**
  * API: api/admin/hekmat-get.php
- * دریافتِ همه‌ی اطلاعاتِ صفحه‌ی مدیریتِ حکمتِ روزانه — فقط سوپرادمین (id=1)
+ * دریافت همه‌ی اطلاعات صفحه‌ی مدیریت حکمت روزانه — فقط سوپرادمین (id=1)
  *
  *   GET /api/admin/hekmat-get.php
  *   → {success, settings, quotes, recipients, preview, log}

@@ -1,10 +1,10 @@
 <?php
 /**
- * API: ری‌اکشنِ ایموجی روی یک پیام (تاگل)
+ * API: ری‌اکشن ایموجی روی یک پیام (تاگل)
  * POST /api/chat/react-message.php   body: { message_id: 45, emoji: '👍' }
  *
  * هر کاربر حداکثر یک ری‌اکشن روی هر پیام دارد: اگر همان ایموجی را دوباره
- * بفرستد، ری‌اکشن برداشته می‌شود؛ اگر ایموجیِ دیگری بفرستد، جایگزین می‌شود.
+ * بفرستد، ری‌اکشن برداشته می‌شود؛ اگر ایموجی دیگری بفرستد، جایگزین می‌شود.
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 
-// 🔒 فقط این چند ایموجی مجازند — هم برای سادگیِ UI، هم برای جلوگیری از ورودیِ دلخواه
+// 🔒 فقط این چند ایموجی مجازند — هم برای سادگی UI، هم برای جلوگیری از ورودی دلخواه
 const ALLOWED_REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
 try {

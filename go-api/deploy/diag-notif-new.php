@@ -1,6 +1,6 @@
 <?php
 /**
- * تشخیصِ یک‌باره: کدوم نوتیفیکیشن دقیقاً باعثِ اختلافِ new_count بینِ
+ * تشخیص یک‌باره: کدوم نوتیفیکیشن دقیقا باعث اختلاف new_count بین
  * PHP و Go شده؟ فقط GET می‌زنه، امن است.
  *
  *   php go-api/deploy/diag-notif-new.php <user_id>
@@ -36,8 +36,8 @@ $g = call("$base/go/api/notifications/new?since=0", $token);
 $pIds = array_column($p['notifications'] ?? [], 'id');
 $gIds = array_column($g['notifications'] ?? [], 'id');
 
-echo "PHP new_count={$p['new_count']} تعدادِ واقعیِ آرایه=" . count($pIds) . "\n";
-echo "GO  new_count={$g['new_count']} تعدادِ واقعیِ آرایه=" . count($gIds) . "\n\n";
+echo "PHP new_count={$p['new_count']} تعداد واقعی آرایه=" . count($pIds) . "\n";
+echo "GO  new_count={$g['new_count']} تعداد واقعی آرایه=" . count($gIds) . "\n\n";
 
 $onlyInGo  = array_diff($gIds, $pIds);
 $onlyInPhp = array_diff($pIds, $gIds);
@@ -46,7 +46,7 @@ echo "فقط در GO (نمایش داده می‌شه ولی PHP فیلترش ک
 echo "فقط در PHP: " . implode(',', $onlyInPhp) . "\n\n";
 
 foreach (array_merge($onlyInGo, $onlyInPhp) as $id) {
-    // خودِ ردیف رو مستقیم از دیتابیس بخون تا کامل ببینیمش
+    // خود ردیف رو مستقیم از دیتابیس بخون تا کامل ببینیمش
     $stmt = $db->prepare("SELECT id, related_type, related_id, bypass_self_filter, message FROM notifications WHERE id = ?");
     $stmt->execute([$id]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);

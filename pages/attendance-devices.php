@@ -665,9 +665,9 @@ if (!hasPermission($__me, 'view_org_settings')) {
         function devAction(id, action) {
             const run = async function () {
                 try {
-                    // 🔒 عمداً رویِ PHP می‌ماند: این تابع عمومی approve/reject/delete را
+                    // 🔒 عمدا روی PHP می‌ماند: این تابع عمومی approve/reject/delete را
                     // پوشش می‌دهد، ولی go-api فقط delete/relabel را پورت کرده (approve/
-                    // reject به ارسالِ پیامکِ Notification::create وابسته‌اند که پورت نشده).
+                    // reject به ارسال پیامک Notification::create وابسته‌اند که پورت نشده).
                     const d = await api('../api/attendance/devices.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

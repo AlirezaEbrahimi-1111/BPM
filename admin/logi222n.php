@@ -2,7 +2,7 @@
 require_once 'config/database.php';
 require_once 'includes/auth.php';
 
-// اگر قبلاً لاگین کرده، ریدایرکت کن
+// اگر قبلا لاگین کرده، ریدایرکت کن
 if (isset($_COOKIE['auth_token'])) {
     header('Location: admin/dashboard.php');
     exit;
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header('Location: admin/dashboard.php');
         exit;
     } else {
-        recordFailedLogin($ip, $db);  // ورود ناموفق → ثبتِ تلاش
+        recordFailedLogin($ip, $db);  // ورود ناموفق → ثبت تلاش
         $error = $result['message'];
     }
 }

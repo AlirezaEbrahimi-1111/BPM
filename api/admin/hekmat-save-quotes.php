@@ -1,7 +1,7 @@
 <?php
 /**
  * API: api/admin/hekmat-save-quotes.php
- * جایگزینیِ کاملِ لیستِ حکمت‌ها — هر خط یک جمله (paste دسته‌جمعی)
+ * جایگزینی کامل لیست حکمت‌ها — هر خط یک جمله (paste دسته‌جمعی)
  *
  *   POST /api/admin/hekmat-save-quotes.php
  *   body: {text: "جمله اول\nجمله دوم\n..."}

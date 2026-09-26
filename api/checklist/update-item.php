@@ -76,8 +76,8 @@ try {
         exit;
     }
 
-    // 🔒 خط قرمز: ارجاع باید به کاربر/واحدِ همین سازمان باشد (هم‌راستا با save.php)،
-    // وگرنه می‌شود آیتم را به کاربرِ سازمان کاملاً دیگری ارجاع داد
+    // 🔒 خط قرمز: ارجاع باید به کاربر/واحد همین سازمان باشد (هم‌راستا با save.php)،
+    // وگرنه می‌شود آیتم را به کاربر سازمان کاملا دیگری ارجاع داد
     if ($has_assignee && $assignee_type === 'user') {
         $chk = $db->prepare("SELECT id FROM users WHERE id = ? AND organization_id = ?");
         $chk->execute([$assignee_value, $task['organization_id']]);
@@ -105,7 +105,7 @@ try {
         $stmt = $db->prepare("UPDATE task_checklist_items SET title = ?, description = ? WHERE id = ?");
         $stmt->execute([$title, $description, $item_id]);
     }
-    // 🆕 اگر ارجاع تغییر کرده و مقصدِ جدید معتبر است → اعلان بفرست
+    // 🆕 اگر ارجاع تغییر کرده و مقصد جدید معتبر است → اعلان بفرست
     if ($has_assignee) {
         try {
             $oldType  = $row['assignee_type']  ?? null;

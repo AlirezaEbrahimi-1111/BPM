@@ -18,11 +18,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
-    <!-- این صفحه header.php را include نمی‌کند (یک برگهٔ چاپیِ بدونِ نوار بالا)
+    <!-- این صفحه header.php را include نمی‌کند (یک برگهٔ چاپی بدون نوار بالا)
          پس faDigits/toFa و بقیهٔ کمکی‌های سراسری را باید خودش مستقیم بگیرد. -->
     <script src="<?= asset('/assets/js/common-bundle.js') ?>"></script>
     <style>
-        /* کاغذِ چاپ: A4 افقی */
+        /* کاغذ چاپ: A4 افقی */
         @page { size: A4 landscape; margin: 8mm; }
 
         body {
@@ -38,7 +38,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             justify-content: space-between;
         }
 
-        /* پیش‌نمایشِ برگه با نسبتِ ۳:۲٫۱ (A4 افقی) */
+        /* پیش‌نمایش برگه با نسبت ۳:۲٫۱ (A4 افقی) */
         .sheet {
             width: 1123px;
             max-width: 100%;
@@ -153,17 +153,17 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         /* سربرگ: ستون خالی | عنوان | (برچسب | مقدار) در دو ردیف — همه در همین جدول
-           تا حاشیه‌ها هم‌تراز بمانند (جدولِ تودرتو خط‌های اضافه می‌ساخت). */
+           تا حاشیه‌ها هم‌تراز بمانند (جدول تودرتو خط‌های اضافه می‌ساخت). */
         .inv-top { table-layout: fixed; }
         .inv-top .hc-empty { width: 210px; }
         .inv-top .mlbl { width: 86px; }
         .inv-top .mval { width: 124px; }
 
-        /* شبکهٔ ۶ ستونیِ یکسان برای «مشخصات فروشنده» و «مشخصات خریدار» */
+        /* شبکهٔ ۶ ستونی یکسان برای «مشخصات فروشنده» و «مشخصات خریدار» */
         .grid6 { table-layout: fixed; }
         .grid6 col.c-lbl  { width: 124px; }
-        .grid6 col.c-nlbl { width: 150px; }  /* برچسبِ «نام شخص حقیقی و حقوقی» ~۲۰٪ بزرگ‌تر */
-        .grid6 col.c-nval { width: 204px; }  /* فضای مقابلِ نام ~۲۵٪ کوچک‌تر */
+        .grid6 col.c-nlbl { width: 150px; }  /* برچسب «نام شخص حقیقی و حقوقی» ~۲۰٪ بزرگ‌تر */
+        .grid6 col.c-nval { width: 204px; }  /* فضای مقابل نام ~۲۵٪ کوچک‌تر */
         .grid6 col.c-code { width: 133px; }  /* آزادشده به کد اقتصادی/شناسه ملی/کد پستی/شهر/تلفن اضافه شد */
 
         /* عرض ستون‌های جدول اقلام مطابق فرم رسمی */
@@ -183,7 +183,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         .pay-terms .pt-h { font-weight: 700; margin-inline-end: 16px; }
         .pay-note { font-size: 11px; }
 
-        /* بخش پایین: دو ستونِ «شرایط و نحوه فروش» و «نام شرکت» هم‌اندازه */
+        /* بخش پایین: دو ستون «شرایط و نحوه فروش» و «نام شرکت» هم‌اندازه */
         .pay-blk { table-layout: fixed; }
         .pay-blk td { width: 50%; }
 
@@ -219,8 +219,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             color: #666;
         }
 
-        /* هاورِ استانداردِ سایت (تینتِ بنفشِ نرم) — .btn-outline-secondary اصلاً
-           هاورِ اختصاصی نداشت (پیش‌فرضِ خاکستریِ بوت‌استرپ می‌ماند) */
+        /* هاور استاندارد سایت (تینت بنفش نرم) — .btn-outline-secondary اصلا
+           هاور اختصاصی نداشت (پیش‌فرض خاکستری بوت‌استرپ می‌ماند) */
         .btn-outline-primary:hover,
         .btn-outline-secondary:hover,
         .btn-outline-primary:active,
@@ -280,7 +280,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <script>
         const API = '/crm/api';
         const INV_ID = <?= $invId ?>;
-        // ?print=1 → بعد از نمایشِ فاکتور، پنجرهٔ چاپ خودکار باز شود (دکمهٔ پرینترِ فهرست).
+        // ?print=1 → بعد از نمایش فاکتور، پنجرهٔ چاپ خودکار باز شود (دکمهٔ پرینتر فهرست).
         const AUTO_PRINT = new URLSearchParams(location.search).get('print') === '1';
 
         function tok() {

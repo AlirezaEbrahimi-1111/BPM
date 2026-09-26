@@ -1,11 +1,11 @@
 """
-ai-service (FastAPI) — طبقِ بندِ ۲.۱/۱۹ سندِ docs/ai-assistant/spec-v1.md.
+ai-service (FastAPI) — طبق بند ۲.۱/۱۹ سند docs/ai-assistant/spec-v1.md.
 
-⚠️ این سرویس هرگز نباید مستقیماً از اینترنت/مرورگر در دسترس باشد — فقط
-از سمتِ api/ai-assistant/ask.php (سرور-به-سرور، با HMAC) فراخوانی می‌شود.
-در استقرار، رویِ یک پورتِ داخلی (مثلاً 127.0.0.1:8100) بایند شود.
+⚠️ این سرویس هرگز نباید مستقیما از اینترنت/مرورگر در دسترس باشد — فقط
+از سمت api/ai-assistant/ask.php (سرور-به-سرور، با HMAC) فراخوانی می‌شود.
+در استقرار، روی یک پورت داخلی (مثلا 127.0.0.1:8100) بایند شود.
 
-اجرایِ محلی برایِ تست:
+اجرای محلی برای تست:
     uvicorn main:app --host 127.0.0.1 --port 8100
 """
 
@@ -40,11 +40,11 @@ class AskPayload(BaseModel):
 
 def verify_internal_signature(raw_body: bytes, timestamp: str, signature: str) -> None:
     """
-    دقیقاً هم‌ارزِ منطقِ امضایِ ask.php:
+    دقیقا هم‌ارز منطق امضای ask.php:
         hash_hmac('sha256', $timestamp . '.' . $body, $secret)
-    برایِ جلوگیری از عدمِ تطابق، محاسبه رویِ بایت خام انجام می‌شود (نه
-    decode/encode)، تا کاراکترهایِ فارسیِ UTF-8 دقیقاً همان بایت‌هایِ
-    امضاشده در سمتِ PHP بمانند.
+    برای جلوگیری از عدم تطابق، محاسبه روی بایت خام انجام می‌شود (نه
+    decode/encode)، تا کاراکترهای فارسی UTF-8 دقیقا همان بایت‌های
+    امضاشده در سمت PHP بمانند.
     """
     if not cfg.AI_SERVICE_SECRET:
         logger.error("AI_SERVICE_SECRET is not configured")
@@ -53,7 +53,7 @@ def verify_internal_signature(raw_body: bytes, timestamp: str, signature: str) -
     try:
         ts = int(timestamp)
     except (TypeError, ValueError):
-        raise HTTPException(status_code=401, detail="هدرِ زمان نامعتبر است")
+        raise HTTPException(status_code=401, detail="هدر زمان نامعتبر است")
 
     if abs(time.time() - ts) > cfg.SIGNATURE_WINDOW_SECONDS:
         raise HTTPException(status_code=401, detail="درخواست منقضی شده است")
@@ -62,7 +62,7 @@ def verify_internal_signature(raw_body: bytes, timestamp: str, signature: str) -
     expected = hmac.new(cfg.AI_SERVICE_SECRET.encode("utf-8"), message, hashlib.sha256).hexdigest()
 
     if not hmac.compare_digest(expected, signature or ""):
-        raise HTTPException(status_code=401, detail="امضایِ نامعتبر")
+        raise HTTPException(status_code=401, detail="امضای نامعتبر")
 
 
 @app.post("/ask")

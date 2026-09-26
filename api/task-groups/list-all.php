@@ -33,7 +33,7 @@ try {
     $stmt->execute([$org_id]);
     $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // علامت‌گذاری اینکه کدام گروه‌ها متعلق به خودِ مدیر است (قابل ویرایش)
+    // علامت‌گذاری اینکه کدام گروه‌ها متعلق به خود مدیر است (قابل ویرایش)
     foreach ($groups as &$g) {
         $g['can_edit'] = ((int)$g['created_by'] === (int)$user_id);
     }

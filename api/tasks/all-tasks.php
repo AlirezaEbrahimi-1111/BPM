@@ -36,7 +36,7 @@ try {
 
     $tasks = $taskManager->getAllTasks($user_id, $filters);
 
-    // 🆕 پیش‌واکشیِ دسته‌ایِ تاریخ‌های تکمیل برای کارهای دوره‌ای (بدونِ کوئریِ
+    // 🆕 پیش‌واکشی دسته‌ای تاریخ‌های تکمیل برای کارهای دوره‌ای (بدون کوئری
     // جدا به‌ازای هر کار) — برای maybeStartNextPeriod/enrichTaskDates
     $continuousIds = [];
     foreach ($tasks as $t) {
@@ -45,9 +45,9 @@ try {
     $completionMap = pe_preloadCompletionDates($db, $continuousIds);
 
     foreach ($tasks as &$task) {
-        // 🔒 رفع ناهماهنگی: این برگشت‌ازِ period_done به دوره‌ی بعدی قبلاً
+        // 🔒 رفع ناهماهنگی: این برگشت‌از period_done به دوره‌ی بعدی قبلا
         // فقط در overview.php/delegated-tasks.php انجام می‌شد، نه اینجا —
-        // یعنی وضعیتِ یک کارِ تکرارشونده بسته به صفحه‌ای که کاربر باز
+        // یعنی وضعیت یک کار تکرارشونده بسته به صفحه‌ای که کاربر باز
         // می‌کرد فرق داشت. حالا همه‌جا یکسان اجرا می‌شود.
         if (($task['task_type'] ?? '') === 'continuous' && !empty($task['start_date'])) {
             maybeStartNextPeriod($db, $task, $user_id, $holidays, $completionMap);

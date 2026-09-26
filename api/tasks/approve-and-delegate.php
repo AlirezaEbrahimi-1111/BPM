@@ -74,7 +74,7 @@ try {
     }
 
     // بررسی کاربر مقصد
-    // 🔒 خط قرمز: کاربر مقصد باید از همان سازمانِ کار باشد
+    // 🔒 خط قرمز: کاربر مقصد باید از همان سازمان کار باشد
     $stmt = $db->prepare("SELECT id, organization_id, CONCAT(first_name, ' ', last_name) AS full_name FROM users WHERE id = ? AND is_active = 1");
     $stmt->execute([$input['to_user_id']]);
     $toUser = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -126,9 +126,9 @@ try {
         ? $existingNotes . "\n---\n" . $delegationNoteText
         : $delegationNoteText;
 
-    // status مستقیماً 'not_started' ست می‌شه (نه 'delegated') — چون هرجایِ
-    // دیگه‌یِ سیستم (دکمه‌ی شروع، تیکِ چک‌لیست، فیلترها) از قبل این دو رو
-    // یکسان می‌دونست؛ خودِ رخدادِ ارجاع در task_history (action='delegated')
+    // status مستقیما 'not_started' ست می‌شه (نه 'delegated') — چون هرجای
+    // دیگه‌ی سیستم (دکمه‌ی شروع، تیک چک‌لیست، فیلترها) از قبل این دو رو
+    // یکسان می‌دونست؛ خود رخداد ارجاع در task_history (action='delegated')
     // و delegation_notes ثبت می‌مونه، پس چیزی گم نمی‌شه
     $sql = "UPDATE tasks SET
                 assignee_id = ?,
@@ -165,7 +165,7 @@ try {
             'sms_pattern' => 'task_approved',
             'sms_args' => [$task['title'] ?? 'نامشخص', $currentUserName],
             // 🔒 چند خط بالاتر assignee_id همین الان به to_user_id تغییر کرد؛
-            // چکِ self-notificationِ پیش‌فرض این رو با ارجاع‌دادن به خودِ
+            // چک self-notification پیش‌فرض این رو با ارجاع‌دادن به خود
             // creator اشتباه می‌گرفت و بی‌صدا نوتیف رو حذف می‌کرد
             'skip_self_check' => true
         ]);

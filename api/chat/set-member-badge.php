@@ -1,13 +1,13 @@
 <?php
 /**
- * API: نمایش/عدم‌نمایشِ بجِ «مدیر» برایِ یک عضوِ گروه
+ * API: نمایش/عدم‌نمایش بج «مدیر» برای یک عضو گروه
  * POST /api/chat/set-member-badge.php
  *   body: { conversation_id, user_id, show_badge: true|false }
  *
- * 🔒 این بج کاملاً مستقل از role/permissionsِ واقعیه — هر عضوی (چه مدیرِ
- * واقعی، چه عضوِ عادی) می‌تونه این بج رو داشته باشه یا نداشته باشه، بدونِ
- * اینکه هیچ اختیارِ خاصی (پین/افزودن‌عضو/حذف‌عضو/عکس) بگیره یا از دست بده.
- * دسترسی: فقط سازنده‌ی گروه — مثلِ تنظیمِ اختیاراتِ واقعی.
+ * 🔒 این بج کاملا مستقل از role/permissions واقعیه — هر عضوی (چه مدیر
+ * واقعی، چه عضو عادی) می‌تونه این بج رو داشته باشه یا نداشته باشه، بدون
+ * اینکه هیچ اختیار خاصی (پین/افزودن‌عضو/حذف‌عضو/عکس) بگیره یا از دست بده.
+ * دسترسی: فقط سازنده‌ی گروه — مثل تنظیم اختیارات واقعی.
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -63,7 +63,7 @@ try {
 
     if ($targetUserId === (int) $conv['created_by']) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'سازنده‌ی گروه همیشه بجِ «سازنده‌ی گروه» را دارد']);
+        echo json_encode(['success' => false, 'message' => 'سازنده‌ی گروه همیشه بج «سازنده‌ی گروه» را دارد']);
         exit;
     }
 
@@ -71,7 +71,7 @@ try {
     $stmt->execute([$conversationId, $targetUserId]);
     if (!$stmt->fetch()) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'این کاربر عضوِ گروه نیست']);
+        echo json_encode(['success' => false, 'message' => 'این کاربر عضو گروه نیست']);
         exit;
     }
 

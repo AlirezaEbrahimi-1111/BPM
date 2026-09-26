@@ -1,6 +1,6 @@
 <?php
 /**
- * API: دریافتِ پیام‌های یک گفتگو (صفحه‌بندی‌شده)
+ * API: دریافت پیام‌های یک گفتگو (صفحه‌بندی‌شده)
  * GET /api/chat/messages.php?conversation_id=1&before_id=&limit=30
  */
 
@@ -41,7 +41,7 @@ try {
         exit;
     }
 
-    // 🔒 فقط شرکت‌کننده‌های همین گفتگو اجازه‌ی دیدنِ پیام‌ها را دارند
+    // 🔒 فقط شرکت‌کننده‌های همین گفتگو اجازه‌ی دیدن پیام‌ها را دارند
     $stmt = $db->prepare("SELECT id FROM chat_participants WHERE conversation_id = ? AND user_id = ?");
     $stmt->execute([$conversationId, $user_id]);
     if (!$stmt->fetch()) {
@@ -69,14 +69,14 @@ try {
     $params = [$user_id, $conversationId];
 
     if ($afterId > 0) {
-        // ✅ حالتِ polling — پیام‌های جدیدترِ از afterId (صعودی، بدونِ نیاز به reverse)
+        // ✅ حالت polling — پیام‌های جدیدتر از afterId (صعودی، بدون نیاز به reverse)
         $sql .= " AND m.id > ? ORDER BY m.id ASC LIMIT " . $limit;
         $params[] = $afterId;
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } elseif ($aroundId > 0) {
-        // ✅ حالتِ «پرش به یک پیامِ خاص» — نیمی از limit قبل و نیمی بعد از آن پیام
+        // ✅ حالت «پرش به یک پیام خاص» — نیمی از limit قبل و نیمی بعد از آن پیام
         $half = (int) floor($limit / 2);
 
         $beforeSql = $sql . " AND m.id <= ? ORDER BY m.id DESC LIMIT " . ($half + 1);
@@ -108,8 +108,8 @@ try {
 
         $replyTo = null;
         if ($r['reply_to_message_id']) {
-            // پیامِ اصلی ممکن است بعداً «حذف برای همه» شده باشد؛ رفرنسِ ستون هنوز
-            // برقرار است (ON DELETE SET NULL فقط برای حذفِ کاملِ ردیف اعمال می‌شود)
+            // پیام اصلی ممکن است بعدا «حذف برای همه» شده باشد؛ رفرنس ستون هنوز
+            // برقرار است (ON DELETE SET NULL فقط برای حذف کامل ردیف اعمال می‌شود)
             $replyTo = [
                 'id'         => (int) $r['reply_to_message_id'],
                 'user_name'  => trim(($r['reply_first_name'] ?? '') . ' ' . ($r['reply_last_name'] ?? '')),
@@ -140,7 +140,7 @@ try {
         ];
     }
 
-    // ─── پیوست‌های همین دسته از پیام‌ها (یک کوئریِ دسته‌ای) ───
+    // ─── پیوست‌های همین دسته از پیام‌ها (یک کوئری دسته‌ای) ───
     if ($messageIds) {
         $placeholders = implode(',', array_fill(0, count($messageIds), '?'));
         $stmt = $db->prepare("
@@ -164,7 +164,7 @@ try {
         }
         unset($m);
 
-        // ─── ری‌اکشن‌هایِ همین دسته از پیام‌ها (یک کوئریِ دسته‌ای) ───
+        // ─── ری‌اکشن‌های همین دسته از پیام‌ها (یک کوئری دسته‌ای) ───
         $stmt = $db->prepare("
             SELECT message_id, emoji, COUNT(*) AS cnt, SUM(user_id = ?) AS mine
             FROM chat_message_reactions
@@ -186,12 +186,12 @@ try {
         unset($m);
     }
 
-    // ─── بروزرسانیِ آخرین‌پیامِ‌خوانده‌شده: فقط در حالتِ polling (after_id) ───
-    // بارگذاریِ اولیه/اسکرول‌به‌بالا (before_id)/پرش (around_id) دیگر خودکار
-    // «خوانده» حساب نمی‌شوند — چون صرفِ لود شدن به‌معنیِ دیده‌شدن نیست؛ خواندنِ
-    // واقعی از رویِ اسکرولِ کاربر (IntersectionObserver در chat.php) و صدا زدنِ
-    // api/chat/mark-read.php محاسبه می‌شود. فقط پیامِ تازه‌رسیده حینِ polling
-    // (یعنی گفتگو همین الان باز و در حالِ دیده‌شدن است) همچنان فوری خوانده‌شده می‌شود.
+    // ─── بروزرسانی آخرین‌پیام‌خوانده‌شده: فقط در حالت polling (after_id) ───
+    // بارگذاری اولیه/اسکرول‌به‌بالا (before_id)/پرش (around_id) دیگر خودکار
+    // «خوانده» حساب نمی‌شوند — چون صرف لود شدن به‌معنی دیده‌شدن نیست؛ خواندن
+    // واقعی از روی اسکرول کاربر (IntersectionObserver در chat.php) و صدا زدن
+    // api/chat/mark-read.php محاسبه می‌شود. فقط پیام تازه‌رسیده حین polling
+    // (یعنی گفتگو همین الان باز و در حال دیده‌شدن است) همچنان فوری خوانده‌شده می‌شود.
     if ($afterId > 0 && $messageIds) {
         $maxId = max($messageIds);
         $db->prepare("

@@ -106,7 +106,7 @@ class TestRunner
     private int $passed = 0;
     private int $failed = 0;
 
-    /** بارگذاری یک مجموعه‌تست از یک آرایه (برای اسکریپت‌های تستِ مستقل/موقت) */
+    /** بارگذاری یک مجموعه‌تست از یک آرایه (برای اسکریپت‌های تست مستقل/موقت) */
     public function loadFromArray(array $suite): void
     {
         if (!isset($suite['tests'])) return;

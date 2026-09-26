@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 
-// فقط سوپرادمین — این صفحه پیام‌هایِ خطایِ داخلیِ سرور (مسیرها، جزئیاتِ
-// فنی) رو نشون می‌ده که نباید دستِ کاربرِ عادی باشه.
+// فقط سوپرادمین — این صفحه پیام‌های خطای داخلی سرور (مسیرها، جزئیات
+// فنی) رو نشون می‌ده که نباید دست کاربر عادی باشه.
 if ((int) $__me['id'] !== 1) {
     header('Location: /pages/dashboard.php');
     exit;
@@ -14,7 +14,7 @@ if ((int) $__me['id'] !== 1) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشاهده‌ی لاگِ خطا - سامانه مدیریت فرآیندها</title>
+    <title>مشاهده‌ی لاگ خطا - سامانه مدیریت فرآیندها</title>
 
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
@@ -24,9 +24,9 @@ if ((int) $__me['id'] !== 1) {
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
 
     <style>
-        /* توضیحِ مبتدی: این بخش فقط ظاهرِ همین صفحه‌ست — چیزیِ مشترک با
-           بقیه‌ی سایت رو عوض نمی‌کنه. رنگِ اصلیِ سایت (#8e57fe) و رنگِ
-           هاورِ استانداردِ سایت (feedback_hover_color_standard) این‌جا هم
+        /* توضیح مبتدی: این بخش فقط ظاهر همین صفحه‌ست — چیزی مشترک با
+           بقیه‌ی سایت رو عوض نمی‌کنه. رنگ اصلی سایت (#8e57fe) و رنگ
+           هاور استاندارد سایت (feedback_hover_color_standard) این‌جا هم
            رعایت شده. */
         .elog-toolbar {
             display: flex;
@@ -155,13 +155,13 @@ if ((int) $__me['id'] !== 1) {
 
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
-                <h1><i class="bi bi-terminal"></i> مشاهده‌ی لاگِ خطا</h1>
-                <p>خطاهای فنیِ خودِ اپِ BPM (سرورِ Apache) — فقط برایِ سوپرادمین</p>
+                <h1><i class="bi bi-terminal"></i> مشاهده‌ی لاگ خطا</h1>
+                <p>خطاهای فنی خود اپ BPM (سرور Apache) — فقط برای سوپرادمین</p>
             </div>
         </div>
 
         <div class="elog-toolbar">
-            <input type="text" class="form-control elog-search" id="elogSearch" placeholder="جست‌وجو در متنِ خطا...">
+            <input type="text" class="form-control elog-search" id="elogSearch" placeholder="جست‌وجو در متن خطا...">
             <div class="persian-datepicker-wrapper" id="dateFromWrap" data-restrict-past="-1">
                 <input type="text" class="persian-datepicker-input form-control" id="dateFrom" placeholder="از تاریخ" readonly>
                 <div class="persian-datepicker">
@@ -219,9 +219,9 @@ if ((int) $__me['id'] !== 1) {
 
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
     <script>
-        // توضیحِ مبتدی: این صفحه فقط یک API را صدا می‌زند
-        // (api/admin/error-log.php) و نتیجه را لیست می‌کند — منطقِ اصلی
-        // (خواندن/فیلترِ فایلِ لاگ) سمتِ سرور است، این‌جا فقط نمایشه.
+        // توضیح مبتدی: این صفحه فقط یک API را صدا می‌زند
+        // (api/admin/error-log.php) و نتیجه را لیست می‌کند — منطق اصلی
+        // (خواندن/فیلتر فایل لاگ) سمت سرور است، این‌جا فقط نمایشه.
         let range = {
             from: null,
             to: null
@@ -277,7 +277,7 @@ if ((int) $__me['id'] !== 1) {
             const status = document.getElementById('elogStatus');
 
             if (!data || data.success === false) {
-                list.innerHTML = '<div class="elog-empty">دریافتِ لاگ با خطا مواجه شد — دوباره تلاش کنید.</div>';
+                list.innerHTML = '<div class="elog-empty">دریافت لاگ با خطا مواجه شد — دوباره تلاش کنید.</div>';
                 status.textContent = '';
                 return;
             }
@@ -286,7 +286,7 @@ if ((int) $__me['id'] !== 1) {
                 status.textContent = data.message;
             } else {
                 status.textContent = data.truncated
-                    ? `${data.entries.length} خط نمایش داده شد (نتایجِ بیشتری هم هست — جست‌وجو را محدودتر کنید)`
+                    ? `${data.entries.length} خط نمایش داده شد (نتایج بیشتری هم هست — جست‌وجو را محدودتر کنید)`
                     : `${data.entries.length} خط نمایش داده شد`;
             }
 
@@ -305,8 +305,8 @@ if ((int) $__me['id'] !== 1) {
                 </div>
             `).join('');
 
-            // متنِ پیام رو با textContent می‌ذاریم (نه innerHTML) تا اگه خودِ
-            // پیامِ خطا حاویِ کاراکترهایِ HTMLی بود، به‌عنوانِ کد اجرا نشه.
+            // متن پیام رو با textContent می‌ذاریم (نه innerHTML) تا اگه خود
+            // پیام خطا حاوی کاراکترهای HTMLی بود، به‌عنوان کد اجرا نشه.
             const messages = list.querySelectorAll('.elog-message');
             data.entries.forEach((e, i) => {
                 messages[i].textContent = e.message;

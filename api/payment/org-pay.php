@@ -25,7 +25,7 @@ $me = $db->prepare("
 $me->execute([$user_id]);
 $me = $me->fetch(PDO::FETCH_ASSOC);
 
-// 🔒 تمدیدِ اشتراکِ سازمان یک تصمیمِ مالیِ سراسری است، نه چیزی که به
+// 🔒 تمدید اشتراک سازمان یک تصمیم مالی سراسری است، نه چیزی که به
 // زیرمجموعهٔ یک مدیر محدود شود؛ پس فقط supervisor/admin
 if (!isOrgWideRole($me)) {
     http_response_code(403);
@@ -48,7 +48,7 @@ if ($months < 1 || $months > 24) {
 $price_per_month = 200000;            // قیمت هر ماه؛ به دلخواه تغییر بده
 $amount = $price_per_month * $months;
 
-/* ── ساخت رکورد پرداختِ «در انتظار» ── */
+/* ── ساخت رکورد پرداخت «در انتظار» ── */
 $db->prepare(
     "INSERT INTO payments (organization_id, months, amount, status)
      VALUES (?, ?, ?, 'pending')"

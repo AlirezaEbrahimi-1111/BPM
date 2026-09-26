@@ -16,7 +16,7 @@ class TaskManager
     {
         try {
             if (empty($to_user_id) || (int)$to_user_id === (int)$actor_id) {
-                return; // گیرنده نامعتبر یا خودِ اقدام‌کننده → پیامک نفرست
+                return; // گیرنده نامعتبر یا خود اقدام‌کننده → پیامک نفرست
             }
             require_once __DIR__ . '/Notification.php';
             $notif = new Notification($this->db);
@@ -57,9 +57,9 @@ class TaskManager
                 'related_type' => 'task',
                 'related_id'   => $task['id'] ?? null,
                 'is_read'      => 0,
-                // گیرنده اینجا حتماً غیرِ اقدام‌کننده است (بالاتر چک شد)؛ ولی چون
+                // گیرنده اینجا حتما غیر اقدام‌کننده است (بالاتر چک شد)؛ ولی چون
                 // تکمیل/فاینالایز ممکن است assignee_id را روی همین گیرنده گذاشته
-                // باشد، self-check نوتیفیکیشن آن را اشتباهاً بلاک می‌کند.
+                // باشد، self-check نوتیفیکیشن آن را اشتباها بلاک می‌کند.
                 'skip_self_check' => true,
                 'sms_pattern'  => $pattern,
                 'sms_args'     => $args,
@@ -101,8 +101,8 @@ class TaskManager
                     return ['success' => false, 'message' => 'نمی‌توانید کار با تاریخ گذشته ایجاد کنید'];
                 }
                 // موعد فقط وقتی داده شده که کار به کسی ارجاع شده (بررسی‌شده در
-                // لایهٔ API)؛ کارِ شخصیِ بدونِ موعد باید deadline/original_deadline
-                // هم null بمونه — نه یک مقدارِ پیش‌فرضِ ۳۰ روزهٔ ساختگی
+                // لایهٔ API)؛ کار شخصی بدون موعد باید deadline/original_deadline
+                // هم null بمونه — نه یک مقدار پیش‌فرض ۳۰ روزهٔ ساختگی
                 $deadline = $data['due_date'];
                 // original_deadline همیشه برابر deadline است
                 $original_deadline = $deadline;
@@ -114,8 +114,8 @@ class TaskManager
                 }
             }
 
-            // 🔒 خط قرمز: مسئولِ کار باید از همان سازمانِ تعریف‌کننده باشد، وگرنه
-            // می‌شود کاری را مستقیماً به کاربرِ سازمانِ کاملاً دیگری واگذار کرد
+            // 🔒 خط قرمز: مسئول کار باید از همان سازمان تعریف‌کننده باشد، وگرنه
+            // می‌شود کاری را مستقیما به کاربر سازمان کاملا دیگری واگذار کرد
             if (!empty($data['assignee_id']) && (int)$data['assignee_id'] !== (int)$creator_id) {
                 $assigneeOrgStmt = $this->db->prepare("SELECT organization_id FROM users WHERE id = ?");
                 $assigneeOrgStmt->execute([$data['assignee_id']]);
@@ -222,11 +222,11 @@ class TaskManager
                 }
             }
 
-            // ✅ ویرایشِ «موعد انجام» کارِ مقطعی: چون «موعدِ مؤثر» در کلِ سیستم
+            // ✅ ویرایش «موعد انجام» کار مقطعی: چون «موعد مؤثر» در کل سیستم
             // max(due_date, deadline, original_deadline) است، اگر فقط due_date
-            // عوض شود و کوتاه‌تر باشد، deadline/original_deadlineِ قدیمیِ بزرگ‌تر
-            // در max() برنده می‌شوند و موعدِ اشتباه نمایش داده می‌شود. پس هر سه
-            // را هم‌راستا می‌کنیم. (فرم ویرایش فقط قبل از شروعِ کار باز است، پس
+            // عوض شود و کوتاه‌تر باشد، deadline/original_deadline قدیمی بزرگ‌تر
+            // در max() برنده می‌شوند و موعد اشتباه نمایش داده می‌شود. پس هر سه
+            // را هم‌راستا می‌کنیم. (فرم ویرایش فقط قبل از شروع کار باز است، پس
             // این‌جا هنوز تاریخچهٔ تأخیری نداریم که original_deadline لازم باشد.)
             if (isset($data['due_date']) && $data['due_date'] !== '' && $data['due_date'] !== null) {
                 $ttStmt = $this->db->prepare("SELECT task_type FROM tasks WHERE id = ?");
@@ -263,7 +263,7 @@ class TaskManager
         error_log("$label: " . print_r($data, true));
     }
     /**
-     * نهایی‌کردن «تکمیلِ بدون نیاز به تأیید».
+     * نهایی‌کردن «تکمیل بدون نیاز به تأیید».
      * - کار دوره‌ای (continuous): دوره را جلو می‌برد و کار را برای دوره بعد آماده می‌کند.
      * - کار عادی/مقطعی: مثل قبل فقط تکمیل می‌شود.
      */
@@ -299,11 +299,11 @@ class TaskManager
                 WHERE id = ?
             ")->execute([$today, $today, $task_id]);
 
-            // 🔒 ریستِ چک‌لیست برایِ دوره‌ی بعدی — بدونِ این، تیک‌هایِ همین دوره
-            // (که برایِ رسیدن به این‌جا لازم بود همه‌شون زده شده باشن، طبقِ قفلِ
-            // updateTaskStatus) تا ابد روی چک‌لیستِ دوره‌ی بعدی هم باقی می‌موندن
-            // و isChecklistLocked() هم تا خودترمیمیِ status (maybeStartNextPeriod)
-            // اشتباهاً قفلش نشون می‌داد
+            // 🔒 ریست چک‌لیست برای دوره‌ی بعدی — بدون این، تیک‌های همین دوره
+            // (که برای رسیدن به این‌جا لازم بود همه‌شون زده شده باشن، طبق قفل
+            // updateTaskStatus) تا ابد روی چک‌لیست دوره‌ی بعدی هم باقی می‌موندن
+            // و isChecklistLocked() هم تا خودترمیمی status (maybeStartNextPeriod)
+            // اشتباها قفلش نشون می‌داد
             $this->db->prepare("
                 UPDATE task_checklist_items
                 SET is_done = 0, done_at = NULL, done_by = NULL
@@ -350,12 +350,12 @@ class TaskManager
                 return ['success' => false, 'message' => 'کار یافت نشد'];
             }
 
-            // 🔒 قفلِ چک‌لیست: تا تیک‌نخوردنِ همهٔ آیتم‌ها، تکمیلِ کار مجاز نیست.
-            // برای تسکِ معمولی status==='completed' همین‌جا کامل می‌شود؛ برای مرحلهٔ
-            // روتین معمولاً از WorkflowManager::completeStep رد می‌شود (که خودش همین
+            // 🔒 قفل چک‌لیست: تا تیک‌نخوردن همهٔ آیتم‌ها، تکمیل کار مجاز نیست.
+            // برای تسک معمولی status==='completed' همین‌جا کامل می‌شود؛ برای مرحلهٔ
+            // روتین معمولا از WorkflowManager::completeStep رد می‌شود (که خودش همین
             // چک را دارد) اما اگر آن مسیر خطا بدهد، update-status.php به همین تابع با
             // status==='approved' برمی‌گردد — پس همین‌جا هم باید چک شود، وگرنه قفل با
-            // این مسیرِ جایگزین دور زده می‌شود.
+            // این مسیر جایگزین دور زده می‌شود.
             $isCompletionAttempt = ($status === 'completed') || ($task['is_workflow_task'] == 1 && $status === 'approved');
             if ($isCompletionAttempt) {
                 $clStmt = $this->db->prepare("SELECT COUNT(*) FROM task_checklist_items WHERE task_id = ? AND is_done = 0");
@@ -397,12 +397,12 @@ class TaskManager
 
                 // فقط اگر previousPerson دیگه‌ای باشه → pending_approval و نوتیفیکیشن
 
-                // ✅ کار دوره‌ای (continuous): دورهٔ امروز باید همین الان — روزی که واقعاً
+                // ✅ کار دوره‌ای (continuous): دورهٔ امروز باید همین الان — روزی که واقعا
                 // انجام شده — در task_history با action='completed' بسته شود، نه در لحظهٔ
                 // تأیید. وگرنه اگر تأیید یک روز (یا بیشتر) بعد اتفاق بیفتد، موتور دوره
                 // (period-engine → pe_completionDates) رکورد completed را با تاریخ تأیید
-                // می‌بیند و اشتباهاً دورهٔ همان روزِ تأیید را «انجام‌شده» حساب می‌کند؛
-                // نتیجه: دورهٔ واقعیِ آن روز قفل می‌ماند و کاربر نمی‌تواند تکمیلش بزند.
+                // می‌بیند و اشتباها دورهٔ همان روز تأیید را «انجام‌شده» حساب می‌کند؛
+                // نتیجه: دورهٔ واقعی آن روز قفل می‌ماند و کاربر نمی‌تواند تکمیلش بزند.
                 if ($task['task_type'] === 'continuous') {
                     $holidays = getHolidaySet($this->db);
                     $state    = pe_state($this->db, $task, $holidays);
@@ -455,8 +455,8 @@ class TaskManager
                         'related_id' => $task_id,
                         'is_read' => 0,
                         // درست بالاتر assignee_id را روی $previousPerson گذاشتیم؛ اگر او
-                        // همان creator باشد (حالتِ رایج)، self-check نوتیفیکیشن را
-                        // بلاک می‌کند. گیرنده قطعاً غیرِ اقدام‌کننده است، پس امن است.
+                        // همان creator باشد (حالت رایج)، self-check نوتیفیکیشن را
+                        // بلاک می‌کند. گیرنده قطعا غیر اقدام‌کننده است، پس امن است.
                         'skip_self_check' => true,
                         'sms_pattern' => 'completion_request',
                         'sms_args' => [($task['title'] ?? 'نامشخص'), $performerName],
@@ -502,7 +502,7 @@ class TaskManager
             //    مرحله «فعال» باشه (نه pending)، و وضعیت مجاز
             if (!$hasAccess && $task['is_workflow_task'] == 1) {
                 try {
-                    // 🔒 ابتدا مطمئن شو مرحلهٔ این تسک واقعاً active است.
+                    // 🔒 ابتدا مطمئن شو مرحلهٔ این تسک واقعا active است.
                     //    (جلوگیری از عمل روی مرحله‌ای که هنوز نوبتش نرسیده)
                     $stepStmt = $this->db->prepare("
                         SELECT wis.status AS step_status, ws.activity_section
@@ -671,15 +671,15 @@ class TaskManager
                 return ['success' => false, 'message' => 'کار تکمیل شده قابل ارجاع نیست'];
             }
 
-            // 🆕 کارِ مقطعیِ بدونِ موعد (خودی) وقتی به کسِ دیگه‌ای ارجاع داده
+            // 🆕 کار مقطعی بدون موعد (خودی) وقتی به کس دیگه‌ای ارجاع داده
             // می‌شه، باید همین حالا یک موعد براش تعیین بشه.
             //
-            // ⚠️ باگِ قبلی: این گیت فقط ستونِ due_date را می‌دید. اما «تمدید موعد»
-            // (request-deadline.php / approve-deadline.php) فقط ستونِ deadline
+            // ⚠️ باگ قبلی: این گیت فقط ستون due_date را می‌دید. اما «تمدید موعد»
+            // (request-deadline.php / approve-deadline.php) فقط ستون deadline
             // (و گاهی original_deadline) را جلو می‌برد و due_date را دست‌نخورده
             // می‌گذارد. پس کاری که موعدش تازه با «تمدید موعد» تعیین شده بود،
-            // این‌جا هنوز «بدونِ موعد» شمرده می‌شد و ارجاعش را می‌بست.
-            // موعدِ مؤثر = بزرگ‌ترینِ سه ستونِ تاریخ — دقیقاً همان منطقِ
+            // این‌جا هنوز «بدون موعد» شمرده می‌شد و ارجاعش را می‌بست.
+            // موعد مؤثر = بزرگ‌ترین سه ستون تاریخ — دقیقا همان منطق
             // enrichTaskDates() در includes/task-dates-helper.php.
             $effective_due = null;
             foreach (['due_date', 'deadline', 'original_deadline'] as $f) {
@@ -695,17 +695,17 @@ class TaskManager
                 return ['success' => false, 'message' => 'این کار موعد ندارد — برای ارجاع، ابتدا یک موعد تعیین کنید'];
             }
 
-            // 🆕 کارِ مقطعیِ عقب‌افتاده قابلِ ارجاع نیست — چون تریگرِ دیتابیس
-            // (چند خط پایین‌تر) هر تلاش برایِ ثبتِ due_date به تاریخِ گذشته را
-            // رد می‌کند، ارجاعِ چنین کاری بی‌سروصدا با همان موعدِ گذشته می‌ماند
-            // و هیچ‌وقت واقعاً روی زمانِ درست نمی‌شینه. باید اول موعد تمدید بشه
-            // (فرآیندِ جداگانه‌یِ request-deadline.php). فقط مقطعی، چون
-            // دوره‌ای/روتین از موتورِ عقب‌افتادگیِ متفاوتی استفاده می‌کنن
-            // (overdue_periods / مرحله‌یِ active)، نه این سه ستون.
+            // 🆕 کار مقطعی عقب‌افتاده قابل ارجاع نیست — چون تریگر دیتابیس
+            // (چند خط پایین‌تر) هر تلاش برای ثبت due_date به تاریخ گذشته را
+            // رد می‌کند، ارجاع چنین کاری بی‌سروصدا با همان موعد گذشته می‌ماند
+            // و هیچ‌وقت واقعا روی زمان درست نمی‌شینه. باید اول موعد تمدید بشه
+            // (فرآیند جداگانه‌ی request-deadline.php). فقط مقطعی، چون
+            // دوره‌ای/روتین از موتور عقب‌افتادگی متفاوتی استفاده می‌کنن
+            // (overdue_periods / مرحله‌ی active)، نه این سه ستون.
             //
-            // 🆕 استثنا: ارجاع به خودِ تعریف‌کننده‌ی کار مسدود نمی‌شه — چون
+            // 🆕 استثنا: ارجاع به خود تعریف‌کننده‌ی کار مسدود نمی‌شه — چون
             // تعریف‌کننده خودش می‌تونه بلافاصله موعد رو تمدید کنه، پس این
-            // قفل این‌جا فایده‌ای نداره و فقط مانعِ یک گردشِ کارِ طبیعی می‌شه.
+            // قفل این‌جا فایده‌ای نداره و فقط مانع یک گردش کار طبیعی می‌شه.
             if (
                 $task['task_type'] === 'periodic'
                 && !empty($effective_due)
@@ -715,15 +715,15 @@ class TaskManager
                 return ['success' => false, 'code' => 'overdue_periodic', 'message' => 'موعد این کار گذشته است — امکان ارجاع نیست. ابتدا موعد کار را تمدید کنید'];
             }
 
-            // اگر ارجاع‌دهنده موعدِ جدیدی نداده ولی کار از قبل موعدِ مؤثر دارد،
+            // اگر ارجاع‌دهنده موعد جدیدی نداده ولی کار از قبل موعد مؤثر دارد،
             // همان را به‌عنوان due_date تثبیت کن تا بعد از ارجاع، جدول‌ها /
             // فیلترهای تاریخ / مرتب‌سازی‌هایی که مستقیم due_date را می‌خوانند
             // هم موعد را ببینند و سه ستون دوباره هم‌راستا شوند.
             //
-            // ⚠️ فقط اگر موعدِ مؤثر گذشته نباشد: تریگرِ check_task_date_before_update
-            // روی جدولِ tasks هر تغییرِ due_date به تاریخِ گذشته را رد می‌کند و
-            // کلِ ارجاع fail می‌شود. اگر گذشته بود، due_date دست‌نخورده می‌ماند
-            // (deadline/original_deadline خودشان موعدِ مؤثر را نگه می‌دارند).
+            // ⚠️ فقط اگر موعد مؤثر گذشته نباشد: تریگر check_task_date_before_update
+            // روی جدول tasks هر تغییر due_date به تاریخ گذشته را رد می‌کند و
+            // کل ارجاع fail می‌شود. اگر گذشته بود، due_date دست‌نخورده می‌ماند
+            // (deadline/original_deadline خودشان موعد مؤثر را نگه می‌دارند).
             if (empty($due_date) && !empty($effective_due) && $effective_due >= date('Y-m-d')) {
                 $due_date = $effective_due;
             }
@@ -739,8 +739,8 @@ class TaskManager
                 return ['success' => false, 'message' => 'کاربر مقصد یافت نشد'];
             }
 
-            // 🔒 خط قرمز: کاربر مقصد باید از همان سازمانِ کار باشد، وگرنه یک
-            // کار می‌تواند به کاربرِ سازمانِ کاملاً دیگری ارجاع داده شود
+            // 🔒 خط قرمز: کاربر مقصد باید از همان سازمان کار باشد، وگرنه یک
+            // کار می‌تواند به کاربر سازمان کاملا دیگری ارجاع داده شود
             $orgStmt = $this->db->prepare("SELECT organization_id FROM users WHERE id = ?");
             $orgStmt->execute([$to_user_id]);
             $toUserOrg = $orgStmt->fetchColumn();
@@ -752,8 +752,8 @@ class TaskManager
             $new_notes = $task['delegation_notes'] ?
                 $task['delegation_notes'] . "\n---\n" . $notes : $notes;
 
-            // بروزرسانی کار — status مستقیماً 'not_started' می‌شه (نه
-            // 'delegated')؛ خودِ رخدادِ ارجاع چند خط پایین‌تر با addTaskHistory
+            // بروزرسانی کار — status مستقیما 'not_started' می‌شه (نه
+            // 'delegated')؛ خود رخداد ارجاع چند خط پایین‌تر با addTaskHistory
             // (action='delegated') و همین‌جا با delegation_notes ثبت می‌مونه
             if (!empty($due_date)) {
                 $sql = "UPDATE tasks SET assignee_id = ?, status = 'not_started', delegation_notes = ?, due_date = ?, updated_at = NOW() WHERE id = ?";
@@ -825,7 +825,7 @@ class TaskManager
             $user = $stmt->fetch();
 
             $isCreator = ($task['creator_id'] == $user_id);
-            // 🔒 خط قرمز: اختیار «مدیر» فقط داخل همان سازمانِ کار معتبر است
+            // 🔒 خط قرمز: اختیار «مدیر» فقط داخل همان سازمان کار معتبر است
             $isManager = ($user
                 && ($user['role'] == 'management' || $user['role'] == 'supervisor')
                 && (int)$user['organization_id'] === (int)$task['organization_id']);
@@ -956,7 +956,7 @@ class TaskManager
     public function getAllTasks($user_id, $filters = [])
     {
         try {
-            // واحد و سازمانِ کاربر را برای شرط چک‌لیست بخوان
+            // واحد و سازمان کاربر را برای شرط چک‌لیست بخوان
             $secStmt = $this->db->prepare("SELECT activity_section, organization_id FROM users WHERE id = ?");
             $secStmt->execute([$user_id]);
             $user_row = $secStmt->fetch(PDO::FETCH_ASSOC) ?: [];
@@ -965,7 +965,7 @@ class TaskManager
 
             // ✅ نمایش: سازنده، یا مسئول، یا ارجاع چک‌لیست (به کاربر یا واحدش)
             // نکته: چون activity_section بین سازمان‌های مختلف می‌تواند مقدار یکسان داشته باشد،
-            // شرط چک‌لیستِ واحد باید حتماً به t.organization_id هم محدود شود.
+            // شرط چک‌لیست واحد باید حتما به t.organization_id هم محدود شود.
             $checklist_exists = "EXISTS (
                 SELECT 1 FROM task_checklist_items ci
                 WHERE ci.task_id = t.id
@@ -975,15 +975,15 @@ class TaskManager
                   )
             )";
             $where_conditions = ["(t.creator_id = ? OR t.assignee_id = ? OR $checklist_exists)"];
-            // 🔒 ترتیبِ این آرایه باید دقیقاً با ترتیبِ ظاهرشدنِ «?»ها در متنِ
-            // نهاییِ SQL یکی باشه — نه ترتیبِ اضافه‌شدنشون این‌جا در PHP.
-            // چون CASE WHEN پایین‌تر (در SELECT) قبل از WHERE در متنِ SQL
-            // میاد، دو تا $user_idِ اولش مالِ همون CASE ان، نه اینجا؛ قبلاً
-            // این دو تا آخرِ آرایه اضافه می‌شدن (بعد از این ۵تا) و کلِ
+            // 🔒 ترتیب این آرایه باید دقیقا با ترتیب ظاهرشدن «?»ها در متن
+            // نهایی SQL یکی باشه — نه ترتیب اضافه‌شدنشون این‌جا در PHP.
+            // چون CASE WHEN پایین‌تر (در SELECT) قبل از WHERE در متن SQL
+            // میاد، دو تا $user_id اولش مال همون CASE ان، نه اینجا؛ قبلا
+            // این دو تا آخر آرایه اضافه می‌شدن (بعد از این ۵تا) و کل
             // بایندینگ از همین‌جا به بعد یکی جابه‌جا می‌شد — یعنی
-            // t.assignee_id در WHERE عملاً با user_section مقایسه می‌شد،
+            // t.assignee_id در WHERE عملا با user_section مقایسه می‌شد،
             // نه با user_id، و کارهایی که فقط assignee بودی (نه creator)
-            // اصلاً تویِ نتیجه نمی‌اومدن
+            // اصلا توی نتیجه نمی‌اومدن
             $params = [$user_id, $user_id, $user_id, $user_id, (string)$user_id, $user_section, $user_org_id];
 
             if (!empty($filters['status'])) {
@@ -1204,7 +1204,7 @@ class TaskManager
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // ✅ بررسی اینکه آیا کاربر قبلاً این تسک را در دور جاری تأیید (approved) کرده
+    // ✅ بررسی اینکه آیا کاربر قبلا این تسک را در دور جاری تأیید (approved) کرده
     // دور جاری = از آخرین reject یا آخرین completed به بعد
     private function hasAlreadyApproved($task_id, $user_id, $creator_id = null)
     {
@@ -1337,13 +1337,13 @@ class TaskManager
                     $stmt = $this->db->prepare($sql);
                     $stmt->execute([$today, $performerId, $task_id]);
 
-                    // ⚠️ اینجا نباید دوباره action='completed' ثبت شود. رکورد completedِ
+                    // ⚠️ اینجا نباید دوباره action='completed' ثبت شود. رکورد completed
                     // واقعی، در لحظهٔ ارسال برای تأیید (بالاتر در updateTaskStatus) و با
-                    // تاریخ واقعیِ انجام کار ثبت می‌شود. تأیید ممکن است روز(های) بعد اتفاق
+                    // تاریخ واقعی انجام کار ثبت می‌شود. تأیید ممکن است روز(های) بعد اتفاق
                     // بیفتد؛ اگر اینجا هم completed بزنیم، موتور دوره آن را با تاریخ تأیید
-                    // می‌بیند و اشتباهاً دورهٔ همان روز را هم «انجام‌شده» حساب می‌کند.
+                    // می‌بیند و اشتباها دورهٔ همان روز را هم «انجام‌شده» حساب می‌کند.
                     $this->addTaskHistory($task_id, $user_id, $performerId, 'approved', 'آخرین دوره تأیید شد: ' . $notes);
-                    /* حذف‌شده (درخواستِ کاربر): تأییدِ آخرین دوره → به انجام‌دهنده نوتیف/پیامکِ 'completion_approved' نمی‌رود. */
+                    /* حذف‌شده (درخواست کاربر): تأیید آخرین دوره → به انجام‌دهنده نوتیف/پیامک 'completion_approved' نمی‌رود. */
                     return [
                         'success' => true,
                         'message' => 'تمام دوره‌ها تأیید شد. کار به حالت عادی بازگشت',
@@ -1357,7 +1357,7 @@ class TaskManager
                     $creator_id = (int)$task['creator_id'];
 
                     // ساخت full_chain: ترتیب واقعی همه افراد در زنجیره
-                    // ✅ حذف تکرار متوالی (مثلاً created از 19→19 باعث [19,19,29] می‌شد)
+                    // ✅ حذف تکرار متوالی (مثلا created از 19→19 باعث [19,19,29] می‌شد)
                     $full_chain = [];
                     foreach ($chain as $entry) {
                         $from = (int)$entry['from_user_id'];
@@ -1393,9 +1393,9 @@ class TaskManager
                         $stmt = $this->db->prepare($sql);
                         $stmt->execute([$task_id]);
                         $this->addTaskHistory($task_id, $user_id, null, 'completed', 'تأیید نهایی' . $notes);
-                        /* حذف‌شده (درخواستِ کاربر): در تأییدِ نهایی، به انجام‌دهندهٔ کار نوتیف/پیامکِ
+                        /* حذف‌شده (درخواست کاربر): در تأیید نهایی، به انجام‌دهندهٔ کار نوتیف/پیامک
    'completion_approved' فرستاده نمی‌شود. رد شدن (completion_rejected) و اتمام
-   توسطِ مدیر (completion_by_manager) دست‌نخورده‌اند. */
+   توسط مدیر (completion_by_manager) دست‌نخورده‌اند. */
                         return ['success' => true, 'message' => 'کار با موفقیت تکمیل شد', 'final_approval' => true];
                     }
 
@@ -1410,9 +1410,9 @@ class TaskManager
                         $stmt = $this->db->prepare($sql);
                         $stmt->execute([$task_id]);
                         $this->addTaskHistory($task_id, $user_id, null, 'completed', 'تأیید خودکار نهایی: ' . $notes);
-                        /* حذف‌شده (درخواستِ کاربر): در تأییدِ نهایی، به انجام‌دهندهٔ کار نوتیف/پیامکِ
+                        /* حذف‌شده (درخواست کاربر): در تأیید نهایی، به انجام‌دهندهٔ کار نوتیف/پیامک
    'completion_approved' فرستاده نمی‌شود. رد شدن (completion_rejected) و اتمام
-   توسطِ مدیر (completion_by_manager) دست‌نخورده‌اند. */
+   توسط مدیر (completion_by_manager) دست‌نخورده‌اند. */
                         return ['success' => true, 'message' => 'کار با موفقیت تکمیل شد', 'final_approval' => true];
                     }
 
@@ -1469,9 +1469,9 @@ class TaskManager
                     $stmt = $this->db->prepare($sql);
                     $stmt->execute([$task_id]);
                     $this->addTaskHistory($task_id, $user_id, null, 'completed', 'تأیید نهایی' . $notes);
-                    /* حذف‌شده (درخواستِ کاربر): در تأییدِ نهایی، به انجام‌دهندهٔ کار نوتیف/پیامکِ
+                    /* حذف‌شده (درخواست کاربر): در تأیید نهایی، به انجام‌دهندهٔ کار نوتیف/پیامک
    'completion_approved' فرستاده نمی‌شود. رد شدن (completion_rejected) و اتمام
-   توسطِ مدیر (completion_by_manager) دست‌نخورده‌اند. */
+   توسط مدیر (completion_by_manager) دست‌نخورده‌اند. */
                     return ['success' => true, 'message' => 'کار با موفقیت تکمیل نهایی شد', 'final_approval' => true];
                 }
 
@@ -1485,9 +1485,9 @@ class TaskManager
                     $stmt = $this->db->prepare($sql);
                     $stmt->execute([$task_id]);
                     $this->addTaskHistory($task_id, $user_id, null, 'completed', 'تأیید خودکار نهایی: ' . $notes);
-                    /* حذف‌شده (درخواستِ کاربر): در تأییدِ نهایی، به انجام‌دهندهٔ کار نوتیف/پیامکِ
+                    /* حذف‌شده (درخواست کاربر): در تأیید نهایی، به انجام‌دهندهٔ کار نوتیف/پیامک
    'completion_approved' فرستاده نمی‌شود. رد شدن (completion_rejected) و اتمام
-   توسطِ مدیر (completion_by_manager) دست‌نخورده‌اند. */
+   توسط مدیر (completion_by_manager) دست‌نخورده‌اند. */
                     return ['success' => true, 'message' => 'کار با موفقیت تکمیل نهایی شد', 'final_approval' => true];
                 }
 
@@ -1747,7 +1747,7 @@ class TaskManager
 
             // ✅ بخش دوم: کارهای دوره‌ای — از موتور مشترک
             // (پیش از این از جدول continuous_tasks_overdue خوانده می‌شد
-            //  که کاملاً خالی بود → معوقهٔ کارهای دوره‌ای همیشه صفر شمرده می‌شد)
+            //  که کاملا خالی بود → معوقهٔ کارهای دوره‌ای همیشه صفر شمرده می‌شد)
             $stmt = $this->db->prepare("
                 SELECT * FROM tasks
                 WHERE (assignee_id = ? OR creator_id = ?)
@@ -1806,7 +1806,7 @@ class TaskManager
         return $task['end_date'] <= $today;
     }
 
-    // اعمال واقعیِ تمدید (مشترک بین مسیر مستقیم و مسیر تأیید زنجیره‌ای)
+    // اعمال واقعی تمدید (مشترک بین مسیر مستقیم و مسیر تأیید زنجیره‌ای)
     private function applyRenewalChanges($task_id, $new_start_date, $new_end_date, $performer_id)
     {
         // ✅ قدم 1: خواندن تاریخ‌های قبلی از دیتابیس، قبل از اینکه پاک شوند!

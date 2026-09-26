@@ -4,8 +4,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
-// این ابزار کدِ کامل و حتی فایل‌هایِ .env رو قابلِ‌جستجو می‌کنه — قبلاً بدونِ
-// هیچ احرازِ هویتی برایِ عموم در دسترس بود؛ الان محدود به سوپرادمین شد
+// این ابزار کد کامل و حتی فایل‌های .env رو قابل‌جستجو می‌کنه — قبلا بدون
+// هیچ احراز هویتی برای عموم در دسترس بود؛ الان محدود به سوپرادمین شد
 $database = new Database();
 $db = $database->getConnection();
 $auth = new Auth($db);

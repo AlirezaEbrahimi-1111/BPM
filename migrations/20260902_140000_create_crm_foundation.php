@@ -1,16 +1,16 @@
 <?php
 /**
  * ═══════════════════════════════════════════════════════════════════
- *  بسترِ دیتابیسِ ماژولِ CRM.
+ *  بستر دیتابیس ماژول CRM.
  * ───────────────────────────────────────────────────────────────────
- *  فقط جدول‌ها ساخته می‌شوند — هیچ صفحه/APIِ PHPِ جدیدی به این مهاجرت
- *  وابسته نیست. منطقِ CRM در سرویسِ جدا (crm-service/, نوشته‌شده با Go)
+ *  فقط جدول‌ها ساخته می‌شوند — هیچ صفحه/API PHP جدیدی به این مهاجرت
+ *  وابسته نیست. منطق CRM در سرویس جدا (crm-service/, نوشته‌شده با Go)
  *  خواهد بود و همین جدول‌ها را می‌خواند/می‌نویسد.
  *
- *  همه‌ی جدول‌ها با organization_id (جداسازیِ سازمان‌ها).
- *  کلیدِ خارجیِ سخت عمداً گذاشته نشده — هم‌راستا با بقیه‌ی مهاجرت‌های پروژه
- *  (فقط ایندکس). این مهاجرت روی اپِ فعلی هیچ اثری ندارد جز یک ستونِ
- *  جدیدِ users با پیش‌فرضِ ۰.
+ *  همه‌ی جدول‌ها با organization_id (جداسازی سازمان‌ها).
+ *  کلید خارجی سخت عمدا گذاشته نشده — هم‌راستا با بقیه‌ی مهاجرت‌های پروژه
+ *  (فقط ایندکس). این مهاجرت روی اپ فعلی هیچ اثری ندارد جز یک ستون
+ *  جدید users با پیش‌فرض ۰.
  * ═══════════════════════════════════════════════════════════════════
  */
 
@@ -20,16 +20,16 @@ return [
 
     'up' => function (PDO $db) {
 
-        // ── نقشِ «مدیر فروش» (تجزیه‌ی نقشِ درشتِ manager) ──
-        // نقشِ فعلیِ manager دست نمی‌خورد؛ این فقط یک سوییچِ فردیِ اضافه است.
+        // ── نقش «مدیر فروش» (تجزیه‌ی نقش درشت manager) ──
+        // نقش فعلی manager دست نمی‌خورد؛ این فقط یک سوییچ فردی اضافه است.
         $col = $db->query("SHOW COLUMNS FROM `users` LIKE 'is_sales_manager'")->fetch();
         if (!$col) {
             $db->exec("ALTER TABLE `users`
                        ADD COLUMN `is_sales_manager` TINYINT(1) NOT NULL DEFAULT 0
-                       COMMENT 'مدیرِ فروش — تأییدِ تخصیصِ کارشناس، تنظیمِ تارگت، گزارش‌های فروش'");
+                       COMMENT 'مدیر فروش — تأیید تخصیص کارشناس، تنظیم تارگت، گزارش‌های فروش'");
         }
 
-        // ── مشتری: حقیقی یا حقوقی، هر مشتری فقط یک کارشناسِ فروش ──
+        // ── مشتری: حقیقی یا حقوقی، هر مشتری فقط یک کارشناس فروش ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `crm_customers` (
                 `id`              INT AUTO_INCREMENT PRIMARY KEY,
@@ -42,9 +42,9 @@ return [
                 `address`         TEXT NULL,
                 `national_id`     VARCHAR(20) NULL COMMENT 'کد ملی (حقیقی) یا شناسه ملی (حقوقی)',
                 `economic_code`   VARCHAR(20) NULL COMMENT 'کد اقتصادی',
-                `assigned_rep_id` INT NULL COMMENT 'کارشناسِ فروشِ مسئول (users.id)',
-                `external_source` VARCHAR(40) NULL COMMENT 'نامِ نرم‌افزارِ حسابداریِ مبدأ (فعلاً خالی)',
-                `external_ref`    VARCHAR(80) NULL COMMENT 'شناسه‌ی مشتری در آن نرم‌افزار (فعلاً خالی)',
+                `assigned_rep_id` INT NULL COMMENT 'کارشناس فروش مسئول (users.id)',
+                `external_source` VARCHAR(40) NULL COMMENT 'نام نرم‌افزار حسابداری مبدأ (فعلا خالی)',
+                `external_ref`    VARCHAR(80) NULL COMMENT 'شناسه‌ی مشتری در آن نرم‌افزار (فعلا خالی)',
                 `note`            TEXT NULL,
                 `is_deleted`      TINYINT(1) NOT NULL DEFAULT 0,
                 `created_by`      INT NULL,
@@ -56,7 +56,7 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // ── درخواستِ تخصیصِ کارشناس (منتظرِ تأییدِ مدیرِ فروش) ──
+        // ── درخواست تخصیص کارشناس (منتظر تأیید مدیر فروش) ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `crm_assignment_requests` (
                 `id`              INT AUTO_INCREMENT PRIMARY KEY,
@@ -74,13 +74,13 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // ── تارگت / سقف / کف فروش برای هر مشتری در هر دوره (ماهِ شمسی) ──
+        // ── تارگت / سقف / کف فروش برای هر مشتری در هر دوره (ماه شمسی) ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `crm_targets` (
                 `id`              INT AUTO_INCREMENT PRIMARY KEY,
                 `organization_id` INT NOT NULL,
                 `customer_id`     INT NOT NULL,
-                `period_ym`       CHAR(7) NOT NULL COMMENT 'ماهِ شمسی مثل 1405-06',
+                `period_ym`       CHAR(7) NOT NULL COMMENT 'ماه شمسی مثل 1405-06',
                 `target_amount`   BIGINT NOT NULL DEFAULT 0 COMMENT 'ریال',
                 `floor_amount`    BIGINT NOT NULL DEFAULT 0,
                 `ceiling_amount`  BIGINT NOT NULL DEFAULT 0,
@@ -91,7 +91,7 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // ── برنامه‌ی پیگیری: یا روزِ مشخصِ هفته، یا هر N روز ──
+        // ── برنامه‌ی پیگیری: یا روز مشخص هفته، یا هر N روز ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `crm_followups` (
                 `id`              INT AUTO_INCREMENT PRIMARY KEY,
@@ -110,7 +110,7 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // ── تایم‌لاینِ فعالیت (تماس، بازدید، یادداشت، پیامک) ──
+        // ── تایم‌لاین فعالیت (تماس، بازدید، یادداشت، پیامک) ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `crm_activities` (
                 `id`              INT AUTO_INCREMENT PRIMARY KEY,
@@ -155,7 +155,7 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // ── پیش‌فاکتور (داخلِ همین CRM ساخته می‌شود) ──
+        // ── پیش‌فاکتور (داخل همین CRM ساخته می‌شود) ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `crm_proformas` (
                 `id`              INT AUTO_INCREMENT PRIMARY KEY,
@@ -191,13 +191,13 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // ── فروشِ واقعی (تا قبل از اتصالِ حسابداری: دستی یا اکسل) ──
+        // ── فروش واقعی (تا قبل از اتصال حسابداری: دستی یا اکسل) ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `crm_actual_sales` (
                 `id`              INT AUTO_INCREMENT PRIMARY KEY,
                 `organization_id` INT NOT NULL,
                 `customer_id`     INT NOT NULL,
-                `period_ym`       CHAR(7) NOT NULL COMMENT 'ماهِ شمسی مثل 1405-06',
+                `period_ym`       CHAR(7) NOT NULL COMMENT 'ماه شمسی مثل 1405-06',
                 `amount`          BIGINT NOT NULL DEFAULT 0 COMMENT 'ریال',
                 `source`          ENUM('manual','excel','accounting') NOT NULL DEFAULT 'manual',
                 `note`            VARCHAR(255) NULL,
@@ -208,7 +208,7 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // ── کانفیگِ اتصالِ حسابداریِ هر سازمان (فعلاً خالی، برای توسعه‌ی بعدی) ──
+        // ── کانفیگ اتصال حسابداری هر سازمان (فعلا خالی، برای توسعه‌ی بعدی) ──
         $db->exec("
             CREATE TABLE IF NOT EXISTS `crm_org_accounting_config` (
                 `id`              INT AUTO_INCREMENT PRIMARY KEY,
@@ -219,7 +219,7 @@ return [
                 `auth_mode`       VARCHAR(40) NULL,
                 `auth_user`       VARCHAR(120) NULL,
                 `auth_pass`       VARCHAR(255) NULL,
-                `extra`           TEXT NULL COMMENT 'JSON — تنظیماتِ اضافه',
+                `extra`           TEXT NULL COMMENT 'JSON — تنظیمات اضافه',
                 `is_enabled`      TINYINT(1) NOT NULL DEFAULT 0,
                 `updated_at`      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 UNIQUE KEY `uq_crm_acc_org` (`organization_id`)

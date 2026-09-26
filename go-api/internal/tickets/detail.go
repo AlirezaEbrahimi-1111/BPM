@@ -7,7 +7,7 @@ import (
 	"bmp/go-api/internal/core"
 )
 
-// Detail — پورتِ دقیقِ api/tickets/detail.php
+// Detail — پورت دقیق api/tickets/detail.php
 //
 //	GET /go/api/tickets/detail?id=
 //	→ {"success":true,"ticket":{...},"messages":[...],"attachments":[...],
@@ -84,8 +84,8 @@ func Detail(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// ثبتِ «این کاربر تیکت را الان دید» — مثلِ نسخهٔ PHP، خطا در این
-		// بخش کشنده نیست (مثلاً اگر جدول هنوز مایگریت نشده باشد).
+		// ثبت «این کاربر تیکت را الان دید» — مثل نسخهٔ PHP، خطا در این
+		// بخش کشنده نیست (مثلا اگر جدول هنوز مایگریت نشده باشد).
 		_, _ = db.Exec(`
 			INSERT INTO ticket_message_reads (ticket_id, user_id, last_read_at)
 			VALUES (?, ?, NOW())

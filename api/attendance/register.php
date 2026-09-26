@@ -132,19 +132,19 @@ if (!$organization_id) {
     $device = $dStmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$device) {
-        // شناسهٔ دستگاه یک توکنِ تصادفیِ داخلِ localStorage/کوکی است؛ «کلیر کشِ»
+        // شناسهٔ دستگاه یک توکن تصادفی داخل localStorage/کوکی است؛ «کلیر کش»
         // مرورگر هر دو را پاک می‌کند و کاربر با شناسهٔ نو دوباره «در انتظار تأیید»
-        // می‌شود. اگر همین کاربر قبلاً در همین سازمان حضور ثبت کرده (یعنی یک بار
+        // می‌شود. اگر همین کاربر قبلا در همین سازمان حضور ثبت کرده (یعنی یک بار
         // تأیید شده) و الان هم از IP مجاز آمده (بالاتر چک شد)، شناسهٔ جدیدش
-        // خودکار تأیید می‌شود و درخواستِ تازه‌ای برای سرپرست نمی‌رود.
-        // ✅ تأییدِ سطحِ «کاربر» (جدولِ attendance_approved_users) — مقاوم به کلیر کش.
-        //    بعد از یک‌بار تأیید، هر شناسهٔ دستگاهِ جدیدِ همین کاربر خودکار approved
-        //    می‌شود و درخواستِ تازه‌ای برای سرپرست نمی‌رود.
+        // خودکار تأیید می‌شود و درخواست تازه‌ای برای سرپرست نمی‌رود.
+        // ✅ تأیید سطح «کاربر» (جدول attendance_approved_users) — مقاوم به کلیر کش.
+        //    بعد از یک‌بار تأیید، هر شناسهٔ دستگاه جدید همین کاربر خودکار approved
+        //    می‌شود و درخواست تازه‌ای برای سرپرست نمی‌رود.
         $apprStmt = $db->prepare("SELECT 1 FROM attendance_approved_users WHERE organization_id = ? AND user_id = ? LIMIT 1");
         $apprStmt->execute([$organization_id, $user_id]);
         $autoApprove = (bool) $apprStmt->fetchColumn();
 
-        // سازگاری: کاربری که قبلاً حضور ثبت کرده ولی هنوز در جدولِ جدید نیست
+        // سازگاری: کاربری که قبلا حضور ثبت کرده ولی هنوز در جدول جدید نیست
         if (!$autoApprove) {
             $prevStmt = $db->prepare("SELECT COUNT(*) FROM attendance_records WHERE user_id = ? AND organization_id = ?");
             $prevStmt->execute([$user_id, $organization_id]);
@@ -161,16 +161,16 @@ if (!$organization_id) {
         if ($autoApprove) {
             $db->prepare("UPDATE attendance_devices SET last_used_at = NOW() WHERE organization_id = ? AND fingerprint_hash = ?")
                 ->execute([$organization_id, $fp_hash]);
-            // self-heal: کاربر را در جدولِ تأییدِ سطحِ کاربر ثبت کن (اگر از مسیرِ سازگاری آمده)
+            // self-heal: کاربر را در جدول تأیید سطح کاربر ثبت کن (اگر از مسیر سازگاری آمده)
             try {
                 $db->prepare("INSERT IGNORE INTO attendance_approved_users (organization_id, user_id, approved_at) VALUES (?, ?, NOW())")
                     ->execute([$organization_id, $user_id]);
             } catch (Exception $e) { /* بی‌صدا */ }
-            return; // از گاردِ IIFE خارج شو — اجازهٔ ثبتِ ورود/خروج بده
+            return; // از گارد IIFE خارج شو — اجازهٔ ثبت ورود/خروج بده
         }
 
         if ($ins->rowCount() > 0) {
-            // فقط وقتی دستگاه واقعاً «جدید» ثبت شد → اطلاع به مدیران
+            // فقط وقتی دستگاه واقعا «جدید» ثبت شد → اطلاع به مدیران
             attendance_notify_managers_new_device($db, $organization_id, $user_id, $client_ip);
         }
         $logDenied('DEVICE_PENDING');
@@ -290,7 +290,7 @@ try {
 }
     // ⭐⭐⭐ پایان بررسی محدودیت ⭐⭐⭐
 
-    // ⭐⭐⭐ محدودیت ورود شیفت ۱: فقط تا پایانِ شیفت ۱ ⭐⭐⭐
+    // ⭐⭐⭐ محدودیت ورود شیفت ۱: فقط تا پایان شیفت ۱ ⭐⭐⭐
     if ($action === 'check_in' && $shift === 1 && $shift_count >= 2 && !empty($user['shift_1_end'])) {
         $shift1_end_obj = new DateTime($user['shift_1_end']);
         $current_time_obj = new DateTime($current_time);
@@ -338,7 +338,7 @@ try {
                 exit;
             }
 
-            // به‌روزرسانی ورود (اگر قبلاً خروج زده)
+            // به‌روزرسانی ورود (اگر قبلا خروج زده)
             $stmt = $db->prepare("
                 UPDATE attendance_records 
                 SET check_in = ?, check_out = NULL, updated_at = NOW()

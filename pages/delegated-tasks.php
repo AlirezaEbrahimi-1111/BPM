@@ -362,7 +362,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
             loadUserInfo();
             loadSections().then(() => loadAssigneeList());
-            // گزینه‌های فیلترِ وضعیت از فایلِ مشترک (assets/js/task-filters.js)
+            // گزینه‌های فیلتر وضعیت از فایل مشترک (assets/js/task-filters.js)
             TF.renderStatusFilter(document.getElementById('filterStatus'), { selected: 'open' });
             document.getElementById('filterStatus').value = 'open';
             loadTasks();
@@ -537,7 +537,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 if (as && t.assignee_id != as) return false;
                 if (pr && t.priority !== pr) return false;
                 if (ty && t.task_type !== ty) return false;
-                // فیلترِ وضعیت — تنها مرجع: assets/js/task-filters.js
+                // فیلتر وضعیت — تنها مرجع: assets/js/task-filters.js
                 if (st && st !== 'all' && !TF.matchesStatusFilter(t, st, currentUser)) return false;
 
                 // 🆕 فیلتر اجباری تأخیردار (وقتی با ?filter=overdue آمده) — با جستجو نادیده گرفته می‌شود
@@ -579,7 +579,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             continuous: ['دوره‌ای', 'arrow-repeat']
         };
 
-        // برچسب/آیکن/رنگِ وضعیت — از assets/js/task-filters.js (تنها مرجع)
+        // برچسب/آیکن/رنگ وضعیت — از assets/js/task-filters.js (تنها مرجع)
         function statusBadge(s) {
             return `<span class="badge ${TF.statusClass(s)}"><i class="bi bi-${TF.statusIcon(s)}"></i>${TF.statusLabel(s)}</span>`;
         }
@@ -594,15 +594,15 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             return `<span class="badge type-${t}"><i class="bi bi-${i}"></i>${l}</span>`;
         }
 
-        // 🔒 دو مدلِ تأخیر/مهلت: روتین/فرآیندی (is_workflow_task=1) ساعتی،
-        // بقیه روزِ کاری — هر دو عدد از سرور (enrichTaskDates)، نه از new Date()
+        // 🔒 دو مدل تأخیر/مهلت: روتین/فرآیندی (is_workflow_task=1) ساعتی،
+        // بقیه روز کاری — هر دو عدد از سرور (enrichTaskDates)، نه از new Date()
         function daysLeft(d, status, task) {
             if (status === 'completed' || status === 'approved') return '<span class="badge days-badge days-normal">تکمیل</span>';
 
-            // 🔒 کارِ دوره‌ای: تأخیرِ واقعی یعنی دوره‌هایِ معوقه، نه اختلافِ
-            // تقویمیِ next_due_date — چون next_due_date همیشه نزدیکِ امروزه
+            // 🔒 کار دوره‌ای: تأخیر واقعی یعنی دوره‌های معوقه، نه اختلاف
+            // تقویمی next_due_date — چون next_due_date همیشه نزدیک امروزه
             // (حتی وقتی ده‌ها دوره معوقه داره)، محاسبه‌ی رو‌به‌پایین می‌تونست
-            // «امروز»/«N روز دیگر» نشون بده و تأخیرِ واقعی رو کاملاً پنهان کنه
+            // «امروز»/«N روز دیگر» نشون بده و تأخیر واقعی رو کاملا پنهان کنه
             if (task && task.task_type === 'continuous') {
                 const op = task.overdue_periods || 0;
                 if (op > 0) {
@@ -638,7 +638,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
 
         function relTime(d) {
-            // زمانِ نسبی از منبعِ یگانه (ساعتِ سرور، نه دستگاه) — time-sync.js
+            // زمان نسبی از منبع یگانه (ساعت سرور، نه دستگاه) — time-sync.js
             return window.TimeSync ? TimeSync.timeAgo(d) : '';
         }
 
@@ -674,7 +674,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             });
         }
 
-        // قبلاً فقط console.error می‌زد و هیچ پیغامی به کاربر نشون داده نمی‌شد
+        // قبلا فقط console.error می‌زد و هیچ پیغامی به کاربر نشون داده نمی‌شد
         function showError(msg) {
             console.error(msg);
             if (gridApi) gridApi.setGridOption('rowData', []);

@@ -1,10 +1,10 @@
-# فایلِ سرویسِ systemd برای crm-service.
+# فایل سرویس systemd برای crm-service.
 # روی سرور کپی شود به:  /etc/systemd/system/bmp-crm.service
 # سپس:
 #   sudo systemctl daemon-reload
 #   sudo systemctl enable --now bmp-crm
 #   sudo systemctl status bmp-crm
-#   journalctl -u bmp-crm -f        # دیدنِ لاگِ زنده
+#   journalctl -u bmp-crm -f        # دیدن لاگ زنده
 
 [Unit]
 Description=BPM CRM service (Go)
@@ -21,7 +21,7 @@ Environment=CRM_CONFIG=/opt/bmp-crm/config.json
 Restart=on-failure
 RestartSec=3
 
-# ── سخت‌سازیِ سبک (اگر جایی مشکل ساخت، این چهار خط را کامنت کن) ──
+# ── سخت‌سازی سبک (اگر جایی مشکل ساخت، این چهار خط را کامنت کن) ──
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict

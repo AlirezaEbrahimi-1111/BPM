@@ -9,7 +9,7 @@ import (
 	"bmp/go-api/internal/core"
 )
 
-// نامِ واحدها — عیناً از api/reports/list.php و detail.php.
+// نام واحدها — عینا از api/reports/list.php و detail.php.
 var unitNames = map[string]string{
 	"RS":  "کامپیوتر",
 	"ATM": "فضای مجازی + رسانه",
@@ -28,7 +28,7 @@ func qint(r *http.Request, key string, def int) int {
 	return def
 }
 
-// List — پورتِ api/reports/list.php
+// List — پورت api/reports/list.php
 //
 //	GET /go/api/reports/list?limit=&offset=&unit=&search=
 //	→ {"success":true,"reports":[{id,unique_code,activity_unit,report_date,created_at,content_preview,unit_name}],"total":N}
@@ -52,7 +52,7 @@ func List(db *sql.DB) http.HandlerFunc {
 			args = append(args, like, like)
 		}
 
-		// LIMIT/OFFSET مثلِ نسخهٔ PHP مستقیم درج می‌شوند (هر دو int، بدونِ تزریق).
+		// LIMIT/OFFSET مثل نسخهٔ PHP مستقیم درج می‌شوند (هر دو int، بدون تزریق).
 		q := fmt.Sprintf(`SELECT r.id, r.unique_code, r.activity_unit, r.report_date, r.created_at,
 		                         SUBSTRING(r.content, 1, 4096) AS content_preview
 		                  FROM reports r

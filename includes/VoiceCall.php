@@ -1,16 +1,16 @@
 <?php
 // ==================================================
 // includes/VoiceCall.php
-// تماسِ صوتیِ هشدار (زرین‌کال) — الگویِ کاملاً موازیِ includes/sms.php
+// تماس صوتی هشدار (زرین‌کال) — الگوی کاملا موازی includes/sms.php
 // ==================================================
 class VoiceCall
 {
     private $db;
     private $api_url = 'https://ws.zarincall.ir/apiv2/Message/Send';
-    private $apikey = 'c39eea73-9a5f-4a18-88b3-a895ac89018b.d1933abb-7754-41b0-9518-72deaa7afb18'; // 🔴 پنلِ زرین‌کال
+    private $apikey = 'c39eea73-9a5f-4a18-88b3-a895ac89018b.d1933abb-7754-41b0-9518-72deaa7afb18'; // 🔴 پنل زرین‌کال
 
-    // VoiceIdِ پیامِ هشدارِ «تیکتِ بحرانی» — از پنلِ زرین‌کال آپلود شده
-    // (StoreForEver=true، ۱۹ ثانیه، تأییدشده با Voice/Get قبلِ استفاده)
+    // VoiceId پیام هشدار «تیکت بحرانی» — از پنل زرین‌کال آپلود شده
+    // (StoreForEver=true، ۱۹ ثانیه، تأییدشده با Voice/Get قبل استفاده)
     private $critical_ticket_voice_id = '74d01fa6-0da2-460b-b1ab-a46dd0e38a4d';
 
     public function __construct($database)
@@ -19,11 +19,11 @@ class VoiceCall
     }
 
     /**
-     * تماسِ صوتیِ مستقیم با یک VoiceId مشخص، به یک یا چند شماره
+     * تماس صوتی مستقیم با یک VoiceId مشخص، به یک یا چند شماره
      *
      * @param string[] $numbers شماره‌ها (هر فرمتی؛ خودش نرمال می‌شه)
-     * @param string   $voiceId شناسه‌یِ فایلِ صوتیِ از‌قبل‌آپلودشده در زرین‌کال
-     * @param string|null $context برایِ لاگ — مثلاً 'ticket:123'
+     * @param string   $voiceId شناسه‌ی فایل صوتی از‌قبل‌آپلودشده در زرین‌کال
+     * @param string|null $context برای لاگ — مثلا 'ticket:123'
      */
     public function call(array $numbers, string $voiceId, ?string $context = null): bool
     {
@@ -69,7 +69,7 @@ class VoiceCall
     }
 
     /**
-     * تماسِ هشدارِ «تیکتِ بحرانی ثبت شد» — مصرفِ اصلیِ این کلاس
+     * تماس هشدار «تیکت بحرانی ثبت شد» — مصرف اصلی این کلاس
      */
     public function callForCriticalTicket(array $numbers, ?int $ticketId = null): bool
     {
@@ -77,8 +77,8 @@ class VoiceCall
     }
 
     /**
-     * دیسپچِ async (پروسه‌یِ پس‌زمینه) — عیناً الگویِ
-     * Notification::sendSMSAsync، تا ثبتِ تیکت معطلِ جوابِ زرین‌کال نمونه
+     * دیسپچ async (پروسه‌ی پس‌زمینه) — عینا الگوی
+     * Notification::sendSMSAsync، تا ثبت تیکت معطل جواب زرین‌کال نمونه
      */
     public static function dispatchCriticalTicketCallAsync(array $numbers, ?int $ticketId = null): void
     {
@@ -105,7 +105,7 @@ class VoiceCall
                 exec($cmd);
                 error_log("📤 VoiceCall async dispatched for ticket #" . ($ticketId ?? '-'));
             } else {
-                // ⚡ Fallback: تماسِ sync با timeoutِ کوتاه (curl خودش 8 ثانیه سقف داره)
+                // ⚡ Fallback: تماس sync با timeout کوتاه (curl خودش 8 ثانیه سقف داره)
                 error_log("⚠️ exec not available for VoiceCall, falling back to sync");
                 require_once __DIR__ . '/database.php';
                 $database = new Database();
@@ -140,9 +140,9 @@ class VoiceCall
     }
 
     /**
-     * نرمال‌سازیِ شماره به فرمتِ محلی که زرین‌کال می‌خواد: 09121110000
-     * (برخلافِ SMS::normalizePhone که فرمتِ 98... تولید می‌کنه — این API
-     * طبقِ داکیومنتِ رسمی‌ش صریحاً فرمتِ صفرِ ابتدایی می‌خواد)
+     * نرمال‌سازی شماره به فرمت محلی که زرین‌کال می‌خواد: 09121110000
+     * (برخلاف SMS::normalizePhone که فرمت 98... تولید می‌کنه — این API
+     * طبق داکیومنت رسمی‌ش صریحا فرمت صفر ابتدایی می‌خواد)
      */
     private function normalizePhone(string $phone): string
     {

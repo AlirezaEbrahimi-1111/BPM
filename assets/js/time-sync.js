@@ -1,24 +1,24 @@
 /* ============================================================
- * time-sync.js — همهٔ زمان‌ها از ساعتِ سرور خوانده شوند، نه از دستگاهِ کاربر.
+ * time-sync.js — همهٔ زمان‌ها از ساعت سرور خوانده شوند، نه از دستگاه کاربر.
  *
- * چرا: `new Date()` ساعتِ دستگاه است و `new Date("YYYY-MM-DD HH:MM:SS")`
- * رشتهٔ بدونِ آفست را با تایم‌زونِ دستگاه تفسیر می‌کند. اگر ساعت/تایم‌زونِ
+ * چرا: `new Date()` ساعت دستگاه است و `new Date("YYYY-MM-DD HH:MM:SS")`
+ * رشتهٔ بدون آفست را با تایم‌زون دستگاه تفسیر می‌کند. اگر ساعت/تایم‌زون
  * کاربر غلط باشد، همهٔ «... پیش»ها و دسته‌بندی‌های تاریخی جابجا می‌شوند.
  *
  * این فایل:
- *   - یک‌بار با سرور هم‌کوک می‌شود (bootstrapِ درون‌خطیِ header یا /api/server-time.php)
- *   - TimeSync.serverNow() / serverNowMs()  → «اکنون» بر مبنایِ سرور
- *   - TimeSync.parseServerTime(str)         → Date درست (رشتهٔ خام = وقتِ تهران)
- *   - TimeSync.timeAgo(str)                 → «... پیش» یگانه (جایگزینِ کپی‌های محلی)
- *   - TimeSync.formatJalali(str)            → «YYYY/MM/DD» شمسی با آفستِ ثابتِ تهران
+ *   - یک‌بار با سرور هم‌کوک می‌شود (bootstrap درون‌خطی header یا /api/server-time.php)
+ *   - TimeSync.serverNow() / serverNowMs()  → «اکنون» بر مبنای سرور
+ *   - TimeSync.parseServerTime(str)         → Date درست (رشتهٔ خام = وقت تهران)
+ *   - TimeSync.timeAgo(str)                 → «... پیش» یگانه (جایگزین کپی‌های محلی)
+ *   - TimeSync.formatJalali(str)            → «YYYY/MM/DD» شمسی با آفست ثابت تهران
  *
- * قواعدِ اسکریپتِ مشترک: فقط var/function در سطحِ بالا، و محافظ در برابرِ لودِ دوباره.
+ * قواعد اسکریپت مشترک: فقط var/function در سطح بالا، و محافظ در برابر لود دوباره.
  * ============================================================ */
 (function () {
     if (window.TimeSync && window.TimeSync.__installed) return;
 
     var SKEW_MS = 0;         // serverEpochMs - clientEpochMs در لحظهٔ هم‌کوکی
-    var TZ_OFFSET_MIN = 210; // آفستِ Asia/Tehran (+03:30) — پیش‌فرض تا پاسخِ سرور
+    var TZ_OFFSET_MIN = 210; // آفست Asia/Tehran (+03:30) — پیش‌فرض تا پاسخ سرور
     var synced = false;
 
     function applyPayload(d) {
@@ -29,7 +29,7 @@
         return true;
     }
 
-    /* هم‌کوکیِ ناهمگام (backup، یا برای صفحاتی که ساعت‌ها باز می‌مانند) */
+    /* هم‌کوکی ناهمگام (backup، یا برای صفحاتی که ساعت‌ها باز می‌مانند) */
     function sync() {
         try {
             return fetch('/api/server-time.php', { cache: 'no-store' })
@@ -51,9 +51,9 @@
         return String(x).replace(/[0-9]/g, function (c) { return FA_DIGITS[+c]; });
     }
 
-    /* رشتهٔ تایم‌استمپِ سرور → Date
-     *  - ISO دارایِ Z یا آفست  → مستقیم
-     *  - "YYYY-MM-DD HH:MM:SS"  → به‌عنوانِ وقتِ تهران (نه محلیِ دستگاه) */
+    /* رشتهٔ تایم‌استمپ سرور → Date
+     *  - ISO دارای Z یا آفست  → مستقیم
+     *  - "YYYY-MM-DD HH:MM:SS"  → به‌عنوان وقت تهران (نه محلی دستگاه) */
     function parseServerTime(v) {
         if (v === null || v === undefined || v === '') return null;
         if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
@@ -75,8 +75,8 @@
             m[4] + ':' + m[5] + ':' + (m[6] || '00') + off);
     }
 
-    /* «... پیش» — نسخهٔ یگانه، مبنا: ساعتِ سرور.
-       بازه‌ها superset از همهٔ نسخه‌های محلیِ قبلی است. */
+    /* «... پیش» — نسخهٔ یگانه، مبنا: ساعت سرور.
+       بازه‌ها superset از همهٔ نسخه‌های محلی قبلی است. */
     function timeAgo(v) {
         var date = parseServerTime(v);
         if (!date) return '';
@@ -93,7 +93,7 @@
         return formatJalali(date);
     }
 
-    /* گرگوری → جلالی (همان الگوریتمِ includes/JalaliHelper.php) */
+    /* گرگوری → جلالی (همان الگوریتم includes/JalaliHelper.php) */
     function gregorianToJalali(gy, gm, gd) {
         var gdm = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
         var jy = (gy <= 1600) ? 0 : 979;
@@ -112,7 +112,7 @@
         return [jy, jm, jd];
     }
 
-    /* تاریخِ مطلقِ شمسی با آفستِ ثابتِ تهران (نه تایم‌زونِ دستگاه) */
+    /* تاریخ مطلق شمسی با آفست ثابت تهران (نه تایم‌زون دستگاه) */
     function tehranParts(v) {
         var date = parseServerTime(v);
         if (!date) return null;
@@ -156,47 +156,47 @@
         return toFaDigits(pad2(p.h)) + ':' + toFaDigits(pad2(p.mi));
     }
 
-    /* نامِ روزِ هفته به وقتِ تهران — هفته از شنبه شروع می‌شود */
+    /* نام روز هفته به وقت تهران — هفته از شنبه شروع می‌شود */
     var WEEKDAYS = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
     function weekdayName(v) {
         var p = tehranParts(v);
         if (!p) return '';
-        // Date.UTC(...).getUTCDay(): ۰=یکشنبه ... ۶=شنبه — دقیقاً هم‌ترازِ WEEKDAYS
+        // Date.UTC(...).getUTCDay(): ۰=یکشنبه ... ۶=شنبه — دقیقا هم‌تراز WEEKDAYS
         var dow = new Date(Date.UTC(p.y, p.mo - 1, p.d)).getUTCDay();
         return WEEKDAYS[dow];
     }
 
-    /* «چهارشنبه ۱۴۰۵/۰۴/۲۴» — برایِ جداکننده‌هایِ تاریخِ قدیمی‌تر از یک هفته */
+    /* «چهارشنبه ۱۴۰۵/۰۴/۲۴» — برای جداکننده‌های تاریخ قدیمی‌تر از یک هفته */
     function formatJalaliWithWeekday(v) {
         var wd = weekdayName(v);
         var d = formatJalali(v);
         return wd && d ? (wd + ' ' + d) : (wd || d);
     }
 
-    /* ═══ کمکی‌های «امروزِ سرور» برای منطقِ دسته‌بندی (فاز ۲) ═══ */
+    /* ═══ کمکی‌های «امروز سرور» برای منطق دسته‌بندی (فاز ۲) ═══ */
 
     function serverParts() { return tehranParts(serverNow()); }
 
-    /* 'YYYY-MM-DD' میلادیِ امروز، به وقتِ تهران (هم‌فرمت با تاریخِ موعدِ کارها) */
+    /* 'YYYY-MM-DD' میلادی امروز، به وقت تهران (هم‌فرمت با تاریخ موعد کارها) */
     function serverToday() {
         var p = serverParts();
         return p.y + '-' + pad2(p.mo) + '-' + pad2(p.d);
     }
 
-    /* [jy, jm, jd]ِ امروز به وقتِ تهران */
+    /* [jy, jm, jd] امروز به وقت تهران */
     function serverJalali() {
         var p = serverParts();
         return gregorianToJalali(p.y, p.mo, p.d);
     }
 
-    /* 'YYYY-MM-DD' میلادیِ یک تایم‌استمپ، به وقتِ تهران */
+    /* 'YYYY-MM-DD' میلادی یک تایم‌استمپ، به وقت تهران */
     function dateOnly(v) {
         var p = tehranParts(v);
         if (!p) return '';
         return p.y + '-' + pad2(p.mo) + '-' + pad2(p.d);
     }
 
-    /* اختلافِ روزِ تقویمی نسبت به امروزِ سرور (مثبت = آینده، ۰ = امروز، ‑۱ = دیروز) */
+    /* اختلاف روز تقویمی نسبت به امروز سرور (مثبت = آینده، ۰ = امروز، ‑۱ = دیروز) */
     function daysFromToday(v) {
         var p = tehranParts(v);
         if (!p) return NaN;
@@ -232,12 +232,12 @@
         toFaDigits: toFaDigits
     };
 
-    /* میان‌بُرهای سراسری — تا جایگزینیِ کپی‌های محلی کم‌دردسر باشد */
+    /* میان‌برهای سراسری — تا جایگزینی کپی‌های محلی کم‌دردسر باشد */
     window.timeAgo = timeAgo;
     window.serverNow = serverNow;
 
-    /* هم‌کوکیِ اولیه: اگر header مقدارِ درون‌خطی داده، همان لحظه اعمال کن
-       (بدونِ round-trip)؛ بعد یک sync پشتیبان هم بزن. */
+    /* هم‌کوکی اولیه: اگر header مقدار درون‌خطی داده، همان لحظه اعمال کن
+       (بدون round-trip)؛ بعد یک sync پشتیبان هم بزن. */
     if (window.__SERVER_TIME__ && applyPayload(window.__SERVER_TIME__)) {
         // skew از قبل ست شد
     } else {

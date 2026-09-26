@@ -1,7 +1,7 @@
 <?php
 /**
  * API: api/admin/hekmat-save-recipients.php
- * جایگزینیِ کاملِ لیستِ شماره‌تلفن‌ها — هر خط یک شماره (paste دسته‌جمعی)
+ * جایگزینی کامل لیست شماره‌تلفن‌ها — هر خط یک شماره (paste دسته‌جمعی)
  *
  *   POST /api/admin/hekmat-save-recipients.php
  *   body: {text: "09121234567\n09131234567\n..."}

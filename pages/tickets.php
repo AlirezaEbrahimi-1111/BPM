@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 
 
-// سازمانِ اصلی (پشتیبان) — سازمانِ ۱ — پیش‌فرض تیکت‌های «در انتظار پاسخ پشتیبان» را ببیند.
+// سازمان اصلی (پشتیبان) — سازمان ۱ — پیش‌فرض تیکت‌های «در انتظار پاسخ پشتیبان» را ببیند.
 $__orgId = (int) ($__me['organization_id'] ?? ($_SESSION['organization_id'] ?? 0));
 $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
 ?>
@@ -101,7 +101,7 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,.12);
         }
-        /* کارتِ آماریِ متناظر با فیلترِ وضعیتِ فعلی */
+        /* کارت آماری متناظر با فیلتر وضعیت فعلی */
         .stat-card.active {
             outline: 3px solid rgba(255,255,255,.92);
             outline-offset: -3px;
@@ -437,7 +437,7 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
             });
         }
 
-        // 🆕 هماهنگ با تمِ فعلی — چون Theming API جدید AG Grid، متغیرهای CSS تمِ سراسری را نمی‌خواند
+        // 🆕 هماهنگ با تم فعلی — چون Theming API جدید AG Grid، متغیرهای CSS تم سراسری را نمی‌خواند
         const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
         const gridOptions = {
             theme: agGrid.themeQuartz.withParams(isDarkTheme ? {
@@ -495,8 +495,8 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
         gridApi = agGrid.createGrid(document.getElementById('myGrid'), gridOptions);
         gridApi.showLoadingOverlay();
 
-        /* ── ذخیره/بازگردانیِ فیلترها و کارتِ آماریِ انتخاب‌شده (localStorage) ──
-           تا با رفتن به فرمِ دیگر و برگشت، آخرین فیلتر/جستجو/دسته‌بندی و وضعیتِ
+        /* ── ذخیره/بازگردانی فیلترها و کارت آماری انتخاب‌شده (localStorage) ──
+           تا با رفتن به فرم دیگر و برگشت، آخرین فیلتر/جستجو/دسته‌بندی و وضعیت
            انتخاب‌شده دوباره اعمال شود. */
         var TICKETS_FILTER_KEY = 'tickets_filters_v1';
 
@@ -547,13 +547,13 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
             restoreTicketFilters();
             loadTickets();
 
-            // دکمهٔ «حل‌شده کردنِ تیکت‌های بی‌پاسخِ ۲۱ روزه» — فقط مدیرِ اصلی
+            // دکمهٔ «حل‌شده کردن تیکت‌های بی‌پاسخ ۲۱ روزه» — فقط مدیر اصلی
             if (currentUserId == 1) {
                 var b = document.getElementById('btnResolveStale');
                 if (b) b.style.display = 'inline-flex';
             }
 
-            // کلیک در هر نقطه از کادر جستجو (نه فقط خودِ input) باید فوکوس بده
+            // کلیک در هر نقطه از کادر جستجو (نه فقط خود input) باید فوکوس بده
             var searchBox = document.querySelector('.filters-row .search-box');
             var searchInput = document.getElementById('fSearch');
             if (searchBox && searchInput) {
@@ -648,7 +648,7 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
             document.getElementById('sClosed').textContent   = toPersian(s.closed_count || 0);
         }
 
-        /* ── حل‌شده کردنِ تیکت‌های «در انتظارِ پاسخِ کاربر» که ۲۱ روز بی‌پاسخ مانده‌اند (فقط id=1) ── */
+        /* ── حل‌شده کردن تیکت‌های «در انتظار پاسخ کاربر» که ۲۱ روز بی‌پاسخ مانده‌اند (فقط id=1) ── */
         window.resolveStaleTickets = function(){
             uiConfirm('همهٔ تیکت‌هایی که «در انتظار پاسخ کاربر» هستند و از آخرین پیامشان ۲۱ روز گذشته، به «حل شده» تغییر کنند؟', async function(){
                 var btn = document.getElementById('btnResolveStale');
@@ -738,7 +738,7 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
 
         /* ── helpers ── */
         function relTime(d) {
-            // زمانِ نسبی از منبعِ یگانه (ساعتِ سرور، نه دستگاه) — time-sync.js
+            // زمان نسبی از منبع یگانه (ساعت سرور، نه دستگاه) — time-sync.js
             return window.TimeSync ? TimeSync.timeAgo(d) : '';
         }
         function esc(str){

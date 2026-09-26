@@ -1,57 +1,57 @@
 <?php
 /**
- * طبقه‌بندی‌کننده‌یِ کاننیکِ «معوقه/امروز/برچسبِ وضعیت» در سمتِ PHP —
- * دقیقاً هم‌معنی با TF.isOverdue/TF.isDueToday/TF.statusBadge در
- * assets/js/task-filters.js (تنها مرجعِ این منطق تا امروز، فقط سمتِ
- * مرورگر). چون دستیارِ هوش‌مصنوعی (api/ai-assistant/data/task-summary.php)
- * باید دقیقاً همون چیزی رو بگه که کاربر روی داشبورد می‌بینه، این فایل
- * ساخته شد تا همون منطق رو، بدونِ بازنویسیِ ساده‌شده/ناقص، سمتِ سرور هم
+ * طبقه‌بندی‌کننده‌ی کاننیک «معوقه/امروز/برچسب وضعیت» در سمت PHP —
+ * دقیقا هم‌معنی با TF.isOverdue/TF.isDueToday/TF.statusBadge در
+ * assets/js/task-filters.js (تنها مرجع این منطق تا امروز، فقط سمت
+ * مرورگر). چون دستیار هوش‌مصنوعی (api/ai-assistant/data/task-summary.php)
+ * باید دقیقا همون چیزی رو بگه که کاربر روی داشبورد می‌بینه، این فایل
+ * ساخته شد تا همون منطق رو، بدون بازنویسی ساده‌شده/ناقص، سمت سرور هم
  * در دسترس باشه.
  *
- * ورودیِ همه‌یِ توابعِ این فایل، آرایه‌یِ یک تسک است که از قبل با
+ * ورودی همه‌ی توابع این فایل، آرایه‌ی یک تسک است که از قبل با
  * enrichTaskDates() (includes/task-dates-helper.php) غنی شده — یعنی
  * next_due_date/overdue_periods از همون‌جا میان، نه این‌جا دوباره
- * محاسبه بشن. علاوه‌براین، ستون‌هایِ زیر باید در کوئریِ اصلی JOIN شده
- * باشن (دقیقاً مثلِ api/tasks/my-tasks.php):
+ * محاسبه بشن. علاوه‌براین، ستون‌های زیر باید در کوئری اصلی JOIN شده
+ * باشن (دقیقا مثل api/tasks/my-tasks.php):
  *   dr.current_approver_id, dr.created_at AS deadline_request_date,
  *   ph.last_pending_date
- * (dr = deadline_requests با status='pending', ph = آخرین رویدادِ
+ * (dr = deadline_requests با status='pending', ph = آخرین رویداد
  * pending_approval که بعدش rejected نشده)
  */
 
 require_once __DIR__ . '/period-engine.php';
 
-/** معادلِ isDone در task-filters.js */
+/** معادل isDone در task-filters.js */
 function taskIsDone(array $t): bool
 {
     return $t['status'] === 'completed' || $t['status'] === 'approved';
 }
 
-/** معادلِ isExpired — یعنی بازه‌ی کارِ دوره‌ای تمام شده */
+/** معادل isExpired — یعنی بازه‌ی کار دوره‌ای تمام شده */
 function taskIsExpired(array $t, string $today): bool
 {
     return !empty($t['end_date']) && substr($t['end_date'], 0, 10) < $today;
 }
 
 /**
- * آیا این کارِ دوره‌ای نیازمندِ تصمیمِ تمدید است؟ — از قبل توسطِ
- * enrichTaskDates() (includes/task-dates-helper.php) محاسبه و رویِ خودِ
- * کار نشسته؛ این‌جا فقط خونده می‌شه (نه بازمحاسبه، چون باید بر پایه‌یِ
- * ساعتِ سرور باشه، نه فراخوانیِ دوباره)
+ * آیا این کار دوره‌ای نیازمند تصمیم تمدید است؟ — از قبل توسط
+ * enrichTaskDates() (includes/task-dates-helper.php) محاسبه و روی خود
+ * کار نشسته؛ این‌جا فقط خونده می‌شه (نه بازمحاسبه، چون باید بر پایه‌ی
+ * ساعت سرور باشه، نه فراخوانی دوباره)
  */
 function taskNeedsRenewalDecision(array $t): bool
 {
     return !empty($t['needs_renewal_decision']);
 }
 
-/** معادلِ isWaitingMyApproval */
+/** معادل isWaitingMyApproval */
 function taskIsWaitingMyApproval(array $t, int $userId): bool
 {
     if (empty($t['is_pending_approval'])) return false;
     return $userId === (int) ($t['creator_id'] ?? 0) || $userId === (int) ($t['current_approver_id'] ?? 0);
 }
 
-/** معادلِ isWaitingMyDeadline */
+/** معادل isWaitingMyDeadline */
 function taskIsWaitingMyDeadline(array $t, int $userId): bool
 {
     if (empty($t['has_pending_deadline_request'])) return false;
@@ -59,10 +59,10 @@ function taskIsWaitingMyDeadline(array $t, int $userId): bool
 }
 
 /**
- * معادلِ TF.isOverdue — دقیقاً همون ترتیب و همون قانون‌ها، از جمله
- * لیستِ سفیدِ وضعیت‌هایِ کارِ مقطعی (نه لیستِ سیاه؛ TaskManager::getTaskStats
- * از یک لیستِ سیاهِ متفاوت استفاده می‌کنه که عمداً این‌جا دنبال نشده،
- * چون منبعِ صحت همینه، نه اون)
+ * معادل TF.isOverdue — دقیقا همون ترتیب و همون قانون‌ها، از جمله
+ * لیست سفید وضعیت‌های کار مقطعی (نه لیست سیاه؛ TaskManager::getTaskStats
+ * از یک لیست سیاه متفاوت استفاده می‌کنه که عمدا این‌جا دنبال نشده،
+ * چون منبع صحت همینه، نه اون)
  */
 function taskIsOverdue(array $t, int $userId, string $today): bool
 {
@@ -103,7 +103,7 @@ function taskIsOverdue(array $t, int $userId, string $today): bool
     return false;
 }
 
-/** معادلِ TF.isDueToday */
+/** معادل TF.isDueToday */
 function taskIsDueToday(array $t, int $userId, string $today): bool
 {
     if (taskIsDone($t)) return false;
@@ -132,10 +132,10 @@ function taskIsDueToday(array $t, int $userId, string $today): bool
 }
 
 /**
- * جدولِ برچسب‌ها — طبقِ بررسی، سه نسخه‌یِ مختلف و ناقص از این جدول در
- * جاهایِ مختلفِ پروژه بود (TF.statusCfg در جاوااسکریپت، یک ثابتِ محلی در
- * api/chat/link-preview.php، و نسخه‌یِ قبلیِ همینِ فایل در task-summary.php)
- * که با هم اختلاف داشتن. این‌جا کامل‌ترین نسخه (اجتماعِ هر سه) است.
+ * جدول برچسب‌ها — طبق بررسی، سه نسخه‌ی مختلف و ناقص از این جدول در
+ * جاهای مختلف پروژه بود (TF.statusCfg در جاوااسکریپت، یک ثابت محلی در
+ * api/chat/link-preview.php، و نسخه‌ی قبلی همین فایل در task-summary.php)
+ * که با هم اختلاف داشتن. این‌جا کامل‌ترین نسخه (اجتماع هر سه) است.
  */
 const TASK_STATUS_LABELS = [
     'not_started'           => 'شروع نشده',
@@ -151,7 +151,7 @@ const TASK_STATUS_LABELS = [
 ];
 
 /**
- * معادلِ TF.statusBadge — اولویت: در انتظارِ تأیید > معوقه > برچسبِ خامِ وضعیت.
+ * معادل TF.statusBadge — اولویت: در انتظار تأیید > معوقه > برچسب خام وضعیت.
  * خروجی: ['label' => رشته‌ی فارسی, 'is_overdue' => bool, 'is_due_today' => bool]
  */
 function taskStatusInfo(array $t, int $userId, string $today): array
@@ -164,9 +164,9 @@ function taskStatusInfo(array $t, int $userId, string $today): array
     } elseif ($t['status'] === 'pending_approval') {
         $label = TASK_STATUS_LABELS['pending_approval'];
     } elseif (taskIsWaitingMyDeadline($t, $userId)) {
-        // مثلِ pending_approval بالا: وقتی کاربرِ جاری تأییدکننده‌ی یک
-        // درخواستِ تمدیدِ موعد است، این چیزیه که واقعاً باید ببینه —
-        // نه وضعیتِ خامِ کار یا صرفاً «عقب افتاده»
+        // مثل pending_approval بالا: وقتی کاربر جاری تأییدکننده‌ی یک
+        // درخواست تمدید موعد است، این چیزیه که واقعا باید ببینه —
+        // نه وضعیت خام کار یا صرفا «عقب افتاده»
         $label = 'درخواست تمدید موعد';
     } elseif ($isOverdue) {
         $label = 'عقب افتاده';

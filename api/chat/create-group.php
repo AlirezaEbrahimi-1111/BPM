@@ -1,6 +1,6 @@
 <?php
 /**
- * API: ساختِ یک گفتگویِ گروهیِ جدید
+ * API: ساخت یک گفتگوی گروهی جدید
  * POST /api/chat/create-group.php   body: { title: '...', member_ids: [1,2,3] }
  */
 
@@ -66,8 +66,8 @@ try {
     $stmt->execute([$orgId, $title, $user_id]);
     $conversationId = (int) $db->lastInsertId();
 
-    // سازنده‌ی گروه از همون اول admin هست (نه فقط created_by)، تا بعداً
-    // بشه یک مدیرِ دیگه هم کنارش اضافه کرد
+    // سازنده‌ی گروه از همون اول admin هست (نه فقط created_by)، تا بعدا
+    // بشه یک مدیر دیگه هم کنارش اضافه کرد
     $db->prepare("INSERT INTO chat_participants (conversation_id, user_id, role) VALUES (?, ?, 'admin')")
         ->execute([$conversationId, $user_id]);
 

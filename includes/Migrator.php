@@ -73,7 +73,7 @@ class Migrator
         return $names;
     }
 
-    /** لیست مهاجرت‌هایی که قبلاً اجرا شده‌اند */
+    /** لیست مهاجرت‌هایی که قبلا اجرا شده‌اند */
     public function appliedMigrations(): array
     {
         $stmt = $this->db->query(

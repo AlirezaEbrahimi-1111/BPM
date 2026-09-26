@@ -190,7 +190,7 @@ if (!hasPermission($__me, 'manage_task_groups')) {
         ];
 
         const gridOptions = {
-            theme: AgGridFa.theme({ rowHoverColor: '#f0f7ff' }), // پایهٔ مشترک؛ هاورِ فعلیِ همین صفحه حفظ شد
+            theme: AgGridFa.theme({ rowHoverColor: '#f0f7ff' }), // پایهٔ مشترک؛ هاور فعلی همین صفحه حفظ شد
             columnDefs: columnDefs,
             rowData: [],
             enableRtl: true,

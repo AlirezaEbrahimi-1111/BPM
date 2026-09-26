@@ -86,7 +86,7 @@ if (!hasPermission($__me, 'manage_users')) {
             color: #6b7280;
         }
 
-        /* ── فهرستِ درخواست‌هایِ سهمیهٔ تشویقی ── */
+        /* ── فهرست درخواست‌های سهمیهٔ تشویقی ── */
         .bonus-req-box {
             background: #fff8e6;
             border: 1px solid #f6d98b;
@@ -543,8 +543,8 @@ if (!hasPermission($__me, 'manage_users')) {
             }
         }
 
-        /* فوکوسِ همهٔ ورودی‌ها و لیست‌های کشویی: بنفشِ سازمانی به‌جایِ آبیِ
-           پیش‌فرضِ بوت‌استرپ */
+        /* فوکوس همهٔ ورودی‌ها و لیست‌های کشویی: بنفش سازمانی به‌جای آبی
+           پیش‌فرض بوت‌استرپ */
         .form-control:focus,
         .form-select:focus,
         .form-check-input:focus,
@@ -556,8 +556,8 @@ if (!hasPermission($__me, 'manage_users')) {
             box-shadow: 0 0 0 .2rem rgba(142, 87, 254, .25);
         }
 
-        /* دکمه‌هایِ «تکمیلِ کار»/«لغوِ کار» تو مودالِ رسیدگی‌به‌کارهایِ کاربرِ
-           غیرفعال‌شده — رنگِ سبز/قرمزِ صریح، تا وضوحِ دیداری داشته باشن و با
+        /* دکمه‌های «تکمیل کار»/«لغو کار» تو مودال رسیدگی‌به‌کارهای کاربر
+           غیرفعال‌شده — رنگ سبز/قرمز صریح، تا وضوح دیداری داشته باشن و با
            «ارجاع به دیگری» (بنفش) قاطی نشن */
         #pendingTasksModal .btn-outline-success,
         #pendingTasksModal .btn-outline-danger,
@@ -597,15 +597,13 @@ if (!hasPermission($__me, 'manage_users')) {
             background: transparent;
         }
 
-        /* دکمه‌ی «ارجاع به دیگری» — همیشه بنفشِ اصلیِ سایت (نه فقط وقتی
-           checkه)، و چون اولین دکمه‌ی گروهه (سمتِ راست، تویِ صفحه‌ی RTL)،
-           رادیوسِ گوشه‌هایِ سمتِ راستش عمداً صفره */
+        /* دکمه‌ی «ارجاع به دیگری» — همیشه بنفش اصلی سایت (نه فقط وقتی
+           checkه)، و چون اولین دکمه‌ی گروهه (سمت راست، توی صفحه‌ی RTL)،
+           رادیوس گوشه‌های سمت راستش عمدا صفره */
         #pendingTasksModal .btn-outline-primary {
             background-color: #8e57fe !important;
             border-color: #8e57fe !important;
             color: white !important;
-            border-top-right-radius: 0 !important;
-            border-bottom-right-radius: 0 !important;
         }
     </style>
 </head>
@@ -912,21 +910,21 @@ if (!hasPermission($__me, 'manage_users')) {
         </div>
     </div>
 
-    <!-- مودالِ رسیدگی به کارهایِ بازِ کاربر، قبل از غیرفعال‌سازی -->
+    <!-- مودال رسیدگی به کارهای باز کاربر، قبل از غیرفعال‌سازی -->
     <div class="modal fade" id="pendingTasksModal" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header-custom modal-header border-0">
                     <h5 class="modal-title text-white" style="color: black;">
                         <i class="bi bi-exclamation-triangle ms-2"></i>
-                        کارهایِ بازِ <span id="ptName"></span>
+                        کارهای باز <span id="ptName"></span>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-warning" style="font-size:.85rem;">
-                        این کاربر <b id="ptCount"></b> کارِ باز دارد. قبل از غیرفعال‌سازی، برایِ هرکدوم تعیین کنید:
-                        ارجاع به شخصِ دیگر، تکمیلِ کار (بدونِ نیاز به تأیید)، یا لغوِ کار — و دلیلش را بنویسید.
+                        این کاربر <b id="ptCount"></b> کار باز دارد. قبل از غیرفعال‌سازی، برای هرکدوم تعیین کنید:
+                        ارجاع به شخص دیگر، تکمیل کار (بدون نیاز به تأیید)، یا لغو کار — و دلیلش را بنویسید.
                     </div>
                     <div id="ptTaskList"></div>
                 </div>
@@ -951,7 +949,7 @@ if (!hasPermission($__me, 'manage_users')) {
         let orgSections = [];
         // ═══════════ چندانتخابی واحدها ═══════════
         let secList = []; // همهٔ واحدها
-        let secPrimary = ''; // کلیدِ واحد اصلی
+        let secPrimary = ''; // کلید واحد اصلی
 
         function renderSecTags() {
             const tags = document.getElementById('secTags');
@@ -1222,7 +1220,7 @@ if (!hasPermission($__me, 'manage_users')) {
                         if (secs.length) {
                             body = secs.map(s => chip(s.section_label, s.is_primary == 1)).join('');
                         } else if (p.value) {
-                            // واحدِ تکی (مثلِ «مدیریت») هم بجِ استاندارد بگیرد، نه متنِ ساده
+                            // واحد تکی (مثل «مدیریت») هم بج استاندارد بگیرد، نه متن ساده
                             body = chip(getSectionLabel(p.value), false);
                         } else {
                             body = '<small style="color:#9ca3af;">—</small>';
@@ -1393,9 +1391,9 @@ if (!hasPermission($__me, 'manage_users')) {
                 .catch(() => showToast('خطا در دریافت موجودی', 'error'));
         }
 
-        // درخواست‌هایِ در‌انتظارِ سهمیهٔ تشویقی از این‌جا به
-        // attendance_system/pages/requests.php (تبِ «درخواست‌های سازمان»)
-        // منتقل شدن — طبقِ تصمیمِ صریح، این‌جا دیگه نمایش داده نمی‌شن.
+        // درخواست‌های در‌انتظار سهمیهٔ تشویقی از این‌جا به
+        // attendance_system/pages/requests.php (تب «درخواست‌های سازمان»)
+        // منتقل شدن — طبق تصمیم صریح، این‌جا دیگه نمایش داده نمی‌شن.
 
         async function restoreUser(userId) {
             try {
@@ -1578,12 +1576,12 @@ if (!hasPermission($__me, 'manage_users')) {
             }
         }
 
-        // ست‌کردنِ مقدارِ یک <select> از کدِ صفحه (نه با کلیکِ کاربر) باید
-        // رویدادِ change رو دستی شلیک کنه — وگرنه ویجتِ SelectBox
-        // (assets/js/select-box.js) که ظاهرِ این دراپ‌داون‌ها رو می‌سازه،
-        // بی‌خبر می‌مونه و برچسبِ نمایشی‌ش با مقدارِ واقعیِ <select> (که درست
-        // ذخیره می‌شه) ناهماهنگ می‌مونه — دقیقاً همون چیزی که برایِ
-        // «وضعیت» توی مودالِ ویرایش دیده شد.
+        // ست‌کردن مقدار یک <select> از کد صفحه (نه با کلیک کاربر) باید
+        // رویداد change رو دستی شلیک کنه — وگرنه ویجت SelectBox
+        // (assets/js/select-box.js) که ظاهر این دراپ‌داون‌ها رو می‌سازه،
+        // بی‌خبر می‌مونه و برچسب نمایشی‌ش با مقدار واقعی <select> (که درست
+        // ذخیره می‌شه) ناهماهنگ می‌مونه — دقیقا همون چیزی که برای
+        // «وضعیت» توی مودال ویرایش دیده شد.
         function setSelectValue(id, value) {
             const el = document.getElementById(id);
             if (!el) return;
@@ -1606,7 +1604,7 @@ if (!hasPermission($__me, 'manage_users')) {
             document.getElementById('e_phone').value = u.phone || '';
             document.getElementById('e_email').value = u.email || '';
 
-            // هم‌راستا با نمایشِ جدول (p.value == 1) — نه ‍‍`?? 1`، چون
+            // هم‌راستا با نمایش جدول (p.value == 1) — نه ‍‍`?? 1`، چون
             // is_active=null (نه 0) رو غلط «فعال» نشون می‌داد، درحالی‌که
             // جدول همون null رو «غیرفعال» نشون می‌ده
             setSelectValue('e_is_active', (u.is_active == 1) ? '1' : '0');
@@ -1762,10 +1760,10 @@ if (!hasPermission($__me, 'manage_users')) {
                 shift_1_end: document.getElementById('e_shift1_end').value || null,
                 shift_2_start: document.getElementById('e_shift2_start').value || null,
                 shift_2_end: document.getElementById('e_shift2_end').value || null,
-                // فیلد به‌صورتِ «تومان + رقمِ فارسی» نمایش داده می‌شه؛ قبل از
-                // ارسال باید به رقمِ لاتین و ریال (× ۱۰) تبدیل بشه — قبلاً
-                // اینجا parseFloat مستقیم روی متنِ فارسی می‌خورد و همیشه NaN
-                // می‌شد، یعنی هر ذخیره‌ای حقوقِ کاربر رو بی‌صدا صفر می‌کرد.
+                // فیلد به‌صورت «تومان + رقم فارسی» نمایش داده می‌شه؛ قبل از
+                // ارسال باید به رقم لاتین و ریال (× ۱۰) تبدیل بشه — قبلا
+                // اینجا parseFloat مستقیم روی متن فارسی می‌خورد و همیشه NaN
+                // می‌شد، یعنی هر ذخیره‌ای حقوق کاربر رو بی‌صدا صفر می‌کرد.
                 monthly_salary: Math.round(parseSalaryToman(document.getElementById('e_monthly_salary').value) * 10),
                 activity_section: document.getElementById('e_activity_section').value || null,
                 sections: collectSections(),
@@ -1778,13 +1776,13 @@ if (!hasPermission($__me, 'manage_users')) {
                 manager_lastname: mgr?.last_name || null,
             };
 
-            // 🆕 اگه از داخلِ همین مودال هم وضعیت از فعال به غیرفعال عوض
-            // بشه، باید دقیقاً مثلِ سوییچِ غیرفعال‌سازیِ لیست، اول کارهایِ
-            // بازِ کاربر چک بشه — وگرنه از این مسیر می‌شد یه کاربر رو با
-            // کارهایِ بازِ رهاشده غیرفعال کرد. اگه کارِ بازی بود، بقیه‌ی
-            // فیلدها (بدونِ is_active) همین‌جا ذخیره می‌شن و بعد همون
-            // مودالِ رسیدگی‌به‌کارهایِ toggleStatus باز می‌شه؛ خودِ آن مودال
-            // (submitPendingTaskResolutions) غیرفعال‌سازیِ واقعی رو انجام می‌ده.
+            // 🆕 اگه از داخل همین مودال هم وضعیت از فعال به غیرفعال عوض
+            // بشه، باید دقیقا مثل سوییچ غیرفعال‌سازی لیست، اول کارهای
+            // باز کاربر چک بشه — وگرنه از این مسیر می‌شد یه کاربر رو با
+            // کارهای باز رهاشده غیرفعال کرد. اگه کار بازی بود، بقیه‌ی
+            // فیلدها (بدون is_active) همین‌جا ذخیره می‌شن و بعد همون
+            // مودال رسیدگی‌به‌کارهای toggleStatus باز می‌شه؛ خود آن مودال
+            // (submitPendingTaskResolutions) غیرفعال‌سازی واقعی رو انجام می‌ده.
             const isDeactivating = originalUserData.is_active === '1' && payload.is_active === 0;
             if (isDeactivating) {
                 try {
@@ -1810,7 +1808,7 @@ if (!hasPermission($__me, 'manage_users')) {
                         return;
                     }
                 } catch {
-                    // مثلِ toggleStatus، شکستِ این چک نباید جلویِ ذخیره‌ی معمولی رو بگیره
+                    // مثل toggleStatus، شکست این چک نباید جلوی ذخیره‌ی معمولی رو بگیره
                 }
             }
 
@@ -1841,8 +1839,8 @@ if (!hasPermission($__me, 'manage_users')) {
             const toman = Math.round(val / 10);
             return toFa(toman.toLocaleString('en-US'));
         }
-        // معکوسِ formatSalary: رشته‌ی نمایشی (رقمِ فارسی/عربی + جداکننده‌ی هزارگان)
-        // رو به یک عددِ ریالِ خام برمی‌گردونه — برایِ ارسال به سرور.
+        // معکوس formatSalary: رشته‌ی نمایشی (رقم فارسی/عربی + جداکننده‌ی هزارگان)
+        // رو به یک عدد ریال خام برمی‌گردونه — برای ارسال به سرور.
         function normalizeDigits(str) {
             return String(str)
                 .replace(/[۰-۹]/g, d => d.charCodeAt(0) - 1776)
@@ -1863,9 +1861,9 @@ if (!hasPermission($__me, 'manage_users')) {
             const user = allUsers.find(x => x.id === userId);
             const name = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'این کاربر';
 
-            // 🆕 قبل از غیرفعال‌سازی (نه فعال‌سازی)، اول چک کن این کاربر کارِ
-            // بازی داره یا نه — اگه داره، به‌جایِ تأییدِ ساده، مودالِ رسیدگی
-            // به کارها باز می‌شه؛ غیرفعال‌سازیِ واقعی از دلِ همون مودال انجام می‌شه
+            // 🆕 قبل از غیرفعال‌سازی (نه فعال‌سازی)، اول چک کن این کاربر کار
+            // بازی داره یا نه — اگه داره، به‌جای تأیید ساده، مودال رسیدگی
+            // به کارها باز می‌شه؛ غیرفعال‌سازی واقعی از دل همون مودال انجام می‌شه
             if (newVal === 0) {
                 try {
                     const pr = await fetch('/api/admin/user-pending-tasks.php?user_id=' + userId, { headers: ahj() });
@@ -1875,8 +1873,8 @@ if (!hasPermission($__me, 'manage_users')) {
                         return;
                     }
                 } catch {
-                    // شکستِ این چک نباید جلویِ کلِ غیرفعال‌سازی رو بگیره — با
-                    // همون مسیرِ سادهٔ زیر ادامه می‌دیم
+                    // شکست این چک نباید جلوی کل غیرفعال‌سازی رو بگیره — با
+                    // همون مسیر سادهٔ زیر ادامه می‌دیم
                 }
             }
 
@@ -1907,7 +1905,7 @@ if (!hasPermission($__me, 'manage_users')) {
             });
         }
 
-        // ─────────────── رسیدگی به کارهایِ بازِ کاربر قبل از غیرفعال‌سازی ───────────────
+        // ─────────────── رسیدگی به کارهای باز کاربر قبل از غیرفعال‌سازی ───────────────
         var ptModalInstance = null;
         var ptTargetUserId = null;
         var ptTasks = [];
@@ -1920,8 +1918,8 @@ if (!hasPermission($__me, 'manage_users')) {
             document.getElementById('ptName').textContent = name;
             document.getElementById('ptCount').textContent = toFa ? toFa(tasks.length) : tasks.length;
 
-            // مقصدهایِ ممکن برایِ ارجاع: کاربرانِ فعالِ همون سازمان، به‌جز خودِ
-            // کاربرِ در‌حالِ‌غیرفعال‌شدن
+            // مقصدهای ممکن برای ارجاع: کاربران فعال همون سازمان، به‌جز خود
+            // کاربر در‌حال‌غیرفعال‌شدن
             const targetUser = allUsers.find(x => x.id === userId);
             const orgId = targetUser ? targetUser.organization_id : null;
             const reassignCandidates = allUsers.filter(u =>
@@ -1942,17 +1940,17 @@ if (!hasPermission($__me, 'manage_users')) {
                         <input type="radio" class="btn-check" name="pt-action-${t.id}" id="pt-reassign-${t.id}" value="reassign" checked onchange="ptOnActionChange(${t.id})">
                         <label class="btn btn-outline-primary" for="pt-reassign-${t.id}">ارجاع به دیگری</label>
                         <input type="radio" class="btn-check" name="pt-action-${t.id}" id="pt-complete-${t.id}" value="complete" onchange="ptOnActionChange(${t.id})">
-                        <label class="btn btn-outline-success" for="pt-complete-${t.id}">تکمیلِ کار</label>
+                        <label class="btn btn-outline-success" for="pt-complete-${t.id}">تکمیل کار</label>
                         <input type="radio" class="btn-check" name="pt-action-${t.id}" id="pt-cancel-${t.id}" value="cancel" onchange="ptOnActionChange(${t.id})">
-                        <label class="btn btn-outline-danger" for="pt-cancel-${t.id}">لغوِ کار</label>
+                        <label class="btn btn-outline-danger" for="pt-cancel-${t.id}">لغو کار</label>
                     </div>
                     <div id="pt-reassign-wrap-${t.id}" class="mb-2">
                         <select class="form-select form-select-sm" id="pt-to-user-${t.id}">
-                            <option value="">— انتخابِ کاربرِ مقصد —</option>
+                            <option value="">— انتخاب کاربر مقصد —</option>
                             ${userOptions}
                         </select>
                     </div>
-                    <textarea class="form-control form-control-sm" id="pt-reason-${t.id}" rows="1" placeholder="دلیل (مثلاً: غیرفعال‌سازیِ ${esc(name)})"></textarea>
+                    <textarea class="form-control form-control-sm" id="pt-reason-${t.id}" rows="1" placeholder="دلیل (مثلا: غیرفعال‌سازی ${esc(name)})"></textarea>
                 </div>`;
             }).join('');
 
@@ -1978,7 +1976,7 @@ if (!hasPermission($__me, 'manage_users')) {
                 if (action === 'reassign') {
                     const toUserId = document.getElementById('pt-to-user-' + t.id).value;
                     if (!toUserId) {
-                        showAlert('برایِ «' + (t.title || 'یک کار') + '» کاربرِ مقصد را انتخاب کنید', 'danger');
+                        showAlert('برای «' + (t.title || 'یک کار') + '» کاربر مقصد را انتخاب کنید', 'danger');
                         return;
                     }
                     item.to_user_id = parseInt(toUserId, 10);

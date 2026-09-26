@@ -1,6 +1,6 @@
 <?php
 /**
- * API: ارسالِ پیام در یک گفتگو (متن و/یا پیوست)
+ * API: ارسال پیام در یک گفتگو (متن و/یا پیوست)
  * POST /api/chat/send.php   (multipart/form-data یا JSON)
  *   conversation_id, message, attachments[]
  */
@@ -61,7 +61,7 @@ try {
         exit;
     }
 
-    // 🔒 پیامِ موردِ پاسخ باید واقعاً متعلق به همین گفتگو باشد، وگرنه نادیده گرفته می‌شود
+    // 🔒 پیام مورد پاسخ باید واقعا متعلق به همین گفتگو باشد، وگرنه نادیده گرفته می‌شود
     // (بدون خطا — تا اگر کاربر دیرتر ارسال کند و پیام از دیدش حذف/جابه‌جا شده باشد، پیام اصلی همچنان ارسال شود)
     if ($replyToId) {
         $stmt = $db->prepare("SELECT id FROM chat_messages WHERE id = ? AND conversation_id = ? AND is_deleted = 0");
@@ -73,12 +73,12 @@ try {
 
     $db->beginTransaction();
 
-    // 🔒 برایِ پیامِ فقط‌پیوست (بدونِ متن)، عمداً '' ذخیره می‌شه نه NULL —
-    // چون لیستِ گفتگوها (api/chat/conversations.php → chat.php خطِ پیش‌نمایش)
-    // دقیقاً با last_message === '' تشخیص می‌ده که پیام «فقط پیوست»ه و
+    // 🔒 برای پیام فقط‌پیوست (بدون متن)، عمدا '' ذخیره می‌شه نه NULL —
+    // چون لیست گفتگوها (api/chat/conversations.php → chat.php خط پیش‌نمایش)
+    // دقیقا با last_message === '' تشخیص می‌ده که پیام «فقط پیوست»ه و
     // «📎 پیوست» نشون بده؛ اگه NULL ذخیره می‌شد، اون چک هیچ‌وقت true
-    // نمی‌شد و به‌جاش غلط «هنوز پیامی نیست» نشون داده می‌شد — دقیقاً همون
-    // گزارشِ کاربر برایِ گفتگوهایی که آخرین پیامشون فقط عکس/فایل بود
+    // نمی‌شد و به‌جاش غلط «هنوز پیامی نیست» نشون داده می‌شد — دقیقا همون
+    // گزارش کاربر برای گفتگوهایی که آخرین پیامشون فقط عکس/فایل بود
     $stmt = $db->prepare("INSERT INTO chat_messages (conversation_id, user_id, message, reply_to_message_id) VALUES (?, ?, ?, ?)");
     $stmt->execute([$conversationId, $user_id, $message, $replyToId]);
     $messageId = (int) $db->lastInsertId();
@@ -110,7 +110,7 @@ try {
             if ($error !== UPLOAD_ERR_OK || $size > $maxSize || !in_array($type, $allowedTypes)) continue;
 
             $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-            // فقط پسوندهایِ امن ذخیره شوند (نه php/phtml/svg/html/js/...)
+            // فقط پسوندهای امن ذخیره شوند (نه php/phtml/svg/html/js/...)
             if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'mp3', 'm4a', 'ogg', 'txt'], true)) continue;
             $storedName = uniqid('chat_') . '_' . time() . '.' . $ext;
 
@@ -128,19 +128,19 @@ try {
     $db->prepare("UPDATE chat_participants SET last_read_message_id = ? WHERE conversation_id = ? AND user_id = ?")
         ->execute([$messageId, $conversationId, $user_id]);
 
-    // برای مرتب‌سازیِ لیستِ گفتگوها بر اساسِ آخرین فعالیت
+    // برای مرتب‌سازی لیست گفتگوها بر اساس آخرین فعالیت
     $db->prepare("UPDATE chat_conversations SET updated_at = NOW() WHERE id = ?")->execute([$conversationId]);
 
     $db->commit();
 
-    // ⚠️ عمداً بدونِ نوتیفیکیشن/پیامک: پیام‌های چت زنگوله‌ی اعلانِ خودشون رو دارن
-    // (چک کردن هدر: chatUnreadBadge)، پس نیازی به ثبت در جدولِ notifications یا
-    // ارسالِ پیامک ندارن — بر خلافِ تیکت که کم‌تعداد و رسمی‌تره.
+    // ⚠️ عمدا بدون نوتیفیکیشن/پیامک: پیام‌های چت زنگوله‌ی اعلان خودشون رو دارن
+    // (چک کردن هدر: chatUnreadBadge)، پس نیازی به ثبت در جدول notifications یا
+    // ارسال پیامک ندارن — بر خلاف تیکت که کم‌تعداد و رسمی‌تره.
     //
-    // 🆕 استثنا: منشن‌شدنِ مستقیم (@نام). این کار پرصدا نیست (فقط وقتی
-    // واقعاً کسی رو صدا بزنن) و نیاز به توجهِ فوری داره، پس برخلافِ پیامِ
-    // معمولیِ چت، نوتیفیکیشن/پیامکِ مجزا می‌گیره. «@all» یا مشابهش عمداً
-    // پشتیبانی نمی‌شه — فقط تطبیقِ نامِ واقعیِ یکی از شرکت‌کننده‌ها.
+    // 🆕 استثنا: منشن‌شدن مستقیم (@نام). این کار پرصدا نیست (فقط وقتی
+    // واقعا کسی رو صدا بزنن) و نیاز به توجه فوری داره، پس برخلاف پیام
+    // معمولی چت، نوتیفیکیشن/پیامک مجزا می‌گیره. «@all» یا مشابهش عمدا
+    // پشتیبانی نمی‌شه — فقط تطبیق نام واقعی یکی از شرکت‌کننده‌ها.
     if ($message !== '' && strpos($message, '@') !== false) {
         try {
             $stmt = $db->prepare("
@@ -152,8 +152,8 @@ try {
             $stmt->execute([$conversationId, $user_id]);
             $participants = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // نام‌هایِ بلندتر اول چک بشن تا یک نامِ کوتاه‌تر که زیرمجموعهٔ
-            // یک نامِ دیگه‌ست (مثلاً «علی» داخلِ «علی‌رضا») اشتباهی مچ نشه
+            // نام‌های بلندتر اول چک بشن تا یک نام کوتاه‌تر که زیرمجموعهٔ
+            // یک نام دیگه‌ست (مثلا «علی» داخل «علی‌رضا») اشتباهی مچ نشه
             usort($participants, fn($a, $b) => mb_strlen($b['full_name']) - mb_strlen($a['full_name']));
 
             $senderStmt = $db->prepare("SELECT TRIM(CONCAT(first_name, ' ', last_name)) AS full_name FROM users WHERE id = ?");
@@ -178,8 +178,8 @@ try {
                     'sms_pattern'  => 'general',
                 ]);
 
-                // حذفِ نامِ مچ‌شده از متنِ باقی‌مونده تا یک زیررشتهٔ کوتاه‌تر
-                // از یک نامِ بلندترِ قبلاً-مچ‌شده دوباره حساب نشه
+                // حذف نام مچ‌شده از متن باقی‌مونده تا یک زیررشتهٔ کوتاه‌تر
+                // از یک نام بلندتر قبلا-مچ‌شده دوباره حساب نشه
                 $consumedText = str_replace($needle, '', $consumedText);
             }
         } catch (Exception $e) {

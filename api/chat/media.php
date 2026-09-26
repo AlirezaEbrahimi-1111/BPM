@@ -1,6 +1,6 @@
 <?php
 /**
- * API: فهرستِ فایل/عکسِ به‌اشتراک‌گذاشته‌شده در یک گفتگو (برایِ نمایِ گالری)
+ * API: فهرست فایل/عکس به‌اشتراک‌گذاشته‌شده در یک گفتگو (برای نمای گالری)
  * GET /api/chat/media.php?conversation_id=123
  */
 
@@ -28,7 +28,7 @@ try {
         exit;
     }
 
-    // 🔒 فقط شرکت‌کننده‌هایِ همون گفتگو
+    // 🔒 فقط شرکت‌کننده‌های همون گفتگو
     $stmt = $db->prepare("SELECT id FROM chat_participants WHERE conversation_id = ? AND user_id = ?");
     $stmt->execute([$conversationId, $user_id]);
     if (!$stmt->fetch()) {

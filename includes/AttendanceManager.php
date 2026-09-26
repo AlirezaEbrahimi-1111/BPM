@@ -217,7 +217,7 @@ class AttendanceManager
         if ($user['shift_type'] == 'single') {
             $last_record = $records[0];
             if ($last_record['check_out'] === null) {
-                return false; // قبلاً ورود ثبت شده و خروج نزده
+                return false; // قبلا ورود ثبت شده و خروج نزده
             }
             return false; // یک شیفته‌ها نمی‌توانند دوباره ورود بزنند
         }
@@ -247,7 +247,7 @@ class AttendanceManager
 
                 return 2; // شیفت دوم
             } else {
-                // شیفت دوم قبلاً ثبت شده
+                // شیفت دوم قبلا ثبت شده
                 if ($last_record['check_out'] === null) {
                     return false;
                 }
@@ -505,7 +505,7 @@ class AttendanceManager
                 }
 
                 // بررسی مرخصی، مأموریت و غیره
-                // (این بخش بعداً با کلاس LeaveManager یکپارچه می‌شود)
+                // (این بخش بعدا با کلاس LeaveManager یکپارچه می‌شود)
 
                 $calendar[] = $day_data;
                 $current->modify('+1 day');

@@ -31,9 +31,9 @@ try {
         // نمایش ارجاعات سابق
         $tasks = $taskManager->getPreviousDelegations($user_id);
     } elseif (isset($_GET['scope']) && $_GET['scope'] === 'org') {
-        // 🆕 نمایشِ سازمانی — همه‌ی کارهایِ واگذارشده‌ی سازمان (نه فقط
-        // خودِ کاربرِ جاری)، مخصوصِ ویجتِ «کارهایِ واگذارشده‌ی تأخیردار»یِ
-        // داشبوردِ مدیر؛ فقط برایِ کاربرانی که مجوزِ دیدنِ کلِ سازمان دارن
+        // 🆕 نمایش سازمانی — همه‌ی کارهای واگذارشده‌ی سازمان (نه فقط
+        // خود کاربر جاری)، مخصوص ویجت «کارهای واگذارشده‌ی تأخیردار»ی
+        // داشبورد مدیر؛ فقط برای کاربرانی که مجوز دیدن کل سازمان دارن
         $me = loadUserForPermissions($db, $user_id);
         if (!hasPermission($me, 'view_all_org_tasks') && !hasPermission($me, 'view_org_dashboard_reports')) {
             http_response_code(403);

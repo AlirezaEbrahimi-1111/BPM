@@ -1,52 +1,52 @@
-// go-api — بازنویسیِ تدریجیِ لایهٔ api/ اپِ PHP به Go (الگوی Strangler Fig).
+// go-api — بازنویسی تدریجی لایهٔ api/ اپ PHP به Go (الگوی Strangler Fig).
 //
 // endpointها تا این‌جا:
 //
-//	GET    /go/api/health           → بدونِ احراز هویت؛ سلامتِ سرویس و دیتابیس
-//	GET    /go/api/me               → با همان JWTِ اپِ PHP؛ کاربر + اجازه‌هایش
-//	GET    /go/api/reports/stats    → پورتِ api/reports/stats.php
-//	GET    /go/api/reports/list     → پورتِ api/reports/list.php
-//	POST   /go/api/reports/submit   → پورتِ api/reports/submit.php
-//	GET    /go/api/reports/get-today-activities → پورتِ api/reports/get-today-activities.php
-//	GET    /go/api/reports/bottleneck-report    → پورتِ api/reports/bottleneck-report.php
-//	GET    /go/api/reports/top-delayed-users    → پورتِ api/reports/top-delayed-users.php
-//	GET    /go/api/attendance/today-status → پورتِ api/attendance/today-status.php
-//	GET    /go/api/attendance/absent-today → پورتِ api/attendance/absent-today.php
-//	GET    /go/api/notifications/list      → پورتِ api/notifications/list.php
-//	GET    /go/api/notifications/new       → پورتِ api/notifications/new.php
-//	POST   /go/api/notifications/mark-read → پورتِ api/notifications/mark-read.php
-//	POST   /go/api/notifications/mark-all-read → پورتِ api/notifications/mark-all-read.php
-//	POST   /go/api/notifications/delete    → پورتِ api/notifications/delete.php
-//	GET    /go/api/announcements/list      → پورتِ api/announcements/list.php
-//	GET    /go/api/tickets/list            → پورتِ api/tickets/list.php
-//	POST   /go/api/tickets/mark-all-read   → پورتِ api/tickets/mark-all-read.php
-//	GET|POST /go/api/attendance/allowed-ips → پورتِ api/attendance/allowed-ips.php
-//	GET|POST /go/api/attendance/devices     → پورتِ جزئیِ api/attendance/devices.php (بدونِ approve/reject)
-//	GET|POST /go/api/attendance/denied-log  → پورتِ api/attendance/denied-log.php
-//	GET    /go/api/tickets/detail          → پورتِ api/tickets/detail.php
-//	GET    /go/api/tasks/my-tasks          → پورتِ api/tasks/my-tasks.php
-//	POST   /go/api/attendance/register     → پورتِ api/attendance/register.php
-//	                                          (پورت شده؛ فرانت‌اند هنوز وصل نیست — پایینِ همین کامنت)
+//	GET    /go/api/health           → بدون احراز هویت؛ سلامت سرویس و دیتابیس
+//	GET    /go/api/me               → با همان JWT اپ PHP؛ کاربر + اجازه‌هایش
+//	GET    /go/api/reports/stats    → پورت api/reports/stats.php
+//	GET    /go/api/reports/list     → پورت api/reports/list.php
+//	POST   /go/api/reports/submit   → پورت api/reports/submit.php
+//	GET    /go/api/reports/get-today-activities → پورت api/reports/get-today-activities.php
+//	GET    /go/api/reports/bottleneck-report    → پورت api/reports/bottleneck-report.php
+//	GET    /go/api/reports/top-delayed-users    → پورت api/reports/top-delayed-users.php
+//	GET    /go/api/attendance/today-status → پورت api/attendance/today-status.php
+//	GET    /go/api/attendance/absent-today → پورت api/attendance/absent-today.php
+//	GET    /go/api/notifications/list      → پورت api/notifications/list.php
+//	GET    /go/api/notifications/new       → پورت api/notifications/new.php
+//	POST   /go/api/notifications/mark-read → پورت api/notifications/mark-read.php
+//	POST   /go/api/notifications/mark-all-read → پورت api/notifications/mark-all-read.php
+//	POST   /go/api/notifications/delete    → پورت api/notifications/delete.php
+//	GET    /go/api/announcements/list      → پورت api/announcements/list.php
+//	GET    /go/api/tickets/list            → پورت api/tickets/list.php
+//	POST   /go/api/tickets/mark-all-read   → پورت api/tickets/mark-all-read.php
+//	GET|POST /go/api/attendance/allowed-ips → پورت api/attendance/allowed-ips.php
+//	GET|POST /go/api/attendance/devices     → پورت جزئی api/attendance/devices.php (بدون approve/reject)
+//	GET|POST /go/api/attendance/denied-log  → پورت api/attendance/denied-log.php
+//	GET    /go/api/tickets/detail          → پورت api/tickets/detail.php
+//	GET    /go/api/tasks/my-tasks          → پورت api/tasks/my-tasks.php
+//	POST   /go/api/attendance/register     → پورت api/attendance/register.php
+//	                                          (پورت شده؛ فرانت‌اند هنوز وصل نیست — پایین همین کامنت)
 //
-// ثبتِ ورود/خروج (بالا) با احتیاطِ بیشتری پورت شده چون این جدول مستقیم
-// توسطِ monthly-report.php/monthly-deficit.php/leave-balance*.php خونده
-// می‌شه (ریسکِ مالی/عملیاتی). یک استثنا داره: حالتِ نادرِ «دستگاهِ کاملاً
-// جدید + کاربرِ تأییدنشده» که باید پیامک بفرسته — اون با یک تماسِ داخلیِ
+// ثبت ورود/خروج (بالا) با احتیاط بیشتری پورت شده چون این جدول مستقیم
+// توسط monthly-report.php/monthly-deficit.php/leave-balance*.php خونده
+// می‌شه (ریسک مالی/عملیاتی). یک استثنا داره: حالت نادر «دستگاه کاملا
+// جدید + کاربر تأییدنشده» که باید پیامک بفرسته — اون با یک تماس داخلی
 // HTTP به api/internal/notify-new-device.php انجام می‌شه (نگاه کن به
-// core.NotifyNewDeviceAsync)، نه با بازنویسیِ Notification::create() در Go.
-// عمداً پورت نشده: هر منطقِ محاسبه‌ی کسری/حقوق (خودِ گزارش‌ها/کسری‌ها).
+// core.NotifyNewDeviceAsync)، نه با بازنویسی Notification::create() در Go.
+// عمدا پورت نشده: هر منطق محاسبه‌ی کسری/حقوق (خود گزارش‌ها/کسری‌ها).
 //
-// روالِ افزودنِ endpoint: پورت در internal/<module>/، ثبت در main.go، سپس
-// «تستِ سایه‌ای» (SHADOW-TEST.md) — خروجیِ Go و PHP روی یک دیتابیس مقایسه شود —
-// و تنها بعد از تأیید، یک خطِ ProxyPass در Apache اضافه می‌شود.
+// روال افزودن endpoint: پورت در internal/<module>/، ثبت در main.go، سپس
+// «تست سایه‌ای» (SHADOW-TEST.md) — خروجی Go و PHP روی یک دیتابیس مقایسه شود —
+// و تنها بعد از تأیید، یک خط ProxyPass در Apache اضافه می‌شود.
 //
 // این سرویس:
-//   - همان MariaDBِ اپِ اصلی را می‌خواند (فعلاً فقط SELECT روی users).
-//   - همان JWT (HS256, همان jwt_secret) را دقیقاً مثلِ includes/auth.php می‌سنجد.
-//   - فقط روی 127.0.0.1 گوش می‌دهد؛ از بیرون فقط از طریقِ ProxyPass /go/api/ در Apache.
-//   - کاملاً مستقل از PHP و از crm-service است؛ اگر بمیرد فقط /go/api/* می‌افتد.
+//   - همان MariaDB اپ اصلی را می‌خواند (فعلا فقط SELECT روی users).
+//   - همان JWT (HS256, همان jwt_secret) را دقیقا مثل includes/auth.php می‌سنجد.
+//   - فقط روی 127.0.0.1 گوش می‌دهد؛ از بیرون فقط از طریق ProxyPass /go/api/ در Apache.
+//   - کاملا مستقل از PHP و از crm-service است؛ اگر بمیرد فقط /go/api/* می‌افتد.
 //
-// اجرای محلی:  go run .   (پس از `go mod tidy` و ساختِ config.json از نمونه)
+// اجرای محلی:  go run .   (پس از `go mod tidy` و ساخت config.json از نمونه)
 package main
 
 import (
@@ -85,7 +85,7 @@ func (s *server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// GET /go/api/me — کاربرِ جاری + فهرستِ اجازه‌هایش (برای اثباتِ کِرنِل).
+// GET /go/api/me — کاربر جاری + فهرست اجازه‌هایش (برای اثبات کرنل).
 func (s *server) handleMe(w http.ResponseWriter, r *http.Request) {
 	u := core.UserOf(r.Context())
 
@@ -104,7 +104,7 @@ func (s *server) handleMe(w http.ResponseWriter, r *http.Request) {
 	_ = s.db.QueryRow("SELECT first_name, last_name FROM users WHERE id = ?", u.ID).
 		Scan(&firstName, &lastName)
 
-	// چند اجازهٔ نمونه — فقط برای تأییدِ این‌که پورتِ permissions.php کار می‌کند.
+	// چند اجازهٔ نمونه — فقط برای تأیید این‌که پورت permissions.php کار می‌کند.
 	sample := []string{"create_task", "view_reports", "manage_users", "view_payroll", "create_workflow"}
 	perms := map[string]bool{}
 	for _, p := range sample {
@@ -138,51 +138,51 @@ func main() {
 	mux.HandleFunc("GET /go/api/health", s.handleHealth)
 	mux.HandleFunc("GET /go/api/me", s.auth(s.handleMe))
 
-	// ── ماژولِ گزارش‌ها (پورتِ api/reports/*) ──
-	// 🔒 today/history/detail/search/save/delete/generate عمداً این‌جا نیستند:
+	// ── ماژول گزارش‌ها (پورت api/reports/*) ──
+	// 🔒 today/history/detail/search/save/delete/generate عمدا این‌جا نیستند:
 	// بررسی شد و معلوم شد نسخه‌ی PHP‌شون هم صفر مصرف‌کننده داشت (نه در
-	// فرانت‌اند، نه در هیچ فایلِ دیگه‌ای)؛ کدِ مرده بود، هم PHPش هم این
+	// فرانت‌اند، نه در هیچ فایل دیگه‌ای)؛ کد مرده بود، هم PHPش هم این
 	// پورت‌ها، پس هر دو حذف شدن (۲۰۲۶/۰۶/۳۰).
 	mux.HandleFunc("GET /go/api/reports/stats", s.auth(reports.Stats(s.db)))
 	mux.HandleFunc("GET /go/api/reports/list", s.auth(reports.List(s.db)))
 	mux.HandleFunc("POST /go/api/reports/submit", s.auth(reports.Submit(s.db)))
-	// سه endpointِ زنده‌ی داشبورد/گزارشِ روزانه.
+	// سه endpoint زنده‌ی داشبورد/گزارش روزانه.
 	mux.HandleFunc("GET /go/api/reports/get-today-activities", s.auth(reports.TodayActivities(s.db)))
 	mux.HandleFunc("GET /go/api/reports/bottleneck-report", s.auth(reports.Bottleneck(s.db)))
 	mux.HandleFunc("GET /go/api/reports/top-delayed-users", s.auth(reports.TopDelayedUsers(s.db)))
 
-	// ── ماژولِ حضور و غیاب — فقط بخشِ خواندنی (پورتِ api/attendance/*) ──
+	// ── ماژول حضور و غیاب — فقط بخش خواندنی (پورت api/attendance/*) ──
 	mux.HandleFunc("GET /go/api/attendance/today-status", s.auth(attendance.TodayStatus(s.db)))
 	mux.HandleFunc("GET /go/api/attendance/absent-today", s.auth(attendance.AbsentToday(s.db)))
 	// این سه‌تا در PHP هم روی متد شاخه نمی‌زنن (فقط GET را جدا می‌کنن، بقیه
-	// را به‌عنوانِ نوشتنِ JSON با یک action می‌خونن)، پس بدونِ پیشوندِ متد
+	// را به‌عنوان نوشتن JSON با یک action می‌خونن)، پس بدون پیشوند متد
 	// ثبت می‌شن تا همون انعطاف حفظ بشه.
 	mux.HandleFunc("/go/api/attendance/allowed-ips", s.auth(attendance.AllowedIPs(s.db)))
 	mux.HandleFunc("/go/api/attendance/devices", s.auth(attendance.Devices(s.db)))
 	mux.HandleFunc("/go/api/attendance/denied-log", s.auth(attendance.DeniedLog(s.db)))
-	// ⚠️ فقط پورت شده — فرانت‌اند هنوز به این وصل نیست (نگاه کن به کامنتِ
-	// register.go). قبل از وصل‌کردنِ فرانت‌اند، تستِ محلیِ کاملِ همه‌ی
-	// مسیرها لازم است (ریسکِ مالی/عملیاتیِ داده‌های حضور).
+	// ⚠️ فقط پورت شده — فرانت‌اند هنوز به این وصل نیست (نگاه کن به کامنت
+	// register.go). قبل از وصل‌کردن فرانت‌اند، تست محلی کامل همه‌ی
+	// مسیرها لازم است (ریسک مالی/عملیاتی داده‌های حضور).
 	mux.HandleFunc("POST /go/api/attendance/register", s.auth(attendance.Register(s.db, s.cfg)))
 
-	// ── ماژولِ اعلان‌ها (پورتِ api/notifications/*) ──
+	// ── ماژول اعلان‌ها (پورت api/notifications/*) ──
 	mux.HandleFunc("GET /go/api/notifications/list", s.auth(notifications.List(s.db)))
 	mux.HandleFunc("GET /go/api/notifications/new", s.auth(notifications.New(s.db)))
 	mux.HandleFunc("POST /go/api/notifications/mark-read", s.auth(notifications.MarkRead(s.db)))
 	mux.HandleFunc("POST /go/api/notifications/mark-all-read", s.auth(notifications.MarkAllRead(s.db)))
 	mux.HandleFunc("POST /go/api/notifications/delete", s.auth(notifications.Delete(s.db)))
 
-	// ── ماژولِ اطلاعیه‌ها — فقط بخشِ خواندنی (پورتِ api/announcements/list.php) ──
+	// ── ماژول اطلاعیه‌ها — فقط بخش خواندنی (پورت api/announcements/list.php) ──
 	mux.HandleFunc("GET /go/api/announcements/list", s.auth(announcements.List(s.db)))
 
-	// ── ماژولِ تیکت‌ها — فقط لیست + علامت‌گذاریِ همه‌خوانده‌شده ──
+	// ── ماژول تیکت‌ها — فقط لیست + علامت‌گذاری همه‌خوانده‌شده ──
 	mux.HandleFunc("GET /go/api/tickets/list", s.auth(tickets.List(s.db)))
 	mux.HandleFunc("POST /go/api/tickets/mark-all-read", s.auth(tickets.MarkAllRead(s.db)))
 	mux.HandleFunc("GET /go/api/tickets/detail", s.auth(tickets.Detail(s.db)))
 
-	// ── ماژولِ کارها — فقط api/tasks/my-tasks.php (طبقِ تصمیمِ صریح: بقیهٔ
-	// ۳ endpointِ لیستِ کارها هرکدوم قاعدهٔ دسترسیِ مستقل و ناهماهنگِ
-	// خودشون رو دارن و فعلاً روی PHP می‌مونن) ──
+	// ── ماژول کارها — فقط api/tasks/my-tasks.php (طبق تصمیم صریح: بقیهٔ
+	// ۳ endpoint لیست کارها هرکدوم قاعدهٔ دسترسی مستقل و ناهماهنگ
+	// خودشون رو دارن و فعلا روی PHP می‌مونن) ──
 	mux.HandleFunc("GET /go/api/tasks/my-tasks", s.auth(tasks.MyTasks(s.db)))
 
 	addr := "127.0.0.1:" + cfg.Port
@@ -194,6 +194,6 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	log.Printf("go-api روی http://%s — فقط از طریقِ پروکسیِ /go/api/ در Apache", addr)
+	log.Printf("go-api روی http://%s — فقط از طریق پروکسی /go/api/ در Apache", addr)
 	log.Fatal(srv.ListenAndServe())
 }

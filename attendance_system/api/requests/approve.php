@@ -47,8 +47,8 @@ $action = $data['action'] ?? 'approve';
 $notes = $data['notes'] ?? null;
 
 // ============================================
-// بررسی مهلتِ تأیید — طبقِ تنظیماتِ واقعی (approval_deadline_days)، نه هاردکد،
-// و با همان تابعِ مشترکِ روزِ کاری (includes/working-days-helper.php)
+// بررسی مهلت تأیید — طبق تنظیمات واقعی (approval_deadline_days)، نه هاردکد،
+// و با همان تابع مشترک روز کاری (includes/working-days-helper.php)
 // ============================================
 $approval_deadline_days = (int) getSetting($db, 'approval_deadline_days', 3);
 
@@ -115,8 +115,8 @@ try {
     $request_owner = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // بررسی آیا مدیر کاربر همان مسئول است
-    // نکته: manager_code یک کدِ نمایشیِ بی‌ربط به id است (نه شناسه‌ی مدیر)؛
-    // رابطه‌ی سلسله‌مراتبیِ معتبر فقط manager_id (FK واقعی) است.
+    // نکته: manager_code یک کد نمایشی بی‌ربط به id است (نه شناسه‌ی مدیر)؛
+    // رابطه‌ی سلسله‌مراتبی معتبر فقط manager_id (FK واقعی) است.
     $owner_manager_id = $request_owner['manager_id'] ?? null;
     $manager_is_supervisor = false;
 
@@ -287,7 +287,7 @@ try {
             $stmt = $db->prepare("UPDATE {$table} SET status = 'rejected', can_edit = 0, can_delete = 0 WHERE id = ?");
             $stmt->execute([$request_id]);
 
-            // ✅ مرخصیِ ردشده: سهمیه‌ای که موقعِ ثبت کسر شده بود برمی‌گرده
+            // ✅ مرخصی ردشده: سهمیه‌ای که موقع ثبت کسر شده بود برمی‌گرده
             // (پاس هرگز از این مسیر رد نمی‌شه — بالاتر مستقیم بلاک شده)
             if ($request_type === 'leave') {
                 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php';
@@ -363,7 +363,7 @@ try {
                 $next_approver_id = $request_owner['manager_id'];
                 $next_role_label = 'مدیر';
             } elseif ($approver_role === 'manager') {
-                // بعدی: مسئول = supervisorِ همان سازمان
+                // بعدی: مسئول = supervisor همان سازمان
                 $stmt = $db->prepare("
                     SELECT id FROM users
                     WHERE is_supervisor = 1

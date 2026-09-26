@@ -24,7 +24,7 @@ func sectionsArgs(sections []string) []any {
 	return args
 }
 
-// MyTasks — پورتِ دقیقِ api/tasks/my-tasks.php.
+// MyTasks — پورت دقیق api/tasks/my-tasks.php.
 func MyTasks(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := core.UserOf(r.Context())
@@ -56,9 +56,9 @@ func MyTasks(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// my-tasks.php عمداً getHolidaySet($db) رو بدونِ org_id صدا می‌زنه —
-		// یعنی فقط تعطیلاتِ سراسری (organization_id IS NULL) رو می‌بینه، نه
-		// تعطیلاتِ مخصوصِ سازمانِ کاربر. اینجا هم دقیقاً همون رفتار (nil) تکرار می‌شه.
+		// my-tasks.php عمدا getHolidaySet($db) رو بدون org_id صدا می‌زنه —
+		// یعنی فقط تعطیلات سراسری (organization_id IS NULL) رو می‌بینه، نه
+		// تعطیلات مخصوص سازمان کاربر. اینجا هم دقیقا همون رفتار (nil) تکرار می‌شه.
 		holidays, err := core.HolidaySet(db, nil)
 		if err != nil {
 			core.WriteErr(w, http.StatusInternalServerError, "خطای سرور")

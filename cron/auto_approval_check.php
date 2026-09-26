@@ -4,9 +4,9 @@
  * Cron Job برای بررسی خودکار تأییدات
  *
  * قوانین:
- * - مهلتِ نهایی (رد خودکار): از تنظیمِ approval_deadline_days
+ * - مهلت نهایی (رد خودکار): از تنظیم approval_deadline_days
  *   (مدیریت → تنظیمات)، پیش‌فرض ۳ روز
- * - ارجاع به مقامِ بالاتر: یک روز زودتر از مهلتِ نهایی
+ * - ارجاع به مقام بالاتر: یک روز زودتر از مهلت نهایی
  *
  * اجرا: هر 6 ساعت یک بار
  * Crontab: 0 6 * * * /usr/bin/php /path/to/cron/auto_approval_check.php */
@@ -35,9 +35,9 @@ class AutoApprovalChecker {
             mkdir(__DIR__ . '/logs', 0755, true);
         }
 
-        // مهلتِ رد خودکار از تنظیماتِ سازمان (قبلاً هاردکد ۵ روز بود و
-        // اصلاً به approval_deadline_days گوش نمی‌داد — همون چیزی که
-        // باعث می‌شد تغییرِ عدد توی صفحه‌ی تنظیمات هیچ اثری نداشته باشه)
+        // مهلت رد خودکار از تنظیمات سازمان (قبلا هاردکد ۵ روز بود و
+        // اصلا به approval_deadline_days گوش نمی‌داد — همون چیزی که
+        // باعث می‌شد تغییر عدد توی صفحه‌ی تنظیمات هیچ اثری نداشته باشه)
         $settings = loadSettings($this->db);
         $this->deadlineDays = max(1, (int) ($settings['approval_deadline_days'] ?? 3));
         $this->escalationDays = max(1, $this->deadlineDays - 1);
@@ -173,14 +173,14 @@ class AutoApprovalChecker {
     }
     
     /**
-     * بررسی درخواست‌های منقضی شده (بیش از مهلتِ approval_deadline_days)
+     * بررسی درخواست‌های منقضی شده (بیش از مهلت approval_deadline_days)
      */
     private function checkExpiredRequests() {
         $this->log("Checking expired requests... (deadline={$this->deadlineDays}d)");
 
         $expired = 0;
 
-        // درخواست‌های مرخصی منقضی شده (بیشتر از مهلتِ تنظیم‌شده از ارسال)
+        // درخواست‌های مرخصی منقضی شده (بیشتر از مهلت تنظیم‌شده از ارسال)
         // و تاریخ شروع مرخصی هم گذشته باشد
         $stmt = $this->db->query("
             SELECT lr.*
@@ -281,7 +281,7 @@ class AutoApprovalChecker {
         try {
             $this->db->beginTransaction();
             
-            // دریافت مسئول (فقط در سازمانِ خودِ درخواست‌دهنده)
+            // دریافت مسئول (فقط در سازمان خود درخواست‌دهنده)
             $stmt = $this->db->prepare("SELECT organization_id FROM users WHERE id = ?");
             $stmt->execute([$request['user_id']]);
             $requester_org_id = $stmt->fetchColumn();

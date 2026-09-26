@@ -6,7 +6,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
     header('Location: ../pages/dashboard.php');
     exit;
 }
-// دسترسیِ نوشتن = دسترسیِ دیدن: هرکسی که این منو را می‌بیند، CRUD کامل دارد.
+// دسترسی نوشتن = دسترسی دیدن: هرکسی که این منو را می‌بیند، CRUD کامل دارد.
 $canWrite = true;
 ?>
 <!DOCTYPE html>
@@ -105,9 +105,9 @@ $canWrite = true;
         .crm-toolbar .sb-trigger {
             height: 38px !important;
         }
-        /* فوترِ ثابت ته پنجره (نه sticky) تا همیشه دیده شود و صفحه اسکرول نخورد.
-           جدول دقیقاً فضایِ بینِ تولبار و فوتر را می‌گیرد؛ ردیف‌هایِ زیاد
-           داخلِ خودِ جدول اسکرول می‌شوند، نه کلِ صفحه. */
+        /* فوتر ثابت ته پنجره (نه sticky) تا همیشه دیده شود و صفحه اسکرول نخورد.
+           جدول دقیقا فضای بین تولبار و فوتر را می‌گیرد؛ ردیف‌های زیاد
+           داخل خود جدول اسکرول می‌شوند، نه کل صفحه. */
         .site-footer { position: fixed !important; left: 0; right: 0; bottom: 0; top: auto !important; margin-top: 0 !important; z-index: 80; }
         body { padding-bottom: 46px; }
         .grid-fill { height: calc(100vh - 340px); min-height: 260px; padding-top: 1rem; }

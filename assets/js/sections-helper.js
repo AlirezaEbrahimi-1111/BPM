@@ -17,7 +17,7 @@ let _sectionsLoaded = false; // جلوگیری از لود تکراری
 
 /**
  * لود بخش‌ها از API و ساخت map
- * اگه قبلاً لود شده، دوباره لود نمی‌کنه (مگه force=true)
+ * اگه قبلا لود شده، دوباره لود نمی‌کنه (مگه force=true)
  */
 async function loadSectionMap(force = false) {
     if (_sectionsLoaded && !force) return sectionMap;

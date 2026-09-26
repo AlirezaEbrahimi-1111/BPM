@@ -53,7 +53,7 @@ try {
         ann_out(['success' => true]);
     }
 
-    // ───── همه خوانده‌شده (دقیقاً همان دامنهٔ دیدِ کاربر در list.php) ─────
+    // ───── همه خوانده‌شده (دقیقا همان دامنهٔ دید کاربر در list.php) ─────
     if ($action === 'mark_all_read') {
         require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
         $sectionsCsv = implode(',', us_getUserSections($db, (int) $user_id));

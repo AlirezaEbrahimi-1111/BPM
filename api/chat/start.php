@@ -1,6 +1,6 @@
 <?php
 /**
- * API: شروع (یا بازیابیِ) یک گفتگوی یک‌به‌یک با کاربرِ دیگر
+ * API: شروع (یا بازیابی) یک گفتگوی یک‌به‌یک با کاربر دیگر
  * POST /api/chat/start.php   body: { user_id: 123 }
  */
 
@@ -49,7 +49,7 @@ try {
         exit;
     }
 
-    // ─── آیا گفتگوی یک‌به‌یکِ قبلی بینِ این دو نفر وجود دارد؟ ───
+    // ─── آیا گفتگوی یک‌به‌یک قبلی بین این دو نفر وجود دارد؟ ───
     $stmt = $db->prepare("
         SELECT cp1.conversation_id
         FROM chat_participants cp1
@@ -62,7 +62,7 @@ try {
     $existingId = $stmt->fetchColumn();
 
     if ($existingId) {
-        // اگر قبلاً توسطِ همین کاربر بایگانی شده بود، با شروعِ دوباره از بایگانی خارج شود
+        // اگر قبلا توسط همین کاربر بایگانی شده بود، با شروع دوباره از بایگانی خارج شود
         $db->prepare("UPDATE chat_participants SET is_archived = 0, archived_at = NULL WHERE conversation_id = ? AND user_id = ?")
             ->execute([$existingId, $user_id]);
 

@@ -76,7 +76,7 @@ function getUserInfo($user_id) {
 /**
  * ⚠️ منسوخ (Deprecated) — از requirePermission در permissions.php استفاده کنید.
  *
- * این تابع قبلاً activity_section (واحد) را با نقش‌ها مقایسه می‌کرد،
+ * این تابع قبلا activity_section (واحد) را با نقش‌ها مقایسه می‌کرد،
  * که از پایه اشتباه بود. حالا فقط role را چک می‌کند.
  */
 function requireRole($user_id, $required_roles = []) {

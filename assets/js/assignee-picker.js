@@ -36,7 +36,7 @@
  *     }
  *   });
  *
- * حالتِ چندانتخابی  (create-task.php — «چند نفرِ خاص»، opt-in، بدونِ اثر روی بقیهٔ صفحات):
+ * حالت چندانتخابی  (create-task.php — «چند نفر خاص»، opt-in، بدون اثر روی بقیهٔ صفحات):
  *   const picker = AssigneePicker.create({
  *     container:   '#multiAssigneePicker',
  *     users,
@@ -46,7 +46,7 @@
  *
  * ─── API هر instance ───────────────────────────────────────────────────────
  *   picker.getValue()                            → { type, value, label } | null
- *                                                   (در حالتِ چندانتخابی: value=آرایهٔ id، label=آرایهٔ نام)
+ *                                                   (در حالت چندانتخابی: value=آرایهٔ id، label=آرایهٔ نام)
  *   picker.reset()                               → پاک کردن انتخاب
  *   picker.updateData(users?, sections?, map?)   → به‌روزرسانی داده بدون reinit
  *
@@ -109,10 +109,10 @@ const AssigneePicker = (() => {
 .ap-item.ap-selected{background:#e7f0ff}
 .ap-check{
   flex-shrink:0;margin:0;cursor:pointer}
-/* یک قاعدهٔ سراسری در custom.css (.form-check-input) همهٔ چک‌باکس‌هایِ سایت
-   رو با width:3rem!important به‌شکلِ سوئیچِ بزرگ درمیاره. این‌جا selectorِ
-   دوسطحی (تعیّنِ بالاتر) استفاده شده تا بدونِ وابسته‌بودن به ترتیبِ لود
-   استایل‌ها، مطمئناً برنده باشه و اندازهٔ معمولیِ چک‌باکس برگرده */
+/* یک قاعدهٔ سراسری در custom.css (.form-check-input) همهٔ چک‌باکس‌های سایت
+   رو با width:3rem!important به‌شکل سوئیچ بزرگ درمیاره. این‌جا selector
+   دوسطحی (تعیّن بالاتر) استفاده شده تا بدون وابسته‌بودن به ترتیب لود
+   استایل‌ها، مطمئنا برنده باشه و اندازهٔ معمولی چک‌باکس برگرده */
 .ap-dropdown .ap-check{
   width:1rem !important;height:1rem !important;
   border:1px solid var(--bs-border-color,#adb5bd) !important;
@@ -147,7 +147,7 @@ const AssigneePicker = (() => {
 .ap-chip-remove:hover{background:rgba(0,0,0,.25)}
 
 /* تم تاریک — این استایل‌ها از متغیرهای bootstrap (--bs-body-bg و ...) استفاده می‌کنند
-   که با تاگل تمِ اپ (data-theme) هماهنگ نیستند و همیشه مقدار روشن دارند؛ اینجا override می‌شوند */
+   که با تاگل تم اپ (data-theme) هماهنگ نیستند و همیشه مقدار روشن دارند؛ اینجا override می‌شوند */
 :root[data-theme="dark"] .ap-input{
   background:var(--surface);border-color:var(--border-soft);color:var(--text-strong)}
 :root[data-theme="dark"] .ap-clear:hover{background:#2b3242;color:var(--text-strong)}
@@ -174,7 +174,7 @@ const AssigneePicker = (() => {
     /* ── ثبت همه instance‌ها برای resetAll ─────────────────────────── */
     const _instances = [];
 
-    /* ── تبدیلِ اعدادِ لاتین به فارسی، برایِ هر عددی که تویِ متنِ نمایشی میاد ── */
+    /* ── تبدیل اعداد لاتین به فارسی، برای هر عددی که توی متن نمایشی میاد ── */
     function _fa(n) {
         return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
     }
@@ -190,8 +190,8 @@ const AssigneePicker = (() => {
         let _filterText = '';
         let _root, _input, _dropdown, _hint, _chips;
 
-        /* حالتِ چندانتخابی — یک نمونهٔ opt-in (multiSelect:true)، بقیهٔ
-           صفحات که این پرچم رو نمی‌دن، دقیقاً مثلِ قبل تک‌انتخابی می‌مونن */
+        /* حالت چندانتخابی — یک نمونهٔ opt-in (multiSelect:true)، بقیهٔ
+           صفحات که این پرچم رو نمی‌دن، دقیقا مثل قبل تک‌انتخابی می‌مونن */
         const _isMulti = !!cfg.multiSelect;
         let _selectedMulti = {}; // id -> label
 
@@ -216,10 +216,10 @@ const AssigneePicker = (() => {
                 ? _cfg.placeholder
                 : `جستجو در ${_cfg.showSections ? 'کاربران و واحدها' : 'کاربران'}...`;
 
-            // ⚠️ .ap-chips عمداً خارجِ .ap-wrap قرار می‌گیره: اگه داخلش بود، چون
-            // در جریانِ عادیه، به ارتفاعِ .ap-wrap اضافه می‌شد و باعث می‌شد
-            // dropdown (که top:100% نسبت به .ap-wrap حساب می‌کنه) پایین‌ترِ
-            // موردِنظر و زیرِ چیپ‌ها باز بشه، نه دقیقاً زیرِ خودِ فیلد
+            // ⚠️ .ap-chips عمدا خارج .ap-wrap قرار می‌گیره: اگه داخلش بود، چون
+            // در جریان عادیه، به ارتفاع .ap-wrap اضافه می‌شد و باعث می‌شد
+            // dropdown (که top:100% نسبت به .ap-wrap حساب می‌کنه) پایین‌تر
+            // موردنظر و زیر چیپ‌ها باز بشه، نه دقیقا زیر خود فیلد
             _root.innerHTML = `
 <div class="ap-wrap">
   <div class="ap-input-row">
@@ -321,7 +321,7 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
 
             let html = '';
 
-            /* واحدها — فقط حالت واگذاری با showSections:true (نه در حالتِ چندانتخابی) */
+            /* واحدها — فقط حالت واگذاری با showSections:true (نه در حالت چندانتخابی) */
             if (_cfg.showSections && !_isMulti) {
                 const secItems = [];
                 if (_cfg.allowAll && match(ALL_SECTIONS.label))
@@ -341,7 +341,7 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
             /* کاربران */
             const userItems = [];
 
-            /* «خودم» و «همه کاربران» نه در حالت فیلتر، نه در حالتِ چندانتخابی */
+            /* «خودم» و «همه کاربران» نه در حالت فیلتر، نه در حالت چندانتخابی */
             if (!_isFilterMode && !_isMulti) {
                 if (match(SELF_ITEM.label))
                     userItems.push(_itemHTML(SELF_ITEM.id, SELF_ITEM.label, '', 'user', 'user'));
@@ -386,8 +386,8 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
         }
 
         function _itemHTML(value, label, meta, type, avatarCls, checked) {
-            // escapeِ کاملِ HTML — قبلاً فقط " و < را می‌گرفت و روی متنِ دیده‌شونده
-            // (نامِ کاربر) اصلاً اعمال نمی‌شد → XSSِ ذخیره‌شده از راهِ نامِ کاربر.
+            // escape کامل HTML — قبلا فقط " و < را می‌گرفت و روی متن دیده‌شونده
+            // (نام کاربر) اصلا اعمال نمی‌شد → XSS ذخیره‌شده از راه نام کاربر.
             const esc = str => String(str == null ? '' : str)
                 .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -411,10 +411,10 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
                 if (_selectedMulti[value]) delete _selectedMulti[value];
                 else _selectedMulti[value] = label;
 
-                // عمداً متنِ داخلِ اینپوت رو دست نمی‌زنیم — کاربر ممکنه در حالِ
-                // تایپِ جست‌وجو باشه؛ خلاصهٔ «N نفر» فقط موقعِ بستنِ dropdown ست می‌شه
+                // عمدا متن داخل اینپوت رو دست نمی‌زنیم — کاربر ممکنه در حال
+                // تایپ جست‌وجو باشه؛ خلاصهٔ «N نفر» فقط موقع بستن dropdown ست می‌شه
                 _root.querySelector('.ap-clear').classList.toggle('visible', Object.keys(_selectedMulti).length > 0);
-                _renderDropdown(_filterText); // آپدیتِ علامتِ تیک‌ها، بدونِ بستنِ dropdown
+                _renderDropdown(_filterText); // آپدیت علامت تیک‌ها، بدون بستن dropdown
                 _renderChips();
                 if (typeof _cfg.onSelect === 'function') _cfg.onSelect('multi', _multiValues(), _multiLabels());
                 return;
@@ -432,7 +432,7 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
         function _multiValues() { return Object.keys(_selectedMulti).map(Number); }
         function _multiLabels() { return Object.values(_selectedMulti); }
 
-        /* ── نمایشِ افرادِ انتخابی زیرِ لیست (فقط حالتِ چندانتخابی) ─────── */
+        /* ── نمایش افراد انتخابی زیر لیست (فقط حالت چندانتخابی) ─────── */
         function _renderChips() {
             if (!_chips) return;
             const esc = str => String(str == null ? '' : str)
@@ -517,7 +517,7 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
         /* ── مقدار اولیه ────────────────────────────────────────────── */
         function _setInitialValue() {
             if (_isFilterMode || _isMulti) {
-                /* حالتِ فیلتر یا چندانتخابی — بدونِ انتخابِ پیش‌فرض */
+                /* حالت فیلتر یا چندانتخابی — بدون انتخاب پیش‌فرض */
                 _selected = null;
                 return;
             }
@@ -537,8 +537,8 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
 
         function reset() { if (_input) _resetSelection(); }
 
-        // انتخابِ برنامه‌ایِ یک کاربرِ مشخص با شناسه — برایِ پیش‌پرکردنِ فرم از
-        // بیرون (مثلاً از کوئری‌استرینگ). فقط حالتِ تک‌انتخابی؛ اگه کاربر تویِ
+        // انتخاب برنامه‌ای یک کاربر مشخص با شناسه — برای پیش‌پرکردن فرم از
+        // بیرون (مثلا از کوئری‌استرینگ). فقط حالت تک‌انتخابی؛ اگه کاربر توی
         // cfg.users پیدا نشه (هنوز لود نشده یا شناسه نامعتبره)، کاری نمی‌کنه
         function selectByUserId(userId) {
             if (_isMulti) return;
@@ -556,9 +556,9 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
             if (_open) _renderDropdown(_filterText);
         }
 
-        // فوکوسِ برنامه‌ایِ فیلد جستجو — چون input پیش‌فرض readonly هست (تا با
-        // کلیک واردِ حالتِ ویرایش/جستجو بشه)، صرفِ input.focus() کافی نیست؛
-        // باید همون منطقِ رویدادِ click رو دستی اجرا کنیم
+        // فوکوس برنامه‌ای فیلد جستجو — چون input پیش‌فرض readonly هست (تا با
+        // کلیک وارد حالت ویرایش/جستجو بشه)، صرف input.focus() کافی نیست؛
+        // باید همون منطق رویداد click رو دستی اجرا کنیم
         function focus() {
             if (!_input) return;
             _input.removeAttribute('readonly');

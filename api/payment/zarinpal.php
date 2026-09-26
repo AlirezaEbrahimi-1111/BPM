@@ -73,14 +73,14 @@ function zarinpal_request(int $amount, string $callback, string $desc): array {
 function zarinpal_verify(int $amount, string $authority): array {
     $payload = json_encode([
         'merchant_id' => ZP_MERCHANT,
-        'amount'      => $amount,      // باید دقیقاً برابر مبلغ مرحله‌ی درخواست باشد
+        'amount'      => $amount,      // باید دقیقا برابر مبلغ مرحله‌ی درخواست باشد
         'authority'   => $authority,
     ]);
 
     $res  = zp_curl(zp_base() . '/pg/v4/payment/verify.json', $payload);
     $code = (int)($res['data']['code'] ?? 0);
 
-    // 100 = پرداخت موفق   |   101 = قبلاً تأیید شده (هر دو معتبر هستند)
+    // 100 = پرداخت موفق   |   101 = قبلا تأیید شده (هر دو معتبر هستند)
     if ($code === 100 || $code === 101) {
         return [
             'ok'     => true,

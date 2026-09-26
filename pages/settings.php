@@ -383,8 +383,8 @@ function fillForm() {
 
 async function saveProfile(e) {
     e.preventDefault();
-    // نام/نام‌خانوادگی فقط توسطِ ادمین قابلِ‌تغییرن (pages/users.php) — این
-    // فرم فقط ایمیل رو می‌فرسته؛ فیلدهایِ نام readonly-ان و اصلاً ارسال نمی‌شن
+    // نام/نام‌خانوادگی فقط توسط ادمین قابل‌تغییرن (pages/users.php) — این
+    // فرم فقط ایمیل رو می‌فرسته؛ فیلدهای نام readonly-ان و اصلا ارسال نمی‌شن
     const btn = document.getElementById('profileSaveBtn');
     btn.disabled = true;
     clearFormAlert('profileAlert');
@@ -514,7 +514,7 @@ function clearFormAlert(id) { document.getElementById(id).innerHTML = ''; }
 
 // تابع showToast در صورت نیاز (در کد اصلی شما باید وجود داشته باشد، ولی در اینجا تعریف می‌کنیم)
 // showToast از assets/js/alert.js (لودشده در header.php) استفاده می‌شود —
-// قبلاً اینجا یک نسخهٔ محلیِ جداگانه بازتعریف می‌شد که آن را می‌پوشاند
+// قبلا اینجا یک نسخهٔ محلی جداگانه بازتعریف می‌شد که آن را می‌پوشاند
 </script>
 </body>
 </html>

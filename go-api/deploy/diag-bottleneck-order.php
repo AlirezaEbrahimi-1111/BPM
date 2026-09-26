@@ -1,7 +1,7 @@
 <?php
 /**
- * تشخیصِ یک‌باره: آیا MISMATCH در bottleneck-report واقعاً فقط ترتیبِ
- * instanceهایِ هم‌تأخیره یا یه چیزِ دیگه؟ فقط GET می‌زنه، امن است.
+ * تشخیص یک‌باره: آیا MISMATCH در bottleneck-report واقعا فقط ترتیب
+ * instanceهای هم‌تأخیره یا یه چیز دیگه؟ فقط GET می‌زنه، امن است.
  *
  *   php go-api/deploy/diag-bottleneck-order.php <user_id>
  */
@@ -34,7 +34,7 @@ $p = call("$base/api/reports/bottleneck-report.php", $token);
 $g = call("$base/go/api/reports/bottleneck-report", $token);
 
 if (!$p || !$g) {
-    echo "خطا در دریافتِ پاسخ (توکن/دسترسی را چک کن)\n";
+    echo "خطا در دریافت پاسخ (توکن/دسترسی را چک کن)\n";
     exit(1);
 }
 
@@ -73,4 +73,4 @@ foreach (($p['bottlenecks'] ?? []) as $i => $pg) {
     }
 }
 
-echo "\n" . ($allOk ? "نتیجه: فقط ترتیب فرق دارد، امن است." : "نتیجه: مشکل واقعی پیدا شد — بررسیِ بیشتر لازم است.") . "\n";
+echo "\n" . ($allOk ? "نتیجه: فقط ترتیب فرق دارد، امن است." : "نتیجه: مشکل واقعی پیدا شد — بررسی بیشتر لازم است.") . "\n";

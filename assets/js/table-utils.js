@@ -44,7 +44,7 @@ function initColumnResize(tableSelector, defaultWidths) {
             th.style.minWidth = defaultWidths[idx] + 'px';
         }
 
-        // اگر قبلاً handle دارد، دوباره اضافه نکن
+        // اگر قبلا handle دارد، دوباره اضافه نکن
         if (th.querySelector('.resize-handle')) return;
 
         // ─── مرحله ۲: ایجاد resize handle ───

@@ -1,5 +1,5 @@
 <?php
-// /api/attendance/denied-log.php — لیست/حذف نرمِ تلاش‌های ناموفق (supervisor)
+// /api/attendance/denied-log.php — لیست/حذف نرم تلاش‌های ناموفق (supervisor)
 error_reporting(0);
 ini_set('display_errors', '0');
 header('Content-Type: application/json; charset=utf-8');

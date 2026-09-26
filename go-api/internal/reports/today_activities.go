@@ -20,16 +20,16 @@ var groupedActions = []string{
 
 var dateRe = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
 
-// TodayActivities — پورتِ دقیقِ api/reports/get-today-activities.php
+// TodayActivities — پورت دقیق api/reports/get-today-activities.php
 //
 //	GET /go/api/reports/get-today-activities[?date=YYYY-MM-DD]
 //	→ {"success":true,"data":{date,user,activities,grouped_activities,summary,overdue_tasks}}
 //
-// ✅ getUserInfo() در includes/middleware.php قبلاً ستون‌هایِ
+// ✅ getUserInfo() در includes/middleware.php قبلا ستون‌های
 // manager_code/manager_name/manager_lastname/report_prefix/report_suffix/
 // official_code/manager_id/activity_unit را SELECT نمی‌کرد (این فیلدها در
-// خروجیِ userInfo همیشه تهی بودند). این باگ جداگانه و آگاهانه در PHP رفع
-// شد؛ این‌جا هم همزمان با هم رفع شده تا با خروجیِ جدیدِ PHP برابر بماند.
+// خروجی userInfo همیشه تهی بودند). این باگ جداگانه و آگاهانه در PHP رفع
+// شد؛ این‌جا هم همزمان با هم رفع شده تا با خروجی جدید PHP برابر بماند.
 func TodayActivities(db *sql.DB) http.HandlerFunc {
 	const qActivities = `
         SELECT
@@ -49,11 +49,11 @@ func TodayActivities(db *sql.DB) http.HandlerFunc {
         ORDER BY th.created_at DESC
     `
 
-	// 🔒 effective_deadline (با ساعت) — قبلاً شاخه‌یِ ساعتی فقط با
+	// 🔒 effective_deadline (با ساعت) — قبلا شاخه‌ی ساعتی فقط با
 	// «is_workflow_task && deadline!=""» انتخاب می‌شد، با این فرض که
-	// deadline برایِ کارِ روتین همیشه پره. این فرض همیشه درست نبود: چندتا
-	// کارِ روتینِ واقعی پیدا شدن که deadline‌شون خالی بود ولی due_date پر
-	// بود (و ماه‌ها گذشته) — parityِ این فیکس با api/reports/
+	// deadline برای کار روتین همیشه پره. این فرض همیشه درست نبود: چندتا
+	// کار روتین واقعی پیدا شدن که deadline‌شون خالی بود ولی due_date پر
+	// بود (و ماه‌ها گذشته) — parity این فیکس با api/reports/
 	// get-today-activities.php و top-delayed-users.php لازمه.
 	const qOverdue = `
         SELECT
@@ -83,7 +83,7 @@ func TodayActivities(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := core.UserOf(r.Context())
 
-		// معادلِ getUserInfo() — با همان قیدِ is_active = 1، پس کاربرِ
+		// معادل getUserInfo() — با همان قید is_active = 1، پس کاربر
 		// غیرفعال ۴۰۱ می‌گیرد.
 		var (
 			uid             int64
@@ -167,7 +167,7 @@ func TodayActivities(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// getHolidaySet($db, $user['organization_id'] ?? null) — برخلافِ
+		// getHolidaySet($db, $user['organization_id'] ?? null) — برخلاف
 		// top-delayed-users این‌جا شناسه‌ی سازمان پاس داده می‌شود.
 		var orgPtr *int64
 		if orgID.Valid {
@@ -184,9 +184,9 @@ func TodayActivities(db *sql.DB) http.HandlerFunc {
 		nowStr := now.Format("2006-01-02 15:04:05")
 
 		for _, ot := range overdue {
-			// PHP (فیکس‌شده): !empty($ot['is_workflow_task']) — دیگه شرطِ
-			// deadline!="" نداره؛ effective_deadline (GREATEST) جایگزینِ
-			// خودِ deadline در calcHourDelay شده.
+			// PHP (فیکس‌شده): !empty($ot['is_workflow_task']) — دیگه شرط
+			// deadline!="" نداره؛ effective_deadline (GREATEST) جایگزین
+			// خود deadline در calcHourDelay شده.
 			if mInt(ot, "is_workflow_task") != 0 {
 				effDeadline := mStr(ot, "effective_deadline")
 				ot["unit"] = "hours"
@@ -219,9 +219,9 @@ func TodayActivities(db *sql.DB) http.HandlerFunc {
 		}
 
 		// ══ ۴) اطلاعات کاربر ══
-		// PHP: `$user['x'] ?? ''` برایِ فیلدهایِ رشته‌ای (NULL دیتابیس →
+		// PHP: `$user['x'] ?? ''` برای فیلدهای رشته‌ای (NULL دیتابیس →
 		// رشته‌ی خالی، نه JSON null)، ولی `$user['manager_id'] ?? null`
-		// برایِ manager_id (NULL دیتابیس → JSON null، نه ۰).
+		// برای manager_id (NULL دیتابیس → JSON null، نه ۰).
 		var managerIDOut any
 		if managerID.Valid {
 			managerIDOut = managerID.Int64

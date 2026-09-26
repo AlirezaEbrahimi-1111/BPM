@@ -23,8 +23,8 @@ try {
         // دریافت جانشین‌های کاربر
         $target_user = isset($_GET['user_id']) ? (int)$_GET['user_id'] : $user_id;
 
-        // 🔒 خط قرمز: دیدنِ جانشین‌های کاربرِ دیگر، نیاز به اختیارِ مدیریتی
-        // دارد (نه صرفاً هم‌سازمان‌بودن) — supervisor/admin کل سازمان،
+        // 🔒 خط قرمز: دیدن جانشین‌های کاربر دیگر، نیاز به اختیار مدیریتی
+        // دارد (نه صرفا هم‌سازمان‌بودن) — supervisor/admin کل سازمان،
         // manager فقط زیرمجموعهٔ خودش
         if ($target_user !== (int)$user_id) {
             requirePermission($me, 'manage_users');

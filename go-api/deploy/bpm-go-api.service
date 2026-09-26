@@ -1,5 +1,5 @@
 [Unit]
-Description=go-api — بازنویسیِ تدریجیِ api/ به Go (Strangler Fig)
+Description=go-api — بازنویسی تدریجی api/ به Go (Strangler Fig)
 After=network.target mariadb.service
 Wants=mariadb.service
 
@@ -12,12 +12,12 @@ ExecStart=/opt/bpm-go-api/go-api
 Restart=on-failure
 RestartSec=5
 
-# سخت‌سازیِ حافظه — این سرویس نباید هیچ‌وقت باعثِ OOMِ دیتابیس شود.
+# سخت‌سازی حافظه — این سرویس نباید هیچ‌وقت باعث OOM دیتابیس شود.
 # (سابقهٔ OOM روی همین باکس: project_prod_outage_20260907_oom)
 OOMScoreAdjust=500
 MemoryMax=256M
 
-# کمترین دسترسیِ ممکن
+# کمترین دسترسی ممکن
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict

@@ -1,12 +1,12 @@
 <?php
 /**
  * api/workflows/resolve-step.php
- * تصمیمِ یک «مرحلهٔ تصمیم»ِ روتین: تأیید یا رد (با پرشِ شرطی).
+ * تصمیم یک «مرحلهٔ تصمیم» روتین: تأیید یا رد (با پرش شرطی).
  * POST { task_id, decision: 'approve'|'reject', notes? }
  *
- * فقط تعریف‌کنندهٔ همان نمونهٔ روتین مجاز است (چکِ نهایی داخلِ
+ * فقط تعریف‌کنندهٔ همان نمونهٔ روتین مجاز است (چک نهایی داخل
  * WorkflowManager::resolveStepDecision انجام می‌شود). این‌جا فقط
- * چکِ سازمان + معتبربودنِ تسکِ روتین.
+ * چک سازمان + معتبربودن تسک روتین.
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -46,7 +46,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // 🔒 تسک باید یک تسکِ روتینِ همین سازمان باشد
+    // 🔒 تسک باید یک تسک روتین همین سازمان باشد
     $stmt = $db->prepare("
         SELECT id FROM tasks
         WHERE id = ? AND is_workflow_task = 1 AND organization_id = ?

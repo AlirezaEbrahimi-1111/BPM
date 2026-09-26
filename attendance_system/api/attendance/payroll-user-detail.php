@@ -31,7 +31,7 @@ try {
         exit;
     }
 
-    // اطلاعات مدیرِ جاری + گیتِ دسترسی (هماهنگ با API گرید)
+    // اطلاعات مدیر جاری + گیت دسترسی (هماهنگ با API گرید)
     $stmt = $db->prepare("SELECT id, role, activity_section, organization_id FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $me = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -45,7 +45,7 @@ try {
     if ($organization_id <= 0)
         throw new Exception('سازمان نامعتبر');
 
-    // ورودیِ کاربرِ هدف
+    // ورودی کاربر هدف
     $target_user_id = isset($_GET['user_id']) ? (int) $_GET['user_id'] : 0;
     if ($target_user_id <= 0) {
         http_response_code(400);
@@ -55,7 +55,7 @@ try {
 
     $app_settings = loadSettings($db);
 
-    // ماهِ شمسیِ موردنظر (هماهنگ با API گرید)
+    // ماه شمسی موردنظر (هماهنگ با API گرید)
     $today = date('Y-m-d');
     list($g_y, $g_m, $g_d) = explode('-', $today);
     list($cj_y, $cj_m, $cj_d) = sc_gregorianToJalali($g_y, $g_m, $g_d);
@@ -71,7 +71,7 @@ try {
     $start_of_month = $range['start'];
     $end_of_month = $range['end'];
 
-    // ✅ کنترلِ امنیتیِ حیاتی: کاربرِ هدف باید در سازمانِ همین مدیر و فعال باشد
+    // ✅ کنترل امنیتی حیاتی: کاربر هدف باید در سازمان همین مدیر و فعال باشد
     $stmt = $db->prepare("
         SELECT id, first_name, last_name, activity_section,
                shift_count, shift_1_start, shift_1_end, shift_2_start, shift_2_end,
@@ -88,7 +88,7 @@ try {
         exit;
     }
 
-    // برچسبِ فارسیِ واحد
+    // برچسب فارسی واحد
     $sec_key = $u['activity_section'] ?? '';
     $sec_label = $sec_key;
     try {
@@ -100,7 +100,7 @@ try {
     } catch (Exception $e) {
     }
 
-    // تعطیلاتِ بازه
+    // تعطیلات بازه
     $stmt = $db->prepare("SELECT holiday_date, title FROM holidays WHERE holiday_date >= ? AND holiday_date <= ?");
     $stmt->execute([$start_of_month, $end_of_month]);
     $holiday_dates = [];

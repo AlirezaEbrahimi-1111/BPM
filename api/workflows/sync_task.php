@@ -1,8 +1,8 @@
 <?php
 // ⚠️ به‌نظر بلااستفاده می‌رسه — هیچ فراخوانی‌ای (JS fetch یا PHP require/
-// include) به «sync_task» توی کلِ پروژه پیدا نشد. حذف نشده چون grep
+// include) به «sync_task» توی کل پروژه پیدا نشد. حذف نشده چون grep
 // نمی‌تونه صددرصد یه فراخوان‌کننده‌ی خارجی/مخفی رو رد کنه؛ اگه بعد از
-// مدتی لاگِ اجرا نداشت، کاندیدِ حذفه.
+// مدتی لاگ اجرا نداشت، کاندید حذفه.
 header('Content-Type: application/json; charset=utf-8');
 $corsAllowedOrigins = ['https://itmalek.com', 'https://www.itmalek.com', 'https://bpm.itmalek.com'];
 $corsRequestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -18,7 +18,7 @@ try {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 
-    // 🔒 خط قرمز: این فایل قبلاً بدون هیچ احراز هویتی، اجازهٔ تغییر وضعیت
+    // 🔒 خط قرمز: این فایل قبلا بدون هیچ احراز هویتی، اجازهٔ تغییر وضعیت
     // هر workflow instance را (در هر سازمانی) با فقط دادن یک task_id می‌داد
     $user_id = requireAuth();
     $user    = getUserInfo($user_id);
@@ -150,7 +150,7 @@ try {
                 }
             }
         } elseif ($task['status'] == 'in_progress') {
-            // شروع مرحله — فقط اگر واقعاً نوبتش رسیده باشد
+            // شروع مرحله — فقط اگر واقعا نوبتش رسیده باشد
             // (مرحله‌ای که هنوز pending است، نباید با شروع کار active شود؛
             //  فعال‌سازی مراحل آبشاری فقط از طریق completeStep انجام می‌شود)
             $stmt = $db->prepare("
@@ -164,12 +164,12 @@ try {
             $stmt->execute([$task_id]);
             
         } elseif ($task['status'] == 'delegated') {
-            // ⚠️ نقطه‌یِ ارجاع (approve-and-delegate.php، TaskManager::delegateTask)
+            // ⚠️ نقطه‌ی ارجاع (approve-and-delegate.php، TaskManager::delegateTask)
             // دیگه status='delegated' ست نمی‌کنه، همیشه 'not_started' می‌شه —
-            // این شرط از این به بعد فقط برایِ رکوردهایِ قدیمیِ باقی‌مونده
-            // فعاله؛ عمداً 'not_started' رو این‌جا اضافه نکردم چون اون status
-            // دلایلِ دیگه‌ای هم می‌تونه داشته باشه (نه فقط تازه‌ارجاع‌شدن) و
-            // این فایل به‌نظر بلااستفاده می‌رسه، نمی‌خوام رفتارِ ناشناخته‌ای
+            // این شرط از این به بعد فقط برای رکوردهای قدیمی باقی‌مونده
+            // فعاله؛ عمدا 'not_started' رو این‌جا اضافه نکردم چون اون status
+            // دلایل دیگه‌ای هم می‌تونه داشته باشه (نه فقط تازه‌ارجاع‌شدن) و
+            // این فایل به‌نظر بلااستفاده می‌رسه، نمی‌خوام رفتار ناشناخته‌ای
             // براش اضافه کنم
             $stmt = $db->prepare("
                 UPDATE workflow_instance_steps 

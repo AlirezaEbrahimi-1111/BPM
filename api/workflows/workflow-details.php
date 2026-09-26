@@ -18,7 +18,7 @@ try {
     $db = $database->getConnection();
     $workflowManager = new WorkflowManager($db);
 
-    // امنیت: سازمانِ کاربرِ جاری
+    // امنیت: سازمان کاربر جاری
     $me = loadUserForPermissions($db, $user_id);
     if (!$me) {
         http_response_code(403);
@@ -34,8 +34,8 @@ try {
         exit;
     }
 
-    // 🔒 دسترسیِ کامل (دیدنِ همهٔ مراحل): سوپرادمین، سازندهٔ workflow،
-    // نقشِ کل‌بینِ سازمانی (supervisor/admin)، یا managerِ سازنده
+    // 🔒 دسترسی کامل (دیدن همهٔ مراحل): سوپرادمین، سازندهٔ workflow،
+    // نقش کل‌بین سازمانی (supervisor/admin)، یا manager سازنده
     $hasFullAccess = isSuperAdmin($me)
         || (int) $workflow['created_by'] === (int) $user_id
         || (hasPermission($me, 'view_all_org_tasks') && isSameOrganization($me, $workflow['organization_id']))
@@ -44,7 +44,7 @@ try {
     $user_section = $me['activity_section'] ?? '';
 
     if (!$hasFullAccess) {
-        // آیا اصلاً عضوِ واحدِ حداقل یک مرحله از این workflow هست؟
+        // آیا اصلا عضو واحد حداقل یک مرحله از این workflow هست؟
         $isParticipant = false;
         foreach ($workflow['steps'] as $s) {
             if (!empty($s['activity_section']) && $s['activity_section'] === $user_section) {
@@ -58,7 +58,7 @@ try {
             exit;
         }
 
-        // فقط مرحله‌هایی که به واحدِ خودش مربوط است — نه کل مراحل
+        // فقط مرحله‌هایی که به واحد خودش مربوط است — نه کل مراحل
         $workflow['steps'] = filterWorkflowStepsForViewer($workflow['steps'], false, $user_section);
         $stats = computeWorkflowProgress($workflow['steps']);
         $workflow['total_steps']     = $stats['total_steps'];

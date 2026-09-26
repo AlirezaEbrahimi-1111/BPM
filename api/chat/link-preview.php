@@ -1,15 +1,15 @@
 <?php
 /**
  * link-preview.php
- * دادهٔ پیش‌نمایشِ یک ارجاعِ کار/تیکت که در متنِ یک پیامِ چت درج شده
- * (توکن‌هایی مثلِ #task:123 یا #ticket:45) — عنوان، وضعیت، و لیستِ پیوست‌ها.
+ * دادهٔ پیش‌نمایش یک ارجاع کار/تیکت که در متن یک پیام چت درج شده
+ * (توکن‌هایی مثل #task:123 یا #ticket:45) — عنوان، وضعیت، و لیست پیوست‌ها.
  *
  * GET ?type=task|ticket&id=123
  *
- * دسترسی: هم‌سازمانی بودن با ارجاع‌دهنده کافیه (نه صرفاً سازنده/مسئولِ کار)،
- * چون هدف اینه که هرکسی که پیامِ چت رو می‌بینه (اگه هم‌سازمانه) بتونه
- * پیش‌نمایش رو هم ببینه — دقیقاً مثلِ مدلِ دیدِ تیکت‌ها (سازمان‌محور).
- * کاربرِ id=1 همه‌چیز رو می‌بینه.
+ * دسترسی: هم‌سازمانی بودن با ارجاع‌دهنده کافیه (نه صرفا سازنده/مسئول کار)،
+ * چون هدف اینه که هرکسی که پیام چت رو می‌بینه (اگه هم‌سازمانه) بتونه
+ * پیش‌نمایش رو هم ببینه — دقیقا مثل مدل دید تیکت‌ها (سازمان‌محور).
+ * کاربر id=1 همه‌چیز رو می‌بینه.
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -20,7 +20,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-dates-helper.php';
 
-/** اولین N کلمه از یک متن (برایِ خلاصهٔ آخرین پیامِ تیکت) */
+/** اولین N کلمه از یک متن (برای خلاصهٔ آخرین پیام تیکت) */
 function firstWords(string $text, int $n): string {
     $words = preg_split('/\s+/u', trim($text));
     $trimmed = implode(' ', array_slice($words, 0, $n));
@@ -77,8 +77,8 @@ try {
             exit;
         }
 
-        // موعد: برایِ کارِ دوره‌ای (continuous) دورهٔ بعدی، برایِ کارِ مقطعی
-        // (periodic) موعدِ معمولی — همون منطقِ مشترکِ my-tasks.php/overview.php
+        // موعد: برای کار دوره‌ای (continuous) دورهٔ بعدی، برای کار مقطعی
+        // (periodic) موعد معمولی — همون منطق مشترک my-tasks.php/overview.php
         $holidays = getHolidaySet($db, $orgId);
         $enriched = enrichTaskDates($row, $db, $holidays, date('Y-m-d'));
 
@@ -137,12 +137,12 @@ try {
     $attachments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($attachments as &$a) {
         $a['is_image'] = strpos($a['mime_type'], 'image/') === 0;
-        // فایل‌هایِ تیکت پشتِ یک دانلودِ احرازهویت‌شده هستن (نه مسیرِ مستقیم)
+        // فایل‌های تیکت پشت یک دانلود احرازهویت‌شده هستن (نه مسیر مستقیم)
         $a['url'] = '/api/tickets/download.php?id=' . $a['id'];
     }
     unset($a);
 
-    // آخرین پیامِ عمومی (نه یادداشتِ داخلیِ پشتیبانی) — فقط ۱۰ کلمهٔ اول
+    // آخرین پیام عمومی (نه یادداشت داخلی پشتیبانی) — فقط ۱۰ کلمهٔ اول
     $stmt = $db->prepare("
         SELECT message FROM ticket_messages
         WHERE ticket_id = ? AND is_internal = 0

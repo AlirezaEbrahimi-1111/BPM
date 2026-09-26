@@ -1,6 +1,6 @@
 <?php
 /**
- * API: لیستِ اعضایِ یک گفتگویِ گروهی
+ * API: لیست اعضای یک گفتگوی گروهی
  * GET /api/chat/group-members.php?conversation_id=1
  */
 
@@ -65,9 +65,9 @@ try {
 
     $ownerId = (int) $conv['created_by'];
 
-    // 🔒 اختیاراتِ مؤثر از همین ردیفی که همین‌الان خوندیم حل می‌شه (نه یک
-    // کوئریِ جداگانه به‌ازایِ هر عضو) — permissions=NULL یعنی پیش‌فرض همه،
-    // وگرنه دقیقاً همون آرایه‌ی JSONِ ثبت‌شده
+    // 🔒 اختیارات مؤثر از همین ردیفی که همین‌الان خوندیم حل می‌شه (نه یک
+    // کوئری جداگانه به‌ازای هر عضو) — permissions=NULL یعنی پیش‌فرض همه،
+    // وگرنه دقیقا همون آرایه‌ی JSON ثبت‌شده
     $resolvePermissions = function (array $r) {
         if ($r['role'] !== 'admin') return [];
         if ($r['permissions'] === null) return CHAT_GROUP_ADMIN_PERMISSIONS;
@@ -82,8 +82,8 @@ try {
             'is_owner'    => (int) $r['id'] === $ownerId,
             'is_admin'    => $r['role'] === 'admin',
             'permissions' => (int) $r['id'] === $ownerId ? CHAT_GROUP_ADMIN_PERMISSIONS : $resolvePermissions($r),
-            // 🔒 کاملاً مستقل از role/permissions — هر عضوی (چه مدیرِ واقعی،
-            // چه عضوِ عادی) می‌تونه این بج رو داشته باشه، بدونِ هیچ اختیارِ خاصی
+            // 🔒 کاملا مستقل از role/permissions — هر عضوی (چه مدیر واقعی،
+            // چه عضو عادی) می‌تونه این بج رو داشته باشه، بدون هیچ اختیار خاصی
             'show_badge'  => (bool) $r['show_admin_badge'],
             'avatar_url'  => $r['avatar_path'] ?: null,
         ];

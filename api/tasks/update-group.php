@@ -42,7 +42,7 @@ try {
         echo json_encode(['success' => false, 'message' => 'فقط تعریف‌کننده کار می‌تواند گروه را تغییر دهد']);
         exit;
     }
-    // کارِ حذف‌شده/کنسل‌شده/متوقف‌شده/تکمیل‌شده دیگه قابلِ تغییرِ گروه نیست
+    // کار حذف‌شده/کنسل‌شده/متوقف‌شده/تکمیل‌شده دیگه قابل تغییر گروه نیست
     if ((int)$task['is_deleted'] === 1 || in_array($task['status'], ['completed', 'approved', 'stopped', 'rejected'], true)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'این کار در وضعیت پایانی است و گروهش قابل تغییر نیست']);

@@ -708,9 +708,9 @@ if (!hasPermission($__me, 'view_reports')) {
         }
 
         // بارگذاری آمار
-        // سرو توسطِ go-api (پورتِ api/reports/stats.php). خروجی بایت‌به‌بایت
-        // برابر است و parity روی پروداکشن تأیید شده. فایلِ PHP دست‌نخورده
-        // می‌مانَد به‌عنوانِ fallback؛ برگشت = همین URL را به
+        // سرو توسط go-api (پورت api/reports/stats.php). خروجی بایت‌به‌بایت
+        // برابر است و parity روی پروداکشن تأیید شده. فایل PHP دست‌نخورده
+        // می‌ماند به‌عنوان fallback؛ برگشت = همین URL را به
         // '../api/reports/stats.php' برگردان.
         async function loadStats() {
             try {
@@ -733,8 +733,8 @@ if (!hasPermission($__me, 'view_reports')) {
         }
 
         // بارگذاری گزارش‌ها
-        // سرو توسطِ go-api (پورتِ api/reports/list.php). خروجی برابر است و parity
-        // تأیید شده. فایلِ PHP دست‌نخورده و fallback است؛ برگشت = URL را به
+        // سرو توسط go-api (پورت api/reports/list.php). خروجی برابر است و parity
+        // تأیید شده. فایل PHP دست‌نخورده و fallback است؛ برگشت = URL را به
         // '../api/reports/list.php' برگردان.
         async function loadReports() {
             try {
@@ -1234,8 +1234,8 @@ ${highlightedContent}${contentPreview.length > 4096 ? '...' : ''}
             showInlineError('reportsContainer', message, { onRetry: loadReports });
         }
 
-        // showAlert قبلاً یک پیاده‌سازیِ جداگانه (باکسِ alert بوت‌استرپ) داشت؛
-        // الان فقط یک نام‌مستعارِ نازک برایِ showToastِ مشترکه (از assets/js/alert.js)
+        // showAlert قبلا یک پیاده‌سازی جداگانه (باکس alert بوت‌استرپ) داشت؛
+        // الان فقط یک نام‌مستعار نازک برای showToast مشترکه (از assets/js/alert.js)
         function showAlert(message, type = 'info') {
             showToast(message, type);
         }

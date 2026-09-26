@@ -26,15 +26,15 @@ try {
 
     $me = loadUserForPermissions($db, (int) $user_id);
     $org_id = (int) ($me['organization_id'] ?? 0);
-    // مجوزِ حذف: فقط برایِ نمایشِ دکمهٔ حذف در فرانت (تصمیمِ نهایی همیشه در delete.php دوباره چک می‌شه)
+    // مجوز حذف: فقط برای نمایش دکمهٔ حذف در فرانت (تصمیم نهایی همیشه در delete.php دوباره چک می‌شه)
     $canDeleteOrgHolidays = isOrgWideRole($me);
     $canDeleteGlobalHolidays = ((int) $user_id === 1);
 
-    // بازهٔ تاریخ: اگه فرانت مشخص کرده باشه همون، وگرنه پیش‌فرضِ ۱ ماهِ قبل تا ۶ ماهِ بعد
+    // بازهٔ تاریخ: اگه فرانت مشخص کرده باشه همون، وگرنه پیش‌فرض ۱ ماه قبل تا ۶ ماه بعد
     $start_date = $_GET['start_date'] ?? date('Y-m-d', strtotime('-1 month'));
     $end_date   = $_GET['end_date'] ?? date('Y-m-d', strtotime('+6 month'));
 
-    // تعطیلاتِ یک‌روزه: سراسری (organization_id IS NULL) + مخصوصِ سازمانِ خودش
+    // تعطیلات یک‌روزه: سراسری (organization_id IS NULL) + مخصوص سازمان خودش
     $stmt = $db->prepare("
         SELECT id, holiday_date, title, organization_id
         FROM holidays
@@ -57,7 +57,7 @@ try {
         ];
     }
 
-    // تعطیلاتِ هفتگیِ تکرارشونده: قانون‌ها رو می‌خونیم، بعد در بازهٔ تاریخ باز می‌کنیم
+    // تعطیلات هفتگی تکرارشونده: قانون‌ها رو می‌خونیم، بعد در بازهٔ تاریخ باز می‌کنیم
     $stmt = $db->prepare("
         SELECT id, day_of_week, title, organization_id
         FROM holidays
@@ -95,10 +95,10 @@ try {
     echo json_encode([
         'success'     => true,
         'holidays'    => $holidays,
-        // 🆕 «امروز»ِ واقعی (سرور، نه ساعتِ سیستمِ کلاینت) — تاریخ‌گزینِ
-        // مشترک (assets/js/persian-datepicker.js) این رو به‌عنوانِ لنگر
-        // استفاده می‌کنه تا اگه کاربر ساعتِ سیستمش رو دستی عوض کرده باشه،
-        // «امروز» و محدودیتِ تاریخِ گذشته همچنان درست باشن
+        // 🆕 «امروز» واقعی (سرور، نه ساعت سیستم کلاینت) — تاریخ‌گزین
+        // مشترک (assets/js/persian-datepicker.js) این رو به‌عنوان لنگر
+        // استفاده می‌کنه تا اگه کاربر ساعت سیستمش رو دستی عوض کرده باشه،
+        // «امروز» و محدودیت تاریخ گذشته همچنان درست باشن
         'server_time' => round(microtime(true) * 1000),
     ], JSON_UNESCAPED_UNICODE);
 

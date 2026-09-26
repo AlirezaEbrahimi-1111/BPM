@@ -52,9 +52,9 @@ try {
         exit;
     }
 
-    // بررسی نقش کاربر — دو مدلِ تعطیلی داریم، پس مجوزِ حذف بستگی به مالکِ
-    // همون ردیف داره (سراسری فقط id=1، مخصوصِ سازمان فقط supervisor/admin
-    // همون سازمان)، نه یک قاعدهٔ ثابتِ کلی
+    // بررسی نقش کاربر — دو مدل تعطیلی داریم، پس مجوز حذف بستگی به مالک
+    // همون ردیف داره (سراسری فقط id=1، مخصوص سازمان فقط supervisor/admin
+    // همون سازمان)، نه یک قاعدهٔ ثابت کلی
     $stmt = $db->prepare("SELECT id, role, organization_id FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -77,7 +77,7 @@ try {
         exit;
     }
 
-    // پیدا کردنِ ردیف(های) هدف تا مالکیتش قبل از حذف بررسی بشه
+    // پیدا کردن ردیف(های) هدف تا مالکیتش قبل از حذف بررسی بشه
     if ($holiday_id) {
         $stmt = $db->prepare("SELECT id, organization_id FROM holidays WHERE id = ?");
         $stmt->execute([$holiday_id]);
@@ -93,8 +93,8 @@ try {
         exit;
     }
 
-    // مجوزِ هر ردیف رو جدا چک می‌کنیم: سراسری فقط id=1، مخصوصِ سازمان فقط
-    // همون سازمان (نه سازمانِ دیگه، حتی اگه supervisor باشه)
+    // مجوز هر ردیف رو جدا چک می‌کنیم: سراسری فقط id=1، مخصوص سازمان فقط
+    // همون سازمان (نه سازمان دیگه، حتی اگه supervisor باشه)
     $userOrgId = (int) ($user['organization_id'] ?? 0);
     foreach ($rows as $row) {
         $isGlobal = ($row['organization_id'] === null);

@@ -1,19 +1,19 @@
 <?php
 /**
- * تستِ سایه‌ای رویِ پروداکشن — مقایسه‌ی خروجیِ همه‌ی endpointهایِ
- * READ-ONLYِ پورت‌شده بینِ PHP و go-api، رویِ همون دیتابیسِ واقعی.
+ * تست سایه‌ای روی پروداکشن — مقایسه‌ی خروجی همه‌ی endpointهای
+ * READ-ONLY پورت‌شده بین PHP و go-api، روی همون دیتابیس واقعی.
  *
- * فقط GET/خواندنی‌ها امتحان می‌شن — عمداً هیچ endpointِ نوشتنی (save/
+ * فقط GET/خواندنی‌ها امتحان می‌شن — عمدا هیچ endpoint نوشتنی (save/
  * submit/delete/mark-read/mark-all-read/add-ip/toggle/relabel/...) اینجا
- * صدا زده نمی‌شه، چون قبلاً رویِ لوکال کامل تست شدن و لازم نیست رویِ
- * دیتایِ واقعیِ کاربرها ریسک کنیم.
+ * صدا زده نمی‌شه، چون قبلا روی لوکال کامل تست شدن و لازم نیست روی
+ * دیتای واقعی کاربرها ریسک کنیم.
  *
- * اجرا (روی خودِ سرور، از مسیرِ ریشه‌ی پروژه):
+ * اجرا (روی خود سرور، از مسیر ریشه‌ی پروژه):
  *   php go-api/deploy/prod-shadow-test.php <user_id> [report_id] [ticket_id]
  *
- * <user_id> رو با شناسه‌ی یک کاربرِ واقعی که خودت باهاش تست می‌کنی پر کن
- * (ترجیحاً یک supervisor/superadmin تا همه‌ی شاخه‌ها رو ببینه).
- * [ticket_id] اختیاریه — اگر بدی، tickets/detail هم (فقط GET، بدونِ
+ * <user_id> رو با شناسه‌ی یک کاربر واقعی که خودت باهاش تست می‌کنی پر کن
+ * (ترجیحا یک supervisor/superadmin تا همه‌ی شاخه‌ها رو ببینه).
+ * [ticket_id] اختیاریه — اگر بدی، tickets/detail هم (فقط GET، بدون
  * نوشتن) چک می‌شه.
  */
 
@@ -70,9 +70,9 @@ function compare($label, $phpUrl, $goUrl, $token) {
     }
 }
 
-// دامنه رو با دامنه‌ی واقعیِ خودِ سایت جایگزین کن اگر فرق داشت.
+// دامنه رو با دامنه‌ی واقعی خود سایت جایگزین کن اگر فرق داشت.
 // ⚠️ از ۱۴۰۵/۰۶/۲۲: itmalek.com فقط ریدایرکت به bpm.itmalek.com می‌کنه —
-// curl پیش‌فرض ریدایرکت رو دنبال نمی‌کنه، پس باید مستقیم آدرسِ نهایی داده بشه.
+// curl پیش‌فرض ریدایرکت رو دنبال نمی‌کنه، پس باید مستقیم آدرس نهایی داده بشه.
 $base = 'https://bpm.itmalek.com';
 $php = $base . '/api';
 $go  = $base . '/go/api';
@@ -80,11 +80,11 @@ $go  = $base . '/go/api';
 compare('reports/stats',   "$php/reports/stats.php",   "$go/reports/stats",   $token);
 compare('reports/list',    "$php/reports/list.php",    "$go/reports/list",    $token);
 
-// سه endpointِ زنده‌ی داشبورد/گزارشِ روزانه — تنها موارد این ماژول که
-// فرانت واقعاً صدا می‌زند، پس مهم‌ترین موارد همین تست‌اند.
+// سه endpoint زنده‌ی داشبورد/گزارش روزانه — تنها موارد این ماژول که
+// فرانت واقعا صدا می‌زند، پس مهم‌ترین موارد همین تست‌اند.
 compare('reports/get-today-activities', "$php/reports/get-today-activities.php", "$go/reports/get-today-activities", $token);
-// یک تاریخِ ثابتِ گذشته هم چک می‌شود تا شاخه‌ی ?date= و گروه‌بندی با
-// دیتایِ واقعی (نه یک روزِ احتمالاً خالی) سنجیده شود.
+// یک تاریخ ثابت گذشته هم چک می‌شود تا شاخه‌ی ?date= و گروه‌بندی با
+// دیتای واقعی (نه یک روز احتمالا خالی) سنجیده شود.
 $pastDate = date('Y-m-d', strtotime('-7 days'));
 compare('reports/get-today-activities (date)', "$php/reports/get-today-activities.php?date=$pastDate", "$go/reports/get-today-activities?date=$pastDate", $token);
 compare('reports/bottleneck-report',    "$php/reports/bottleneck-report.php",    "$go/reports/bottleneck-report",    $token);
@@ -110,4 +110,4 @@ if ($ticketId > 0) {
     compare('tickets/detail', "$php/tickets/detail.php?id=$ticketId", "$go/tickets/detail?id=$ticketId", $token);
 }
 
-echo "\n" . ($fails === 0 ? "همه چیز مطابقت داشت." : "$fails مورد عدم تطابق — قبل از سوییچِ فرانت‌اند بررسی شود.") . "\n";
+echo "\n" . ($fails === 0 ? "همه چیز مطابقت داشت." : "$fails مورد عدم تطابق — قبل از سوییچ فرانت‌اند بررسی شود.") . "\n";

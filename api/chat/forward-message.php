@@ -1,8 +1,8 @@
 <?php
 /**
- * API: هدایت یک پیامِ موجود به گفتگویِ دیگر
+ * API: هدایت یک پیام موجود به گفتگوی دیگر
  * POST /api/chat/forward-message.php   body: { message_id: 45, conversation_id: 3 }
- *   conversation_id همان گفتگویِ مقصد است
+ *   conversation_id همان گفتگوی مقصد است
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -47,8 +47,8 @@ try {
         exit;
     }
 
-    // 🔒 برای هدایت کاربر باید هم به گفتگویِ مبدأ (که پیام را می‌بیند) و هم
-    // به گفتگویِ مقصد (که می‌خواهد در آن بفرستد) دسترسی داشته باشد
+    // 🔒 برای هدایت کاربر باید هم به گفتگوی مبدأ (که پیام را می‌بیند) و هم
+    // به گفتگوی مقصد (که می‌خواهد در آن بفرستد) دسترسی داشته باشد
     $stmt = $db->prepare("SELECT id FROM chat_participants WHERE conversation_id = ? AND user_id = ?");
     $stmt->execute([$original['conversation_id'], $user_id]);
     if (!$stmt->fetch()) {

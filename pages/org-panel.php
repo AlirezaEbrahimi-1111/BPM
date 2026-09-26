@@ -68,7 +68,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
     .alert-expire.crit{background:var(--danger-light);color:#B42318}
 
     /* Badges */
-    /* این صفحه custom.css را لود نمی‌کند → با fallback تا اگر متغیرِ سراسری نبود، همان مقادیرِ استاندارد */
+    /* این صفحه custom.css را لود نمی‌کند → با fallback تا اگر متغیر سراسری نبود، همان مقادیر استاندارد */
     .badge{display:inline-flex;align-items:center;gap:4px;padding:7px 10px;border-radius:var(--badge-radius,7px);font-size:11.5px;font-weight:var(--badge-font-weight,500)}
     .badge-success{background:var(--success-light);color:#1b7b39}
     .badge-danger{background:var(--danger-light);color:#B42318}
@@ -233,7 +233,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
   }
 
   // showError از showInlineError مشترک (assets/js/alert.js) استفاده می‌کنه —
-  // قبلاً msg بدونِ escape مستقیم در innerHTML می‌رفت؛ الان امنه
+  // قبلا msg بدون escape مستقیم در innerHTML می‌رفت؛ الان امنه
   function showError(msg) {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('errorBox').style.display = 'block';
@@ -335,8 +335,8 @@ if (!hasPermission($__me, 'view_org_settings')) {
   }
 
   // ── Toast ──
-  // showToast از assets/js/alert.js استفاده می‌شود — قبلاً اینجا یک نسخهٔ
-  // محلیِ جداگانه (وابسته به یک div ثابت) بازتعریف می‌شد
+  // showToast از assets/js/alert.js استفاده می‌شود — قبلا اینجا یک نسخهٔ
+  // محلی جداگانه (وابسته به یک div ثابت) بازتعریف می‌شد
 
   // ── نمایش نتیجه‌ی پرداخت بعد از بازگشت از درگاه ──
   (function () {

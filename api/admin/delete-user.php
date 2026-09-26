@@ -27,7 +27,7 @@ if ($uid === (int)$user_id) {
 }
 
 try {
-    // 🔒 خط قرمز: supervisor/admin فقط در سازمانِ خودشان، manager فقط
+    // 🔒 خط قرمز: supervisor/admin فقط در سازمان خودشان، manager فقط
     // روی زیرمجموعهٔ خودش (زنجیرهٔ manager_id) — نه فراتر
     if (!canManageTargetUser($db, $me, $uid)) {
         http_response_code(404);
@@ -40,10 +40,10 @@ try {
     $target = $targetStmt->fetch(PDO::FETCH_ASSOC);
 
     $suffix = 'deleted_' . $target['phone'] . '_' . time();
-    // 🔒 is_active هم صفر می‌شود — قبلاً فقط is_deleted ست می‌شد، و چون
-    // خیلی از کوئری‌هایِ سراسرِ پروژه (پیکِرها/لیستِ کاربران) فقط
-    // is_active=1 را چک می‌کنند، کاربرِ حذف‌شده همچنان توی همه‌جا دیده
-    // می‌شد — این ناهماهنگی ریشه‌یِ باگِ «کاربرانِ حذف‌شده هنوز نشون داده
+    // 🔒 is_active هم صفر می‌شود — قبلا فقط is_deleted ست می‌شد، و چون
+    // خیلی از کوئری‌های سراسر پروژه (پیکرها/لیست کاربران) فقط
+    // is_active=1 را چک می‌کنند، کاربر حذف‌شده همچنان توی همه‌جا دیده
+    // می‌شد — این ناهماهنگی ریشه‌ی باگ «کاربران حذف‌شده هنوز نشون داده
     // می‌شن» بود.
     $stmt = $db->prepare('UPDATE users SET is_deleted = 1, is_active = 0, deleted_at = NOW(), deleted_by = ?, phone = ?, username = ? WHERE id = ?');
     $stmt->execute([$user_id, $suffix, $suffix, $uid]);

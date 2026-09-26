@@ -1,9 +1,9 @@
 <?php
 /**
- * ردیابیِ درخواستِ سهمیهٔ تشویقیِ مرخصی/پاس — قبلاً فقط یک نوتیفیکیشنِ
+ * ردیابی درخواست سهمیهٔ تشویقی مرخصی/پاس — قبلا فقط یک نوتیفیکیشن
  * زودگذر بود که با سین‌شدن/فراموش‌شدنش، هیچ اثری ازش نمی‌موند و کارمند
- * برایِ همیشه در انتظار می‌ماند. حالا هر درخواست یک ردیفِ ماندگار داره
- * (pending/granted/declined) که در فهرستِ سرپرست تا حل‌نشدن باقی می‌مونه.
+ * برای همیشه در انتظار می‌ماند. حالا هر درخواست یک ردیف ماندگار داره
+ * (pending/granted/declined) که در فهرست سرپرست تا حل‌نشدن باقی می‌مونه.
  */
 
 return [
@@ -16,10 +16,10 @@ return [
             `user_id` INT NOT NULL,
             `organization_id` INT NOT NULL,
             `note` VARCHAR(500) NULL,
-            `balance_at_request` INT NOT NULL COMMENT 'دقیقه — موجودی در لحظهٔ ثبتِ درخواست',
+            `balance_at_request` INT NOT NULL COMMENT 'دقیقه — موجودی در لحظهٔ ثبت درخواست',
             `status` ENUM('pending','granted','declined') NOT NULL DEFAULT 'pending',
             `resolved_by` INT NULL,
-            `resolved_amount` INT NULL COMMENT 'دقیقه — فقط برایِ status=granted',
+            `resolved_amount` INT NULL COMMENT 'دقیقه — فقط برای status=granted',
             `resolve_note` VARCHAR(500) NULL,
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             `resolved_at` TIMESTAMP NULL,

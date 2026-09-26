@@ -52,9 +52,9 @@ try {
         exit;
     }
 
-    // بررسی نقش کاربر — دو مدلِ تعطیلی داریم:
-    //   ۱) سراسری (organization_id = NULL) — فقط کاربرِ id=1
-    //   ۲) مخصوصِ سازمان (organization_id = سازمانِ خودش) — هر supervisor/admin
+    // بررسی نقش کاربر — دو مدل تعطیلی داریم:
+    //   ۱) سراسری (organization_id = NULL) — فقط کاربر id=1
+    //   ۲) مخصوص سازمان (organization_id = سازمان خودش) — هر supervisor/admin
     $stmt = $db->prepare("SELECT id, role, organization_id FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -73,7 +73,7 @@ try {
     $title = trim($input['title'] ?? '');
     $description = trim($input['description'] ?? '');
 
-    // فقط کاربرِ id=1 اجازهٔ ساختنِ تعطیلیِ سراسری داره؛ بقیه همیشه برایِ سازمانِ خودشونه
+    // فقط کاربر id=1 اجازهٔ ساختن تعطیلی سراسری داره؛ بقیه همیشه برای سازمان خودشونه
     if ($scope === 'global' && (int) $user_id !== 1) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'فقط مدیر کل سامانه می‌تواند تعطیلی سراسری تعریف کند']);
@@ -139,7 +139,7 @@ try {
         exit;
     }
 
-    // بررسی تکراری نبودن (فقط در همون scope؛ هم‌پوشانیِ سراسری/سازمانی مشکلی نداره)
+    // بررسی تکراری نبودن (فقط در همون scope؛ هم‌پوشانی سراسری/سازمانی مشکلی نداره)
     $stmt = $db->prepare("
         SELECT id FROM holidays
         WHERE type = 'date' AND holiday_date = ?

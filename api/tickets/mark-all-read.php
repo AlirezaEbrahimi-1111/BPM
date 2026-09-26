@@ -1,8 +1,8 @@
 <?php
 /**
- * «همه‌ی تیکت‌ها را خوانده‌شده علامت بزن» برای کاربرِ جاری.
- * برای هر تیکتِ قابل‌مشاهده، last_read_at = NOW() در ticket_message_reads ثبت
- * می‌شود؛ در نتیجه بجِ «در انتظارِ پاسخِ شما» صفر می‌شود و از تیکتِ بعدی درست
+ * «همه‌ی تیکت‌ها را خوانده‌شده علامت بزن» برای کاربر جاری.
+ * برای هر تیکت قابل‌مشاهده، last_read_at = NOW() در ticket_message_reads ثبت
+ * می‌شود؛ در نتیجه بج «در انتظار پاسخ شما» صفر می‌شود و از تیکت بعدی درست
  * کار می‌کند.
  */
 header('Content-Type: application/json; charset=utf-8');
@@ -41,7 +41,7 @@ try {
     $me = loadUserForPermissions($db, (int) $user_id);
     $iAmSupport = in_array((int) $user_id, getSuperAdminIds(), true);
 
-    // محدوده: پشتیبان → همه‌ی تیکت‌ها؛ بقیه → فقط تیکتِ خودشان/ارجاع‌شده.
+    // محدوده: پشتیبان → همه‌ی تیکت‌ها؛ بقیه → فقط تیکت خودشان/ارجاع‌شده.
     $scopeSQL = '';
     $params   = [(int) $user_id];
     if (!$iAmSupport) {

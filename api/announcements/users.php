@@ -25,7 +25,7 @@ try {
         exit;
     }
 
-    // بدون سازمانِ معتبر، لیست خالی (سوپرادمینِ بدون سازمان)
+    // بدون سازمان معتبر، لیست خالی (سوپرادمین بدون سازمان)
     if ($org <= 0) {
         echo json_encode(['success' => true, 'users' => []], JSON_UNESCAPED_UNICODE);
         exit;
@@ -34,7 +34,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // ✅ فقط کاربرانِ فعالِ همان سازمان
+    // ✅ فقط کاربران فعال همان سازمان
     $stmt = $db->prepare("
         SELECT id, TRIM(CONCAT(COALESCE(first_name,''),' ',COALESCE(last_name,''))) AS name
         FROM users

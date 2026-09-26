@@ -1,6 +1,6 @@
 <?php
 /**
- * API: افزودنِ عضو به گروه — سازنده یا هر مدیرِ گروه مجاز است
+ * API: افزودن عضو به گروه — سازنده یا هر مدیر گروه مجاز است
  * POST /api/chat/group-add-members.php   body: { conversation_id: 1, member_ids: [4,5] }
  */
 
@@ -50,7 +50,7 @@ try {
         exit;
     }
 
-    // 🔒 سازنده یا مدیرِ دارایِ اختیارِ اختصاصیِ «add_member» اجازه‌ی افزودنِ عضو داره
+    // 🔒 سازنده یا مدیر دارای اختیار اختصاصی «add_member» اجازه‌ی افزودن عضو داره
     if (!chatUserHasGroupPermission($db, $conversationId, $user_id, 'add_member')) {
         http_response_code(403);
         error_log("Chat group-add-members denied | user_id={$user_id} | conversation_id={$conversationId}");
@@ -69,9 +69,9 @@ try {
         exit;
     }
 
-    // 🔒 اعضایی که از قبل تو گروه بودن رو جدا می‌کنیم — فقط برایِ عضوهایِ
-    // واقعاً تازه باید پیامِ سیستمیِ «اضافه شد» ساخته بشه، وگرنه اضافه‌کردنِ
-    // دوباره‌ی یه عضوِ موجود هر بار یه پیامِ تکراری تولید می‌کنه
+    // 🔒 اعضایی که از قبل تو گروه بودن رو جدا می‌کنیم — فقط برای عضوهای
+    // واقعا تازه باید پیام سیستمی «اضافه شد» ساخته بشه، وگرنه اضافه‌کردن
+    // دوباره‌ی یه عضو موجود هر بار یه پیام تکراری تولید می‌کنه
     $placeholders2 = implode(',', array_fill(0, count($validMemberIds), '?'));
     $stmt = $db->prepare("SELECT user_id FROM chat_participants WHERE conversation_id = ? AND user_id IN ($placeholders2)");
     $stmt->execute(array_merge([$conversationId], $validMemberIds));

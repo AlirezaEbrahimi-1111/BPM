@@ -1,7 +1,7 @@
-// Package announcements — پورتِ api/announcements/list.php (فقط بخشِ
-// خواندنی؛ create.php/update.php/users.php — که فقط مدیران برایِ
-// ساختن/ویرایشِ اطلاعیه استفاده می‌کنن، نه چیزی که هر بارگذاریِ صفحه صدا
-// بزنه — عمداً فعلاً پورت نشدن).
+// Package announcements — پورت api/announcements/list.php (فقط بخش
+// خواندنی؛ create.php/update.php/users.php — که فقط مدیران برای
+// ساختن/ویرایش اطلاعیه استفاده می‌کنن، نه چیزی که هر بارگذاری صفحه صدا
+// بزنه — عمدا فعلا پورت نشدن).
 package announcements
 
 import (
@@ -24,7 +24,7 @@ func parseIntDefault(s string, def int) int {
 	return n
 }
 
-// List — پورتِ دقیقِ api/announcements/list.php
+// List — پورت دقیق api/announcements/list.php
 //
 //	GET /go/api/announcements/list?limit=&offset=&all=1&unread_only=1
 //	→ {"success":true,"announcements":[...],"unread_count":N,"total":N}
@@ -32,7 +32,7 @@ func List(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := core.UserOf(r.Context())
 
-		// معادلِ getUserInfo(): فقط کاربرِ فعال.
+		// معادل getUserInfo(): فقط کاربر فعال.
 		var role, section sql.NullString
 		var orgID sql.NullInt64
 		err := db.QueryRow("SELECT role, organization_id, activity_section FROM users WHERE id = ? AND is_active = 1", u.ID).
@@ -137,7 +137,7 @@ func List(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// ───── تعداد نخوانده (همان دامنهٔ دیدِ کاربر عادی، مستقل از showAll) ─────
+		// ───── تعداد نخوانده (همان دامنهٔ دید کاربر عادی، مستقل از showAll) ─────
 		var unreadCount int
 		err = db.QueryRow(`
 			SELECT COUNT(*) FROM announcements a
