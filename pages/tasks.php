@@ -222,7 +222,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             {
                 headerName: 'مهلت',
                 colId: 'col_mohlat',
-                width: 120,
+                width: 168, // ۱۲۰ × ۱.۴ — ۴۰٪ عریض‌تر (طبق درخواست)
                 resizable: true,
                 field: 'deadline',
                 sortable: false,
@@ -270,8 +270,12 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             overlayNoRowsTemplate: '<span class="text-muted">اطلاعاتی یافت نشد</span>',
             onGridReady: params => {
                 const saved = localStorage.getItem('allTasksGridState');
+                // 🔒 عرضِ ذخیره‌شده‌ی قدیمیِ «مهلت» (۱۲۰ = پیش‌فرضِ قدیم، یعنی
+                // کاربر دستی تغییرش نداده) با پیش‌فرضِ جدید (۱۶۸) عوض می‌شه؛
+                // وگرنه state ذخیره‌شده تویِ localStorage، عرضِ جدید رو برایِ
+                // کاربرانِ قبلی نادیده می‌گرفت. عرضِ دست‌کاری‌شده دست‌نخورده می‌مونه.
                 if (saved) params.api.applyColumnState({
-                    state: JSON.parse(saved),
+                    state: JSON.parse(saved).map(c => (c.colId === 'col_mohlat' && c.width === 120) ? { ...c, width: 168 } : c),
                     applyOrder: true
                 });
                 applyResponsiveColumns(); // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
