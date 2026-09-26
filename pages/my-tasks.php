@@ -303,7 +303,11 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
             // ✅ حفظ state بعد از برگشت به صفحه
             onGridReady: params => {
-                const saved = localStorage.getItem('allTasksGridState');
+                // 🔒 قبلاً اینجا 'allTasksGridState' (کلیدِ صفحه‌ی tasks.php) خونده
+                // می‌شد ولی پایین‌تر تو 'myTasksGridState' ذخیره می‌شد؛ یعنی تنظیماتِ
+                // ستونِ همین صفحه هیچ‌وقت برنمی‌گشت و به‌جاش چیدمانِ صفحه‌ی دیگه
+                // اعمال می‌شد. الان خوندن/نوشتن هر دو با کلیدِ خودِ این صفحه‌ست.
+                const saved = localStorage.getItem('myTasksGridState');
                 // 🔒 عرضِ ذخیره‌شده‌ی قدیمیِ «مهلت» (۱۲۰ = پیش‌فرضِ قدیم) با
                 // پیش‌فرضِ جدید (۱۶۸) عوض می‌شه؛ عرضِ دست‌کاری‌شده دست‌نخورده می‌مونه
                 if (saved) params.api.applyColumnState({

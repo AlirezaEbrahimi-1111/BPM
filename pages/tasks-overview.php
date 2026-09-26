@@ -249,7 +249,11 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
             overlayNoRowsTemplate: '<span class="text-muted">اطلاعاتی یافت نشد</span>',
             onRowClicked: params => viewTask(params.data.id),
             onGridReady: params => {
-                const saved = localStorage.getItem('allTasksGridState');
+                // 🔒 قبلاً این صفحه از 'allTasksGridState' (کلیدِ صفحه‌ی tasks.php)
+                // می‌خوند ولی خودش هیچ‌وقت چیزی ذخیره نمی‌کرد؛ یعنی چیدمانِ ستونِ
+                // صفحه‌ی دیگه به‌اشتباه روی این جدول اعمال می‌شد و تغییراتِ خودِ
+                // کاربر اینجا ماندگار نبود. الان کلیدِ اختصاصیِ خودش رو دارد.
+                const saved = localStorage.getItem('tasksOverviewGridState');
                 // 🔒 عرضِ ذخیره‌شده‌ی قدیمیِ «مهلت» (۱۲۰ = پیش‌فرضِ قدیم) با
                 // پیش‌فرضِ جدید (۱۶۸) عوض می‌شه؛ عرضِ دست‌کاری‌شده دست‌نخورده می‌مونه
                 if (saved) params.api.applyColumnState({
@@ -258,6 +262,8 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                 });
                 applyResponsiveColumns(); // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
             },
+            onSortChanged: params => localStorage.setItem('tasksOverviewGridState', JSON.stringify(params.api.getColumnState())),
+            onColumnResized: params => localStorage.setItem('tasksOverviewGridState', JSON.stringify(params.api.getColumnState())),
             onPaginationChanged: () => {
                 setTimeout(() => {
                     // فارسی کردن اعداد و متن‌ها
