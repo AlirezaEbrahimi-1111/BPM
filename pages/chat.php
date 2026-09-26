@@ -450,6 +450,33 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             background: var(--surface-3, rgba(255, 255, 255, .08));
         }
 
+        /* پیامِ سیستمی/رویدادی («فلانی به گروه اضافه شد») — بدونِ حباب،
+           بدونِ آواتار، وسط‌چین؛ دقیقاً مثلِ تلگرام/واتساپ */
+        .chat-system-message {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .chat-system-message span {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--surface-2, #f1f2f4);
+            color: var(--text-muted, #6b7280);
+            font-size: .72rem;
+            padding: 5px 14px;
+            border-radius: 999px;
+            white-space: normal;
+            max-width: 80%;
+        }
+
+        :root[data-theme="dark"] .chat-system-message span {
+            background: var(--surface-3, rgba(255, 255, 255, .08));
+        }
+
         .chat-conv-mute-icon {
             font-size: .72rem;
             color: var(--text-muted);
@@ -3685,6 +3712,32 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 // یک ردیفِ تکراری نساز — این دقیقاً همون چیزی بود که باعث می‌شد
                 // یک پیام دوبار (یا یک هدایت، دوبار) روی صفحه دیده بشه
                 if (el.querySelector('.chat-bubble-row[data-message-id="' + m.id + '"]')) return;
+                if (el.querySelector('.chat-system-message[data-message-id="' + m.id + '"]')) return;
+
+                // پیامِ سیستمی/رویدادی (مثلاً «فلانی به گروه اضافه شد») — بدونِ
+                // حباب، بدونِ منویِ راست‌کلیک، فقط یه نوارِ خاکستریِ وسط‌چین
+                if (m.type === 'system') {
+                    var sysDateKey = chatDateKey(m);
+                    var sysRow = document.createElement('div');
+                    sysRow.className = 'chat-system-message';
+                    sysRow.setAttribute('data-message-id', m.id);
+                    sysRow.innerHTML = '<span><i class="bi bi-person-plus"></i> ' + esc(m.message || '') + '</span>';
+
+                    if (prepend) {
+                        if (sysDateKey && sysDateKey !== prevKeyInPrependBatch) {
+                            frag.appendChild(buildChatDateDivider(m));
+                            prevKeyInPrependBatch = sysDateKey;
+                        }
+                        frag.appendChild(sysRow);
+                    } else {
+                        if (sysDateKey && sysDateKey !== lastAppendedDateKey) {
+                            el.appendChild(buildChatDateDivider(m));
+                            lastAppendedDateKey = sysDateKey;
+                        }
+                        el.appendChild(sysRow);
+                    }
+                    return;
+                }
                 // خطِ «پیام‌های خوانده‌نشده» — درست بالایِ اولین پیامِ خوانده‌نشده، فقط
                 // یک‌بار (unreadDividerBeforeId بلافاصله صفر می‌شود تا در پیام‌های
                 // بعدیِ همین دسته یا در after_id/prependِ بعدی دوباره درج نشود)

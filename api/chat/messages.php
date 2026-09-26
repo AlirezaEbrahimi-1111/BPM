@@ -52,7 +52,7 @@ try {
     }
 
     $sql = "
-        SELECT m.id, m.user_id, m.message, m.created_at, m.edited_at, m.reply_to_message_id,
+        SELECT m.id, m.user_id, m.type, m.message, m.created_at, m.edited_at, m.reply_to_message_id,
                m.forwarded_from_user_id,
                u.first_name, u.last_name,
                rm.message AS reply_message, rm.is_deleted AS reply_is_deleted,
@@ -125,6 +125,7 @@ try {
         $messages[] = [
             'id'         => (int) $r['id'],
             'user_id'    => (int) $r['user_id'],
+            'type'       => $r['type'],
             'user_name'  => trim($r['first_name'] . ' ' . $r['last_name']),
             'message'    => $r['message'],
             'created_at' => $r['created_at'],

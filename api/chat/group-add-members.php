@@ -69,9 +69,44 @@ try {
         exit;
     }
 
+    // 🔒 اعضایی که از قبل تو گروه بودن رو جدا می‌کنیم — فقط برایِ عضوهایِ
+    // واقعاً تازه باید پیامِ سیستمیِ «اضافه شد» ساخته بشه، وگرنه اضافه‌کردنِ
+    // دوباره‌ی یه عضوِ موجود هر بار یه پیامِ تکراری تولید می‌کنه
+    $placeholders2 = implode(',', array_fill(0, count($validMemberIds), '?'));
+    $stmt = $db->prepare("SELECT user_id FROM chat_participants WHERE conversation_id = ? AND user_id IN ($placeholders2)");
+    $stmt->execute(array_merge([$conversationId], $validMemberIds));
+    $alreadyIn = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+    $newlyAddedIds = array_values(array_diff($validMemberIds, $alreadyIn));
+
     $stmt = $db->prepare("INSERT IGNORE INTO chat_participants (conversation_id, user_id) VALUES (?, ?)");
     foreach ($validMemberIds as $mid) {
         $stmt->execute([$conversationId, $mid]);
+    }
+
+    if ($newlyAddedIds) {
+        $actorName = trim((function () use ($db, $user_id) {
+            $s = $db->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
+            $s->execute([$user_id]);
+            $u = $s->fetch(PDO::FETCH_ASSOC);
+            return $u ? $u['first_name'] . ' ' . $u['last_name'] : '';
+        })());
+
+        $placeholders3 = implode(',', array_fill(0, count($newlyAddedIds), '?'));
+        $stmt = $db->prepare("SELECT id, first_name, last_name FROM users WHERE id IN ($placeholders3)");
+        $stmt->execute($newlyAddedIds);
+        $newMembers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $sysStmt = $db->prepare("
+            INSERT INTO chat_messages (conversation_id, user_id, type, message)
+            VALUES (?, ?, 'system', ?)
+        ");
+        foreach ($newMembers as $nm) {
+            $memberName = trim($nm['first_name'] . ' ' . $nm['last_name']);
+            $text = $actorName !== ''
+                ? "{$actorName}، {$memberName} را به گروه اضافه کرد."
+                : "{$memberName} به گروه اضافه شد.";
+            $sysStmt->execute([$conversationId, $user_id, $text]);
+        }
     }
 
     $db->prepare("UPDATE chat_conversations SET updated_at = NOW() WHERE id = ?")->execute([$conversationId]);
