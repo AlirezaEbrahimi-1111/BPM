@@ -427,13 +427,22 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         /* جداکننده‌ی تاریخ — خنثی و کم‌رنگ‌تر از جداکننده‌ی «خوانده‌نشده»
-           تا با اون اشتباه گرفته نشه */
+           تا با اون اشتباه گرفته نشه.
+           🔒 شناور (مثلِ تلگرام): چون هر جداکننده دقیقاً یک‌بار، درست بالایِ
+           پیام‌هایِ همون روز، به‌عنوانِ فرزندِ مستقیمِ #chatMessages درج
+           می‌شه (نه داخلِ یه رَپرِ دیگه)، position:sticky با top:0 خودش
+           به‌طورِ طبیعی این رفتار رو می‌ده: تا وقتی پیام‌هایِ همون روز رویِ
+           صفحه‌ن، برچسب بالا می‌چسبه؛ به‌محضِ رسیدن به جداکننده‌ی روزِ بعد،
+           خودکار جاش رو بهش می‌ده — بدون نیاز به هیچ کدِ جاوااسکریپتِ اسکرول */
         .chat-date-divider {
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 12px 0;
             text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 2;
         }
 
         .chat-date-divider span {
