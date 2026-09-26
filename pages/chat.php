@@ -182,7 +182,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             border-radius: 999px;
             padding-block: 9px;
             padding-inline-start: 38px;
-            padding-inline-end: 14px;
+            padding-inline-end: 34px;
             font-size: .83rem;
             outline: none;
             background: var(--ink-050);
@@ -192,6 +192,35 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         .chat-search-box input:focus {
             background: var(--surface);
             border-color: var(--ink-900);
+        }
+
+        /* دکمه‌ی پاک‌کردنِ سرچ — فقط وقتی متنی تایپ شده نشون داده می‌شه */
+        .chat-search-box .chat-search-clear {
+            position: absolute;
+            top: 40%;
+            inset-inline-end: 26px;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border: none;
+            border-radius: 50%;
+            background: var(--ink-100, rgba(0, 0, 0, .08));
+            color: var(--text-muted);
+            font-size: .8rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .chat-search-box .chat-search-clear.visible {
+            display: flex;
+        }
+
+        .chat-search-box .chat-search-clear:hover {
+            background: var(--ink-200, rgba(0, 0, 0, .16));
         }
 
         .chat-conv-list {
@@ -628,6 +657,17 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         .chat-msg-search-nav-btn:disabled {
             opacity: .4;
             cursor: not-allowed;
+        }
+
+        /* دکمه‌ی پاک‌کردنِ متنِ جست‌وجویِ داخلِ گفتگو — جدا از دکمه‌ی
+           بستن‌کاملِ نوارِ جست‌وجو (chatSearchToggleBtn)؛ فقط متن رو پاک
+           می‌کنه و نوار باز می‌مونه */
+        .chat-msg-search-clear-btn {
+            display: none;
+        }
+
+        .chat-msg-search-clear-btn.visible {
+            display: flex;
         }
 
         .chat-bubble-highlight {
@@ -2094,6 +2134,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 <div class="chat-search-box">
                     <i class="bi bi-search"></i>
                     <input type="text" id="convSearchInput" placeholder="جستجو در گفتگوها و پیام‌ها..." oninput="onConvSearchInput()" onkeydown="onConvSearchKeydown(event)">
+                    <button type="button" class="chat-search-clear" id="convSearchClearBtn" onclick="clearConvSearch()" title="پاک کردن"><i class="bi bi-x"></i></button>
                 </div>
                 <div class="chat-conv-list" id="convListWrap">
                     <div id="convList">
@@ -2130,6 +2171,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                             <button class="chat-msg-search-nav-btn" id="chatMsgSearchPrevBtn" onclick="navMsgSearch(-1)" title="نتیجهٔ قبلی"><i class="bi bi-chevron-up"></i></button>
                             <button class="chat-msg-search-nav-btn" id="chatMsgSearchNextBtn" onclick="navMsgSearch(1)" title="نتیجهٔ بعدی"><i class="bi bi-chevron-down"></i></button>
                             <input type="text" id="chatMsgSearchInput" placeholder="جستجو در این گفتگو..." oninput="runMsgSearch()">
+                            <button class="chat-msg-search-nav-btn chat-msg-search-clear-btn" id="chatMsgSearchClearBtn" onclick="clearMsgSearchText()" title="پاک کردن"><i class="bi bi-x"></i></button>
                         </div>
 
                         <button class="chat-search-toggle-btn" id="chatMediaGalleryBtn" onclick="openMediaGallery()" title="فایل‌ها و عکس‌های این گفتگو">
@@ -2856,10 +2898,25 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         function closeMsgSearch() {
             document.getElementById('chatMsgSearchBar').classList.remove('show');
             document.getElementById('chatMsgSearchInput').value = '';
+            document.getElementById('chatMsgSearchClearBtn').classList.remove('visible');
             clearMsgSearchHighlights();
             msgSearchMatches = [];
             msgSearchActiveIdx = -1;
             updateMsgSearchCount();
+        }
+
+        // دکمه‌ی ضربدرِ داخلِ نوارِ جست‌وجویِ گفتگو — فقط متن رو پاک می‌کنه؛
+        // برخلافِ closeMsgSearch، نوار همچنان باز می‌مونه (کاربر می‌تونه
+        // بلافاصله عبارتِ دیگه‌ای تایپ کنه)
+        function clearMsgSearchText() {
+            var input = document.getElementById('chatMsgSearchInput');
+            input.value = '';
+            document.getElementById('chatMsgSearchClearBtn').classList.remove('visible');
+            clearMsgSearchHighlights();
+            msgSearchMatches = [];
+            msgSearchActiveIdx = -1;
+            updateMsgSearchCount();
+            input.focus();
         }
 
         function clearMsgSearchHighlights() {
@@ -2884,6 +2941,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             clearMsgSearchHighlights();
 
             var term = document.getElementById('chatMsgSearchInput').value.trim();
+            document.getElementById('chatMsgSearchClearBtn').classList.toggle('visible', term.length > 0);
             if (!term) {
                 msgSearchMatches = [];
                 msgSearchActiveIdx = -1;
@@ -3139,6 +3197,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             renderConversationList();
 
             var term = document.getElementById('convSearchInput').value.trim();
+            document.getElementById('convSearchClearBtn').classList.toggle('visible', term.length > 0);
             clearTimeout(globalSearchDebounce);
             if (term.length < 2) {
                 document.getElementById('msgSearchResultsSection').style.display = 'none';
@@ -3149,14 +3208,20 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }, 300);
         }
 
-        // Esc → پاک‌کردنِ عبارتِ جست‌وجو و مخفی‌کردنِ لیستِ نتایج (تنها
-        // راهِ دیگه‌ای که طبقِ خواسته این لیست باید مخفی بشه، جز پاک‌کردنِ
-        // دستیِ خودِ متن که از قبل توسطِ onConvSearchInput هندل می‌شه)
-        function onConvSearchKeydown(e) {
-            if (e.key !== 'Escape') return;
-            document.getElementById('convSearchInput').value = '';
+        // دکمه‌ی ضربدرِ داخلِ سرچ‌باکس + Esc — هر دو همینو صدا می‌زنن:
+        // پاک‌کردنِ عبارتِ جست‌وجو، مخفی‌کردنِ لیستِ نتایج، و فوکوسِ دوباره
+        function clearConvSearch() {
+            var input = document.getElementById('convSearchInput');
+            input.value = '';
+            document.getElementById('convSearchClearBtn').classList.remove('visible');
             document.getElementById('msgSearchResultsSection').style.display = 'none';
             renderConversationList();
+            input.focus();
+        }
+
+        function onConvSearchKeydown(e) {
+            if (e.key !== 'Escape') return;
+            clearConvSearch();
         }
 
         function runGlobalMessageSearch(term) {
