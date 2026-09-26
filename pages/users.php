@@ -597,13 +597,19 @@ if (!hasPermission($__me, 'manage_users')) {
             background: transparent;
         }
 
-        /* دکمه‌ی «ارجاع به دیگری» — همیشه بنفش اصلی سایت (نه فقط وقتی
-           checkه)، و چون اولین دکمه‌ی گروهه (سمت راست، توی صفحه‌ی RTL)،
-           رادیوس گوشه‌های سمت راستش عمدا صفره */
+        /* دکمه‌ی «ارجاع به دیگری» — همیشه بنفش اصلی سایت (نه فقط وقتی checkه).
+           🔒 چون اولین دکمه‌ی گروهه، خودِ bootstrap.min.css (نسخه‌ی LTR، نه
+           RTL) با ".btn-group > .btn:not(:last-child)"، گوشه‌های سمتِ
+           راستش رو صفر می‌کنه — این فرض برای چیدمانِ RTL این پروژه غلطه
+           (تو RTL، لبه‌ی بیرونی/گردِ گروه سمتِ راسته، نه چپ). این وراثت
+           رو با var(--radius-btn) (رادیوسِ استانداردِ دکمه‌هایِ پروژه،
+           تعریف‌شده تو custom.css) خنثی می‌کنیم */
         #pendingTasksModal .btn-outline-primary {
             background-color: #8e57fe !important;
             border-color: #8e57fe !important;
             color: white !important;
+            border-top-right-radius: var(--radius-btn) !important;
+            border-bottom-right-radius: var(--radius-btn) !important;
         }
     </style>
 </head>
