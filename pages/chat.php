@@ -5779,15 +5779,29 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         // از دراورِ اطلاعاتِ گروه صدا زده می‌شه — کلیک روی نامِ یک عضو،
         // گفتگویِ مستقیم با همون فرد رو باز می‌کنه
         function openMemberDirectChat(userId) {
+            // 🔒 قبلاً اینجا fallbackInfo پاس داده نمی‌شد و startChatWith
+            // فقط توی currentUserResults (نتیجهٔ سرچِ مودالِ «گفتگوی جدید»)
+            // دنبالِ اسم/عکس می‌گشت — که وقتی از داخلِ لیستِ اعضایِ گروه
+            // کلیک می‌کردیم (نه از اون مودال)، هیچ‌وقت پر نبود، پس اسم تا
+            // برگشتنِ جوابِ start.php خط‌تیره می‌موند. حالا مستقیماً از
+            // کشِ اعضایِ همین گروه (groupInfoMembersCache) که هنگامِ بازکردنِ
+            // درآورِ اطلاعاتِ گروه پر شده، اسم/عکس رو برمی‌داریم.
+            var m = groupInfoMembersCache.find(x => Number(x.id) === Number(userId));
+            var fallbackInfo = m ? { title: m.full_name, avatar_url: m.avatar_url } : null;
             closeGroupInfoDrawer();
-            startChatWith(userId);
+            startChatWith(userId, fallbackInfo);
         }
 
-        function startChatWith(userId) {
+        function startChatWith(userId, fallbackInfo) {
             // برایِ fallbackِ نام/عکسِ هدر، قبل از اینکه اولین پیام فرستاده بشه
-            // (وقتی گفتگوی تازه هنوز توی لیستِ conversations نیست)
-            var userInfo = currentUserResults.find(u => u.id === userId);
-            var fallbackInfo = userInfo ? { title: userInfo.full_name, avatar_url: userInfo.avatar_url } : null;
+            // (وقتی گفتگوی تازه هنوز توی لیستِ conversations نیست) — اگه
+            // صدازننده (مثلِ openMemberDirectChat) خودش از قبل fallbackInfo
+            // داده باشه، همونو نگه می‌داریم؛ وگرنه (مودالِ «گفتگوی جدید»)
+            // مثلِ قبل از currentUserResults می‌سازیمش
+            if (!fallbackInfo) {
+                var userInfo = currentUserResults.find(u => u.id === userId);
+                fallbackInfo = userInfo ? { title: userInfo.full_name, avatar_url: userInfo.avatar_url } : null;
+            }
 
             fetch('../api/chat/start.php', {
                     method: 'POST',
