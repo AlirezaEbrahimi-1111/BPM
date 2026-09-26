@@ -69,12 +69,20 @@ function enrichTaskDates(array $task, PDO $db, array $holidays, string $today, ?
         $task['current_period_date']  = $s['current_period_date'];
 
         // 🆕 نیازمند تصمیم تمدید؟ — دقیقا هم‌معنی TaskManager::isReadyForRenewal()
-        // (end_date <= امروز + بدون تأیید در جریان/درخواست تمدید در جریان)،
+        // (end_date < امروز + بدون تأیید در جریان/درخواست تمدید در جریان)،
         // به‌اضافه‌ی حذف کارهای از قبل بسته‌شده (تکمیل/تأیید/متوقف‌شده). این‌جا
         // (نه سمت جاوااسکریپت) محاسبه می‌شه تا بر پایه‌ی ساعت سرور باشه، نه
         // ساعت مرورگر
+        //
+        // 🔒 قبلاً اینجا <= بود (یعنی از خودِ روزِ end_date، نه فردایِ آن).
+        // این با pe_state() (خطِ «بازهٔ کار تمام شده» در period-engine.php)
+        // که کار را فقط وقتی «تمام‌شده» می‌داند که $today > $endDate،
+        // یک‌روز ناهماهنگ بود: دقیقاً روزِ end_date، موتورِ دوره می‌گفت
+        // «هنوز فعاله، چک‌لیستِ امروز را انجام بده» و چک‌لیست را هم برایِ
+        // همان روز تازه می‌ساخت، ولی این‌جا هم‌زمان می‌گفت «تمام شد، تمدید کن».
+        // با < ، این‌جا هم دقیقاً همان مرزِ pe_state() را رعایت می‌کند.
         $task['needs_renewal_decision'] = !empty($task['end_date'])
-            && substr($task['end_date'], 0, 10) <= $today
+            && substr($task['end_date'], 0, 10) < $today
             && (int) ($task['is_pending_approval'] ?? 0) !== 1
             && (int) ($task['has_pending_renewal_request'] ?? 0) !== 1
             && !in_array($task['status'] ?? '', ['completed', 'approved', 'rejected'], true);

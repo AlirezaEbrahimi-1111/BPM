@@ -1796,6 +1796,10 @@ class TaskManager
     // =====================================================================
 
     // بررسی اینکه آیا کار آماده تمدید دوره است (end_date گذشته + آخرین دوره تأیید شده)
+    // 🔒 قبلاً <= بود؛ یک روز زودتر از موعدِ واقعی، همون روزِ end_date،
+    // اجازه‌ی تمدید می‌داد در حالی‌که period-engine.php هنوز اون روز رو
+    // «فعال» و چک‌لیستش رو قابل‌تکمیل می‌دونست (فقط فردایِ end_date
+    // «تمام‌شده» حساب می‌شه). با < هماهنگ شد.
     private function isReadyForRenewal($task)
     {
         if (!$task || $task['task_type'] !== 'continuous') return false;
@@ -1803,7 +1807,7 @@ class TaskManager
         if ((int)$task['is_pending_approval'] === 1) return false;
         if ((int)($task['has_pending_renewal_request'] ?? 0) === 1) return false;
         $today = date('Y-m-d');
-        return $task['end_date'] <= $today;
+        return $task['end_date'] < $today;
     }
 
     // اعمال واقعی تمدید (مشترک بین مسیر مستقیم و مسیر تأیید زنجیره‌ای)

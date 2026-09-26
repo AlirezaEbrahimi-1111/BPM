@@ -6,20 +6,20 @@ import (
 	"time"
 )
 
-// پورتِ دقیقِ includes/period-engine.php — تنها مرجعِ محاسبه‌ی دوره‌یِ
-// کارهایِ تکرارشونده. هر تغییری اینجا باید هم‌زمان در نسخه‌یِ PHP هم باشد.
+// پورت دقیق includes/period-engine.php — تنها مرجع محاسبه‌ی دوره‌ی
+// کارهای تکرارشونده. هر تغییری اینجا باید هم‌زمان در نسخه‌ی PHP هم باشد.
 
 const peMaxPeriods = 3000
 
-// peAddMonthsClamped — پورتِ pe_addMonthsClamped(): افزودنِ N ماه به یک
-// تاریخِ لنگر با روزِ ثابت، بدونِ سرریزِ تقویمی (اگر روزِ لنگر در ماهِ
-// مقصد نبود، به آخرین روزِ همان ماه محدود می‌شود).
+// peAddMonthsClamped — پورت pe_addMonthsClamped(): افزودن N ماه به یک
+// تاریخ لنگر با روز ثابت، بدون سرریز تقویمی (اگر روز لنگر در ماه
+// مقصد نبود، به آخرین روز همان ماه محدود می‌شود).
 func peAddMonthsClamped(anchor time.Time, months int) time.Time {
 	day := anchor.Day()
 	y, m := anchor.Year(), int(anchor.Month())+months
 
 	// m همیشه >= 1 است (months فقط از pe_nextPeriodAfter با +1 صدا زده
-	// می‌شود)، پس نیازی به هندلِ صریحِ ماهِ منفی نیست.
+	// می‌شود)، پس نیازی به هندل صریح ماه منفی نیست.
 	y += (m - 1) / 12
 	m = ((m-1)%12+12)%12 + 1
 
@@ -30,7 +30,7 @@ func peAddMonthsClamped(anchor time.Time, months int) time.Time {
 	return time.Date(y, time.Month(m), day, 0, 0, 0, 0, time.UTC)
 }
 
-// peMonthsBetween — پورتِ pe_monthsBetween().
+// peMonthsBetween — پورت pe_monthsBetween().
 func peMonthsBetween(anchor, date time.Time) int {
 	y := date.Year() - anchor.Year()
 	m := int(date.Month()) - int(anchor.Month())
@@ -48,8 +48,8 @@ func parseYMD(s string) (time.Time, error) {
 	return time.Parse("2006-01-02", s)
 }
 
-// PePeriodDates — پورتِ دقیقِ pe_periodDates(): فهرستِ تاریخِ سررسیدِ
-// همه‌ی دوره‌ها از start تا upto (شاملِ خودش)، صعودی.
+// PePeriodDates — پورت دقیق pe_periodDates(): فهرست تاریخ سررسید
+// همه‌ی دوره‌ها از start تا upto (شامل خودش)، صعودی.
 func PePeriodDates(periodType string, start, upto time.Time, holidays map[string]bool, endDate *string) []string {
 	var dates []string
 	cursor := dateOnly(start)
@@ -110,7 +110,7 @@ func PePeriodDates(periodType string, start, upto time.Time, holidays map[string
 	return dates
 }
 
-// PePeriodOf — پورتِ pe_periodOf(): تاریخِ سررسیدِ دوره‌ای که یک تاریخِ
+// PePeriodOf — پورت pe_periodOf(): تاریخ سررسید دوره‌ای که یک تاریخ
 // مشخص به آن تعلق دارد (آخرین سررسیدی که <= date است).
 func PePeriodOf(periodDates []string, date string) string {
 	found := ""
@@ -124,8 +124,8 @@ func PePeriodOf(periodDates []string, date string) string {
 	return found
 }
 
-// PeCompletionDates — پورتِ pe_completionDates(): تاریخ‌هایِ یکتایی که
-// کاربر رویِ این کار «تکمیل» زده (از preloadedMap اگر داده شده باشد).
+// PeCompletionDates — پورت pe_completionDates(): تاریخ‌های یکتایی که
+// کاربر روی این کار «تکمیل» زده (از preloadedMap اگر داده شده باشد).
 func PeCompletionDates(db *sql.DB, taskID int64, preloadedMap map[int64][]string) ([]string, error) {
 	if preloadedMap != nil {
 		return preloadedMap[taskID], nil
@@ -149,8 +149,8 @@ func PeCompletionDates(db *sql.DB, taskID int64, preloadedMap map[int64][]string
 	return out, rows.Err()
 }
 
-// PePreloadCompletionDates — پورتِ pe_preloadCompletionDates(): نسخه‌ی
-// دسته‌ای برایِ همه‌ی تسک‌هایِ داده‌شده، با یک کوئری.
+// PePreloadCompletionDates — پورت pe_preloadCompletionDates(): نسخه‌ی
+// دسته‌ای برای همه‌ی تسک‌های داده‌شده، با یک کوئری.
 func PePreloadCompletionDates(db *sql.DB, taskIDs []int64) (map[int64][]string, error) {
 	uniq := map[int64]bool{}
 	var ids []int64
@@ -190,7 +190,7 @@ func PePreloadCompletionDates(db *sql.DB, taskIDs []int64) (map[int64][]string, 
 	return m, rows.Err()
 }
 
-// PeNextPeriodAfter — پورتِ pe_nextPeriodAfter().
+// PeNextPeriodAfter — پورت pe_nextPeriodAfter().
 func PeNextPeriodAfter(periodType, afterDate string, holidays map[string]bool, anchor *time.Time) string {
 	d, err := parseYMD(afterDate)
 	if err != nil {
@@ -220,7 +220,7 @@ func PeNextPeriodAfter(periodType, afterDate string, holidays map[string]bool, a
 	return d.Format("2006-01-02")
 }
 
-// PeState — خروجیِ pe_state(): وضعیتِ کاملِ دوره‌هایِ یک کارِ تکرارشونده.
+// PeState — خروجی pe_state(): وضعیت کامل دوره‌های یک کار تکرارشونده.
 type PeState struct {
 	Started            bool
 	Finished           bool
@@ -246,7 +246,7 @@ type PeStateTask struct {
 	OverdueForgivenCredit int
 }
 
-// PeStateCalc — پورتِ دقیقِ pe_state().
+// PeStateCalc — پورت دقیق pe_state().
 func PeStateCalc(db *sql.DB, task PeStateTask, holidays map[string]bool, today string, preloadedCompletionMap map[int64][]string) PeState {
 	out := PeState{Forgiven: task.OverdueForgivenCredit}
 

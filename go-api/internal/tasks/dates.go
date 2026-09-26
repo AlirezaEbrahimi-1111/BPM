@@ -85,10 +85,16 @@ func EnrichTaskDates(task map[string]any, db *sql.DB, holidays map[string]bool, 
 			task["current_period_date"] = nil
 		}
 
+		// 🔒 قبلاً <= بود؛ یک روز زودتر از موعدِ واقعی (خودِ end_date، نه
+		// فردایِ آن) پرچمِ تمدید رو روشن می‌کرد، در حالی‌که بالاتر همین
+		// تابع (pe_state معادل) اون روز رو هنوز «فعال» و چک‌لیستش رو
+		// قابل‌تکمیل می‌دونه (فقط فردایِ end_date «تمام‌شده» حساب می‌شه).
+		// با < با اون هماهنگ شد — هم‌راستا با فیکسِ همینِ منطق در
+		// includes/task-dates-helper.php و includes/TaskManager.php
 		endDate := strOf(task, "end_date")
 		status := strOf(task, "status")
 		task["needs_renewal_decision"] = endDate != "" &&
-			endDate[:min(10, len(endDate))] <= today &&
+			endDate[:min(10, len(endDate))] < today &&
 			int64Of(task, "is_pending_approval") != 1 &&
 			int64Of(task, "has_pending_renewal_request") != 1 &&
 			status != "completed" && status != "approved" && status != "rejected"
