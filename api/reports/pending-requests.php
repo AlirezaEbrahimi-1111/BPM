@@ -48,7 +48,7 @@ try {
         $stmt = $db->prepare("
             SELECT first_name, last_name
             FROM users
-            WHERE id = ? AND is_active = 1
+            WHERE id = ? AND is_active = 1 AND is_deleted = 0
         ");
         $stmt->execute([$request['user_id']]);
         $employee = $stmt->fetch(PDO::FETCH_ASSOC);

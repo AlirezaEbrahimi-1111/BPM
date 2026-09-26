@@ -60,8 +60,8 @@ try {
             CONCAT(COALESCE(tu.first_name,''),' ',COALESCE(tu.last_name,'')) as to_user_name
         FROM task_history th
         LEFT JOIN tasks t ON th.task_id = t.id
-        LEFT JOIN users fu ON th.from_user_id = fu.id
-        LEFT JOIN users tu ON th.to_user_id = tu.id
+        LEFT JOIN users fu ON th.from_user_id = fu.id AND fu.is_active = 1 AND fu.is_deleted = 0
+        LEFT JOIN users tu ON th.to_user_id = tu.id AND tu.is_active = 1 AND tu.is_deleted = 0
         WHERE DATE(th.created_at) = ? AND th.from_user_id = ?
           AND (t.is_deleted = 0 OR t.is_deleted IS NULL)
         ORDER BY th.created_at DESC
@@ -118,7 +118,7 @@ try {
             ) AS effective_deadline,
             CONCAT(COALESCE(c.first_name,''),' ',COALESCE(c.last_name,'')) as creator_name
         FROM tasks t
-        LEFT JOIN users c ON t.creator_id = c.id AND c.is_active = 1
+        LEFT JOIN users c ON t.creator_id = c.id AND c.is_active = 1 AND c.is_deleted = 0
         WHERE t.assignee_id = ? AND t.is_deleted = 0
           AND t.status NOT IN ('completed','approved','stopped','rejected')
           AND (t.due_date IS NOT NULL OR t.deadline IS NOT NULL OR t.original_deadline IS NOT NULL)

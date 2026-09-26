@@ -31,7 +31,9 @@ type delayBucket struct {
 //
 // هر سه نوعِ کارِ تأخیردار (مقطعی / دوره‌ای / روتین) شمرده می‌شود و تأخیر
 // یا پایِ کاربرِ مسئول یا — اگر مسئولی نباشد — پایِ واحدِ سازمانی نوشته
-// می‌شود. کاربرِ غیرفعال (نه حذف‌شده) با برچسبِ «(غیرفعال)» می‌آید.
+// می‌شود. 🔒 کارِ متعلق به کاربرِ غیرفعال/حذف‌شده کاملاً نادیده گرفته
+// می‌شود (نه نمایش، نه احتسابِ تأخیر) — هم‌راستا با فیکسِ همینِ منطق در
+// api/reports/top-delayed-users.php.
 func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 	const qPeriodic = `
         SELECT id, assignee_id, activity_section,
@@ -102,14 +104,13 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// ── نگاشتِ شناسه‌ی کاربر → نام و وضعیتِ فعال‌بودن ──
+		// ── نگاشتِ شناسه‌ی کاربر → نام — فقط کاربرانِ فعال و حذف‌نشده ──
 		userNames := map[int64]string{}
-		userActive := map[int64]bool{}
 		{
 			rows, err := db.Query(`
-				SELECT id, first_name, last_name, is_active
+				SELECT id, first_name, last_name
 				FROM users
-				WHERE organization_id = ? AND is_deleted = 0
+				WHERE organization_id = ? AND is_deleted = 0 AND is_active = 1
 			`, orgID)
 			if err != nil {
 				core.WriteErr(w, http.StatusInternalServerError, "خطای سرور")
@@ -124,7 +125,6 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 			for _, ur := range list {
 				uid := mInt(ur, "id")
 				userNames[uid] = strings.TrimSpace(mStr(ur, "first_name") + " " + mStr(ur, "last_name"))
-				userActive[uid] = mInt(ur, "is_active") != 0
 			}
 		}
 
@@ -134,25 +134,24 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 		order := []string{}
 		acc := map[string]*delayBucket{}
 
-		// bucket — معادلِ کلوژرِ $bucket در PHP.
+		// bucket — معادلِ کلوژرِ $bucket در PHP. اگه assignee_id متعلق به
+		// کاربرِ غیرفعال/حذف‌شده باشه (تویِ userNames نیست)، nil برمی‌گردونه
+		// — یعنی صدازننده باید کلِ اون کار رو نادیده بگیره
 		bucket := func(assigneeID any, section any) *delayBucket {
-			// PHP: `!empty($assignee_id) && isset($userNames[(int)$assignee_id])`
-			// — empty() هم NULL و هم 0/"0" را رد می‌کند.
+			// PHP: `!empty($assignee_id)` — empty() هم NULL و هم 0/"0" را رد می‌کند.
 			if aid := core.ToInt64(assigneeID); aid != 0 {
-				if name, ok := userNames[aid]; ok {
-					key := "user:" + fmtAny(aid)
-					if b, exists := acc[key]; exists {
-						return b
-					}
-					label := name
-					if !userActive[aid] {
-						label += " (غیرفعال)"
-					}
-					b := &delayBucket{Kind: "user", RefID: aid, Name: label}
-					acc[key] = b
-					order = append(order, key)
+				name, ok := userNames[aid]
+				if !ok {
+					return nil
+				}
+				key := "user:" + fmtAny(aid)
+				if b, exists := acc[key]; exists {
 					return b
 				}
+				b := &delayBucket{Kind: "user", RefID: aid, Name: name}
+				acc[key] = b
+				order = append(order, key)
+				return b
 			}
 			// واحد — PHP: `$section ?: 'نامشخص'` (هم NULL و هم رشته‌ی خالی)
 			sec := fmtAny(section)
@@ -184,6 +183,9 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 			}
 			for _, t := range list {
 				b := bucket(t["assignee_id"], t["activity_section"])
+				if b == nil {
+					continue
+				}
 				b.Periodic++
 				due := mStr(t, "effective_due")
 				if len(due) > 10 {
@@ -218,6 +220,9 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 
 				if state.OverduePeriods > 0 {
 					b := bucket(t["assignee_id"], t["activity_section"])
+					if b == nil {
+						continue
+					}
 					b.Continuous++
 					b.DelayDays += state.WorkingDaysDelayed
 				}
@@ -239,6 +244,9 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 			}
 			for _, t := range list {
 				b := bucket(t["assignee_id"], t["activity_section"])
+				if b == nil {
+					continue
+				}
 				b.Workflow++
 				b.DelayHours += core.CalcHourDelay(mStr(t, "deadline"), nowStr)
 			}

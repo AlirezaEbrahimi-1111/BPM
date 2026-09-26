@@ -249,8 +249,8 @@ try {
                     )
                 ) AS history_text
             FROM tasks t
-            LEFT JOIN users creator ON t.creator_id = creator.id AND creator.is_active = 1
-            LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1
+            LEFT JOIN users creator ON t.creator_id = creator.id AND creator.is_active = 1 AND creator.is_deleted = 0
+            LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1 AND assignee.is_deleted = 0
             LEFT JOIN task_groups tg ON t.group_id = tg.id
             WHERE t.is_deleted = 0 AND t.organization_id = ?
             ORDER BY
@@ -373,8 +373,8 @@ try {
                     )
                 ) AS history_text
         FROM tasks t
-        LEFT JOIN users creator ON t.creator_id = creator.id AND creator.is_active = 1
-        LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1
+        LEFT JOIN users creator ON t.creator_id = creator.id AND creator.is_active = 1 AND creator.is_deleted = 0
+        LEFT JOIN users assignee ON t.assignee_id = assignee.id AND assignee.is_active = 1 AND assignee.is_deleted = 0
         LEFT JOIN task_groups tg ON t.group_id = tg.id
         WHERE t.is_deleted = 0
         AND (t.creator_id IN ($placeholders) OR t.assignee_id IN ($placeholders))
