@@ -5304,9 +5304,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     document.getElementById('groupInfoMemberList').innerHTML = data.members.map(m => {
                         var isMe = myUserId && Number(m.id) === Number(myUserId);
                         var nameAttrs = isMe ? '' : ' onclick="openMemberDirectChat(' + m.id + ')" style="cursor:pointer;"';
+                        // 🔒 بجِ «مدیر» کاملاً مستقل از role/permissionsِ واقعیه (نه
+                        // اینکه m.is_admin باشه) — طبقِ درخواستِ صریح، باید برایِ هر
+                        // عضوی (نه فقط مدیرها) قابل‌فعال‌سازیِ صرفاً نمایشی باشه
                         var roleTag = m.is_owner
                             ? '<span class="chat-group-owner-tag">سازنده‌ی گروه</span>'
-                            : (m.is_admin ? '<span class="chat-group-owner-tag">مدیر</span>' : '');
+                            : (m.show_badge ? '<span class="chat-group-owner-tag">مدیر</span>' : '');
                         // ارتقا به مدیر: کارِ هر مدیری. عزل از مدیریت: فقط سازنده (تا مدیرها نتونن همدیگه رو عزل کنن)
                         var roleBtn = '';
                         if (!isMe && !m.is_owner) {
@@ -5320,6 +5323,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         var permBtn = (data.is_owner && m.is_admin && !m.is_owner)
                             ? '<button class="chat-group-member-role-btn" title="تنظیمِ اختیارات" onclick="openGroupMemberPermissionsModal(' + m.id + ')"><i class="bi bi-gear-fill"></i></button>'
                             : '';
+                        // نمایش/عدم‌نمایشِ بجِ «مدیر» — فقط سازنده، برایِ هر عضوی غیر از
+                        // خودِ سازنده (چه واقعاً مدیر باشه چه نه)؛ هیچ اختیارِ واقعی‌ای نمی‌ده
+                        var badgeBtn = (data.is_owner && !m.is_owner)
+                            ? '<button class="chat-group-member-role-btn" title="' + (m.show_badge ? 'حذفِ بجِ مدیر' : 'نمایشِ بجِ مدیر') + '" onclick="toggleMemberBadge(' + m.id + ', ' + (m.show_badge ? 'true' : 'false') + ')"><i class="bi ' + (m.show_badge ? 'bi-patch-check-fill' : 'bi-patch-check') + '"></i></button>'
+                            : '';
                         // حذفِ عضو: مدیرِ دارایِ اختیارِ remove_member برایِ اعضایِ عادی؛ حذفِ یک مدیرِ دیگه فقط دستِ سازنده‌ست
                         var canRemove = !m.is_owner && (groupInfoMyPermissions.indexOf('remove_member') !== -1) && (!m.is_admin || data.is_owner);
                         return '<div class="chat-group-member-row">' +
@@ -5329,6 +5337,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         '</span>' +
                         roleBtn +
                         permBtn +
+                        badgeBtn +
                         (canRemove
                             ? '<button class="chat-group-member-remove" title="حذف عضو" onclick="removeGroupMember(' + m.id + ')"><i class="bi bi-x-lg"></i></button>'
                             : '') +
@@ -5498,6 +5507,29 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         showToast(isPromote ? 'عضو مدیر شد' : 'اختیارات به‌روزرسانی شد', 'success');
                     } else {
                         showToast(data.message || (isPromote ? 'خطا در ارتقای عضو' : 'خطا در ذخیره‌ی اختیارات'), 'error');
+                    }
+                });
+        }
+
+        // نمایش/عدم‌نمایشِ بجِ «مدیر» — مستقل از هرگونه اختیارِ واقعی، فقط
+        // سازنده‌ی گروه صدا می‌زنه (دکمه‌اش هم فقط براش رندر می‌شه)
+        function toggleMemberBadge(userId, currentlyShown) {
+            if (!activeConversationId) return;
+            fetch('../api/chat/set-member-badge.php', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ conversation_id: activeConversationId, user_id: userId, show_badge: !currentlyShown })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        refreshGroupInfoMembers(false);
+                        showToast(data.show_badge ? 'بجِ مدیر نشون داده می‌شه' : 'بجِ مدیر برداشته شد', 'success');
+                    } else {
+                        showToast(data.message || 'خطا در تنظیمِ بج', 'error');
                     }
                 });
         }
