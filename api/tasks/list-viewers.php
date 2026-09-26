@@ -46,7 +46,7 @@ try {
         SELECT tv.user_id AS id, TRIM(CONCAT(u.first_name, ' ', u.last_name)) AS full_name,
                tv.can_view_attachments, tv.can_view_history, tv.can_view_checklist
         FROM task_viewers tv
-        JOIN users u ON u.id = tv.user_id
+        JOIN users u ON u.id = tv.user_id AND u.is_active = 1 AND u.is_deleted = 0
         WHERE tv.task_id = ?
         ORDER BY tv.created_at ASC
     ");
