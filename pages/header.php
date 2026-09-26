@@ -206,7 +206,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         width: 100%;
         border: 1.5px solid #e9e9e9;
         border-radius: 9px;
-        padding: 10px 42px 10px 14px;
+        padding: 10px 42px 10px 34px;
         font-size: .9rem;
         outline: none;
         transition: border-color .15s;
@@ -214,6 +214,33 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
 
     .gs-search-box input:focus {
         border-color: #8e57fe;
+    }
+
+    /* دکمه‌ی پاک‌کردنِ سرچ سراسری — سمتِ چپ، مقابلِ آیکنِ ذره‌بین؛ فقط وقتی متنی تایپ شده نشون داده می‌شه */
+    .gs-search-box .gs-search-clear {
+        position: absolute;
+        left: 12px;
+        width: 20px;
+        height: 20px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, .08);
+        color: #6b7280;
+        font-size: .8rem;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .gs-search-box .gs-search-clear.visible {
+        display: flex;
+    }
+
+    .gs-search-box .gs-search-clear:hover {
+        background: rgba(0, 0, 0, .14);
     }
 
     .gs-type-filters {
@@ -1186,6 +1213,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         <div class="gs-search-box">
             <i class="bi bi-search"></i>
             <input type="text" id="gsInput" placeholder="جستجو در تسک‌ها، تیکت‌ها، اطلاعیه‌ها، نوتیفیکیشن‌ها و..." oninput="gsOnInput()">
+            <button type="button" class="gs-search-clear" id="gsClearBtn" onclick="gsClearSearch()" title="پاک کردن"><i class="bi bi-x"></i></button>
         </div>
         <div class="gs-type-filters" id="gsTypeFilters">
             <span class="gs-type-chip active" data-type="task" onclick="gsToggleType(this)">کارها</span>
@@ -2754,7 +2782,20 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         clearTimeout(gsSearchTimer);
         var input = document.getElementById('gsInput');
         var q = (input.value || '').trim();
+        var clearBtn = document.getElementById('gsClearBtn');
+        if (clearBtn) clearBtn.classList.toggle('visible', q.length > 0);
         gsSearchTimer = setTimeout(function() { gsRunSearch(q); }, 300);
+    }
+
+    function gsClearSearch() {
+        var input = document.getElementById('gsInput');
+        if (!input) return;
+        input.value = '';
+        var clearBtn = document.getElementById('gsClearBtn');
+        if (clearBtn) clearBtn.classList.remove('visible');
+        clearTimeout(gsSearchTimer);
+        gsRunSearch('');
+        input.focus();
     }
 
     function gsRunSearch(q) {
