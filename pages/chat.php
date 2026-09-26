@@ -5457,13 +5457,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 (isPromote ? 'ارتقا به مدیر — انتخابِ اختیاراتِ ' : 'اختیاراتِ ') + esc(m.full_name);
             var saveBtn = document.getElementById('gmpSaveBtn');
             if (saveBtn) saveBtn.textContent = isPromote ? 'ارتقا به مدیر' : 'ذخیره';
-            // پیش‌فرض برایِ ارتقا: چهارتایِ اختیارِ واقعی تیک‌خورده (هم‌راستا با
-            // پیش‌فرضِ سرور)، ولی 'badge' عمداً از این پیش‌فرض جداست و از اول
-            // خاموشه — چون فقط نمایشیه و باید صراحتاً توسطِ سازنده روشن بشه،
-            // نه این‌که خودکار برایِ هر مدیرِ تازه فعال باشه
-            var currentPermissions = isPromote
-                ? groupInfoAllPermissions.filter(function (k) { return k !== 'badge'; })
-                : m.permissions;
+            // پیش‌فرض برایِ ارتقا: همه‌ی اختیارات تیک‌خورده (هم‌راستا با پیش‌فرضِ
+            // سرور — NULL یعنی همه)؛ سازنده هرکدوم رو نخواد، خودش برمی‌داره
+            var currentPermissions = isPromote ? groupInfoAllPermissions : m.permissions;
             document.getElementById('gmpPermissionList').innerHTML = groupInfoAllPermissions.map(function (key) {
                 var checked = currentPermissions.indexOf(key) !== -1;
                 var label = GROUP_PERMISSION_LABELS[key] || key;
