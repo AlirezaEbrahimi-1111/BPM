@@ -5162,35 +5162,6 @@ ${task.overdue_periods > 0 ? `
                 }, 500);
             }
 
-            async function submitApproveAndDelegate(toUserId, delegateNotes) {
-                try {
-                    const response = await fetch('../api/tasks/approve-and-delegate.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + authToken
-                        },
-                        body: JSON.stringify({
-                            task_id: taskId,
-                            to_user_id: toUserId,
-                            approve_notes: window._approveNotesForDelegate || '',
-                            delegate_notes: delegateNotes
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        showToast(data.message, 'success');
-                        bootstrap.Modal.getInstance(document.getElementById('delegateModal')).hide();
-                    } else {
-                        showToast(data.message || 'خطا در تأیید و ارجاع', 'warning');
-                    }
-                } catch (error) {
-                    showToast('خطا در ارتباط با سرور', 'warning');
-                }
-            }
-
             async function submitReject() {
                 const notes = document.getElementById('rejectNotes').value.trim();
 
