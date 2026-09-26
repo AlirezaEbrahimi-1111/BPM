@@ -5232,10 +5232,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             pin: 'سنجاق‌کردنِ پیام',
             add_member: 'افزودنِ عضو',
             remove_member: 'حذفِ عضو',
-            avatar: 'تغییرِ عکسِ گروه',
-            // 🔒 برخلافِ بقیه، هیچ اختیارِ واقعی‌ای نمی‌ده — فقط تعیین می‌کنه
-            // بجِ «مدیر» کنارِ اسمِ این عضو تو لیستِ اعضا نشون داده بشه یا نه
-            badge: 'مدیر (فقط نمایشِ بج، بدونِ اختیارِ خاص)'
+            avatar: 'تغییرِ عکسِ گروه'
         };
 
         function openGroupInfoDrawer() {
@@ -5307,13 +5304,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     document.getElementById('groupInfoMemberList').innerHTML = data.members.map(m => {
                         var isMe = myUserId && Number(m.id) === Number(myUserId);
                         var nameAttrs = isMe ? '' : ' onclick="openMemberDirectChat(' + m.id + ')" style="cursor:pointer;"';
-                        // 🔒 بجِ «مدیر» فقط وقتی نشون داده می‌شه که کلیدِ 'badge' هم
-                        // جزوِ اختیاراتِ این مدیر باشه — این کلید هیچ اختیارِ واقعی‌ای
-                        // نمی‌ده، صرفاً کنترلِ نمایشِ همین بجه (سازنده می‌تونه یکی رو
-                        // مدیرِ بدونِ اختیار کنه ولی بجش رو نشون نده، یا برعکس)
                         var roleTag = m.is_owner
                             ? '<span class="chat-group-owner-tag">سازنده‌ی گروه</span>'
-                            : ((m.is_admin && m.permissions.indexOf('badge') !== -1) ? '<span class="chat-group-owner-tag">مدیر</span>' : '');
+                            : (m.is_admin ? '<span class="chat-group-owner-tag">مدیر</span>' : '');
                         // ارتقا به مدیر: کارِ هر مدیری. عزل از مدیریت: فقط سازنده (تا مدیرها نتونن همدیگه رو عزل کنن)
                         var roleBtn = '';
                         if (!isMe && !m.is_owner) {
