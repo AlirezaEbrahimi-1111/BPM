@@ -37,7 +37,6 @@ try {
     $conversationId = (int) ($input['conversation_id'] ?? 0);
     $targetUserId = (int) ($input['user_id'] ?? 0);
     $permissions = $input['permissions'] ?? null;
-    $adminTitleInput = $input['admin_title'] ?? null;
 
     if (!$conversationId || !$targetUserId || !is_array($permissions)) {
         http_response_code(400);
@@ -78,14 +77,10 @@ try {
         exit;
     }
 
-    $adminTitleToStore = (is_string($adminTitleInput) && trim($adminTitleInput) !== '')
-        ? mb_substr(trim($adminTitleInput), 0, 30)
-        : null;
+    $db->prepare("UPDATE chat_participants SET permissions = ? WHERE conversation_id = ? AND user_id = ?")
+        ->execute([json_encode($cleanPermissions), $conversationId, $targetUserId]);
 
-    $db->prepare("UPDATE chat_participants SET permissions = ?, admin_title = ? WHERE conversation_id = ? AND user_id = ?")
-        ->execute([json_encode($cleanPermissions), $adminTitleToStore, $conversationId, $targetUserId]);
-
-    echo json_encode(['success' => true, 'permissions' => $cleanPermissions, 'admin_title' => $adminTitleToStore]);
+    echo json_encode(['success' => true, 'permissions' => $cleanPermissions]);
 
 } catch (Exception $e) {
     http_response_code(500);

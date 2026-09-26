@@ -2421,15 +2421,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     <h6 class="modal-title">اختیاراتِ <span id="gmpMemberName"></span></h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label" for="gmpTitleInput" style="font-size:.82rem;">عنوان (اختیاری — مثلاً «پشتیبان» یا «ناظر»)</label>
-                        <input type="text" class="form-control form-control-sm" id="gmpTitleInput" placeholder="مدیر" maxlength="30">
-                        <div class="form-text" style="font-size:.72rem;">این عنوان به‌جایِ «مدیر» کنارِ اسمِ این عضو، توی لیستِ اعضایِ گروه نشون داده می‌شه — مثلِ تلگرام.</div>
-                    </div>
-                    <hr style="margin:10px 0;">
-                    <div id="gmpPermissionList"></div>
-                </div>
+                <div class="modal-body" id="gmpPermissionList"></div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">انصراف</button>
                     <button type="button" class="btn btn-primary btn-sm" id="gmpSaveBtn" onclick="saveGroupMemberPermissions()">ذخیره</button>
@@ -5312,12 +5304,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     document.getElementById('groupInfoMemberList').innerHTML = data.members.map(m => {
                         var isMe = myUserId && Number(m.id) === Number(myUserId);
                         var nameAttrs = isMe ? '' : ' onclick="openMemberDirectChat(' + m.id + ')" style="cursor:pointer;"';
-                        // 🔒 اگه موقعِ ارتقا/ویرایش عنوانِ سفارشی تنظیم شده باشه (مثلِ
-                        // «پشتیبان»)، به‌جایِ «مدیر» عمومی همون نشون داده می‌شه —
-                        // دقیقاً مثلِ تلگرام
                         var roleTag = m.is_owner
                             ? '<span class="chat-group-owner-tag">سازنده‌ی گروه</span>'
-                            : (m.is_admin ? '<span class="chat-group-owner-tag">' + esc(m.admin_title || 'مدیر') + '</span>' : '');
+                            : (m.is_admin ? '<span class="chat-group-owner-tag">مدیر</span>' : '');
                         // ارتقا به مدیر: کارِ هر مدیری. عزل از مدیریت: فقط سازنده (تا مدیرها نتونن همدیگه رو عزل کنن)
                         var roleBtn = '';
                         if (!isMe && !m.is_owner) {
@@ -5461,9 +5450,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 (isPromote ? 'ارتقا به مدیر — انتخابِ اختیاراتِ ' : 'اختیاراتِ ') + esc(m.full_name);
             var saveBtn = document.getElementById('gmpSaveBtn');
             if (saveBtn) saveBtn.textContent = isPromote ? 'ارتقا به مدیر' : 'ذخیره';
-            // برایِ ارتقا خالیه (هنوز عنوانی نداره)؛ برایِ ویرایشِ مدیرِ موجود،
-            // عنوانِ فعلی‌اش (اگه قبلاً تنظیم شده) پر می‌شه
-            document.getElementById('gmpTitleInput').value = isPromote ? '' : (m.admin_title || '');
             // پیش‌فرض برایِ ارتقا: همه‌ی اختیارات تیک‌خورده (هم‌راستا با پیش‌فرضِ
             // سرور — NULL یعنی همه)؛ سازنده هرکدوم رو نخواد، خودش برمی‌داره
             var currentPermissions = isPromote ? groupInfoAllPermissions : m.permissions;
@@ -5488,13 +5474,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             if (!gmpTargetUserId || !activeConversationId) return;
             var granted = Array.prototype.slice.call(document.querySelectorAll('#gmpPermissionList input[type=checkbox]:checked'))
                 .map(function (el) { return el.getAttribute('data-perm'); });
-            var adminTitle = document.getElementById('gmpTitleInput').value.trim();
 
             var isPromote = gmpMode === 'promote';
             var url = isPromote ? '../api/chat/set-member-role.php' : '../api/chat/set-member-permissions.php';
             var body = isPromote
-                ? { conversation_id: activeConversationId, user_id: gmpTargetUserId, role: 'admin', permissions: granted, admin_title: adminTitle }
-                : { conversation_id: activeConversationId, user_id: gmpTargetUserId, permissions: granted, admin_title: adminTitle };
+                ? { conversation_id: activeConversationId, user_id: gmpTargetUserId, role: 'admin', permissions: granted }
+                : { conversation_id: activeConversationId, user_id: gmpTargetUserId, permissions: granted };
 
             fetch(url, {
                     method: 'POST',
