@@ -36,6 +36,7 @@ func inShiftWindow(nowT, start, end string) bool {
 // 🆕 هر نفر فقط داخل ساعتِ شیفت‌هایِ خودش قضاوت می‌شود، و «مرخصی» فقط وقتی
 // که همین لحظه داخل بازهٔ (تاریخ+ساعتِ) شروع تا پایانِ مرخصیِ تأییدشده باشد
 // (جزئیاتِ کامل: کامنتِ بالایِ api/attendance/absent-today.php).
+// 🆕 سرپرست‌ها هم مثل بقیه دیده می‌شوند (استثنایِ قبلی برداشته شد).
 //
 //	GET /go/api/attendance/absent-today
 //	→ {"success":true,"holiday":bool,"today":"YYYY-MM-DD","absent":[...],"count":N}
@@ -80,8 +81,6 @@ func AbsentToday(db *sql.DB) http.HandlerFunc {
 			  AND is_active = 1
 			  AND COALESCE(is_deleted, 0) = 0
 			  AND id <> ?
-			  AND COALESCE(role, '') <> 'supervisor'
-			  AND COALESCE(is_supervisor, 0) = 0
 			  AND COALESCE(shift_count, 0) >= 1
 			  AND shift_1_start IS NOT NULL
 			  AND COALESCE(monthly_salary, 0) > 0
