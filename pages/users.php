@@ -938,7 +938,10 @@ if (!hasPermission($__me, 'manage_users')) {
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-warning" style="font-size:.85rem;">
-                        این کاربر <b id="ptCount"></b> کار باز دارد. قبل از غیرفعال‌سازی، برای هرکدوم تعیین کنید:
+                        این کاربر <b id="ptCount"></b> کار باز دارد.
+                    </div>
+                    <div class="text-muted mb-3" style="font-size:.8rem;">
+                        قبل از غیرفعال‌سازی، برای هرکدوم تعیین کنید:
                         ارجاع به شخص دیگر، تکمیل کار (بدون نیاز به تأیید)، یا لغو کار — و دلیلش را بنویسید.
                     </div>
                     <div id="ptTaskList"></div>
