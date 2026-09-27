@@ -611,6 +611,15 @@ if (!hasPermission($__me, 'manage_users')) {
             border-top-right-radius: var(--radius-btn) !important;
             border-bottom-right-radius: var(--radius-btn) !important;
         }
+
+        /* 🔒 عنوانِ این مودال قبلا سفید دیده می‌شد چون کلاسِ bootstrap
+           «.text-white» با !important تعریف شده و حتی روی style رویِ خودِ
+           تگ هم برنده می‌شه — فقط با یک !important قوی‌تر (سلکتورِ
+           مشخص‌ترِ همینجا) قابلِ خنثی‌کردنه. آیکنِ کنارش هم چون رنگش رو
+           ارث می‌بره، با همین یک قانون مشکی می‌شه */
+        #pendingTasksModal .modal-title {
+            color: #000 !important;
+        }
     </style>
 </head>
 
@@ -921,7 +930,7 @@ if (!hasPermission($__me, 'manage_users')) {
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header-custom modal-header border-0">
-                    <h5 class="modal-title text-white" style="color: black;">
+                    <h5 class="modal-title text-white">
                         <i class="bi bi-exclamation-triangle ms-2"></i>
                         کارهای باز <span id="ptName"></span>
                     </h5>
