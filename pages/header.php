@@ -243,6 +243,13 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         background: rgba(0, 0, 0, .14);
     }
 
+    /* 🔒 گلیف bi-x داخل فونت آیکن، خودش کمی به سمت بالای جعبه‌ی حروفش کشیده
+       شده — با اینکه دکمه flex+center است، چشمی چند پیکسل بالاتر از وسط
+       دایره دیده می‌شد. یک هل کوچک به پایین برای مرکزچینی بصری واقعی */
+    .gs-search-box .gs-search-clear i {
+        padding-top: 2px;
+    }
+
     .gs-type-filters {
         display: flex;
         flex-wrap: wrap;
