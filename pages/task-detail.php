@@ -5731,30 +5731,31 @@ ${task.overdue_periods > 0 ? `
                         xhr.addEventListener('load', () => {
                             progressContainer.style.display = 'none';
 
-                            if (xhr.status === 200) {
-                                const data = JSON.parse(xhr.responseText);
-                                if (data.success) {
-                                    showAlert('فایل با موفقیت آپلود شد', 'success');
-                                    loadAttachments(); // بارگذاری مجدد لیست
-                                    if (typeof refreshHistory === 'function') refreshHistory();
-                                    // باز کردن آکاردئون پیوست‌ها بعد از آپلود
-                                    const attachmentsBody = document.getElementById('attachmentsBody');
-                                    const attachmentsChevron = document.getElementById('attachmentsChevron');
-                                    if (attachmentsBody) {
-                                        attachmentsBody.style.display = 'block';
-                                    }
-                                    if (attachmentsChevron) {
-                                        attachmentsChevron.style.transform = 'rotate(180deg)';
-                                    }
-                                    document.getElementById('fileInput').value = ''; // پاک کردن input
-                                    resolve(data);
-                                } else {
-                                    showAlert(data.message || 'خطا در آپلود فایل', 'danger');
-                                    reject(new Error(data.message || 'خطا در آپلود فایل'));
+                            // 🆕 پیام واقعی سرور رو حتی روی وضعیت غیر ۲۰۰ بخون — قبلا هرچی سرور
+                            // می‌گفت (مثلا «حجم فایل نباید بیشتر از...») دور ریخته می‌شد و
+                            // همیشه یک پیام ثابت و بی‌ربط («خطا در آپلود فایل») نشون داده می‌شد
+                            let data = null;
+                            try { data = JSON.parse(xhr.responseText); } catch (e) {}
+
+                            if (xhr.status === 200 && data && data.success) {
+                                showAlert('فایل با موفقیت آپلود شد', 'success');
+                                loadAttachments(); // بارگذاری مجدد لیست
+                                if (typeof refreshHistory === 'function') refreshHistory();
+                                // باز کردن آکاردئون پیوست‌ها بعد از آپلود
+                                const attachmentsBody = document.getElementById('attachmentsBody');
+                                const attachmentsChevron = document.getElementById('attachmentsChevron');
+                                if (attachmentsBody) {
+                                    attachmentsBody.style.display = 'block';
                                 }
+                                if (attachmentsChevron) {
+                                    attachmentsChevron.style.transform = 'rotate(180deg)';
+                                }
+                                document.getElementById('fileInput').value = ''; // پاک کردن input
+                                resolve(data);
                             } else {
-                                showAlert('خطا در آپلود فایل', 'danger');
-                                reject(new Error('خطا در آپلود فایل'));
+                                const msg = (data && data.message) || 'خطا در آپلود فایل';
+                                showAlert(msg, 'danger');
+                                reject(new Error(msg));
                             }
                         });
 

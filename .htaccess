@@ -10,6 +10,23 @@
 # نوشته شده، خودکار با هر دیپلوی به همه‌جا اعمال می‌شه).
 Options -Indexes
 
+# سقف حجم آپلود PHP (پیش‌فرض سرور معمولا خیلی کمتر از حد مجاز خودِ برنامه‌ست —
+# مثلا فایل ۸ مگابایتی با ۴۰۰ رد می‌شد چون PHP قبل از رسیدن به کد ما فایل رو
+# دور می‌ریخت). چند مگابایت بیشتر از سقف ۲۰ مگابایتیِ upload-attachment.php،
+# تا حاشیه‌ی امن داشته باشیم.
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 25M
+    php_value post_max_size 25M
+</IfModule>
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 25M
+    php_value post_max_size 25M
+</IfModule>
+<IfModule mod_php.c>
+    php_value upload_max_filesize 25M
+    php_value post_max_size 25M
+</IfModule>
+
 # .htaccess
 RewriteEngine On
 
