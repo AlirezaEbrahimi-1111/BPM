@@ -66,13 +66,15 @@ try {
     $ownerId = (int) $conv['created_by'];
 
     // 🔒 اختیارات مؤثر از همین ردیفی که همین‌الان خوندیم حل می‌شه (نه یک
-    // کوئری جداگانه به‌ازای هر عضو) — permissions=NULL یعنی پیش‌فرض همه،
-    // وگرنه دقیقا همون آرایه‌ی JSON ثبت‌شده
+    // کوئری جداگانه به‌ازای هر عضو) — منطق دقیقا هم‌راستا با
+    // chatGroupAdminEffectivePermissions در chat-helpers.php: دیگه به
+    // role='admin' گره نخورده (عضو عادی هم می‌تونه اختیار داشته باشه)
     $resolvePermissions = function (array $r) {
-        if ($r['role'] !== 'admin') return [];
-        if ($r['permissions'] === null) return CHAT_GROUP_ADMIN_PERMISSIONS;
+        if ($r['permissions'] === null) {
+            return $r['role'] === 'admin' ? CHAT_GROUP_ADMIN_PERMISSIONS : [];
+        }
         $decoded = json_decode($r['permissions'], true);
-        return is_array($decoded) ? array_values(array_intersect($decoded, CHAT_GROUP_ADMIN_PERMISSIONS)) : CHAT_GROUP_ADMIN_PERMISSIONS;
+        return is_array($decoded) ? array_values(array_intersect($decoded, CHAT_GROUP_ADMIN_PERMISSIONS)) : [];
     };
 
     $members = array_map(function ($r) use ($ownerId, $resolvePermissions) {

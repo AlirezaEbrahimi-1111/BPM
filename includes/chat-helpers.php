@@ -49,10 +49,15 @@ function chatMemberRole(PDO $db, int $conversationId, int $userId): ?string
 const CHAT_GROUP_ADMIN_PERMISSIONS = ['pin', 'add_member', 'remove_member', 'avatar'];
 
 /**
- * اختیارات مؤثر یک مدیر — اگر ستون permissions برای اون ردیف NULL باشه
- * (یعنی سازنده هنوز سفارشی‌اش نکرده)، پیش‌فرض همه‌ی اختیاراته (رفتار
- * قدیمی، برای سازگاری با مدیرهای ازقبل‌موجود). فقط وقتی سازنده صراحتا
- * یک آرایه ثبت کرده، همون آرایه مرجعه.
+ * اختیارات مؤثر یک عضو (مدیر یا نه) — عمدا دیگه به role='admin' گره نخورده:
+ * طبق درخواست صریح، یک عضو عادی هم می‌تونه یکی از این اختیارات رو داشته
+ * باشه بدون اینکه «مدیر» باشه/بج مدیر بگیره؛ و برعکس، مدیرشدن به‌تنهایی
+ * دیگه به‌معنی داشتن همه‌ی اختیارات نیست.
+ *
+ * NULL در ستون permissions یعنی «هنوز سفارشی نشده» — فقط برای مدیرهای
+ * ازقبل‌موجود (قبل این تغییر) پیش‌فرض همه‌ی اختیاراته، تا رفتارشون عوض
+ * نشه؛ برای عضو عادی NULL یعنی هیچ اختیاری (چون هیچ‌وقت پیش‌فرضی برای
+ * عضو عادی وجود نداشته).
  *
  * @return string[] زیرمجموعه‌ای از CHAT_GROUP_ADMIN_PERMISSIONS
  */
@@ -61,17 +66,14 @@ function chatGroupAdminEffectivePermissions(PDO $db, int $conversationId, int $u
     $stmt = $db->prepare("SELECT role, permissions FROM chat_participants WHERE conversation_id = ? AND user_id = ?");
     $stmt->execute([$conversationId, $userId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$row || $row['role'] !== 'admin') {
+    if (!$row) {
         return [];
     }
     if ($row['permissions'] === null) {
-        return CHAT_GROUP_ADMIN_PERMISSIONS;
+        return $row['role'] === 'admin' ? CHAT_GROUP_ADMIN_PERMISSIONS : [];
     }
     $decoded = json_decode($row['permissions'], true);
-    if (!is_array($decoded)) {
-        return CHAT_GROUP_ADMIN_PERMISSIONS;
-    }
-    return array_values(array_intersect($decoded, CHAT_GROUP_ADMIN_PERMISSIONS));
+    return is_array($decoded) ? array_values(array_intersect($decoded, CHAT_GROUP_ADMIN_PERMISSIONS)) : [];
 }
 
 /**

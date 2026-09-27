@@ -1,12 +1,16 @@
 <?php
 /**
- * API: تنظیم اختیارات اختصاصی یک مدیر گروه
+ * API: تنظیم اختیارات اختصاصی یک عضو گروه
  * POST /api/chat/set-member-permissions.php
  *   body: { conversation_id, user_id, permissions: ['pin','add_member',...] }
  *
- * دسترسی: فقط سازنده‌ی گروه — تا خود مدیرها نتونن اختیارات همدیگه رو
- * دست‌کاری کنن. permissions می‌تونه آرایه‌ی خالی باشه (یعنی این مدیر
- * فعلا هیچ اختیار اختصاصی‌ای نداره، فقط عنوان «مدیر» رو داره).
+ * 🆕 دیگه محدود به مدیرها نیست — طبق درخواست صریح، یک عضو عادی هم می‌تونه
+ * یکی از این اختیارات رو داشته باشه بدون اینکه «مدیر» بشه/بج مدیر بگیره.
+ * تصمیم ارتقا/عزل نقش جدا و در set-member-role.php گرفته می‌شه.
+ *
+ * دسترسی: فقط سازنده‌ی گروه — تا خود مدیرها نتونن اختیارات همدیگه یا بقیه
+ * رو دست‌کاری کنن. permissions می‌تونه آرایه‌ی خالی باشه (یعنی این عضو
+ * فعلا هیچ اختیار اختصاصی‌ای نداره).
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -70,10 +74,13 @@ try {
         exit;
     }
 
-    $targetRole = chatMemberRole($db, $conversationId, $targetUserId);
-    if ($targetRole !== 'admin') {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'این کاربر مدیر گروه نیست']);
+    // 🔒 هدف باید عضو گروه باشه (نه لزوما مدیر — همین‌جاست که این endpoint
+    // دیگه محدود به مدیرها نیست)
+    $stmt = $db->prepare("SELECT id FROM chat_participants WHERE conversation_id = ? AND user_id = ?");
+    $stmt->execute([$conversationId, $targetUserId]);
+    if (!$stmt->fetch()) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'message' => 'این کاربر عضو گروه نیست']);
         exit;
     }
 
