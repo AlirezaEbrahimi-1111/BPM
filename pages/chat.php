@@ -2600,6 +2600,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         var activeGroupMembers = []; // [{id, full_name}] — فقط برای گفتگوی گروهی فعال، برای منشن
         var activeGroupIsCreator = false; // آیا کاربر جاری سازنده‌ی همین گروه فعال است — برای حذف پیام دیگران
         var activeGroupCanManage = false; // سازنده یا مدیر — برای نمایش کنترل‌های مدیریتی در دراور اطلاعات گروه
+        var activeConvOtherStatus = null; // {is_online, last_seen_at} طرفِ مقابلِ گفتگویِ مستقیمِ فعلی — پرشده از api/chat/direct-status.php، مستقل از اینکه گفتگو توی لیستِ سایدبار (که پیام‌دارها رو نشون می‌ده) هست یا نه
 
         // ── پرش به اولین پیام خوانده‌نشده هنگام بازکردن گفتگو (مثل تلگرام/سروش) ──
         var unreadDividerBeforeId = 0;  // id پیامی که خط «پیام‌های خوانده‌نشده» باید درست بالایش قرار بگیرد؛ فقط یک‌بار مصرف می‌شود
@@ -3293,6 +3294,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             var conv = conversations.find(c => c.conversation_id === id);
             activeConversationTitle = conv ? conv.title : (fallbackInfo ? fallbackInfo.title : '—');
             activeConversationType = conv ? conv.type : 'direct';
+            activeConvOtherStatus = null; // گفتگوی قبلی هرچی بود دیگه معتبر نیست — تا جوابِ تازه برسه، پاکه
             cancelEditMessage();
             cancelReplyMessage();
             closeMsgSearch();
@@ -3311,6 +3313,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             setAvatarContent(headAvatar, activeConversationTitle, conv ? conv.avatar_url : (fallbackInfo ? fallbackInfo.avatar_url : null));
             updateMuteButton(conv);
             updateChatHeadLastSeen(conv);
+            // 🆕 در هر حالتی (چه گفتگوی قدیمی، چه اولین‌بار که با این آدم چت
+            // می‌زنیم) وضعیتِ واقعیِ طرفِ مقابل رو مستقیم می‌گیریم — نه فقط
+            // وقتی توی لیستِ سایدبار بود. برای گروه بی‌اثره (خودِ endpoint
+            // فقط مستقیم رو جواب می‌ده)
+            if (activeConversationType === 'direct') {
+                refreshDirectStatus(id);
+            }
             // 🔒 عمدا innerHTML اینجا پاک نمی‌شه (قبلا اینجا بود) — طبق
             // گزارش کاربر، خالی‌کردن فوری صفحه و بعد صبرکردن ۱ثانیه‌ای
             // برای جواب شبکه یه لحظه‌ی خالی زشت می‌ساخت. پایین‌تر، داخل
@@ -5580,17 +5589,47 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 return;
             }
             el.classList.remove('typing');
-            if (!conv) {
+
+            if (activeConversationType !== 'direct') {
+                el.textContent = conv ? ((conv.member_count || 0) + ' عضو') : '';
+                return;
+            }
+
+            // 🆕 conv فقط از لیستِ سایدبار میاد که گفتگویِ مستقیمِ بدون‌پیام رو
+            // نشون نمی‌ده — برایِ چنین گفتگویی همیشه undefined می‌مونه.
+            // activeConvOtherStatus منبعِ کامل‌تریه (از api/chat/direct-status.php،
+            // مستقل از پیام)؛ هروقت conv واقعی بود بهش اعتماد و
+            // activeConvOtherStatus رو هم sync می‌کنیم، وگرنه از همون مقدارِ
+            // قبلی استفاده می‌کنیم — تا رفرشِ دوره‌ایِ لیستِ گفتگوها (هر
+            // ۴ثانیه، در loadConversations) این خط رو دوباره خالی نکنه
+            if (conv) {
+                activeConvOtherStatus = { is_online: conv.other_user_is_online, last_seen_at: conv.other_user_last_seen_at };
+            }
+            if (!activeConvOtherStatus) {
                 el.textContent = '';
                 return;
             }
-            if (conv.type !== 'direct') {
-                el.textContent = (conv.member_count || 0) + ' عضو';
-                return;
-            }
-            el.textContent = conv.other_user_is_online
+            el.textContent = activeConvOtherStatus.is_online
                 ? 'آنلاین'
-                : 'آخرین بازدید: ' + formatLastSeen(conv.other_user_last_seen_at);
+                : 'آخرین بازدید: ' + formatLastSeen(activeConvOtherStatus.last_seen_at);
+        }
+
+        // همیشه (چه گفتگوی قدیمی چه اولین‌باره) وضعیتِ واقعیِ طرفِ مقابل رو
+        // مستقیم با شناسه‌ی گفتگو می‌گیره — نه از لیستِ سایدبار که پیام‌نداره
+        // رو حذف می‌کنه. هر بار بازکردنِ یک گفتگویِ مستقیم صدا زده می‌شه.
+        function refreshDirectStatus(conversationId) {
+            fetch('../api/chat/direct-status.php?conversation_id=' + conversationId, {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    // کاربر تا رسیدنِ جواب جایِ دیگه‌ای رو باز کرده — این جواب کهنه‌ست
+                    if (conversationId !== activeConversationId || !data.success) return;
+                    activeConvOtherStatus = { is_online: data.is_online, last_seen_at: data.last_seen_at };
+                    document.getElementById('chatHeadAvatar').classList.toggle('online', !!data.is_online);
+                    updateChatHeadLastSeen();
+                })
+                .catch(function () {});
         }
 
         function openGroupInfoIfApplicable() {
