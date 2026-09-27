@@ -463,6 +463,18 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
            به‌طور طبیعی این رفتار رو می‌ده: تا وقتی پیام‌های همون روز روی
            صفحه‌ن، برچسب بالا می‌چسبه؛ به‌محض رسیدن به جداکننده‌ی روز بعد،
            خودکار جاش رو بهش می‌ده — بدون نیاز به هیچ کد جاوااسکریپت اسکرول */
+        /* 🔒 هر روز داخل یک ظرف مخصوص خودشه (نه مستقیم زیر #chatMessages) — تا
+           position:sticky وقتی مرز دو روز می‌رسه، بجِ روزِ قبل رو «هل بده و رد
+           کنه»، نه اینکه براش یک لحظه رویش بره. sticky فقط تا وقتی جعبه‌ی
+           پدرش (همین ظرف) داخل صفحه‌ست می‌چسبه؛ به‌محض رد شدن کل جعبه، بجِ
+           روزِ بعد (که پدرش تازه به بالا رسیده) بدون هیچ هم‌پوشانی جایگزینش
+           می‌شه. gap همون ۳px قبلی رو بین اجزای داخل هر روز هم حفظ می‌کنه. */
+        .chat-date-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
         .chat-date-divider {
             display: flex;
             align-items: center;
@@ -1345,7 +1357,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             gap: 12px;
             padding: 10px 4px;
             border-bottom: 1px solid var(--border-soft, #eee);
-            direction: ltr;
         }
 
         .chat-profile-drawer-field i {
@@ -2578,6 +2589,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         // ── بارگذاری پیام‌های قدیمی‌تر با اسکرول به بالا ──
         var oldestMessageId = 0;   // کوچک‌ترین id نمایش‌داده‌شده
         var lastAppendedDateKey = null; // تاریخ (میلادی خام) آخرین پیام اضافه‌شده به‌ته لیست — برای تشخیص نیاز جداکننده‌ی تاریخ
+        var lastAppendedDateGroupEl = null; // خودِ ظرفِ (.chat-date-group) همون روز — پیام‌های همون روز داخل همین اضافه می‌شن، نه مستقیم زیر #chatMessages
         var hasMoreOlder = false;  // آیا در دیتابیس پیام قدیمی‌تر نمایش‌داده‌نشده هست؟
         var loadingOlder = false;  // گارد همزمانی — جلوی درخواست تکراری حین اسکرول
         var pendingFiles = [];
@@ -3021,6 +3033,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     if (convId !== activeConversationId || !data.success) return; // کاربر جای دیگه‌ای رو باز کرده — این پاسخ کهنه رو نادیده بگیر
                     document.getElementById('chatMessages').innerHTML = '';
                     lastAppendedDateKey = null;
+                    lastAppendedDateGroupEl = null;
                     oldestMessageId = 0;
                     lastMessageId = 0;
                     appendMessages(data.messages, false);
@@ -3312,6 +3325,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             lastMessageId = 0;
             oldestMessageId = 0;
             lastAppendedDateKey = null;
+            lastAppendedDateGroupEl = null;
             hasMoreOlder = false;
             loadingOlder = false;
             readReceipts = {};
@@ -3772,9 +3786,19 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             return d;
         }
 
+        // ظرف یک روز: خودِ بج تاریخ + هرچی (پیام/رویداد سیستمی) که همون روز
+        // بهش اضافه می‌شه — توضیح کامل بالای .chat-date-group در CSS
+        function buildChatDateGroup(m) {
+            var g = document.createElement('div');
+            g.className = 'chat-date-group';
+            g.setAttribute('data-date-key', chatDateKey(m));
+            g.appendChild(buildChatDateDivider(m));
+            return g;
+        }
+
         function appendMessages(msgs, scrollBottom, prepend) {
             var el = document.getElementById('chatMessages');
-            var prevKeyInPrependBatch = null; // فقط برای حالت prepend استفاده می‌شود
+            var prevGroupInBatch = null; // {key, el} — فقط برای حالت prepend، گروهِ در حال ساخت داخل frag
             var frag = prepend ? document.createDocumentFragment() : null;
             var prependLinkRefs = [];
             msgs.forEach(m => {
@@ -3798,17 +3822,18 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     sysRow.innerHTML = '<span><i class="bi bi-person-plus"></i> ' + esc(m.message || '') + '</span>';
 
                     if (prepend) {
-                        if (sysDateKey && sysDateKey !== prevKeyInPrependBatch) {
-                            frag.appendChild(buildChatDateDivider(m));
-                            prevKeyInPrependBatch = sysDateKey;
+                        if (!prevGroupInBatch || sysDateKey !== prevGroupInBatch.key) {
+                            prevGroupInBatch = { key: sysDateKey, el: buildChatDateGroup(m) };
+                            frag.appendChild(prevGroupInBatch.el);
                         }
-                        frag.appendChild(sysRow);
+                        prevGroupInBatch.el.appendChild(sysRow);
                     } else {
                         if (sysDateKey && sysDateKey !== lastAppendedDateKey) {
-                            el.appendChild(buildChatDateDivider(m));
+                            lastAppendedDateGroupEl = buildChatDateGroup(m);
+                            el.appendChild(lastAppendedDateGroupEl);
                             lastAppendedDateKey = sysDateKey;
                         }
-                        el.appendChild(sysRow);
+                        lastAppendedDateGroupEl.appendChild(sysRow);
                     }
                     return;
                 }
@@ -3913,25 +3938,44 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 });
 
                 if (prepend) {
-                    if (dateKey && dateKey !== prevKeyInPrependBatch) {
-                        frag.appendChild(buildChatDateDivider(m));
-                        prevKeyInPrependBatch = dateKey;
+                    if (!prevGroupInBatch || dateKey !== prevGroupInBatch.key) {
+                        prevGroupInBatch = { key: dateKey, el: buildChatDateGroup(m) };
+                        frag.appendChild(prevGroupInBatch.el);
                     }
-                    frag.appendChild(row);
+                    prevGroupInBatch.el.appendChild(row);
                     if (linkRefs.length) prependLinkRefs.push([row, linkRefs]);
                 } else {
                     if (dateKey && dateKey !== lastAppendedDateKey) {
-                        el.appendChild(buildChatDateDivider(m));
+                        lastAppendedDateGroupEl = buildChatDateGroup(m);
+                        el.appendChild(lastAppendedDateGroupEl);
                         lastAppendedDateKey = dateKey;
                     }
-                    if (dividerRow) el.appendChild(dividerRow);
-                    el.appendChild(row);
+                    if (dividerRow) lastAppendedDateGroupEl.appendChild(dividerRow);
+                    lastAppendedDateGroupEl.appendChild(row);
                     if (linkRefs.length) loadLinkRefPreviews(row, linkRefs);
                 }
                 if (chatMsgObserver) chatMsgObserver.observe(row);
             });
             if (prepend) {
-                if (frag.childNodes.length) el.insertBefore(frag, el.firstChild);
+                if (frag.childNodes.length) {
+                    // 🔒 مرزِ بین این دسته‌ی تازه‌بارگذاری‌شده و قدیمی‌ترین گروهِ
+                    // موجود: اگه آخرین (جدیدترین) گروهِ داخل frag همون روزِ
+                    // اولین گروهِ موجودِ توی صفحه‌ست، به‌جای گذاشتن یک بجِ دومِ
+                    // تکراری برای همون روز، پیام‌هاشو به ابتدای همون گروهِ
+                    // موجود منتقل می‌کنیم و بجِ تکراری رو دور می‌ریزیم
+                    var existingFirstGroup = el.firstElementChild;
+                    if (prevGroupInBatch && existingFirstGroup &&
+                        existingFirstGroup.classList.contains('chat-date-group') &&
+                        existingFirstGroup.getAttribute('data-date-key') === prevGroupInBatch.key) {
+                        var dupGroup = prevGroupInBatch.el;
+                        var insertBeforeRef = existingFirstGroup.children[1] || null; // ثابت — همون اولین پیامِ قبلاً موجود
+                        while (dupGroup.children.length > 1) {
+                            existingFirstGroup.insertBefore(dupGroup.children[1], insertBeforeRef);
+                        }
+                        dupGroup.remove(); // فقط بجِ تکراری (بدون هیچ پیامی) داخلش مونده بود
+                    }
+                    el.insertBefore(frag, el.firstChild);
+                }
                 prependLinkRefs.forEach(function (x) { loadLinkRefPreviews(x[0], x[1]); });
             }
             if (scrollBottom) el.scrollTop = el.scrollHeight;
