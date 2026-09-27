@@ -5310,18 +5310,19 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         var roleTag = m.is_owner
                             ? '<span class="chat-group-owner-tag">سازنده‌ی گروه</span>'
                             : (m.show_badge ? '<span class="chat-group-owner-tag">مدیر</span>' : '');
-                        // ارتقا به مدیر: کار هر مدیری. عزل از مدیریت: فقط سازنده (تا مدیرها نتونن همدیگه رو عزل کنن)
-                        var roleBtn = '';
-                        if (!isMe && !m.is_owner) {
-                            if (!m.is_admin && data.can_manage) {
-                                roleBtn = '<button class="chat-group-member-role-btn" title="ارتقا به مدیر" onclick="promoteGroupMember(' + m.id + ')"><i class="bi bi-shield-plus"></i></button>';
-                            } else if (m.is_admin && data.is_owner) {
-                                roleBtn = '<button class="chat-group-member-role-btn" title="عزل از مدیریت" onclick="demoteGroupMember(' + m.id + ')"><i class="bi bi-shield-minus"></i></button>';
-                            }
-                        }
-                        // تنظیم اختیارات اختصاصی: فقط سازنده، فقط روی مدیرهای دیگه
-                        var permBtn = (data.is_owner && m.is_admin && !m.is_owner)
-                            ? '<button class="chat-group-member-role-btn" title="تنظیم اختیارات" onclick="openGroupMemberPermissionsModal(' + m.id + ')"><i class="bi bi-gear-fill"></i></button>'
+                        // 🆕 آیکن مستقل «ارتقا به مدیر» حذف شد — این کار حالا از داخل
+                        // همون مودال «اختیارات اعضا» (permBtn پایین‌تر) انجام می‌شه.
+                        // عزل از مدیریت هنوز آیکن جدا داره، چون درخواست فقط ارتقا رو گفته بود.
+                        var roleBtn = (!isMe && !m.is_owner && m.is_admin && data.is_owner)
+                            ? '<button class="chat-group-member-role-btn" title="عزل از مدیریت" onclick="demoteGroupMember(' + m.id + ')"><i class="bi bi-shield-minus"></i></button>'
+                            : '';
+                        // مودال اختیارات: سازنده روی هر عضوی (چه مدیر چه نه) — هم ارتقا
+                        // هم تنظیم اختیارات. مدیرِ عادی فقط روی اعضای هنوز-غیرمدیر می‌تونه
+                        // بازش کنه، ولی داخلش گزینه‌ی «ارتقا به مدیر» رو نمی‌بینه (فقط
+                        // سازنده می‌بینه) — طبق تصمیم صریح کاربر.
+                        var canOpenPermModal = !isMe && !m.is_owner && (data.is_owner || (data.can_manage && !m.is_admin));
+                        var permBtn = canOpenPermModal
+                            ? '<button class="chat-group-member-role-btn" title="اختیارات اعضا" onclick="openGroupMemberPermissionsModal(' + m.id + ')"><i class="bi bi-gear-fill"></i></button>'
                             : '';
                         // نمایش/عدم‌نمایش بج «مدیر» — فقط سازنده، برای هر عضوی غیر از
                         // خود سازنده (چه واقعا مدیر باشه چه نه)؛ هیچ اختیار واقعی‌ای نمی‌ده
@@ -5427,42 +5428,49 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 });
         }
 
-        // ارتقا به مدیر: اگه من سازنده‌ام، همون اول مودال انتخاب اختیارات باز
-        // می‌شه (تا انتخاب اختیارات جزو خود عمل ارتقا باشه، نه یک قدم
-        // جداگانه‌ی بعدی)؛ اگه فقط مدیر عادی‌ام (نه سازنده)، طبق همون قاعده‌ی
-        // «تنظیم اختیارات فقط دست سازنده‌ست»، نمی‌تونم انتخاب کنم — همون
-        // ارتقای مستقیم با اختیارات پیش‌فرض (همه) انجام می‌شه
-        function promoteGroupMember(userId) {
-            if (groupInfoIsOwner) {
-                openGroupMemberPermissionsModal(userId, 'promote');
-                return;
-            }
-            setGroupMemberRole(userId, 'admin', 'خطا در ارتقای عضو');
-        }
-
         function demoteGroupMember(userId) {
             setGroupMemberRole(userId, 'member', 'خطا در عزل مدیر');
         }
 
-        // ─────────────── اختیارات اختصاصی یک مدیر (فقط سازنده تنظیم می‌کنه) ───────────────
+        // ─────────────── مودال «اختیارات اعضا» ───────────────
+        // یک مودال، سه حالت که موقع باز شدن از روی داده‌ی خود عضو تعیین می‌شه
+        // (نه از روی اینکه کدوم آیکن زده شده، چون آیکن جدای «ارتقا» دیگه وجود نداره):
+        //   ۱) عضو از قبل مدیره               → مثل قبل، فقط لیست اختیارات (فقط سازنده ویرایش می‌کنه)
+        //   ۲) عضو مدیر نیست + بازکننده سازنده‌ست → تاگل «ارتقا به مدیر» + لیست اختیارات
+        //      (پیش‌فرض همه تیک‌خورده)؛ ذخیره فقط وقتی تاگل روشنه فعاله
+        //   ۳) عضو مدیر نیست + بازکننده یک مدیر عادیه → طبق تصمیم صریح کاربر،
+        //      گزینه‌ی ارتقا اصلا نشون داده نمی‌شه (فقط سازنده می‌بینتش)
         var gmpModalInstance = null;
         var gmpTargetUserId = null;
-        var gmpMode = 'edit'; // 'edit' = تنظیم اختیارات مدیر موجود | 'promote' = ارتقا+انتخاب اختیارات هم‌زمان
 
-        function openGroupMemberPermissionsModal(userId, mode) {
+        function openGroupMemberPermissionsModal(userId) {
             var m = groupInfoMembersCache.find(function (x) { return Number(x.id) === Number(userId); });
             if (!m) return;
-            gmpMode = mode || 'edit';
             gmpTargetUserId = userId;
-            var isPromote = gmpMode === 'promote';
+            var isAdmin = !!m.is_admin;
+            var canPromote = groupInfoIsOwner && !isAdmin;
+            var managerViewOnly = !groupInfoIsOwner; // مدیر عادی، فقط وقتی !isAdmin به اینجا می‌رسه (permBtn همینو تضمین می‌کنه)
+
             document.querySelector('#groupMemberPermissionsModal .modal-title').innerHTML =
-                (isPromote ? 'ارتقا به مدیر — انتخاب اختیارات ' : 'اختیارات ') + esc(m.full_name);
+                (isAdmin ? 'اختیارات ' : 'ارتقا به مدیر — ') + esc(m.full_name);
+
             var saveBtn = document.getElementById('gmpSaveBtn');
-            if (saveBtn) saveBtn.textContent = isPromote ? 'ارتقا به مدیر' : 'ذخیره';
-            // پیش‌فرض برای ارتقا: همه‌ی اختیارات تیک‌خورده (هم‌راستا با پیش‌فرض
-            // سرور — NULL یعنی همه)؛ سازنده هرکدوم رو نخواد، خودش برمی‌داره
-            var currentPermissions = isPromote ? groupInfoAllPermissions : m.permissions;
-            document.getElementById('gmpPermissionList').innerHTML = groupInfoAllPermissions.map(function (key) {
+            var body = document.getElementById('gmpPermissionList');
+
+            if (managerViewOnly) {
+                saveBtn.style.display = 'none';
+                body.innerHTML = '<div class="chat-empty-list" style="padding:8px 4px;">فقط سازنده‌ی گروه می‌تواند این عضو را به مدیر ارتقا دهد.</div>';
+                if (!gmpModalInstance) gmpModalInstance = new bootstrap.Modal(document.getElementById('groupMemberPermissionsModal'));
+                gmpModalInstance.show();
+                return;
+            }
+
+            saveBtn.style.display = '';
+            saveBtn.textContent = isAdmin ? 'ذخیره' : 'ارتقا به مدیر';
+            // پیش‌فرض ارتقا: همه‌ی اختیارات تیک‌خورده (هم‌راستا با پیش‌فرض سرور —
+            // NULL یعنی همه)؛ سازنده هرکدوم رو نخواد، خودش برمی‌داره
+            var currentPermissions = isAdmin ? m.permissions : groupInfoAllPermissions;
+            var permsHtml = groupInfoAllPermissions.map(function (key) {
                 var checked = currentPermissions.indexOf(key) !== -1;
                 var label = GROUP_PERMISSION_LABELS[key] || key;
                 return '<div class="chat-profile-drawer-field" style="border-bottom:none; padding:6px 4px;">' +
@@ -5473,41 +5481,91 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     '</label>' +
                 '</div>';
             }).join('');
+
+            if (canPromote) {
+                body.innerHTML =
+                    '<div class="chat-profile-drawer-field" style="padding:6px 4px; border-bottom:1px solid var(--border-soft, #eee);">' +
+                        '<label class="chat-profile-drawer-label" for="gmpPromoteToggle" style="flex:1; font-size:.85rem; font-weight:600; color:var(--ink-900);">ارتقا به مدیر</label>' +
+                        '<label class="chat-toggle-switch">' +
+                            '<input type="checkbox" id="gmpPromoteToggle" onchange="onGmpPromoteToggleChange()">' +
+                            '<span class="chat-toggle-slider"></span>' +
+                        '</label>' +
+                    '</div>' +
+                    '<div id="gmpPermSection" style="display:none;">' + permsHtml + '</div>';
+                saveBtn.disabled = true; // تا وقتی تاگل روشن نشه، چیزی برای ذخیره نیست
+            } else {
+                // عضو از قبل مدیره: مثل قبل، مستقیم لیست اختیارات
+                body.innerHTML = '<div id="gmpPermSection">' + permsHtml + '</div>';
+                saveBtn.disabled = false;
+            }
+
             if (!gmpModalInstance) {
                 gmpModalInstance = new bootstrap.Modal(document.getElementById('groupMemberPermissionsModal'));
             }
             gmpModalInstance.show();
         }
 
+        function onGmpPromoteToggleChange() {
+            var checked = document.getElementById('gmpPromoteToggle').checked;
+            document.getElementById('gmpPermSection').style.display = checked ? '' : 'none';
+            document.getElementById('gmpSaveBtn').disabled = !checked;
+        }
+
         function saveGroupMemberPermissions() {
             if (!gmpTargetUserId || !activeConversationId) return;
-            var granted = Array.prototype.slice.call(document.querySelectorAll('#gmpPermissionList input[type=checkbox]:checked'))
+            var m = groupInfoMembersCache.find(function (x) { return Number(x.id) === Number(gmpTargetUserId); });
+            if (!m) return;
+            var isAdmin = !!m.is_admin;
+            var granted = Array.prototype.slice.call(document.querySelectorAll('#gmpPermSection input[type=checkbox]:checked'))
                 .map(function (el) { return el.getAttribute('data-perm'); });
 
-            var isPromote = gmpMode === 'promote';
-            var url = isPromote ? '../api/chat/set-member-role.php' : '../api/chat/set-member-permissions.php';
-            var body = isPromote
-                ? { conversation_id: activeConversationId, user_id: gmpTargetUserId, role: 'admin', permissions: granted }
-                : { conversation_id: activeConversationId, user_id: gmpTargetUserId, permissions: granted };
+            if (isAdmin) {
+                // ویرایش اختیارات یک مدیر موجود — بدون تغییر نسبت به قبل
+                fetch('../api/chat/set-member-permissions.php', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ conversation_id: activeConversationId, user_id: gmpTargetUserId, permissions: granted })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            gmpModalInstance.hide();
+                            refreshGroupInfoMembers(false);
+                            showToast('اختیارات به‌روزرسانی شد', 'success');
+                        } else {
+                            showToast(data.message || 'خطا در ذخیره‌ی اختیارات', 'error');
+                        }
+                    });
+                return;
+            }
 
-            fetch(url, {
+            // ارتقا به مدیر (فقط سازنده به اینجا می‌رسه — دکمه تا تیک‌نخوردن تاگل غیرفعاله)
+            fetch('../api/chat/set-member-role.php', {
                     method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + authToken,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(body)
+                    headers: { 'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ conversation_id: activeConversationId, user_id: gmpTargetUserId, role: 'admin', permissions: granted })
                 })
                 .then(r => r.json())
                 .then(data => {
-                    if (data.success) {
-                        gmpModalInstance.hide();
-                        refreshGroupInfoMembers(false);
-                        if (isPromote) loadActiveGroupMembers(); // برای منشن و data-can-delete هم به‌روز بشه
-                        showToast(isPromote ? 'عضو مدیر شد' : 'اختیارات به‌روزرسانی شد', 'success');
-                    } else {
-                        showToast(data.message || (isPromote ? 'خطا در ارتقای عضو' : 'خطا در ذخیره‌ی اختیارات'), 'error');
+                    if (!data.success) {
+                        showToast(data.message || 'خطا در ارتقای عضو', 'error');
+                        return;
                     }
+                    // 🆕 طبق درخواست صریح: وقتی از همین مودال ارتقا داده می‌شه، بج
+                    // مدیر هم خودکار روشن بشه تا بلافاصله در لیست اعضا دیده بشه
+                    fetch('../api/chat/set-member-badge.php', {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ conversation_id: activeConversationId, user_id: gmpTargetUserId, show_badge: true })
+                        })
+                        .then(r => r.json())
+                        .catch(function () {}) // اگه بج شکست بخوره، خودِ ارتقا موفق بوده — بی‌سروصدا رد می‌شیم
+                        .then(function () {
+                            gmpModalInstance.hide();
+                            refreshGroupInfoMembers(false);
+                            loadActiveGroupMembers(); // برای منشن و data-can-delete هم به‌روز بشه
+                            showToast('عضو مدیر شد', 'success');
+                        });
                 });
         }
 
