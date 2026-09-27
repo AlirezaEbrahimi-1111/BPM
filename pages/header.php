@@ -247,7 +247,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
        شده — با اینکه دکمه flex+center است، چشمی چند پیکسل بالاتر از وسط
        دایره دیده می‌شد. یک هل کوچک به پایین برای مرکزچینی بصری واقعی */
     .gs-search-box .gs-search-clear i {
-        padding-top: 2px;
+        padding-top: 3px;
     }
 
     .gs-type-filters {
