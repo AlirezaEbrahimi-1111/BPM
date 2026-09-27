@@ -126,23 +126,32 @@ func AbsentToday(db *sql.DB) http.HandlerFunc {
 		}
 		ph := strings.TrimSuffix(strings.Repeat("?,", len(ids)), ",")
 
-		present := map[int64]bool{}
-		presentArgs := append(append([]any{}, args...), today)
-		presentRows, err := db.Query("SELECT DISTINCT user_id FROM attendance_records WHERE user_id IN ("+ph+") AND date = ? AND check_in IS NOT NULL", presentArgs...)
+		// 🆕 وضعیت ورود/خروجِ امروز، به‌تفکیکِ شماره‌شیفت — نه صرفا «امروز یک
+		// ورود دارد یا نه». لازم است بدانیم برایِ همان شیفتی که الان در
+		// بازه‌اش هستیم، ورود زده و هنوز خروج نزده یا نه (پایین‌تر، «حاضر»)
+		type shiftAtt struct{ in_, out bool }
+		attByUser := map[int64]map[int]shiftAtt{}
+		attArgs := append(append([]any{}, args...), today)
+		attRows, err := db.Query("SELECT user_id, shift_number, check_in, check_out FROM attendance_records WHERE user_id IN ("+ph+") AND date = ?", attArgs...)
 		if err != nil {
 			core.WriteErr(w, http.StatusInternalServerError, "خطای سرور")
 			return
 		}
-		for presentRows.Next() {
+		for attRows.Next() {
 			var uid int64
-			if err := presentRows.Scan(&uid); err != nil {
-				presentRows.Close()
+			var shiftNum int
+			var checkIn, checkOut sql.NullString
+			if err := attRows.Scan(&uid, &shiftNum, &checkIn, &checkOut); err != nil {
+				attRows.Close()
 				core.WriteErr(w, http.StatusInternalServerError, "خطای سرور")
 				return
 			}
-			present[uid] = true
+			if attByUser[uid] == nil {
+				attByUser[uid] = map[int]shiftAtt{}
+			}
+			attByUser[uid][shiftNum] = shiftAtt{in_: checkIn.Valid, out: checkOut.Valid}
 		}
-		presentRows.Close()
+		attRows.Close()
 
 		// 🔒 مرخصی فقط وقتی «همین لحظه» داخل بازهٔ (تاریخ+ساعتِ) شروع تا پایانش
 		// باشیم حساب می‌شود — معادلِ PHP؛ ساعتِ خالی: ۰۰:۰۰:۰۰ تا ۲۳:۵۹:۵۹
@@ -196,15 +205,22 @@ func AbsentToday(db *sql.DB) http.HandlerFunc {
 
 		absent := []absentEntry{}
 		for _, ur := range users {
-			if present[ur.id] {
+			// 🆕 فقط داخل ساعتِ شیفت‌هایِ خودش قضاوت می‌شود: قبل از شروعِ
+			// شیفت، بعد از پایان، یا بینِ دو شیفت هنوز/دیگر انتظارِ حضورش نیست
+			inShift1 := inShiftWindow(nowT, ur.s1Start.String, ur.s1End.String)
+			inShift2 := ur.shiftCount >= 2 && inShiftWindow(nowT, ur.s2Start.String, ur.s2End.String)
+			if !inShift1 && !inShift2 {
 				continue
 			}
 
-			// 🆕 فقط داخل ساعتِ شیفت‌هایِ خودش قضاوت می‌شود: قبل از شروعِ
-			// شیفت، بعد از پایان، یا بینِ دو شیفت هنوز/دیگر انتظارِ حضورش نیست
-			expectedNow := inShiftWindow(nowT, ur.s1Start.String, ur.s1End.String) ||
-				(ur.shiftCount >= 2 && inShiftWindow(nowT, ur.s2Start.String, ur.s2End.String))
-			if !expectedNow {
+			// 🆕 «حاضر» = برایِ همون شیفتی که الان در بازه‌اشیم، ورود زده و
+			// هنوز خروج نزده — نه صرفا اینکه امروز یک بار ورود زده. کسی که
+			// ورود زده و بعد خروج هم زده (مثلا برایِ مرخصیِ میان‌روز)، دیگه
+			// «حاضر» نیست و باید دوباره طبقِ مرخصی/پاس/غیبت قضاوت بشه
+			att := attByUser[ur.id]
+			currentlyPresent := (inShift1 && att[1].in_ && !att[1].out) ||
+				(inShift2 && att[2].in_ && !att[2].out)
+			if currentlyPresent {
 				continue
 			}
 

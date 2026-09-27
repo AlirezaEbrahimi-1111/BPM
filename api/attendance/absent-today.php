@@ -10,7 +10,11 @@
  *     shift_count >= 1 و shift_1_start پر (نه فقط پیش‌فرض فرم ویرایش) و
  *     حقوق ماهانه‌ی مشخص (monthly_salary > 0) — یعنی کسی که هنوز شیفت/حقوقش
  *     ثبت نشده، اصلا وارد این محاسبه نمی‌شود. سرپرست‌ها و خود کاربر جاری نه.
- *   • «حاضر» = حداقل یک check_in امروز (هر شیفتی) → در لیست نمی‌آید.
+ *   • «حاضر» = برای شیفتی که همین الان در بازهٔ آن هستیم، ورود زده و هنوز
+ *     خروج نزده. کسی که ورود زده و بعد خروج هم زده (مثلا برای مرخصی
+ *     میان‌روز) دیگر «حاضر» حساب نمی‌شود و دوباره طبق مرخصی/پاس/غیبت
+ *     قضاوت می‌شود — نه اینکه چون یک‌بار امروز ورود زده برای همیشه از
+ *     لیست حذف شود (محدودیت قبلی).
  *   • 🆕 هر نفر فقط داخل ساعت شیفت‌های خودش قضاوت می‌شود: قبل از شروع
  *     شیفت، بعد از پایان شیفت، یا بین دو شیفت → در لیست نمی‌آید (هنوز/دیگر
  *     انتظار حضورش نیست).
@@ -111,10 +115,18 @@ try {
     $ids = array_map('intval', array_column($users, 'id'));
     $ph  = implode(',', array_fill(0, count($ids), '?'));
 
-    // امروز حداقل یک check_in دارند؟
-    $aStmt = $db->prepare("SELECT DISTINCT user_id FROM attendance_records WHERE user_id IN ($ph) AND date = ? AND check_in IS NOT NULL");
+    // 🆕 وضعیت ورود/خروجِ امروز، به‌تفکیکِ شماره‌شیفت — نه صرفا «امروز یک
+    // ورود دارد یا نه». لازم است بدانیم برایِ همان شیفتی که الان در بازه‌اش
+    // هستیم، ورود زده و هنوز خروج نزده یا نه (پایین‌تر، تعریفِ «حاضر»)
+    $aStmt = $db->prepare("SELECT user_id, shift_number, check_in, check_out FROM attendance_records WHERE user_id IN ($ph) AND date = ?");
     $aStmt->execute(array_merge($ids, [$today]));
-    $present = array_fill_keys(array_map('intval', array_column($aStmt->fetchAll(PDO::FETCH_ASSOC), 'user_id')), true);
+    $att_by_user = [];
+    foreach ($aStmt->fetchAll(PDO::FETCH_ASSOC) as $a) {
+        $att_by_user[(int) $a['user_id']][(int) $a['shift_number']] = [
+            'in'  => $a['check_in'] !== null,
+            'out' => $a['check_out'] !== null,
+        ];
+    }
 
     // مرخصی تأییدشده‌ای که امروز را لمس می‌کند — با تاریخ+ساعتِ شروع/پایان.
     // 🔒 فقط وقتی «همین لحظه» داخل بازه‌اش باشیم مرخصی حساب می‌شود (نه صرفا
@@ -157,15 +169,24 @@ try {
     $absent = [];
     foreach ($users as $u) {
         $uid = (int) $u['id'];
-        if (isset($present[$uid])) {
-            continue; // حاضر
-        }
 
         // 🆕 فقط داخل ساعتِ شیفت‌هایِ خودش قضاوت می‌شود: قبل از شروعِ شیفت،
         // بعد از پایان، یا بینِ دو شیفت هنوز/دیگر انتظارِ حضورش نیست
-        $expected_now = $in_shift($u['shift_1_start'], $u['shift_1_end'])
-            || ((int) $u['shift_count'] >= 2 && $in_shift($u['shift_2_start'], $u['shift_2_end']));
-        if (!$expected_now) {
+        $in_shift1 = $in_shift($u['shift_1_start'], $u['shift_1_end']);
+        $in_shift2 = (int) $u['shift_count'] >= 2 && $in_shift($u['shift_2_start'], $u['shift_2_end']);
+        if (!$in_shift1 && !$in_shift2) {
+            continue;
+        }
+
+        // 🆕 «حاضر» = برایِ همون شیفتی که الان در بازه‌اشیم، ورود زده و هنوز
+        // خروج نزده — نه صرفا اینکه امروز یک بار ورود زده. کسی که ورود زده و
+        // بعد خروج هم زده (مثلا برایِ مرخصیِ میان‌روز)، دیگه «حاضر» نیست و
+        // باید دوباره طبقِ مرخصی/پاس/غیبت قضاوت بشه
+        $att = $att_by_user[$uid] ?? [];
+        $currently_present =
+            ($in_shift1 && !empty($att[1]['in']) && empty($att[1]['out'])) ||
+            ($in_shift2 && !empty($att[2]['in']) && empty($att[2]['out']));
+        if ($currently_present) {
             continue;
         }
 
