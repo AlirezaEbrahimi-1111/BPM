@@ -25,6 +25,7 @@
 //	GET|POST /go/api/attendance/denied-log  → پورت api/attendance/denied-log.php
 //	GET    /go/api/tickets/detail          → پورت api/tickets/detail.php
 //	GET    /go/api/tasks/my-tasks          → پورت api/tasks/my-tasks.php
+//	GET    /go/api/system/monitor          → جدید، معادلِ PHP نداره؛ خلاصه‌ی CPU/RAM/دیسک/شبکه، فقط id=1
 //	POST   /go/api/attendance/register     → پورت api/attendance/register.php
 //	                                          (پورت شده؛ فرانت‌اند هنوز وصل نیست — پایین همین کامنت)
 //
@@ -61,6 +62,7 @@ import (
 	"bmp/go-api/internal/core"
 	"bmp/go-api/internal/notifications"
 	"bmp/go-api/internal/reports"
+	"bmp/go-api/internal/sysmon"
 	"bmp/go-api/internal/tasks"
 	"bmp/go-api/internal/tickets"
 )
@@ -184,6 +186,9 @@ func main() {
 	// ۳ endpoint لیست کارها هرکدوم قاعدهٔ دسترسی مستقل و ناهماهنگ
 	// خودشون رو دارن و فعلا روی PHP می‌مونن) ──
 	mux.HandleFunc("GET /go/api/tasks/my-tasks", s.auth(tasks.MyTasks(s.db)))
+
+	// ── مانیتورینگ خلاصه‌ی خودِ سرور — endpoint جدید (بدون معادلِ PHP)، فقط id=1 ──
+	mux.HandleFunc("GET /go/api/system/monitor", s.auth(sysmon.Monitor(s.db)))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{

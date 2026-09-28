@@ -953,6 +953,11 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                                 <i class="bi bi-moon-stars ms-2"></i>حکمت روزانه
                             </a>
                         </li>
+                        <li id="serverMonitorMenuItem" style="display:none;">
+                            <a class="dropdown-item" href="../../pages/server-monitor.php">
+                                <i class="bi bi-hdd-network ms-2"></i>مانیتورینگ سرور
+                            </a>
+                        </li>
                         <li id="holidaysMenuItem" style="display:none;">
                             <a class="dropdown-item" href="../../pages/holidays.php">
                                 <i class="bi bi-calendar-x ms-2"></i>روزهای تعطیل
@@ -2703,6 +2708,10 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         const hekmatBroadcastItem = document.getElementById('hekmatBroadcastMenuItem');
         if (hekmatBroadcastItem) {
             hekmatBroadcastItem.style.display = (Number(user.id) === 1) ? 'block' : 'none';
+        }
+        const serverMonitorItem = document.getElementById('serverMonitorMenuItem');
+        if (serverMonitorItem) {
+            serverMonitorItem.style.display = (Number(user.id) === 1) ? 'block' : 'none';
         }
         const overviewMenu = document.getElementById('navOverview');
         if (overviewMenu) {
