@@ -629,6 +629,26 @@ if (!hasPermission($__me, 'manage_users')) {
             height: 84vh;
         }
 
+        /* 🔒 علتِ واقعیِ «فرقی نکرد»: توی assets/css/custom.css یک قانونِ
+           قدیمیِ «.modal-content { position:fixed; top:50%; left:50%;
+           transform:translate(-50%,-50%); max-height:90vh; ... }» هست که
+           (بدون اسکوپ به .modal-overlay، برخلافِ قانونِ درستِ بالاش) روی
+           .modal-content همه‌ی مودال‌هایِ بوت‌استرپِ کل سایت اثر می‌ذاره —
+           چون specificity‌اش با قانونِ خودِ بوت‌استرپ برابره ولی دیرتر لود
+           می‌شه. با position:fixed، این باکس دیگه اصلا از ارتفاعِ
+           modal-dialog (بالا) تبعیت نمی‌کنه، برایِ همینه که تغییرِ height
+           هیچ اثری نداشت. این یک باگِ سراسریِ قدیمی‌تره که جدا باید بررسی
+           بشه؛ فعلا فقط برایِ همین یک مودال خنثیش می‌کنیم */
+        #pendingTasksModal .modal-content {
+            position: relative;
+            top: auto;
+            left: auto;
+            transform: none;
+            max-width: none;
+            width: 100%;
+            max-height: 84vh;
+        }
+
         /* 🔒 «ارجاع به دیگری»/«تکمیل کار»/«لغو کار»: این لیبل‌ها تو یک
            btn-group-sm هستن، ولی کلاسِ btn-sm رو مستقیم روی خودشون ندارن.
            بوت‌استرپ سایزِ فونتِ کوچیک رو معمولا با selector مرکب
@@ -947,7 +967,7 @@ if (!hasPermission($__me, 'manage_users')) {
     </div>
 
     <!-- مودال رسیدگی به کارهای باز کاربر، قبل از غیرفعال‌سازی -->
-    <div class="modal fade" id="pendingTasksModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal fade" id="pendingTasksModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header-custom modal-header border-0">
@@ -959,7 +979,7 @@ if (!hasPermission($__me, 'manage_users')) {
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-warning" style="font-size:.85rem;">
-                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        <i class="bi bi-exclamation-circle-fill me-2" style="color:var(--warning, #f59e0b); font-size:1.1rem; vertical-align:-2px;"></i>
                         این کاربر <b id="ptCount"></b> کار باز دارد.
                     </div>
                     <div class="text-muted mb-3" style="font-size:.8rem;">
