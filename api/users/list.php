@@ -34,7 +34,16 @@ try {
     $org_id = $currentUser['organization_id'];
 
     // اگر supervisor باشد → همه کاربران
-    if ($role === 'supervisor') {
+    // 🔒 همچنین اگر واحدِ خودِ کاربر «all» باشه → همه کاربران. «all» یک
+    // مقدارِ ویژه‌ست به‌معنیِ «همهٔ واحدها» (دقیقا همون‌جوری که
+    // api/organization/my-org-data.php هم برچسبش می‌زنه «همه واحدها»)، نه
+    // اسمِ یه واحدِ واقعی — پس نباید وابسته به این باشه که جدولِ
+    // unit_visibility برایِ هر واحدِ تازه‌ساخته‌شده هم یه ردیفِ
+    // «all → آن واحد» داشته باشه. قبلا این‌جا wildcard بودنِ «all» در نظر
+    // گرفته نمی‌شد و طبقِ همون جدول (که فقط یک ردیفِ all→all داره) رفتار
+    // می‌کرد؛ یعنی کاربرِ واحد «all» فقط کاربرانِ دیگری با واحدِ دقیقا
+    // «all» رو می‌دید، نه همه رو.
+    if ($role === 'supervisor' || $unit === 'all') {
 
         $sql = "SELECT id, first_name, last_name, phone, activity_section, activity_unit,
                        CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) as full_name
