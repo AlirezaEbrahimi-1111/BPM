@@ -52,13 +52,10 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
             color: #8e57fe;
         }
 
-        .du-kind-badge {
-            font-size: .72rem;
-            padding: 2px 9px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
+        /* 🔒 پدینگ/فونت‌سایز/رادیوس از کلاسِ مشترکِ .badge (custom.css) میاد —
+           اون کلاس با !important و «استاندارد سراسری، بدون راه گریز» تعریف
+           شده، پس اینجا فقط رنگِ مخصوصِ هر حالت رو اضافه می‌کنیم، نه
+           پدینگ/سایزِ جدا */
         .du-kind-badge.is-user {
             background: rgba(27, 123, 57, .12);
             color: #1b7b39;
@@ -73,23 +70,21 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
             background: rgba(220, 38, 38, .1);
             color: #dc2626;
             font-weight: 700;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: .8rem;
-            display: inline-block;
         }
 
         :root[data-theme="dark"] .du-delay-badge {
             background: rgba(220, 38, 38, .18);
         }
 
+        /* 🔒 سایزِ متنِ فرعی — عینِ همون ۰.۷rem ای که tasks.php برایِ متنِ
+           فرعیِ زیرِ عنوان (توضیحاتِ کار) استفاده می‌کنه */
         .du-task-count {
-            font-size: .75rem;
+            font-size: .7rem;
             color: var(--text-muted, #6b7280);
         }
 
         .du-breakdown {
-            font-size: .75rem;
+            font-size: .7rem;
             color: var(--text-muted, #6b7280);
         }
 
@@ -251,8 +246,8 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
                 width: 100,
                 sortable: true,
                 cellRenderer: p => p.value === 'section'
-                    ? '<span class="du-kind-badge is-section">واحد</span>'
-                    : '<span class="du-kind-badge is-user">کاربر</span>'
+                    ? '<span class="badge du-kind-badge is-section">واحد</span>'
+                    : '<span class="badge du-kind-badge is-user">کاربر</span>'
             },
             {
                 headerName: 'نام',
@@ -302,11 +297,12 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
             {
                 headerName: 'مجموع تأخیر',
                 field: 'delay',
-                width: 150,
+                width: 190,
+                minWidth: 170,
                 sortable: true,
                 sort: 'desc',
                 comparator: (a, b, nodeA, nodeB) => duCombinedHours(nodeA.data) - duCombinedHours(nodeB.data),
-                cellRenderer: p => `<span class="du-delay-badge">${esc(formatHourDelay(duCombinedHours(p.data)))}</span>`
+                cellRenderer: p => `<span class="badge du-delay-badge">${esc(formatHourDelay(duCombinedHours(p.data)))}</span>`
             }
         ];
 
@@ -314,6 +310,9 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
             columnDefs: duColumnDefs,
             rowData: [],
             defaultColDef: { resizable: true },
+            enableRtl: true, // 🔒 همون تنظیمی که tasks.php/users.php هم دارن — بدونش هم ترتیبِ
+            // پرشدنِ ستون‌ها از چپ می‌شه (باید از راست باشه)، هم ترتیبِ عدد/کلمه‌ی
+            // فارسیِ ترکیبی (مثلا «روز ۱۸۵» به‌جایِ «۱۸۵ روز») به‌هم می‌ریزه
             domLayout: 'normal',
             rowHeight: 54,
             onRowClicked: e => duOpenModal(e.data),
