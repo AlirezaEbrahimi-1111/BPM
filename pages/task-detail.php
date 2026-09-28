@@ -4062,8 +4062,15 @@ ${task.overdue_periods > 0 ? `
                 completeBtnEligible = false;
 
                 if (isPendingApproval) {
-                    // هر کسی که باید تأیید کند، دکمه‌های تأیید/رد را می‌بیند
-                    if (isCreator || isAssignee) {
+                    // 🔒 فقط assignee فعلی — نه تعریف‌کننده — دکمه‌های تأیید/رد را می‌بیند.
+                    // وقتی کاری برای تأیید ارسال می‌شود، assignee_id معنایش عوض می‌شود:
+                    // دیگر «کسی که کار را انجام داده» نیست، «کسی که الان باید تأییدش
+                    // کند» است (سرور هم دقیقا همین را چک می‌کند —
+                    // TaskManager::approveOrRejectTask). اگر کار چند مرحله دست‌به‌دست
+                    // شده باشد، آن شخص لزوما تعریف‌کننده‌ی اولیه نیست؛ قبلا این‌جا
+                    // isCreator هم اجازه می‌داد و دکمه‌ای نشان می‌داد که کلیکش همیشه
+                    // با «شما مجاز به انجام این کار نیستید» رد می‌شد (تسک ۲۷۶۴).
+                    if (isAssignee) {
                         approveBtn.style.display = 'inline-block';
                         rejectBtn.style.display = 'inline-block';
                     }
