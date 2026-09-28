@@ -3321,7 +3321,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         document.addEventListener('click', () => rowCloseMenus());
         document.getElementById('topDelayedSeeAll')?.addEventListener('click', (e) => {
             e.preventDefault();
-            location.href = 'tasks-overview.php?filter=overdue';
+            location.href = 'delayed-users.php';
         });
         /* اجرای عملیات از جدول — از مودال استفاده می‌کند */
         function rowAction(taskId, action, ev) {

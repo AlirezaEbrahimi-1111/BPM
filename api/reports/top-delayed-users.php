@@ -38,6 +38,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/period-engine.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/delayed-tasks-helper.php';
 
 try {
     // ── احراز هویت ───────────────────────────────────
@@ -157,22 +158,9 @@ try {
     // یکسانی باهم ندارن (ناهماهنگی قدیمی خود اسکیما)، مقایسه‌ی HAVING با
     // خطای «Illegal mix of collations» (1267) کرش می‌کنه. تبدیل به DATE این
     // مشکل رو کاملا کنار می‌ذاره چون DATE اصلا collation نداره
-    $stmt = $db->prepare("
-        SELECT id, assignee_id, activity_section,
-            GREATEST(
-                COALESCE(CAST(due_date AS DATE), CAST('1000-01-01' AS DATE)),
-                COALESCE(CAST(deadline AS DATE), CAST('1000-01-01' AS DATE)),
-                COALESCE(CAST(original_deadline AS DATE), CAST('1000-01-01' AS DATE))
-            ) AS effective_due
-        FROM tasks
-        WHERE organization_id = ?
-          AND is_deleted = 0
-          AND task_type = 'periodic'
-          AND status NOT IN ('completed', 'approved', 'stopped', 'rejected')
-        HAVING effective_due > '1000-01-01' AND effective_due < ?
-    ");
-    $stmt->execute([$org_id, $today]);
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
+    // 🔒 کوئری از includes/delayed-tasks-helper.php میاد — منبعِ مشترک با
+    // api/reports/delayed-tasks-for.php (تعریفِ «تأخیردار» فقط یک‌جا نوشته می‌شه)
+    foreach (getDelayedPeriodicTasks($db, $org_id, $today) as $t) {
         $k = $bucket($t['assignee_id'], $t['activity_section']);
         if ($k === null) continue;
         $acc[$k]['periodic']++;
@@ -182,15 +170,7 @@ try {
     // ══════════════════════════════════════════════
     //  ۲) کارهای دوره‌ای تأخیردار (از موتور مشترک)
     // ══════════════════════════════════════════════
-    $stmt = $db->prepare("
-        SELECT * FROM tasks
-        WHERE organization_id = ?
-          AND is_deleted = 0
-          AND task_type = 'continuous'
-          AND status NOT IN ('completed', 'approved', 'stopped', 'rejected')
-    ");
-    $stmt->execute([$org_id]);
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
+    foreach (getOpenContinuousTasks($db, $org_id) as $t) {
         $state = pe_state($db, $t, $holidays, $today);
         if ($state['overdue_periods'] > 0) {
             $k = $bucket($t['assignee_id'], $t['activity_section']);
@@ -218,25 +198,7 @@ try {
     // effective_due پایین‌تر هم با CAST AS DATE ازش دور می‌زنه)، خطای
     // «Illegal mix of collations» (1267) می‌ده — روی دیتای واقعی تست
     // محلی گرفت.
-    $stmt = $db->prepare("
-        SELECT t.id, t.assignee_id, t.activity_section,
-            GREATEST(
-                COALESCE(CAST(CONCAT(t.due_date, ' 23:59:59') AS DATETIME), CAST('1000-01-01 00:00:00' AS DATETIME)),
-                COALESCE(CAST(t.deadline AS DATETIME), CAST('1000-01-01 00:00:00' AS DATETIME)),
-                COALESCE(CAST(t.original_deadline AS DATETIME), CAST('1000-01-01 00:00:00' AS DATETIME))
-            ) AS effective_deadline
-        FROM tasks t
-        JOIN workflow_instance_steps wis ON wis.task_id = t.id
-        WHERE t.organization_id = ?
-          AND t.is_deleted = 0
-          AND t.is_workflow_task = 1
-          AND wis.status IN ('active', 'pending', 'delayed')
-          AND (t.due_date IS NOT NULL OR t.deadline IS NOT NULL OR t.original_deadline IS NOT NULL)
-          AND t.status NOT IN ('completed', 'approved', 'stopped', 'rejected')
-        HAVING effective_deadline > '1000-01-01 00:00:00' AND effective_deadline < ?
-    ");
-    $stmt->execute([$org_id, $now]);
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
+    foreach (getDelayedWorkflowTasks($db, $org_id, $now) as $t) {
         $k = $bucket($t['assignee_id'], $t['activity_section']);
         if ($k === null) continue;
         $acc[$k]['workflow']++;
