@@ -90,52 +90,32 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
 
         /* ─── مودالِ کارهایِ تأخیردار یک کاربر/واحد ─── */
         #duTasksModal .modal-dialog {
-            max-width: 720px;
+            max-width: 860px;
         }
 
-        .du-task-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            padding: 10px 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background .12s ease;
+        /* 🔒 همون باگِ سراسریِ «.modal-content { position:fixed; ... }» که
+           توی pages/users.php (مودالِ رسیدگی‌به‌کارهایِ کاربرِ غیرفعال‌شده)
+           پیدا شد — یک قانونِ اسکوپ‌نشده تو custom.css که روی .modal-content
+           همه‌ی مودال‌هایِ بوت‌استرپِ سایت اثر می‌ذاره (position/top/left/
+           transform/max-width/max-height رو عوض می‌کنه)؛ بدونِ خنثی‌کردنش،
+           نه عرضِ modal-dialog بالا اعمال می‌شه نه اندازه‌گیریِ عادیِ باکس کار
+           می‌کنه. این باگِ ریشه‌ای هنوز جدا بررسی نشده، فقط برایِ همین یک
+           مودال خنثی می‌شه */
+        #duTasksModal .modal-content {
+            position: relative;
+            top: auto;
+            left: auto;
+            transform: none;
+            max-width: none;
+            width: 100%;
         }
 
-        .du-task-row:hover {
-            background: rgba(142, 87, 254, .12);
-        }
-
-        :root[data-theme="dark"] .du-task-row:hover {
-            background: rgba(142, 87, 254, .18);
-        }
-
-        .du-task-row+.du-task-row {
-            margin-top: 2px;
-        }
-
-        .du-task-title {
-            font-size: .87rem;
-            font-weight: 600;
-            color: var(--ink-900, #1f2937);
-        }
-
-        .du-task-meta {
-            font-size: .75rem;
-            color: var(--text-muted, #6b7280);
-            margin-top: 2px;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .du-task-delay {
-            font-size: .78rem;
-            font-weight: 700;
-            color: #dc2626;
-            white-space: nowrap;
+        /* 🔒 به‌جایِ modal-dialog-scrollable (که ارتفاعش با تعدادِ کارها زیاد
+           می‌شد)، یک گریدِ کوچیکِ با ارتفاعِ ثابت — خودِ AG Grid اسکرولِ
+           داخلیش رو داره، پس مودال همیشه یک‌اندازه و جمع‌وجور می‌مونه */
+        #duTasksGrid {
+            height: 340px;
+            width: 100%;
         }
 
         /* 🔒 عینِ .dash-loading/.dash-empty در dashboard-manager.php — همون
@@ -201,14 +181,14 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
 
     <!-- مودالِ کارهایِ تأخیردار یک کاربر/واحدِ خاص -->
     <div class="modal fade" id="duTasksModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h6 class="modal-title">کارهای تأخیردار <span id="duModalName"></span></h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" id="duModalBody">
-                    <div class="dash-loading"><span class="spinner-border spinner-border-sm" role="status"></span>در حال بارگذاری…</div>
+                <div class="modal-body">
+                    <div id="duTasksGrid" class="ag-theme-alpine"></div>
                 </div>
             </div>
         </div>
@@ -224,6 +204,7 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
         let duList = [];
         let duGridApi = null;
         let duModalInstance = null;
+        let duTasksGridApi = null;
 
         // 🔒 عینِ همون فرمولِ combinedHours در pages/dashboard-manager.php
         // (renderTopDelayed) — روزِ کاری (مقطعی/دوره‌ای) به ساعت تبدیل و با
@@ -359,7 +340,7 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
             duGridApi.setGridOption('rowData', filtered);
         }
 
-        /* ─── مودالِ کارهایِ یک کاربر/واحدِ خاص ─── */
+        /* ─── مودالِ کارهایِ یک کاربر/واحدِ خاص — همون الگویِ AG Grid ─── */
         function duTaskTypeLabel(t) {
             if (t === 'periodic') return 'مقطعی';
             if (t === 'continuous') return 'دوره‌ای';
@@ -371,13 +352,58 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
             return formatHourDelay(hours);
         }
 
+        const duTasksColumnDefs = [
+            {
+                headerName: 'عنوان',
+                field: 'title',
+                flex: 2,
+                sortable: true,
+                cellRenderer: p => esc(p.value || '—')
+            },
+            {
+                headerName: 'نوع',
+                field: 'task_type',
+                width: 100,
+                sortable: true,
+                cellRenderer: p => duTaskTypeLabel(p.value)
+            },
+            {
+                headerName: 'میزان تأخیر',
+                field: 'delay',
+                width: 170,
+                sortable: true,
+                sort: 'desc',
+                comparator: (a, b, nodeA, nodeB) => {
+                    const da = nodeA.data.task_type === 'workflow' ? (nodeA.data.delay_hours || 0) : (nodeA.data.delay_days || 0) * 24;
+                    const db = nodeB.data.task_type === 'workflow' ? (nodeB.data.delay_hours || 0) : (nodeB.data.delay_days || 0) * 24;
+                    return da - db;
+                },
+                cellRenderer: p => `<span class="badge du-delay-badge">${esc(duFormatDelay(p.data))}</span>`
+            }
+        ];
+
+        const duTasksGridOptions = {
+            columnDefs: duTasksColumnDefs,
+            rowData: [],
+            defaultColDef: { resizable: true },
+            enableRtl: true,
+            domLayout: 'normal',
+            rowHeight: 44,
+            onRowClicked: e => window.location.href = 'task-detail.php?id=' + e.data.id,
+            overlayNoRowsTemplate: '<div class="dash-empty"><i class="bi bi-check2-circle"></i>کار تأخیرداری یافت نشد</div>',
+            overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>'
+        };
+
         async function duOpenModal(row) {
             const isSection = row.kind === 'section';
             const displayName = isSection ? duSectionLabel(row.name) : row.name;
             document.getElementById('duModalName').textContent = displayName;
 
-            const body = document.getElementById('duModalBody');
-            body.innerHTML = '<div class="dash-loading"><span class="spinner-border spinner-border-sm" role="status"></span>در حال بارگذاری…</div>';
+            if (!duTasksGridApi) {
+                duTasksGridApi = agGrid.createGrid(document.getElementById('duTasksGrid'), duTasksGridOptions);
+            }
+            duTasksGridApi.setGridOption('rowData', []);
+            duTasksGridApi.showLoadingOverlay();
 
             if (!duModalInstance) duModalInstance = new bootstrap.Modal(document.getElementById('duTasksModal'));
             duModalInstance.show();
@@ -388,29 +414,18 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
                 });
                 const data = await res.json();
                 if (!data.success) {
-                    body.innerHTML = `<div class="text-danger text-center py-3">${esc(data.message || 'خطا در دریافت کارها')}</div>`;
+                    showToast(data.message || 'خطا در دریافت کارها', 'error');
+                    duTasksGridApi.showNoRowsOverlay();
                     return;
                 }
                 const tasks = data.tasks || [];
-                if (!tasks.length) {
-                    body.innerHTML = '<div class="dash-empty"><i class="bi bi-check2-circle"></i>کار تأخیرداری یافت نشد</div>';
-                    return;
-                }
-                body.innerHTML = tasks.map(t => `
-                    <div class="du-task-row" onclick="window.location.href='task-detail.php?id=${t.id}'">
-                        <div>
-                            <div class="du-task-title">${esc(t.title || '—')}</div>
-                            <div class="du-task-meta">
-                                <span>${duTaskTypeLabel(t.task_type)}</span>
-                                <span>#${toFa(t.id)}</span>
-                            </div>
-                        </div>
-                        <div class="du-task-delay">${esc(duFormatDelay(t))}</div>
-                    </div>
-                `).join('');
+                duTasksGridApi.setGridOption('rowData', tasks);
+                if (!tasks.length) duTasksGridApi.showNoRowsOverlay();
+                else duTasksGridApi.hideOverlay();
             } catch (e) {
                 console.error('duOpenModal:', e);
-                body.innerHTML = '<div class="text-danger text-center py-3">خطا در ارتباط با سرور</div>';
+                showToast('خطا در ارتباط با سرور', 'error');
+                duTasksGridApi.showNoRowsOverlay();
             }
         }
 
