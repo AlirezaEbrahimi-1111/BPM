@@ -4358,7 +4358,11 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 setTimeout(() => {
                     AssigneePicker.init({
                         container: '#pmPicker-' + taskId,
-                        users: pmUsers.filter(u => Number(u.id) !== Number(currentUser.id)),
+                        // 🔒 دیگه لازم نیست اینجا خودِ کاربر رو دستی فیلتر کنیم — خودِ
+                        // AssigneePicker موقعی که «خودم» رو نشون می‌ده، این کار رو
+                        // خودکار انجام می‌ده (تا با بقیه‌ی صفحاتی که این کار رو
+                        // یادشون رفته بود یکپارچه بمونه)
+                        users: pmUsers,
                         sections: (typeof sectionList !== 'undefined') ? sectionList : [],
                         sectionMap: (typeof sectionMap !== 'undefined') ? sectionMap : {},
                         showSections: false, // ارجاع فقط به شخص

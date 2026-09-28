@@ -200,6 +200,24 @@ const AssigneePicker = (() => {
         const ALL_USERS    = { id: '__all_users__', label: 'همه کاربران', type: 'user',    avatarCls: 'all'  };
         const ALL_SECTIONS = { id: '__all__',       label: 'همه واحدها',  type: 'section', avatarCls: 'all'  };
 
+        /* 🔒 شناسهٔ کاربر جاری — تا وقتی «خودم» نشون داده می‌شه (پایین‌تر)،
+           خودِ همون کاربر دوباره به‌عنوان یه ردیفِ معمولی توی لیست نیاد.
+           قبلا این‌جا این شناسه اصلاً وجود نداشت، پس هر صفحه‌ای که خودش
+           یادش نمی‌رفت users رو قبل از پاس‌دادن فیلتر کنه، هم «خودم» رو
+           نشون می‌داد هم اسمِ واقعیِ همون آدم رو — نتیجه یه ردیفِ تکراری.
+           cfg.currentUserId اختیاریه (برای صفحه‌ای که از قبل شناسه رو
+           جایی دیگه داره)؛ وگرنه از همون user_info که کل پروژه برای
+           ورود استفاده می‌کنه خونده می‌شه */
+        let _currentUserId = null;
+        if (cfg.currentUserId != null) {
+            _currentUserId = Number(cfg.currentUserId);
+        } else {
+            try {
+                const info = JSON.parse(localStorage.getItem('user_info') || '{}');
+                if (info && info.id != null) _currentUserId = Number(info.id);
+            } catch (e) { /* localStorage غیرقابل‌دسترس یا JSON نامعتبر — بی‌خیال، فقط دیگه حذف نمی‌شه */ }
+        }
+
         /* وجود cfg.placeholder = حالت فیلتر */
         const _isFilterMode = !!cfg.placeholder;
 
@@ -351,6 +369,10 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
             }
 
             users.forEach(u => {
+                // 🔒 وقتی «خودم» نشون داده می‌شه (نه حالتِ فیلتر، نه چندانتخابی)،
+                // خودِ همون کاربر دیگه به‌عنوانِ ردیفِ معمولی تکرار نشه —
+                // «خودم» از قبل همون هویت رو پوشش می‌ده
+                if (!_isFilterMode && !_isMulti && _currentUserId != null && Number(u.id) === _currentUserId) return;
                 const name = (u.full_name ||
                     `${u.first_name || ''} ${u.last_name || ''}`.trim() ||
                     u.phone || '').trim();
