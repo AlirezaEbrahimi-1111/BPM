@@ -259,6 +259,76 @@ func formatUptime(seconds float64) string {
 	return fmt.Sprintf("%dد", mins)
 }
 
+/* ─────────────────────── یک نمونه‌ی کامل — منبعِ واحد ───────────────────────
+   هم هندلرِ زنده (Monitor) هم نمونه‌گیرِ پس‌زمینه (history.go) از همینِ یک
+   تابع استفاده می‌کنن — تا منطقِ «یک نمونه یعنی چی» دو جا جدا نوشته نشه
+   (دقیقا همون درسی که با باگِ تعدادِ اعضایِ گروهِ چت گرفتیم). */
+
+type snapshot struct {
+	cpuPercent              float64
+	memUsedKB, memTotalKB   uint64
+	memPercent              float64
+	swapUsedKB, swapTotalKB uint64
+	swapPercent             float64
+	diskUsedBytes           uint64
+	diskTotalBytes          uint64
+	diskPercent             float64
+	netRxBps, netTxBps      float64
+	load1, load5, load15    float64
+	uptimeSeconds           float64
+}
+
+func collectSnapshot() (snapshot, error) {
+	var s snapshot
+	var err error
+
+	s.cpuPercent, s.netRxBps, s.netTxBps, err = rateSample()
+	if err != nil {
+		return s, fmt.Errorf("cpu/net: %w", err)
+	}
+
+	mem, err := readMemInfo()
+	if err != nil {
+		return s, fmt.Errorf("meminfo: %w", err)
+	}
+	s.memTotalKB = mem["MemTotal"]
+	memAvailKB := mem["MemAvailable"]
+	if s.memTotalKB > memAvailKB {
+		s.memUsedKB = s.memTotalKB - memAvailKB
+	}
+	if s.memTotalKB > 0 {
+		s.memPercent = 100 * float64(s.memUsedKB) / float64(s.memTotalKB)
+	}
+	s.swapTotalKB = mem["SwapTotal"]
+	swapFreeKB := mem["SwapFree"]
+	if s.swapTotalKB > swapFreeKB {
+		s.swapUsedKB = s.swapTotalKB - swapFreeKB
+	}
+	if s.swapTotalKB > 0 {
+		s.swapPercent = 100 * float64(s.swapUsedKB) / float64(s.swapTotalKB)
+	}
+
+	s.diskTotalBytes, s.diskUsedBytes, err = readDisk("/")
+	if err != nil {
+		return s, fmt.Errorf("disk: %w", err)
+	}
+	if s.diskTotalBytes > 0 {
+		s.diskPercent = 100 * float64(s.diskUsedBytes) / float64(s.diskTotalBytes)
+	}
+
+	s.load1, s.load5, s.load15, err = readLoadAvg()
+	if err != nil {
+		return s, fmt.Errorf("loadavg: %w", err)
+	}
+
+	s.uptimeSeconds, err = readUptimeSeconds()
+	if err != nil {
+		return s, fmt.Errorf("uptime: %w", err)
+	}
+
+	return s, nil
+}
+
 /* ─────────────────────── هندلر HTTP ─────────────────────── */
 
 // Monitor — GET /go/api/system/monitor
@@ -273,57 +343,9 @@ func Monitor(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		cpuPct, rxBps, txBps, err := rateSample()
+		s, err := collectSnapshot()
 		if err != nil {
-			core.WriteErr(w, http.StatusInternalServerError, "خطا در خواندن اطلاعات CPU/شبکه")
-			return
-		}
-
-		mem, err := readMemInfo()
-		if err != nil {
-			core.WriteErr(w, http.StatusInternalServerError, "خطا در خواندن اطلاعات حافظه")
-			return
-		}
-		memTotalKB := mem["MemTotal"]
-		memAvailKB := mem["MemAvailable"]
-		memUsedKB := uint64(0)
-		if memTotalKB > memAvailKB {
-			memUsedKB = memTotalKB - memAvailKB
-		}
-		memPct := 0.0
-		if memTotalKB > 0 {
-			memPct = 100 * float64(memUsedKB) / float64(memTotalKB)
-		}
-		swapTotalKB := mem["SwapTotal"]
-		swapFreeKB := mem["SwapFree"]
-		swapUsedKB := uint64(0)
-		if swapTotalKB > swapFreeKB {
-			swapUsedKB = swapTotalKB - swapFreeKB
-		}
-		swapPct := 0.0
-		if swapTotalKB > 0 {
-			swapPct = 100 * float64(swapUsedKB) / float64(swapTotalKB)
-		}
-
-		diskTotal, diskUsed, err := readDisk("/")
-		if err != nil {
-			core.WriteErr(w, http.StatusInternalServerError, "خطا در خواندن اطلاعات دیسک")
-			return
-		}
-		diskPct := 0.0
-		if diskTotal > 0 {
-			diskPct = 100 * float64(diskUsed) / float64(diskTotal)
-		}
-
-		l1, l5, l15, err := readLoadAvg()
-		if err != nil {
-			core.WriteErr(w, http.StatusInternalServerError, "خطا در خواندن میانگین بار سیستم")
-			return
-		}
-
-		uptimeSec, err := readUptimeSeconds()
-		if err != nil {
-			core.WriteErr(w, http.StatusInternalServerError, "خطا در خواندن آپ‌تایم")
+			core.WriteErr(w, http.StatusInternalServerError, "خطا در خواندن اطلاعات سرور")
 			return
 		}
 
@@ -332,33 +354,33 @@ func Monitor(db *sql.DB) http.HandlerFunc {
 		core.WriteJSON(w, http.StatusOK, map[string]any{
 			"success": true,
 			"cpu": map[string]any{
-				"percent": round1(cpuPct),
+				"percent": round1(s.cpuPercent),
 			},
 			"ram": map[string]any{
-				"used_mb":  memUsedKB / 1024,
-				"total_mb": memTotalKB / 1024,
-				"percent":  round1(memPct),
+				"used_mb":  s.memUsedKB / 1024,
+				"total_mb": s.memTotalKB / 1024,
+				"percent":  round1(s.memPercent),
 			},
 			"swap": map[string]any{
-				"used_mb":  swapUsedKB / 1024,
-				"total_mb": swapTotalKB / 1024,
-				"percent":  round1(swapPct),
+				"used_mb":  s.swapUsedKB / 1024,
+				"total_mb": s.swapTotalKB / 1024,
+				"percent":  round1(s.swapPercent),
 			},
 			"disk": map[string]any{
-				"used_gb":  round1(float64(diskUsed) / 1024 / 1024 / 1024),
-				"total_gb": round1(float64(diskTotal) / 1024 / 1024 / 1024),
-				"percent":  round1(diskPct),
+				"used_gb":  round1(float64(s.diskUsedBytes) / 1024 / 1024 / 1024),
+				"total_gb": round1(float64(s.diskTotalBytes) / 1024 / 1024 / 1024),
+				"percent":  round1(s.diskPercent),
 			},
 			"network": map[string]any{
-				"rx_kbps": round1(rxBps / 1024),
-				"tx_kbps": round1(txBps / 1024),
+				"rx_kbps": round1(s.netRxBps / 1024),
+				"tx_kbps": round1(s.netTxBps / 1024),
 			},
 			"load": map[string]any{
-				"l1":  l1,
-				"l5":  l5,
-				"l15": l15,
+				"l1":  s.load1,
+				"l5":  s.load5,
+				"l15": s.load15,
 			},
-			"uptime_label": formatUptime(uptimeSec),
+			"uptime_label": formatUptime(s.uptimeSeconds),
 			"db_ok":        dbOK,
 		})
 	}

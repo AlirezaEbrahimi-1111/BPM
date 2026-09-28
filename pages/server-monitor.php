@@ -197,19 +197,34 @@ if ((int) $__me['id'] !== 1) {
             </div>
         </div>
 
-        <div class="mt-3">
-            <small class="text-muted">
-                این صفحه فقط برای شما (id=1) قابل‌مشاهده است. برای گزارش کامل و تاریخچه‌ی طولانی‌مدت، از
-                Netdata (با تونل SSH) استفاده کنید.
-            </small>
+        <!-- روندِ تاریخی — از یک نمونه‌گیرِ پس‌زمینه‌ی هر ۲دقیقه‌ای پر می‌شه؛
+             بلافاصله بعدِ دیپلوی تقریبا خالیه، کم‌کم پر می‌شه -->
+        <div class="card mt-4">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <h5 class="mb-0"><i class="bi bi-graph-up ms-2"></i>روند مصرف (CPU / RAM / دیسک)</h5>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-primary sm-range-btn active" data-range="1h" onclick="smSelectRange('1h', this)">۱ ساعت اخیر</button>
+                    <button type="button" class="btn btn-outline-primary sm-range-btn" data-range="24h" onclick="smSelectRange('24h', this)">۲۴ ساعت اخیر</button>
+                    <button type="button" class="btn btn-outline-primary sm-range-btn" data-range="7d" onclick="smSelectRange('7d', this)">۷ روز اخیر</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="smHistoryEmpty" class="text-muted text-center py-4" style="display:none;">
+                    هنوز داده‌ی تاریخی کافی جمع نشده — کمی صبر کنید (هر ۲ دقیقه یک نمونه ذخیره می‌شود).
+                </div>
+                <canvas id="smHistoryChart" height="90"></canvas>
+            </div>
         </div>
     </div>
 
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
+    <script src="<?= asset('../assets/js/cdn/chart.js') ?>"></script>
     <script>
         // 🔒 هر ۳ ثانیه رفرش — کافیه برای یک نگاه سریع، بدون بار اضافه روی سرور
         const SM_POLL_MS = 3000;
         let smTimer = null;
+        let smCurrentRange = '1h';
+        let smChart = null;
 
         function smBarClass(pct) {
             if (pct >= 90) return 'sm-bar-fill sm-danger';
@@ -282,9 +297,79 @@ if ((int) $__me['id'] !== 1) {
             }
         }
 
+        // برچسبِ محور افقی — برایِ بازه‌ی کوتاه فقط ساعت، برایِ ۷ روز
+        // تاریخِ شمسی هم بیاد؛ از همون TimeSync ای که کل پروژه استفاده
+        // می‌کنه، نه یک تبدیلِ شمسیِ جداگانه
+        function smFormatChartLabel(raw) {
+            if (!window.TimeSync) return raw;
+            return smCurrentRange === '7d' ? TimeSync.formatJalaliTime(raw) : TimeSync.formatTimeOnly(raw);
+        }
+
+        async function smLoadHistory(range) {
+            try {
+                const res = await fetch('/go/api/system/monitor/history?range=' + encodeURIComponent(range), {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                const data = await res.json();
+                if (!data.success) return;
+
+                const empty = document.getElementById('smHistoryEmpty');
+                const canvas = document.getElementById('smHistoryChart');
+                if (!data.labels || !data.labels.length) {
+                    empty.style.display = 'block';
+                    canvas.style.display = 'none';
+                    return;
+                }
+                empty.style.display = 'none';
+                canvas.style.display = 'block';
+
+                const labels = data.labels.map(smFormatChartLabel);
+
+                if (smChart) {
+                    smChart.data.labels = labels;
+                    smChart.data.datasets[0].data = data.cpu;
+                    smChart.data.datasets[1].data = data.ram;
+                    smChart.data.datasets[2].data = data.disk;
+                    smChart.update();
+                    return;
+                }
+
+                smChart = new Chart(canvas.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'CPU٪', data: data.cpu, borderColor: '#8e57fe', backgroundColor: 'rgba(142,87,254,.08)', tension: .3, pointRadius: 0, fill: true },
+                            { label: 'RAM٪', data: data.ram, borderColor: '#0d9488', backgroundColor: 'rgba(13,148,136,.08)', tension: .3, pointRadius: 0, fill: true },
+                            { label: 'دیسک٪', data: data.disk, borderColor: '#ea580c', backgroundColor: 'rgba(234,88,12,.06)', tension: .3, pointRadius: 0, fill: true }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: { y: { min: 0, max: 100, ticks: { callback: v => toFa(v) + '٪' } } },
+                        plugins: { legend: { position: 'bottom', rtl: true } }
+                    }
+                });
+            } catch (e) {
+                console.error('smLoadHistory:', e);
+            }
+        }
+
+        function smSelectRange(range, btn) {
+            smCurrentRange = range;
+            document.querySelectorAll('.sm-range-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            smLoadHistory(range);
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             smLoadOnce();
             smTimer = setInterval(smLoadOnce, SM_POLL_MS);
+            smLoadHistory(smCurrentRange);
+            // 🔒 تاریخچه نیازی به رفرشِ هر ۳ثانیه نداره — هر ۲ دقیقه (هم‌زمان
+            // با نمونه‌گیرِ پس‌زمینه‌ی go-api) برایِ تازه‌موندنِ نمودار کافیه
+            setInterval(function () { smLoadHistory(smCurrentRange); }, 120000);
         });
     </script>
     <?php include 'footer.php'; ?>

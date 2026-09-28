@@ -26,6 +26,7 @@
 //	GET    /go/api/tickets/detail          → پورت api/tickets/detail.php
 //	GET    /go/api/tasks/my-tasks          → پورت api/tasks/my-tasks.php
 //	GET    /go/api/system/monitor          → جدید، معادلِ PHP نداره؛ خلاصه‌ی CPU/RAM/دیسک/شبکه، فقط id=1
+//	GET    /go/api/system/monitor/history  → جدید؛ همون‌ها ولی تاریخی (۱ساعت/۲۴ساعت/۷روز)، فقط id=1
 //	POST   /go/api/attendance/register     → پورت api/attendance/register.php
 //	                                          (پورت شده؛ فرانت‌اند هنوز وصل نیست — پایین همین کامنت)
 //
@@ -189,6 +190,8 @@ func main() {
 
 	// ── مانیتورینگ خلاصه‌ی خودِ سرور — endpoint جدید (بدون معادلِ PHP)، فقط id=1 ──
 	mux.HandleFunc("GET /go/api/system/monitor", s.auth(sysmon.Monitor(s.db)))
+	mux.HandleFunc("GET /go/api/system/monitor/history", s.auth(sysmon.History(s.db)))
+	sysmon.StartSampler(s.db) // نمونه‌گیرِ پس‌زمینه، هر ۲ دقیقه — برایِ همون نمودارهایِ تاریخی
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{
