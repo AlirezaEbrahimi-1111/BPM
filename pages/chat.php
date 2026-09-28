@@ -1432,6 +1432,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             transform: translateX(18px);
         }
 
+        /* طبق درخواست صریح: فقط فوترِ همین مودال (نه همه‌ی مودال‌های سایت که
+           .modal-footer پیش‌فرضشون از custom.css میاد) بدون بکگراند باشه */
+        #groupMemberPermissionsModal .modal-footer {
+            background: transparent;
+        }
+
         /* ─── ارجاع به کار/تیکت (#task:ID / #ticket:ID) ─── */
         .chat-linkref {
             display: inline-flex;
@@ -5494,7 +5500,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             var promoteRow = { key: '__promote', label: 'ارتقا به مدیر', checked: !!m.is_admin };
 
             body.innerHTML = permRows.map(function (row) {
-                return '<div class="chat-profile-drawer-field" style="border-bottom:none; padding:6px 4px;">' +
+                return '<div class="chat-profile-drawer-field" style="border-bottom:none; padding:12px 4px;">' +
                     '<label class="chat-profile-drawer-label" for="gmp-' + row.key + '" style="flex:1; font-size:.85rem; color:var(--ink-900); cursor:pointer;">' + esc(row.label) + '</label>' +
                     '<label class="chat-toggle-switch">' +
                         '<input type="checkbox" id="gmp-' + row.key + '" data-perm="' + row.key + '"' + (row.checked ? ' checked' : '') + '>' +
@@ -5502,7 +5508,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     '</label>' +
                 '</div>';
             }).join('') +
-            '<div class="chat-profile-drawer-field" style="border-bottom:none; border-top:1px solid var(--border-soft, #eee); padding:10px 4px 6px;">' +
+            '<div class="chat-profile-drawer-field" style="border-bottom:none; border-top:1px solid var(--border-soft, #eee); margin-top:5px; padding:16px 4px 6px;">' +
                 '<input type="checkbox" id="gmp-' + promoteRow.key + '" data-perm="' + promoteRow.key + '"' + (promoteRow.checked ? ' checked' : '') + ' style="width:16px; height:16px; cursor:pointer; flex:none;">' +
                 '<label class="chat-profile-drawer-label" for="gmp-' + promoteRow.key + '" style="font-size:.85rem; font-weight:600; color:var(--ink-900); cursor:pointer;">' + esc(promoteRow.label) + '</label>' +
             '</div>';
