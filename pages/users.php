@@ -205,7 +205,7 @@ if (!hasPermission($__me, 'manage_users')) {
             background: #8e57fe;
             color: #fff;
             border-radius: .4rem .4rem 0 0;
-            padding: .9rem 1.1rem;
+            padding: .5rem 1.1rem !important;
         }
 
         .modal-tabs {
@@ -620,6 +620,27 @@ if (!hasPermission($__me, 'manage_users')) {
         #pendingTasksModal .modal-title {
             color: #000 !important;
         }
+
+        /* طبق درخواست صریح: این مودال حدود ۱۰٪ کوتاه‌تر از حالت پیش‌فرضِ
+           بوت‌استرپ برای modal-dialog-scrollable بشه (که تقریبا کل ارتفاعِ
+           صفحه رو می‌گیره: calc(100% - 3.5rem)) — بقیه‌ی محتوا (لیستِ
+           کارهایِ باز) همچنان با اسکرولِ داخلیِ modal-body دیده می‌شه */
+        #pendingTasksModal .modal-dialog-scrollable {
+            height: 84vh;
+        }
+
+        /* 🔒 «ارجاع به دیگری»/«تکمیل کار»/«لغو کار»: این لیبل‌ها تو یک
+           btn-group-sm هستن، ولی کلاسِ btn-sm رو مستقیم روی خودشون ندارن.
+           بوت‌استرپ سایزِ فونتِ کوچیک رو معمولا با selector مرکب
+           «.btn-group-sm > .btn» به‌صورتِ خودکار میده، ولی قانونِ سراسریِ
+           «.btn» توی custom.css (که با همون specificityِ کلاسِ ساده ولی
+           دیرتر لود می‌شه) اون رو خنثی می‌کنه و فونت رو به‌جای سایزِ
+           استانداردِ دکمه‌یِ کوچیکِ پروژه (۰.۸rem، دقیقا همون مقدارِ کلاسِ
+           btn-sm در custom.css) روی سایزِ پایه (۰.۸۷۵rem) نگه می‌داره —
+           درحالی‌که پدینگش (از همون btn-group-sm) از قبل کوچیک شده بود */
+        #pendingTasksModal .btn-group-sm > .btn {
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 
@@ -932,12 +953,13 @@ if (!hasPermission($__me, 'manage_users')) {
                 <div class="modal-header-custom modal-header border-0">
                     <h5 class="modal-title text-white">
                         <i class="bi bi-exclamation-triangle ms-2"></i>
-                        کارهای باز <span id="ptName"></span>
+                        تعیین تکلیف کارهای باز <span id="ptName"></span>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-warning" style="font-size:.85rem;">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
                         این کاربر <b id="ptCount"></b> کار باز دارد.
                     </div>
                     <div class="text-muted mb-3" style="font-size:.8rem;">
@@ -1964,7 +1986,7 @@ if (!hasPermission($__me, 'manage_users')) {
                     </div>
                     <div id="pt-reassign-wrap-${t.id}" class="mb-2">
                         <select class="form-select form-select-sm" id="pt-to-user-${t.id}">
-                            <option value="">— انتخاب کاربر مقصد —</option>
+                            <option value="">انتخاب کاربر مقصد</option>
                             ${userOptions}
                         </select>
                     </div>
