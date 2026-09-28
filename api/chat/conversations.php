@@ -53,7 +53,17 @@ try {
             lm.user_id AS last_message_user_id,
             lmu.first_name AS last_message_first_name,
             lmu.last_name AS last_message_last_name,
-            (SELECT COUNT(*) FROM chat_participants pc WHERE pc.conversation_id = c.id) AS member_count
+            -- 🔒 «عضو» یعنی چیزی که api/chat/group-members.php هم می‌گه: هم
+            -- ردیف عضویت باشه هم حساب‌ِ کاربر فعال باشه. قبلا این‌جا صرفا
+            -- COUNT(*) خامِ chat_participants بود — یعنی کاربری که بعدا
+            -- سیستم‌وار غیرفعال شده بود (نه اینکه کسی از گروه حذفش کرده باشه)
+            -- از لیستِ اعضا (اون فایل) محو می‌شد ولی همچنان توی همین عدد
+            -- شمرده می‌شد؛ نتیجه یه عدد که هیچ‌وقت با لیستِ واقعیِ اعضا یکی
+            -- نمی‌شد. اگه این تعریف عوض شد، اون‌جا رو هم عوض کن — دو منبعِ
+            -- جدا برای یه مفهومِ واحد نباید وجود داشته باشه
+            (SELECT COUNT(*) FROM chat_participants pc
+                JOIN users mu ON mu.id = pc.user_id AND mu.is_active = 1 AND mu.is_deleted = 0
+                WHERE pc.conversation_id = c.id) AS member_count
         FROM chat_participants cp
         JOIN chat_conversations c ON c.id = cp.conversation_id
         LEFT JOIN chat_participants op ON op.conversation_id = c.id AND op.user_id != ? AND c.type = 'direct'
