@@ -5361,6 +5361,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         var roleTag = m.is_owner
                             ? '<span class="chat-group-owner-tag">سازنده‌ی گروه</span>'
                             : (m.is_admin ? '<span class="chat-group-owner-tag">مدیر</span>' : '');
+                        // 🆕 ستاره‌ی بنفش: یعنی به این عضو اختیار اختصاصی داده شده —
+                        // مستقل از مدیر بودنش (طبق همون تصمیمِ اختیاراتِ مستقل از نقش).
+                        // سازنده رو نشون نمی‌ده چون همیشه همه‌ی اختیارات رو داره، نشونش دادن بی‌معنیه
+                        var hasCustomPerms = !m.is_owner && (m.permissions || []).length > 0;
+                        var permStar = hasCustomPerms
+                            ? '<i class="bi bi-star-fill" style="color:#8e57fe; font-size:.7rem;" title="این عضو اختیار اختصاصی دارد"></i>'
+                            : '';
                         // 🆕 طبق درخواست صریح، فقط دو آیکن روی هر ردیف می‌مونه: «اختیارات
                         // اعضا» (گیر) و «حذف عضو». ارتقا/عزل مدیریت هم از همون مودال
                         // اختیارات انجام می‌شه (یک تاگل «ارتقا به مدیر» در کنار بقیه‌ی
@@ -5374,6 +5381,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         return '<div class="chat-group-member-row">' +
                         '<div' + nameAttrs + '>' + avatarHtml(m.full_name, false, null, m.avatar_url) + '</div>' +
                         '<span class="chat-group-member-name"' + nameAttrs + '>' + esc(m.full_name) + ' ' +
+                        permStar + ' ' +
                         roleTag +
                         '</span>' +
                         permBtn +
@@ -5478,20 +5486,27 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             saveBtn.disabled = false;
             saveBtn.textContent = 'ذخیره';
 
-            var rows = [{ key: '__promote', label: 'ارتقا به مدیر', checked: !!m.is_admin, bold: true }]
-                .concat(groupInfoAllPermissions.map(function (key) {
-                    return { key: key, label: GROUP_PERMISSION_LABELS[key] || key, checked: (m.permissions || []).indexOf(key) !== -1, bold: false };
-                }));
+            // 🆕 «ارتقا به مدیر» آخرین ردیفه (بعدِ همه‌ی اختیارات)، و برخلاف
+            // بقیه‌ی ردیف‌ها که سوییچن، این یکی یک چک‌باکس ساده‌ست —
+            // چک‌باکس اول در کد میاد که توی RTL سمتِ راستِ ردیف بشینه
+            var permRows = groupInfoAllPermissions.map(function (key) {
+                return { key: key, label: GROUP_PERMISSION_LABELS[key] || key, checked: (m.permissions || []).indexOf(key) !== -1 };
+            });
+            var promoteRow = { key: '__promote', label: 'ارتقا به مدیر', checked: !!m.is_admin };
 
-            body.innerHTML = rows.map(function (row) {
+            body.innerHTML = permRows.map(function (row) {
                 return '<div class="chat-profile-drawer-field" style="border-bottom:none; padding:6px 4px;">' +
-                    '<label class="chat-profile-drawer-label" for="gmp-' + row.key + '" style="flex:1; font-size:.85rem; color:var(--ink-900); cursor:pointer;' + (row.bold ? ' font-weight:600;' : '') + '">' + esc(row.label) + '</label>' +
+                    '<label class="chat-profile-drawer-label" for="gmp-' + row.key + '" style="flex:1; font-size:.85rem; color:var(--ink-900); cursor:pointer;">' + esc(row.label) + '</label>' +
                     '<label class="chat-toggle-switch">' +
                         '<input type="checkbox" id="gmp-' + row.key + '" data-perm="' + row.key + '"' + (row.checked ? ' checked' : '') + '>' +
                         '<span class="chat-toggle-slider"></span>' +
                     '</label>' +
                 '</div>';
-            }).join('');
+            }).join('') +
+            '<div class="chat-profile-drawer-field" style="border-bottom:none; border-top:1px solid var(--border-soft, #eee); padding:10px 4px 6px;">' +
+                '<input type="checkbox" id="gmp-' + promoteRow.key + '" data-perm="' + promoteRow.key + '"' + (promoteRow.checked ? ' checked' : '') + ' style="width:16px; height:16px; cursor:pointer; flex:none;">' +
+                '<label class="chat-profile-drawer-label" for="gmp-' + promoteRow.key + '" style="font-size:.85rem; font-weight:600; color:var(--ink-900); cursor:pointer;">' + esc(promoteRow.label) + '</label>' +
+            '</div>';
 
             if (!gmpModalInstance) {
                 gmpModalInstance = new bootstrap.Modal(document.getElementById('groupMemberPermissionsModal'));
