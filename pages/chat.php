@@ -5380,8 +5380,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         var canRemove = !m.is_owner && (groupInfoMyPermissions.indexOf('remove_member') !== -1) && (!m.is_admin || data.is_owner);
                         return '<div class="chat-group-member-row">' +
                         '<div' + nameAttrs + '>' + avatarHtml(m.full_name, false, null, m.avatar_url) + '</div>' +
-                        '<span class="chat-group-member-name"' + nameAttrs + '>' + esc(m.full_name) + ' ' +
-                        permStar + ' ' +
+                        '<span class="chat-group-member-name"' + nameAttrs + '>' + (permStar ? permStar + ' ' : '') + esc(m.full_name) + ' ' +
                         roleTag +
                         '</span>' +
                         permBtn +
