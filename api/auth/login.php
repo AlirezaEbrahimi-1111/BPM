@@ -20,6 +20,31 @@ require_once __DIR__ . '/../../includes/sms.php';
 require_once __DIR__ . '/../../includes/sms_patterns.php';
 require_once __DIR__ . '/../../includes/audit-log.php';
 require_once __DIR__ . '/../../includes/user-sections.php';
+require_once __DIR__ . '/../../includes/JalaliHelper.php';
+
+// ------------------- پیامکِ هشدارِ ورود (طبق درخواست صریح: هر بار ورود) -------------------
+// 🔒 هیچ‌وقت نباید جلویِ ورودِ موفق رو بگیره — SMS::send/sendFromTemplate
+// خودشون خطا رو catch و توی sms_logs ثبت می‌کنن (false برمی‌گردونن، throw
+// نمی‌کنن)؛ اینجا هم یک لایه‌ی try/catch اضافه، فقط برایِ احتیاط.
+// 🔒 ساعت/تاریخ از NOW()ِ خودِ MySQL گرفته می‌شه، نه از date()/time()ِ PHP —
+// طبق قاعده‌ی همیشگیِ پروژه («سرور PHP روی این پروژه ساعتش با تهران یکی
+// نیست، MySQL هست»)، وگرنه توی پیامک یک ساعتِ اشتباه می‌رفت.
+function sendLoginAlertSms($db, $userId)
+{
+    try {
+        $now = $db->query("SELECT NOW() AS n")->fetch(PDO::FETCH_ASSOC)['n'];
+        $date = JalaliHelper::formatJalaliDate(substr($now, 0, 10));
+        $time = JalaliHelper::Persian(substr($now, 11, 5));
+
+        $sms = new SMS($db);
+        $sms->sendFromTemplate($userId, 'login_alert', [
+            'date' => $date,
+            'time' => $time,
+        ]);
+    } catch (Throwable $e) {
+        error_log('sendLoginAlertSms failed | user_id=' . $userId . ' | ' . $e->getMessage());
+    }
+}
 
 // ------------------- توابع کمکی (قبلی) -------------------
 // 🔒 قبلا فقط بر اساس IP محدود می‌شد — مهاجمی با چند IP/پراکسی مختلف
@@ -222,6 +247,7 @@ try {
         $auth = new Auth();
         $token = $auth->generateJWTToken($user['id'], $token_expiry, $user['organization_id']);
         logSecurityEvent($user['id'], 'login_success', null, ['method' => 'otp']);
+        sendLoginAlertSms($db, $user['id']);
 
         unset($user['password']);
         // 🆕 فهرست کامل واحدهای کاربر (نه فقط واحد اصلی) — بدون این، کاربران
@@ -286,6 +312,7 @@ try {
         $result['user']['organization_name'] = $_SESSION['organization_name'];
 
         logSecurityEvent($result['user']['id'], 'login_success', null, ['method' => 'password']);
+        sendLoginAlertSms($db, $result['user']['id']);
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
     } else {
         recordFailedLogin($ip, $db, $username);
