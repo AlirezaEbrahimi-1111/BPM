@@ -938,24 +938,9 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                                 <i class="bi bi-diagram-3 ms-2"></i>مدیریت گروه‌ها
                             </a>
                         </li>
-                        <li id="securityLogMenuItem" style="display:none;">
-                            <a class="dropdown-item" href="../../pages/security-log.php">
-                                <i class="bi bi-shield-lock ms-2"></i>رصد امنیتی
-                            </a>
-                        </li>
-                        <li id="errorLogMenuItem" style="display:none;">
-                            <a class="dropdown-item" href="../../pages/error-log.php">
-                                <i class="bi bi-terminal ms-2"></i>مشاهده‌ی لاگ خطا
-                            </a>
-                        </li>
                         <li id="hekmatBroadcastMenuItem" style="display:none;">
                             <a class="dropdown-item" href="../../pages/hekmat-broadcast.php">
                                 <i class="bi bi-moon-stars ms-2"></i>حکمت روزانه
-                            </a>
-                        </li>
-                        <li id="serverMonitorMenuItem" style="display:none;">
-                            <a class="dropdown-item" href="../../pages/server-monitor.php">
-                                <i class="bi bi-hdd-network ms-2"></i>مانیتورینگ سرور
                             </a>
                         </li>
                         <li id="holidaysMenuItem" style="display:none;">
@@ -974,6 +959,30 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                         <li>
                             <a class="dropdown-item" href="../../attendance_system/pages/settings.php">
                                 <i class="bi bi-gear-fill ms-2"></i>تنظیمات سیستم
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <!-- منوی سرور (فقط id=1) — رصد امنیتی/لاگ خطا/مانیتورینگ سرور، طبق درخواست صریح از زیرمنوی «مدیریت» جدا شدن -->
+                <li class="nav-item dropdown" id="serverMenuTag" style="display: none;">
+                    <a class="nav-link dropdown-toggle" href="#" id="serverDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-hdd-rack me-2"></i>سرور
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end admin-submenu" aria-labelledby="serverDropdown">
+                        <li id="securityLogMenuItem" style="display:none;">
+                            <a class="dropdown-item" href="../../pages/security-log.php">
+                                <i class="bi bi-shield-lock ms-2"></i>رصد امنیتی
+                            </a>
+                        </li>
+                        <li id="errorLogMenuItem" style="display:none;">
+                            <a class="dropdown-item" href="../../pages/error-log.php">
+                                <i class="bi bi-terminal ms-2"></i>مشاهده‌ی لاگ خطا
+                            </a>
+                        </li>
+                        <li id="serverMonitorMenuItem" style="display:none;">
+                            <a class="dropdown-item" href="../../pages/server-monitor.php">
+                                <i class="bi bi-hdd-network ms-2"></i>مانیتورینگ سرور
                             </a>
                         </li>
                     </ul>
@@ -2712,6 +2721,12 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         const serverMonitorItem = document.getElementById('serverMonitorMenuItem');
         if (serverMonitorItem) {
             serverMonitorItem.style.display = (Number(user.id) === 1) ? 'block' : 'none';
+        }
+        // 🔒 خودِ منویِ «سرور» هم فقط id=1 می‌بینه — دقیقا مثلِ سه زیرمنویِ
+        // داخلش (وگرنه یک منویِ بالایی‌یِ خالی برایِ بقیه‌ی کاربرا نمایان می‌شد)
+        const serverMenuTag = document.getElementById('serverMenuTag');
+        if (serverMenuTag) {
+            serverMenuTag.style.display = (Number(user.id) === 1) ? 'block' : 'none';
         }
         const overviewMenu = document.getElementById('navOverview');
         if (overviewMenu) {

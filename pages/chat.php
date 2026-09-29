@@ -1294,6 +1294,21 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             transition: transform .25s ease, opacity .25s ease, visibility 0s linear .25s;
         }
 
+        /* 🔒 طبق درخواست صریح: وقتی دراورِ اطلاعاتِ گروه/شخص بازه و همزمان
+           منویِ هدر هم باز بشه، منویِ هدر نباید پشتِ دراور گم بشه. علتِ
+           اصلی این بود که nav.fixed-top (بوت‌استرپ) خودش z-index:1030 رو
+           به‌عنوانِ یک stacking context مستقل تعریف می‌کنه — پس هرچقدر هم
+           z-index خودِ dropdown-menu داخلش بالا باشه، از سقفِ ۱۰۳۰ی
+           والدش نمی‌تونه بالاتر بره. راه‌حل: فقط وقتی دراور بازه (کلاسِ
+           chat-drawer-open روی body، از همین openGroupInfoDrawer/
+           openChatProfileDrawer)، سقفِ nav رو موقتا از دراور (۱۰۴۱) بالاتر
+           می‌بریم. عمدا این تغییر سراسری (توی custom.css) زده نشد، چون
+           z-index نوار ناوبری اگه همیشه بالا بمونه، روی مودال‌هایِ
+           بوت‌استرپِ کل سایت (backdrop=۱۰۴۰) هم اثر می‌ذاشت. */
+        body.chat-drawer-open nav.navbar.fixed-top {
+            z-index: 1045;
+        }
+
         .chat-profile-drawer.show {
             opacity: 1;
             visibility: visible;
@@ -5305,6 +5320,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
             document.getElementById('groupInfoDrawerOverlay').classList.add('show');
             document.getElementById('groupInfoDrawer').classList.add('show');
+            // 🔒 طبق درخواست صریح: وقتی این دراور بازه، منویِ هدر (که به‌صورتِ
+            // پیش‌فرض z-index پایین‌تری از دراور داره) باید جلوتر دیده بشه —
+            // نه برعکس. این کلاس رو کلاسِ CSS پایینِ همین فایل می‌خونه.
+            document.body.classList.add('chat-drawer-open');
 
             fetch('../api/chat/media.php?conversation_id=' + convId, {
                     headers: { 'Authorization': 'Bearer ' + authToken }
@@ -5407,6 +5426,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         function closeGroupInfoDrawer() {
             document.getElementById('groupInfoDrawerOverlay').classList.remove('show');
             document.getElementById('groupInfoDrawer').classList.remove('show');
+            document.body.classList.remove('chat-drawer-open');
         }
 
         function triggerGroupAvatarUpload() {
@@ -5669,6 +5689,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
             document.getElementById('chatProfileDrawerOverlay').classList.add('show');
             document.getElementById('chatProfileDrawer').classList.add('show');
+            document.body.classList.add('chat-drawer-open');
             document.getElementById('chatProfileDrawerName').textContent = conv ? conv.title : '—';
             setAvatarContent(document.getElementById('chatProfileDrawerAvatar'), conv ? conv.title : '', conv && conv.avatar_url);
             document.getElementById('chatProfileDrawerPhone').textContent = '—';
@@ -5715,6 +5736,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         function closeChatProfileDrawer() {
             document.getElementById('chatProfileDrawerOverlay').classList.remove('show');
             document.getElementById('chatProfileDrawer').classList.remove('show');
+            document.body.classList.remove('chat-drawer-open');
         }
 
         // ─────────────── بی‌صداکردن گفتگو ───────────────

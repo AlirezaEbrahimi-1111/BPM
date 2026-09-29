@@ -62,247 +62,35 @@ try {
     die('❌ خطا: ' . $e->getMessage());
 }
 
-// ایجاد جدول تنظیمات اگر موجود نیست
-try {
-    $db->exec("
-        CREATE TABLE IF NOT EXISTS settings (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            setting_key VARCHAR(50) UNIQUE NOT NULL,
-            setting_value VARCHAR(255) NOT NULL,
-            description TEXT,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-    ");
-} catch (Exception $e) {
-    // جدول شاید وجود دارد
-}
-
 // ============================================
-// تعریف تمام تنظیمات با گروه‌بندی
+// لایه‌ی داده — از همون API جدا (attendance_system/api/attendance/
+// settings.php) میاد، فقط این‌جا به‌جایِ HTTP، مستقیم require و صدا
+// زده می‌شه (بدونِ loopback)؛ چون این صفحه همچنان با فرمِ سنتیِ POST/
+// رندرِ سمتِ سرور کار می‌کنه و نباید رفتارش عوض بشه. جزئیاتِ کامل:
+// همون فایل.
 // ============================================
-$settings_groups = [
-    'attendance' => [
-        'title' => 'حضور و غیاب',
-        'icon' => 'bi-calendar-check',
-        'color' => '#3B82F6',
-        'settings' => [
-            'clickable_days_limit' => [
-                'value' => '5',
-                'label' => 'محدودیت روزهای قابل کلیک',
-                'type' => 'number',
-                'min' => '1',
-                'max' => '30',
-                'help' => 'تعداد روزهای قبل از امروز که کاربران می‌توانند درخواست ارسال کنند',
-                'unit' => 'روز'
-            ],
-        ]
-    ],
-    'calculation' => [
-        'title' => 'قوانین محاسبه حقوق',
-        'icon' => 'bi-calculator',
-        'color' => '#8e57fe',
-        'settings' => [
-            'shortage_multiplier' => [
-                'value' => '2',
-                'label' => 'ضریب کسری بدون درخواست',
-                'type' => 'number',
-                'min' => '1',
-                'max' => '10',
-                'help' => 'کسری‌هایی که درخواست تأیید‌شده ندارند، در این عدد ضرب می‌شوند',
-                'unit' => 'برابر'
-            ],
-            'salary_round_to' => [
-                'value' => '100000',
-                'label' => 'گرد کردن مبالغ ریالی',
-                'type' => 'number',
-                'min' => '1000',
-                'max' => '1000000',
-                'help' => 'مبالغ ریالی به نزدیک‌ترین مضرب این عدد گرد می‌شوند',
-                'unit' => 'ریال'
-            ],
-        ]
-    ],
-    'approval' => [
-        'title' => 'تأیید و مهلت‌ها',
-        'icon' => 'bi-clock-history',
-        'color' => '#F59E0B',
-        'settings' => [
-            'approval_deadline_days' => [
-                'value' => '3',
-                'label' => 'مهلت تأیید/رد درخواست',
-                'type' => 'number',
-                'min' => '1',
-                'max' => '30',
-                'help' => 'بعد از این مدت، مدیر/جانشین/مسئول نمی‌تواند درخواست را تأیید یا رد کند',
-                'unit' => 'روز کاری'
-            ],
-            'pass_edit_hours' => [
-                'value' => '24',
-                'label' => 'مهلت ویرایش/حذف پاس',
-                'type' => 'number',
-                'min' => '1',
-                'max' => '168',
-                'help' => 'کاربر تا این مدت بعد از ثبت پاس می‌تواند آن را ویرایش یا حذف کند',
-                'unit' => 'ساعت'
-            ],
-        ]
-    ],
-    'leave' => [
-        'title' => 'محدودیت مرخصی',
-        'icon' => 'bi-house-door',
-        'color' => '#1b7b39',
-        'settings' => [
-            'leave_max_consecutive' => [
-                'value' => '20',
-                'label' => 'حداکثر روزهای متوالی مرخصی',
-                'type' => 'number',
-                'min' => '1',
-                'max' => '365',
-                'help' => 'حداکثر تعداد روزهایی که می‌توان پیاپی مرخصی گرفت',
-                'unit' => 'روز'
-            ],
-            'leave_initial_quota' => [
-                'value' => '30',
-                'label' => 'سهم مرخصی سالانه',
-                'type' => 'number',
-                'min' => '0',
-                'max' => '365',
-                'help' => 'تعداد روزهای مرخصی اولیه برای هر کاربر در سال',
-                'unit' => 'روز'
-            ],
-        ]
-    ],
-    'limits' => [
-        'title' => 'سقف درخواست‌ها',
-        'icon' => 'bi-shield-check',
-        'color' => '#EF4444',
-        'settings' => [
-            'mission_max_hours_monthly' => [
-                'value' => '0',
-                'label' => 'حداکثر ساعت مأموریت در ماه',
-                'type' => 'number',
-                'min' => '0',
-                'help' => '۰ = نامحدود',
-                'unit' => 'ساعت'
-            ],
-            'pass_max_count_monthly' => [
-                'value' => '0',
-                'label' => 'حداکثر تعداد پاس در ماه',
-                'type' => 'number',
-                'min' => '0',
-                'help' => '۰ = نامحدود. تعداد دفعات پاسی که کاربر می‌تواند در یک ماه ثبت کند',
-                'unit' => 'بار'
-            ],
-            'pass_max_hours_daily' => [
-                'value' => '0',
-                'label' => 'حداکثر ساعت پاس در روز',
-                'type' => 'number',
-                'min' => '0',
-                'help' => '۰ = نامحدود',
-                'unit' => 'ساعت'
-            ],
-            'pass_max_hours_monthly' => [
-                'value' => '0',
-                'label' => 'حداکثر ساعت پاس در ماه',
-                'type' => 'number',
-                'min' => '0',
-                'help' => '۰ = نامحدود. مجموع ساعات پاس مجاز در یک ماه',
-                'unit' => 'ساعت'
-            ],
-            'technical_max_monthly' => [
-                'value' => '0',
-                'label' => 'حداکثر مشکل فنی در ماه',
-                'type' => 'number',
-                'min' => '0',
-                'help' => '۰ = نامحدود',
-                'unit' => 'بار'
-            ],
-            'forget_max_monthly' => [
-                'value' => '0',
-                'label' => 'حداکثر فراموشی در ماه',
-                'type' => 'number',
-                'min' => '0',
-                'help' => '۰ = نامحدود',
-                'unit' => 'بار'
-            ],
-        ]
-    ],
-];
-
-// استخراج flat default_settings برای سازگاری
-$default_settings = [];
-foreach ($settings_groups as $group) {
-    foreach ($group['settings'] as $key => $setting) {
-        $default_settings[$key] = $setting;
-    }
-}
-
-// ایجاد تنظیمات در صورت عدم وجود
-try {
-    foreach ($default_settings as $key => $setting) {
-        $stmt = $db->prepare("SELECT COUNT(*) FROM settings WHERE setting_key = ?");
-        $stmt->execute([$key]);
-        if ($stmt->fetchColumn() == 0) {
-            $stmt = $db->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?)");
-            $stmt->execute([$key, $setting['value']]);
-        }
-    }
-} catch (Exception $e) {
-    // تنظیمات شاید قبلا ایجاد شده‌اند
-}
-
-// دریافت تمام تنظیمات
-$current_settings = [];
-try {
-    $stmt = $db->prepare("SELECT setting_key, setting_value FROM settings");
-    $stmt->execute();
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $current_settings[$row['setting_key']] = $row['setting_value'];
-    }
-} catch (Exception $e) {
-    die('❌ خطا در دریافت تنظیمات: ' . $e->getMessage());
-}
+require_once $_SERVER['DOCUMENT_ROOT'] . '/attendance_system/api/attendance/settings.php';
 
 // ارسال درخواست
 $success_message = '';
 $error_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        foreach ($default_settings as $key => $setting) {
-            if ($setting['type'] === 'boolean') {
-                $value = isset($_POST[$key]) ? '1' : '0';
-            } else {
-                $value = $_POST[$key] ?? '';
-
-                // اعتبارسنجی
-                if ($setting['type'] === 'number') {
-                    $value = intval($value);
-                    if (isset($setting['min']) && $value < $setting['min']) {
-                        throw new Exception("{$setting['label']}: حداقل مقدار {$setting['min']} است");
-                    }
-                    if (isset($setting['max']) && $value > $setting['max']) {
-                        throw new Exception("{$setting['label']}: حداکثر مقدار {$setting['max']} است");
-                    }
-                }
-            }
-
-            $stmt = $db->prepare("UPDATE settings SET setting_value = ? WHERE setting_key = ?");
-            $stmt->execute([$value, $key]);
-        }
-        $success_message = 'تنظیمات با موفقیت ذخیره شدند';
-
-        // بروزرسانی متغیرهای محلی
-        foreach ($default_settings as $key => $setting) {
-            if ($setting['type'] === 'boolean') {
-                $current_settings[$key] = isset($_POST[$key]) ? '1' : '0';
-            } else {
-                $current_settings[$key] = $_POST[$key] ?? $setting['value'];
-            }
-        }
-    } catch (Exception $e) {
-        $error_message = $e->getMessage();
+    $result = attendanceSettingsSave($db, $_POST);
+    if ($result['success']) {
+        $success_message = $result['message'];
+    } else {
+        $error_message = $result['message'];
     }
+}
+
+// همیشه بعد از (احتمالا) ذخیره، مقادیرِ تازه رو می‌خونیم — این‌جوری
+// بعدِ یک ذخیره‌ی موفق هم صفحه دقیقا همون چیزی رو نشون می‌ده که واقعا
+// توی دیتابیسه، نه یک کپیِ دستیِ محاسبه‌شده
+try {
+    $settings_groups = attendanceSettingsGetAll($db);
+} catch (Exception $e) {
+    die('❌ خطا در دریافت تنظیمات: ' . $e->getMessage());
 }
 
 // تبدیل اعداد به فارسی
@@ -954,7 +742,7 @@ function toPersianNumber($num)
                                         <?php if ($setting['type'] === 'boolean'): ?>
                                             <label class="toggle-switch">
                                                 <input type="checkbox" name="<?php echo $key; ?>" value="1"
-                                                    <?php echo ($current_settings[$key] ?? $setting['value']) == '1' ? 'checked' : ''; ?>>
+                                                    <?php echo $setting['value'] == '1' ? 'checked' : ''; ?>>
                                                 <span class="toggle-slider"></span>
                                             </label>
                                         <?php else: ?>
@@ -962,7 +750,7 @@ function toPersianNumber($num)
                                                 type="number"
                                                 name="<?php echo $key; ?>"
                                                 id="<?php echo $key; ?>"
-                                                value="<?php echo htmlspecialchars($current_settings[$key] ?? $setting['value']); ?>"
+                                                value="<?php echo htmlspecialchars($setting['value']); ?>"
                                                 <?php if (isset($setting['min'])): ?>min="<?php echo $setting['min']; ?>" <?php endif; ?>
                                                 <?php if (isset($setting['max'])): ?>max="<?php echo $setting['max']; ?>" <?php endif; ?>
                                                 required>
