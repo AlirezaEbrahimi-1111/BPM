@@ -807,14 +807,15 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                 } catch (e) {}
             })();
 
-            // 🆕 طبق گزارش کاربر: وقتی ادمین اسمِ یک کاربر رو از «مدیریت
-            // کاربران» عوض می‌کنه، تا وقتی خودِ اون کاربر خروج/ورودِ مجدد
-            // نکنه، هدرش اسمِ قدیمی رو نشون می‌ده — چون بخشِ بالا فقط از
-            // localStorage می‌خونه، نه از دیتابیس. اینجا با همون
-            // api/auth/profile.php ای که جاهای دیگه‌ی پروژه هم استفاده
-            // می‌کنن، اسمِ تازه رو از سرور می‌گیریم و اگه فرق داشت،
-            // localStorage و متنِ روی هدر رو بی‌سروصدا آپدیت می‌کنیم —
-            // بدون نیاز به خروج/ورودِ دستی.
+            // 🆕 طبق گزارش کاربر: وقتی ادمین اسمِ یک کاربر یا نامِ سازمان رو
+            // عوض می‌کنه، تا وقتی خودِ اون کاربر خروج/ورودِ مجدد نکنه، هدرش
+            // مقدارِ قدیمی رو نشون می‌ده — چون بخشِ بالا فقط از localStorage
+            // می‌خونه، نه از دیتابیس. اینجا با همون api/auth/profile.php ای
+            // که جاهای دیگه‌ی پروژه هم استفاده می‌کنن (که organization_name
+            // رو هم برمی‌گردونه)، مقادیرِ تازه رو از سرور می‌گیریم و اگه فرق
+            // داشت، localStorage و متنِ روی هدر (هم اسمِ کاربر هم نامِ
+            // سازمان) رو بی‌سروصدا آپدیت می‌کنیم — بدون نیاز به خروج/ورودِ
+            // دستی.
             (function () {
                 try {
                     var token = localStorage.getItem('auth_token');
@@ -824,18 +825,28 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                         .then(function (data) {
                             if (!data.success || !data.user) return;
                             var cached = JSON.parse(localStorage.getItem('user_info') || '{}');
-                            if (cached.first_name === data.user.first_name && cached.last_name === data.user.last_name) return;
+                            var nameChanged = cached.first_name !== data.user.first_name || cached.last_name !== data.user.last_name;
+                            var orgChanged = data.user.organization_name && cached.organization_name !== data.user.organization_name;
+                            if (!nameChanged && !orgChanged) return;
+
                             cached.first_name = data.user.first_name;
                             cached.last_name = data.user.last_name;
+                            if (data.user.organization_name) cached.organization_name = data.user.organization_name;
                             localStorage.setItem('user_info', JSON.stringify(cached));
 
-                            var full = ((data.user.first_name || '') + ' ' + (data.user.last_name || '')).trim();
-                            var el = document.getElementById('headerUserFullName');
-                            var div = document.getElementById('headerNameDivider');
-                            if (full && el) {
-                                el.textContent = full;
-                                el.style.display = '';
-                                if (div) div.style.display = '';
+                            if (nameChanged) {
+                                var full = ((data.user.first_name || '') + ' ' + (data.user.last_name || '')).trim();
+                                var el = document.getElementById('headerUserFullName');
+                                var div = document.getElementById('headerNameDivider');
+                                if (full && el) {
+                                    el.textContent = full;
+                                    el.style.display = '';
+                                    if (div) div.style.display = '';
+                                }
+                            }
+                            if (orgChanged) {
+                                var orgEl = document.getElementById('userName');
+                                if (orgEl) orgEl.textContent = data.user.organization_name;
                             }
                         })
                         .catch(function () {});
@@ -1027,7 +1038,7 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                         </li>
                         <li id="superAdminMenuItem" style="display:none;">
                             <a class="dropdown-item" href="../../pages/superAdmin.php">
-                                <i class="bi bi-buildings ms-2"></i>مدیریت سازمان‌ها
+                                <i class="bi bi-bank ms-2"></i>مدیریت سازمان‌ها
                             </a>
                         </li>
                     </ul>

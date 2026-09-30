@@ -46,26 +46,33 @@ try {
     }
 
     // دریافت اطلاعات کاربر
+    // 🔒 organization_name هم اضافه شد — طبق گزارش کاربر، دقیقا همون
+    // مشکلِ اسمِ کاربر (نمایشِ نامِ قدیمی توی هدر تا خروج/ورودِ مجدد) برای
+    // نامِ سازمان هم پیش میومد، چون هدر اون رو هم از همون localStorage.
+    // user_info می‌خونه. این فیلدِ اضافه، بدونِ اثر روی بقیه‌ی مصرف‌کننده‌های
+    // این endpoint (فقط یک کلیدِ جدید به خروجیِ JSON اضافه می‌شه).
     $stmt = $db->prepare("
         SELECT
-            id,
-            username,
-            phone,
-            first_name,
-            last_name,
-            email,
-            activity_section,
-            can_create_routine,
-            is_active,
-            created_at,
-            updated_at,
-            role,
-            avatar_path,
-            official_code,
-            last_login,
-            daily_work_hours
-        FROM users
-        WHERE id = ? AND is_active = 1
+            u.id,
+            u.username,
+            u.phone,
+            u.first_name,
+            u.last_name,
+            u.email,
+            u.activity_section,
+            u.can_create_routine,
+            u.is_active,
+            u.created_at,
+            u.updated_at,
+            u.role,
+            u.avatar_path,
+            u.official_code,
+            u.last_login,
+            u.daily_work_hours,
+            o.name AS organization_name
+        FROM users u
+        LEFT JOIN organizations o ON o.id = u.organization_id
+        WHERE u.id = ? AND u.is_active = 1
     ");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
