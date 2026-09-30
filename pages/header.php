@@ -806,6 +806,41 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                     if (div) div.style.display = '';
                 } catch (e) {}
             })();
+
+            // 🆕 طبق گزارش کاربر: وقتی ادمین اسمِ یک کاربر رو از «مدیریت
+            // کاربران» عوض می‌کنه، تا وقتی خودِ اون کاربر خروج/ورودِ مجدد
+            // نکنه، هدرش اسمِ قدیمی رو نشون می‌ده — چون بخشِ بالا فقط از
+            // localStorage می‌خونه، نه از دیتابیس. اینجا با همون
+            // api/auth/profile.php ای که جاهای دیگه‌ی پروژه هم استفاده
+            // می‌کنن، اسمِ تازه رو از سرور می‌گیریم و اگه فرق داشت،
+            // localStorage و متنِ روی هدر رو بی‌سروصدا آپدیت می‌کنیم —
+            // بدون نیاز به خروج/ورودِ دستی.
+            (function () {
+                try {
+                    var token = localStorage.getItem('auth_token');
+                    if (!token) return;
+                    fetch('/api/auth/profile.php', { headers: { 'Authorization': 'Bearer ' + token } })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            if (!data.success || !data.user) return;
+                            var cached = JSON.parse(localStorage.getItem('user_info') || '{}');
+                            if (cached.first_name === data.user.first_name && cached.last_name === data.user.last_name) return;
+                            cached.first_name = data.user.first_name;
+                            cached.last_name = data.user.last_name;
+                            localStorage.setItem('user_info', JSON.stringify(cached));
+
+                            var full = ((data.user.first_name || '') + ' ' + (data.user.last_name || '')).trim();
+                            var el = document.getElementById('headerUserFullName');
+                            var div = document.getElementById('headerNameDivider');
+                            if (full && el) {
+                                el.textContent = full;
+                                el.style.display = '';
+                                if (div) div.style.display = '';
+                            }
+                        })
+                        .catch(function () {});
+                } catch (e) {}
+            })();
         </script>
 
         <!-- دکمه همبرگر سفارشی موبایل -->
@@ -924,6 +959,11 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                             </a>
                         </li>
                         <li>
+                            <a class="dropdown-item" href="../../pages/organization.php">
+                                <i class="bi bi-building ms-2"></i>مدیریت سازمان
+                            </a>
+                        </li>
+                        <li>
                             <a class="dropdown-item" href="../../pages/workflow-templates.php">
                                 <i class="bi bi-diagram-3 ms-2"></i>مدیریت روتین‌ها
                             </a>
@@ -983,6 +1023,11 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                         <li id="serverMonitorMenuItem" style="display:none;">
                             <a class="dropdown-item" href="../../pages/server-monitor.php">
                                 <i class="bi bi-hdd-network ms-2"></i>مانیتورینگ سرور
+                            </a>
+                        </li>
+                        <li id="superAdminMenuItem" style="display:none;">
+                            <a class="dropdown-item" href="../../pages/superAdmin.php">
+                                <i class="bi bi-buildings ms-2"></i>مدیریت سازمان‌ها
                             </a>
                         </li>
                     </ul>
@@ -2721,6 +2766,10 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         const serverMonitorItem = document.getElementById('serverMonitorMenuItem');
         if (serverMonitorItem) {
             serverMonitorItem.style.display = (Number(user.id) === 1) ? 'block' : 'none';
+        }
+        const superAdminItem = document.getElementById('superAdminMenuItem');
+        if (superAdminItem) {
+            superAdminItem.style.display = (Number(user.id) === 1) ? 'block' : 'none';
         }
         // 🔒 خودِ منویِ «سرور» هم فقط id=1 می‌بینه — دقیقا مثلِ سه زیرمنویِ
         // داخلش (وگرنه یک منویِ بالایی‌یِ خالی برایِ بقیه‌ی کاربرا نمایان می‌شد)
