@@ -1815,7 +1815,8 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             const nm = o => 'مرحلهٔ ' + toFa(o) + (nameByOrder[o] ? ' «' + nameByOrder[o] + '»' : '');
 
             const lines = [];
-            const starts = steps.filter(s => !wfCurrentTransitions.some(t => t.to_step_order === s.order));
+            // یالِ «شروع → مرحله» (from_step_order=null) پیش‌نیازِ واقعی نیست، فقط نمایشی است
+            const starts = steps.filter(s => !wfCurrentTransitions.some(t => t.to_step_order === s.order && t.from_step_order !== null && t.from_step_order !== undefined));
             lines.push(starts.length
                 ? 'شروع روتین: ' + starts.map(s => nm(s.order)).join(' و ') + (starts.length > 1 ? ' هم‌زمان فعال می‌شوند.' : ' فعال می‌شود.')
                 : 'هشدار: هیچ مرحله‌ای بدون پیش‌نیاز نیست — این روتین هیچ‌وقت شروع نمی‌شود!');
@@ -2014,9 +2015,13 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
         function wfValidateGraph() {
             const steps = wfFormSteps();
             if (!steps.length) return null;
-            const incoming = {};
+            const incoming = {};      // همهٔ یال‌های ورودی — برای چکِ «تصمیم+جوین»
+            const realIncoming = {};  // فقط یال‌هایی که مبدأشون یک مرحلهٔ واقعی است (نه گرهٔ «شروع»)
             wfCurrentTransitions.forEach(t => {
                 (incoming[t.to_step_order] = incoming[t.to_step_order] || []).push(t.condition);
+                if (t.from_step_order !== null && t.from_step_order !== undefined) {
+                    (realIncoming[t.to_step_order] = realIncoming[t.to_step_order] || []).push(t.condition);
+                }
             });
             for (const ord in incoming) {
                 const conds = incoming[ord];
@@ -2026,7 +2031,9 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                     return `مرحلهٔ ${toFa(ord)}${nm && nm.name ? ' «' + nm.name + '»' : ''} هم مقصدِ یک تصمیم (تأیید/رد) است هم مقصدِ یالِ دیگری — این حالت مجاز نیست؛ روی بوم یکی از یال‌های ورودی آن را حذف کنید.`;
                 }
             }
-            const hasStart = steps.some(s => !incoming[s.order]);
+            // یالِ «شروع → مرحله» پیش‌نیازِ واقعی حساب نمی‌شود (فقط برای نمایش است)؛
+            // پس مرحله‌ای که فقط از «شروع» خط گرفته هم یک نقطهٔ شروعِ معتبر است.
+            const hasStart = steps.some(s => !realIncoming[s.order]);
             if (!hasStart) {
                 return 'هیچ مرحله‌ای بدون پیش‌نیاز (نقطهٔ شروع) وجود ندارد — حداقل یک مرحله باید بدون یالِ ورودی باشد تا روتین بتواند شروع شود.';
             }
