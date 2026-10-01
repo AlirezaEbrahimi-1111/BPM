@@ -2446,9 +2446,17 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 ]);
                 const usersData = await usersRes.json();
                 const sectionsData = await sectionsRes.json();
-                if (usersData.success) wfUsers = usersData.users;
+                // 🔒 محتوای آرایه‌ها را همین‌جا به‌روز می‌کنیم (نه با = جایگزینش می‌کنیم)؛
+                // چون اگر مرحله‌ی اول (که خودکار و بلافاصله ساخته می‌شود) زودتر از
+                // رسیدنِ این پاسخ ساخته شده باشد، AssigneePicker‌اش از قبل یک
+                // اشاره‌گر به همین آرایه‌ی wfUsers/wfSections گرفته — اگر این‌جا با
+                // = جایگزینش کنیم، آن پیکر همچنان به آرایه‌ی خالیِ قدیمی نگاه
+                // می‌کند و همیشه «بدون عضو» نشان می‌دهد؛ ولی چون همان آرایه را
+                // پر می‌کنیم، هر پیکری (قدیمی یا جدید) موقعِ باز شدن محتوایِ تازه را می‌بیند.
+                if (usersData.success) { wfUsers.length = 0; wfUsers.push(...usersData.users); }
                 if (sectionsData.success) {
-                    wfSections = sectionsData.sections;
+                    wfSections.length = 0;
+                    wfSections.push(...sectionsData.sections);
                     sectionsData.sections.forEach(s => {
                         wfSectionMap[s.section_key] = s.section_label;
                     });
