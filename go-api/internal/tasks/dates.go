@@ -91,10 +91,15 @@ func EnrichTaskDates(task map[string]any, db *sql.DB, holidays map[string]bool, 
 		// قابل‌تکمیل می‌دونه (فقط فردایِ end_date «تمام‌شده» حساب می‌شه).
 		// با < با اون هماهنگ شد — هم‌راستا با فیکسِ همینِ منطق در
 		// includes/task-dates-helper.php و includes/TaskManager.php
+		//
+		// 🆕 ولی اگه دقیقاً همون روزِ end_date، دورهٔ همون روز (s.IsTodayDone)
+		// از قبل تکمیل شده باشه، دیگه تناقضی نیست — نیازی به صبرِ تا فردا نیست.
 		endDate := strOf(task, "end_date")
 		status := strOf(task, "status")
+		endDateOnly := endDate[:min(10, len(endDate))]
+		periodDone := endDateOnly != "" && (endDateOnly < today || (endDateOnly == today && s.IsTodayDone))
 		task["needs_renewal_decision"] = endDate != "" &&
-			endDate[:min(10, len(endDate))] < today &&
+			periodDone &&
 			int64Of(task, "is_pending_approval") != 1 &&
 			int64Of(task, "has_pending_renewal_request") != 1 &&
 			status != "completed" && status != "approved" && status != "rejected"

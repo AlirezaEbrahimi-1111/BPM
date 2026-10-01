@@ -81,8 +81,15 @@ function enrichTaskDates(array $task, PDO $db, array $holidays, string $today, ?
         // «هنوز فعاله، چک‌لیستِ امروز را انجام بده» و چک‌لیست را هم برایِ
         // همان روز تازه می‌ساخت، ولی این‌جا هم‌زمان می‌گفت «تمام شد، تمدید کن».
         // با < ، این‌جا هم دقیقاً همان مرزِ pe_state() را رعایت می‌کند.
+        //
+        // 🆕 با این‌حال، اگر کاربر دقیقاً همان روزِ end_date، چک‌لیستِ همان
+        // دوره (آخرین دوره) را از قبل تکمیل کرده باشد ($is_today_done)،
+        // دیگر تناقضی در کار نیست — پس نیازی نیست تا فردا صبر کنیم؛ پیغامِ
+        // «نیازمند تمدید» همان لحظه ظاهر می‌شود.
+        $endDateOnly = substr($task['end_date'] ?? '', 0, 10);
+        $periodDone = $endDateOnly !== '' && ($endDateOnly < $today || ($endDateOnly === $today && $task['is_today_done']));
         $task['needs_renewal_decision'] = !empty($task['end_date'])
-            && substr($task['end_date'], 0, 10) < $today
+            && $periodDone
             && (int) ($task['is_pending_approval'] ?? 0) !== 1
             && (int) ($task['has_pending_renewal_request'] ?? 0) !== 1
             && !in_array($task['status'] ?? '', ['completed', 'approved', 'rejected'], true);

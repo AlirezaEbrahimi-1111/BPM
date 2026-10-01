@@ -1827,6 +1827,10 @@ class TaskManager
     // اجازه‌ی تمدید می‌داد در حالی‌که period-engine.php هنوز اون روز رو
     // «فعال» و چک‌لیستش رو قابل‌تکمیل می‌دونست (فقط فردایِ end_date
     // «تمام‌شده» حساب می‌شه). با < هماهنگ شد.
+    //
+    // 🆕 استثنا: اگه دقیقاً همون روزِ end_date، دورهٔ همون روز (آخرین دوره)
+    // از قبل تکمیل شده باشه، دیگه نیازی به صبرِ تا فردا نیست — هم‌راستا با
+    // needs_renewal_decision در includes/task-dates-helper.php
     private function isReadyForRenewal($task)
     {
         if (!$task || $task['task_type'] !== 'continuous') return false;
@@ -1834,7 +1838,14 @@ class TaskManager
         if ((int)$task['is_pending_approval'] === 1) return false;
         if ((int)($task['has_pending_renewal_request'] ?? 0) === 1) return false;
         $today = date('Y-m-d');
-        return $task['end_date'] < $today;
+        $endDateOnly = substr($task['end_date'], 0, 10);
+        if ($endDateOnly < $today) return true;
+        if ($endDateOnly === $today) {
+            $holidays = getHolidaySet($this->db, $task['organization_id'] ?? null);
+            $s = pe_state($this->db, $task, $holidays, $today);
+            return !empty($s['is_today_done']);
+        }
+        return false;
     }
 
     // اعمال واقعی تمدید (مشترک بین مسیر مستقیم و مسیر تأیید زنجیره‌ای)
