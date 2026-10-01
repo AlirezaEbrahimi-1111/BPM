@@ -4083,8 +4083,11 @@ ${task.overdue_periods > 0 ? `
                         }
                     }
 
-                    // دکمه "تأیید و نگهداری" → فقط برای کارهای مقطعی غیرروتین، و فقط برای creator
-                    if (isCreator && task.task_type === 'periodic' && !isWorkflow) {
+                    // دکمه "تأیید و نگهداری" → برای هر کسی که الان مسئولِ تأییدِ این کار
+                    // است (نه فقط تعریف‌کننده — مثلا یک واسطه‌ی وسطِ زنجیره‌ی ارجاع هم
+                    // می‌تواند کار را تأیید کند و نزدِ خودش نگه دارد)، برای کارهای
+                    // مقطعی و دوره‌ای (نه کارهای روتین که منطقِ تأییدشان جداست)
+                    if (isAssignee && !isWorkflow && (task.task_type === 'periodic' || task.task_type === 'continuous')) {
                         const approveAndKeepBtn = document.getElementById('approveAndKeepBtn');
                         if (approveAndKeepBtn) {
                             approveAndKeepBtn.style.display = 'inline-block';
