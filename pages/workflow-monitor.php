@@ -2000,12 +2000,12 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             `;
 
             new bootstrap.Modal(document.getElementById('detailModal')).show();
-            if (hasFlow) setTimeout(function () { wfmRenderFlow(steps); }, 120);
+            if (hasFlow) setTimeout(function () { wfmRenderFlow(steps, wf); }, 120);
         }
 
-        /* ─── نمودار فقط‌خواندنی مسیر روتین (فاز ۴) ─── */
+        /* ─── نمودار فقط‌خواندنی مسیر روتین (فاز ۴ — قدیمی، فاز ۶ — گراف‌محور) ─── */
         let wfmEditor = null;
-        function wfmRenderFlow(steps) {
+        function wfmRenderFlow(steps, wf) {
             const host = document.getElementById('wfmChart');
             if (!host || typeof Drawflow === 'undefined' || !Array.isArray(steps) || !steps.length) return;
             try {
@@ -2018,42 +2018,63 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 const ordered = steps.slice().sort((a, b) => (a.step_order - b.step_order));
                 const idByOrder = {};
                 const startId = wfmEditor.addNode('start', 0, 1, 20, 20, 'wfm-fixed', {}, '<div class="wfm-nb"><b>شروع</b></div>');
+                const isGraph = wf && Number(wf.engine_version) === 2;
+                const trans = isGraph ? (wf.transitions || []) : [];
+                const outByOrder = {};
+                trans.forEach(t => {
+                    const key = (t.from_step_order === null || t.from_step_order === undefined) ? 'start' : t.from_step_order;
+                    (outByOrder[key] = outByOrder[key] || []).push(t);
+                });
+                const isDecisionOrder = o => (outByOrder[o] || []).some(t => t.condition === 'approve' || t.condition === 'reject');
 
                 ordered.forEach((s, i) => {
                     const st = String(s.status || 'pending');
-                    const dec = Number(s.is_decision) === 1;
+                    const dec = isGraph ? isDecisionOrder(s.step_order) : Number(s.is_decision) === 1;
                     const nid = wfmEditor.addNode('s', 1, dec ? 2 : 1, 20, 100 + i * 88,
                         'st-' + st + (dec ? ' wfm-dec' : ''),
                         { order: s.step_order },
                         `<div class="wfm-nb"><b>${toFa(s.step_order)}.</b> ${escHtml(s.step_name || 'مرحله')}${dec ? ' <span style="color:#8e57fe">◆</span>' : ''}</div>`);
                     idByOrder[s.step_order] = nid;
                 });
-                const creatorId = wfmEditor.addNode('creator', 1, 0, 250, 100 + ordered.length * 88, 'wfm-fixed', {},
-                    '<div class="wfm-nb"><b>تعریف‌کننده</b></div>');
 
-                const cascadeOrders = ordered.filter(s => (s.execution_mode || 'cascade') !== 'parallel').map(s => s.step_order);
                 const taken = new Set(ordered.filter(s => ['completed', 'active', 'rejected', 'delayed'].includes(String(s.status))).map(s => s.step_order));
 
-                if (cascadeOrders.length) wfmEditor.addConnection(startId, idByOrder[cascadeOrders[0]], 'output_1', 'input_1');
-                ordered.forEach(s => {
-                    if ((s.execution_mode || 'cascade') === 'parallel') {
-                        wfmEditor.addConnection(startId, idByOrder[s.step_order], 'output_1', 'input_1');
-                        return;
-                    }
-                    const ci = cascadeOrders.indexOf(s.step_order);
-                    const nextOrd = (ci >= 0 && ci + 1 < cascadeOrders.length) ? cascadeOrders[ci + 1] : null;
-                    if (Number(s.is_decision) === 1) {
-                        const appr = s.on_approve_step_order ? parseInt(s.on_approve_step_order, 10) : nextOrd;
-                        if (appr && idByOrder[appr]) wfmEditor.addConnection(idByOrder[s.step_order], idByOrder[appr], 'output_1', 'input_1');
-                        if ((s.on_reject_mode || '') === 'creator') {
-                            wfmEditor.addConnection(idByOrder[s.step_order], creatorId, 'output_2', 'input_1');
-                        } else if (s.on_reject_step_order && idByOrder[parseInt(s.on_reject_step_order, 10)]) {
-                            wfmEditor.addConnection(idByOrder[s.step_order], idByOrder[parseInt(s.on_reject_step_order, 10)], 'output_2', 'input_1');
+                if (isGraph) {
+                    // فاز ۶: مستقیماً از رویِ یال‌هایِ ذخیره‌شدهٔ گراف رسم کن (فورک/جوین/تصمیم)
+                    trans.forEach(t => {
+                        const toNid = idByOrder[t.to_step_order];
+                        if (!toNid) return;
+                        const fromNid = (t.from_step_order === null || t.from_step_order === undefined) ? startId : idByOrder[t.from_step_order];
+                        if (!fromNid) return;
+                        const outKey = (t.condition === 'reject') ? 'output_2' : 'output_1';
+                        try { wfmEditor.addConnection(fromNid, toNid, outKey, 'input_1'); } catch (e) {}
+                    });
+                } else {
+                    const creatorId = wfmEditor.addNode('creator', 1, 0, 250, 100 + ordered.length * 88, 'wfm-fixed', {},
+                        '<div class="wfm-nb"><b>تعریف‌کننده</b></div>');
+                    const cascadeOrders = ordered.filter(s => (s.execution_mode || 'cascade') !== 'parallel').map(s => s.step_order);
+
+                    if (cascadeOrders.length) wfmEditor.addConnection(startId, idByOrder[cascadeOrders[0]], 'output_1', 'input_1');
+                    ordered.forEach(s => {
+                        if ((s.execution_mode || 'cascade') === 'parallel') {
+                            wfmEditor.addConnection(startId, idByOrder[s.step_order], 'output_1', 'input_1');
+                            return;
                         }
-                    } else if (nextOrd && idByOrder[nextOrd]) {
-                        wfmEditor.addConnection(idByOrder[s.step_order], idByOrder[nextOrd], 'output_1', 'input_1');
-                    }
-                });
+                        const ci = cascadeOrders.indexOf(s.step_order);
+                        const nextOrd = (ci >= 0 && ci + 1 < cascadeOrders.length) ? cascadeOrders[ci + 1] : null;
+                        if (Number(s.is_decision) === 1) {
+                            const appr = s.on_approve_step_order ? parseInt(s.on_approve_step_order, 10) : nextOrd;
+                            if (appr && idByOrder[appr]) wfmEditor.addConnection(idByOrder[s.step_order], idByOrder[appr], 'output_1', 'input_1');
+                            if ((s.on_reject_mode || '') === 'creator') {
+                                wfmEditor.addConnection(idByOrder[s.step_order], creatorId, 'output_2', 'input_1');
+                            } else if (s.on_reject_step_order && idByOrder[parseInt(s.on_reject_step_order, 10)]) {
+                                wfmEditor.addConnection(idByOrder[s.step_order], idByOrder[parseInt(s.on_reject_step_order, 10)], 'output_2', 'input_1');
+                            }
+                        } else if (nextOrd && idByOrder[nextOrd]) {
+                            wfmEditor.addConnection(idByOrder[s.step_order], idByOrder[nextOrd], 'output_1', 'input_1');
+                        }
+                    });
+                }
 
                 // یال‌های «طی‌شده» را پررنگ کن (هر دو سرش در مسیر)
                 Object.keys(idByOrder).forEach(ord => {

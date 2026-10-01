@@ -13,14 +13,30 @@ class WorkflowManager
     {
         try {
             $this->db->beginTransaction();
+
+            // 🆕 فاز ۶: قالبِ گراف‌محور (engine_version=2) — دیگه آبشاری/موازی
+            // به‌عنوانِ تنظیمِ جدا وجود نداره؛ همه‌چیز با یال‌هایِ
+            // workflow_step_transitions تعیین می‌شه. قالب‌هایِ قدیمی
+            // (پیش‌فرض ۱) دست‌نخورده‌ن.
+            $engineVersion = ((int) ($data['engine_version'] ?? 1) === 2) ? 2 : 1;
+
+            if ($engineVersion === 2) {
+                $err = $this->validateStepTransitions($data['transitions'] ?? []);
+                if ($err) {
+                    $this->db->rollBack();
+                    return ['success' => false, 'message' => $err];
+                }
+            }
+
             // ایجاد template
-            $stmt = $this->db->prepare("INSERT INTO workflow_templates (name, description, is_active, created_by, organization_id) VALUES (?, ?, ?, ?, ?)");
+            $stmt = $this->db->prepare("INSERT INTO workflow_templates (name, description, is_active, created_by, organization_id, engine_version) VALUES (?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $data['name'],
                 $data['description'] ?? '',
                 $data['is_active'] ?? 1,
                 $creator_id,
-                $data['organization_id']
+                $data['organization_id'],
+                $engineVersion
             ]);
 
             $template_id = $this->db->lastInsertId();
@@ -31,6 +47,10 @@ class WorkflowManager
                 }
             }
 
+            if ($engineVersion === 2) {
+                $this->saveStepTransitions($template_id, $data['transitions'] ?? []);
+            }
+
             $this->db->commit();
             return ['success' => true, 'template_id' => $template_id, 'message' => 'الگوی کار روتین با موفقیت ایجاد شد'];
         } catch (Exception $e) {
@@ -38,6 +58,247 @@ class WorkflowManager
             error_log("CreateTemplate error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطا: ' . $e->getMessage()];  // موقت
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  فاز ۶ — موتورِ گراف‌محورِ مراحل (جایگزینِ کاملِ آبشاری/موازی برایِ
+    //  قالب‌هایِ جدید؛ engine_version=2). قالب‌هایِ قدیمی (engine_version=1)
+    //  هیچ تغییری نمی‌کنن و با همون موتورِ cascade/parallel اجرا می‌شن.
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * اعتبارسنجیِ گراف قبل از ذخیره: یک مرحله که مقصدِ یک یالِ شرطی
+     * (approve/reject) است، حقِ داشتنِ هیچ یالِ ورودیِ دیگری رو نداره —
+     * یعنی نمی‌تونه هم‌زمان «نتیجه‌ی یک تصمیم» و «نقطه‌ی هم‌گرایی/join»
+     * باشه. دلیل: اگه تصمیم مسیرِ دیگه رو بره، اون join برایِ همیشه
+     * منتظرِ پیش‌نیازی می‌مونه که هیچ‌وقت کامل نمی‌شه.
+     * @return string|null پیامِ خطا، یا null اگه معتبر بود
+     */
+    private function validateStepTransitions(array $transitions)
+    {
+        $incomingConds = [];
+        foreach ($transitions as $t) {
+            $to = (int) ($t['to_step_order'] ?? 0);
+            if ($to <= 0) return 'یالِ انشعاب بدونِ مرحله‌ی مقصدِ معتبر وجود داره';
+            $incomingConds[$to][] = (string) ($t['condition'] ?? 'always');
+        }
+        foreach ($incomingConds as $to => $conds) {
+            $hasConditional = count(array_filter($conds, fn($c) => $c !== 'always')) > 0;
+            if ($hasConditional && count($conds) > 1) {
+                return "مرحله‌ی شماره {$to} هم مقصدِ یک تصمیم (تأیید/رد) است هم مقصدِ یالِ دیگری — این حالت مجاز نیست.";
+            }
+        }
+        return null;
+    }
+
+    /** ذخیره‌ی کاملِ یال‌هایِ گراف یک قالب (جایگزینیِ کل، نه افزایشی) */
+    private function saveStepTransitions($template_id, array $transitions)
+    {
+        $this->db->prepare("DELETE FROM workflow_step_transitions WHERE template_id = ?")->execute([$template_id]);
+        if (!$transitions) return;
+        $stmt = $this->db->prepare("
+            INSERT INTO workflow_step_transitions (template_id, from_step_order, to_step_order, `condition`)
+            VALUES (?, ?, ?, ?)
+        ");
+        foreach ($transitions as $t) {
+            $from = (isset($t['from_step_order']) && $t['from_step_order'] !== '' && $t['from_step_order'] !== null)
+                ? (int) $t['from_step_order'] : null;
+            $to = (int) $t['to_step_order'];
+            $cond = in_array($t['condition'] ?? 'always', ['always', 'approve', 'reject'], true)
+                ? $t['condition'] : 'always';
+            $stmt->execute([$template_id, $from, $to, $cond]);
+        }
+    }
+
+    /** شروعِ یک نمونه‌ی اجرا برایِ قالبِ گراف‌محور (engine_version=2) */
+    private function startWorkflowGraph($template_id, $title, $creator_id, $organization_id)
+    {
+        try {
+            $this->db->beginTransaction();
+
+            $stmt = $this->db->prepare("SELECT * FROM workflow_steps WHERE template_id = ? ORDER BY step_order ASC");
+            $stmt->execute([$template_id]);
+            $steps = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($steps)) {
+                throw new Exception('هیچ مرحله‌ای برای این الگو تعریف نشده');
+            }
+
+            // 🔒 توجه: یالِ با from_step_order=NULL («شروع» روی بوم) پیش‌نیازِ
+            // واقعی نیست — فقط برایِ نمایشِ دیداری‌ـه. پس اینجا فقط یال‌هایِ
+            // با مبدأِ واقعی رو می‌شماریم؛ وگرنه مرحله‌ای که فقط از «شروع»
+            // وصله (و هیچ پیش‌نیازِ واقعی نداره) هیچ‌وقت فعال نمی‌شد.
+            $transStmt = $this->db->prepare("SELECT to_step_order FROM workflow_step_transitions WHERE template_id = ? AND from_step_order IS NOT NULL");
+            $transStmt->execute([$template_id]);
+            $hasIncoming = array_fill_keys(array_map('intval', $transStmt->fetchAll(PDO::FETCH_COLUMN)), true);
+
+            $stmt = $this->db->prepare("
+                INSERT INTO workflow_instances (template_id, title, current_step, execution_mode, status, created_by, organization_id, started_at)
+                VALUES (?, ?, 1, 'cascade', 'in_progress', ?, ?, NOW())
+            ");
+            $stmt->execute([$template_id, $title, $creator_id, $organization_id]);
+            $instance_id = $this->db->lastInsertId();
+
+            // همه‌ی مراحل اول pending/بدونِ تسک ساخته می‌شن — فقط مراحلِ
+            // «بدونِ پیش‌نیاز» (هیچ یالِ ورودی ندارن) همون اول، با همون
+            // activateInstanceStep ای که فازِ ۲ ساخته (ساختِ تنبلِ تسک)،
+            // فعال می‌شن.
+            $stepRowIdByOrder = [];
+            foreach ($steps as $step) {
+                $ins = $this->db->prepare("
+                    INSERT INTO workflow_instance_steps (instance_id, step_id, task_id, step_order, status)
+                    VALUES (?, ?, NULL, ?, 'pending')
+                ");
+                $ins->execute([$instance_id, $step['id'], $step['step_order']]);
+                $stepRowIdByOrder[(int) $step['step_order']] = (int) $this->db->lastInsertId();
+            }
+
+            $first_task_id = null;
+            foreach ($steps as $step) {
+                $order = (int) $step['step_order'];
+                if (empty($hasIncoming[$order])) {
+                    $task_id = $this->activateInstanceStep($stepRowIdByOrder[$order], $creator_id, '');
+                    if ($first_task_id === null) $first_task_id = $task_id;
+                }
+            }
+
+            if ($first_task_id === null) {
+                throw new Exception('هیچ مرحله‌ی شروع (بدونِ پیش‌نیاز) توی این قالب پیدا نشد');
+            }
+
+            $this->db->commit();
+            return [
+                'success' => true,
+                'instance_id' => $instance_id,
+                'task_id' => $first_task_id,
+                'message' => 'کار روتین با موفقیت ایجاد شد'
+            ];
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log("startWorkflowGraph error: " . $e->getMessage());
+            return ['success' => false, 'message' => 'خطا: ' . $e->getMessage()];
+        }
+    }
+
+    /** template_id نمونه‌ی اجرا */
+    private function getTemplateIdForInstance($instance_id)
+    {
+        $stmt = $this->db->prepare("SELECT template_id FROM workflow_instances WHERE id = ?");
+        $stmt->execute([$instance_id]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * آیا همه‌ی پیش‌نیازهایِ یک مرحله‌ی مقصد، توی همین نمونه، برآورده
+     * شدن؟ هر یال یک شرط داره: always/approve → مبدأ باید completed
+     * باشه، reject → مبدأ باید rejected باشه.
+     */
+    private function stepPredecessorsSatisfied($instance_id, $template_id, $to_step_order)
+    {
+        $stmt = $this->db->prepare("
+            SELECT from_step_order, `condition` FROM workflow_step_transitions
+            WHERE template_id = ? AND to_step_order = ?
+        ");
+        $stmt->execute([$template_id, $to_step_order]);
+        $edges = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!$edges) return true;
+
+        foreach ($edges as $e) {
+            if ($e['from_step_order'] === null) continue; // یالِ «شروع» — پیش‌نیازِ واقعی نیست
+            $wantedStatus = ($e['condition'] === 'reject') ? 'rejected' : 'completed';
+            $src = $this->getInstanceStepByOrder($instance_id, (int) $e['from_step_order']);
+            if (!$src || $src['status'] !== $wantedStatus) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * یک مرحله (اگه هنوز pending باشه) رو dormant می‌کنه و همین کار رو
+     * برایِ مقصدهایِ خروجیش هم تکرار می‌کنه، ولی فقط اگه اون مقصد خودش
+     * دقیقا همین یک پیش‌نیاز رو داشته باشه (طبقِ validateStepTransitions،
+     * زنجیره‌یِ بعدِ یک یالِ تصمیم همیشه تک‌پیش‌نیازه).
+     * 🔒 محدودیتِ شناخته‌شده: اگه این زنجیره به یک join (۲+ پیش‌نیاز) برسه،
+     * انتشار همون‌جا متوقف می‌شه — چون اون join ممکنه از مسیرِ دیگه‌ای هم
+     * قابل‌تکمیل باشه. در این حالت، اگه واقعا راهِ دیگری نباشه، اون join
+     * برایِ همیشه pending می‌مونه (نیاز به لغوِ دستی). برایِ نسخه‌ی اول،
+     * طراحیِ گراف باید از قرار دادنِ join بعد از یک نقطه‌ی تصمیم خودداری کنه.
+     */
+    private function propagateDormantGraph($instance_id, $template_id, $step_order)
+    {
+        $cur = $this->getInstanceStepByOrder($instance_id, $step_order);
+        if (!$cur || $cur['status'] !== 'pending') return;
+
+        $this->db->prepare("UPDATE workflow_instance_steps SET status = 'dormant' WHERE id = ?")
+            ->execute([$cur['id']]);
+
+        $stmt = $this->db->prepare("SELECT to_step_order FROM workflow_step_transitions WHERE template_id = ? AND from_step_order = ?");
+        $stmt->execute([$template_id, $step_order]);
+        foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $nextOrder) {
+            $nextOrder = (int) $nextOrder;
+            $inCount = $this->db->prepare("SELECT COUNT(*) FROM workflow_step_transitions WHERE template_id = ? AND to_step_order = ?");
+            $inCount->execute([$template_id, $nextOrder]);
+            if ((int) $inCount->fetchColumn() === 1) {
+                $this->propagateDormantGraph($instance_id, $template_id, $nextOrder);
+            }
+        }
+    }
+
+    /**
+     * یک مرحله (عادی یا نقطه‌ی تصمیم) تموم شده با نتیجه‌ی $outcome
+     * ('always' برایِ مرحله‌ی عادی، 'approve'/'reject' برایِ تصمیم) —
+     * یال‌هایِ مطابق رو فعال می‌کنه، یال‌هایِ شرطیِ انتخاب‌نشده رو dormant
+     * می‌کنه، و اگه هیچ مرحله‌ای دیگه در انتظار/فعال نمونده، روتین رو
+     * تمام می‌کنه.
+     */
+    private function advanceGraphStep($instance_step, $user_id, $notes, $outcome)
+    {
+        $instance_id = (int) $instance_step['instance_id'];
+        $template_id = $this->getTemplateIdForInstance($instance_id);
+        $fromOrder = (int) $instance_step['step_order'];
+
+        $stmt = $this->db->prepare("
+            SELECT * FROM workflow_step_transitions
+            WHERE template_id = ? AND from_step_order = ?
+              AND (`condition` = 'always' OR `condition` = ?)
+        ");
+        $stmt->execute([$template_id, $fromOrder, $outcome]);
+        $firingEdges = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($outcome !== 'always') {
+            $other = $outcome === 'approve' ? 'reject' : 'approve';
+            $stmt2 = $this->db->prepare("
+                SELECT to_step_order FROM workflow_step_transitions
+                WHERE template_id = ? AND from_step_order = ? AND `condition` = ?
+            ");
+            $stmt2->execute([$template_id, $fromOrder, $other]);
+            foreach ($stmt2->fetchAll(PDO::FETCH_COLUMN) as $notTakenOrder) {
+                $this->propagateDormantGraph($instance_id, $template_id, (int) $notTakenOrder);
+            }
+        }
+
+        $anyActivated = false;
+        foreach ($firingEdges as $edge) {
+            $toOrder = (int) $edge['to_step_order'];
+            if ($this->stepPredecessorsSatisfied($instance_id, $template_id, $toOrder)) {
+                $target = $this->getInstanceStepByOrder($instance_id, $toOrder);
+                if ($target && $target['status'] === 'pending') {
+                    $this->activateInstanceStep($target['id'], $user_id, $notes);
+                    $anyActivated = true;
+                }
+            }
+        }
+
+        $remStmt = $this->db->prepare("
+            SELECT COUNT(*) FROM workflow_instance_steps WHERE instance_id = ? AND status IN ('pending','active')
+        ");
+        $remStmt->execute([$instance_id]);
+        if ((int) $remStmt->fetchColumn() === 0) {
+            $this->completeInstance($instance_id, $user_id);
+            return 'کار روتین با موفقیت تکمیل شد';
+        }
+
+        return $anyActivated ? 'مرحله تکمیل شد و به مرحله‌ی بعدی منتقل شد' : 'مرحله تکمیل شد؛ در انتظار تکمیلِ سایرِ مراحل';
     }
     /**
      * فاز ۳: تنظیمات انشعاب یک مرحله را نرمال می‌کند.
@@ -140,7 +401,12 @@ class WorkflowManager
         // 🆕 فاز ۳: انشعاب شرطی — فقط برای مراحل آبشاری معنی دارد
         [$isDecision, $onApprove, $onRejectMode, $onRejectStep] = $this->normalizeBranchConfig($step_data, $execution_mode);
 
-        $stmt = $this->db->prepare("INSERT INTO workflow_steps (template_id, step_order, step_name, activity_section, time_limit_hours, assignee_type, assignee_user_id, execution_mode, is_decision, on_approve_step_order, on_reject_mode, on_reject_step_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        // 🆕 فاز ۶: جایِ گرهِ این مرحله رویِ بومِ Drawflow (فقط قالب‌هایِ
+        // گراف‌محور این رو می‌فرستن؛ برایِ قالب‌هایِ قدیمی همیشه null می‌مونه)
+        $canvasX = isset($step_data['canvas_x']) && $step_data['canvas_x'] !== '' ? (int) $step_data['canvas_x'] : null;
+        $canvasY = isset($step_data['canvas_y']) && $step_data['canvas_y'] !== '' ? (int) $step_data['canvas_y'] : null;
+
+        $stmt = $this->db->prepare("INSERT INTO workflow_steps (template_id, step_order, step_name, activity_section, time_limit_hours, assignee_type, assignee_user_id, execution_mode, is_decision, on_approve_step_order, on_reject_mode, on_reject_step_order, canvas_x, canvas_y) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $ok = $stmt->execute([
             $template_id,
             $step_data['step_order'],
@@ -153,7 +419,9 @@ class WorkflowManager
             $isDecision,
             $onApprove,
             $onRejectMode,
-            $onRejectStep
+            $onRejectStep,
+            $canvasX,
+            $canvasY
         ]);
 
         if ($ok && !empty($step_data['checklist_items'])) {
@@ -275,7 +543,7 @@ class WorkflowManager
         SELECT ws.id, ws.template_id, ws.step_order, ws.step_name, ws.step_description,
                ws.activity_section, ws.time_limit_hours, ws.assignee_type, ws.assignee_user_id,
                ws.execution_mode, ws.is_decision, ws.on_approve_step_order,
-               ws.on_reject_mode, ws.on_reject_step_order,
+               ws.on_reject_mode, ws.on_reject_step_order, ws.canvas_x, ws.canvas_y,
                CONCAT(u.first_name, ' ', u.last_name) AS assignee_user_name
         FROM workflow_steps ws
         LEFT JOIN users u ON u.id = ws.assignee_user_id
@@ -297,6 +565,15 @@ class WorkflowManager
                 $step['checklist_items'] = $clStmt->fetchAll(PDO::FETCH_ASSOC);
             }
             unset($step);
+
+            // 🆕 فاز ۶: یال‌هایِ گراف (فقط برایِ engine_version=2 معنی دارن؛
+            // برایِ قالب‌هایِ قدیمی همیشه آرایه‌ی خالیه)
+            $trStmt = $this->db->prepare("
+                SELECT from_step_order, to_step_order, `condition`
+                FROM workflow_step_transitions WHERE template_id = ?
+            ");
+            $trStmt->execute([$template_id]);
+            $template['transitions'] = $trStmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         return $template;
@@ -402,10 +679,19 @@ class WorkflowManager
             // 🔒 خط قرمز: قالب باید متعلق به همین سازمان باشد، وگرنه یک سازمان
             // می‌تواند با حدس template_id، از ساختار/مراحل قالب خصوصی سازمان
             // دیگر برای ساختن یک نمونهٔ اجرایی خودش استفاده کند
-            $tmplCheck = $this->db->prepare("SELECT id FROM workflow_templates WHERE id = ? AND organization_id = ?");
+            $tmplCheck = $this->db->prepare("SELECT id, engine_version FROM workflow_templates WHERE id = ? AND organization_id = ?");
             $tmplCheck->execute([$template_id, $organization_id]);
-            if (!$tmplCheck->fetch()) {
+            $tmplRow = $tmplCheck->fetch(PDO::FETCH_ASSOC);
+            if (!$tmplRow) {
                 throw new Exception('قالب یافت نشد یا متعلق به سازمان شما نیست');
+            }
+
+            // 🆕 فاز ۶: قالبِ گراف‌محور — این ترنزکشنِ فعلی رو می‌بندیم و
+            // کاملِ کار رو به startWorkflowGraph (که ترنزکشنِ خودش رو
+            // می‌گیره) می‌سپریم؛ منطقِ قدیمیِ زیر دیگه اجرا نمی‌شه.
+            if ((int) $tmplRow['engine_version'] === 2) {
+                $this->db->commit();
+                return $this->startWorkflowGraph($template_id, $title, $creator_id, $organization_id);
             }
 
             // دریافت مراحل الگو
@@ -611,6 +897,51 @@ class WorkflowManager
             if (!$current_step) {
                 throw new Exception('مرحله یافت نشد');
             }
+
+            // 🆕 فاز ۶: قالبِ گراف‌محور — منطقِ کاملا جدا (بدونِ execution_mode/
+            // is_decision قدیمی؛ «نقطه‌ی تصمیم» بودن از رویِ یال‌هایِ خروجیِ
+            // شرطی توی workflow_step_transitions تشخیص داده می‌شه)
+            $tmplV = $this->db->prepare("
+                SELECT wt.engine_version FROM workflow_instances wi
+                JOIN workflow_templates wt ON wt.id = wi.template_id
+                WHERE wi.id = ?
+            ");
+            $tmplV->execute([$instance_id]);
+            if ((int) $tmplV->fetchColumn() === 2) {
+                // آیا این مرحله یالِ خروجیِ شرطی (approve/reject) داره؟ یعنی نقطه‌ی تصمیمه
+                $decCheck = $this->db->prepare("
+                    SELECT COUNT(*) FROM workflow_step_transitions
+                    WHERE template_id = ? AND from_step_order = ? AND `condition` IN ('approve','reject')
+                ");
+                $decCheck->execute([$this->getTemplateIdForInstance($instance_id), $current_step['step_order']]);
+                if ((int) $decCheck->fetchColumn() > 0) {
+                    $this->db->commit();
+                    return $this->resolveStepDecision($task_id, $user_id, 'approve', $notes);
+                }
+
+                if (!in_array($current_step['status'], ['active', 'pending'])) {
+                    throw new Exception('این مرحله قابل تکمیل نیست (وضعیت: ' . $current_step['status'] . ')');
+                }
+                $clCheck = $this->db->prepare("SELECT COUNT(*) FROM task_checklist_items WHERE task_id = ? AND is_done = 0");
+                $clCheck->execute([$task_id]);
+                if ((int) $clCheck->fetchColumn() > 0) {
+                    throw new Exception('ابتدا باید همه‌ی آیتم‌هایِ چک‌لیستِ این مرحله را تیک بزنید');
+                }
+                $notes = trim((string) $notes);
+                $this->db->prepare("UPDATE tasks SET status = 'completed', updated_at = NOW() WHERE id = ?")->execute([$task_id]);
+                $this->db->prepare("
+                    UPDATE workflow_instance_steps SET status = 'completed', completed_at = NOW(), completed_by = ?, completion_notes = ?
+                    WHERE id = ?
+                ")->execute([$user_id, ($notes !== '' ? $notes : null), $current_step['id']]);
+                $this->db->prepare("INSERT INTO task_history (task_id, from_user_id, action, notes) VALUES (?, ?, 'completed', ?)")
+                    ->execute([$task_id, $user_id, ($notes !== '' ? $notes : 'مرحله تکمیل شد')]);
+
+                $message = $this->advanceGraphStep($current_step, $user_id, $notes, 'always');
+                $this->db->commit();
+                return ['success' => true, 'message' => $message];
+            }
+
+            // ⬇️ از اینجا به بعد، فقط برایِ قالب‌هایِ قدیمی (engine_version=1) اجرا می‌شه
 
             // 🆕 فاز ۲: اگر این مرحله «نقطهٔ تصمیم» است، «تکمیل» = «تأیید» → منطق انشعاب
             $decStmt = $this->db->prepare("SELECT is_decision FROM workflow_steps WHERE id = ?");
@@ -933,7 +1264,24 @@ class WorkflowManager
             $instance_id = (int) $cur['instance_id'];
             $curOrder = (int) $cur['step_order'];
 
-            if ((int) $cur['is_decision'] !== 1) {
+            // 🆕 فاز ۶: قالبِ گراف‌محور — «نقطه‌ی تصمیم» بودن از رویِ یال‌هایِ
+            // شرطیِ workflow_step_transitions تشخیص داده می‌شه، نه ستونِ
+            // قدیمیِ is_decision (که برایِ این قالب‌ها اصلا پر نمی‌شه)
+            $template_id = $this->getTemplateIdForInstance($instance_id);
+            $tmplV = $this->db->prepare("SELECT engine_version FROM workflow_templates WHERE id = ?");
+            $tmplV->execute([$template_id]);
+            $isGraph = ((int) $tmplV->fetchColumn() === 2);
+
+            if ($isGraph) {
+                $decCheck = $this->db->prepare("
+                    SELECT COUNT(*) FROM workflow_step_transitions
+                    WHERE template_id = ? AND from_step_order = ? AND `condition` IN ('approve','reject')
+                ");
+                $decCheck->execute([$template_id, $curOrder]);
+                if ((int) $decCheck->fetchColumn() === 0) {
+                    throw new Exception('این مرحله «نقطهٔ تصمیم» نیست');
+                }
+            } elseif ((int) $cur['is_decision'] !== 1) {
                 throw new Exception('این مرحله «نقطهٔ تصمیم» نیست');
             }
             if ((int) $user_id !== (int) $cur['created_by']) {
@@ -970,6 +1318,16 @@ class WorkflowManager
                 $task_id, $user_id, $decision === 'approve' ? 'approved' : 'rejected',
                 ($notes !== '' ? $notes : ($decision === 'approve' ? 'مرحله تأیید شد' : 'مرحله رد شد'))
             ]);
+
+            // 🆕 فاز ۶: قالبِ گراف‌محور — فعال‌سازیِ مرحله‌هایِ بعدی طبقِ یال‌ها
+            // (نه ستون‌هایِ قدیمیِ on_approve_step_order/on_reject_*)
+            if ($isGraph) {
+                $message = $this->advanceGraphStep($cur, $user_id, $notes, $decision);
+                $this->db->commit();
+                return ['success' => true, 'message' => $message];
+            }
+
+            // ⬇️ از اینجا به بعد، فقط برایِ قالب‌هایِ قدیمی (engine_version=1)
 
             // تعیین هدف
             $targetOrder = null;
@@ -1107,10 +1465,11 @@ class WorkflowManager
         try {
             // اطلاعات اصلی
             $sql = "
-                SELECT 
+                SELECT
                     wi.*,
                     wt.name as template_name,
                     wt.description as template_description,
+                    wt.engine_version,
                     creator.first_name as creator_first_name,
                     creator.last_name as creator_last_name,
                     CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name
@@ -1166,6 +1525,19 @@ class WorkflowManager
             ");
             $stmt->execute([$instance_id]);
             $workflow['steps'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // 🆕 فاز ۶: یال‌هایِ گراف — فقط برایِ instanceهایِ engine_version=2 معنی
+            // دارن (چارتِ فقط‌خواندنیِ این صفحه برایِ آن‌ها از این استفاده می‌کند)
+            if ((int) $workflow['engine_version'] === 2) {
+                $trStmt = $this->db->prepare("
+                    SELECT from_step_order, to_step_order, `condition`
+                    FROM workflow_step_transitions WHERE template_id = ?
+                ");
+                $trStmt->execute([$workflow['template_id']]);
+                $workflow['transitions'] = $trStmt->fetchAll(PDO::FETCH_ASSOC);
+            } else {
+                $workflow['transitions'] = [];
+            }
 
             // محاسبه آمار
             $workflow['total_steps'] = count($workflow['steps']);

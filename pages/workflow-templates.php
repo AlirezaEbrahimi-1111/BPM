@@ -336,88 +336,12 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
         /* حالت مشاهده: عناصر ویرایش/جابه‌جایی پنهان شوند */
         #templateModal.view-mode .btn-remove-step,
         #templateModal.view-mode .drag-hint,
-        #templateModal.view-mode .btn-add-step,
-        #templateModal.view-mode .exec-quick {
+        #templateModal.view-mode .btn-add-step {
             display: none !important;
         }
 
         #templateModal.view-mode .step-item {
             cursor: default;
-        }
-
-        #templateModal.view-mode .step-mode-toggle {
-            pointer-events: none;
-            opacity: .85;
-        }
-
-        /* فاز ۴: پنل انشعاب فاز ۳ به‌عنوان لایهٔ دادهٔ مخفی نگه داشته می‌شود؛
-           ویرایش دیداری روی بوم Drawflow انجام می‌شود */
-        .sr-decision-toggle,
-        .step-decision-body,
-        #execPreview {
-            display: none !important;
-        }
-
-        /* ─── انشعاب شرطی مرحله (فاز ۳) ─── */
-        .sr-decision-toggle {
-            background: none;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 4px 8px;
-            font-size: .72rem;
-            color: var(--text-2);
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .sr-decision-toggle.has-branch {
-            border-color: #8e57fe;
-            color: #8e57fe;
-        }
-
-        .step-decision-body {
-            flex-basis: 100%;
-            margin-top: 8px;
-            padding: 10px 12px;
-            background: var(--surface-2);
-            border: 1px dashed var(--border);
-            border-radius: 10px;
-            font-size: .8rem;
-        }
-
-        .step-decision-body .dec-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 8px;
-        }
-
-        .step-decision-body select {
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 5px 10px;
-            font-size: .8rem;
-            font-family: inherit;
-            background: var(--surface);
-            color: var(--text);
-        }
-
-        .step-decision-body .dec-config[hidden],
-        .step-decision-body .dec-reject-target[hidden] {
-            display: none;
-        }
-
-        .step-decision-body .dec-hint {
-            color: var(--text-2);
-            font-size: .72rem;
-            margin-top: 4px;
-        }
-
-        #templateModal.view-mode .step-decision-body select,
-        #templateModal.view-mode .step-decision-toggle-input {
-            pointer-events: none;
-            opacity: .85;
         }
 
         /* ─── بوم مسیر و انشعاب (فاز ۴ — Drawflow) ─── */
@@ -860,19 +784,6 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             text-align: center;
         }
 
-        .step-row .sr-mode {
-            flex: 0 0 auto;
-            margin: 0;
-            display: flex;
-            gap: 4px;
-        }
-
-        .step-row .sr-mode .sm-btn {
-            padding: 5px 9px;
-            font-size: 0.95rem;
-            line-height: 1;
-        }
-
         .step-row .sr-remove {
             flex: 0 0 auto;
         }
@@ -1068,86 +979,6 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             padding: 1.25rem;
         }
 
-        .step-mode-toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-
-        .step-mode-toggle .sm-label {
-            font-size: .8rem;
-            color: var(--text-2);
-        }
-
-        .sm-btn {
-            border: 1px solid #d7dce3;
-            background: #fff;
-            color: #667085;
-            border-radius: 9px;
-            padding: 5px 12px;
-            font-size: .8rem;
-            cursor: pointer;
-            font-family: inherit;
-            transition: all .15s;
-        }
-
-        .sm-btn:hover {
-            border-color: #8e57fe;
-            color: #8e57fe;
-        }
-
-        :root[data-theme="dark"] .sm-btn {
-            background: var(--surface);
-            border-color: var(--border-soft);
-            color: var(--text-muted);
-        }
-
-        .sm-btn.active.sm-parallel {
-            background: #ECFDF3;
-            border-color: #12B76A;
-            color: #027A48;
-            font-weight: 700;
-        }
-
-        .sm-btn.active.sm-cascade {
-            background: #EFF8FF;
-            border-color: #2E90FA;
-            color: #175CD3;
-            font-weight: 700;
-        }
-
-        .exec-quick {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin: 6px 0 12px;
-        }
-
-        .exec-quick .eq-label {
-            font-size: .82rem;
-            color: var(--text-2);
-        }
-
-        .exec-preview {
-            background: #F9FAFB;
-            border: 1px solid #EAECF0;
-            border-radius: 10px;
-            padding: 10px 14px;
-            margin-top: 10px;
-            font-size: .83rem;
-            color: #344054;
-        }
-
-        .exec-preview .ep-line {
-            margin: 2px 0;
-        }
-
-        .exec-preview b {
-            color: #101828;
-        }
     </style>
 </head>
 
@@ -1236,21 +1067,13 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                             </button>
                         </div>
 
-                        <div class="exec-quick">
-                            <span class="eq-label"><i class="bi bi-lightning-charge"></i> تنظیم سریع همهٔ مراحل:</span>
-                            <button type="button" class="sm-btn" onclick="setAllModes('cascade')">⛓ همه آبشاری</button>
-                            <button type="button" class="sm-btn" onclick="setAllModes('parallel')">⚡ همه موازی</button>
-                        </div>
-
                         <div id="stepsList"></div>
 
-                        <div id="execPreview" class="exec-preview"></div>
-
-                        <!-- بوم مسیر و انشعاب (فاز ۴) -->
+                        <!-- بوم مسیر و انشعاب (فاز ۶ — گراف‌محور) -->
                         <div class="wf-canvas-wrap" id="wfCanvasWrap">
                             <div class="wf-canvas-toolbar">
                                 <b><i class="bi bi-diagram-2"></i>مسیردهی روتین</b>
-                                <button type="button" onclick="wfSyncFromForm()" title="بازچینش از روی فهرست مراحل"><i class="bi bi-arrow-repeat"></i> همگام‌سازی</button>
+                                <button type="button" onclick="wfAutoArrange()" title="چیدمانِ گره‌ها را به یک ستون مرتب تنظیم کن (یال‌ها حفظ می‌شوند)"><i class="bi bi-arrow-repeat"></i> چیدمان خودکار</button>
                                 <button type="button" onclick="wfZoom(0.1)" title="بزرگ‌نمایی"><i class="bi bi-zoom-in"></i></button>
                                 <button type="button" onclick="wfZoom(-0.1)" title="کوچک‌نمایی"><i class="bi bi-zoom-out"></i></button>
                                 <button type="button" onclick="wfZoomReset()" title="بازنشانی بزرگ‌نمایی">۱:۱</button>
@@ -1268,9 +1091,9 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
 
                         <div class="steps-hint">
                             <i class="bi bi-info-circle"></i>
-                            جزئیات هر مرحله (نام، مسئول، مهلت، چک‌لیست) در فهرست بالا؛ <b>ترتیب و انشعاب</b> را روی بوم پایین مشخص کنید:
-                            گره «نقطهٔ تصمیم» را تیک بزنید تا دو خروجی «تأیید» و «رد» بگیرد، بعد آن‌ها را به گره مقصد (یا گره «تعریف‌کننده») وصل کنید.
-                            جای عمودی گره‌ها ترتیب اجرا را تعیین می‌کند. <b>کلیک راست</b> روی یک خط آن را حذف می‌کند.
+                            جزئیات هر مرحله (نام، مسئول، مهلت، چک‌لیست) در فهرست بالا؛ <b>زمانِ اجرا و انشعاب</b> را فقط با یال‌هایِ روی بوم پایین مشخص کنید:
+                            گرهٔ «شروع» را به هر مرحله‌ای که باید از همان ابتدا فعال شود وصل کنید؛ یک گره را می‌توان هم‌زمان به چند مرحله وصل کرد (موازی/فورک)، و یک مرحله می‌تواند از چند مبدأ هم‌زمان خط بگیرد (هم‌گرایی/join — تا همه تمام نشوند، آن مرحله فعال نمی‌شود).
+                            برای «نقطهٔ تصمیم»، تیکِ گره را بزنید تا دو خروجیِ «تأیید» (سبز) و «رد» (قرمز) بگیرد و هرکدام را به مقصدِ دلخواه وصل کنید. جابه‌جاکردنِ گره‌ها فقط ظاهر است و چیزی را تغییر نمی‌دهد. <b>کلیک راست</b> روی یک خط، آن را حذف می‌کند.
                         </div>
                     </form>
                 </div>
@@ -1443,6 +1266,39 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 }
             });
         }
+        // فاز ۶: تبدیلِ ساختارِ آبشاری/موازی/انشعابِ تک‌مقصدیِ قالب‌هایِ قدیمی
+        // (engine_version=1) به آرایهٔ یال‌هایِ گراف — فقط برایِ «نمایش» یا
+        // «بازتعریف»؛ خودِ قالبِ قدیمی دست‌نخورده می‌ماند. برمی‌گرداند:
+        // { transitions, creatorRejectSteps } — دومی مراحلی‌ست که «رد →
+        // بازگشت به ایجادکننده» داشتند و معادلِ گراف‌محور ندارند (باید
+        // دستی روی بوم وصل شوند).
+        function wfTransitionsFromTemplateData(t) {
+            if (Number(t.engine_version) === 2) {
+                return { transitions: t.transitions || [], creatorRejectSteps: [] };
+            }
+            const steps = t.steps || [];
+            const cascadeOrders = steps.filter(s => s.execution_mode !== 'parallel').map(s => s.step_order);
+            const transitions = [];
+            const creatorRejectSteps = [];
+            steps.forEach(s => {
+                if (s.execution_mode === 'parallel') return; // بدون پیش‌نیاز؛ خودش مستقل شروع می‌شود
+                const ci = cascadeOrders.indexOf(s.step_order);
+                const nextCascade = (ci >= 0 && ci + 1 < cascadeOrders.length) ? cascadeOrders[ci + 1] : null;
+                if (Number(s.is_decision) === 1) {
+                    const appr = s.on_approve_step_order ? Number(s.on_approve_step_order) : nextCascade;
+                    if (appr) transitions.push({ from_step_order: s.step_order, to_step_order: appr, condition: 'approve' });
+                    if (s.on_reject_mode === 'step' && s.on_reject_step_order) {
+                        transitions.push({ from_step_order: s.step_order, to_step_order: Number(s.on_reject_step_order), condition: 'reject' });
+                    } else {
+                        creatorRejectSteps.push(s.step_order);
+                    }
+                } else if (nextCascade) {
+                    transitions.push({ from_step_order: s.step_order, to_step_order: nextCascade, condition: 'always' });
+                }
+            });
+            return { transitions, creatorRejectSteps };
+        }
+
         // ─── مودال افزودن ────────────────────────────────
         function showAddTemplateModal() {
             currentTemplateId = null;
@@ -1456,6 +1312,9 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             if (wrap) wrap.style.display = 'none'; // تیک فقط در بازتعریف
             document.getElementById('stepsList').innerHTML = '';
             stepCounter = 0;
+            stepCanvasPos = {};
+            wfCurrentTransitions = [];
+            wfLoadedTransitions = [];
             addStep();
             new bootstrap.Modal(document.getElementById('templateModal')).show();
         }
@@ -1492,6 +1351,10 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
 
                 document.getElementById('stepsList').innerHTML = '';
                 stepCounter = 0;
+                stepCanvasPos = {};
+                wfCurrentTransitions = [];
+                const conv = wfTransitionsFromTemplateData(t);
+                wfLoadedTransitions = conv.transitions;
                 if (t.steps && t.steps.length > 0) {
                     t.steps.forEach(step => addStep(step));
                 } else {
@@ -1559,6 +1422,9 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
 
                 document.getElementById('stepsList').innerHTML = '';
                 stepCounter = 0;
+                stepCanvasPos = {};
+                wfCurrentTransitions = [];
+                wfLoadedTransitions = wfTransitionsFromTemplateData(t).transitions;
 
                 if (t.steps && t.steps.length > 0) {
                     t.steps.forEach(step => addStep(step));
@@ -1607,6 +1473,11 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
 
                 document.getElementById('stepsList').innerHTML = '';
                 stepCounter = 0;
+                stepCanvasPos = {};
+                wfCurrentTransitions = [];
+                const conv = wfTransitionsFromTemplateData(t);
+                wfLoadedTransitions = conv.transitions;
+
                 if (t.steps && t.steps.length > 0) {
                     t.steps.forEach(step => addStep(step));
                 } else {
@@ -1614,6 +1485,14 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 }
 
                 new bootstrap.Modal(document.getElementById('templateModal')).show();
+
+                // 🆕 فاز ۶: قالبِ قدیمی اگر مرحلهٔ «رد → بازگشت به ایجادکننده» داشت،
+                // این حالت معادلِ مستقیم در گراف ندارد — کاربر باید آن یال را
+                // دستی روی بوم بکشد (مثلاً به مرحله‌ای با مسئولِ «ایجادکننده»)
+                if (conv.creatorRejectSteps.length) {
+                    showToast('توجه: مرحلهٔ ' + conv.creatorRejectSteps.map(o => toFa(o)).join('، ') +
+                        ' در قالبِ قبلی «در صورتِ رد → بازگشت به ایجادکننده» بود؛ این حالت دیگر خودکار نیست — روی بوم، یالِ رد را دستی به مرحلهٔ دلخواه وصل کنید.', 'warning');
+                }
             } catch (e) {
                 console.error(e);
                 showToast('خطا در بارگذاری اطلاعات', 'error');
@@ -1623,6 +1502,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
         let stepPickers = {}; // stepId -> picker instance
         let stepOriginalData = {}; // stepId -> { type, value } (برای حالت ویرایش‌نشده)
         let stepChecklists = {}; // stepId -> [{tempId, title, description}]
+        let stepCanvasPos = {}; // stepId -> {x,y} یا null (فاز ۶ — جایِ گره رویِ بوم)
         /* 🆕 تیک «به ایجادکننده» → غیرفعال‌کردن AssigneePicker */
         function toggleCreatorMode(stepId, checkbox) {
             const wrap = document.getElementById('step_assignee_' + stepId);
@@ -1643,7 +1523,10 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
         function addStep(stepData = null) {
             stepCounter++;
             const stepId = stepData ? stepData.id : `new_${stepCounter}`;
-            const stepMode = (stepData && stepData.execution_mode === 'parallel') ? 'parallel' : 'cascade';
+            // 🆕 فاز ۶: جایِ گرهٔ این مرحله رویِ بوم (اگر از قبل ذخیره شده بود) —
+            // برایِ ساختِ اولیهٔ بوم در wfSyncFromForm استفاده می‌شود
+            stepCanvasPos[stepId] = (stepData && stepData.canvas_x != null && stepData.canvas_y != null)
+                ? { x: parseInt(stepData.canvas_x, 10), y: parseInt(stepData.canvas_y, 10) } : null;
             stepOriginalData[stepId] = {
                 type: stepData ? (stepData.assignee_type || 'section') : 'section',
                 value: stepData ?
@@ -1667,7 +1550,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                     <input type="text" class="form-control form-control-sm step-name sr-name"
                            value="${escAttr(stepData ? stepData.step_name : '')}"
                            placeholder="نام مرحله"
-                           oninput="updateExecPreview(); if(typeof wfPatchNodeDebounced==='function') wfPatchNodeDebounced('${stepId}')" required>
+                           oninput="if(typeof wfPatchNodeDebounced==='function') wfPatchNodeDebounced('${stepId}')" required>
 
                     <div class="sr-assignee-wrap">
                         <div class="sr-assignee" id="step_assignee_${stepId}"></div>
@@ -1683,17 +1566,8 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                            value="${stepData ? stepData.time_limit_hours : 24}"
                            min="1" placeholder="ساعت" title="مهلت (ساعت)" required>
 
-                    <div class="step-mode-toggle sr-mode" data-mode="${stepMode}">
-                        <button type="button" class="sm-btn sm-cascade ${stepMode==='cascade'?'active':''}" onclick="setStepMode(this,'cascade')" title="آبشاری">⛓</button>
-                        <button type="button" class="sm-btn sm-parallel ${stepMode==='parallel'?'active':''}" onclick="setStepMode(this,'parallel')" title="موازی">⚡</button>
-                    </div>
-
                     <button type="button" class="sr-checklist-toggle" id="scl-toggle-${stepId}" onclick="toggleStepChecklist('${stepId}')" title="چک‌لیست این مرحله">
                         <i class="bi bi-check2-square"></i> <span id="scl-count-${stepId}">چک‌لیست</span>
-                    </button>
-
-                    <button type="button" class="sr-decision-toggle" id="dec-toggle-${stepId}" onclick="toggleStepDecision('${stepId}')" title="انشعاب شرطی (تأیید/رد)">
-                        <i class="bi bi-signpost-split"></i> <span id="dec-label-${stepId}">انشعاب</span>
                     </button>
 
                     <button type="button" class="btn-remove-step sr-remove" onclick="removeStep(this)" title="حذف مرحله">
@@ -1709,34 +1583,6 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="addStepChecklistItem('${stepId}')">
                                 <i class="bi bi-plus"></i>
                             </button>
-                        </div>
-                    </div>
-
-                    <div class="step-decision-body" id="dec-body-${stepId}" style="display:none;">
-                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                            <input type="checkbox" class="step-decision-toggle-input" id="dec-on-${stepId}"
-                                   onchange="onDecisionToggle('${stepId}', this)">
-                            <span>این مرحله «نقطهٔ تصمیم» است (تعریف‌کنندهٔ روتین تأیید/رد می‌کند)</span>
-                        </label>
-                        <div class="dec-config" id="dec-config-${stepId}" hidden>
-                            <div class="dec-row">
-                                <span>در صورت <b>تأیید</b> → برو به مرحلهٔ</span>
-                                <select class="dec-approve-target" id="dec-approve-${stepId}">
-                                    <option value="">مرحلهٔ بعدی (پیش‌فرض)</option>
-                                </select>
-                            </div>
-                            <div class="dec-row">
-                                <span>در صورت <b>رد</b> →</span>
-                                <select class="dec-reject-kind" id="dec-rkind-${stepId}" onchange="onRejectKindChange('${stepId}', this)">
-                                    <option value="step">برگرد به مرحلهٔ…</option>
-                                    <option value="creator">برگشت به تعریف‌کنندهٔ روتین</option>
-                                </select>
-                                <select class="dec-reject-target" id="dec-reject-${stepId}"></select>
-                            </div>
-                            <div class="dec-hint">مقصد رد می‌تواند هر مرحله‌ای باشد؛ حتی مراحل بعد از این مرحله.</div>
-                        </div>
-                        <div class="dec-hint" id="dec-parallel-hint-${stepId}" hidden>
-                            انشعاب فقط برای مراحل «آبشاری» است. این مرحله موازی است.
                         </div>
                     </div>
                 </div>`;
@@ -1768,130 +1614,47 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 if (cb) toggleCreatorMode(stepId, cb);
             }
 
-            // 🆕 فاز ۳: تنظیمات انشعاب (اگر از قبل داشت) — روی المان ذخیره می‌شود و
-            // در refreshDecisionTargets() اعمال می‌شود (چون گزینه‌های select هنوز ساخته نشده‌اند)
-            const stepEl = document.querySelector(`.step-item[data-step-id="${stepId}"]`);
-            if (stepEl && stepData && Number(stepData.is_decision) === 1) {
-                stepEl._pendingBranch = {
-                    on_approve_step_order: stepData.on_approve_step_order ?? '',
-                    on_reject_mode: stepData.on_reject_mode || 'creator',
-                    on_reject_step_order: stepData.on_reject_step_order ?? ''
-                };
-                const onCb = document.getElementById('dec-on-' + stepId);
-                if (onCb) { onCb.checked = true; onDecisionToggle(stepId, onCb); }
-                const decBody = document.getElementById('dec-body-' + stepId);
-                if (decBody) decBody.style.display = 'block'; // باز نشان بده چون انشعاب دارد
-            }
-
-            updateStepNumbers();   // ← refreshDecisionTargets() هم از این‌جا صدا زده می‌شود
+            updateStepNumbers();
             initDragAndDrop();
 
-            // فاز ۴: افزودن تعاملی یک مرحله → بوم Drawflow را همگام کن
-            // (حالت bulk/restore با رویداد shown.bs.modal همگام می‌شود)
-            if (!stepData && typeof wfSyncFromForm === 'function') wfSyncFromForm();
+            // فاز ۶: افزودنِ تعاملیِ یک مرحله (توسط خودِ کاربر، نه بارگذاریِ
+            // قالبِ ذخیره‌شده) → فقط همین یک گره را به بوم اضافه کن، بدونِ
+            // دست‌زدن به جای گره‌هایِ دیگر (حالتِ بارگذاریِ کامل با رویدادِ
+            // shown.bs.modal و wfSyncFromForm انجام می‌شود)
+            if (!stepData && typeof wfAddNodeForStep === 'function') wfAddNodeForStep(stepId);
         }
-
-        // ─── انشعاب شرطی مرحله (فاز ۳) ─────────────────────────────
-        function toggleStepDecision(stepId) {
-            const body = document.getElementById('dec-body-' + stepId);
-            if (!body) return;
-            body.style.display = (body.style.display === 'none') ? 'block' : 'none';
-        }
-
-        function onDecisionToggle(stepId, cb) {
-            const stepEl = document.querySelector(`.step-item[data-step-id="${stepId}"]`);
-            const config = document.getElementById('dec-config-' + stepId);
-            const pHint = document.getElementById('dec-parallel-hint-' + stepId);
-            const isParallel = stepEl && stepEl.querySelector('.step-mode-toggle')?.dataset.mode === 'parallel';
-
-            if (cb.checked && isParallel) {
-                // انشعاب فقط برای آبشاری
-                cb.checked = false;
-                if (config) config.hidden = true;
-                if (pHint) pHint.hidden = false;
-            } else {
-                if (config) config.hidden = !cb.checked;
-                if (pHint) pHint.hidden = true;
-            }
-            markBranchToggle(stepId);
-            refreshDecisionTargets();
-        }
-
-        function onRejectKindChange(stepId, sel) {
-            const tgt = document.getElementById('dec-reject-' + stepId);
-            if (tgt) tgt.hidden = (sel.value !== 'step');
-        }
-
-        function markBranchToggle(stepId) {
-            const btn = document.getElementById('dec-toggle-' + stepId);
-            const on = document.getElementById('dec-on-' + stepId);
-            const lbl = document.getElementById('dec-label-' + stepId);
-            if (!btn || !on) return;
-            btn.classList.toggle('has-branch', on.checked);
-            if (lbl) lbl.textContent = on.checked ? 'انشعاب فعال' : 'انشعاب';
-        }
-
-        // گزینه‌های dropdown همهٔ مراحل تصمیم را از ترتیب فعلی مراحل بازمی‌سازد
-        function refreshDecisionTargets() {
-            const items = [...document.querySelectorAll('.step-item')];
-            const opts = items.map((el, i) => {
-                const nm = (el.querySelector('.step-name')?.value || '').trim() || 'بی‌نام';
-                return { pos: i + 1, name: nm };
-            });
-
-            items.forEach((el, idx) => {
-                const stepId = el.dataset.stepId;
-                const selfPos = idx + 1;
-                const approveSel = document.getElementById('dec-approve-' + stepId);
-                const rejectSel = document.getElementById('dec-reject-' + stepId);
-                if (!approveSel || !rejectSel) return;
-
-                // اعمال pending (فقط یک‌بار، بعد از ساخت گزینه‌ها)
-                const pending = el._pendingBranch;
-
-                const prevApprove = pending ? String(pending.on_approve_step_order ?? '') : approveSel.value;
-                const prevRejectKind = pending ? (pending.on_reject_mode || 'creator')
-                    : (document.getElementById('dec-rkind-' + stepId)?.value || 'step');
-                const prevRejectStep = pending ? String(pending.on_reject_step_order ?? '') : rejectSel.value;
-
-                const buildOptions = (includeDefault) => {
-                    let h = includeDefault ? '<option value="">مرحلهٔ بعدی (پیش‌فرض)</option>' : '<option value="">— انتخاب مرحله —</option>';
-                    opts.forEach(o => {
-                        if (o.pos === selfPos) return; // خود مرحله را نگذار
-                        h += `<option value="${o.pos}">${toFa(o.pos)} - ${escHtml(o.name)}</option>`;
-                    });
-                    return h;
-                };
-
-                approveSel.innerHTML = buildOptions(true);
-                rejectSel.innerHTML = buildOptions(false);
-
-                if ([...approveSel.options].some(o => o.value === prevApprove)) approveSel.value = prevApprove;
-                const rkind = document.getElementById('dec-rkind-' + stepId);
-                if (rkind && ['step', 'creator'].includes(prevRejectKind)) rkind.value = prevRejectKind;
-                if ([...rejectSel.options].some(o => o.value === prevRejectStep)) rejectSel.value = prevRejectStep;
-                if (rkind) onRejectKindChange(stepId, rkind);
-
-                if (pending) delete el._pendingBranch;
-            });
-        }
-
+        /* توابعِ آبشاری/موازی/انشعابِ تک‌مقصدیِ قدیمی (setStepMode, setAllModes,
+           toggleStepDecision, onDecisionToggle, onRejectKindChange,
+           markBranchToggle, refreshDecisionTargets, updateExecPreview) طبقِ
+           فازِ ۶ کاملاً حذف شدند — ترتیب/هم‌زمانی/انشعاب از این به بعد فقط
+           با یال‌هایِ رسم‌شده رویِ بومِ Drawflow تعیین می‌شود. */
         /* ═══════════════════════════════════════════════════════════════
-           فاز ۴ — بوم تعاملی «مسیر و انشعاب» با Drawflow.
-           مدل داده همان عناصر مخفی فاز ۳ است (dec-on/dec-approve/dec-rkind/
-           dec-reject در هر ردیف مرحله). بوم آن‌ها را می‌خواند و می‌نویسد؛
-           saveTemplate بدون تغییر می‌ماند.
-           ─ گره مرحله: ورودی ۱، خروجی ۱ (یا ۲ اگر «نقطهٔ تصمیم» تیک باشد:
-             output_1 = تأیید/بعدی، output_2 = رد).
-           ─ گره ثابت «شروع» و «تعریف‌کننده».
-           ─ جای عمودی گره‌ها → ترتیب اجرا (step_order).
+           فاز ۶ — بوم «مسیر و انشعاب» با Drawflow، این‌بار به‌عنوانِ تنها
+           منبعِ حقیقتِ ترتیب/هم‌زمانی/انشعاب (نه یک لایهٔ نمایشیِ روی یک
+           مدلِ فرمیِ جدا). جدولِ workflow_step_transitions مستقیماً از
+           یال‌هایِ این بوم ساخته می‌شود؛ saveTemplate آن را می‌خواند.
+           ─ گره «شروع»: بدونِ ورودی، یک خروجی که می‌تواند هم‌زمان به چند
+             مرحلهٔ «بدونِ پیش‌نیاز» وصل شود (یعنی آن مرحله‌ها همان اولِ
+             روتین فعال می‌شوند).
+           ─ گره مرحله: یک ورودی (که می‌تواند از چند مبدأ هم‌زمان خط بگیرد
+             → یعنی «هم‌گرایی/join»: آن مرحله تا تکمیلِ همهٔ مبدأها منتظر
+             می‌ماند)، و یک خروجی («همیشه») یا دو خروجی اگر تیکِ «نقطهٔ
+             تصمیم» رویِ گره زده شود (خروجیِ ۱ = تأیید، خروجیِ ۲ = رد). از
+             یک خروجی می‌توان هم‌زمان چند خط به چند مقصد کشید → یعنی
+             «فورک/موازی‌سازی».
+           ─ شمارهٔ مرحله (step_order) از رویِ ترتیبِ ردیف‌ها در فهرستِ
+             مراحل (بالا) تعیین می‌شود، نه از رویِ جایِ گره — پس جابه‌جا
+             کردنِ گره‌ها رویِ بوم هیچ‌وقت شماره/ترتیبِ مراحل را به‌هم
+             نمی‌ریزد؛ فقط x/y (ظاهر) ذخیره می‌شود.
            ═══════════════════════════════════════════════════════════════ */
         let wfEditor = null;
-        let wfStartId = null, wfCreatorId = null;
+        let wfStartId = null;
         let wfSyncing = false;        // جلوگیری از حلقهٔ رویدادها هنگام بازسازی
         let wfCanvasToFormTimer = null;
         let wfNodeIdByStepId = {};    // stepId → drawflow node id
         let wfPatchTimers = {};
+        let wfCurrentTransitions = []; // [{from_step_order|null, to_step_order, condition}] — خروجیِ wfCanvasToForm
+        let wfLoadedTransitions = null; // یال‌هایِ بارگذاری‌شده از سرور (view/edit/redefine) — فقط برایِ ساختِ اولیهٔ بوم
 
         // برچسب مسئول یک مرحله برای نمایش در گوشهٔ گره
         function wfStepAssigneeLabel(stepId) {
@@ -2026,67 +1789,107 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             </div>`;
         }
 
-        // فهرست مراحل فرم به‌ترتیب فعلی
+        // فهرست مراحل فرم به‌ترتیب فعلی (شمارهٔ مرحله = جایِ ردیف در این فهرست)
         function wfFormSteps() {
-            return [...document.querySelectorAll('.step-item')].map((el, i) => {
-                const stepId = el.dataset.stepId;
-                const mode = el.querySelector('.step-mode-toggle')?.dataset.mode === 'parallel' ? 'parallel' : 'cascade';
-                const decOn = document.getElementById('dec-on-' + stepId);
-                return {
-                    el, stepId, order: i + 1,
-                    name: (el.querySelector('.step-name')?.value || '').trim(),
-                    mode,
-                    isDecision: mode === 'cascade' && decOn && decOn.checked,
-                    onApprove: document.getElementById('dec-approve-' + stepId)?.value || '',
-                    rkind: document.getElementById('dec-rkind-' + stepId)?.value || 'creator',
-                    onReject: document.getElementById('dec-reject-' + stepId)?.value || ''
-                };
-            });
+            return [...document.querySelectorAll('.step-item')].map((el, i) => ({
+                el, stepId: el.dataset.stepId, order: i + 1,
+                name: (el.querySelector('.step-name')?.value || '').trim()
+            }));
         }
 
-        // توضیح متنی چگونگی اجرای روتین — از شروع تا پایان. با هر تغییری به‌روز می‌شود.
+        function wfStepOrderOf(stepId) {
+            const items = [...document.querySelectorAll('.step-item')];
+            const idx = items.findIndex(el => el.dataset.stepId === stepId);
+            return idx >= 0 ? idx + 1 : null;
+        }
+
+        // توضیح متنی چگونگی اجرای روتین — مستقیماً از روی یال‌های بوم (wfCurrentTransitions) ساخته می‌شود
         function wfBuildNarrative() {
             const box = document.getElementById('wfNarrative');
             if (!box) return;
             const steps = wfFormSteps();
             if (!steps.length) { box.innerHTML = '<div>هنوز مرحله‌ای تعریف نشده است.</div>'; return; }
 
-            const nm = s => 'مرحلهٔ ' + toFa(s.order) + (s.name ? ' «' + s.name + '»' : '');
-            const cascade = steps.filter(s => s.mode === 'cascade');
-            const parallel = steps.filter(s => s.mode === 'parallel');
+            const nameByOrder = {};
+            steps.forEach(s => { nameByOrder[s.order] = s.name || ('بی‌نام'); });
+            const nm = o => 'مرحلهٔ ' + toFa(o) + (nameByOrder[o] ? ' «' + nameByOrder[o] + '»' : '');
+
             const lines = [];
+            const starts = steps.filter(s => !wfCurrentTransitions.some(t => t.to_step_order === s.order));
+            lines.push(starts.length
+                ? 'شروع روتین: ' + starts.map(s => nm(s.order)).join(' و ') + (starts.length > 1 ? ' هم‌زمان فعال می‌شوند.' : ' فعال می‌شود.')
+                : 'هشدار: هیچ مرحله‌ای بدون پیش‌نیاز نیست — این روتین هیچ‌وقت شروع نمی‌شود!');
 
-            const startActive = [];
-            if (cascade.length) startActive.push(nm(cascade[0]) + ' (آبشاری)');
-            parallel.forEach(s => startActive.push(nm(s) + ' (موازی)'));
-            lines.push('شروع روتین: ' + (startActive.length > 1
-                ? startActive.join(' و ') + ' هم‌زمان فعال می‌شوند.'
-                : (startActive[0] || '—') + ' فعال می‌شود.'));
-
-            cascade.forEach((s, i) => {
-                const nextOrd = (i + 1 < cascade.length) ? cascade[i + 1].order : null;
-                if (s.isDecision) {
-                    const appr = s.onApprove ? ('مرحلهٔ ' + toFa(s.onApprove)) : (nextOrd ? ('مرحلهٔ ' + toFa(nextOrd)) : 'پایان روتین');
-                    let rej;
-                    if (s.rkind === 'creator') rej = 'کار برای اصلاح به تعریف‌کنندهٔ روتین برمی‌گردد';
-                    else if (s.onReject) rej = 'به مرحلهٔ ' + toFa(s.onReject) + ' می‌رود';
-                    else rej = 'کار به تعریف‌کننده برمی‌گردد';
-                    lines.push(nm(s) + ' (آبشاری) یک «نقطهٔ تصمیم» است؛ تعریف‌کنندهٔ روتین بررسی می‌کند — اگر «تأیید» → ' + appr + '، اگر «رد» → ' + rej + '.');
-                } else {
-                    lines.push('پس از تکمیل ' + nm(s) + ' (آبشاری) → ' + (nextOrd ? ('مرحلهٔ ' + toFa(nextOrd)) : 'روتین به پایان می‌رسد') + '.');
+            steps.forEach(s => {
+                const outs = wfCurrentTransitions.filter(t => t.from_step_order === s.order);
+                if (!outs.length) { lines.push(nm(s.order) + ': پایانِ یک مسیر (بعد از آن مرحلهٔ دیگری فعال نمی‌شود).'); return; }
+                const approve = outs.filter(t => t.condition === 'approve');
+                const reject = outs.filter(t => t.condition === 'reject');
+                const always = outs.filter(t => t.condition === 'always');
+                if (approve.length || reject.length) {
+                    const a = approve.length ? approve.map(t => nm(t.to_step_order)).join(' و ') : 'پایان روتین';
+                    const r = reject.length ? reject.map(t => nm(t.to_step_order)).join(' و ') : 'پایان روتین';
+                    lines.push(nm(s.order) + ' یک «نقطهٔ تصمیم» است؛ در صورت تأیید → ' + a + '، در صورت رد → ' + r + '.');
+                } else if (always.length) {
+                    lines.push('پس از تکمیل ' + nm(s.order) + ' → ' + always.map(t => nm(t.to_step_order)).join(' و ') +
+                        (always.length > 1 ? ' هم‌زمان فعال می‌شوند.' : ' فعال می‌شود.'));
                 }
             });
 
-            parallel.forEach(s => {
-                lines.push(nm(s) + ' (موازی) مستقل انجام می‌شود و جریان اصلی را جلو نمی‌برد؛ فقط باید پیش از پایان روتین تکمیل شود.');
+            // هم‌گرایی‌ها (join): مرحله‌ای که چند مبدأ هم‌زمان دارد
+            steps.forEach(s => {
+                const ins = wfCurrentTransitions.filter(t => t.to_step_order === s.order && t.condition === 'always');
+                if (ins.length > 1) {
+                    lines.push(nm(s.order) + ' تا تکمیلِ همهٔ این مراحل صبر می‌کند: ' + ins.map(t => nm(t.from_step_order)).join('، ') + '.');
+                }
             });
 
-            lines.push('پایان روتین: وقتی آخرین مرحلهٔ آبشاری و همهٔ مراحل موازی تکمیل شوند. مراحلی که به‌خاطر پرش تأیید/رد اجرا نشده‌اند، در پایان لغو می‌شوند.');
-
+            lines.push('پایان روتین: وقتی هیچ مرحلهٔ در انتظار/فعالی باقی نماند.');
             box.innerHTML = lines.map((l, i) => `<div><b>${toFa(i + 1)}.</b> ${escHtml(l)}</div>`).join('');
         }
 
-        // بازسازی کامل بوم از روی فهرست مراحل
+        // ساختِ یک گرهِ تازه رویِ بوم برایِ یک مرحله — بدونِ دست‌زدن به گره‌هایِ دیگر
+        function wfAddNodeForStep(stepId) {
+            wfInit();
+            if (!wfEditor || wfNodeIdByStepId[stepId]) return;
+            const order = wfStepOrderOf(stepId);
+            const saved = stepCanvasPos[stepId];
+            let x, y;
+            if (saved) {
+                x = saved.x; y = saved.y;
+            } else {
+                // زیرِ پایین‌ترین گرهٔ موجود قرار بگیرد تا هیچ گرهٔ دیگری جابه‌جا نشود
+                let maxY = 20;
+                try {
+                    const data = wfEditor.export().drawflow.Home.data;
+                    Object.values(data).forEach(n => { if (n.data && n.data.stepId) maxY = Math.max(maxY, n.pos_y); });
+                } catch (e) { /* بومِ خالی */ }
+                x = 30; y = maxY + 120;
+            }
+            wfSyncing = true;
+            try {
+                const nid = wfEditor.addNode('step', 1, 1, x, y, 'wf-step',
+                    { stepId }, wfNodeHtml(order, '', false, wfStepAssigneeLabel(stepId)));
+                wfNodeIdByStepId[stepId] = nid;
+            } catch (e) { console.error('wfAddNodeForStep', e); }
+            finally { wfSyncing = false; }
+            wfCanvasToForm();
+        }
+
+        // حذفِ گرهِ یک مرحله از بوم — بدونِ دست‌زدن به گره‌هایِ دیگر
+        function wfRemoveNodeForStep(stepId) {
+            const nid = wfNodeIdByStepId[stepId];
+            if (!wfEditor || !nid) return;
+            wfSyncing = true;
+            try { wfEditor.removeNodeId('node-' + nid); } catch (e) { console.error('wfRemoveNodeForStep', e); }
+            finally { wfSyncing = false; }
+            delete wfNodeIdByStepId[stepId];
+            wfCanvasToForm();
+        }
+
+        // بازسازیِ کاملِ بوم — فقط برایِ ساختِ اولیه (بازِشدنِ مودال) یا دکمهٔ
+        // دستیِ «بازچینش»؛ هیچ‌وقت از addStep/removeStep صدا زده نمی‌شود چون
+        // چینشِ دستیِ کاربر را از بین می‌برد.
         function wfSyncFromForm() {
             wfInit();
             if (!wfEditor) return;
@@ -2097,50 +1900,50 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 const steps = wfFormSteps();
                 wfStartId = wfEditor.addNode('start', 0, 1, 30, 20, 'wf-fixed', {}, '<div class="wf-node-body"><b>شروع</b></div>');
 
+                // یال‌ها: اگر از قبل روی خودِ بوم چیزی ساخته/ویرایش شده (wfCurrentTransitions)
+                // همان حفظ شود؛ وگرنه (اولین‌بار) از دادهٔ بارگذاری‌شدهٔ سرور استفاده کن
+                const trans = (wfCurrentTransitions && wfCurrentTransitions.length) ? wfCurrentTransitions : (wfLoadedTransitions || []);
+                const outByOrder = {}; // order → [{to,cond}]
+                trans.forEach(t => {
+                    const key = (t.from_step_order === null || t.from_step_order === undefined) ? 'start' : t.from_step_order;
+                    (outByOrder[key] = outByOrder[key] || []).push(t);
+                });
+                const isDecisionOrder = o => (outByOrder[o] || []).some(t => t.condition === 'approve' || t.condition === 'reject');
+
                 const idByOrder = {};
                 steps.forEach((s, i) => {
-                    const nid = wfEditor.addNode('step', 1, s.isDecision ? 2 : 1, 30, 110 + i * 95,
-                        'wf-step' + (s.isDecision ? ' wf-decision' : ''),
-                        { stepId: s.stepId }, wfNodeHtml(s.order, s.name, s.isDecision, wfStepAssigneeLabel(s.stepId)));
+                    const dec = isDecisionOrder(s.order);
+                    const pos = stepCanvasPos[s.stepId];
+                    const x = pos ? pos.x : 30;
+                    const y = pos ? pos.y : (110 + i * 120);
+                    const nid = wfEditor.addNode('step', 1, dec ? 2 : 1, x, y,
+                        'wf-step' + (dec ? ' wf-decision' : ''),
+                        { stepId: s.stepId }, wfNodeHtml(s.order, s.name, dec, wfStepAssigneeLabel(s.stepId)));
                     idByOrder[s.order] = nid;
                     wfNodeIdByStepId[s.stepId] = nid;
                 });
 
-                wfCreatorId = wfEditor.addNode('creator', 1, 0, 260, 110 + steps.length * 95, 'wf-fixed', {},
-                    '<div class="wf-node-body"><b>تعریف‌کنندهٔ روتین</b></div>');
-
-                // یال‌ها
-                const cascadeOrders = steps.filter(s => s.mode === 'cascade').map(s => s.order);
-                if (cascadeOrders.length) {
-                    wfEditor.addConnection(wfStartId, idByOrder[cascadeOrders[0]], 'output_1', 'input_1');
-                }
-                steps.forEach(s => {
-                    if (s.mode === 'parallel') {
-                        wfEditor.addConnection(wfStartId, idByOrder[s.order], 'output_1', 'input_1');
-                        return;
-                    }
-                    const ci = cascadeOrders.indexOf(s.order);
-                    const nextCascadeOrder = (ci >= 0 && ci + 1 < cascadeOrders.length) ? cascadeOrders[ci + 1] : null;
-                    if (s.isDecision) {
-                        const appr = s.onApprove ? parseInt(s.onApprove, 10) : nextCascadeOrder;
-                        if (appr && idByOrder[appr]) wfEditor.addConnection(idByOrder[s.order], idByOrder[appr], 'output_1', 'input_1');
-                        if (s.rkind === 'creator') {
-                            wfEditor.addConnection(idByOrder[s.order], wfCreatorId, 'output_2', 'input_1');
-                        } else if (s.onReject && idByOrder[parseInt(s.onReject, 10)]) {
-                            wfEditor.addConnection(idByOrder[s.order], idByOrder[parseInt(s.onReject, 10)], 'output_2', 'input_1');
-                        } else {
-                            wfEditor.addConnection(idByOrder[s.order], wfCreatorId, 'output_2', 'input_1');
-                        }
-                    } else if (nextCascadeOrder && idByOrder[nextCascadeOrder]) {
-                        wfEditor.addConnection(idByOrder[s.order], idByOrder[nextCascadeOrder], 'output_1', 'input_1');
-                    }
+                // رسمِ یال‌ها از رویِ داده‌یِ بارگذاری‌شده
+                trans.forEach(t => {
+                    const toNid = idByOrder[t.to_step_order];
+                    if (!toNid) return;
+                    const fromNid = (t.from_step_order === null || t.from_step_order === undefined) ? wfStartId : idByOrder[t.from_step_order];
+                    if (!fromNid) return;
+                    const outKey = (t.condition === 'reject') ? 'output_2' : 'output_1';
+                    try { wfEditor.addConnection(fromNid, toNid, outKey, 'input_1'); } catch (e) { /* یالِ تکراری/نامعتبر */ }
                 });
+
+                // اگر هیچ دادهٔ بارگذاری‌شده‌ای نبود (قالبِ تازه) و فقط یک مرحله
+                // هست، آن را خودکار به «شروع» وصل کن تا بومِ خالی سردرگم‌کننده نباشد
+                if (!trans.length && steps.length === 1) {
+                    try { wfEditor.addConnection(wfStartId, idByOrder[steps[0].order], 'output_1', 'input_1'); } catch (e) {}
+                }
             } catch (e) {
                 console.error('wfSyncFromForm', e);
             } finally {
                 wfSyncing = false;
             }
-            if (typeof wfBuildNarrative === 'function') wfBuildNarrative();
+            wfCanvasToForm();
         }
 
         function wfSetNodeDecision(nodeId, on) {
@@ -2163,74 +1966,81 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             wfCanvasToFormTimer = setTimeout(wfCanvasToForm, 200);
         }
 
-        // نوشتن وضعیت بوم به عناصر مخفی فرم + بازچینش ردیف‌ها بر اساس جای عمودی
+        // خواندنِ وضعیتِ کاملِ بوم → wfCurrentTransitions (یال‌ها) + stepCanvasPos (جایِ گره‌ها).
+        // دیگر هیچ فیلدِ فرمیِ جداگانه‌ای نمی‌نویسد و ترتیبِ ردیف‌هایِ فهرستِ
+        // مراحل را هم جابه‌جا نمی‌کند — شماره‌گذاری همیشه از رویِ فهرست است.
         function wfCanvasToForm() {
             if (!wfEditor) return;
             let data;
             try { data = wfEditor.export().drawflow.Home.data; } catch (e) { return; }
 
-            const nodes = Object.values(data).filter(n => n.data && n.data.stepId);
-            if (!nodes.length) return;
-            nodes.sort((a, b) => (a.pos_y - b.pos_y));
-
-            const orderByNodeId = {};
-            nodes.forEach((n, i) => { orderByNodeId[n.id] = i + 1; });
-
-            // بازچینش DOM فهرست مراحل
-            const list = document.getElementById('stepsList');
-            nodes.forEach(n => {
-                const row = document.querySelector(`.step-item[data-step-id="${n.data.stepId}"]`);
-                if (row) list.appendChild(row);
+            const stepNodes = Object.values(data).filter(n => n.data && n.data.stepId);
+            const orderOfNode = {}; // nodeId → step_order
+            stepNodes.forEach(n => {
+                const ord = wfStepOrderOf(n.data.stepId);
+                if (ord) orderOfNode[n.id] = ord;
+                // جایِ گره را هم ذخیره کن تا هنگامِ ذخیرهٔ قالب فرستاده شود
+                stepCanvasPos[n.data.stepId] = { x: Math.round(n.pos_x), y: Math.round(n.pos_y) };
             });
-            updateStepNumbers(); // شماره‌ها + refreshDecisionTargets
 
-            // انشعاب هر مرحله از روی یال‌ها
-            nodes.forEach(n => {
-                const stepId = n.data.stepId;
-                const decOn = document.getElementById('dec-on-' + stepId);
+            const transitions = [];
+
+            // یال‌ها را از سمتِ «خروجیِ» هر گرهِ مبدأ می‌سازیم:
+            // برایِ هر گرهِ مبدأ (مرحله یا «شروع»)، هر خروجی‌اش را می‌خوانیم.
+            const allNodes = Object.values(data);
+            allNodes.forEach(n => {
+                const isStart = n.id === wfStartId;
+                const fromOrder = isStart ? null : orderOfNode[n.id];
+                if (!isStart && !fromOrder) return;
                 const outs = n.outputs || {};
-                const isDecision = Object.keys(outs).length >= 2;
-
-                if (decOn) {
-                    if (decOn.checked !== isDecision) {
-                        decOn.checked = isDecision;
-                        if (typeof onDecisionToggle === 'function') onDecisionToggle(stepId, decOn);
-                    }
-                }
-                if (!isDecision) return;
-
-                const targetOf = (outKey) => {
-                    const c = outs[outKey] && outs[outKey].connections && outs[outKey].connections[0];
-                    return c ? parseInt(c.node, 10) : null;
-                };
-                const apprNode = targetOf('output_1');
-                const rejNode = targetOf('output_2');
-
-                const apprSel = document.getElementById('dec-approve-' + stepId);
-                const rkind = document.getElementById('dec-rkind-' + stepId);
-                const rejSel = document.getElementById('dec-reject-' + stepId);
-
-                if (apprSel) {
-                    const p = apprNode && orderByNodeId[apprNode] ? String(orderByNodeId[apprNode]) : '';
-                    if ([...apprSel.options].some(o => o.value === p)) apprSel.value = p; else apprSel.value = '';
-                }
-                if (rkind && rejSel) {
-                    if (rejNode === wfCreatorId || rejNode === null) {
-                        rkind.value = 'creator';
-                    } else {
-                        rkind.value = 'step';
-                        const p = orderByNodeId[rejNode] ? String(orderByNodeId[rejNode]) : '';
-                        if ([...rejSel.options].some(o => o.value === p)) rejSel.value = p;
-                    }
-                    if (typeof onRejectKindChange === 'function') onRejectKindChange(stepId, rkind);
-                }
+                const outKeys = Object.keys(outs).sort(); // output_1, output_2, ...
+                const isDecision = !isStart && outKeys.length >= 2;
+                outKeys.forEach((key, idx) => {
+                    const cond = isDecision ? (idx === 0 ? 'approve' : 'reject') : 'always';
+                    (outs[key].connections || []).forEach(c => {
+                        const toOrder = orderOfNode[c.node];
+                        if (!toOrder) return;
+                        transitions.push({ from_step_order: fromOrder, to_step_order: toOrder, condition: cond });
+                    });
+                });
             });
+            wfCurrentTransitions = transitions;
 
             if (typeof wfBuildNarrative === 'function') wfBuildNarrative();
         }
 
+        // اعتبارسنجیِ سمتِ کاربر، همتایِ validateStepTransitions در بک‌اند —
+        // پیامِ خطا را برمی‌گرداند یا null اگر معتبر بود
+        function wfValidateGraph() {
+            const steps = wfFormSteps();
+            if (!steps.length) return null;
+            const incoming = {};
+            wfCurrentTransitions.forEach(t => {
+                (incoming[t.to_step_order] = incoming[t.to_step_order] || []).push(t.condition);
+            });
+            for (const ord in incoming) {
+                const conds = incoming[ord];
+                const hasConditional = conds.some(c => c !== 'always');
+                if (hasConditional && conds.length > 1) {
+                    const nm = steps.find(s => s.order === Number(ord));
+                    return `مرحلهٔ ${toFa(ord)}${nm && nm.name ? ' «' + nm.name + '»' : ''} هم مقصدِ یک تصمیم (تأیید/رد) است هم مقصدِ یالِ دیگری — این حالت مجاز نیست؛ روی بوم یکی از یال‌های ورودی آن را حذف کنید.`;
+                }
+            }
+            const hasStart = steps.some(s => !incoming[s.order]);
+            if (!hasStart) {
+                return 'هیچ مرحله‌ای بدون پیش‌نیاز (نقطهٔ شروع) وجود ندارد — حداقل یک مرحله باید بدون یالِ ورودی باشد تا روتین بتواند شروع شود.';
+            }
+            return null;
+        }
+
         function wfZoom(delta) { if (wfEditor) { delta > 0 ? wfEditor.zoom_in() : wfEditor.zoom_out(); } }
         function wfZoomReset() { if (wfEditor) wfEditor.zoom_reset(); }
+
+        // چیدمانِ گره‌ها را به یک ستونِ مرتب برمی‌گرداند؛ یال‌ها/داده‌ها حفظ می‌شوند
+        function wfAutoArrange() {
+            Object.keys(stepCanvasPos).forEach(stepId => { stepCanvasPos[stepId] = null; });
+            wfSyncFromForm();
+        }
 
         // ─── حذف مرحله ───────────────────────────────────
         function removeStep(btn) {
@@ -2239,9 +2049,11 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             delete stepPickers[stepId];
             delete stepOriginalData[stepId];
             delete stepChecklists[stepId];
+            delete stepCanvasPos[stepId];
             stepEl.remove();
             updateStepNumbers();
-            if (typeof wfSyncFromForm === 'function') wfSyncFromForm();
+            // فاز ۶: فقط همین یک گره از بوم حذف شود — بقیهٔ گره‌ها/جایشان دست‌نخورده می‌مانند
+            if (typeof wfRemoveNodeForStep === 'function') wfRemoveNodeForStep(stepId);
         }
 
         // ─── چک‌لیست مرحله ────────────────────────────────
@@ -2361,75 +2173,20 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             document.querySelectorAll('.step-item').forEach((el, i) => {
                 el.querySelector('.step-num').textContent = toFa(i + 1);
             });
-            updateExecPreview();
-            if (typeof refreshDecisionTargets === 'function') refreshDecisionTargets();
-            if (typeof wfBuildNarrative === 'function') wfBuildNarrative();
-        }
-
-        // ── انتخاب حالت یک مرحله ──
-        function setStepMode(btn, mode) {
-            const wrap = btn.closest('.step-mode-toggle');
-            wrap.dataset.mode = mode;
-            wrap.querySelectorAll('.sm-btn').forEach(b => b.classList.remove('active'));
-            wrap.querySelector(mode === 'parallel' ? '.sm-parallel' : '.sm-cascade').classList.add('active');
-            // 🆕 انشعاب فقط برای آبشاری — با تبدیل به موازی، تصمیم خاموش می‌شود
-            if (mode === 'parallel') {
-                const stepEl = wrap.closest('.step-item');
-                const stepId = stepEl?.dataset.stepId;
-                const onCb = stepId && document.getElementById('dec-on-' + stepId);
-                if (onCb && onCb.checked) { onCb.checked = false; onDecisionToggle(stepId, onCb); }
-            }
-            updateExecPreview();
-        }
-
-        // ── ست‌کردن همهٔ مراحل با یک کلیک ──
-        function setAllModes(mode) {
-            document.querySelectorAll('.step-mode-toggle').forEach(wrap => {
-                wrap.dataset.mode = mode;
-                wrap.querySelectorAll('.sm-btn').forEach(b => b.classList.remove('active'));
-                wrap.querySelector(mode === 'parallel' ? '.sm-parallel' : '.sm-cascade').classList.add('active');
-            });
-            updateExecPreview();
-        }
-
-        // ── پیش‌نمایش زنده ──
-        function updateExecPreview() {
-            const box = document.getElementById('execPreview');
-            if (!box) return;
-            const faNum = s => String(s).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
-            const items = [...document.querySelectorAll('.step-item')];
-            if (!items.length) {
-                box.innerHTML = '';
-                return;
-            }
-
-            const modes = items.map(it => it.querySelector('.step-mode-toggle')?.dataset.mode || 'cascade');
-            const names = items.map((it, i) => (it.querySelector('.step-name')?.value.trim() || ('مرحله ' + faNum(i + 1))));
-            const firstCascadeIdx = modes.findIndex(m => m === 'cascade');
-
-            const activeNow = [],
-                waiting = [];
-            items.forEach((it, i) => {
-                if (modes[i] === 'parallel' || i === firstCascadeIdx) {
-                    activeNow.push(names[i]);
-                } else {
-                    let p = -1;
-                    for (let k = i - 1; k >= 0; k--) {
-                        if (modes[k] === 'cascade') {
-                            p = k;
-                            break;
-                        }
-                    }
-                    waiting.push(names[i] + (p >= 0 ? ' (بعد از: ' + names[p] + ')' : ''));
+            // جابه‌جاییِ ردیف‌ها (درگ‌ودراپ) شمارهٔ مرحله‌ها را عوض می‌کند —
+            // نودهای بوم سرِ جایشان می‌مانند، فقط باید نگاشتِ شماره↔یال دوباره
+            // محاسبه و متنِ گره‌ها (شماره) به‌روزرسانی شود
+            document.querySelectorAll('.step-item').forEach((el, i) => {
+                const stepId = el.dataset.stepId;
+                const nid = wfNodeIdByStepId[stepId];
+                if (nid) {
+                    const t = document.querySelector('#node-' + nid + ' .wf-node-title');
+                    if (t) t.innerHTML = toFa(i + 1) + '. <span class="wf-node-name">' + escHtml(el.querySelector('.step-name')?.value.trim() || ('مرحلهٔ ' + toFa(i + 1))) + '</span>';
                 }
             });
-
-            box.innerHTML =
-                '<div class="ep-line"><b>از ابتدا فعال:</b> ' + (activeNow.length ? activeNow.map(escHtml).join('، ') : '—') + '</div>' +
-                '<div class="ep-line"><b>منتظر:</b> ' + (waiting.length ? waiting.map(escHtml).join('، ') : '—') + '</div>';
-
-            if (typeof wfBuildNarrative === 'function') wfBuildNarrative();
+            if (typeof wfCanvasToForm === 'function') wfCanvasToForm();
         }
+
 
         // ─── Drag & Drop ──────────────────────────────────
         let draggedEl = null;
@@ -2467,13 +2224,19 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 return;
             }
 
-            // فاز ۴: آخرین وضعیت بوم را (بدون منتظر debounce) در فرم بنویس
+            // فاز ۶: آخرین وضعیت بوم را (بدون منتظر debounce) در transitions/جای‌گره‌ها بنویس
             clearTimeout(wfCanvasToFormTimer);
             if (typeof wfCanvasToForm === 'function' && wfEditor) wfCanvasToForm();
 
             const stepItems = document.querySelectorAll('.step-item');
             if (stepItems.length === 0) {
                 showToast('حداقل یک مرحله تعریف کنید', 'warning');
+                return;
+            }
+
+            const graphError = wfValidateGraph();
+            if (graphError) {
+                showToast(graphError, 'warning');
                 return;
             }
 
@@ -2485,8 +2248,6 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 const sName = item.querySelector('.step-name').value.trim();
                 const sTime = item.querySelector('.step-time').value;
 
-                const sMode = item.querySelector('.step-mode-toggle')?.dataset.mode === 'parallel' ? 'parallel' : 'cascade';
-
                 // 🆕 چک‌لیست این مرحله — فقط آیتم‌هایی که عنوان دارند
                 const stepChecklistItems = (stepChecklists[stepId] || [])
                     .filter(it => it.title && it.title.trim())
@@ -2495,20 +2256,8 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                         description: (it.description || '').trim()
                     }));
 
-                // 🆕 فاز ۳: تنظیمات انشعاب شرطی (فقط برای آبشاری)
-                const decOn = document.getElementById('dec-on-' + stepId);
-                const branch = { is_decision: 0, on_approve_step_order: null, on_reject_mode: null, on_reject_step_order: null };
-                if (sMode === 'cascade' && decOn && decOn.checked) {
-                    branch.is_decision = 1;
-                    branch.on_approve_step_order = document.getElementById('dec-approve-' + stepId)?.value || null;
-                    const rkind = document.getElementById('dec-rkind-' + stepId)?.value || 'creator';
-                    branch.on_reject_mode = rkind;
-                    if (rkind === 'step') {
-                        const rt = document.getElementById('dec-reject-' + stepId)?.value || '';
-                        if (!rt) { valid = false; }
-                        branch.on_reject_step_order = rt || null;
-                    }
-                }
+                // فاز ۶: جایِ گرهٔ این مرحله رویِ بوم (برایِ باز نشدنِ چینش در دفعهٔ بعد)
+                const pos = stepCanvasPos[stepId];
 
                 // 🆕 حالت «به ایجادکننده»
                 if (item.dataset.creatorMode === '1') {
@@ -2522,9 +2271,9 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                         time_limit_hours: parseInt(sTime),
                         assignee_type: 'creator',
                         assignee_value: 'creator', // مقدار نمادین (بک‌اند نادیده می‌گیرد)
-                        execution_mode: sMode,
                         checklist_items: stepChecklistItems,
-                        ...branch
+                        canvas_x: pos ? pos.x : null,
+                        canvas_y: pos ? pos.y : null
                     });
                     return;
                 }
@@ -2549,14 +2298,14 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                     time_limit_hours: parseInt(sTime),
                     assignee_type: assignee.type,
                     assignee_value: assignee.value,
-                    execution_mode: sMode,
                     checklist_items: stepChecklistItems,
-                    ...branch
+                    canvas_x: pos ? pos.x : null,
+                    canvas_y: pos ? pos.y : null
                 });
             });
 
             if (!valid) {
-                showToast('تمام فیلدها را تکمیل کنید — و برای مراحل «رد → برگرد به مرحلهٔ…»، مقصد رد را انتخاب کنید', 'warning');
+                showToast('تمام فیلدها را تکمیل کنید', 'warning');
                 return;
             }
 
@@ -2564,6 +2313,8 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                 name,
                 description: document.getElementById('templateDescription').value.trim(),
                 is_active: document.getElementById('templateActive').checked ? 1 : 0,
+                engine_version: 2,
+                transitions: wfCurrentTransitions,
                 steps
             };
 
