@@ -87,8 +87,18 @@ try {
     $sectionsCsv = implode(',', $userSections);
 
     $idMatch = ctype_digit($q) ? (int) $q : 0;
-    $perType = 6;
+    $perType = 10;
+    // صفحه‌بندیِ «نمایش بیشتر» — همون offset برایِ هر ۵ نوع یکسان پیش می‌ره
+    // (کلیک اول: ۰، کلیک دوم: ۱۰، و...)؛ چون مقدارِ عددیه (نه رشته‌یِ
+    // کاربر)، بعد از cast به int مستقیم توی SQL می‌تونه قرار بگیره، دقیقا
+    // مثلِ perType که از قبل همین‌جوری استفاده می‌شد.
+    $offset = max(0, (int) ($_GET['offset'] ?? 0));
     $results = [];
+    // 🔒 اگه رویِ هر نوعی دقیقا perType ردیف برگشت، یعنی احتمالا نتیجه‌یِ
+    // بیشتری هم هست که با همین LIMIT نیومده — پس لینکِ «نمایش بیشتر» رو
+    // نشون بده. این دقیق‌ترین کاری هست که بدونِ یک کوئریِ COUNT(*) جداگانه
+    // برایِ هر نوع (که کندتره) می‌شه کرد.
+    $hasMore = false;
 
     // ───── تسک‌ها ─────
     if (isset($want['task'])) {
@@ -181,10 +191,12 @@ try {
               AND $accessSql
               AND ($tier4Sql OR t.id = ? OR t.workflow_instance_id = ?)
             ORDER BY match_tier ASC, t.created_at DESC
-            LIMIT $perType
+            LIMIT $perType OFFSET $offset
         ");
         $stmt->execute($params);
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (count($rows) === $perType) $hasMore = true;
+        foreach ($rows as $row) {
             $results[] = [
                 'type' => 'task',
                 'type_label' => 'کار',
@@ -212,10 +224,12 @@ try {
               AND (t.organization_id = ? OR ?)
               AND ($subjectWordSql OR t.id = ? OR tm.id IS NOT NULL)
             ORDER BY t.created_at DESC
-            LIMIT $perType
+            LIMIT $perType OFFSET $offset
         ");
         $stmt->execute($params);
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (count($rows) === $perType) $hasMore = true;
+        foreach ($rows as $row) {
             $results[] = [
                 'type' => 'ticket',
                 'type_label' => 'تیکت',
@@ -238,7 +252,7 @@ try {
                 FROM announcements
                 WHERE is_active = 1 AND ($wordSql)
                 ORDER BY created_at DESC
-                LIMIT $perType
+                LIMIT $perType OFFSET $offset
             ");
             $stmt->execute($params);
         } else {
@@ -261,11 +275,13 @@ try {
                       )
                   )
                 ORDER BY a.created_at DESC
-                LIMIT $perType
+                LIMIT $perType OFFSET $offset
             ");
             $stmt->execute($params);
         }
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (count($rows) === $perType) $hasMore = true;
+        foreach ($rows as $row) {
             $results[] = [
                 'type' => 'announcement',
                 'type_label' => 'اطلاعیه',
@@ -290,10 +306,12 @@ try {
             FROM notifications
             WHERE user_id = ? AND ($wordSql)
             ORDER BY created_at DESC
-            LIMIT $perType
+            LIMIT $perType OFFSET $offset
         ");
         $stmt->execute($params);
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (count($rows) === $perType) $hasMore = true;
+        foreach ($rows as $row) {
             $link = null;
             if ($row['related_type'] === 'task' && $row['related_id']) {
                 $link = 'task-detail.php?id=' . $row['related_id'];
@@ -326,10 +344,12 @@ try {
             WHERE wi.organization_id = ? AND wi.is_deleted = 0
               AND ($wordSql OR wi.id = ?)
             ORDER BY wi.started_at DESC
-            LIMIT $perType
+            LIMIT $perType OFFSET $offset
         ");
         $stmt->execute($params);
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (count($rows) === $perType) $hasMore = true;
+        foreach ($rows as $row) {
             $results[] = [
                 'type' => 'workflow',
                 'type_label' => 'روتین',
@@ -343,7 +363,7 @@ try {
         }
     }
 
-    echo json_encode(['success' => true, 'query' => $q, 'results' => $results], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => true, 'query' => $q, 'results' => $results, 'has_more' => $hasMore], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
     http_response_code(500);

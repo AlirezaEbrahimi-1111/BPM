@@ -357,6 +357,26 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         padding: 10px 0 4px;
     }
 
+    .gs-load-more {
+        text-align: center;
+        color: #8e57fe;
+        font-size: .8rem;
+        font-weight: 600;
+        padding: 10px 0 4px;
+        cursor: pointer;
+        border-top: 1px solid rgba(142, 87, 254, .15);
+        margin-top: 4px;
+    }
+
+    .gs-load-more:hover {
+        background: rgba(142, 87, 254, .12);
+        border-radius: 8px;
+    }
+
+    :root[data-theme="dark"] .gs-load-more:hover {
+        background: rgba(142, 87, 254, .18);
+    }
+
     @media (max-width: 768px) {
         .gs-panel {
             width: 92%;
@@ -2825,6 +2845,11 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
     var gsSearchTimer = null;
     var gsLastQuery = '';
     var gsResultsCache = [];
+    // 🆕 صفحه‌بندیِ «نمایش بیشتر» — طبقِ درخواستِ صریح: هر دسته حداکثر ۱۰تا،
+    // با کلیکِ «نمایش بیشتر» ۱۰تایِ بعدی لود بشه و اگه باز هم بود، دوباره
+    // همون لینک نشون داده بشه (تکرارپذیر، نه فقط یک‌بار)
+    var gsOffset = 0;
+    var gsHasMore = false;
 
     function gsGetActiveTypes() {
         var chips = document.querySelectorAll('.gs-type-chip.active');
@@ -2893,6 +2918,9 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         var box = document.getElementById('gsResults');
         if (!box) return;
 
+        gsOffset = 0; // هر جستجوی جدید (یا تغییرِ فیلترِ نوع) از صفحه‌ی اول شروع می‌شه
+        gsResultsCache = [];
+
         if (q === '') {
             box.innerHTML = '<div class="gs-hint">برای جستجو تایپ کنید</div>';
             gsLastQuery = q;
@@ -2905,8 +2933,16 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
         }
 
         gsLastQuery = q;
+        gsFetchResults(q, 0, false);
+    }
+
+    /** append=false یعنی جایگزینیِ کامل (جستجویِ جدید)؛ append=true یعنی
+        ادامه‌ی همون جستجو با کلیکِ «نمایش بیشتر» */
+    function gsFetchResults(q, offset, append) {
+        var box = document.getElementById('gsResults');
+        if (!box) return;
         var typesParam = gsGetActiveTypes().join(',');
-        fetch('../api/search/global.php?q=' + encodeURIComponent(q) + '&types=' + encodeURIComponent(typesParam), {
+        fetch('../api/search/global.php?q=' + encodeURIComponent(q) + '&types=' + encodeURIComponent(typesParam) + '&offset=' + offset, {
                 headers: { 'Authorization': 'Bearer ' + authToken }
             })
             .then(function(r) { return r.json(); })
@@ -2914,29 +2950,36 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                 // اگه کاربر تا وقت برگشت پاسخ چیز دیگه‌ای تایپ کرده، این پاسخ قدیمی رو نادیده بگیر
                 if (q !== gsLastQuery) return;
                 if (!data.success) {
-                    box.innerHTML = '<div class="gs-hint">خطا در جستجو</div>';
+                    if (!append) box.innerHTML = '<div class="gs-hint">خطا در جستجو</div>';
                     return;
                 }
-                gsRenderResults(data.results || []);
+                gsOffset = offset;
+                gsHasMore = !!data.has_more;
+                gsRenderResults(data.results || [], append);
             })
             .catch(function() {
                 if (q !== gsLastQuery) return;
-                box.innerHTML = '<div class="gs-hint">خطا در ارتباط با سرور</div>';
+                if (!append) box.innerHTML = '<div class="gs-hint">خطا در ارتباط با سرور</div>';
             });
     }
 
-    function gsRenderResults(results) {
+    function gsLoadMore(ev) {
+        if (ev) ev.preventDefault();
+        gsFetchResults(gsLastQuery, gsOffset + 10, true);
+    }
+
+    function gsRenderResults(newResults, append) {
         var box = document.getElementById('gsResults');
         if (!box) return;
 
-        gsResultsCache = results;
+        gsResultsCache = append ? gsResultsCache.concat(newResults) : newResults;
 
-        if (!results.length) {
+        if (!gsResultsCache.length) {
             box.innerHTML = '<div class="gs-empty">نتیجه‌ای یافت نشد</div>';
             return;
         }
 
-        box.innerHTML = results.map(function(r, idx) {
+        var html = gsResultsCache.map(function(r, idx) {
             var snippet = r.snippet ? '<span class="gs-result-snippet">' + esc(r.snippet) + '</span>' : '';
             var isNav = (r.type !== 'announcement' && r.type !== 'notification');
             var tag = isNav ? 'a' : 'div';
@@ -2949,6 +2992,12 @@ $__crmReportMenu = isset($db) && ($db instanceof PDO)
                 '</div>' +
                 '</' + tag + '>';
         }).join('');
+
+        if (gsHasMore) {
+            html += '<div class="gs-load-more" onclick="gsLoadMore(event)">نمایش بیشتر</div>';
+        }
+
+        box.innerHTML = html;
     }
 
     /** کلیک روی نتیجه — اطلاعیه: بازکردن همون مودال آشنا (بدون رفتن به صفحه‌ی جدید)؛
