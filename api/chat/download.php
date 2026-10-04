@@ -16,8 +16,6 @@ try {
     // قبلا ?token=<JWT> در لاگ سرور و DOM نشت می‌کرد.
     $auth = new Auth($db);
     $user_id = $auth->getUserFromToken();
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
-    requirePlanFeature($user_id, 'chat');
     if (!$user_id) {
         require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
         if (!empty($_SESSION['user_id'])) {
@@ -32,6 +30,8 @@ try {
         echo json_encode(['success' => false, 'message' => 'عدم احراز هویت']);
         exit;
     }
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'chat');
 
     $attachmentId = (int) ($_GET['id'] ?? 0);
     if (!$attachmentId) {

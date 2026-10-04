@@ -45,14 +45,14 @@ try {
     $user_id = $_SESSION['user_id'] ?? null;
     if (!$user_id)
         $user_id = $auth->getUserFromToken();
-        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
-        requirePlanFeature($user_id, 'admin_other');
 
     if (!$user_id) {
         http_response_code(401);
         echo json_encode(['success' => false, 'message' => 'احراز هویت نامعتبر']);
         exit;
     }
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'admin_other');
 
     // بررسی نقش کاربر — دو مدل تعطیلی داریم:
     //   ۱) سراسری (organization_id = NULL) — فقط کاربر id=1

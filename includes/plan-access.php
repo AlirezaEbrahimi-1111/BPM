@@ -103,6 +103,12 @@ function requirePlanFeature(int $userId, string $feature): void
     if (!isset(PLAN_FEATURE_MIN[$feature])) {
         throw new InvalidArgumentException("ناشناخته: {$feature}");
     }
+    if ($userId <= 0) {
+        http_response_code(401);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'message' => 'عدم احراز هویت'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 
     $db = (new Database())->getConnection();
     $stmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
