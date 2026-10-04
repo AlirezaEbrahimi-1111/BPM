@@ -26,6 +26,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
 try {
     // ۱) احراز هویت
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'routine');
 
     $database = new Database();
     $db = $database->getConnection();

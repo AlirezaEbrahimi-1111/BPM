@@ -17,6 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'notifications');
     
     $database = new Database();
     $db = $database->getConnection();

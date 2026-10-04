@@ -7,6 +7,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'routine');
     
     $filters = [];
     if (!empty($_GET['template_id'])) $filters['template_id'] = $_GET['template_id'];

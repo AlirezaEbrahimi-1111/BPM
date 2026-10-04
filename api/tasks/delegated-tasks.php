@@ -19,6 +19,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'delegated_tasks');
 
     $database = new Database();
     $db = $database->getConnection();

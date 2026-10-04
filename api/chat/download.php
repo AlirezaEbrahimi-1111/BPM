@@ -16,6 +16,8 @@ try {
     // قبلا ?token=<JWT> در لاگ سرور و DOM نشت می‌کرد.
     $auth = new Auth($db);
     $user_id = $auth->getUserFromToken();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'chat');
     if (!$user_id) {
         require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
         if (!empty($_SESSION['user_id'])) {

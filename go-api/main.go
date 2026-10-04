@@ -146,13 +146,13 @@ func main() {
 	// بررسی شد و معلوم شد نسخه‌ی PHP‌شون هم صفر مصرف‌کننده داشت (نه در
 	// فرانت‌اند، نه در هیچ فایل دیگه‌ای)؛ کد مرده بود، هم PHPش هم این
 	// پورت‌ها، پس هر دو حذف شدن (۲۰۲۶/۰۶/۳۰).
-	mux.HandleFunc("GET /go/api/reports/stats", s.auth(reports.Stats(s.db)))
+	mux.HandleFunc("GET /go/api/reports/stats", s.auth(core.RequirePlan(s.db, "monitoring", reports.Stats(s.db))))
 	mux.HandleFunc("GET /go/api/reports/list", s.auth(reports.List(s.db)))
 	mux.HandleFunc("POST /go/api/reports/submit", s.auth(reports.Submit(s.db)))
 	// سه endpoint زنده‌ی داشبورد/گزارش روزانه.
 	mux.HandleFunc("GET /go/api/reports/get-today-activities", s.auth(reports.TodayActivities(s.db)))
-	mux.HandleFunc("GET /go/api/reports/bottleneck-report", s.auth(reports.Bottleneck(s.db)))
-	mux.HandleFunc("GET /go/api/reports/top-delayed-users", s.auth(reports.TopDelayedUsers(s.db)))
+	mux.HandleFunc("GET /go/api/reports/bottleneck-report", s.auth(core.RequirePlan(s.db, "monitoring", reports.Bottleneck(s.db))))
+	mux.HandleFunc("GET /go/api/reports/top-delayed-users", s.auth(core.RequirePlan(s.db, "monitoring", reports.TopDelayedUsers(s.db))))
 
 	// ── ماژول حضور و غیاب — فقط بخش خواندنی (پورت api/attendance/*) ──
 	mux.HandleFunc("GET /go/api/attendance/today-status", s.auth(attendance.TodayStatus(s.db)))
@@ -160,20 +160,20 @@ func main() {
 	// این سه‌تا در PHP هم روی متد شاخه نمی‌زنن (فقط GET را جدا می‌کنن، بقیه
 	// را به‌عنوان نوشتن JSON با یک action می‌خونن)، پس بدون پیشوند متد
 	// ثبت می‌شن تا همون انعطاف حفظ بشه.
-	mux.HandleFunc("/go/api/attendance/allowed-ips", s.auth(attendance.AllowedIPs(s.db)))
-	mux.HandleFunc("/go/api/attendance/devices", s.auth(attendance.Devices(s.db)))
-	mux.HandleFunc("/go/api/attendance/denied-log", s.auth(attendance.DeniedLog(s.db)))
+	mux.HandleFunc("/go/api/attendance/allowed-ips", s.auth(core.RequirePlan(s.db, "admin_other", attendance.AllowedIPs(s.db))))
+	mux.HandleFunc("/go/api/attendance/devices", s.auth(core.RequirePlan(s.db, "admin_other", attendance.Devices(s.db))))
+	mux.HandleFunc("/go/api/attendance/denied-log", s.auth(core.RequirePlan(s.db, "admin_other", attendance.DeniedLog(s.db))))
 	// ⚠️ فقط پورت شده — فرانت‌اند هنوز به این وصل نیست (نگاه کن به کامنت
 	// register.go). قبل از وصل‌کردن فرانت‌اند، تست محلی کامل همه‌ی
 	// مسیرها لازم است (ریسک مالی/عملیاتی داده‌های حضور).
-	mux.HandleFunc("POST /go/api/attendance/register", s.auth(attendance.Register(s.db, s.cfg)))
+	mux.HandleFunc("POST /go/api/attendance/register", s.auth(core.RequirePlan(s.db, "attendance_checkin", attendance.Register(s.db, s.cfg))))
 
 	// ── ماژول اعلان‌ها (پورت api/notifications/*) ──
-	mux.HandleFunc("GET /go/api/notifications/list", s.auth(notifications.List(s.db)))
-	mux.HandleFunc("GET /go/api/notifications/new", s.auth(notifications.New(s.db)))
-	mux.HandleFunc("POST /go/api/notifications/mark-read", s.auth(notifications.MarkRead(s.db)))
-	mux.HandleFunc("POST /go/api/notifications/mark-all-read", s.auth(notifications.MarkAllRead(s.db)))
-	mux.HandleFunc("POST /go/api/notifications/delete", s.auth(notifications.Delete(s.db)))
+	mux.HandleFunc("GET /go/api/notifications/list", s.auth(core.RequirePlan(s.db, "notifications", notifications.List(s.db))))
+	mux.HandleFunc("GET /go/api/notifications/new", s.auth(core.RequirePlan(s.db, "notifications", notifications.New(s.db))))
+	mux.HandleFunc("POST /go/api/notifications/mark-read", s.auth(core.RequirePlan(s.db, "notifications", notifications.MarkRead(s.db))))
+	mux.HandleFunc("POST /go/api/notifications/mark-all-read", s.auth(core.RequirePlan(s.db, "notifications", notifications.MarkAllRead(s.db))))
+	mux.HandleFunc("POST /go/api/notifications/delete", s.auth(core.RequirePlan(s.db, "notifications", notifications.Delete(s.db))))
 
 	// ── ماژول اطلاعیه‌ها — فقط بخش خواندنی (پورت api/announcements/list.php) ──
 	mux.HandleFunc("GET /go/api/announcements/list", s.auth(announcements.List(s.db)))
@@ -189,8 +189,8 @@ func main() {
 	mux.HandleFunc("GET /go/api/tasks/my-tasks", s.auth(tasks.MyTasks(s.db)))
 
 	// ── مانیتورینگ خلاصه‌ی خودِ سرور — endpoint جدید (بدون معادلِ PHP)، فقط id=1 ──
-	mux.HandleFunc("GET /go/api/system/monitor", s.auth(sysmon.Monitor(s.db)))
-	mux.HandleFunc("GET /go/api/system/monitor/history", s.auth(sysmon.History(s.db)))
+	mux.HandleFunc("GET /go/api/system/monitor", s.auth(core.RequirePlan(s.db, "monitoring", sysmon.Monitor(s.db))))
+	mux.HandleFunc("GET /go/api/system/monitor/history", s.auth(core.RequirePlan(s.db, "monitoring", sysmon.History(s.db))))
 	sysmon.StartSampler(s.db) // نمونه‌گیرِ پس‌زمینه، هر ۲ دقیقه — برایِ همون نمودارهایِ تاریخی
 
 	addr := "127.0.0.1:" + cfg.Port

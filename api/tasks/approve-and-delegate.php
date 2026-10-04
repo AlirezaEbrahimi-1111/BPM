@@ -32,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'delegate');
     $input = json_decode(file_get_contents('php://input'), true);
 
     if (empty($input['task_id'])) {

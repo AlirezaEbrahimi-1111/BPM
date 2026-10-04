@@ -260,6 +260,8 @@ try {
         // این رو داشته باشه و هدر دیگه فقط به $_SESSION (که با انقضای زودتر
         // از JWT، خالی می‌مونه و «کاربر جاری» نشون می‌ده) وابسته نباشه
         $user['organization_name'] = $_SESSION['organization_name'];
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+        $user = array_merge($user, planPayload($db, (int) $user['organization_id']));
         echo json_encode([
             'success' => true,
             'token' => $token,

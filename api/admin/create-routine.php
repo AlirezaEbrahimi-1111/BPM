@@ -12,6 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     $admin_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($admin_id, 'routine');
 
     // بررسی ادمین بودن — طبق لیست رسمی سوپرادمین‌ها (permissions.php)
     if (!in_array((int) $admin_id, getSuperAdminIds(), true)) {

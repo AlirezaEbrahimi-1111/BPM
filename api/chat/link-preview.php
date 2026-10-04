@@ -42,6 +42,8 @@ const TASK_STATUS_LABELS = [
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'chat');
 
     $type = $_GET['type'] ?? '';
     $id   = (int) ($_GET['id'] ?? 0);

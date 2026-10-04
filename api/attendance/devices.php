@@ -14,6 +14,8 @@ function dev_out($a, $c = 200) { http_response_code($c); echo json_encode($a, JS
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'admin_other');
     $u = getUserInfo($user_id);
     $org  = $u['organization_id'];
     $role = $u['role'] ?? 'employee';

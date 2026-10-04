@@ -12,6 +12,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'monitoring');
     
     $database = new Database();
     $db = $database->getConnection();

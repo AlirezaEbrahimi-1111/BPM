@@ -14,6 +14,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'viewers');
     $input = json_decode(file_get_contents('php://input'), true) ?: [];
     $task_id = (int) ($input['task_id'] ?? 0);
     $viewer_id = (int) ($input['user_id'] ?? 0);

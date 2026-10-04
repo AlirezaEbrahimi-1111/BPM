@@ -17,6 +17,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'task_overview');
 
     $database = new Database();
     $db       = $database->getConnection();

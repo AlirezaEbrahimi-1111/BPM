@@ -13,6 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'user_management');
 
     // بررسی دسترسی ادمین
     $database = new Database();
@@ -38,25 +40,16 @@ try {
         $countStmt->execute([$current_org_id]);
         $currentCount = (int)$countStmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-        // سقف مجاز از اشتراک فعال
-        $subStmt = $db->prepare("
-            SELECT max_users FROM subscriptions 
-            WHERE organization_id = ? AND is_active = 1 AND end_date >= CURDATE()
-            ORDER BY end_date DESC LIMIT 1
-        ");
-        $subStmt->execute([$current_org_id]);
-        $subscription = $subStmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($subscription) {
-            $maxUsers = (int)$subscription['max_users'];
-            if ($currentCount >= $maxUsers) {
-                http_response_code(403);
-                echo json_encode([
-                    'success' => false,
-                    'message' => "سقف تعداد کاربران مجاز ({$maxUsers} نفر) تکمیل شده است. برای افزایش، اشتراک خود را ارتقا دهید."
-                ]);
-                exit;
-            }
+        // سقف مجاز از پلن سازمان (منبع حقیقت: organizations.plan_users)
+        $planState = planState($db, (int) $current_org_id);
+        if ($currentCount >= $planState['plan_users']) {
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'code' => 'PLAN_RESTRICTED',
+                'message' => "سقف تکمیل شده است ({$planState['plan_users']} نفر). برای افزایش، پلن سازمان را ارتقا دهید."
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
         }
     }
 

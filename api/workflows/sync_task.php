@@ -21,6 +21,8 @@ try {
     // 🔒 خط قرمز: این فایل قبلا بدون هیچ احراز هویتی، اجازهٔ تغییر وضعیت
     // هر workflow instance را (در هر سازمانی) با فقط دادن یک task_id می‌داد
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'routine');
     $user    = getUserInfo($user_id);
     $org_id  = $user['organization_id'];
 

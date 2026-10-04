@@ -6,6 +6,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 $user_id = requireAuth();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+requirePlanFeature($user_id, 'user_management');
 
 $database = new Database();
 $db = $database->getConnection();

@@ -14,6 +14,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'viewers');
     $task_id = (int) ($_GET['task_id'] ?? 0);
     if (!$task_id) {
         http_response_code(400);

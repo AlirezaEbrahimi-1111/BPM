@@ -105,6 +105,12 @@ try {
         }
     }
 
+    $__bulkForOthers = array_filter(array_map('intval', $assignee_ids), fn($id) => $id !== (int) $user_id) !== [];
+    if ($__bulkForOthers) {
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+        requirePlanFeature((int) $user_id, 'create_for_others');
+    }
+
     // ── اعتبارسنجی assignee_ids: فقط کاربران همین سازمان ─────────────────────
     $placeholders = implode(',', array_fill(0, count($assignee_ids), '?'));
     $stmt = $db->prepare(

@@ -35,6 +35,8 @@ try {
     // ── احراز هویت ───────────────────────────────────
     $auth    = new Auth();
     $user_id = $auth->getUserFromToken();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'monitoring');
     if (!$user_id) {
         http_response_code(401);
         echo json_encode(['success' => false, 'message' => 'احراز هویت الزامی است'], JSON_UNESCAPED_UNICODE);

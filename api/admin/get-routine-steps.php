@@ -13,6 +13,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 // routine_id می‌تونست مراحل روتین هر سازمانی رو ببینه. هم‌راستا با
 // routines-all.php (که همین داده رو لیست می‌کنه)، همون سطح دسترسی اعمال می‌شه
 $user_id = requireAuth();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+requirePlanFeature($user_id, 'routine');
 $database = new Database();
 $db = $database->getConnection();
 $currentUser = loadUserForPermissions($db, $user_id);

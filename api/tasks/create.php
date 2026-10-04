@@ -50,6 +50,10 @@ try {
     // موعد فقط وقتی الزامیه که کار به کس دیگه‌ای ارجاع داده بشه؛ اگه خود
     // تعریف‌کننده مسئول انجامش هم باشه، می‌تونه بدون موعد ثبت کنه
     $__is_self_task = (($input['assignee_id'] ?? $user_id) == $user_id);
+    if (!$__is_self_task) {
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+        requirePlanFeature($user_id, 'create_for_others');
+    }
     if ($input['task_type'] === 'periodic' && empty($input['due_date']) && !$__is_self_task) {
         ob_end_clean();
         http_response_code(400);

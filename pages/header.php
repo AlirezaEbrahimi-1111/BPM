@@ -8,7 +8,43 @@ $__crmMenu = isset($db) && ($db instanceof PDO) && crmModuleAllowed($db, $__crmU
 // «گزارش همکاران» را مدیران و سوپروایزرها هم می‌بینند (حتی بدون منوی فاکتور).
 $__crmReportMenu = isset($db) && ($db instanceof PDO)
     && function_exists('crmReportAllowed') && crmReportAllowed($db, $__crmUid);
+// 🔒 دسترسی وب بر اساس پلن: بدون web_access به صفحه‌ی توضیح پلن می‌رویم
+if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
+    && !headers_sent() && basename($_SERVER['SCRIPT_NAME'] ?? '') !== 'plan-required.php') {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+    if (!in_array((int) $_SESSION['user_id'], getSuperAdminIds(), true)
+        && !planWebAccessForUser($db, (int) $_SESSION['user_id'])) {
+        header('Location: plan-required.php');
+        exit;
+    }
+}
 ?>
+<!-- 🆔 هدر X-Client: web برای همه‌ی درخواست‌های API وب (سرور با آن نسخه‌ی وب را از اپ تشخیص می‌دهد) -->
+<script>
+    (function () {
+        var nativeFetch = window.fetch;
+        window.fetch = function (input, init) {
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            if (url.indexOf('/api/') !== -1) {
+                init = init || {};
+                var headers = new Headers(init.headers || (typeof input !== 'string' && input.headers) || {});
+                if (!headers.has('X-Client')) headers.set('X-Client', 'web');
+                init.headers = headers;
+            }
+            return nativeFetch.call(this, input, init).then(function (res) {
+                if (res.status === 403) {
+                    res.clone().json().then(function (j) {
+                        if (j && j.code === 'PLAN_RESTRICTED' && typeof showToast === 'function') {
+                            showToast(j.message, 'warning');
+                        }
+                    }).catch(function () {});
+                }
+                return res;
+            });
+        };
+    })();
+</script>
 <!-- 🌗 تم روشن/تاریک — اعمال فوری از localStorage، پیش از رندر هدر (جلوگیری فلاش) -->
 <script>
     function bpmGetTheme() {

@@ -18,6 +18,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'viewers');
     $input = json_decode(file_get_contents('php://input'), true) ?: [];
     $task_id = (int) ($input['task_id'] ?? 0);
     $userIds = array_values(array_unique(array_map('intval', $input['user_ids'] ?? [])));

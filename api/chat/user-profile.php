@@ -19,6 +19,8 @@ try {
     $db = $database->getConnection();
     $auth = new Auth($db);
     $user_id = $auth->getUserFromToken();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'chat');
     if (!$user_id) {
         http_response_code(401);
         echo json_encode(['success' => false, 'message' => 'عدم احراز هویت']);

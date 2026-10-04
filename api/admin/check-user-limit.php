@@ -26,21 +26,9 @@ try {
     $countStmt->execute([$org_id]);
     $currentCount = (int)$countStmt->fetch(PDO::FETCH_ASSOC)['total'];
     
-    // سقف مجاز
-    $subStmt = $db->prepare("
-        SELECT max_users FROM subscriptions 
-        WHERE organization_id = ? AND is_active = 1 AND end_date >= CURDATE()
-        ORDER BY end_date DESC LIMIT 1
-    ");
-    $subStmt->execute([$org_id]);
-    $subscription = $subStmt->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$subscription) {
-        echo json_encode(['allowed' => false, 'message' => 'اشتراک فعالی یافت نشد']);
-        exit;
-    }
-    
-    $maxUsers = (int)$subscription['max_users'];
+    // سقف مجاز از پلن سازمان (منبع حقیقت: organizations.plan_users)
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    $maxUsers = planState($db, (int) $org_id)['plan_users'];
     
     if ($currentCount >= $maxUsers) {
         echo json_encode([

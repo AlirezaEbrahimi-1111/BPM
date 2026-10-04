@@ -13,6 +13,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'monitoring');
     
     $year = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
     $month = isset($_GET['month']) ? (int)$_GET['month'] : date('n');

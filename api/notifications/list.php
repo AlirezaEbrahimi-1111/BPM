@@ -14,6 +14,8 @@ try {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/cors.php';
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'notifications');
     
     if (!$user_id) {
         throw new Exception('کاربر احراز هویت نشده است');

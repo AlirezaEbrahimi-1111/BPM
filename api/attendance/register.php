@@ -55,6 +55,8 @@ if (!$user_id) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+requirePlanFeature((int) $user_id, 'attendance_checkin');
 
 // دریافت organization_id از توکن
 $organization_id = $auth->getOrganizationFromToken();

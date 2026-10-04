@@ -8,6 +8,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'routine');
 
     if (empty($_GET['id'])) {
         echo json_encode(['success' => false, 'message' => 'شناسه workflow الزامی است']);

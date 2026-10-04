@@ -11,6 +11,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'daily_tasks');
     
     if (empty($_GET['unit']) || empty($_GET['date'])) {
         http_response_code(400);

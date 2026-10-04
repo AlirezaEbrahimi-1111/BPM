@@ -69,7 +69,8 @@ try {
             u.official_code,
             u.last_login,
             u.daily_work_hours,
-            o.name AS organization_name
+            o.name AS organization_name,
+            u.organization_id AS __org_id
         FROM users u
         LEFT JOIN organizations o ON o.id = u.organization_id
         WHERE u.id = ? AND u.is_active = 1
@@ -85,6 +86,15 @@ try {
         ]);
         exit;
     }
+
+    // پلن سازمان؛ برای رایگان، نام سازمان و واحد پنهان می‌شود (مشخصات بخش ۱۱)
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    $planFields = planPayload($db, (int) $user['__org_id']);
+    unset($user['__org_id']);
+    if ($planFields['plan'] === 'free') {
+        unset($user['organization_name'], $user['activity_unit']);
+    }
+    $user = array_merge($user, $planFields);
 
     // Return user data
     http_response_code(200);

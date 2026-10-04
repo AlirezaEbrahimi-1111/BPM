@@ -224,6 +224,15 @@ try {
         $history = [];
     }
 
+    // 🔒 پلن رایگان: اطلاعات سازنده از پاسخ حذف می‌شود (مشخصات بخش ۱۱)
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    if (planState($db, (int) ($task['organization_id'] ?? 0))['plan'] === 'free') {
+        unset($task['creator_id']);
+        foreach (array_keys($task) as $__k) {
+            if (strpos($__k, 'creator_') === 0) unset($task[$__k]);
+        }
+    }
+
     echo json_encode([
         'success' => true,
         'task' => $task,

@@ -14,6 +14,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 try {
     $auth    = new Auth();
     $user_id = $auth->getUserFromToken();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'admin_other');
     if (!$user_id) {
         ob_end_clean();
         http_response_code(401);

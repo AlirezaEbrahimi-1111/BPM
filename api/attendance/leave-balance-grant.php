@@ -17,6 +17,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php';
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'admin_other');
 
     $input = json_decode(file_get_contents('php://input'), true) ?: [];
     $targetUserId = (int) ($input['user_id'] ?? 0);

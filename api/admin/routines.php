@@ -8,6 +8,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
     $admin_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($admin_id, 'routine');
 
     $database = new Database();
     $db = $database->getConnection();

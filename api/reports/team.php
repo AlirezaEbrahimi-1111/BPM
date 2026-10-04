@@ -12,6 +12,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 
 try {
     $user_id = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'monitoring');
     
     $date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
     
