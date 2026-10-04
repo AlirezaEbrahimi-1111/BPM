@@ -106,6 +106,7 @@ $allowedUsers = ['free' => [1], 'silver' => [10], 'gold' => [5, 10, 20, 40]];
                                     <div class="datepicker-weekday">ج</div>
                                 </div>
                                 <div class="datepicker-days"></div>
+                                <button type="button" class="datepicker-today-btn">امروز</button>
                             </div>
                         </div>
                     </div>
@@ -119,9 +120,9 @@ $allowedUsers = ['free' => [1], 'silver' => [10], 'gold' => [5, 10, 20, 40]];
             <div class="card-block p-3" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;">
                 <h2 style="font-size:1rem;margin-bottom:10px;">وضعیت فعلی</h2>
                 <div>پلن: <b><?= $planLabels[$st['plan']] ?? $st['plan'] ?></b></div>
-                <div>سقف کاربر: <b><?= $st['plan_users'] ?></b> (فعلی: <?= $userCount ?>)</div>
-                <div>انقضا: <b><?= $st['plan_expires_at'] ? htmlspecialchars($st['plan_expires_at']) : '—' ?></b></div>
-                <div>تست وب تا: <b><?= $st['web_trial_ends_at'] ? htmlspecialchars($st['web_trial_ends_at']) : '—' ?></b></div>
+                <div>سقف کاربر: <b><?= JalaliHelper::Persian($st['plan_users']) ?></b> (فعلی: <?= JalaliHelper::Persian($userCount) ?>)</div>
+                <div>انقضا: <b><?= $st['plan_expires_at'] ? JalaliHelper::formatJalaliDate($st['plan_expires_at']) : '—' ?></b></div>
+                <div>تست وب تا: <b><?= $st['web_trial_ends_at'] ? JalaliHelper::formatJalaliDate($st['web_trial_ends_at']) : '—' ?></b></div>
                 <div>دسترسی وب: <b><?= $st['web_access'] ? 'دارد' : 'ندارد' ?></b></div>
             </div>
             <div class="card-block p-3" style="background:var(--surface);border:1px dashed var(--border);border-radius:12px;">
@@ -136,6 +137,8 @@ $allowedUsers = ['free' => [1], 'silver' => [10], 'gold' => [5, 10, 20, 40]];
 const PLAN_USERS = <?= json_encode($allowedUsers) ?>;
 const CURRENT = { plan: <?= json_encode($st['plan']) ?>, users: <?= (int) $st['plan_users'] ?> };
 
+function toFa(n) { return String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
+
 const planSel = document.getElementById('planSelect');
 const usersSel = document.getElementById('usersSelect');
 const expiryWrap = document.getElementById('expiryWrap');
@@ -144,7 +147,7 @@ const expiryInput = document.getElementById('expiryInput');
 function fillUsers() {
     const plan = planSel.value;
     const list = PLAN_USERS[plan] || [];
-    usersSel.innerHTML = list.map(n => `<option value="${n}">${n}</option>`).join('');
+    usersSel.innerHTML = list.map(n => `<option value="${n}">${toFa(n)}</option>`).join('');
     if (plan === CURRENT.plan && list.includes(CURRENT.users)) usersSel.value = String(CURRENT.users);
     expiryWrap.style.display = plan === 'free' ? 'none' : '';
 }
@@ -181,6 +184,7 @@ document.getElementById('savePlanBtn').addEventListener('click', async () => {
     }
 });
 </script>
+<script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
 <script src="<?= asset('../assets/js/persian-datepicker.js') ?>"></script>
 <?php include 'footer.php'; ?>
 </body>
