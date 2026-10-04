@@ -9,6 +9,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/JalaliHelper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
 
 if (!isset($db)) {
     $database = new Database();
@@ -35,39 +36,53 @@ if (!in_array((int)$user_id, getSuperAdminIds(), true)) {
 $stmt = $db->query("
     SELECT
       o.id, o.name, o.is_active, o.created_at,
-      s.plan_type, s.end_date, s.is_active AS sub_active, s.max_users,
+      o.plan, o.plan_users, o.plan_expires_at, o.web_trial_ends_at,
       COUNT(u.id) AS user_count,
       MAX(u.last_login) AS last_login
     FROM organizations o
-    LEFT JOIN subscriptions s ON s.organization_id = o.id AND s.is_active = 1
     LEFT JOIN users u ON u.organization_id = o.id AND u.is_active = 1
     GROUP BY o.id
     ORDER BY o.created_at DESC
 ");
 $orgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$today = planTehranToday();
+$planState = function (array $o) use ($today): array {
+    $expires = $o['plan_expires_at'] ? substr($o['plan_expires_at'], 0, 10) : null;
+    $paidActive = in_array($o['plan'], ['silver', 'gold'], true) && ($expires === null || $today < $expires);
+    $trialEnds = $o['web_trial_ends_at'] ? substr($o['web_trial_ends_at'], 0, 10) : null;
+    return [
+        'effective' => $paidActive ? $o['plan'] : 'free',
+        'expires'   => $paidActive ? $expires : null,
+        'trial_active' => $trialEnds !== null && $today < $trialEnds,
+        'trial_ends' => $trialEnds,
+    ];
+};
+
 $total       = count($orgs);
-$active_subs = array_filter($orgs, fn($o) => $o['sub_active'] && strtotime($o['end_date']) > time());
+$active_subs = array_filter($orgs, fn($o) => $planState($o)['effective'] !== 'free');
 $expired     = $total - count($active_subs);
 
-$labels = ['trial' => 'آزمایشی', 'monthly' => 'ماهانه', 'yearly' => 'سالانه'];
+$planLabels = ['free' => 'رایگان', 'silver' => 'نقره‌ای', 'gold' => 'طلایی'];
 $gridData = [];
 foreach ($orgs as $org) {
-    $is_expired = !$org['sub_active'] || ($org['end_date'] && strtotime($org['end_date']) < time());
-    $days_left  = $org['end_date'] ? max(0, (int)ceil((strtotime($org['end_date']) - time()) / 86400)) : 0;
+    $ps = $planState($org);
+    $days_left = $ps['expires'] ? max(0, (int)ceil((strtotime($ps['expires']) - time()) / 86400)) : 0;
     $gridData[] = [
-        'id'         => (int)$org['id'],
-        'name'       => $org['name'],
-        'first_char' => mb_substr($org['name'], 0, 1),
-        'user_count' => (int)$org['user_count'],
-        'max_users'  => (int)($org['max_users'] ?? 0),
-        'plan_label' => $labels[$org['plan_type']] ?? '-',
-        'created'    => JalaliHelper::formatJalaliDate(substr((string)$org['created_at'], 0, 10)),
-        'end'        => $org['end_date'] ? JalaliHelper::formatJalaliDate($org['end_date']) : '',
-        'days_left'  => $days_left,
-        'is_expired' => $is_expired ? 1 : 0,
-        'is_active'  => (int)$org['is_active'],
-        'last_login' => $org['last_login']
+        'id'          => (int)$org['id'],
+        'name'        => $org['name'],
+        'first_char'  => mb_substr($org['name'], 0, 1),
+        'user_count'  => (int)$org['user_count'],
+        'max_users'   => (int)$org['plan_users'],
+        'plan_label'  => $planLabels[$ps['effective']] ?? '-',
+        'web_trial'   => $ps['trial_active'] ? 'تست وب تا ' . JalaliHelper::formatJalaliDate($ps['trial_ends']) : '',
+        'created'     => JalaliHelper::formatJalaliDate(substr((string)$org['created_at'], 0, 10)),
+        'end'         => $ps['expires'] ? JalaliHelper::formatJalaliDate($ps['expires']) : '',
+        'days_left'   => $days_left,
+        'is_expired'  => ($ps['effective'] === 'free' && !$ps['trial_active']) ? 1 : 0,
+        'is_free'     => $ps['effective'] === 'free' ? 1 : 0,
+        'is_active'   => (int)$org['is_active'],
+        'last_login'  => $org['last_login']
             ? JalaliHelper::formatJalaliDate(substr((string)$org['last_login'], 0, 10)) . ' - ' . substr((string)$org['last_login'], 11, 5)
             : 'هرگز',
     ];
@@ -300,34 +315,6 @@ foreach ($ustmt->fetchAll(PDO::FETCH_ASSOC) as $u) {
 
 </div>
 
-<!-- مودال تمدید -->
-<div class="ov" id="ovExtend">
-  <div class="md">
-    <h3>تمدید اشتراک</h3>
-    <p class="sb" id="exName">نام سازمان</p>
-    <label>تعداد ماه</label>
-    <input type="number" id="exMonths" min="1" max="24" value="1">
-    <div class="md-actions">
-      <button class="btn btn-secondary" onclick="closeExtend()">انصراف</button>
-      <button class="btn btn-primary" onclick="confirmExtend()">تمدید</button>
-    </div>
-  </div>
-</div>
-
-<!-- مودال سقف کاربران -->
-<div class="ov" id="ovLimit">
-  <div class="md">
-    <h3>تغییر سقف کاربران</h3>
-    <p class="sb" id="lmName">نام سازمان</p>
-    <label>حداکثر تعداد کاربر</label>
-    <input type="number" id="lmInput" min="1" max="100000" value="50">
-    <div class="md-actions">
-      <button class="btn btn-secondary" onclick="closeLimit()">انصراف</button>
-      <button class="btn btn-primary" onclick="confirmLimit()">ذخیره</button>
-    </div>
-  </div>
-</div>
-
 <script>
 const ORGS = <?= json_encode($gridData, JSON_UNESCAPED_UNICODE) ?>;
 const USERS_BY_ORG = <?= json_encode($usersByOrg, JSON_UNESCAPED_UNICODE) ?>;
@@ -404,21 +391,25 @@ function cUsers(p) {
   return `<span style="font-weight:700;color:#2D3748">${faNum(d.user_count)}</span>
           <span style="color:#A0AEC0"> / ${faNum(d.max_users || '∞')} نفر</span>`;
 }
-function cPlan(p) { return `<span class="pill plan">${esc(p.data.plan_label)}</span>`; }
+function cPlan(p) {
+  const d = p.data;
+  const trial = d.web_trial ? `<div style="font-size:11.5px;color:#8e57fe">${esc(d.web_trial)}</div>` : '';
+  return `<span class="pill plan">${esc(d.plan_label)}</span>${trial}`;
+}
 function cExpiry(p) {
   const d = p.data;
-  if (!d.is_expired && d.end) {
+  if (d.is_free) return '—';
+  if (d.end) {
     const cls = d.days_left > 7 ? '' : (d.days_left > 3 ? 'warn' : 'crit');
     return `<div style="font-size:13px;color:#2D3748">${faNum(d.days_left)} روز مانده</div>
             <div class="bar"><i class="${cls}" style="width:${Math.min(100, (d.days_left / 14) * 100)}%"></i></div>`;
   }
-  if (d.is_expired) return `<span style="font-size:12.5px;color:#F04438">منقضی شده</span>`;
   return '—';
 }
 function cStatus(p) {
-  return p.data.is_expired
-    ? `<span class="pill no">منقضی</span>`
-    : `<span class="pill ok">فعال</span>`;
+  const d = p.data;
+  if (d.is_free) return `<span class="pill no">رایگان</span>`;
+  return `<span class="pill ok">فعال</span>`;
 }
 function cLastLogin(p) {
   const v = p.data.last_login;
@@ -428,8 +419,7 @@ function cLastLogin(p) {
 function cActions(p) {
   const d = p.data;
   return `
-    <button class="act" title="تمدید اشتراک" onclick="openExtend(${d.id})"><i class="bi bi-arrow-clockwise"></i></button>
-    <button class="act" title="سقف کاربران" onclick="openLimit(${d.id})"><i class="bi bi-people"></i></button>
+    <button class="act" title="پلن و تمدید" onclick="goPlan(${d.id})"><i class="bi bi-arrow-clockwise"></i></button>
     <button class="act danger" title="${d.is_active ? 'غیرفعال‌سازی' : 'فعال‌سازی'}" onclick="toggleOrg(${d.id})">
       <i class="bi bi-${d.is_active ? 'slash-circle' : 'check-circle'}"></i>
     </button>`;
@@ -469,57 +459,9 @@ document.getElementById('orgSearch').addEventListener('input', function () {
   gridApi.setGridOption('quickFilterText', this.value);
 });
 
-/* تمدید */
-function openExtend(id) {
-  const o = byId[id]; curId = id;
-  document.getElementById('exName').textContent = o.name;
-  document.getElementById('exMonths').value = 1;
-  document.getElementById('ovExtend').classList.add('show');
-}
-function closeExtend() { document.getElementById('ovExtend').classList.remove('show'); }
-document.getElementById('ovExtend').addEventListener('click', e => { if (e.target.id === 'ovExtend') closeExtend(); });
-
-async function confirmExtend() {
-  const months = parseInt(document.getElementById('exMonths').value);
-  if (!months || months < 1) return;
-  closeExtend();
-  try {
-    const res = await fetch('/api/organization/extend-subscription.php', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ org_id: curId, months })
-    });
-    const text = await res.text();
-    let data;
-    try { data = JSON.parse(text); }
-    catch (e) { console.error('Raw:', text); showToast('خطا در پردازش پاسخ سرور', 'error'); return; }
-    showToast(data.message, data.success ? 'success' : 'error');
-    if (data.success) setTimeout(() => location.reload(), 1200);
-  } catch (err) { console.error(err); showToast('خطا در ارتباط با سرور', 'error'); }
-}
-
-/* سقف کاربران */
-function openLimit(id) {
-  const o = byId[id]; curId = id;
-  document.getElementById('lmName').textContent = o.name + ' — فعلی: ' + (o.max_users ? faNum(o.max_users) : '—') + ' نفر';
-  document.getElementById('lmInput').value = o.max_users || 50;
-  document.getElementById('ovLimit').classList.add('show');
-}
-function closeLimit() { document.getElementById('ovLimit').classList.remove('show'); }
-document.getElementById('ovLimit').addEventListener('click', e => { if (e.target.id === 'ovLimit') closeLimit(); });
-
-async function confirmLimit() {
-  const max = parseInt(document.getElementById('lmInput').value);
-  if (!max || max < 1) return;
-  closeLimit();
-  try {
-    const res = await fetch('/api/organization/set-user-limit.php', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ org_id: curId, max_users: max })
-    });
-    const data = await res.json();
-    showToast(data.message, data.success ? 'success' : 'error');
-    if (data.success) setTimeout(() => location.reload(), 1200);
-  } catch (err) { console.error(err); showToast('خطا در ارتباط با سرور', 'error'); }
+/* تمدید و سقف کاربران: هر دو در صفحه‌ی پلن و پرداخت ثبت می‌شوند */
+function goPlan(id) {
+  window.location.href = 'plan-purchase.php?org_id=' + encodeURIComponent(id);
 }
 
 /* فعال/غیرفعال */
