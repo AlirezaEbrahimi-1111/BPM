@@ -38,8 +38,8 @@ $usersStmt = $db->prepare("SELECT COUNT(*) FROM users WHERE organization_id = ? 
 $usersStmt->execute([$orgId]);
 $userCount = (int) $usersStmt->fetchColumn();
 
-$planLabels = ['free' => 'رایگان', 'silver' => 'نقره‌ای', 'gold' => 'طلایی'];
-$allowedUsers = ['free' => [1], 'silver' => [10], 'gold' => [5, 10, 20, 40]];
+$planLabels = ['free' => 'رایگان', 'gold' => 'طلایی'];
+$allowedUsers = ['free' => [1], 'gold' => [5, 10, 20, 40]];
 
 ?>
 <!DOCTYPE html>

@@ -52,8 +52,6 @@ $periods = ['1' => 'یک ماهه', '3' => 'سه ماهه', '6' => 'شش ماه�
     <div class="card">
         <h2>پلن‌ها</h2>
         <ul>
-            <li><b>رایگان:</b> یک کاربر؛ امکانات پایه‌ی کار شخصی.</li>
-            <li><b>نقره‌ای (فقط اپ):</b> تا ۱۰ کاربر؛ ساخت کار برای دیگران، کارهای واگذارشده و برنامه‌ی کاری.</li>
             <li><b>طلایی (اپ و وب):</b> تا ۴۰ کاربر؛ همه‌ی امکانات شامل ارجاع، کار روتین، گفتگو، اعلان‌ها، گزارش‌ها و مدیریت.</li>
             <li><b>تست ۱۴ روزه‌ی وب:</b> یک‌بار برای هر سازمان؛ در طول تست، امکانات طلایی در نسخه‌ی وب فعال است.</li>
         </ul>
@@ -71,12 +69,6 @@ $periods = ['1' => 'یک ماهه', '3' => 'سه ماهه', '6' => 'شش ماه�
                 </tr>
             </thead>
             <tbody>
-                <?php $s = PLAN_PRICE_TABLE['silver']; ?>
-                <tr>
-                    <td><span class="tag"><?= $s['label'] ?></span></td>
-                    <td><?= planFa((string) $s['users']) ?></td>
-                    <?php foreach (array_keys($periods) as $p) : ?><td><?= planPrice($s['prices'][$p]) ?></td><?php endforeach; ?>
-                </tr>
                 <?php foreach (PLAN_PRICE_TABLE['gold']['tiers'] as $users => $prices) : ?>
                 <tr>
                     <td><span class="tag"><?= PLAN_PRICE_TABLE['gold']['label'] ?></span></td>

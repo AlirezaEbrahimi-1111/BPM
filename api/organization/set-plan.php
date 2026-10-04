@@ -21,7 +21,6 @@ $expires = (string) ($data['plan_expires_at'] ?? '');
 
 $allowedUsers = [
     'free' => [1],
-    'silver' => [10],
     'gold' => [5, 10, 20, 40],
 ];
 
