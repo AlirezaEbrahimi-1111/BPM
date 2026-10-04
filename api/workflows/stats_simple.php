@@ -13,7 +13,9 @@ try {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 
-    requireAuth();
+    $__planUid = requireAuth();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature((int) $__planUid, 'routine');
 
     $database = new Database();
     $db = $database->getConnection();

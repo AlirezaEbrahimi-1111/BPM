@@ -145,6 +145,8 @@ if (!$user_id)
         echo json_encode(['success' => false, 'message' => 'احراز هویت نامعتبر'], JSON_UNESCAPED_UNICODE);
         exit;
     }
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature((int) $user_id, 'monitoring');
     
 try {
 

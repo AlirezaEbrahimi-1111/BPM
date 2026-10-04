@@ -36,6 +36,8 @@ if (!$current_user_id) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+requirePlanFeature((int) $current_user_id, 'monitoring');
 
 $target_user_id = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
 $months_count = isset($_GET['months']) ? min((int)$_GET['months'], 12) : 6;

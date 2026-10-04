@@ -22,6 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 try {
     $managerId = requireAuth();
+
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature((int) $managerId, 'monitoring');
     
     // بررسی اینکه کاربر مدیر است
     $database = new Database();
