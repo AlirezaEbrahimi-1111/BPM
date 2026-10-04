@@ -312,6 +312,8 @@ try {
 
         // 🔒 نام سازمان هم توی خود جواب لاگین — دلیل: بالاتر توضیح داده شد
         $result['user']['organization_name'] = $_SESSION['organization_name'];
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+        $result['user'] = array_merge($result['user'], planPayload($db, (int) $result['user']['organization_id']));
 
         logSecurityEvent($result['user']['id'], 'login_success', null, ['method' => 'password']);
         sendLoginAlertSms($db, $result['user']['id']);
