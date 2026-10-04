@@ -8,6 +8,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-prices.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/JalaliHelper.php';
 
 $db = (new Database())->getConnection();
 $auth = new Auth($db);
