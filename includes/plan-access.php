@@ -149,9 +149,12 @@ function planWebAccessForUser(PDO $db, int $userId): bool
 function planPayload(PDO $db, int $orgId): array
 {
     $st = planState($db, $orgId);
+    $usedStmt = $db->prepare("SELECT COUNT(*) FROM users WHERE organization_id = ? AND is_active = 1 AND COALESCE(is_deleted, 0) = 0");
+    $usedStmt->execute([$orgId]);
     return [
         'plan' => $st['plan'],
         'plan_users' => $st['plan_users'],
+        'plan_users_used' => (int) $usedStmt->fetchColumn(),
         'plan_expires_at' => $st['plan_expires_at'],
         'web_trial_ends_at' => $st['web_trial_ends_at'],
         'web_access' => $st['web_access'],
