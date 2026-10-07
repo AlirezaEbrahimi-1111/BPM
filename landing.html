@@ -103,20 +103,9 @@ body {
 }
 
 .eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--u) * 0.8);
   font-size: calc(var(--u) * 1.5);
   font-weight: 700;
   margin-bottom: calc(var(--u) * 1);
-}
-
-.eyebrow::before {
-  content: '';
-  width: calc(var(--u) * 2.4);
-  height: 2px;
-  border-radius: 2px;
-  background: currentColor;
 }
 
 .block--store .eyebrow { color: #b4a2ff; }
@@ -175,47 +164,38 @@ body {
 
 .cta--bpm:focus-visible { outline-color: rgba(16, 185, 129, .6); }
 
-/* امکانات: چیپ‌های افقیِ کوچک (آیکون + برچسب) */
+/* امکانات: آیکون بالا، برچسب پایین (بدون کادر) */
 .features {
   display: flex;
-  flex-wrap: wrap;
-  gap: calc(var(--u) * 1);
-  margin-top: calc(var(--u) * 2.8);
+  gap: calc(var(--u) * 2.4);
+  margin-top: calc(var(--u) * 2.6);
 }
 
+.block--bpm .features { margin-top: calc(var(--u) * 3.2); }
+
 .feature {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: calc(var(--u) * 0.6);
-  padding: calc(var(--u) * 0.55) calc(var(--u) * 1.1);
-  border-radius: 999px;
-  font-size: calc(var(--u) * 1.2);
+  gap: calc(var(--u) * 1.1);
+  font-size: calc(var(--u) * 1.4);
   font-weight: 600;
   white-space: nowrap;
 }
 
 .feature svg {
-  width: calc(var(--u) * 1.8);
-  height: calc(var(--u) * 1.8);
+  width: calc(var(--u) * 3.7);
+  height: calc(var(--u) * 3.7);
   fill: none;
-  stroke-width: 1.7;
+  stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.block--store .feature {
-  color: #e6e9f5;
-  background: rgba(255, 255, 255, .06);
-  border: 1px solid rgba(167, 139, 250, .28);
-}
+.block--store .feature { color: #e6e9f5; }
 .block--store .feature svg { stroke: url(#gradStore); }
-
-.block--bpm .feature {
-  color: #2b2f45;
-  background: rgba(16, 185, 129, .07);
-  border: 1px solid rgba(16, 185, 129, .22);
-}
-.block--bpm .feature svg { stroke: #14a37c; }
+.block--bpm .feature { color: #2b2f45; }
+.block--bpm .feature svg { stroke: #19b58a; width: calc(var(--u) * 3.2); height: calc(var(--u) * 3.2); }
 
 /* لوگوی BPM داخلِ دایره‌ی سفیدِ وسطِ تصویر */
 .bpm-logo {
@@ -327,7 +307,7 @@ body {
     </div>
   </section>
 
-  <img class="bpm-logo" src="/assets/landing/bpm-logo.png" alt="لوگوی BPM">
+  <img class="bpm-logo" src="/assets/landing/bpm-logo.webp" alt="لوگوی BPM">
 
   <!-- تصویرِ داشبورد: ستونِ چپِ کارتِ روشن -->
   <div class="dashboard"><img src="/assets/landing/dashboard.png" alt="نمایی از داشبورد سامانه BPM" onerror="this.remove()"></div>
