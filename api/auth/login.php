@@ -36,11 +36,10 @@ function sendLoginAlertSms($db, $userId)
         $date = JalaliHelper::formatJalaliDate(substr($now, 0, 10));
         $time = JalaliHelper::Persian(substr($now, 11, 5));
 
+        // الگوی ملی‌پیامک (نه متن آزاد) — متن شامل لینک itmalek.com است و
+        // ملی‌پیامک لینک را فقط در الگوی تأییدشده قبول می‌کند
         $sms = new SMS($db);
-        $sms->sendFromTemplate($userId, 'login_alert', [
-            'date' => $date,
-            'time' => $time,
-        ]);
+        $sms->sendPattern($userId, resolveBodyId('login_alert'), [$date, $time]);
     } catch (Throwable $e) {
         error_log('sendLoginAlertSms failed | user_id=' . $userId . ' | ' . $e->getMessage());
     }
