@@ -40,6 +40,15 @@ RewriteCond %{HTTP_HOST} !^(localhost|bpm\.local) [NC]
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+# دامنه‌ی اصلی itmalek.com (نه bpm.itmalek.com): صفحه‌ی اول = صفحه‌ی خوش‌آمد
+# استاتیک (landing.html)؛ هر مسیر دیگر به همان مسیر روی bpm.itmalek.com
+# فرستاده می‌شود تا لینک‌های قدیمی (مثلا itmalek.com/pages/...) خراب نشوند.
+RewriteCond %{HTTP_HOST} ^(www\.)?itmalek\.com$ [NC]
+RewriteRule ^$ /landing.html [L]
+RewriteCond %{HTTP_HOST} ^(www\.)?itmalek\.com$ [NC]
+RewriteCond %{REQUEST_URI} !^/(landing\.html|assets/landing/|assets/fonts/|\.well-known/)
+RewriteRule ^(.*)$ https://bpm.itmalek.com/$1 [R=301,L]
+
 # یا این روش:
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 

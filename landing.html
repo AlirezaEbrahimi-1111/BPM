@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<!--
+  صفحه‌ی اولِ دامنه‌ی اصلی itmalek.com (نه bpm.itmalek.com).
+  نسخه‌ی استاتیکِ صفحه‌ای که در وردپرس فروشگاه (computeryekta.com/wellcome) ساخته شده بود.
+  مسیردهی: .htaccess برای میزبان itmalek.com مسیر «/» را به همین فایل می‌دهد و
+  هر مسیر دیگر را به bpm.itmalek.com می‌فرستد.
+  ⚠️ اگر صفحه در وردپرس ویرایش شود، این فایل خودکار به‌روز نمی‌شود.
+-->
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>کامپیوتر یکتا</title>
+<link href="/assets/fonts/Vazirmatn-font-face.css" rel="stylesheet">
+<style>
+/* ===================================================
+   TOKENS
+=================================================== */
+:root {
+  --clr-void:     #04080f;
+  --clr-deep:     #0b1220;
+  --clr-surface:  #101827;
+  --clr-glass:    rgba(255,255,255,0.04);
+  --clr-border:   rgba(255,255,255,0.08);
+
+  /* Store palette — electric indigo */
+  --clr-store-a:  #3b5bdb;
+  --clr-store-b:  #6c8eff;
+  --clr-store-glow: rgba(59,91,219,0.35);
+
+  /* BPM palette — emerald */
+  --clr-bpm-a:    #0d9373;
+  --clr-bpm-b:    #34d399;
+  --clr-bpm-glow: rgba(13,147,115,0.35);
+
+  --clr-text:     #f0f4ff;
+  --clr-muted:    #8b9ab8;
+  --clr-caption:  #5a6880;
+
+  --ff-display: 'Vazirmatn', system-ui, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 0.35s;
+  --dur-med:  0.6s;
+  --dur-slow: 1s;
+}
+
+/* ===================================================
+   RESET & BASE
+=================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--clr-void);
+  color: var(--clr-text);
+  font-family: var(--ff-display);
+  overflow: hidden;
+  height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===================================================
+   SPLIT WRAPPER
+=================================================== */
+.wrapper {
+  display: flex;
+  height: 100dvh;
+  position: relative;
+}
+
+/* Divider glow line */
+.wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255,255,255,0.15) 30%,
+    rgba(255,255,255,0.15) 70%,
+    transparent 100%
+  );
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ===================================================
+   PANELS
+=================================================== */
+.panel {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  transition: flex var(--dur-slow) var(--ease-out-expo);
+  cursor: pointer;
+  outline: none;
+}
+
+.panel:focus-visible {
+  outline: 3px solid rgba(255,255,255,0.4);
+  outline-offset: -3px;
+}
+
+/* BG images */
+.panel__bg {
+  position: absolute;
+  inset: -5%;
+  background-size: cover;
+  background-position: center;
+  transition: transform var(--dur-slow) var(--ease-out-expo),
+              filter var(--dur-slow) var(--ease-out-expo);
+  will-change: transform;
+}
+
+.panel--store .panel__bg {
+  background-image: url('/assets/landing/store-bg.png');
+}
+
+.panel--bpm .panel__bg {
+  background-image: url('/assets/landing/bpm-bg.jpg');
+}
+
+/* Dimming overlay */
+.panel__dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.62);
+  transition: background var(--dur-med) var(--ease-out-expo);
+}
+
+/* Signature accent — vertical color bar on inner edge */
+.panel--store .panel__accent {
+  position: absolute;
+  top: 15%; bottom: 15%;
+  left: 0; /* inner edge for RTL store=left */
+  width: 3px;
+  background: linear-gradient(to bottom, transparent, var(--clr-store-b), transparent);
+  opacity: 0;
+  transition: opacity var(--dur-med);
+}
+.panel--bpm .panel__accent {
+  position: absolute;
+  top: 15%; bottom: 15%;
+  right: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, transparent, var(--clr-bpm-b), transparent);
+  opacity: 0;
+  transition: opacity var(--dur-med);
+}
+
+/* Ambient glow that bleeds into the divider */
+.panel__glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--dur-med);
+  pointer-events: none;
+}
+
+.panel--store .panel__glow {
+  background: radial-gradient(ellipse 60% 80% at 90% 50%, var(--clr-store-glow), transparent);
+}
+
+.panel--bpm .panel__glow {
+  background: radial-gradient(ellipse 60% 80% at 10% 50%, var(--clr-bpm-glow), transparent);
+}
+
+/* ===================================================
+   PANEL CONTENT
+=================================================== */
+.panel__content {
+  position: absolute;
+  bottom: 44px;
+  right: 32px;
+  left: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* frosted card for legibility over any background image */
+  background: rgba(8, 14, 26, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 16px;
+  padding: 22px 24px 20px;
+}
+
+.panel__title {
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 800;
+  line-height: 1.3;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.panel__body {
+  font-size: 13px;
+  font-weight: 400;
+  color: #c8d4e8;
+  line-height: 1.85;
+  max-width: 320px;
+}
+
+/* CTA Button */
+.panel__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1.5px solid transparent;
+  transition:
+    background var(--dur-fast),
+    border-color var(--dur-fast),
+    color var(--dur-fast),
+    transform var(--dur-fast) var(--ease-spring),
+    box-shadow var(--dur-fast);
+  width: fit-content;
+  position: relative;
+  overflow: hidden;
+}
+
+.panel__cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.08);
+  opacity: 0;
+  transition: opacity var(--dur-fast);
+}
+
+.panel__cta:hover::after,
+.panel__cta:focus-visible::after { opacity: 1; }
+
+.panel--store .panel__cta {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.18);
+  color: var(--clr-text);
+  backdrop-filter: blur(6px);
+}
+
+.panel--bpm .panel__cta {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.18);
+  color: var(--clr-text);
+  backdrop-filter: blur(6px);
+}
+
+.panel__cta-arrow {
+  font-size: 16px;
+  transition: transform var(--dur-fast) var(--ease-spring);
+  display: inline-block;
+}
+
+
+/* ===================================================
+   HOVER STATES
+=================================================== */
+.wrapper:has(.panel--store:hover) .panel--store,
+.wrapper:has(.panel--store:focus-visible) .panel--store { flex: 1.45; }
+.wrapper:has(.panel--store:hover) .panel--bpm,
+.wrapper:has(.panel--store:focus-visible) .panel--bpm   { flex: 0.55; }
+
+.wrapper:has(.panel--bpm:hover) .panel--bpm,
+.wrapper:has(.panel--bpm:focus-visible) .panel--bpm     { flex: 1.45; }
+.wrapper:has(.panel--bpm:hover) .panel--store,
+.wrapper:has(.panel--bpm:focus-visible) .panel--store   { flex: 0.55; }
+
+/* Dim recedes on hover */
+.panel--store:hover .panel__dim,
+.panel--store:focus-visible .panel__dim { background: rgba(0,0,0,0.42); }
+.panel--bpm:hover .panel__dim,
+.panel--bpm:focus-visible .panel__dim   { background: rgba(0,0,0,0.42); }
+
+/* BG zoom */
+.panel--store:hover .panel__bg,
+.panel--store:focus-visible .panel__bg { transform: scale(1.04); }
+.panel--bpm:hover .panel__bg,
+.panel--bpm:focus-visible .panel__bg   { transform: scale(1.04); }
+
+/* Glow + accent */
+.panel--store:hover .panel__glow,
+.panel--store:focus-visible .panel__glow { opacity: 1; }
+.panel--bpm:hover .panel__glow,
+.panel--bpm:focus-visible .panel__glow   { opacity: 1; }
+
+.panel--store:hover .panel__accent,
+.panel--store:focus-visible .panel__accent { opacity: 1; }
+.panel--bpm:hover .panel__accent,
+.panel--bpm:focus-visible .panel__accent   { opacity: 1; }
+
+/* CTA hover color */
+.panel--store:hover .panel__cta {
+  background: var(--clr-store-a);
+  border-color: var(--clr-store-b);
+  box-shadow: 0 0 20px var(--clr-store-glow);
+}
+.panel--bpm:hover .panel__cta {
+  background: var(--clr-bpm-a);
+  border-color: var(--clr-bpm-b);
+  box-shadow: 0 0 20px var(--clr-bpm-glow);
+}
+
+.panel__cta:hover .panel__cta-arrow { transform: translateX(-4px); }
+
+
+
+/* ===================================================
+   FOOTER STRIP
+=================================================== */
+.site-footer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  animation: slideUp2 0.5s var(--ease-out-expo) forwards 0.2s;
+}
+
+.site-footer__text {
+  font-size: 11px;
+  color: var(--clr-caption);
+  letter-spacing: 0.3px;
+}
+
+/* ===================================================
+   KEYFRAMES
+=================================================== */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp2 {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* ===================================================
+   REDUCED MOTION
+=================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+  .site-header, .site-footer {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ===================================================
+   RESPONSIVE — MOBILE
+=================================================== */
+@media (max-width: 768px) {
+  body { overflow: auto; }
+
+  .wrapper {
+    flex-direction: column;
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  .wrapper::after { display: none; }
+
+  .panel {
+    height: 50dvh;
+    flex: none !important;
+  }
+
+  .panel__content {
+    bottom: 24px;
+    right: 20px;
+    left: 20px;
+    gap: 8px;
+    padding: 18px 20px 16px;
+  }
+
+  .panel__title { font-size: 22px; }
+
+  .panel__body { font-size: 12px; }
+
+  /* On mobile no :has hover — keep dims soft */
+  .panel__dim { background: rgba(0,0,0,0.55); }
+
+  /* Active tap state */
+  .panel:active .panel__dim { background: rgba(0,0,0,0.35); }
+  .panel:active .panel__bg  { transform: scale(1.03); }
+}
+
+@media (max-width: 400px) {
+  .panel__title { font-size: 18px; }
+  .panel__content { bottom: 16px; right: 14px; left: 14px; padding: 14px 16px 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===================================================
+  MAIN — Split panels
+=================================================== -->
+<main class="wrapper" id="main-content" role="main">
+
+  <!-- STORE PANEL -->
+  <article class="panel panel--store"
+           tabindex="0"
+           role="article"
+           aria-label="ورود به فروشگاه کامپیوتر یکتا"
+           onclick="window.location='https://computeryekta.com'"
+           onkeydown="if(event.key==='Enter'||event.key===' ') window.location='https://computeryekta.com'">
+
+    <div class="panel__bg" role="presentation" aria-hidden="true"></div>
+    <div class="panel__dim" aria-hidden="true"></div>
+    <div class="panel__glow" aria-hidden="true"></div>
+    <div class="panel__accent" aria-hidden="true"></div>
+
+    <div class="panel__content">
+      <h1 class="panel__title">فروشگاه کامپیوتر یکتا</h1>
+      <p class="panel__body">
+        سیستم‌های گیمینگ و قطعات حرفه‌ای با ضمانت اصالت کالا، پشتیبانی تخصصی و ارسال سریع سراسری.
+      </p>
+      <a class="panel__cta"
+         href="https://computeryekta.com"
+         aria-label="ورود به فروشگاه کامپیوتر یکتا"
+         onclick="event.stopPropagation()">
+        ورود به فروشگاه
+        <span class="panel__cta-arrow" aria-hidden="true">←</span>
+      </a>
+    </div>
+  </article>
+
+  <!-- BPM PANEL — در نسخه‌ی وردپرس به bpm.computeryekta.com (هاست قدیمی) اشاره می‌کرد -->
+  <article class="panel panel--bpm"
+           tabindex="0"
+           role="article"
+           aria-label="ورود به سیستم BPM سازمانی"
+           onclick="window.location='https://bpm.itmalek.com'"
+           onkeydown="if(event.key==='Enter'||event.key===' ') window.location='https://bpm.itmalek.com'">
+
+    <div class="panel__bg" role="presentation" aria-hidden="true"></div>
+    <div class="panel__dim" aria-hidden="true"></div>
+    <div class="panel__glow" aria-hidden="true"></div>
+    <div class="panel__accent" aria-hidden="true"></div>
+
+    <div class="panel__content">
+      <h1 class="panel__title">سامانه مدیریت فرآیند کسب‌وکار (BPM)</h1>
+      <p class="panel__body">
+مدیریت هوشمند فرآیندها و وظایف سازمان برای افزایش سرعت، نظم و کنترل عملکرد تیم‌ها
+      </p>
+      <a class="panel__cta"
+         href="https://bpm.itmalek.com"
+         aria-label="ورود به نسخه BPM سازمانی کامپیوتر یکتا"
+         onclick="event.stopPropagation()">
+آغاز هوشمندسازی فرآیندها
+        <span class="panel__cta-arrow" aria-hidden="true">←</span>
+      </a>
+    </div>
+  </article>
+
+</main>
+
+<!-- ===================================================
+  FOOTER
+=================================================== -->
+<footer class="site-footer" role="contentinfo">
+  <p class="site-footer__text">© ۱۴۰۴ کامپیوتر یکتا · تمامی حقوق محفوظ است</p>
+</footer>
+
+</body>
+</html>
