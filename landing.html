@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <!--
   صفحه‌ی اولِ دامنه‌ی اصلی itmalek.com (نه bpm.itmalek.com).
-  نسخه‌ی استاتیکِ صفحه‌ای که در وردپرس فروشگاه (computeryekta.com/wellcome) ساخته شده بود.
   مسیردهی: .htaccess برای میزبان itmalek.com مسیر «/» را به همین فایل می‌دهد و
   هر مسیر دیگر را به bpm.itmalek.com می‌فرستد.
-  ⚠️ اگر صفحه در وردپرس ویرایش شود، این فایل خودکار به‌روز نمی‌شود.
+
+  طرح: تصویرِ ۲:۱ (landing-bg.png) تمام‌صفحه؛ .stage دقیقاً هم‌اندازه‌ی تصویر
+  است و محتوا با درصد (موقعیت) و cqw (اندازه — ۱cqw = ۱٪ عرضِ .stage)
+  چیده شده، تا با هر اندازه‌ی پنجره روی همان کارت‌های داخلِ تصویر بماند.
 -->
 <html lang="fa" dir="rtl">
 <head>
@@ -13,470 +15,324 @@
 <title>کامپیوتر یکتا</title>
 <link href="/assets/fonts/Vazirmatn-font-face.css" rel="stylesheet">
 <style>
-/* ===================================================
-   TOKENS
-=================================================== */
-:root {
-  --clr-void:     #04080f;
-  --clr-deep:     #0b1220;
-  --clr-surface:  #101827;
-  --clr-glass:    rgba(255,255,255,0.04);
-  --clr-border:   rgba(255,255,255,0.08);
-
-  /* Store palette — electric indigo */
-  --clr-store-a:  #3b5bdb;
-  --clr-store-b:  #6c8eff;
-  --clr-store-glow: rgba(59,91,219,0.35);
-
-  /* BPM palette — emerald */
-  --clr-bpm-a:    #0d9373;
-  --clr-bpm-b:    #34d399;
-  --clr-bpm-glow: rgba(13,147,115,0.35);
-
-  --clr-text:     #f0f4ff;
-  --clr-muted:    #8b9ab8;
-  --clr-caption:  #5a6880;
-
-  --ff-display: 'Vazirmatn', system-ui, sans-serif;
-
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --dur-fast: 0.35s;
-  --dur-med:  0.6s;
-  --dur-slow: 1s;
-}
-
-/* ===================================================
-   RESET & BASE
-=================================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: #04092a;   /* هم‌رنگِ لبه‌های تصویر — اگر جایی از تصویر بیرون ماند */
+}
 
 body {
-  background: var(--clr-void);
-  color: var(--clr-text);
-  font-family: var(--ff-display);
-  overflow: hidden;
-  height: 100dvh;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ===================================================
-   SPLIT WRAPPER
-=================================================== */
-.wrapper {
-  display: flex;
-  height: 100dvh;
-  position: relative;
-}
-
-/* Divider glow line */
-.wrapper::after {
-  content: '';
-  position: absolute;
-  top: 0; bottom: 0;
-  left: 50%;
-  width: 1px;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(255,255,255,0.15) 30%,
-    rgba(255,255,255,0.15) 70%,
-    transparent 100%
-  );
-  z-index: 10;
-  pointer-events: none;
-}
-
-/* ===================================================
-   PANELS
-=================================================== */
-.panel {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  transition: flex var(--dur-slow) var(--ease-out-expo);
-  cursor: pointer;
-  outline: none;
-}
-
-.panel:focus-visible {
-  outline: 3px solid rgba(255,255,255,0.4);
-  outline-offset: -3px;
-}
-
-/* BG images */
-.panel__bg {
-  position: absolute;
-  inset: -5%;
-  background-size: cover;
-  background-position: center;
-  transition: transform var(--dur-slow) var(--ease-out-expo),
-              filter var(--dur-slow) var(--ease-out-expo);
-  will-change: transform;
-}
-
-.panel--store .panel__bg {
-  background-image: url('/assets/landing/store-bg.png');
-}
-
-.panel--bpm .panel__bg {
-  background-image: url('/assets/landing/bpm-bg.jpg');
-}
-
-/* Dimming overlay */
-.panel__dim {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.62);
-  transition: background var(--dur-med) var(--ease-out-expo);
-}
-
-/* Signature accent — vertical color bar on inner edge */
-.panel--store .panel__accent {
-  position: absolute;
-  top: 15%; bottom: 15%;
-  left: 0; /* inner edge for RTL store=left */
-  width: 3px;
-  background: linear-gradient(to bottom, transparent, var(--clr-store-b), transparent);
-  opacity: 0;
-  transition: opacity var(--dur-med);
-}
-.panel--bpm .panel__accent {
-  position: absolute;
-  top: 15%; bottom: 15%;
-  right: 0;
-  width: 3px;
-  background: linear-gradient(to bottom, transparent, var(--clr-bpm-b), transparent);
-  opacity: 0;
-  transition: opacity var(--dur-med);
-}
-
-/* Ambient glow that bleeds into the divider */
-.panel__glow {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity var(--dur-med);
-  pointer-events: none;
-}
-
-.panel--store .panel__glow {
-  background: radial-gradient(ellipse 60% 80% at 90% 50%, var(--clr-store-glow), transparent);
-}
-
-.panel--bpm .panel__glow {
-  background: radial-gradient(ellipse 60% 80% at 10% 50%, var(--clr-bpm-glow), transparent);
-}
-
-/* ===================================================
-   PANEL CONTENT
-=================================================== */
-.panel__content {
-  position: absolute;
-  bottom: 44px;
-  right: 32px;
-  left: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  /* frosted card for legibility over any background image */
-  background: rgba(8, 14, 26, 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 16px;
-  padding: 22px 24px 20px;
-}
-
-.panel__title {
-  font-size: clamp(20px, 2.2vw, 26px);
-  font-weight: 800;
-  line-height: 1.3;
-  color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-}
-
-.panel__body {
-  font-size: 13px;
-  font-weight: 400;
-  color: #c8d4e8;
-  line-height: 1.85;
-  max-width: 320px;
-}
-
-/* CTA Button */
-.panel__cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-  padding: 11px 20px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-  border: 1.5px solid transparent;
-  transition:
-    background var(--dur-fast),
-    border-color var(--dur-fast),
-    color var(--dur-fast),
-    transform var(--dur-fast) var(--ease-spring),
-    box-shadow var(--dur-fast);
-  width: fit-content;
-  position: relative;
-  overflow: hidden;
-}
-
-.panel__cta::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.08);
-  opacity: 0;
-  transition: opacity var(--dur-fast);
-}
-
-.panel__cta:hover::after,
-.panel__cta:focus-visible::after { opacity: 1; }
-
-.panel--store .panel__cta {
-  background: rgba(255,255,255,0.10);
-  border-color: rgba(255,255,255,0.18);
-  color: var(--clr-text);
-  backdrop-filter: blur(6px);
-}
-
-.panel--bpm .panel__cta {
-  background: rgba(255,255,255,0.10);
-  border-color: rgba(255,255,255,0.18);
-  color: var(--clr-text);
-  backdrop-filter: blur(6px);
-}
-
-.panel__cta-arrow {
-  font-size: 16px;
-  transition: transform var(--dur-fast) var(--ease-spring);
-  display: inline-block;
-}
-
-
-/* ===================================================
-   HOVER STATES
-=================================================== */
-.wrapper:has(.panel--store:hover) .panel--store,
-.wrapper:has(.panel--store:focus-visible) .panel--store { flex: 1.45; }
-.wrapper:has(.panel--store:hover) .panel--bpm,
-.wrapper:has(.panel--store:focus-visible) .panel--bpm   { flex: 0.55; }
-
-.wrapper:has(.panel--bpm:hover) .panel--bpm,
-.wrapper:has(.panel--bpm:focus-visible) .panel--bpm     { flex: 1.45; }
-.wrapper:has(.panel--bpm:hover) .panel--store,
-.wrapper:has(.panel--bpm:focus-visible) .panel--store   { flex: 0.55; }
-
-/* Dim recedes on hover */
-.panel--store:hover .panel__dim,
-.panel--store:focus-visible .panel__dim { background: rgba(0,0,0,0.42); }
-.panel--bpm:hover .panel__dim,
-.panel--bpm:focus-visible .panel__dim   { background: rgba(0,0,0,0.42); }
-
-/* BG zoom */
-.panel--store:hover .panel__bg,
-.panel--store:focus-visible .panel__bg { transform: scale(1.04); }
-.panel--bpm:hover .panel__bg,
-.panel--bpm:focus-visible .panel__bg   { transform: scale(1.04); }
-
-/* Glow + accent */
-.panel--store:hover .panel__glow,
-.panel--store:focus-visible .panel__glow { opacity: 1; }
-.panel--bpm:hover .panel__glow,
-.panel--bpm:focus-visible .panel__glow   { opacity: 1; }
-
-.panel--store:hover .panel__accent,
-.panel--store:focus-visible .panel__accent { opacity: 1; }
-.panel--bpm:hover .panel__accent,
-.panel--bpm:focus-visible .panel__accent   { opacity: 1; }
-
-/* CTA hover color */
-.panel--store:hover .panel__cta {
-  background: var(--clr-store-a);
-  border-color: var(--clr-store-b);
-  box-shadow: 0 0 20px var(--clr-store-glow);
-}
-.panel--bpm:hover .panel__cta {
-  background: var(--clr-bpm-a);
-  border-color: var(--clr-bpm-b);
-  box-shadow: 0 0 20px var(--clr-bpm-glow);
-}
-
-.panel__cta:hover .panel__cta-arrow { transform: translateX(-4px); }
-
-
-
-/* ===================================================
-   FOOTER STRIP
-=================================================== */
-.site-footer {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  height: 36px;
+  font-family: 'Vazirmatn', system-ui, sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 20;
-  pointer-events: none;
-  opacity: 0;
-  animation: slideUp2 0.5s var(--ease-out-expo) forwards 0.2s;
+  height: 100dvh;
 }
 
-.site-footer__text {
-  font-size: 11px;
-  color: var(--clr-caption);
-  letter-spacing: 0.3px;
+/* تصویر ۲:۱ تمام‌صفحه (مثل background-size: cover): .stage همیشه دست‌کم
+   هم‌عرض و هم‌ارتفاعِ پنجره است و اضافه‌اش از دو طرف (یا بالا/پایین) بیرون
+   می‌زند. چون محتوا داخلِ همین .stage با درصد چیده شده، همراهِ تصویر می‌ماند. */
+.stage {
+  position: relative;
+  flex-shrink: 0;
+  /* ×1.1 = حدود ۵٪ از هر طرف بیشتر از کاور بریده می‌شود (زومِ پس‌زمینه) */
+  width: calc(max(100vw, 200dvh) * 1.1);
+  aspect-ratio: 2 / 1;
+  container-type: inline-size;
 }
 
-/* ===================================================
-   KEYFRAMES
-=================================================== */
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes slideUp2 {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-/* ===================================================
-   REDUCED MOTION
-=================================================== */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    transition-duration: 0.001ms !important;
-  }
-  .site-header, .site-footer {
-    opacity: 1 !important;
-    transform: none !important;
-  }
+/* پس‌زمینه روی یک لایه‌ی جدا (::before) تا بشود قرینه‌اش کرد */
+.stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/assets/landing/landing-bg.png') center / 100% 100% no-repeat;
 }
 
-/* ===================================================
-   RESPONSIVE — MOBILE
-=================================================== */
-@media (max-width: 768px) {
-  body { overflow: auto; }
+/* حالتِ قرینه (کلاسِ mirror روی .stage): تصویر افقی برعکس می‌شود و
+   چون کامپیوتر به چپ می‌رود، بلوکِ فروشگاه به جای قرینه‌اش در راست می‌رود */
+.stage.mirror::before { transform: scaleX(-1); }
+.stage.mirror .block--store { left: auto; right: 24.4%; width: 21%; }  /* هم‌راستا با متنِ BPM */
 
-  .wrapper {
-    flex-direction: column;
-    height: auto;
-    min-height: 100dvh;
-  }
-
-  .wrapper::after { display: none; }
-
-  .panel {
-    height: 50dvh;
-    flex: none !important;
-  }
-
-  .panel__content {
-    bottom: 24px;
-    right: 20px;
-    left: 20px;
-    gap: 8px;
-    padding: 18px 20px 16px;
-  }
-
-  .panel__title { font-size: 22px; }
-
-  .panel__body { font-size: 12px; }
-
-  /* On mobile no :has hover — keep dims soft */
-  .panel__dim { background: rgba(0,0,0,0.55); }
-
-  /* Active tap state */
-  .panel:active .panel__dim { background: rgba(0,0,0,0.35); }
-  .panel:active .panel__bg  { transform: scale(1.03); }
+/* صفحه‌های کم‌عرض‌تر (مثل ۵:۴): زوم کارتِ پایین (۲۱٪ تا ۷۹٪ عرضِ تصویر)
+   را بیرون می‌انداخت — این‌جا فقط کاور، بدون زوم */
+@media (max-aspect-ratio: 29/20) {
+  .stage { width: max(100vw, 200dvh); }
 }
 
-@media (max-width: 400px) {
-  .panel__title { font-size: 18px; }
-  .panel__content { bottom: 16px; right: 14px; left: 14px; padding: 14px 16px 12px; }
+/* صفحه‌های باریک (موبایلِ عمودی): کاور هم کارت را بیرون می‌انداخت —
+   زیرِ نسبتِ ۶:۵ کلِ تصویر به عرضِ صفحه نشان داده می‌شود */
+@media (max-aspect-ratio: 6/5) {
+  .stage { width: 100vw; }
 }
+
+/* --u واحدِ اندازه‌ی هر بلوک است (بر حسبِ cqw = ٪ عرضِ .stage)؛
+   همه‌ی اندازه‌های داخلِ بلوک ضریبی از آن‌اند */
+.block {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;   /* در RTL یعنی راست‌چین */
+  text-align: right;
+}
+
+/* چیدمانِ ضربدری: بالا = فروشگاه (چپ) و کامپیوترِ تصویر (راست)؛
+   پایین = داشبورد (چپِ کارت) و متنِ BPM (راستِ کارت).
+   فروشگاه: لبه‌ی چپش هم‌راستای لبه‌ی چپِ کارت (۲۱.۶٪) و لبه‌ی راستش با
+   فاصله از لپ‌تاپِ تصویر (۴۰٪)؛ از پایین به بالای
+   کارت (۵۲٪) قفل است و رو به بالا رشد می‌کند تا بریدگیِ بالای تصویر فقط
+   فضای خالیِ تیره را بخورد */
+.block--store { --u: 0.46cqw; left: 21.6%; bottom: 50.5%; width: 18.4%; color: #ffffff; }
+/* BPM: ستونِ راستِ کارتِ روشن */
+.block--bpm   { --u: 0.44cqw; right: 24.4%; top: 60.5%; width: 21%; color: #1e1b3a; }
+
+.store-logo {
+  width: calc(var(--u) * 10);
+  height: calc(var(--u) * 6.8);
+  margin-bottom: calc(var(--u) * 2.4);
+}
+
+.store-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: right center;
+  display: block;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--u) * 0.8);
+  font-size: calc(var(--u) * 1.5);
+  font-weight: 700;
+  margin-bottom: calc(var(--u) * 1);
+}
+
+.eyebrow::before {
+  content: '';
+  width: calc(var(--u) * 2.4);
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.block--store .eyebrow { color: #b4a2ff; }
+.block--bpm .eyebrow   { color: #10a87a; }
+
+.title {
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.block--store .title { font-size: calc(var(--u) * 4.6); }
+.block--bpm .title   { font-size: calc(var(--u) * 2.7); }
+
+.subtitle {
+  margin-top: calc(var(--u) * 1.4);
+  font-weight: 500;
+  line-height: 1.8;
+}
+
+.block--store .subtitle { font-size: calc(var(--u) * 1.7); color: #c9d2ec; }
+.block--bpm .subtitle   { font-size: calc(var(--u) * 1.7); color: #5b6075; }
+
+/* دکمه‌ها */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 1.4);
+  padding: 0 calc(var(--u) * 3);
+  height: calc(var(--u) * 5);
+  border-radius: calc(var(--u) * 1.2);
+  font-size: calc(var(--u) * 1.6);
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  transition: transform .2s, box-shadow .2s, filter .2s;
+}
+
+.cta svg { width: calc(var(--u) * 1.9); height: calc(var(--u) * 1.9); transition: transform .2s; }
+
+.cta:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.cta:hover svg { transform: translateX(-3px); }
+.cta:focus-visible { outline: 3px solid rgba(255,255,255,.7); outline-offset: 3px; }
+
+.cta--store {
+  margin-top: calc(var(--u) * 3.2);
+  background: linear-gradient(90deg, #4f46e5, #8b3dff);
+  box-shadow: 0 0 calc(var(--u) * 2.2) rgba(139, 61, 255, .5);
+}
+
+.cta--bpm {
+  margin-top: calc(var(--u) * 3.2);
+  background: linear-gradient(90deg, #22c79a, #0fa47a);
+  box-shadow: 0 calc(var(--u) * 0.8) calc(var(--u) * 2) rgba(16, 185, 129, .32);
+}
+
+.cta--bpm:focus-visible { outline-color: rgba(16, 185, 129, .6); }
+
+/* امکانات: چیپ‌های افقیِ کوچک (آیکون + برچسب) */
+.features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--u) * 1);
+  margin-top: calc(var(--u) * 2.8);
+}
+
+.feature {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--u) * 0.6);
+  padding: calc(var(--u) * 0.55) calc(var(--u) * 1.1);
+  border-radius: 999px;
+  font-size: calc(var(--u) * 1.2);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.feature svg {
+  width: calc(var(--u) * 1.8);
+  height: calc(var(--u) * 1.8);
+  fill: none;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.block--store .feature {
+  color: #e6e9f5;
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(167, 139, 250, .28);
+}
+.block--store .feature svg { stroke: url(#gradStore); }
+
+.block--bpm .feature {
+  color: #2b2f45;
+  background: rgba(16, 185, 129, .07);
+  border: 1px solid rgba(16, 185, 129, .22);
+}
+.block--bpm .feature svg { stroke: #14a37c; }
+
+/* لوگوی BPM داخلِ دایره‌ی سفیدِ وسطِ تصویر */
+.bpm-logo {
+  position: absolute;
+  left: 50.05%;
+  top: 54.1%;
+  width: 2.5cqw;
+  transform: translate(-50%, -50%);
+  display: block;
+}
+
+/* تصویرِ داشبورد: ستونِ چپِ کارت، با کمی چرخشِ سه‌بعدی رو به متنِ BPM؛
+   با hover صاف می‌شود. کادرِ شیشه‌ای با کد (padding + پس‌زمینه‌ی خودِ img)،
+   تا همیشه دقیقاً هم‌اندازه‌ی خودِ عکس باشد */
+.dashboard {
+  position: absolute;
+  left: 23.2%;
+  top: 58.2%;
+  width: 26.4%;
+  height: 30.6%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  direction: ltr;            /* تا flex-start یعنی «چپ» (نه راستِ RTL) */
+  perspective: 120cqw;
+}
+
+.dashboard img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  padding: 0.6cqw;
+  background: rgba(244, 246, 255, .8);
+  border: 1px solid rgba(255, 255, 255, .9);
+  border-radius: 1cqw;
+  box-shadow:
+    -1cqw 1.2cqw 2.4cqw rgba(60, 50, 140, .2),
+    inset 0 0 0 1px rgba(255, 255, 255, .5);
+  transform: rotateY(12deg);
+  transform-origin: left center;
+  transition: transform .6s cubic-bezier(.16, 1, .3, 1);
+}
+
+.dashboard:hover img { transform: rotateY(0deg); }
 </style>
 </head>
 <body>
 
-<!-- ===================================================
-  MAIN — Split panels
-=================================================== -->
-<main class="wrapper" id="main-content" role="main">
+<!-- گرادیانِ آیکون‌های کارتِ فروشگاه (بنفش → آبی) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gradStore" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a78bfa"/>
+      <stop offset="1" stop-color="#60a5fa"/>
+    </linearGradient>
+  </defs>
+</svg>
 
-  <!-- STORE PANEL -->
-  <article class="panel panel--store"
-           tabindex="0"
-           role="article"
-           aria-label="ورود به فروشگاه کامپیوتر یکتا"
-           onclick="window.location='https://computeryekta.com'"
-           onkeydown="if(event.key==='Enter'||event.key===' ') window.location='https://computeryekta.com'">
+<main class="stage mirror" id="main-content">
 
-    <div class="panel__bg" role="presentation" aria-hidden="true"></div>
-    <div class="panel__dim" aria-hidden="true"></div>
-    <div class="panel__glow" aria-hidden="true"></div>
-    <div class="panel__accent" aria-hidden="true"></div>
-
-    <div class="panel__content">
-      <h1 class="panel__title">فروشگاه کامپیوتر یکتا</h1>
-      <p class="panel__body">
-        سیستم‌های گیمینگ و قطعات حرفه‌ای با ضمانت اصالت کالا، پشتیبانی تخصصی و ارسال سریع سراسری.
-      </p>
-      <a class="panel__cta"
-         href="https://computeryekta.com"
-         aria-label="ورود به فروشگاه کامپیوتر یکتا"
-         onclick="event.stopPropagation()">
-        ورود به فروشگاه
-        <span class="panel__cta-arrow" aria-hidden="true">←</span>
-      </a>
+  <!-- ===== کارتِ بالا: فروشگاه ===== -->
+  <section class="block block--store" aria-label="فروشگاه کامپیوتر یکتا">
+    <div class="store-logo"><img src="/assets/landing/logo.png" alt="لوگوی کامپیوتر یکتا" onerror="this.remove()"></div>
+    <span class="eyebrow">فروشگاه</span>
+    <h1 class="title">کامپیوتر یکتا</h1>
+    <p class="subtitle">سیستم های گیمینگ و قطعات سخت افزاری</p>
+    <a class="cta cta--store" href="https://computeryekta.com">
+      ورود به فروشگاه
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </a>
+    <div class="features">
+      <div class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="13.5" width="4" height="6" rx="1.6"/><rect x="17.5" y="13.5" width="4" height="6" rx="1.6"/><path d="M19.5 19.5c0 1.5-2 2.5-5 2.5"/></svg>
+        پشتیبانی تخصصی
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 6h11v10H2z"/><path d="M13 9h4.5l3.5 3.5V16h-8"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/><line x1="0.8" y1="9" x2="4" y2="9"/><line x1="0.8" y1="12" x2="3" y2="12"/></svg>
+        ارسال سریع
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6c0 5.2-3.4 8.6-8 10-4.6-1.4-8-4.8-8-10v-6z"/><polyline points="8.5 12 11 14.5 15.5 10"/></svg>
+        گارانتی معتبر
+      </div>
     </div>
-  </article>
+  </section>
 
-  <!-- BPM PANEL — در نسخه‌ی وردپرس به bpm.computeryekta.com (هاست قدیمی) اشاره می‌کرد -->
-  <article class="panel panel--bpm"
-           tabindex="0"
-           role="article"
-           aria-label="ورود به سیستم BPM سازمانی"
-           onclick="window.location='https://bpm.itmalek.com'"
-           onkeydown="if(event.key==='Enter'||event.key===' ') window.location='https://bpm.itmalek.com'">
-
-    <div class="panel__bg" role="presentation" aria-hidden="true"></div>
-    <div class="panel__dim" aria-hidden="true"></div>
-    <div class="panel__glow" aria-hidden="true"></div>
-    <div class="panel__accent" aria-hidden="true"></div>
-
-    <div class="panel__content">
-      <h1 class="panel__title">سامانه مدیریت فرآیند کسب‌وکار (BPM)</h1>
-      <p class="panel__body">
-مدیریت هوشمند فرآیندها و وظایف سازمان برای افزایش سرعت، نظم و کنترل عملکرد تیم‌ها
-      </p>
-      <a class="panel__cta"
-         href="https://bpm.itmalek.com"
-         aria-label="ورود به نسخه BPM سازمانی کامپیوتر یکتا"
-         onclick="event.stopPropagation()">
-آغاز هوشمندسازی فرآیندها
-        <span class="panel__cta-arrow" aria-hidden="true">←</span>
-      </a>
+  <!-- ===== کارتِ پایین: BPM ===== -->
+  <section class="block block--bpm" aria-label="سامانه مدیریت فرآیند کسب و کار">
+    <span class="eyebrow">سامانه</span>
+    <h2 class="title">سامانه مدیریت فرآیند کسب‌و‌کار (BPM)</h2>
+    <p class="subtitle">مدیریت هوشمند فرآیند ها</p>
+    <a class="cta cta--bpm" href="https://bpm.itmalek.com">
+      ورود به سامانه
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </a>
+    <div class="features">
+      <div class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="21" x2="21" y2="21"/><rect x="5" y="12" width="3.2" height="7" rx=".6"/><rect x="10.4" y="8" width="3.2" height="11" rx=".6"/><rect x="15.8" y="4" width="3.2" height="15" rx=".6"/></svg>
+        گزارش گیری پیشرفته
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 0 1-13.7 5.6"/><path d="M4 12a8 8 0 0 1 13.7-5.6"/><polyline points="18 2.5 18 6.5 14 6.5"/><polyline points="6 21.5 6 17.5 10 17.5"/><circle cx="12" cy="12" r="2.6"/></svg>
+        اتوماسیون فرآیندها
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        نظارت لحظه ای
+      </div>
     </div>
-  </article>
+  </section>
+
+  <img class="bpm-logo" src="/assets/landing/bpm-logo.png" alt="لوگوی BPM">
+
+  <!-- تصویرِ داشبورد: ستونِ چپِ کارتِ روشن -->
+  <div class="dashboard"><img src="/assets/landing/dashboard.png" alt="نمایی از داشبورد سامانه BPM" onerror="this.remove()"></div>
 
 </main>
-
-<!-- ===================================================
-  FOOTER
-=================================================== -->
-<footer class="site-footer" role="contentinfo">
-  <p class="site-footer__text">© ۱۴۰۴ کامپیوتر یکتا · تمامی حقوق محفوظ است</p>
-</footer>
 
 </body>
 </html>
