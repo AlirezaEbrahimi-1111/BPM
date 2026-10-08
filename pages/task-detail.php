@@ -1667,17 +1667,25 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
                 // ✅ تنظیم تاریخ پیش‌فرض
                 try {
-                    let defaultDate;
+                    // «امروز» از ساعت سرور (تهران)، نه دستگاه
+                    const _p2 = n => String(n).padStart(2, '0');
+                    const _now = new Date();
+                    const todayStr = window.TimeSync
+                        ? TimeSync.serverToday()
+                        : `${_now.getFullYear()}-${_p2(_now.getMonth() + 1)}-${_p2(_now.getDate())}`;
 
-                    // استفاده از پارامتر ارسالی
-                    if (defaultDateString) {
-                        defaultDate = new Date(defaultDateString);
-
-                    } else {
-                        defaultDate = new Date();
+                    // تاریخ پیش‌فرض = پارامتر ارسالی؛ ولی اگر خالی/نامعتبر باشد یا «گذشته»
+                    // باشد → امروز. این تقویم روز گذشته را قابل‌انتخاب نمی‌گذارد، پس
+                    // پیش‌فرض گذشته معنی ندارد: برای کاری که موعدش مثلا در شهریور گذشته،
+                    // «تمدید موعد» تقویم را روی شهریور باز می‌کرد و همان روز
+                    // (غیرقابل‌انتخاب) را انتخاب‌شده نشان می‌داد.
+                    let defStr = defaultDateString ? String(defaultDateString).slice(0, 10) : '';
+                    if (!/^\d{4}-\d{2}-\d{2}$/.test(defStr) || defStr < todayStr) {
+                        defStr = todayStr;
                     }
-
-                    // اطمینان از معتبر بودن تاریخ
+                    const _d = defStr.split('-').map(Number);
+                    // ساعت ۱۲ ظهر محلی تا تبدیل تاریخ در هیچ تایم‌زونی یک روز جابه‌جا نشود
+                    let defaultDate = new Date(_d[0], _d[1] - 1, _d[2], 12, 0, 0);
                     if (isNaN(defaultDate.getTime())) {
                         defaultDate = new Date();
                     }
