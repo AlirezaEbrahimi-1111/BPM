@@ -121,7 +121,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                         <input type="text" class="form-control" id="s_national_id">
                     </div>
                     <div>
-                        <label class="form-label">کد اقتصادی</label>
+                        <label class="form-label">شماره اقتصادی</label>
                         <input type="text" class="form-control" id="s_economic_code">
                     </div>
                     <div>

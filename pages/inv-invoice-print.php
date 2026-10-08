@@ -164,7 +164,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         .grid6 col.c-lbl  { width: 124px; }
         .grid6 col.c-nlbl { width: 150px; }  /* برچسب «نام شخص حقیقی و حقوقی» ~۲۰٪ بزرگ‌تر */
         .grid6 col.c-nval { width: 204px; }  /* فضای مقابل نام ~۲۵٪ کوچک‌تر */
-        .grid6 col.c-code { width: 133px; }  /* آزادشده به کد اقتصادی/شناسه ملی/کد پستی/شهر/تلفن اضافه شد */
+        .grid6 col.c-code { width: 133px; }  /* آزادشده به شماره اقتصادی/شناسه ملی/کد پستی/شهر/تلفن اضافه شد */
 
         /* عرض ستون‌های جدول اقلام مطابق فرم رسمی */
         table.items { table-layout: fixed; }
@@ -419,7 +419,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <tr><td colspan="6" class="band">مشخصات فروشنده</td></tr>
                 <tr>
                     <td class="lbl">نام شخص حقیقی و حقوقی</td><td>${esc(seller.company_name)}</td>
-                    <td class="lbl">کد اقتصادی</td><td>${faDigits(esc(seller.economic_code))}</td>
+                    <td class="lbl">شماره اقتصادی</td><td>${faDigits(esc(seller.economic_code))}</td>
                     <td class="lbl">شناسه ملی</td><td>${faDigits(esc(seller.national_id))}</td>
                 </tr>
                 <tr>

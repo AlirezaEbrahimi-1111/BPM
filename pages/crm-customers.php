@@ -199,7 +199,7 @@ $canWrite = true;
                                 <input type="text" class="form-control" id="f_national_id" inputmode="numeric">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">کد اقتصادی</label>
+                                <label class="form-label">شماره اقتصادی</label>
                                 <input type="text" class="form-control" id="f_economic_code">
                             </div>
                             <div class="col-md-4">
@@ -321,7 +321,7 @@ $canWrite = true;
                 cellRenderer: p => faDigits(p.value) || '—'
             },
             {
-                headerName: 'کد اقتصادی',
+                headerName: 'شماره اقتصادی',
                 field: 'economic_code',
                 width: 140,
                 cellRenderer: p => faDigits(p.value) || '—'
@@ -467,7 +467,8 @@ $canWrite = true;
             'موبایل': 'mobile',
             'کد/شناسه ملی': 'national_id',
             'کد / شناسه ملی': 'national_id',
-            'کد اقتصادی': 'economic_code',
+            'شماره اقتصادی': 'economic_code',
+            'کد اقتصادی': 'economic_code', // عنوان قدیمی — فایل‌های اکسل قبلی هنوز خوانده شوند
             'استان': 'province',
             'شهر': 'city',
             'کد پستی': 'postal_code',
