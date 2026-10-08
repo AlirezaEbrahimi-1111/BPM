@@ -1,7 +1,11 @@
 <?php
 /**
- * تغییر دسته‌جمعی وضعیت تیکت‌های «در انتظار پاسخ کاربر» که از آخرین پیامشان
+ * تغییر دسته‌جمعی وضعیت تیکت‌هایی که منتظر پاسخ کاربرند و از آخرین پیامشان
  * ۲۱ روز گذشته → «حل شده». فقط برای مدیر اصلی سیستم (user_id = 1).
+ *
+ * «منتظر پاسخ کاربر» = آخرین پیام تیکت را پشتیبان فرستاده، یا پشتیبان دستی
+ * وضعیت را «در انتظار پاسخ کاربر» گذاشته. (از وقتی پیام پشتیبان وضعیت را
+ * خودکار عوض نمی‌کند — api/tickets/reply.php — وضعیت به‌تنهایی کافی نیست.)
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -16,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 const BULK_RESOLVE_STALE_DAYS = 21;
 
@@ -40,23 +45,32 @@ try {
     }
 
     // شناسهٔ وضعیت‌های مبدأ/مقصد
-    $stmt = $db->prepare("SELECT id, name, label FROM ticket_statuses WHERE name IN ('waiting_reply','resolved')");
+    $stmt = $db->prepare("SELECT id, name, label FROM ticket_statuses WHERE name = 'resolved'");
     $stmt->execute();
     $statuses = [];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
         $statuses[$row['name']] = $row;
     }
-    if (empty($statuses['waiting_reply']) || empty($statuses['resolved'])) {
+    if (empty($statuses['resolved'])) {
         echo json_encode(['success' => false, 'message' => 'وضعیت‌های تیکت پیدا نشد'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     $resolvedId    = (int) $statuses['resolved']['id'];
     $resolvedLabel = $statuses['resolved']['label'];
 
-    // تیکت‌های واجد شرایط: وضعیت = waiting_reply و آخرین فعالیت (آخرین پیام،
-    // یا اگر پیامی نبود تاریخ ساخت تیکت) دست‌کم ۲۱ روز پیش بوده.
+    // تیکت‌های واجد شرایط: هنوز تمام‌نشده (نه حل‌شده/بسته/لغو)، آخرین فعالیت
+    // (آخرین پیام، یا اگر پیامی نبود تاریخ ساخت تیکت) دست‌کم ۲۱ روز پیش بوده، و
+    // نوبت کاربر است:
+    //   • وضعیت دستی «در انتظار پاسخ کاربر» باشد، یا
+    //   • آخرین پیام را پشتیبان فرستاده باشد (همان تعریف «پشتیبان» و «آخرین
+    //     نویسنده» در api/tickets/list.php) — به‌جز وقتی خود پشتیبان سازندهٔ تیکت است.
+    $supportList = implode(',', array_map('intval', getSuperAdminIds()));
+    $lastAuthorSub = "(SELECT tm2.user_id FROM ticket_messages tm2
+                        WHERE tm2.ticket_id = t.id AND tm2.deleted_at IS NULL
+                        ORDER BY tm2.created_at DESC, tm2.id DESC LIMIT 1)";
     $sql = "
-        SELECT t.id, t.ticket_number, t.subject, t.created_by, t.assigned_to
+        SELECT t.id, t.ticket_number, t.subject, t.created_by, t.assigned_to,
+               t.status_id, ts.label AS status_label
         FROM tickets t
         JOIN ticket_statuses ts ON t.status_id = ts.id
         LEFT JOIN (
@@ -66,7 +80,9 @@ try {
             GROUP BY ticket_id
         ) m ON m.ticket_id = t.id
         WHERE t.deleted_at IS NULL
-          AND ts.name = 'waiting_reply'
+          AND ts.name NOT IN ('resolved', 'closed', 'cancelled')
+          AND (ts.name = 'waiting_reply'
+               OR ($lastAuthorSub IN ($supportList) AND $lastAuthorSub <> t.created_by))
           AND COALESCE(m.last_msg, t.created_at) <= (NOW() - INTERVAL :days DAY)
     ";
     $stmt = $db->prepare($sql);
@@ -89,7 +105,7 @@ try {
     $updated = 0;
 
     foreach ($targets as $t) {
-        $ok = $updateStmt->execute([$resolvedId, (int) $t['id'], (int) $statuses['waiting_reply']['id']]);
+        $ok = $updateStmt->execute([$resolvedId, (int) $t['id'], (int) $t['status_id']]);
         if (!$ok || $updateStmt->rowCount() === 0) {
             continue; // وضعیت بین کوئری و آپدیت عوض شده — رد کن
         }
@@ -97,7 +113,7 @@ try {
 
         $historyStmt->execute([
             (int) $t['id'], $user_id,
-            $statuses['waiting_reply']['label'], $resolvedLabel,
+            $t['status_label'], $resolvedLabel,
         ]);
 
         if ((int) $t['created_by'] && (int) $t['created_by'] !== (int) $user_id

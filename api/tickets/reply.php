@@ -92,13 +92,14 @@ try {
     $stmt->execute([$ticketId, $user_id, $message]);
     $messageId = (int)$db->lastInsertId();
 
-    // ─── تغییر خودکار وضعیت بر اساس فرستنده‌ی پیام ───
-    // پاسخ سوپرادمین → منتظر پاسخ (کاربر)؛ پاسخ کاربر → باز (منتظر بررسی سوپرادمین)
+    // ─── تغییر خودکار وضعیت — فقط با پیام کاربر ───
+    // پیام کاربر → «در انتظار پاسخ پشتیبان» (open).
+    // پیام پشتیبان دیگر وضعیت را عوض نمی‌کند (قبلا → waiting_reply می‌شد)؛ هر
+    // تغییر وضعیت دیگری را پشتیبان دستی انجام می‌دهد (api/tickets/change-status.php).
     // تیکت لغوشده خودکار دوباره باز نمی‌شود؛ باید دستی تغییر وضعیت داده شود.
-    if ($ticket['old_status_name'] !== 'cancelled') {
-        $newStatusName = $isSuperAdmin ? 'waiting_reply' : 'open';
+    if (!$isSuperAdmin && $ticket['old_status_name'] !== 'cancelled') {
         $stmt = $db->prepare("SELECT id, label FROM ticket_statuses WHERE name = ?");
-        $stmt->execute([$newStatusName]);
+        $stmt->execute(['open']);
         $newStatus = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($newStatus && (int)$newStatus['id'] !== (int)$ticket['status_id']) {

@@ -648,9 +648,9 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
             document.getElementById('sClosed').textContent   = toPersian(s.closed_count || 0);
         }
 
-        /* ── حل‌شده کردن تیکت‌های «در انتظار پاسخ کاربر» که ۲۱ روز بی‌پاسخ مانده‌اند (فقط id=1) ── */
+        /* ── حل‌شده کردن تیکت‌هایی که ۲۱ روز منتظر پاسخ کاربر مانده‌اند (فقط id=1) ── */
         window.resolveStaleTickets = function(){
-            uiConfirm('همهٔ تیکت‌هایی که «در انتظار پاسخ کاربر» هستند و از آخرین پیامشان ۲۱ روز گذشته، به «حل شده» تغییر کنند؟', async function(){
+            uiConfirm('همهٔ تیکت‌های بازی که آخرین پیامشان را پشتیبان فرستاده (یا «در انتظار پاسخ کاربر» هستند) و ۲۱ روز از آن پیام گذشته، به «حل شده» تغییر کنند؟', async function(){
                 var btn = document.getElementById('btnResolveStale');
                 if (btn) btn.disabled = true;
                 try {
