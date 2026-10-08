@@ -3920,7 +3920,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             const map = {
                 mine: 'my-tasks.php',
                 delegated: 'delegated-tasks.php',
-                recent: 'workflow-monitor.php',
+                // «همه‌ی فعالیت‌ها» با همان نطاق انتخاب‌شده در چیپ‌های این تب
+                recent: 'recent-activity.php?scope=' + encodeURIComponent(activityScope),
                 starred: '#'
             };
             a.href = map[currentTab] || '#';
@@ -3990,6 +3991,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     activityScope = chip.dataset.scope;
                     document.querySelectorAll('.activity-scope-chip').forEach(c => c.classList.remove('active'));
                     chip.classList.add('active');
+                    updateTasksSeeAll();
                     loadActivityLog(activityScope);
                 });
             });

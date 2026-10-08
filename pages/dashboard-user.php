@@ -3669,7 +3669,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             const map = {
                 mine: 'my-tasks.php',
                 delegated: 'delegated-tasks.php',
-                recent: 'workflow-monitor.php',
+                recent: 'recent-activity.php',
                 starred: '#'
             };
             a.href = map[currentTab] || '#';
