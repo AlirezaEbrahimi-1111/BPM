@@ -44,11 +44,15 @@ function taskNeedsRenewalDecision(array $t): bool
     return !empty($t['needs_renewal_decision']);
 }
 
-/** معادل isWaitingMyApproval */
+/**
+ * معادل TF.isWaitingMyApproval — کار منتظر تأیید کسی است که الان assignee_id
+ * است (همان کسی که TaskManager::approveOrRejectTask اجازهٔ تأیید می‌دهد)، نه
+ * سازندهٔ کار و نه current_approver_id (که تأییدکنندهٔ درخواست تمدید موعد است).
+ */
 function taskIsWaitingMyApproval(array $t, int $userId): bool
 {
     if (empty($t['is_pending_approval'])) return false;
-    return $userId === (int) ($t['creator_id'] ?? 0) || $userId === (int) ($t['current_approver_id'] ?? 0);
+    return $userId === (int) ($t['assignee_id'] ?? 0);
 }
 
 /** معادل isWaitingMyDeadline */

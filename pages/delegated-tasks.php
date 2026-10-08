@@ -204,7 +204,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     return da < db ? -1 : da > db ? 1 : 0;
                 },
                 cellRenderer: p => {
-                    const d = TF.effectiveDue(p.data);
+                    const d = TF.displayDue(p.data);
                     return `<span class="date-display">${fmtDate(d)}</span>`;
                 }
             },
@@ -596,42 +596,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             return `<span class="badge type-${t}"><i class="bi bi-${i}"></i>${l}</span>`;
         }
 
-        // 🔒 دو مدل تأخیر/مهلت: روتین/فرآیندی (is_workflow_task=1) ساعتی،
-        // بقیه روز کاری — هر دو عدد از سرور (enrichTaskDates)، نه از new Date()
+        // بج ستون «مهلت» — تنها مرجع: TF.remainingBadge (assets/js/task-filters.js)
         function daysLeft(d, status, task) {
-            if (status === 'completed' || status === 'approved') return '<span class="badge days-badge days-normal">تکمیل</span>';
-
-            // 🔒 کار دوره‌ای: تأخیر واقعی یعنی دوره‌های معوقه، نه اختلاف
-            // تقویمی next_due_date — چون next_due_date همیشه نزدیک امروزه
-            // (حتی وقتی ده‌ها دوره معوقه داره)، محاسبه‌ی رو‌به‌پایین می‌تونست
-            // «امروز»/«N روز دیگر» نشون بده و تأخیر واقعی رو کاملا پنهان کنه
-            if (task && task.task_type === 'continuous') {
-                const op = task.overdue_periods || 0;
-                if (op > 0) {
-                    return `<span class="badge days-badge days-overdue">${toPersian(op)} دوره معوقه</span>`;
-                }
-            }
-
-            if (!d) return '<span class="badge days-badge">-</span>';
-
-            if (task && task.is_workflow_task == 1) {
-                const hd = (task.hours_delayed) || 0;
-                if (hd > 0) return `<span class="badge days-badge days-overdue">${formatHourDelay(hd, 'تاخیر')}</span>`;
-                const hr = task.hours_remaining;
-                if (hr == null) return '<span class="badge days-badge">-</span>';
-                if (hr === 0) return `<span class="badge days-badge days-today">اکنون</span>`;
-                const cls = hr <= 24 ? 'days-soon' : 'days-normal';
-                return `<span class="badge days-badge ${cls}">${toPersian(hr)} ساعت مانده</span>`;
-            }
-
-            const diff = Math.ceil((new Date(d).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5);
-            if (diff < 0) {
-                const wd = Math.max(1, (task && task.working_days_delayed) || 0);
-                return `<span class="badge days-badge days-overdue">${toPersian(wd)} روز کاری تاخیر</span>`;
-            }
-            if (diff === 0) return `<span class="badge days-badge days-today">امروز</span>`;
-            if (diff <= 3) return `<span class="badge days-badge days-soon">${toPersian(diff)} روز دیگر</span>`;
-            return `<span class="badge days-badge days-normal">${toPersian(diff)} روز</span>`;
+            return TF.remainingBadge(task || { status: status });
         }
 
         function fmtDate(d) {

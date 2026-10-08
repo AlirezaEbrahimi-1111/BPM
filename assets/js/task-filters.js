@@ -78,6 +78,78 @@ window.TF = (function () {
     }
 
     /**
+     * تاریخی که در ستون «موعد» فهرست‌ها نمایش داده می‌شود.
+     *
+     * با effectiveDue یکی است، به‌جز یک حالت: کار دوره‌ای که بازه‌اش تمام شده
+     * (دورهٔ بعدی ندارد → next_due_date خالی). effectiveDue آن‌جا به start_date
+     * برمی‌گردد (برای مرتب‌سازی/فیلتر کافی است)، ولی نمایش «تاریخ شروع» به‌جای
+     * موعد غلط است — این‌جا تاریخ پایان بازه نشان داده می‌شود.
+     */
+    function displayDue(t) {
+        if (!t) return '';
+        if (t.task_type === 'continuous') {
+            return dateOnly(t.next_due_date) || dateOnly(t.end_date) || dateOnly(t.start_date) || '';
+        }
+        return effectiveDue(t);
+    }
+
+    /**
+     * بج ستون «مهلت» فهرست‌ها — تنها مرجع (قبلا تابع daysLeft در هر چهار صفحهٔ
+     * فهرست جدا کپی شده بود و با هم فرق کرده بودند).
+     *
+     *  • تکمیل‌شده                     → «تکمیل»
+     *  • کار دوره‌ای با دورهٔ معوقه     → «N دوره معوقه»
+     *      (نه اختلاف تقویمی next_due_date: آن تاریخ همیشه نزدیک امروز است،
+     *       حتی وقتی ده‌ها دوره معوقه مانده)
+     *  • کار دوره‌ای با بازهٔ تمام‌شده  → «نیازمند تمدید» (اگر سرور گفته باشد) یا «-»
+     *  • کار دوره‌ای بدون معوقه        → روز مانده تا دورهٔ بعدی
+     *  • کار روتین/فرآیندی             → ساعتی (hours_delayed / hours_remaining)
+     *  • کار مقطعی                     → روز مانده، یا روز کاری تأخیر
+     *
+     * همهٔ عددها از سرور می‌آیند (enrichTaskDates) و «امروز» از ساعت سرور
+     * (TimeSync)، نه ساعت دستگاه.
+     */
+    function remainingBadge(t) {
+        const badge = (cls, txt) => `<span class="badge days-badge${cls ? ' ' + cls : ''}">${txt}</span>`;
+        if (!t) return badge('', '-');
+        if (t.status === 'completed' || t.status === 'approved') return badge('days-normal', 'تکمیل');
+
+        if (t.task_type === 'continuous') {
+            const op = t.overdue_periods || 0;
+            if (op > 0) return badge('days-overdue', `${toFa(op)} دوره معوقه`);
+            if (!t.next_due_date) {
+                return needsRenewalDecision(t) ? badge('days-soon', 'نیازمند تمدید') : badge('', '-');
+            }
+        }
+
+        const d = effectiveDue(t);
+        if (!d) return badge('', '-');
+
+        if (t.is_workflow_task == 1) {
+            const fmtHours = (typeof formatHourDelay === 'function')
+                ? formatHourDelay
+                : function (h, suffix) { return `${toFa(h)} ساعت ${suffix}`; };
+            const hd = t.hours_delayed || 0;
+            if (hd > 0) return badge('days-overdue', fmtHours(hd, 'تاخیر'));
+            const hr = t.hours_remaining;
+            if (hr == null) return badge('', '-');
+            if (hr === 0) return badge('days-today', 'اکنون');
+            return badge(hr <= 24 ? 'days-soon' : 'days-normal', `${toFa(hr)} ساعت مانده`);
+        }
+
+        const diff = window.TimeSync
+            ? TimeSync.daysFromToday(d)
+            : Math.ceil((new Date(d).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5);
+        if (diff < 0) {
+            const wd = Math.max(1, t.working_days_delayed || 0);
+            return badge('days-overdue', `${toFa(wd)} روز کاری تاخیر`);
+        }
+        if (diff === 0) return badge('days-today', 'امروز');
+        if (diff <= 3) return badge('days-soon', `${toFa(diff)} روز دیگر`);
+        return badge('days-normal', `${toFa(diff)} روز`);
+    }
+
+    /**
      * مثل effectiveDue، ولی برای کارهای روتین/فرآیندی لحظه‌ی کامل موعد
      * (میلی‌ثانیه، با ساعت‌وددقیقه‌ی دقیق) رو برمی‌گردونه، نه فقط تاریخ
      * خالص. isOverdue برای این نوع باید ساعتی حساب کنه (هم‌راستا با
@@ -133,10 +205,20 @@ window.TF = (function () {
         return !!t.needs_renewal_decision;
     }
 
-    /** آیا کار منتظر تأیید همین کاربر است؟ */
+    /**
+     * آیا کار منتظر تأیید همین کاربر است؟
+     *
+     * هنگام «در انتظار تأیید»، سرور assignee_id را روی کسی می‌گذارد که الان
+     * نوبت تأییدش است و فقط به همان شخص اجازهٔ تأیید می‌دهد
+     * (TaskManager::approveOrRejectTask) — پس مبنا همین assignee_id است.
+     * قبلا این‌جا «سازندهٔ کار» منتظر تأیید حساب می‌شد: در زنجیرهٔ چندنفره،
+     * سازنده کاری را که نوبت تأییدش با نفر دیگری بود در «امروز» می‌دید و آن
+     * نفر (که واقعا باید تأیید می‌کرد) نمی‌دید. current_approver_id هم که قبلا
+     * این‌جا چک می‌شد تأییدکنندهٔ «درخواست تمدید موعد» است، نه تأیید کار.
+     */
     function isWaitingMyApproval(t, user) {
         if (!user || t.is_pending_approval != 1) return false;
-        return user.id == t.creator_id || user.id == t.current_approver_id;
+        return user.id == t.assignee_id;
     }
 
     /** آیا درخواست تمدید موعد منتظر تأیید همین کاربر است؟ */
@@ -563,6 +645,8 @@ window.TF = (function () {
         toFa,
         effectiveDue,
         effectiveDueMs,
+        displayDue,
+        remainingBadge,
 
         // وضعیت پایه
         isDone,
