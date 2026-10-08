@@ -35,7 +35,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         .inv-head-grid {
             display: grid;
-            /* ۶ فیلد (نوع سند/مشتری/تاریخ/شماره/نحوهٔ فروش/همکار) در یک ردیف جا شوند؛
+            /* ۶ فیلد (تاریخ/شماره/نوع سند/مشتری/نحوهٔ فروش/همکار) در یک ردیف جا شوند؛
                در صفحه‌های باریک‌تر auto-fit خودش کمتر می‌چیند. */
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 14px;
@@ -44,6 +44,18 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         .inv-head-grid > div {
             min-width: 0;
+        }
+
+        /* یادداشت «این فاکتور قبلا نهایی بوده و به پیش‌نویس برگشته» */
+        #revertNote {
+            font-size: .85rem;
+            line-height: 1.9;
+        }
+
+        :root[data-theme="dark"] #revertNote {
+            background: rgba(245, 158, 11, .14);
+            border-color: rgba(245, 158, 11, .35);
+            color: #fcd34d;
         }
 
         table.inv-items {
@@ -231,19 +243,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             </div>
 
             <div id="formAlert"></div>
+            <!-- فقط برای فاکتوری که قبلا تأییدشده بوده و به پیش‌نویس برگشته -->
+            <div id="revertNote" class="alert alert-warning py-2" hidden></div>
 
             <div class="inv-head-grid">
-                <div>
-                    <label class="form-label">نوع سند</label>
-                    <select class="form-select" id="f_doc_type">
-                        <option value="official">فاکتور رسمی</option>
-                        <option value="proforma">پیش‌فاکتور</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="form-label">مشتری <span class="text-danger">*</span></label>
-                    <div id="customerPicker"></div>
-                </div>
                 <div>
                     <label class="form-label">تاریخ صدور</label>
                     <!-- data-restrict-past روی خود wrapper باید باشه، نه روی input — PersianDatePicker
@@ -273,6 +276,17 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <div>
                     <label class="form-label">شماره فاکتور <span class="text-muted" id="seqYearHint" style="font-weight:400"></span></label>
                     <input type="text" class="form-control" id="f_seq_no" inputmode="numeric" autocomplete="off" dir="ltr" style="text-align:center">
+                </div>
+                <div>
+                    <label class="form-label">نوع سند</label>
+                    <select class="form-select" id="f_doc_type">
+                        <option value="official">فاکتور رسمی</option>
+                        <option value="proforma">پیش‌فاکتور</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">مشتری <span class="text-danger">*</span></label>
+                    <div id="customerPicker"></div>
                 </div>
                 <div>
                     <label class="form-label">نحوه‌ی فروش</label>
@@ -890,6 +904,17 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     if (inv.seq_no) {
                         document.getElementById('f_seq_no').value = faDigits(String(inv.seq_no));
                         seqTouched = true;
+                    }
+                    // فاکتوری که قبلا نهایی بوده و برای ویرایش برگشته: یادآوری که هنوز
+                    // نهایی نیست (موجودی انبارش برگشته) و باید دوباره تأیید شود
+                    if (inv.reverted_at) {
+                        const [rd, rt] = inv.reverted_at.split(' ');
+                        const when = ((typeof convertToJalali === 'function') ? convertToJalali(rd) : rd) + (rt ? ' ساعت ' + faDigits(rt) : '');
+                        const rn = document.getElementById('revertNote');
+                        rn.textContent = 'این فاکتور قبلا تأیید شده بود و در ' + when +
+                            (inv.reverted_by_name ? ' توسط ' + inv.reverted_by_name : '') +
+                            ' برای ویرایش به پیش‌نویس برگردانده شد. موجودی کالاهایش به انبار برگشته است؛ بعد از ویرایش، آن را از فهرست فاکتورها دوباره «تأیید» کنید.';
+                        rn.hidden = false;
                     }
                     // همکار — بعد از ست تاریخ صدور تا درصد ماه درست خوانده شود
                     if (partnerPicker && inv.partner_id) partnerPicker.setValue(inv.partner_id);

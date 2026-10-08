@@ -334,6 +334,12 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 h += `<button class="ag-action-btn approve" title="تأیید و صدور" onclick="approveInv(${d.id})"><i class="bi bi-check2-circle"></i></button>`;
                 h += `<button class="ag-action-btn del" title="حذف" onclick="deleteInv(${d.id})"><i class="bi bi-trash"></i></button>`;
             } else if (d.status === 'approved') {
+                // برگرداندن به پیش‌نویس برای ویرایش — پیش‌فاکتور تبدیل‌شده ندارد؛
+                // فاکتور ثبت‌شده در مودیان دکمه را کم‌رنگ می‌بیند و با کلیک دلیلش را می‌خواند
+                if (!d.converted_to_id) {
+                    const locked = d.moadian_status === 'registered';
+                    h += `<button class="ag-action-btn edit" ${locked ? 'style="opacity:.4"' : ''} title="${locked ? 'در مودیان ثبت شده — قابل ویرایش نیست' : 'برگرداندن به پیش‌نویس برای ویرایش'}" onclick="revertInv(${d.id})"><i class="bi bi-arrow-counterclockwise"></i></button>`;
+                }
                 h += `<button class="ag-action-btn cancel" title="ابطال" onclick="cancelInv(${d.id})"><i class="bi bi-x-octagon"></i></button>`;
             }
             if (d.doc_type === 'proforma' && d.status !== 'cancelled') {
@@ -527,11 +533,29 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         }
 
         function approveInv(id) {
-            uiConfirm('این فاکتور تأیید و شماره‌ی رسمی برایش صادر شود؟ (پس از تأیید قابل ویرایش نیست)', async () => {
+            uiConfirm('این فاکتور تأیید و نهایی شود؟ (برای ویرایش بعد از تأیید، باید آن را به پیش‌نویس برگردانید)', async () => {
                 try {
                     const d = await apiSend('POST', '/inv/invoices/' + id + '/approve');
                     showToast('صادر شد: ' + faDigits(d.number || ''), 'success');
                     loadAll();
+                } catch (e) {
+                    showToast(e.message || 'خطا', 'error');
+                }
+            });
+        }
+
+        // فاکتور تأییدشده → پیش‌نویس (برای ویرایش). موجودی انبار برمی‌گردد و شماره می‌ماند.
+        function revertInv(id) {
+            const row = allRows.find(r => r.id === id);
+            if (row && row.moadian_status === 'registered') {
+                showToast('این فاکتور در سامانه‌ی مودیان ثبت شده و قابل ویرایش نیست. برای اصلاح، آن را باطل کنید و فاکتور جدید صادر کنید.', 'error');
+                return;
+            }
+            uiConfirm('این فاکتور برای ویرایش به پیش‌نویس برگردد؟ موجودی کالاهایش به انبار برمی‌گردد، شماره‌ی فاکتور حفظ می‌شود و بعد از ویرایش باید دوباره «تأیید» شود.', async () => {
+                try {
+                    await apiSend('POST', '/inv/invoices/' + id + '/revert-to-draft');
+                    showToast('به پیش‌نویس برگشت', 'success');
+                    location.href = '/pages/inv-invoice-edit.php?id=' + id;
                 } catch (e) {
                     showToast(e.message || 'خطا', 'error');
                 }

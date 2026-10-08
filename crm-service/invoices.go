@@ -80,6 +80,11 @@ type invoiceOut struct {
 	ApprovedAt     string `json:"approved_at"`
 	ConvertedToID  *int64 `json:"converted_to_id"`
 
+	// اگر این فاکتور قبلا تأییدشده بوده و برای ویرایش به پیش‌نویس برگشته
+	RevertedAt  string `json:"reverted_at"`
+	RevertedBy  string `json:"reverted_by_name"`
+	RevertCount int    `json:"revert_count"`
+
 	// همکار (اگر فاکتور به‌درخواست یک همکار صادر شده)
 	PartnerID             *int64  `json:"partner_id"`
 	PartnerName           string  `json:"partner_name"`
@@ -374,6 +379,14 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 		}
 		o.PartnerProfitAmount = int64(math.Round(float64(preTax) * o.PartnerPercent / 100))
 	}
+
+	// سابقه‌ی «برگرداندن به پیش‌نویس» — کوئری جدا و بی‌خطا: اگر ستون‌هایش هنوز
+	// ساخته نشده باشند (migration اجرا نشده)، خود فاکتور همچنان باز می‌شود.
+	_ = s.db.QueryRow(`
+		SELECT COALESCE(DATE_FORMAT(i.reverted_at,'%Y-%m-%d %H:%i'),''),
+		       TRIM(CONCAT(COALESCE(ru.first_name,''),' ',COALESCE(ru.last_name,''))), i.revert_count
+		FROM inv_invoices i LEFT JOIN users ru ON ru.id = i.reverted_by
+		WHERE i.id = ?`, id).Scan(&o.RevertedAt, &o.RevertedBy, &o.RevertCount)
 
 	rows, err := s.db.Query(`
 		SELECT it.id, it.product_id, COALESCE(pr.code,''), it.title, it.qty, it.unit_price,
@@ -828,38 +841,112 @@ func (s *server) cancelInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if status == "approved" {
-		// برگرداندن موجودی: عکس همه‌ی حرکت‌های این فاکتور.
-		rows, err := tx.Query(
-			"SELECT product_id, warehouse_id, qty FROM inv_stock_moves WHERE ref_type = 'invoice' AND ref_id = ?", id)
-		if err != nil {
-			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		if err := reverseInvoiceStock(tx, id, u.ID); err != nil {
+			writeErr(w, http.StatusInternalServerError, "برگرداندن موجودی ناموفق بود")
 			return
-		}
-		type rmv struct {
-			pid, wh int64
-			qty     float64
-		}
-		var rev []rmv
-		for rows.Next() {
-			var m rmv
-			if err := rows.Scan(&m.pid, &m.wh, &m.qty); err != nil {
-				rows.Close()
-				writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
-				return
-			}
-			rev = append(rev, m)
-		}
-		rows.Close()
-		for _, m := range rev {
-			if err := addStock(tx, m.pid, m.wh, -m.qty, "return", "invoice", id, u.ID); err != nil {
-				writeErr(w, http.StatusInternalServerError, "برگرداندن موجودی ناموفق بود")
-				return
-			}
 		}
 	}
 
 	if _, err := tx.Exec("UPDATE inv_invoices SET status = 'cancelled' WHERE id = ?", id); err != nil {
 		writeErr(w, http.StatusInternalServerError, "ابطال ناموفق بود")
+		return
+	}
+	if err := tx.Commit(); err != nil {
+		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"success": true})
+}
+
+// reverseInvoiceStock موجودی‌ای را که این فاکتور از انبار کم کرده برمی‌گرداند:
+// عکس «همه‌ی» حرکت‌های انبار این فاکتور ثبت می‌شود. چون برگشت‌های قبلی هم
+// جزو همین حرکت‌ها هستند، جمع خالص همیشه صفر می‌شود — حتی اگر فاکتور چند بار
+// تأیید و به پیش‌نویس برگردانده شده باشد. مشترک بین «ابطال» و «برگرداندن به
+// پیش‌نویس».
+func reverseInvoiceStock(tx *sql.Tx, invID, userID int64) error {
+	rows, err := tx.Query(
+		"SELECT product_id, warehouse_id, qty FROM inv_stock_moves WHERE ref_type = 'invoice' AND ref_id = ?", invID)
+	if err != nil {
+		return err
+	}
+	type rmv struct {
+		pid, wh int64
+		qty     float64
+	}
+	var rev []rmv
+	for rows.Next() {
+		var m rmv
+		if err := rows.Scan(&m.pid, &m.wh, &m.qty); err != nil {
+			rows.Close()
+			return err
+		}
+		rev = append(rev, m)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	for _, m := range rev {
+		if err := addStock(tx, m.pid, m.wh, -m.qty, "return", "invoice", invID, userID); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// POST /crm/api/inv/invoices/{id}/revert-to-draft
+// فاکتور «تأییدشده» را برای ویرایش به «پیش‌نویس» برمی‌گرداند: موجودی انبارش
+// برمی‌گردد، شماره‌اش حفظ می‌شود و با تأیید دوباره، موجودی از نو کسر می‌شود.
+// فاکتوری که در سامانه‌ی مودیان ثبت شده برنمی‌گردد (فقط ابطال + فاکتور جدید).
+// وضعیت تسویه و تیک «ثبت سود همکار» عمدا مانع نیستند (خواسته‌ی صریح کاربر)
+// و با برگشت هم دست نمی‌خورند.
+func (s *server) revertInvoiceToDraft(w http.ResponseWriter, r *http.Request) {
+	id := idParam(r)
+	u := userOf(r.Context())
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		return
+	}
+	defer tx.Rollback()
+
+	var status, moadian string
+	var convertedTo sql.NullInt64
+	if err := tx.QueryRow(`
+		SELECT status, moadian_status, converted_to_id
+		FROM inv_invoices WHERE id = ? AND organization_id = ? FOR UPDATE`, id, u.OrgID).
+		Scan(&status, &moadian, &convertedTo); err == sql.ErrNoRows {
+		writeErr(w, http.StatusNotFound, "فاکتور یافت نشد")
+		return
+	} else if err != nil {
+		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		return
+	}
+
+	switch {
+	case status != "approved":
+		writeErr(w, http.StatusConflict, "فقط فاکتور تأییدشده را می‌توان به پیش‌نویس برگرداند")
+		return
+	case moadian == "registered":
+		writeErr(w, http.StatusConflict,
+			"این فاکتور در سامانه‌ی مودیان ثبت شده و قابل ویرایش نیست — برای اصلاح، آن را باطل کنید و فاکتور جدید صادر کنید")
+		return
+	case convertedTo.Valid:
+		writeErr(w, http.StatusConflict, "این پیش‌فاکتور به فاکتور رسمی تبدیل شده و قابل ویرایش نیست")
+		return
+	}
+
+	if err := reverseInvoiceStock(tx, id, u.ID); err != nil {
+		writeErr(w, http.StatusInternalServerError, "برگرداندن موجودی ناموفق بود")
+		return
+	}
+	if _, err := tx.Exec(`
+		UPDATE inv_invoices
+		SET status = 'draft', approved_by = NULL, approved_at = NULL,
+		    reverted_at = NOW(), reverted_by = ?, revert_count = revert_count + 1
+		WHERE id = ?`, u.ID, id); err != nil {
+		writeErr(w, http.StatusInternalServerError, "برگرداندن به پیش‌نویس ناموفق بود")
 		return
 	}
 	if err := tx.Commit(); err != nil {
