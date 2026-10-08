@@ -150,77 +150,12 @@ try {
                         }
                     }
                 }
-            } else {
-                // ✅ نوتیفیکیشن برای رد کار
-                $message = 'کار «' . ($task['title'] ?? 'نامشخص') . '» توسط "' . $rejectorName . '" رد شد.';
-
-                if (!empty($input['notes'])) {
-                    $message .= "\n\nدلیل: " . trim($input['notes']);
-                }
-
-                // پیدا کردن نفر قبلی (انجام‌دهنده)
-                $chain = $taskManager->getDelegationChain($input['task_id']);
-                if (!empty($chain)) {
-                    for ($i = count($chain) - 1; $i >= 0; $i--) {
-                        if ($chain[$i]['to_user_id'] == $user_id) {
-                            $previousPerson = $chain[$i]['from_user_id'];
-                            break;
-                        }
-                    }
-                }
-
-                // اگر از زنجیره پیدا نشد، از task_history پیدا کن
-                if (!$previousPerson) {
-                    $stmt = $db->prepare("
-                        SELECT from_user_id 
-                        FROM task_history 
-                        WHERE task_id = ? 
-                        AND action = 'pending_approval'
-                        AND to_user_id = ?
-                        ORDER BY created_at DESC 
-                        LIMIT 1
-                    ");
-                    $stmt->execute([$input['task_id'], $user_id]);
-                    $historyRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                    $previousPerson = $historyRow['from_user_id'] ?? null;
-                }
-
-                // اگر هنوز پیدا نشد، از جدول tasks خود کار بگیر
-                if (!$previousPerson) {
-                    $stmt = $db->prepare("
-                        SELECT assignee_id 
-                        FROM tasks 
-                        WHERE id = ? 
-                        AND status = 'in_progress'
-                    ");
-                    $stmt->execute([$input['task_id']]);
-                    $taskRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                    $previousPerson = $taskRow['assignee_id'] ?? null;
-                }
-
-                // فقط اگر نفر پیدا شد، notification بفرست
-                if ($previousPerson) {
-                    if ($previousPerson != $user_id) {
-                        try {
-                            $notification->create([
-                                'to_user_id' => $previousPerson,
-                                'title' => 'کار رد شد: ' . ($task['title'] ?? 'نامشخص'),
-                                'message' => $message,
-                                'type' => 'warning',
-                                'link' => '/pages/task-detail.php?id=' . $input['task_id'],
-                                'related_type' => 'task',
-                                'related_id' => $input['task_id'],
-                                'is_read' => 0
-                            ]);
-                        } catch (Exception $notifError) {
-                            error_log("Notification create error: " . $notifError->getMessage());
-                            // Continue despite notification error
-                        }
-                    }
-                } else {
-                    error_log("Could not find previous person for rejected task: " . $input['task_id']);
-                }
             }
+            // رد کار: این‌جا اعلانی ساخته نمی‌شود. اعلان (و پیامک) رد را خود
+            // TaskManager::approveOrRejectTask می‌فرستد («اتمام کار رد شد» به کسی که
+            // کار واقعا به او برگشته، همراه دلیل رد). قبلا این‌جا هم یک اعلان
+            // «کار رد شد» ساخته می‌شد → کاربر دو اعلان برای یک رد می‌گرفت، و در
+            // زنجیرهٔ سه‌نفره این یکی به نفر اشتباه (بالادستی ردکننده) می‌رفت.
         }
 
         http_response_code(200);

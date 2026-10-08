@@ -4407,6 +4407,16 @@ ${task.overdue_periods > 0 ? `
                     return;
                 }
 
+                // کار دوره‌ای: تکمیل دوره‌ای که باید تأیید شود دو ردیف هم‌زمان ثبت
+                // می‌کند — «completed» (موتور دوره لازمش دارد تا دوره به روز واقعی
+                // انجام بسته شود) و «pending_approval». هر دو یک رویدادند، پس فقط
+                // ردیف «در انتظار تأیید» نمایش داده می‌شود. فقط نمایش؛ خود داده‌ی
+                // taskHistory (که منطق دکمه‌ها ازش می‌خواند) دست نمی‌خورد.
+                const _hTime = h => h.created_at ? Date.parse(String(h.created_at).replace(' ', 'T')) : NaN;
+                const _pendings = history.filter(h => h.action === 'pending_approval');
+                history = history.filter(h => !(h.action === 'completed' && _pendings.some(p =>
+                    String(p.from_user_id) === String(h.from_user_id) && Math.abs(_hTime(p) - _hTime(h)) <= 2000)));
+
                 let html = '';
                 history.forEach(item => {
                     const actionLabel = TF.actionLabel(item.action);
