@@ -35,9 +35,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
         .inv-head-grid {
             display: grid;
-            /* ۵ فیلد (نوع سند/مشتری/تاریخ/نحوهٔ فروش/همکار) در یک ردیف جا شوند؛
+            /* ۶ فیلد (نوع سند/مشتری/تاریخ/شماره/نحوهٔ فروش/همکار) در یک ردیف جا شوند؛
                در صفحه‌های باریک‌تر auto-fit خودش کمتر می‌چیند. */
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 14px;
             margin-bottom: 1rem;
         }
@@ -271,6 +271,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     </div>
                 </div>
                 <div>
+                    <label class="form-label">شماره فاکتور <span class="text-muted" id="seqYearHint" style="font-weight:400"></span></label>
+                    <input type="text" class="form-control" id="f_seq_no" inputmode="numeric" autocomplete="off" dir="ltr" style="text-align:center">
+                </div>
+                <div>
                     <label class="form-label">نحوه‌ی فروش</label>
                     <select class="form-select" id="f_payment_type">
                         <option value="cash" selected>نقدی</option>
@@ -453,6 +457,37 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         }
 
         // درصد سهم همکار برای ماه صدور را از سرور بگیر، بعد جمع‌ها را بازکش
+        // ── شماره‌ی فاکتور ──
+        // پیش‌فرض = «شماره‌ی آزاد بعدی» سال شمسی تاریخ صدور (از ۱ شروع می‌شود).
+        // تا وقتی کاربر خودش عددی تایپ نکرده (seqTouched)، با عوض‌شدن تاریخ صدور
+        // دوباره از سرور پرسیده می‌شود (چون شماره‌ها در هر سال جدا هستند).
+        let seqTouched = false;
+
+        function issueDateISO() {
+            const di = document.getElementById('f_issue_date');
+            let g = di.getAttribute('data-date') || '';
+            if (!g && di.value && typeof convertToGregorian === 'function') g = convertToGregorian(di.value) || '';
+            return g;
+        }
+
+        function updateSeqYearHint() {
+            const g = issueDateISO();
+            const j = (g && typeof convertToJalali === 'function') ? toEn(convertToJalali(g)) : '';
+            const jy = j.split('/')[0];
+            document.getElementById('seqYearHint').textContent = /^\d{4}$/.test(jy) ? '(سال ' + faDigits(jy) + ')' : '';
+        }
+
+        async function suggestSeqNo() {
+            updateSeqYearHint();
+            if (seqTouched) return;
+            try {
+                const d = await apiGet('/inv/invoices/next-number?issue_date=' + encodeURIComponent(issueDateISO()));
+                if (!seqTouched) document.getElementById('f_seq_no').value = faDigits(String(d.seq_no));
+            } catch (e) {
+                /* بدون پیشنهاد — با فیلد خالی، سرور خودش شماره‌ی بعدی را می‌گذارد */
+            }
+        }
+
         async function refreshPartnerProfit() {
             const p = partnerPicker ? partnerPicker.getValue() : null;
             hasPartner = !!(p && p.id);
@@ -695,9 +730,13 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             if (!issue && dateInput.value && typeof convertToGregorian === 'function') {
                 issue = convertToGregorian(dateInput.value) || '';
             }
+            // شماره‌ی فاکتور: خالی = سرور شماره‌ی آزاد بعدی را می‌گذارد
+            const seqRaw = toEn(document.getElementById('f_seq_no').value).trim();
+            const seqNo = seqRaw === '' ? null : (/^\d+$/.test(seqRaw) ? parseInt(seqRaw, 10) : NaN);
             return {
                 cust,
                 body: {
+                    seq_no: seqNo,
                     doc_type: document.getElementById('f_doc_type').value,
                     customer_id: cust ? cust.id : 0,
                     customer_name: '',
@@ -721,6 +760,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             }
             if (!body.items.length) {
                 alertBox('حداقل یک ردیف با نام کالا لازم است.');
+                return;
+            }
+            if (body.seq_no !== null && !(body.seq_no >= 1)) {
+                alertBox('شماره فاکتور باید یک عدد بزرگ‌تر از صفر باشد.');
+                document.getElementById('f_seq_no').focus();
                 return;
             }
             alertBox('');
@@ -841,6 +885,12 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         di.setAttribute('data-date', inv.issue_date);
                         di.value = (typeof convertToJalali === 'function') ? convertToJalali(inv.issue_date) : inv.issue_date;
                     }
+                    // شماره‌ی ثبت‌شده‌ی همین فاکتور (پیش‌نویس‌های قدیمی شماره ندارند →
+                    // پایین‌تر شماره‌ی آزاد بعدی پیشنهاد می‌شود)
+                    if (inv.seq_no) {
+                        document.getElementById('f_seq_no').value = faDigits(String(inv.seq_no));
+                        seqTouched = true;
+                    }
                     // همکار — بعد از ست تاریخ صدور تا درصد ماه درست خوانده شود
                     if (partnerPicker && inv.partner_id) partnerPicker.setValue(inv.partner_id);
                     (inv.items || []).forEach(addRow);
@@ -865,16 +915,27 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 }
             }
 
-            // تغییر تاریخ صدور → درصد سهم همکار ماه صدور دوباره خوانده شود
+            // تغییر تاریخ صدور → درصد سهم همکار ماه صدور دوباره خوانده شود،
+            // و شماره‌ی پیشنهادی فاکتور (اگر کاربر دستی عوضش نکرده) تازه شود
             {
                 const di = document.getElementById('f_issue_date');
                 if (di) {
-                    di.addEventListener('change', refreshPartnerProfit);
-                    new MutationObserver(() => refreshPartnerProfit())
+                    di.addEventListener('change', () => { refreshPartnerProfit(); suggestSeqNo(); });
+                    new MutationObserver(() => { refreshPartnerProfit(); suggestSeqNo(); })
                         .observe(di, { attributes: true, attributeFilter: ['data-date', 'value'] });
                 }
             }
             refreshPartnerProfit();
+
+            // شماره‌ی فاکتور: فقط رقم، با نمایش فارسی؛ تایپ کاربر = دیگر پیشنهاد نده
+            {
+                const sq = document.getElementById('f_seq_no');
+                sq.addEventListener('input', () => {
+                    seqTouched = true;
+                    sq.value = faDigits(toEn(sq.value).replace(/\D/g, '').replace(/^0+/, ''));
+                });
+            }
+            suggestSeqNo();
 
             document.getElementById('btnAddRow').addEventListener('click', () => {
                 const tr = addRow();

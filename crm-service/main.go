@@ -309,6 +309,7 @@ func main() {
 
 	// ── فاکتور رسمی ──
 	mux.HandleFunc("GET /crm/api/inv/invoices", auth(s.listInvoices))
+	mux.HandleFunc("GET /crm/api/inv/invoices/next-number", auth(s.nextInvoiceNumber))
 	mux.HandleFunc("GET /crm/api/inv/invoices/{id}", auth(s.getInvoice))
 	mux.HandleFunc("POST /crm/api/inv/invoices", write(s.createInvoice))
 	mux.HandleFunc("PUT /crm/api/inv/invoices/{id}", write(s.updateInvoice))

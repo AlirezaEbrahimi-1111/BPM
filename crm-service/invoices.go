@@ -27,6 +27,7 @@ type invoiceIn struct {
 	CustomerName string          `json:"customer_name"` // اگر شناسه نبود، از این نام یک مشتری «حقیقی» ساخته می‌شود
 	PartnerID    int64           `json:"partner_id"`    // همکار — ۰ یعنی «فاکتور خود شرکت»
 	IssueDate    string          `json:"issue_date"`    // "YYYY-MM-DD" یا ""
+	SeqNo        *int            `json:"seq_no"`        // شماره‌ی فاکتور (ترتیبی در سال شمسی صدور)؛ خالی = شماره‌ی آزاد بعدی
 	PaymentType  string          `json:"payment_type"`  // "cash" | "credit" | ""
 	Note         string          `json:"note"`
 	Items        []invoiceItemIn `json:"items"`
@@ -136,6 +137,64 @@ func parseIssueDate(s string) (sql.NullString, time.Time) {
 		return sql.NullString{}, time.Time{}
 	}
 	return sql.NullString{String: s, Valid: true}, t
+}
+
+// ───────────────────────── شماره‌ی فاکتور ─────────────────────────
+//
+// شماره = پیشوند تنظیمات + شماره‌ی ترتیبی (مثلا 12) — سال در خود شماره نمی‌آید،
+// ولی شماره‌ها در هر سال شمسی صدور جدا شمرده می‌شوند (seq_year).
+// از همان لحظه‌ی ذخیره‌ی پیش‌نویس ثبت می‌شود (کاربر می‌تواند عددش را عوض
+// کند؛ پیش‌فرض = بزرگ‌ترین شماره‌ی همان سال + ۱، یعنی از ۱ شروع می‌شود).
+// یکتایی را کلید uq_inv_num (seq_year, seq_no) در دیتابیس تضمین می‌کند.
+
+// هم *sql.DB و هم *sql.Tx
+type rowQuerier interface {
+	QueryRow(query string, args ...any) *sql.Row
+}
+
+// سال شمسی شماره‌گذاری: بر مبنای تاریخ صدور (یا امروز اگر خالی/نامعتبر)
+func seqYearOf(issueDate string) int {
+	_, t := parseIssueDate(issueDate)
+	return jalaliYearOf(t)
+}
+
+func nextSeqNo(q rowQuerier, jy int) (int, error) {
+	var n int
+	err := q.QueryRow("SELECT COALESCE(MAX(seq_no),0)+1 FROM inv_invoices WHERE seq_year = ?", jy).Scan(&n)
+	return n, err
+}
+
+func formatInvoiceNumber(q rowQuerier, no int) string {
+	var prefix string
+	_ = q.QueryRow("SELECT number_prefix FROM inv_settings WHERE id = 1").Scan(&prefix)
+	return fmt.Sprintf("%s%d", prefix, no)
+}
+
+func isDuplicateKey(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "1062")
+}
+
+// پیام «این شماره قبلا استفاده شده» همراه با شماره‌ی آزاد بعدی
+func (s *server) seqTakenMsg(jy, no int) string {
+	msg := fmt.Sprintf("شماره‌ی فاکتور %d در سال %d قبلا استفاده شده است", no, jy)
+	if next, err := nextSeqNo(s.db, jy); err == nil {
+		msg += fmt.Sprintf(" — شماره‌ی آزاد بعدی: %d", next)
+	}
+	return msg
+}
+
+// GET /crm/api/inv/invoices/next-number?issue_date=YYYY-MM-DD
+// شماره‌ی پیشنهادی برای فرم فاکتور (فقط پیشنهاد؛ یکتایی موقع ذخیره چک می‌شود).
+func (s *server) nextInvoiceNumber(w http.ResponseWriter, r *http.Request) {
+	jy := seqYearOf(r.URL.Query().Get("issue_date"))
+	no, err := nextSeqNo(s.db, jy)
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, "تعیین شماره‌ی فاکتور ناموفق بود")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true, "seq_year": jy, "seq_no": no, "number": formatInvoiceNumber(s.db, no),
+	})
 }
 
 // ───────────────────────── هندلرها ─────────────────────────
@@ -447,6 +506,10 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 	if strings.TrimSpace(in.IssueDate) == "" {
 		in.IssueDate = time.Now().Format("2006-01-02") // پیش‌فرض: امروز
 	}
+	if in.SeqNo != nil && *in.SeqNo < 1 {
+		writeErr(w, http.StatusBadRequest, "شماره‌ی فاکتور باید عددی بزرگ‌تر از صفر باشد")
+		return
+	}
 	issueNS, _ := parseIssueDate(in.IssueDate)
 	docType := normalizeDocType(in.DocType)
 	items := keepFilledItems(in.Items)
@@ -458,6 +521,17 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
+
+	// شماره‌ی فاکتور: عدد واردشده، وگرنه شماره‌ی آزاد بعدی همان سال
+	jy := seqYearOf(in.IssueDate)
+	var seqNo int
+	if in.SeqNo != nil {
+		seqNo = *in.SeqNo
+	} else if seqNo, err = nextSeqNo(tx, jy); err != nil {
+		writeErr(w, http.StatusInternalServerError, "تعیین شماره‌ی فاکتور ناموفق بود")
+		return
+	}
+	number := formatInvoiceNumber(tx, seqNo)
 
 	// مشتری: اگر شناسه نداشتیم، از نام تایپ‌شده یک مشتری «حقیقی» تازه می‌سازیم
 	// (بدون حذف تکراری، بدون اجبار کامل‌بودن اطلاعات).
@@ -480,10 +554,17 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 	res, err := tx.Exec(`
 		INSERT INTO inv_invoices
 		  (organization_id, doc_type, customer_id, partner_id, warehouse_id, issue_date, status, source,
-		   payment_type, subtotal_amount, discount_amount, tax_amount, total_amount, note, created_by)
-		VALUES (?, ?, ?, ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?, ?)`,
+		   payment_type, subtotal_amount, discount_amount, tax_amount, total_amount, note, created_by,
+		   seq_year, seq_no, number)
+		VALUES (?, ?, ?, ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		u.OrgID, docType, custID, nullableID(in.PartnerID), s.officialWarehouseID, issueNS,
-		normalizePaymentType(in.PaymentType), sub, disc, tax, total, nullIfEmpty(in.Note), u.ID)
+		normalizePaymentType(in.PaymentType), sub, disc, tax, total, nullIfEmpty(in.Note), u.ID,
+		jy, seqNo, number)
+	if isDuplicateKey(err) {
+		tx.Rollback()
+		writeErr(w, http.StatusConflict, s.seqTakenMsg(jy, seqNo))
+		return
+	}
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "درج فاکتور ناموفق بود")
 		return
@@ -515,9 +596,10 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 	u := userOf(r.Context())
 
 	var status string
+	var curSeqNo sql.NullInt64
 	if err := s.db.QueryRow(
-		"SELECT status FROM inv_invoices WHERE id = ? AND organization_id = ?", id, u.OrgID).
-		Scan(&status); err == sql.ErrNoRows {
+		"SELECT status, seq_no FROM inv_invoices WHERE id = ? AND organization_id = ?", id, u.OrgID).
+		Scan(&status, &curSeqNo); err == sql.ErrNoRows {
 		writeErr(w, http.StatusNotFound, "فاکتور یافت نشد")
 		return
 	} else if err != nil {
@@ -526,6 +608,10 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	if status != "draft" {
 		writeErr(w, http.StatusConflict, "فقط فاکتور پیش‌نویس قابل ویرایش است")
+		return
+	}
+	if in.SeqNo != nil && *in.SeqNo < 1 {
+		writeErr(w, http.StatusBadRequest, "شماره‌ی فاکتور باید عددی بزرگ‌تر از صفر باشد")
 		return
 	}
 
@@ -573,6 +659,30 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "به‌روزرسانی ناموفق بود")
 		return
 	}
+
+	// شماره‌ی فاکتور: عدد واردشده؛ اگر نیامده، شماره‌ی فعلی می‌ماند (ولی سالش
+	// با تاریخ صدور هم‌گام می‌شود). پیش‌نویس قدیمی بی‌شماره، بی‌شماره می‌ماند
+	// تا موقع تأیید خودکار شماره بگیرد.
+	seqNo := 0
+	if in.SeqNo != nil {
+		seqNo = *in.SeqNo
+	} else if curSeqNo.Valid {
+		seqNo = int(curSeqNo.Int64)
+	}
+	if seqNo > 0 {
+		jy := seqYearOf(in.IssueDate)
+		_, err := tx.Exec("UPDATE inv_invoices SET seq_year = ?, seq_no = ?, number = ? WHERE id = ?",
+			jy, seqNo, formatInvoiceNumber(tx, seqNo), id)
+		if isDuplicateKey(err) {
+			tx.Rollback()
+			writeErr(w, http.StatusConflict, s.seqTakenMsg(jy, seqNo))
+			return
+		}
+		if err != nil {
+			writeErr(w, http.StatusInternalServerError, "ثبت شماره‌ی فاکتور ناموفق بود")
+			return
+		}
+	}
 	if _, err := tx.Exec("DELETE FROM inv_invoice_items WHERE invoice_id = ?", id); err != nil {
 		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
@@ -600,10 +710,12 @@ func (s *server) approveInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	var status, issueDate, docType string
+	var status, issueDate, docType, curNumber string
+	var curYear, curNo sql.NullInt64
 	if err := tx.QueryRow(
-		"SELECT status, COALESCE(issue_date,''), doc_type FROM inv_invoices WHERE id = ? AND organization_id = ? FOR UPDATE",
-		id, u.OrgID).Scan(&status, &issueDate, &docType); err == sql.ErrNoRows {
+		`SELECT status, COALESCE(issue_date,''), doc_type, seq_year, seq_no, COALESCE(number,'')
+		 FROM inv_invoices WHERE id = ? AND organization_id = ? FOR UPDATE`,
+		id, u.OrgID).Scan(&status, &issueDate, &docType, &curYear, &curNo, &curNumber); err == sql.ErrNoRows {
 		writeErr(w, http.StatusNotFound, "فاکتور یافت نشد")
 		return
 	} else if err != nil {
@@ -615,25 +727,26 @@ func (s *server) approveInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// سال شمسی بر مبنای تاریخ صدور (یا امروز اگر خالی)
-	var jy int
-	if _, t := parseIssueDate(issueDate); !t.IsZero() {
-		jy = jalaliYearOf(t)
+	// شماره: اگر از قبل (موقع ذخیره‌ی پیش‌نویس) ثبت شده، همان می‌ماند.
+	// فقط پیش‌نویس‌های قدیمی بی‌شماره این‌جا خودکار شماره می‌گیرند —
+	// سال شمسی بر مبنای تاریخ صدور (یا امروز اگر خالی).
+	var jy, nextNo int
+	var number string
+	if curYear.Valid && curNo.Valid && curNo.Int64 > 0 {
+		jy, nextNo, number = int(curYear.Int64), int(curNo.Int64), curNumber
+		if number == "" {
+			number = formatInvoiceNumber(tx, nextNo)
+		}
 	} else {
-		jy = jalaliYearOf(time.Time{})
+		jy = seqYearOf(issueDate)
+		if err := tx.QueryRow(
+			"SELECT COALESCE(MAX(seq_no),0)+1 FROM inv_invoices WHERE seq_year = ? FOR UPDATE", jy).
+			Scan(&nextNo); err != nil {
+			writeErr(w, http.StatusInternalServerError, "تعیین شماره‌ی فاکتور ناموفق بود")
+			return
+		}
+		number = formatInvoiceNumber(tx, nextNo)
 	}
-
-	var nextNo int
-	if err := tx.QueryRow(
-		"SELECT COALESCE(MAX(seq_no),0)+1 FROM inv_invoices WHERE seq_year = ? FOR UPDATE", jy).
-		Scan(&nextNo); err != nil {
-		writeErr(w, http.StatusInternalServerError, "تعیین شماره‌ی فاکتور ناموفق بود")
-		return
-	}
-
-	var prefix string
-	_ = tx.QueryRow("SELECT number_prefix FROM inv_settings WHERE id = 1").Scan(&prefix)
-	number := fmt.Sprintf("%s%d/%d", prefix, jy, nextNo)
 
 	if _, err := tx.Exec(`
 		UPDATE inv_invoices
