@@ -3694,7 +3694,9 @@ ${task.overdue_periods > 0 ? `
                 const modal = document.getElementById('reviewDeadlineModal');
                 window.currentDeadlineRequestId = request.id;
 
-                document.getElementById('requesterName').textContent = request.first_name + " " + request.last_name || 'نامشخص';
+                // سرور نام را با requester_name می‌فرستد (get-deadline-requests.php)؛ قبلا
+                // این‌جا first_name/last_name خوانده می‌شد که وجود ندارند → «undefined undefined»
+                document.getElementById('requesterName').textContent = (request.requester_name || '').trim() || 'نامشخص';
 
                 // موعد فعلی (برای کار روتین با ساعت)
                 const currentDeadlineElement = document.getElementById('currentDeadlineDisplay');
@@ -4502,6 +4504,26 @@ ${task.overdue_periods > 0 ? `
                         const toName = `${esc(item.to_user_first_name || '')} ${esc(item.to_user_last_name || '')}`.trim();
                         if (toName) {
                             customNotesHTML = (notesHTML || '') + `<div class="ml-notes">در انتظار تأیید: ${toName}</div>`;
+                        }
+                    }
+                    // تمدید موعد تأییدشده: from_user = تأییدکننده، to_user = درخواست‌دهنده.
+                    // استثنا (from_is_requester در یادداشت): ردیف به نام خود درخواست‌دهنده
+                    // ثبت شده — «تأیید خودکار»، و همهٔ ردیف‌های قبل از ۱۴۰۵/۰۵/۱۳ که قرارداد
+                    // برعکس بود (to_user = تأییدکننده). آن‌جا to_user درخواست‌دهنده نیست.
+                    if (item.action === 'deadline_extended' && item.to_user_id && item.to_user_first_name &&
+                        String(item.to_user_id) !== String(item.from_user_id)) {
+                        let fromIsRequester = false;
+                        try { fromIsRequester = JSON.parse(item.notes || '{}').from_is_requester === true; } catch (e) {}
+                        const toName = `${esc(item.to_user_first_name || '')} ${esc(item.to_user_last_name || '')}`.trim();
+                        if (!fromIsRequester && toName) {
+                            customNotesHTML = `<div class="ml-notes">به درخواست: ${toName}</div>` + (notesHTML || '');
+                        }
+                    }
+                    // درخواست تمدید موعد (هنوز تأیید/رد نشده): to_user = کسی که باید بررسی کند
+                    if (item.action === 'deadline_requested' && item.to_user_id && item.to_user_first_name) {
+                        const toName = `${esc(item.to_user_first_name || '')} ${esc(item.to_user_last_name || '')}`.trim();
+                        if (toName) {
+                            customNotesHTML = (notesHTML || '') + `<div class="ml-notes">در انتظار بررسی: ${toName}</div>`;
                         }
                     }
                     // ✅ برای رد درخواست تمدید موعد: نمایش نام درخواست‌دهنده (to_user = کسی که درخواست داده بود)

@@ -313,6 +313,28 @@ try {
             'sms_pattern' => 'deadline_request',
             'sms_args'    => [$requester['full_name'], $task_info['title'], $jalali_date],
         ]);
+
+        // ثبت خود «درخواست» در تاریخچهٔ کار — تا معلوم باشد چه کسی و کِی درخواست
+        // داده (قبلا فقط نتیجه، یعنی تأیید/رد، در تاریخچه می‌آمد).
+        // from_user = درخواست‌دهنده، to_user = کسی که باید بررسی کند.
+        // یادداشت یک جملهٔ کامل فارسی است (نه JSON) تا هر جا تاریخچه نمایش داده
+        // شود خوانا باشد. خطای این ثبت نباید خود درخواست را خراب کند.
+        try {
+            $requested_label = $jalali_date;
+            if ($is_workflow && strlen((string) $new_deadline) >= 16) {
+                $requested_label .= ' ساعت ' . JalaliHelper::Persian(substr((string) $new_deadline, 11, 5));
+            }
+            $history_note = 'درخواست تمدید موعد تا ' . $requested_label;
+            if (trim((string) $reason) !== '') {
+                $history_note .= ' — دلیل: ' . trim((string) $reason);
+            }
+            $db->prepare("
+                INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
+                VALUES (?, ?, ?, 'deadline_requested', ?)
+            ")->execute([$task_id, $user_id, $current_approver_id, $history_note]);
+        } catch (Throwable $histErr) {
+            error_log("request-deadline: history row failed | task_id={$task_id} | " . $histErr->getMessage());
+        }
     }
 
     ob_end_clean();
@@ -381,7 +403,11 @@ try {
             json_encode([
                 'old_deadline' => $task['deadline'],
                 'new_deadline' => $new_deadline,
-                'reason' => $reason
+                'reason' => $reason,
+                // تأیید خودکار: این ردیف به نام خود درخواست‌دهنده ثبت می‌شود
+                // (from_user = درخواست‌دهنده، to_user = سازندهٔ کار)؛ تاریخچه با این
+                // نشانه خط «به درخواست: <to_user>» را نشان نمی‌دهد
+                'from_is_requester' => true
             ], JSON_UNESCAPED_UNICODE)
         ]);
         echo json_encode([

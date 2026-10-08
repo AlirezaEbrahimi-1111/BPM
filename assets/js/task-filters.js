@@ -386,6 +386,7 @@ window.TF = (function () {
         delegated:              { label: 'ارجاع',                        verb: 'ارجاع شد',                          cls: 'ab-delegated' },
         updated:                { label: 'یادآوری',                      verb: 'یادآوری شد',                        cls: 'ab-updated' },
         deadline_extended:      { label: 'تمدید موعد',                   verb: 'مهلت تمدید شد',                     cls: 'ab-deadline' },
+        deadline_requested:     { label: 'درخواست تمدید موعد',           verb: 'درخواست تمدید موعد ثبت شد',         cls: 'ab-deadline' },
         deadline_rejected:      { label: 'رد درخواست تمدید موعد',        verb: 'درخواست تمدید مهلت رد شد',          cls: 'ab-rejected' },
         termination_requested:  { label: 'درخواست اتمام',                verb: 'درخواست اتمام کار ثبت شد',         cls: 'ab-pending' },
         checklist_sync:         { label: 'به‌روزرسانی چک‌لیست',           verb: 'چک‌لیست به‌روزرسانی شد',             cls: 'ab-updated' },
