@@ -18,6 +18,7 @@ if (php_sapi_name() !== 'cli') {
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/settings_helper.php';
+require_once __DIR__ . '/../includes/leave-balance-helper.php';
 
 class AutoApprovalChecker {
     private $db;
@@ -364,6 +365,19 @@ class AutoApprovalChecker {
             $stmt->execute([$request_id]);
             $request = $stmt->fetch();
             
+            // مرخصی ردشده هرگز استفاده نشده: سهمیه‌ای که موقع ثبت کسر شده بود
+            // برمی‌گردد — دقیقا مثل رد دستی (attendance_system/api/requests/approve.php).
+            // قبلا این‌جا فقط وضعیت عوض می‌شد و سهمیه برای همیشه کم می‌ماند.
+            if ($request && $table === 'leave_requests') {
+                $refunded = refundLeaveRequestBalance(
+                    $this->db, 'leave', (int) $request_id, (int) $request['user_id'],
+                    'بازگشت سهمیه به‌دلیل رد خودکار درخواست (عدم تأیید در مهلت)'
+                );
+                if ($refunded > 0) {
+                    $this->log("Request #{$request_id}: refunded {$refunded} leave minutes to user #{$request['user_id']}");
+                }
+            }
+
             if ($request) {
                 // اطلاع به کاربر
                 $this->sendNotification(

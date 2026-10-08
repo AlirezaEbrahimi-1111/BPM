@@ -289,20 +289,14 @@ try {
 
             // ✅ مرخصی ردشده: سهمیه‌ای که موقع ثبت کسر شده بود برمی‌گرده
             // (پاس هرگز از این مسیر رد نمی‌شه — بالاتر مستقیم بلاک شده)
+            // (همان تابعی که رد خودکار کران هم صدا می‌زند — refundLeaveRequestBalance)
             if ($request_type === 'leave') {
                 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php';
-                $ded_amount = findLeaveDeduction($db, 'leave', (int) $request_id);
-                if ($ded_amount !== null) {
-                    $stmt = $db->prepare("SELECT user_id FROM leave_requests WHERE id = ?");
-                    $stmt->execute([$request_id]);
-                    $leave_owner_id = (int) $stmt->fetchColumn();
-                    if ($leave_owner_id) {
-                        $stmt = $db->prepare("
-                            INSERT INTO leave_balance_transactions (user_id, type, amount, related_request_id, related_request_type, note)
-                            VALUES (?, 'manual_adjustment', ?, ?, 'leave', 'بازگشت سهمیه به‌دلیل رد درخواست')
-                        ");
-                        $stmt->execute([$leave_owner_id, -$ded_amount, $request_id]);
-                    }
+                $stmt = $db->prepare("SELECT user_id FROM leave_requests WHERE id = ?");
+                $stmt->execute([$request_id]);
+                $leave_owner_id = (int) $stmt->fetchColumn();
+                if ($leave_owner_id) {
+                    refundLeaveRequestBalance($db, 'leave', (int) $request_id, $leave_owner_id, 'بازگشت سهمیه به‌دلیل رد درخواست');
                 }
             }
         } elseif ($is_final_approval && $approval_status === 'approved') {

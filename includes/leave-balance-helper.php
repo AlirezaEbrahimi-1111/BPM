@@ -180,6 +180,37 @@ function findLeaveDeduction(PDO $db, string $requestType, int $requestId): ?int 
 }
 
 /**
+ * برگرداندن سهمیه‌ای که یک درخواست مرخصی/پاس از حساب کاربر کم کرده —
+ * مشترک بین «رد دستی» (attendance_system/api/requests/approve.php) و
+ * «رد خودکار بعد از مهلت» (cron/auto_approval_check.php).
+ *
+ * مبنا «خالص» همهٔ تراکنش‌های همان درخواست است (کسر اولیه + اصلاح‌های
+ * ویرایش + برگشت‌های قبلی)، نه فقط کسر اولیه. برای همین:
+ *   - دوبار صدا زدنش بی‌خطر است (بار دوم خالص صفر است و چیزی ثبت نمی‌شود)
+ *   - اگر درخواست بعد از ثبت ویرایش شده باشد، دقیقا همان مقداری که الان
+ *     کم مانده برمی‌گردد.
+ *
+ * @return int دقیقه‌ای که برگشت داده شد (۰ = چیزی برای برگشت نبود)
+ */
+function refundLeaveRequestBalance(PDO $db, string $requestType, int $requestId, int $userId, string $note): int {
+    $stmt = $db->prepare("
+        SELECT COALESCE(SUM(amount), 0) FROM leave_balance_transactions
+        WHERE related_request_id = ? AND related_request_type = ?
+    ");
+    $stmt->execute([$requestId, $requestType]);
+    $net = (int) $stmt->fetchColumn();
+    if ($net >= 0) {
+        return 0;
+    }
+    $stmt = $db->prepare("
+        INSERT INTO leave_balance_transactions (user_id, type, amount, related_request_id, related_request_type, note)
+        VALUES (?, 'manual_adjustment', ?, ?, ?, ?)
+    ");
+    $stmt->execute([$userId, -$net, $requestId, $requestType, $note]);
+    return -$net;
+}
+
+/**
  * تاریخچهٔ تراکنش‌های یک کاربر (جدیدترین اول)
  */
 function getLeaveBalanceHistory(PDO $db, int $userId, int $limit = 50): array {
