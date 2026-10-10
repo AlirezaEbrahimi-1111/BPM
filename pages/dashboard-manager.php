@@ -3883,7 +3883,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             if (scopeFilters) scopeFilters.style.display = canSeeOrg ? '' : 'none';
             const useOrg = canSeeOrg && delegatedScope === 'org';
             const source = useOrg ? store.orgDelegated : store.delegated;
-            const list = source.filter(t => TF.isOverdue(t, currentUser));
+            // 🔒 کار متوقف‌شده ('rejected' = اتمام زودهنگام توسط تعریف‌کننده، و 'stopped') بسته است
+            // و تأخیردار حساب نمی‌شود — همان قاعدهٔ pages/tasks-overview.php و
+            // api/reports/top-delayed-users.php. TF.isOverdue فقط completed/approved را کنار می‌گذارد.
+            const list = source.filter(t => t.status !== 'rejected' && t.status !== 'stopped' && TF.isOverdue(t, currentUser));
 
             if (!list.length) {
                 box.innerHTML = `<div class="dash-empty">
@@ -3993,10 +3996,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             // «مشاهده همه»ی کارهای واگذار تأخیردار
             document.getElementById('delayedSeeAll').addEventListener('click', ev => {
                 ev.preventDefault();
-                // کل سازمان → «نظارت بر کارها» با فیلتر عقب‌افتاده؛ شخصی (یا بدون مجوز
-                // سازمانی) → «کارهای واگذارشده»ی خود کاربر با فیلتر تأخیردار
+                // کل سازمان → «نظارت بر کارها»، فقط کارهای واگذارشده‌ی تأخیردار (تعریف‌کننده ≠
+                // مسئول)؛ شخصی (یا بدون مجوز سازمانی) → «کارهای واگذارشده»ی خود کاربر
                 location.href = (store.orgDelegated !== null && delegatedScope === 'org')
-                    ? 'tasks-overview.php?status=overdue'
+                    ? 'tasks-overview.php?filter=overdue&delegated=1'
                     : 'delegated-tasks.php?filter=overdue';
             });
 

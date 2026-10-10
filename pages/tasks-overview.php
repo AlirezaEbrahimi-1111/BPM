@@ -375,6 +375,9 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
             if (p.get('assignee')) filterAssigneeId = p.get('assignee');
             if (p.get('section')) window._filterSection = p.get('section');
             if (p.get('filter') === 'overdue') window._filterOverdue = true;
+            // فقط کارهای واگذارشده (تعریف‌کننده ≠ مسئول) — از «مشاهده همه»ی ویجت
+            // «کارهای واگذار شده (تاخیردار)» داشبورد، تب «کل سازمان»
+            if (p.get('delegated') === '1') window._filterDelegated = true;
 
             // نمایش نوار فیلتر فعال
             showActiveFilterBar(p);
@@ -385,6 +388,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
             const parts = [];
 
             if (window._filterOverdue) parts.push('فقط کارهای تأخیردار');
+            if (window._filterDelegated) parts.push('فقط کارهای واگذارشده (تعریف‌کننده و مسئول متفاوت)');
 
             if (p.get('section')) {
                 const secFa = (typeof acticity_section !== 'undefined' && acticity_section[p.get('section')]) ?
@@ -409,6 +413,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
         /* 🆕 پاک کردن فیلترهای داشبورد */
         function clearDashboardFilters() {
             window._filterOverdue = false;
+            window._filterDelegated = false;
             window._filterSection = null;
             filterAssigneeId = '';
 
@@ -645,6 +650,12 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                 if (window._filterSection) {
                     const isUnknownSection = window._filterSection === 'نامشخص';
                     if (isUnknownSection ? !!t.activity_section : t.activity_section !== window._filterSection) return false;
+                }
+
+                // فیلتر «واگذارشده» (از داشبورد): مسئول دارد و مسئول همان تعریف‌کننده نیست —
+                // همان تعریف api/tasks/delegated-tasks.php?scope=org. با جستجو نادیده گرفته می‌شود
+                if (window._filterDelegated && !s) {
+                    if (!t.assignee_id || String(t.assignee_id) === String(t.creator_id)) return false;
                 }
 
                 // 🆕 فیلتر تأخیردار (از داشبورد) — با جستجو نادیده گرفته می‌شود
