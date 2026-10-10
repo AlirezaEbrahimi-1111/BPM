@@ -556,6 +556,31 @@ if (!hasPermission($__me, 'view_org_settings')) {
             return '<span class="ad-badge ad-pending"><i class="bi bi-hourglass-split"></i>در انتظار</span>';
         }
 
+        /* وضعیت «ثبت ورود/خروج از بیرون شبکهٔ سازمان» برای هر دستگاه + دکمه‌های تصمیم.
+           none = فقط داخل شبکه (پیش‌فرض)، pending = کاربر از بیرون درخواست داده */
+        function outsideCell(p) {
+            const d = p.data;
+            const s = d.outside_status || 'none';
+            const btn = (cls, title, action, icon) =>
+                `<span class="ad-icon-btn ${cls}" title="${title}" onclick="devAction(${d.id},'${action}')"><i class="bi ${icon}"></i></span>`;
+            let badge, btns = '';
+            if (s === 'approved') {
+                badge = '<span class="ad-badge ad-approved"><i class="bi bi-globe2"></i>مجاز</span>';
+                btns = btn('no', 'برداشتن اجازهٔ ثبت از بیرون شبکه', 'outside_revoke', 'bi-x-lg');
+            } else if (s === 'pending') {
+                badge = '<span class="ad-badge ad-pending"><i class="bi bi-hourglass-split"></i>درخواست داده</span>';
+                btns = btn('ok', 'تأیید ثبت از بیرون شبکه', 'outside_approve', 'bi-check-lg') +
+                       btn('no', 'رد ثبت از بیرون شبکه', 'outside_reject', 'bi-slash-circle');
+            } else if (s === 'rejected') {
+                badge = '<span class="ad-badge ad-rejected"><i class="bi bi-slash-circle"></i>رد شده</span>';
+                btns = btn('ok', 'اجازهٔ ثبت از بیرون شبکه', 'outside_approve', 'bi-check-lg');
+            } else {
+                badge = '<span style="color:var(--gray-400);font-size:.8rem">فقط داخل شبکه</span>';
+                btns = btn('ok', 'اجازهٔ ثبت از بیرون شبکه', 'outside_approve', 'bi-globe2');
+            }
+            return `<div style="display:flex;gap:6px;align-items:center;height:100%">${badge}${btns}</div>`;
+        }
+
         function devActions(p) {
             const d = p.data;
             let h = '<div style="display:flex;gap:4px;align-items:center;height:100%">';
@@ -599,9 +624,15 @@ if (!hasPermission($__me, 'view_org_settings')) {
                         cellRenderer: p => statusBadge(p.value)
                     },
                     {
+                        headerName: 'ثبت از بیرون شبکه',
+                        field: 'outside_status',
+                        width: 186,
+                        cellRenderer: outsideCell
+                    },
+                    {
                         headerName: 'IP ثبت‌نام',
                         field: 'first_seen_ip',
-                        width: 148,
+                        width: 132,
                         cellRenderer: p => `<code style="direction:ltr;background:var(--gray-100);padding:.15rem .5rem;border-radius:6px;font-size:.8rem;color:var(--gray-700)">${esc(p.value || '—')}</code>`
                     },
                     {
@@ -619,13 +650,13 @@ if (!hasPermission($__me, 'view_org_settings')) {
                     {
                         headerName: 'آخرین استفاده',
                         field: 'last_used_at',
-                        width: 155,
+                        width: 140,
                         cellRenderer: p => `<span style="color:var(--gray-600);font-size:.82rem">${faTime(p.value)}</span>`
                     },
                     {
                         headerName: 'تاریخ ثبت',
                         field: 'created_at',
-                        width: 155,
+                        width: 140,
                         cellRenderer: p => `<span style="color:var(--gray-500);font-size:.82rem">${faTime(p.value)}</span>`
                     },
                     {
@@ -652,7 +683,8 @@ if (!hasPermission($__me, 'view_org_settings')) {
                 if (d.success) {
                     const rows = d.devices || [];
                     devGridApi.setGridOption('rowData', rows);
-                    const pending = rows.filter(r => r.status === 'pending').length;
+                    // «در انتظار» = دستگاه تأییدنشده یا درخواست ثبت از بیرون شبکه
+                    const pending = rows.filter(r => r.status === 'pending' || r.outside_status === 'pending').length;
                     updateStat('statDeviceCount', rows.length);
                     updateStat('statPendingCount', pending);
                     updateStat('tabCountDevices', rows.length);
@@ -679,6 +711,9 @@ if (!hasPermission($__me, 'view_org_settings')) {
             };
             if (action === 'delete') {
                 uiConfirm('این دستگاه حذف شود؟', run, { danger: true, yesText: 'بله، حذف', noText: 'انصراف' });
+            } else if (action === 'outside_approve') {
+                uiConfirm('این دستگاه اجازه داشته باشد از بیرون شبکهٔ سازمان (با هر اینترنتی و از هر جا) ورود و خروج ثبت کند؟', run,
+                    { yesText: 'بله، اجازه بده', noText: 'انصراف' });
             } else {
                 run();
             }
@@ -791,7 +826,9 @@ if (!hasPermission($__me, 'view_org_settings')) {
             NO_FINGERPRINT:     'بدون شناسهٔ دستگاه',
             DEVICE_PENDING:     'دستگاه در انتظار تأیید',
             DEVICE_NOT_APPROVED:'دستگاه تأییدنشده',
-            DEVICE_REJECTED:    'دستگاه ردشده'
+            DEVICE_REJECTED:    'دستگاه ردشده',
+            OUTSIDE_PENDING:    'بیرون شبکه — در انتظار تأیید',
+            OUTSIDE_REJECTED:   'بیرون شبکه — ردشده'
         };
 
         const actionMap = { check_in: 'ورود', check_out: 'خروج' };

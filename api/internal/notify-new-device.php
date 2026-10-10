@@ -56,7 +56,12 @@ try {
         exit;
     }
 
-    attendance_notify_managers_new_device($db, $organizationId, $userId, $ip);
+    // outside=true → درخواست «ثبت از بیرون شبکه» (go-api/internal/attendance/register.go)
+    if (!empty($input['outside'])) {
+        attendance_notify_managers_outside_request($db, $organizationId, $userId, $ip);
+    } else {
+        attendance_notify_managers_new_device($db, $organizationId, $userId, $ip);
+    }
 
     echo json_encode(['success' => true]);
 

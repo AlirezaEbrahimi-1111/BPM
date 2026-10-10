@@ -68,7 +68,10 @@ if (!$organization_id) {
 // ============================================
 // گارد امنیتی: IP داخلی + دستگاه تأییدشده
 // ============================================
-(function () use ($db, $organization_id, $user_id) {
+// آیا این ثبت از بیرون شبکهٔ مجاز سازمان انجام می‌شود؟ (گارد پایین تعیینش می‌کند؛
+// روی رکورد حضور ذخیره می‌شود تا گزارش نشان بدهد ثبت از محل کار بوده یا بیرون)
+$attendanceFromOutside = false;
+(function () use ($db, $organization_id, $user_id, &$attendanceFromOutside) {
 
     $client_ip  = $_SERVER['REMOTE_ADDR'] ?? '';
     $user_agent = substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255);
@@ -98,14 +101,76 @@ if (!$organization_id) {
     ");
     $ipStmt->execute([$organization_id, $client_ip]);
     if ((int)$ipStmt->fetchColumn() === 0) {
-                $logDenied('IP_NOT_ALLOWED');
-        http_response_code(403);
-        echo json_encode([
-            'success' => false,
-            'message' => 'ثبت ورود/خروج فقط از شبکهٔ مجاز سازمان امکان‌پذیر است',
-            'error_code' => 'IP_NOT_ALLOWED'
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
+        // ── بیرون از شبکهٔ مجاز سازمان ──
+        // قبلا همین‌جا با IP_NOT_ALLOWED رد می‌شد. حالا هر «دستگاه» می‌تواند یک بار از
+        // سرپرست اجازهٔ «ثبت از بیرون شبکه» بگیرد (attendance_devices.outside_status)؛
+        // بعد از تأیید، همان دستگاه با هر اینترنتی ثبت می‌کند. تأیید معمولی دستگاه (که
+        // داخل شبکه خودکار هم می‌تواند باشد) این اجازه را نمی‌دهد — باید صریح باشد.
+        $deny = function ($reason, $message, $code = 403) use ($logDenied) {
+            $logDenied($reason);
+            http_response_code($code);
+            echo json_encode(['success' => false, 'message' => $message, 'error_code' => $reason], JSON_UNESCAPED_UNICODE);
+            exit;
+        };
+
+        if ($fp0 === '' || strlen($fp0) < 16) {
+            $deny('NO_FINGERPRINT', 'شناسهٔ دستگاه ارسال نشد. لطفا صفحه را تازه کنید.', 400);
+        }
+
+        $oStmt = $db->prepare("
+            SELECT id, status, outside_status FROM attendance_devices
+            WHERE organization_id = ? AND fingerprint_hash = ?
+            LIMIT 1
+        ");
+        $oStmt->execute([$organization_id, $fp0_hash]);
+        $oDev = $oStmt->fetch(PDO::FETCH_ASSOC);
+
+        $requestedMsg = 'شما بیرون از شبکهٔ سازمان هستید. درخواست «ثبت ورود/خروج از بیرون شبکه» برای این دستگاه ثبت شد؛ پس از تأیید سرپرست می‌توانید با همین دستگاه از هر جا ورود و خروج بزنید.';
+
+        if (!$oDev) {
+            // دستگاه تازه، بیرون از شبکه → هیچ‌وقت خودکار تأیید نمی‌شود
+            $ins = $db->prepare("
+                INSERT IGNORE INTO attendance_devices
+                    (organization_id, fingerprint_hash, status, first_seen_ip, first_seen_user_id, created_at,
+                     outside_status, outside_requested_at)
+                VALUES (?, ?, 'pending', ?, ?, NOW(), 'pending', NOW())
+            ");
+            $ins->execute([$organization_id, $fp0_hash, $client_ip, $user_id]);
+            if ($ins->rowCount() > 0) {
+                attendance_notify_managers_outside_request($db, $organization_id, $user_id, $client_ip);
+            }
+            $deny('OUTSIDE_PENDING', $requestedMsg);
+        }
+
+        if ($oDev['status'] === 'rejected') {
+            $deny('DEVICE_REJECTED', 'این دستگاه توسط سرپرست رد شده است.');
+        }
+
+        if ($oDev['outside_status'] === 'approved' && $oDev['status'] === 'approved') {
+            $db->prepare("UPDATE attendance_devices SET last_used_at = NOW() WHERE id = ?")->execute([$oDev['id']]);
+            $attendanceFromOutside = true;
+            return; // از گارد خارج شو — اجازهٔ ثبت ورود/خروج از بیرون شبکه
+        }
+
+        if ($oDev['outside_status'] === 'rejected') {
+            $deny('OUTSIDE_REJECTED', 'سرپرست اجازهٔ ثبت ورود/خروج از بیرون شبکه را برای این دستگاه نداده است. از داخل شبکهٔ سازمان ثبت کنید.');
+        }
+
+        if ($oDev['outside_status'] === 'pending' || $oDev['outside_status'] === 'approved') {
+            // (approved ولی خود دستگاه هنوز تأیید نشده — حالت غیرعادی؛ مثل «در انتظار» رفتار می‌کنیم)
+            $deny('OUTSIDE_PENDING', 'درخواست ثبت ورود/خروج از بیرون شبکه برای این دستگاه هنوز در انتظار تأیید سرپرست است.');
+        }
+
+        // outside_status = none → اولین تلاش این دستگاه از بیرون: درخواست ثبت می‌شود
+        $upd = $db->prepare("
+            UPDATE attendance_devices SET outside_status = 'pending', outside_requested_at = NOW()
+            WHERE id = ? AND outside_status = 'none'
+        ");
+        $upd->execute([$oDev['id']]);
+        if ($upd->rowCount() > 0) {
+            attendance_notify_managers_outside_request($db, $organization_id, $user_id, $client_ip);
+        }
+        $deny('OUTSIDE_PENDING', $requestedMsg);
     }
 
     // --- لایهٔ ۲: دستگاه تأییدشده ---
@@ -233,8 +298,8 @@ $current_time = date('H:i:s');
 try {
     // ⭐ دریافت اطلاعات کاربر (شیفت‌ها)
     $stmt = $db->prepare("
-        SELECT shift_count, shift_1_start, shift_1_end, shift_2_start, shift_2_end 
-        FROM users 
+        SELECT shift_count, shift_1_start, shift_1_end, shift_2_start, shift_2_end
+        FROM users
         WHERE id = ?
     ");
     $stmt->execute([$user_id]);
@@ -320,7 +385,7 @@ try {
 
     // بررسی رکورد امروز برای این شیفت
     $stmt = $db->prepare("
-        SELECT * FROM attendance_records 
+        SELECT * FROM attendance_records
         WHERE user_id = ? AND date = ? AND shift_number = ?
     ");
     $stmt->execute([$user_id, $today, $shift]);
@@ -342,22 +407,22 @@ try {
 
             // به‌روزرسانی ورود (اگر قبلا خروج زده)
             $stmt = $db->prepare("
-                UPDATE attendance_records 
-                SET check_in = ?, check_out = NULL, updated_at = NOW()
+                UPDATE attendance_records
+                SET check_in = ?, check_out = NULL, check_in_outside = ?, check_out_outside = 0, updated_at = NOW()
                 WHERE id = ?
             ");
-            $stmt->execute([$now, $record['id']]);
+            $stmt->execute([$now, $attendanceFromOutside ? 1 : 0, $record['id']]);
 
             $message = 'ورود شیفت ' . $shift . ' مجددا ثبت شد';
 
         } else {
             // ایجاد رکورد جدید
             $stmt = $db->prepare("
-    INSERT INTO attendance_records 
-    (user_id, organization_id, date, shift_number, check_in, created_at) 
-    VALUES (?, ?, ?, ?, ?, NOW())
+    INSERT INTO attendance_records
+    (user_id, organization_id, date, shift_number, check_in, check_in_outside, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, NOW())
 ");
-            $stmt->execute([$user_id, $organization_id, $today, $shift, $now]);
+            $stmt->execute([$user_id, $organization_id, $today, $shift, $now, $attendanceFromOutside ? 1 : 0]);
 
 
             $message = 'ورود شیفت ' . $shift . ' ثبت شد';
@@ -399,11 +464,11 @@ try {
 
         // ثبت خروج
         $stmt = $db->prepare("
-            UPDATE attendance_records 
-            SET check_out = ?, updated_at = NOW()
+            UPDATE attendance_records
+            SET check_out = ?, check_out_outside = ?, updated_at = NOW()
             WHERE id = ?
         ");
-        $stmt->execute([$now, $record['id']]);
+        $stmt->execute([$now, $attendanceFromOutside ? 1 : 0, $record['id']]);
 
         echo json_encode([
             'success' => true,

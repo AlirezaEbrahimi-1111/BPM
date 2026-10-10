@@ -53,6 +53,84 @@ if (!function_exists('attendance_notify_managers_new_device')) {
     }
 
     /**
+     * اطلاع به مدیران: یک دستگاه از «بیرون شبکهٔ سازمان» درخواست ثبت ورود/خروج داده.
+     * پیامک با همان الگوی device_request می‌رود (متن الگو: دستگاهی در انتظار تأیید است).
+     */
+    function attendance_notify_managers_outside_request($db, $org, $requester_id, $ip)
+    {
+        require_once __DIR__ . '/Notification.php';
+        try {
+            $n = new Notification($db);
+
+            $rs = $db->prepare("SELECT CONCAT(COALESCE(first_name,''),' ',COALESCE(last_name,'')) FROM users WHERE id = ?");
+            $rs->execute([$requester_id]);
+            $rname = trim($rs->fetchColumn() ?: '') ?: 'کاربر';
+
+            $st = $db->prepare("
+                SELECT id FROM users
+                WHERE organization_id = ? AND is_active = 1
+                  AND (role IN ('supervisor','management') OR id = 1)
+            ");
+            $st->execute([$org]);
+            $managers = $st->fetchAll(PDO::FETCH_COLUMN);
+
+            $ip_safe = str_replace('.', '-', $ip);   // نقطه‌ها برای ملی‌پیامک
+
+            foreach ($managers as $mid) {
+                try {
+                    $n->create([
+                        'to_user_id'   => $mid,
+                        'title'        => 'درخواست ثبت ورود/خروج از بیرون شبکه',
+                        'message'      => "{$rname} از بیرون شبکهٔ سازمان ({$ip}) درخواست داده با دستگاهش ورود/خروج ثبت کند. برای تأیید یا رد به پنل دستگاه‌ها بروید.",
+                        'type'         => 'warning',
+                        'link'         => '../pages/attendance-devices.php',
+                        'related_type' => 'attendance_device',
+                        'related_id'   => 0,
+                        'is_read'      => 0,
+                        'sms_pattern'  => 'device_request',
+                        'sms_args'     => [$ip_safe, $rname],
+                    ]);
+                } catch (Exception $e) { /* بی‌صدا */ }
+            }
+        } catch (Exception $e) {
+            error_log('attendance_notify_managers_outside_request: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * اطلاع به درخواست‌دهنده پس از تأیید/رد «ثبت از بیرون شبکه» برای دستگاهش
+     */
+    function attendance_notify_requester_outside_review($db, $org, $device_id, $approved)
+    {
+        require_once __DIR__ . '/Notification.php';
+        try {
+            $st = $db->prepare("SELECT first_seen_user_id, first_seen_ip FROM attendance_devices WHERE id = ? AND organization_id = ?");
+            $st->execute([$device_id, $org]);
+            $row = $st->fetch(PDO::FETCH_ASSOC);
+            if (!$row || empty($row['first_seen_user_id'])) return;
+
+            $ip_safe = str_replace('.', '-', $row['first_seen_ip'] ?: '');
+            $n = new Notification($db);
+            $n->create([
+                'to_user_id'   => $row['first_seen_user_id'],
+                'title'        => $approved ? 'ثبت ورود/خروج از بیرون شبکه تأیید شد' : 'ثبت ورود/خروج از بیرون شبکه رد شد',
+                'message'      => $approved
+                    ? 'سرپرست اجازه داد با این دستگاه از بیرون شبکهٔ سازمان هم ورود و خروج ثبت کنید.'
+                    : 'سرپرست اجازهٔ ثبت ورود و خروج از بیرون شبکهٔ سازمان را برای این دستگاه نداد. از داخل شبکهٔ سازمان همچنان می‌توانید ثبت کنید.',
+                'type'         => $approved ? 'success' : 'danger',
+                'link'         => '#',
+                'related_type' => 'attendance_device',
+                'related_id'   => $device_id,
+                'is_read'      => 0,
+                'sms_pattern'  => $approved ? 'device_approved' : 'device_rejected',
+                'sms_args'     => [$ip_safe],
+            ]);
+        } catch (Exception $e) {
+            error_log('attendance_notify_requester_outside_review: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * اطلاع به درخواست‌دهنده پس از تأیید/رد دستگاه
      */
     function attendance_notify_requester_review($db, $org, $device_id, $approved)

@@ -13,6 +13,8 @@ import (
 //	GET  /go/api/attendance/devices
 //	POST /go/api/attendance/devices   body: {action: delete|relabel, ...}
 //
+// 🔒 عمدا پورت نشده: action=approve/reject و outside_approve/outside_reject/
+// outside_revoke (اجازهٔ ثبت از بیرون شبکه — همان دلیل: نوتیف/پیامک).
 // 🔒 عمدا پورت نشده: action=approve/reject. هر دو Notification::create()
 // (شامل ارسال پیامک async) را صدا می‌زنند — همان مرزی که در ماژول
 // notifications گذاشته شد: منطق ساختن نوتیف/پیامک اینجا پورت نمی‌شود.
@@ -36,7 +38,7 @@ func Devices(db *sql.DB) http.HandlerFunc {
 				LEFT JOIN users fu ON d.first_seen_user_id = fu.id
 				LEFT JOIN users au ON d.approved_by = au.id
 				WHERE d.organization_id = ?
-				ORDER BY (d.status = 'pending') DESC, d.created_at DESC
+				ORDER BY (d.status = 'pending' OR d.outside_status = 'pending') DESC, d.created_at DESC
 			`, org)
 			if err != nil {
 				core.WriteErr(w, http.StatusInternalServerError, "خطای سرور")

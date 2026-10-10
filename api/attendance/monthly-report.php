@@ -188,7 +188,7 @@ try {
     $end_of_month = sprintf('%04d-%02d-%02d', (int)$__ge_y, (int)$__ge_m, (int)$__ge_d);
 
     // رکوردهای حضور
-    $stmt = $db->prepare("SELECT date, shift_number, check_in, check_out FROM attendance_records WHERE user_id = ? AND date >= ? AND date <= ? ORDER BY date, shift_number");
+    $stmt = $db->prepare("SELECT date, shift_number, check_in, check_out, check_in_outside, check_out_outside FROM attendance_records WHERE user_id = ? AND date >= ? AND date <= ? ORDER BY date, shift_number");
     $stmt->execute([$user_id, $start_of_month, $end_of_month]);
     $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -296,6 +296,8 @@ try {
 
         $day_records = $records_by_date[$date_str] ?? [];
         $shift1_in = $shift1_out = $shift2_in = $shift2_out = null;
+        // ثبت از بیرون شبکهٔ مجاز سازمان بوده؟ (فقط وقتی همان ورود/خروج واقعا ثبت شده باشد)
+        $shift1_in_outside = $shift1_out_outside = $shift2_in_outside = $shift2_out_outside = false;
 
         // تطبیق هوشمند شیفت بر اساس ساعت ورود (قانون گزینه ۳)
         // ورود بعد از پایان شیفت ۱ ⟵ متعلق به شیفت ۲، در غیر این صورت شیفت ۱
@@ -316,11 +318,15 @@ try {
                 if ($shift1_in === null && $shift1_out === null) {
                     $shift1_in = $rec_in;
                     $shift1_out = $rec_out;
+                    $shift1_in_outside  = $rec_in !== null && !empty($rec['check_in_outside']);
+                    $shift1_out_outside = $rec_out !== null && !empty($rec['check_out_outside']);
                 }
             } else {
                 if ($shift2_in === null && $shift2_out === null) {
                     $shift2_in = $rec_in;
                     $shift2_out = $rec_out;
+                    $shift2_in_outside  = $rec_in !== null && !empty($rec['check_in_outside']);
+                    $shift2_out_outside = $rec_out !== null && !empty($rec['check_out_outside']);
                 }
             }
         }
@@ -378,6 +384,10 @@ try {
             'shift1_out' => $shift1_out,
             'shift2_in' => $shift2_in,
             'shift2_out' => $shift2_out,
+            'shift1_in_outside'  => $shift1_in_outside,
+            'shift1_out_outside' => $shift1_out_outside,
+            'shift2_in_outside'  => $shift2_in_outside,
+            'shift2_out_outside' => $shift2_out_outside,
             'shortage_minutes' => $initial_shortage_minutes,
             'shortage_hours' => round($initial_shortage_minutes / 60, 2),
             'shortage_hms' => minutesToHM($initial_shortage_minutes),

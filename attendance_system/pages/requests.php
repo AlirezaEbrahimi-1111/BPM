@@ -1733,6 +1733,24 @@ function formatDateJalali($gregorianDate)
             line-height: 2;
         }
 
+        /* محل ثبت ورود/خروج: محل کار (شبکهٔ سازمان) یا بیرون از آن */
+        .att-place {
+            font-size: 11px;
+            margin-inline-start: 4px;
+            vertical-align: middle;
+            color: var(--text-muted);
+            opacity: .55;
+        }
+
+        .att-place.is-outside {
+            color: #ea580c;
+            opacity: 1;
+        }
+
+        :root[data-theme="dark"] .att-place.is-outside {
+            color: #fb923c;
+        }
+
         .time-empty {
             color: #cbd5e1;
             font-style: italic;
@@ -4221,12 +4239,18 @@ function formatDateJalali($gregorianDate)
                         if (p.data.is_holiday) return '<span class="att-off">تعطیل</span>';
                         const a = which === 'in' ? p.data.shift1_in : p.data.shift1_out;
                         const b = which === 'in' ? p.data.shift2_in : p.data.shift2_out;
+                        // محل ثبت: خانه‌ی نارنجی = بیرون از شبکهٔ سازمان، ساختمان کم‌رنگ = محل کار
+                        const place = outside => outside
+                            ? '<i class="bi bi-house-door-fill att-place is-outside" title="ثبت از بیرون شبکهٔ سازمان"></i>'
+                            : '<i class="bi bi-building att-place" title="ثبت از محل کار (شبکهٔ سازمان)"></i>';
+                        const aOut = which === 'in' ? p.data.shift1_in_outside : p.data.shift1_out_outside;
+                        const bOut = which === 'in' ? p.data.shift2_in_outside : p.data.shift2_out_outside;
                         // اگر شیفت/ورود دوم وجود دارد یا کاربر دوشیفته است → هر دو زیر هم
                         if (shiftCount >= 2 || b) {
-                            return '<span class="shift-time">' + (a ? convertToFarsiNumber(a) : '') + '</span>' +
-                                '<span class="shift-time shift-2">' + (b ? convertToFarsiNumber(b) : '') + '</span>';
+                            return '<span class="shift-time">' + (a ? convertToFarsiNumber(a) + place(aOut) : '') + '</span>' +
+                                '<span class="shift-time shift-2">' + (b ? convertToFarsiNumber(b) + place(bOut) : '') + '</span>';
                         }
-                        return a ? '<span class="shift-time">' + convertToFarsiNumber(a) + '</span>' : '<span class="time-empty"></span>';
+                        return a ? '<span class="shift-time">' + convertToFarsiNumber(a) + place(aOut) + '</span>' : '<span class="time-empty"></span>';
                     };
 
                     const columnDefs = [{

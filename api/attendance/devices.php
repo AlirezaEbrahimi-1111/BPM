@@ -34,7 +34,7 @@ try {
             LEFT JOIN users fu ON d.first_seen_user_id = fu.id
             LEFT JOIN users au ON d.approved_by = au.id
             WHERE d.organization_id = ?
-            ORDER BY (d.status = 'pending') DESC, d.created_at DESC
+            ORDER BY (d.status = 'pending' OR d.outside_status = 'pending') DESC, d.created_at DESC
         ");
         $st->execute([$org]);
         dev_out(['success' => true, 'devices' => $st->fetchAll(PDO::FETCH_ASSOC)]);
@@ -84,6 +84,35 @@ try {
         }
         attendance_notify_requester_review($db, $org, $id, false);  // اطلاع به درخواست‌دهنده
         dev_out(['success' => true, 'message' => 'دستگاه رد شد']);
+    } elseif ($action === 'outside_approve') {
+        // اجازهٔ «ثبت از بیرون شبکه» برای همین دستگاه. اگر خود دستگاه هنوز تأیید نشده
+        // (درخواست از بیرون با دستگاه تازه)، همین‌جا تأیید هم می‌شود — مثل action=approve.
+        $db->prepare("
+            UPDATE attendance_devices
+            SET outside_status = 'approved', outside_decided_by = ?, outside_decided_at = NOW(),
+                approved_by = IF(status = 'approved', approved_by, ?),
+                approved_at = IF(status = 'approved', approved_at, NOW()),
+                status = 'approved'
+            WHERE id = ?
+        ")->execute([$user_id, $user_id, $id]);
+        if ($deviceUserId > 0) {
+            $db->prepare("INSERT IGNORE INTO attendance_approved_users (organization_id, user_id, approved_by, approved_at)
+                          VALUES (?, ?, ?, NOW())")
+               ->execute([$org, $deviceUserId, $user_id]);
+        }
+        attendance_notify_requester_outside_review($db, $org, $id, true);
+        dev_out(['success' => true, 'message' => 'این دستگاه از این پس می‌تواند از بیرون شبکه هم ورود و خروج ثبت کند']);
+    } elseif ($action === 'outside_reject') {
+        // فقط اجازهٔ بیرون شبکه رد می‌شود؛ وضعیت خود دستگاه (برای داخل شبکه) دست نمی‌خورد
+        $db->prepare("UPDATE attendance_devices SET outside_status = 'rejected', outside_decided_by = ?, outside_decided_at = NOW() WHERE id = ?")
+           ->execute([$user_id, $id]);
+        attendance_notify_requester_outside_review($db, $org, $id, false);
+        dev_out(['success' => true, 'message' => 'ثبت از بیرون شبکه برای این دستگاه رد شد']);
+    } elseif ($action === 'outside_revoke') {
+        // برگرداندن به حالت اولیه: کاربر اگر دوباره از بیرون تلاش کند درخواست تازه می‌دهد
+        $db->prepare("UPDATE attendance_devices SET outside_status = 'none', outside_decided_by = ?, outside_decided_at = NOW() WHERE id = ?")
+           ->execute([$user_id, $id]);
+        dev_out(['success' => true, 'message' => 'اجازهٔ ثبت از بیرون شبکه برداشته شد']);
     } elseif ($action === 'delete') {
         $db->prepare("DELETE FROM attendance_devices WHERE id=?")->execute([$id]);
         dev_out(['success' => true, 'message' => 'دستگاه حذف شد']);

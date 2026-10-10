@@ -90,15 +90,89 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 			return
 		}
 		if ipCount == 0 {
-			logDenied("IP_NOT_ALLOWED")
-			core.WriteJSON(w, http.StatusForbidden, map[string]any{
-				"success": false, "message": "ثبت ورود/خروج فقط از شبکهٔ مجاز سازمان امکان‌پذیر است", "error_code": "IP_NOT_ALLOWED",
-			})
-			return
+			// ── بیرون از شبکهٔ مجاز سازمان ── (پورت همان بلوک api/attendance/register.php)
+			// هر «دستگاه» یک بار از سرپرست اجازهٔ «ثبت از بیرون شبکه» می‌گیرد
+			// (attendance_devices.outside_status)؛ بعد از تأیید با هر اینترنتی ثبت می‌کند.
+			// تأیید معمولی دستگاه این اجازه را نمی‌دهد.
+			deny := func(reason, message string, code int) {
+				logDenied(reason)
+				core.WriteJSON(w, code, map[string]any{"success": false, "message": message, "error_code": reason})
+			}
+			if len(fp) < 16 {
+				deny("NO_FINGERPRINT", "شناسهٔ دستگاه ارسال نشد. لطفا صفحه را تازه کنید.", http.StatusBadRequest)
+				return
+			}
+			oHash := sha256Hex(fp)
+			const requestedMsg = "شما بیرون از شبکهٔ سازمان هستید. درخواست «ثبت ورود/خروج از بیرون شبکه» برای این دستگاه ثبت شد؛ پس از تأیید سرپرست می‌توانید با همین دستگاه از هر جا ورود و خروج بزنید."
+
+			var oID int64
+			var oStatus, oOutside sql.NullString
+			oErr := db.QueryRow(`
+				SELECT id, status, outside_status FROM attendance_devices
+				WHERE organization_id = ? AND fingerprint_hash = ?
+				LIMIT 1
+			`, org, oHash).Scan(&oID, &oStatus, &oOutside)
+
+			if oErr == sql.ErrNoRows {
+				// دستگاه تازه، بیرون از شبکه → هیچ‌وقت خودکار تأیید نمی‌شود
+				res, insErr := db.Exec(`
+					INSERT IGNORE INTO attendance_devices
+						(organization_id, fingerprint_hash, status, first_seen_ip, first_seen_user_id, created_at,
+						 outside_status, outside_requested_at)
+					VALUES (?, ?, 'pending', ?, ?, NOW(), 'pending', NOW())
+				`, org, oHash, clientIP, u.ID)
+				if insErr != nil {
+					core.WriteErr(w, http.StatusInternalServerError, "خطا در پردازش درخواست")
+					return
+				}
+				if rows, _ := res.RowsAffected(); rows > 0 {
+					core.NotifyOutsideRequestAsync(cfg, org, u.ID, clientIP)
+				}
+				deny("OUTSIDE_PENDING", requestedMsg, http.StatusForbidden)
+				return
+			}
+			if oErr != nil {
+				core.WriteErr(w, http.StatusInternalServerError, "خطا در پردازش درخواست")
+				return
+			}
+
+			switch {
+			case oStatus.String == "rejected":
+				deny("DEVICE_REJECTED", "این دستگاه توسط سرپرست رد شده است.", http.StatusForbidden)
+				return
+			case oOutside.String == "approved" && oStatus.String == "approved":
+				_, _ = db.Exec("UPDATE attendance_devices SET last_used_at = NOW() WHERE id = ?", oID)
+				// اجازهٔ ثبت ورود/خروج از بیرون شبکه — ادامه به پایین تابع
+			case oOutside.String == "rejected":
+				deny("OUTSIDE_REJECTED", "سرپرست اجازهٔ ثبت ورود/خروج از بیرون شبکه را برای این دستگاه نداده است. از داخل شبکهٔ سازمان ثبت کنید.", http.StatusForbidden)
+				return
+			case oOutside.String == "pending" || oOutside.String == "approved":
+				deny("OUTSIDE_PENDING", "درخواست ثبت ورود/خروج از بیرون شبکه برای این دستگاه هنوز در انتظار تأیید سرپرست است.", http.StatusForbidden)
+				return
+			default:
+				// outside_status = none → اولین تلاش این دستگاه از بیرون: درخواست ثبت می‌شود
+				res, _ := db.Exec(`
+					UPDATE attendance_devices SET outside_status = 'pending', outside_requested_at = NOW()
+					WHERE id = ? AND outside_status = 'none'
+				`, oID)
+				if res != nil {
+					if rows, _ := res.RowsAffected(); rows > 0 {
+						core.NotifyOutsideRequestAsync(cfg, org, u.ID, clientIP)
+					}
+				}
+				deny("OUTSIDE_PENDING", requestedMsg, http.StatusForbidden)
+				return
+			}
+		}
+		insideNetwork := ipCount > 0
+		// روی رکورد حضور ذخیره می‌شود تا گزارش نشان بدهد ثبت از محل کار بوده یا بیرون
+		fromOutside := 0
+		if !insideNetwork {
+			fromOutside = 1
 		}
 
-		// ── لایهٔ ۲: دستگاه تأییدشده ──
-		if len(fp) < 16 {
+		// ── لایهٔ ۲: دستگاه تأییدشده ── (فقط داخل شبکه؛ بیرون شبکه بالاتر کامل بررسی شد)
+		if insideNetwork && len(fp) < 16 {
 			logDenied("NO_FINGERPRINT")
 			core.WriteJSON(w, http.StatusBadRequest, map[string]any{
 				"success": false, "message": "شناسهٔ دستگاه ارسال نشد. لطفا صفحه را تازه کنید.", "error_code": "NO_FINGERPRINT",
@@ -274,12 +348,12 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 
 			var execErr error
 			if hasRecord {
-				_, execErr = db.Exec("UPDATE attendance_records SET check_in = ?, check_out = NULL, updated_at = NOW() WHERE id = ?", nowStr, recordID)
+				_, execErr = db.Exec("UPDATE attendance_records SET check_in = ?, check_out = NULL, check_in_outside = ?, check_out_outside = 0, updated_at = NOW() WHERE id = ?", nowStr, fromOutside, recordID)
 			} else {
 				_, execErr = db.Exec(`
-					INSERT INTO attendance_records (user_id, organization_id, date, shift_number, check_in, created_at)
-					VALUES (?, ?, ?, ?, ?, NOW())
-				`, u.ID, org, today, shift, nowStr)
+					INSERT INTO attendance_records (user_id, organization_id, date, shift_number, check_in, check_in_outside, created_at)
+					VALUES (?, ?, ?, ?, ?, ?, NOW())
+				`, u.ID, org, today, shift, nowStr, fromOutside)
 			}
 			if execErr != nil {
 				core.WriteErr(w, http.StatusInternalServerError, "خطا در پردازش درخواست")
@@ -309,7 +383,7 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 			})
 			return
 		}
-		if _, err := db.Exec("UPDATE attendance_records SET check_out = ?, updated_at = NOW() WHERE id = ?", nowStr, recordID); err != nil {
+		if _, err := db.Exec("UPDATE attendance_records SET check_out = ?, check_out_outside = ?, updated_at = NOW() WHERE id = ?", nowStr, fromOutside, recordID); err != nil {
 			core.WriteErr(w, http.StatusInternalServerError, "خطا در پردازش درخواست")
 			return
 		}

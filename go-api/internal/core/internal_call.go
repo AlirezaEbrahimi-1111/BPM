@@ -19,6 +19,17 @@ import (
 // تماس جانبی نمونه؛ اگه شکست بخوره فقط لاگ می‌شه (managers یک اطلاع
 // دیرتر از پنل خودشون می‌بینن، نه این‌که خود ثبت ورود/خروج خراب بشه).
 func NotifyNewDeviceAsync(cfg Config, orgID, userID int64, ip string) {
+	notifyDeviceAsync(cfg, orgID, userID, ip, false)
+}
+
+// NotifyOutsideRequestAsync — مثل NotifyNewDeviceAsync، ولی برای «درخواست ثبت
+// ورود/خروج از بیرون شبکهٔ سازمان» (همان endpoint داخلی با outside=true، که
+// attendance_notify_managers_outside_request را صدا می‌زند).
+func NotifyOutsideRequestAsync(cfg Config, orgID, userID int64, ip string) {
+	notifyDeviceAsync(cfg, orgID, userID, ip, true)
+}
+
+func notifyDeviceAsync(cfg Config, orgID, userID int64, ip string, outside bool) {
 	if cfg.BaseURL == "" || cfg.GoInternalSecret == "" {
 		log.Printf("NotifyNewDeviceAsync: base_url/go_internal_secret تنظیم نشده — این نوتیف نادیده گرفته شد")
 		return
@@ -28,6 +39,7 @@ func NotifyNewDeviceAsync(cfg Config, orgID, userID int64, ip string) {
 			"organization_id": orgID,
 			"user_id":         userID,
 			"ip":              ip,
+			"outside":         outside,
 		})
 		req, err := http.NewRequest("POST", cfg.BaseURL+"/api/internal/notify-new-device.php", bytes.NewReader(body))
 		if err != nil {
