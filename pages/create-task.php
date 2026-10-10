@@ -1124,8 +1124,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     // 🆕 توضیحات مراحل را همیشه ذخیره کن (حتی بدون فایل)
                     await saveStepDescriptions(data.instance_id);
 
-                    if (workflowPendingFiles.length > 0 && data.instance_id) {
-                        await uploadWorkflowFiles(data.instance_id); // 🆕 instance_id
+                    // 🔒 فایل باید به «کار مرحلهٔ اول» همین روتین وصل شود (data.task_id)، نه به
+                    // شمارهٔ روتین: سرویس آپلود task_id می‌خواهد و شمارهٔ روتین، شمارهٔ یک کار
+                    // بی‌ربط دیگر است. فهرست پیوست‌ها فایل‌های همهٔ مراحل یک روتین را با هم
+                    // نشان می‌دهد، پس وصل‌شدن به مرحلهٔ اول برای همهٔ مراحل کافی است.
+                    if (workflowPendingFiles.length > 0) {
+                        if (data.task_id) {
+                            await uploadWorkflowFiles(data.task_id);
+                        } else {
+                            showToast('کار روتین ساخته شد، ولی فایل‌های پیوست بارگذاری نشدند. لطفا از صفحهٔ همان کار دوباره پیوستشان کنید.', 'warning');
+                        }
                     }
                     return data.task_id || data.instance_id;
 
@@ -1937,23 +1945,36 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }
         }
 
-        async function uploadWorkflowFiles(instanceId) {
+        // firstTaskId = شمارهٔ کار مرحلهٔ اول روتین (نه شمارهٔ روتین)
+        async function uploadWorkflowFiles(firstTaskId) {
+            const failed = [];
             for (let item of workflowPendingFiles) {
                 const formData = new FormData();
-                formData.append('task_id', instanceId);
+                formData.append('task_id', firstTaskId);
                 formData.append('file', item.file);
+                // step_ids = شناسهٔ مرحله‌های قالب که فایل را می‌بینند؛ خالی = همه
                 formData.append('step_ids', item.visible_to_steps.length === 0 ? '' : JSON.stringify(item.visible_to_steps));
-                console.log('instanceId:', instanceId, '| step_ids:', item.visible_to_steps, '| visible_to_steps raw:', JSON.stringify(item.visible_to_steps));
 
-                await fetch('../api/tasks/upload-attachment.php', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + authToken
-                    },
-                    body: formData
-                });
+                try {
+                    const res = await fetch('../api/tasks/upload-attachment.php', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: formData
+                    });
+                    const out = await res.json();
+                    if (!out.success) failed.push(item.file.name);
+                } catch (e) {
+                    console.error('uploadWorkflowFiles:', e);
+                    failed.push(item.file.name);
+                }
             }
             workflowPendingFiles = [];
+            // قبلا جواب سرور نگاه نمی‌شد و فایل ردشده بی‌صدا از دست می‌رفت
+            if (failed.length > 0) {
+                showToast('کار روتین ساخته شد، ولی این فایل‌ها پیوست نشدند: ' + failed.join('، ') + '. لطفا از صفحهٔ همان کار دوباره پیوستشان کنید.', 'warning');
+            }
         }
     </script>
     <script src="<?= asset('../assets/js/deadline-toast.js') ?>"></script>

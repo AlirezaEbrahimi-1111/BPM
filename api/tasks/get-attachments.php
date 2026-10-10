@@ -84,34 +84,16 @@ $task = $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     // دریافت فایل‌ها
-// گرفتن current_step از workflow_instances برای این task
-$current_step = null;
-$stmtWf = $db->prepare("
-    SELECT wi.current_step 
-    FROM workflow_instances wi
-    JOIN tasks t ON t.workflow_instance_id = wi.id
-    WHERE t.id = ?
-    LIMIT 1
-");
+// مرحلهٔ قالب (workflow_steps.id) همین کاری که کاربر باز کرده — برای فیلتر step_ids پایین.
+// step_ids در صفحهٔ ساخت روتین (pages/create-task.php) با شناسهٔ مرحلهٔ قالب پر می‌شود،
+// نه شمارهٔ ترتیب مرحله. (قبلا این‌جا با workflow_instances.current_step — یعنی شمارهٔ
+// ترتیب — مقایسه می‌شد و فایل محدود به مرحلهٔ خاص تقریبا به هیچ‌کس نشان داده نمی‌شد.)
+$viewed_step_id = null;
+$stmtWf = $db->prepare("SELECT step_id FROM workflow_instance_steps WHERE task_id = ? LIMIT 1");
 $stmtWf->execute([$task_id]);
 $wfRow = $stmtWf->fetch(PDO::FETCH_ASSOC);
 if ($wfRow) {
-    $current_step = intval($wfRow['current_step']);
-}
-
-// گرفتن workflow_instance_id و current_step از طریق task_id
-$current_step = null;
-$stmtWf = $db->prepare("
-    SELECT wi.current_step 
-    FROM workflow_instances wi
-    JOIN tasks t ON t.workflow_instance_id = wi.id
-    WHERE t.id = ?
-    LIMIT 1
-");
-$stmtWf->execute([$task_id]);
-$wfRow = $stmtWf->fetch(PDO::FETCH_ASSOC);
-if ($wfRow) {
-    $current_step = intval($wfRow['current_step']);
+    $viewed_step_id = intval($wfRow['step_id']);
 }
 
 // دریافت فایل‌های همه تسک‌های همین workflow
@@ -173,16 +155,19 @@ if ($task['is_workflow_task'] == 1 && $task['workflow_instance_id']) {
 $attachments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // فیلتر فایل‌ها بر اساس step_ids
-$attachments = array_values(array_filter($attachments, function($att) use ($current_step) {
+$attachments = array_values(array_filter($attachments, function($att) use ($viewed_step_id, $user_id) {
     if (empty($att['step_ids'])) return true;
-    
+
     $steps = json_decode($att['step_ids'], true);
-    
+
     if (!is_array($steps) || count($steps) === 0) return true;
-    
-    if ($current_step === null) return false;
-    
-    return in_array($current_step, $steps);
+
+    // بارگذارندهٔ فایل همیشه فایل خودش را می‌بیند (وگرنه نمی‌تواند حذف/مدیریتش کند)
+    if ((int) $att['uploader_id'] === (int) $user_id) return true;
+
+    if ($viewed_step_id === null) return false;
+
+    return in_array($viewed_step_id, array_map('intval', $steps), true);
 }));
 
 // 🔒 کاربر چک‌لیستی: فقط فایل‌هایی که خودش بارگذاری کرده
