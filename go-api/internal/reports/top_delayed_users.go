@@ -46,6 +46,9 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
         WHERE organization_id = ?
           AND is_deleted = 0
           AND task_type = 'periodic'
+          -- کار روتین هم task_type='periodic' دارد؛ بدون این شرط دوبار شمرده می‌شد
+          -- (یک بار این‌جا، یک بار در کوئری روتین) — هم‌راستا با includes/delayed-tasks-helper.php
+          AND COALESCE(is_workflow_task, 0) = 0
           AND status NOT IN ('completed', 'approved', 'stopped', 'rejected')
         HAVING effective_due > '1000-01-01' AND effective_due < ?
     `

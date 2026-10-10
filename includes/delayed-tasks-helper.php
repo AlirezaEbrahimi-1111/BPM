@@ -40,6 +40,10 @@ function getDelayedPeriodicTasks(PDO $db, int $org_id, string $today): array
         WHERE organization_id = ?
           AND is_deleted = 0
           AND task_type = 'periodic'
+          -- 🔒 کار روتین هم در دیتابیس task_type='periodic' دارد؛ بدون این شرط هر کار
+          -- روتینِ تأخیردار یک بار این‌جا (مقطعی، به روز) و یک بار در
+          -- getDelayedWorkflowTasks (روتین، به ساعت) شمرده می‌شد — تعداد و تأخیر دوبرابر
+          AND COALESCE(is_workflow_task, 0) = 0
           AND status NOT IN ('completed', 'approved', 'stopped', 'rejected')
         HAVING effective_due > '1000-01-01' AND effective_due < ?
     ");
