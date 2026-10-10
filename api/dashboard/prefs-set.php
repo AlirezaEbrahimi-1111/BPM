@@ -25,9 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// فقط همین سه کلید مجازن — جلوگیری از استفاده‌ی این endpoint به‌عنوان
+// فقط همین کلیدها مجازن — جلوگیری از استفاده‌ی این endpoint به‌عنوان
 // یه key-value store عمومی
-$ALLOWED_KEYS = ['starred_tasks', 'default_tab', 'default_filter'];
+// delegated_scope = تب انتخاب‌شده‌ی ویجت «کارهای واگذار شده (تاخیردار)» (personal|org).
+// برخلاف سه کلید دیگه روزانه ریست نمی‌شه — bootstrap.php بدون شرط تاریخ می‌خوندش.
+$ALLOWED_KEYS = ['starred_tasks', 'default_tab', 'default_filter', 'delegated_scope'];
 
 try {
     $user_id = requireAuth();
@@ -44,6 +46,11 @@ try {
     $prefValue = $input['pref_value'] ?? '';
     if (!is_string($prefValue)) {
         $prefValue = json_encode($prefValue, JSON_UNESCAPED_UNICODE);
+    }
+    if ($prefKey === 'delegated_scope' && !in_array($prefValue, ['personal', 'org'], true)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'مقدار نامعتبر']);
+        exit;
     }
     // محدودیت طول برای جلوگیری از سوءاستفاده (لیست ستاره‌ها معمولا خیلی کوچیکه)
     if (strlen($prefValue) > 20000) {

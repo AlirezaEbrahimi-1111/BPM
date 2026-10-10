@@ -313,7 +313,13 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
             TF.renderStatusFilter(document.getElementById('filterStatus'), { selected: 'open' });
             loadFiltersFromURL();
             checkManagerRole();
-            document.getElementById('filterStatus').value = 'open';
+            // پیش‌فرض «باز» — مگر این‌که آدرس صفحه خودش وضعیت معتبری خواسته باشد
+            // (مثلا ?status=overdue از «مشاهده همه»ی داشبورد). قبلا مقدار آدرس همین‌جا
+            // بی‌قیدوشرط با 'open' بازنویسی می‌شد.
+            const urlStatus = new URLSearchParams(window.location.search).get('status');
+            const statusSel = document.getElementById('filterStatus');
+            statusSel.value = urlStatus || 'open';
+            if (statusSel.value !== (urlStatus || 'open')) statusSel.value = 'open';
 
             loadSections().then(() => loadUsers());
             loadTasks();

@@ -2647,6 +2647,12 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                         مشاهده همه <i class="bi bi-chevron-left"></i>
                     </a>
                 </div>
+                <!-- شخصی = کارهایی که خودم واگذار کرده‌ام؛ کل سازمان = کارهای واگذارشدهٔ همهٔ افراد.
+                     فقط برای کسی که مجوز دیدن کل سازمان را دارد نمایش داده می‌شود (renderDelayed). -->
+                <div class="routine-filters" id="delegatedScopeFilters" style="display:none;">
+                    <button class="routine-filter-chip dlg-scope-chip" data-scope="personal">شخصی</button>
+                    <button class="routine-filter-chip dlg-scope-chip active" data-scope="org">کل سازمان</button>
+                </div>
                 <div class="dash-card-body">
                     <div id="delayedList">
                         <div class="dash-loading"><span class="spinner-border spinner-border-sm" role="status"></span>در حال بارگذاری…</div>
@@ -3036,6 +3042,12 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             starredList = (dashboardPrefs && Array.isArray(dashboardPrefs.starred_tasks)) ? dashboardPrefs.starred_tasks : [];
             defaultTab = (dashboardPrefs && dashboardPrefs.default_tab) || '';
             defaultFilter = (dashboardPrefs && dashboardPrefs.default_filter) || '';
+            // تب ذخیره‌شده‌ی ویجت «کارهای واگذار شده (تاخیردار)» — ماندگار (روزانه ریست نمی‌شود)
+            if (dashboardPrefs && (dashboardPrefs.delegated_scope === 'personal' || dashboardPrefs.delegated_scope === 'org')) {
+                delegatedScope = dashboardPrefs.delegated_scope;
+            }
+            document.querySelectorAll('.dlg-scope-chip').forEach(c =>
+                c.classList.toggle('active', c.dataset.scope === delegatedScope));
             refreshPins();
             refreshFilterPins();
             currentFilter = getDefaultFilter();
@@ -3858,16 +3870,26 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             return diff > 0 ? `${toFa(diff)} روز` : '';
         }
 
+        // نطاق ویجت «کارهای واگذار شده (تاخیردار)»: 'org' = کل سازمان، 'personal' = فقط
+        // کارهایی که خود کاربر واگذار کرده. پیش‌فرض همان رفتار قبلی (کل سازمان) است.
+        let delegatedScope = 'org';
+
         function renderDelayed() {
             const box = document.getElementById('delayedList');
-            // 🆕 مدیر دارای مجوز view_all_org_tasks → کارهای واگذارشده‌ی
-            // تأخیردار کل سازمان، نه فقط کارهایی که خودش شخصا واگذار کرده
-            const source = store.orgDelegated !== null ? store.orgDelegated : store.delegated;
+            // store.orgDelegated === null یعنی کاربر مجوز دیدن کل سازمان را ندارد →
+            // دو تب نمایش داده نمی‌شود و فقط کارهای شخصی خودش می‌آید
+            const canSeeOrg = store.orgDelegated !== null;
+            const scopeFilters = document.getElementById('delegatedScopeFilters');
+            if (scopeFilters) scopeFilters.style.display = canSeeOrg ? '' : 'none';
+            const useOrg = canSeeOrg && delegatedScope === 'org';
+            const source = useOrg ? store.orgDelegated : store.delegated;
             const list = source.filter(t => TF.isOverdue(t, currentUser));
 
             if (!list.length) {
                 box.innerHTML = `<div class="dash-empty">
-                <i class="bi bi-check2-circle"></i>کار واگذارشده‌ی تأخیرداری وجود ندارد</div>`;
+                <i class="bi bi-check2-circle"></i>${useOrg
+                    ? 'در کل سازمان کار واگذارشده‌ی تأخیرداری وجود ندارد'
+                    : (canSeeOrg ? 'از کارهایی که شما واگذار کرده‌اید هیچ‌کدام تأخیر ندارد' : 'کار واگذارشده‌ی تأخیرداری وجود ندارد')}</div>`;
                 return;
             }
 
@@ -3971,15 +3993,31 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             // «مشاهده همه»ی کارهای واگذار تأخیردار
             document.getElementById('delayedSeeAll').addEventListener('click', ev => {
                 ev.preventDefault();
-                // «مشاهده همه»ی کارهای واگذار تأخیردار
-                location.href = 'delegated-tasks.php?filter=overdue';
+                // کل سازمان → «نظارت بر کارها» با فیلتر عقب‌افتاده؛ شخصی (یا بدون مجوز
+                // سازمانی) → «کارهای واگذارشده»ی خود کاربر با فیلتر تأخیردار
+                location.href = (store.orgDelegated !== null && delegatedScope === 'org')
+                    ? 'tasks-overview.php?status=overdue'
+                    : 'delegated-tasks.php?filter=overdue';
             });
 
-            document.querySelectorAll('.routine-filter-chip').forEach(chip => {
+            // تب‌های «شخصی / کل سازمان» ویجت کارهای واگذارشدهٔ تأخیردار
+            document.querySelectorAll('.dlg-scope-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    if (chip.classList.contains('active')) return;
+                    delegatedScope = chip.dataset.scope;
+                    document.querySelectorAll('.dlg-scope-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    saveDashboardPref('delegated_scope', delegatedScope);
+                    renderDelayed();
+                });
+            });
+
+            // (:not(.dlg-scope-chip) — چیپ‌های بالا همان ظاهر را دارند ولی به روتین‌ها ربطی ندارند)
+            document.querySelectorAll('.routine-filter-chip:not(.dlg-scope-chip)').forEach(chip => {
                 chip.addEventListener('click', () => {
                     if (chip.classList.contains('active')) return;
                     routineScope = chip.dataset.scope;
-                    document.querySelectorAll('.routine-filter-chip').forEach(c => c.classList.remove('active'));
+                    document.querySelectorAll('.routine-filter-chip:not(.dlg-scope-chip)').forEach(c => c.classList.remove('active'));
                     chip.classList.add('active');
                     loadRoutines(routineScope);
                 });
