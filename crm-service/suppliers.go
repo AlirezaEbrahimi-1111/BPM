@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// تأمین‌کننده‌ها — جدولِ inv_suppliers. ساختار مثلِ مشتری ولی بدونِ نوع، با یادداشت.
+// تأمین‌کننده‌ها — جدول inv_suppliers. ساختار مثل مشتری ولی بدون نوع، با یادداشت.
 
 type supplierOut struct {
 	ID           int64  `json:"id"`
@@ -104,7 +104,7 @@ func (s *server) createSupplier(w http.ResponseWriter, r *http.Request) {
 		u.OrgID, in.Name, nullIfEmpty(in.Phone), nullIfEmpty(in.Mobile), nullIfEmpty(in.NationalID),
 		nullIfEmpty(in.EconomicCode), nullIfEmpty(in.Address), nullIfEmpty(in.Note), u.ID)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "درجِ تأمین‌کننده ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "درج تأمین‌کننده ناموفق بود")
 		return
 	}
 	id, _ := res.LastInsertId()
@@ -142,7 +142,7 @@ func (s *server) updateSupplier(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
 }
 
-// DELETE /crm/api/inv/suppliers/{id}  — حذفِ نرم.
+// DELETE /crm/api/inv/suppliers/{id}  — حذف نرم.
 func (s *server) deleteSupplier(w http.ResponseWriter, r *http.Request) {
 	id := idParam(r)
 	u := userOf(r.Context())

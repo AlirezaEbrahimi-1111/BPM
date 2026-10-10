@@ -2,9 +2,9 @@ package core
 
 import "database/sql"
 
-// UserSections — پورتِ us_getUserSections() در includes/user-sections.php:
-// فهرستِ واحدهایِ کاربر از جدولِ جدید (چندواحدی)، با بازگشتِ امن به
-// ستونِ قدیمیِ users.activity_section اگر جدولِ جدید برایِ این کاربر خالی بود.
+// UserSections — پورت us_getUserSections() در includes/user-sections.php:
+// فهرست واحدهای کاربر از جدول جدید (چندواحدی)، با بازگشت امن به
+// ستون قدیمی users.activity_section اگر جدول جدید برای این کاربر خالی بود.
 func UserSections(db *sql.DB, userID int64) ([]string, error) {
 	rows, err := db.Query(`
 		SELECT section_key FROM user_activity_sections

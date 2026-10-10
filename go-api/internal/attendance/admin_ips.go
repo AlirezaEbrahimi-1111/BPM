@@ -9,7 +9,7 @@ import (
 	"bmp/go-api/internal/core"
 )
 
-// AllowedIPs — پورتِ دقیقِ api/attendance/allowed-ips.php (GET + POST action=add/toggle/delete)
+// AllowedIPs — پورت دقیق api/attendance/allowed-ips.php (GET + POST action=add/toggle/delete)
 //
 //	GET  /go/api/attendance/allowed-ips
 //	POST /go/api/attendance/allowed-ips   body: {action, ...}

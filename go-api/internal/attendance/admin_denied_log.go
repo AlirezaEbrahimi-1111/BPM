@@ -7,7 +7,7 @@ import (
 	"bmp/go-api/internal/core"
 )
 
-// dlRangeCond — پورتِ دقیقِ dl_range_cond() در denied-log.php.
+// dlRangeCond — پورت دقیق dl_range_cond() در denied-log.php.
 func dlRangeCond(rng string) string {
 	switch rng {
 	case "today":
@@ -19,7 +19,7 @@ func dlRangeCond(rng string) string {
 	}
 }
 
-// DeniedLog — پورتِ دقیقِ api/attendance/denied-log.php
+// DeniedLog — پورت دقیق api/attendance/denied-log.php
 //
 //	GET  /go/api/attendance/denied-log?range=today|week|all
 //	POST /go/api/attendance/denied-log   body: {action: delete|delete_filtered|clear, ...}

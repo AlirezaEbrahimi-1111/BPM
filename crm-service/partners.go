@@ -10,14 +10,14 @@ import (
 )
 
 // ═══════════════════════════════════════════════════════════════════
-//  «همکار» در فاکتور رسمی + سهمِ سودِ ماهانه (شمسی) + گزارشِ همکاران
+//  «همکار» در فاکتور رسمی + سهم سود ماهانه (شمسی) + گزارش همکاران
 // ───────────────────────────────────────────────────────────────────
-//  همکار = شخصی که فاکتور به‌درخواستش صادر می‌شود و درصدی از «مبلغِ پیش از
-//  مالیاتِ» فاکتور را به‌عنوان سهمِ سود می‌گیرد. درصد برای هر (همکار، ماهِ
-//  شمسی) جداگانه تعیین می‌شود و زنده است: تغییرِ درصدِ ماه، سودِ همهٔ
+//  همکار = شخصی که فاکتور به‌درخواستش صادر می‌شود و درصدی از «مبلغ پیش از
+//  مالیات» فاکتور را به‌عنوان سهم سود می‌گیرد. درصد برای هر (همکار، ماه
+//  شمسی) جداگانه تعیین می‌شود و زنده است: تغییر درصد ماه، سود همهٔ
 //  فاکتورهای همان ماه را بازمحاسبه می‌کند (چیزی snapshot نمی‌شود).
 //
-//  مبلغِ سود = round( (subtotal - discount) × percent / 100 )
+//  مبلغ سود = round( (subtotal - discount) × percent / 100 )
 // ═══════════════════════════════════════════════════════════════════
 
 // ───────────────────────── همکار: مدل ─────────────────────────
@@ -98,7 +98,7 @@ func (s *server) createPartner(w http.ResponseWriter, r *http.Request) {
 	}
 	in.normalize()
 	if in.Name == "" {
-		writeErr(w, http.StatusBadRequest, "نامِ همکار الزامی است")
+		writeErr(w, http.StatusBadRequest, "نام همکار الزامی است")
 		return
 	}
 	u := userOf(r.Context())
@@ -127,7 +127,7 @@ func (s *server) updatePartner(w http.ResponseWriter, r *http.Request) {
 	}
 	in.normalize()
 	if in.Name == "" {
-		writeErr(w, http.StatusBadRequest, "نامِ همکار الزامی است")
+		writeErr(w, http.StatusBadRequest, "نام همکار الزامی است")
 		return
 	}
 	u := userOf(r.Context())
@@ -150,7 +150,7 @@ func (s *server) updatePartner(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
 }
 
-// DELETE /crm/api/inv/partners/{id}  — حذفِ نرم.
+// DELETE /crm/api/inv/partners/{id}  — حذف نرم.
 func (s *server) deletePartner(w http.ResponseWriter, r *http.Request) {
 	id := idParam(r)
 	u := userOf(r.Context())
@@ -167,9 +167,9 @@ func (s *server) deletePartner(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
 }
 
-// ───────────────────────── درصدِ ماهانه ─────────────────────────
+// ───────────────────────── درصد ماهانه ─────────────────────────
 
-// ownsPartner: همکار متعلق به سازمانِ کاربر است؟
+// ownsPartner: همکار متعلق به سازمان کاربر است؟
 func (s *server) ownsPartner(partnerID, orgID int64) bool {
 	var x int
 	err := s.db.QueryRow(
@@ -177,7 +177,7 @@ func (s *server) ownsPartner(partnerID, orgID int64) bool {
 	return err == nil && x == 1
 }
 
-// partnerPercent: درصدِ سهمِ یک همکار در یک ماهِ شمسی (۰ اگر ثبت نشده).
+// partnerPercent: درصد سهم یک همکار در یک ماه شمسی (۰ اگر ثبت نشده).
 func (s *server) partnerPercent(partnerID int64, jy, jm int) float64 {
 	var p sql.NullFloat64
 	_ = s.db.QueryRow(
@@ -189,7 +189,7 @@ func (s *server) partnerPercent(partnerID int64, jy, jm int) float64 {
 	return 0
 }
 
-// GET /crm/api/inv/partners/{id}/shares?jy=1405   → همهٔ ۱۲ ماهِ آن سال
+// GET /crm/api/inv/partners/{id}/shares?jy=1405   → همهٔ ۱۲ ماه آن سال
 func (s *server) listPartnerShares(w http.ResponseWriter, r *http.Request) {
 	id := idParam(r)
 	u := userOf(r.Context())
@@ -245,15 +245,15 @@ func (s *server) setPartnerShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if in.JY < 1300 || in.JY > 1500 {
-		writeErr(w, http.StatusBadRequest, "سالِ شمسی نامعتبر است")
+		writeErr(w, http.StatusBadRequest, "سال شمسی نامعتبر است")
 		return
 	}
 	if in.JM < 1 || in.JM > 12 {
-		writeErr(w, http.StatusBadRequest, "ماهِ شمسی باید بینِ ۱ تا ۱۲ باشد")
+		writeErr(w, http.StatusBadRequest, "ماه شمسی باید بین ۱ تا ۱۲ باشد")
 		return
 	}
 	if in.Percent < 0 || in.Percent > 100 {
-		writeErr(w, http.StatusBadRequest, "درصد باید بینِ ۰ تا ۱۰۰ باشد")
+		writeErr(w, http.StatusBadRequest, "درصد باید بین ۰ تا ۱۰۰ باشد")
 		return
 	}
 	if _, err := s.db.Exec(`
@@ -268,7 +268,7 @@ func (s *server) setPartnerShare(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET /crm/api/inv/partner-share?partner_id=&jy=&jm=   → {percent}
-// برای پیش‌نمایشِ «مبلغِ سود» در فرمِ فاکتور.
+// برای پیش‌نمایش «مبلغ سود» در فرم فاکتور.
 func (s *server) getPartnerShare(w http.ResponseWriter, r *http.Request) {
 	u := userOf(r.Context())
 	pid, _ := strconv.ParseInt(r.URL.Query().Get("partner_id"), 10, 64)
@@ -279,13 +279,13 @@ func (s *server) getPartnerShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if jy < 1300 || jy > 1500 || jm < 1 || jm > 12 {
-		writeErr(w, http.StatusBadRequest, "ماهِ شمسی نامعتبر است")
+		writeErr(w, http.StatusBadRequest, "ماه شمسی نامعتبر است")
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"percent": s.partnerPercent(pid, jy, jm)})
 }
 
-// ───────────────────────── گزارشِ همکاران ─────────────────────────
+// ───────────────────────── گزارش همکاران ─────────────────────────
 
 // GET /crm/api/inv/partner-report?jy=&jm=&partner_id=&doc_type=&status=
 func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
@@ -420,7 +420,7 @@ func (s *server) setInvoicePartnerStatus(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// وضعیتِ فعلی برای اعتبارسنجیِ «کدِ مودیان هنگامِ ثبت‌شده»
+	// وضعیت فعلی برای اعتبارسنجی «کد مودیان هنگام ثبت‌شده»
 	var curMoadian, curCode string
 	if err := s.db.QueryRow(
 		"SELECT moadian_status, COALESCE(moadian_code,'') FROM inv_invoices WHERE id = ? AND organization_id = ?",
@@ -446,7 +446,7 @@ func (s *server) setInvoicePartnerStatus(w http.ResponseWriter, r *http.Request)
 	if in.Settlement != nil {
 		v := strings.TrimSpace(*in.Settlement)
 		if v != "unsettled" && v != "settled" && v != "partial" {
-			writeErr(w, http.StatusBadRequest, "وضعیتِ تسویه نامعتبر است")
+			writeErr(w, http.StatusBadRequest, "وضعیت تسویه نامعتبر است")
 			return
 		}
 		sets = append(sets, "settlement_status = ?")
@@ -457,7 +457,7 @@ func (s *server) setInvoicePartnerStatus(w http.ResponseWriter, r *http.Request)
 	if in.Moadian != nil {
 		v := strings.TrimSpace(*in.Moadian)
 		if v != "unregistered" && v != "registered" {
-			writeErr(w, http.StatusBadRequest, "وضعیتِ مودیان نامعتبر است")
+			writeErr(w, http.StatusBadRequest, "وضعیت مودیان نامعتبر است")
 			return
 		}
 		newMoadian = v
@@ -471,11 +471,11 @@ func (s *server) setInvoicePartnerStatus(w http.ResponseWriter, r *http.Request)
 		args = append(args, nullIfEmpty(newCode))
 	}
 	if newMoadian == "registered" && strings.TrimSpace(newCode) == "" {
-		writeErr(w, http.StatusUnprocessableEntity, "برای «مودیان ثبت‌شده» کدِ ثبت در سامانه لازم است")
+		writeErr(w, http.StatusUnprocessableEntity, "برای «مودیان ثبت‌شده» کد ثبت در سامانه لازم است")
 		return
 	}
 	if newMoadian == "unregistered" && in.MoadianCode == nil && curCode != "" {
-		// «ثبت‌نشده» شدن → کدِ قبلی پاک شود
+		// «ثبت‌نشده» شدن → کد قبلی پاک شود
 		sets = append(sets, "moadian_code = NULL")
 	}
 

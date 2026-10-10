@@ -5,9 +5,9 @@ import (
 	"strings"
 )
 
-// AttachChecklistTitles — پورتِ دقیقِ attachChecklistTitles() در
-// includes/checklist-search-helper.php: به هر تسک یک فیلدِ
-// checklist_titles (رشته‌ی جست‌وجوپذیر از عنوانِ آیتم‌های چک‌لیست) اضافه می‌کند.
+// AttachChecklistTitles — پورت دقیق attachChecklistTitles() در
+// includes/checklist-search-helper.php: به هر تسک یک فیلد
+// checklist_titles (رشته‌ی جست‌وجوپذیر از عنوان آیتم‌های چک‌لیست) اضافه می‌کند.
 func AttachChecklistTitles(db *sql.DB, tasksList []map[string]any) error {
 	if len(tasksList) == 0 {
 		return nil

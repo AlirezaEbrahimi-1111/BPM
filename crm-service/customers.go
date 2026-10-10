@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// مشتری در جدولِ crm_customers است و بینِ CRM و فاکتور مشترک است.
+// مشتری در جدول crm_customers است و بین CRM و فاکتور مشترک است.
 
 type customerOut struct {
 	ID           int64  `json:"id"`
@@ -120,7 +120,7 @@ func (s *server) createCustomer(w http.ResponseWriter, r *http.Request) {
 		nullIfEmpty(in.Province), nullIfEmpty(in.City), nullIfEmpty(in.PostalCode),
 		nullIfEmpty(in.Address), u.ID)
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "درجِ مشتری ناموفق بود")
+		writeErr(w, http.StatusInternalServerError, "درج مشتری ناموفق بود")
 		return
 	}
 	id, _ := res.LastInsertId()
@@ -161,7 +161,7 @@ func (s *server) updateCustomer(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
 }
 
-// DELETE /crm/api/customers/{id}  — حذفِ نرم.
+// DELETE /crm/api/customers/{id}  — حذف نرم.
 func (s *server) deleteCustomer(w http.ResponseWriter, r *http.Request) {
 	id := idParam(r)
 	u := userOf(r.Context())

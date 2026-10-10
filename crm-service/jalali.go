@@ -2,8 +2,8 @@ package main
 
 import "time"
 
-// تبدیلِ میلادی → شمسی. فقط سالِ شمسی برایمان مهم است (مبنایِ ریستِ شماره‌ی
-// فاکتور)، ولی تابع کاملِ y/m/d برمی‌گرداند. الگوریتمِ استانداردِ jdn.
+// تبدیل میلادی → شمسی. فقط سال شمسی برایمان مهم است (مبنای ریست شماره‌ی
+// فاکتور)، ولی تابع کامل y/m/d برمی‌گرداند. الگوریتم استاندارد jdn.
 func gregorianToJalali(gy, gm, gd int) (jy, jm, jd int) {
 	gdm := []int{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
 	if gy > 1600 {
@@ -42,7 +42,7 @@ func gregorianToJalali(gy, gm, gd int) (jy, jm, jd int) {
 	return
 }
 
-// jalaliYearOf سالِ شمسیِ یک تاریخِ میلادی را می‌دهد؛ اگر t صفر باشد، «حالا».
+// jalaliYearOf سال شمسی یک تاریخ میلادی را می‌دهد؛ اگر t صفر باشد، «حالا».
 func jalaliYearOf(t time.Time) int {
 	if t.IsZero() {
 		t = time.Now()
@@ -51,7 +51,7 @@ func jalaliYearOf(t time.Time) int {
 	return jy
 }
 
-// jalaliYMOf سال و ماهِ شمسیِ یک تاریخِ میلادی را می‌دهد؛ اگر t صفر باشد، «حالا».
+// jalaliYMOf سال و ماه شمسی یک تاریخ میلادی را می‌دهد؛ اگر t صفر باشد، «حالا».
 func jalaliYMOf(t time.Time) (jy, jm int) {
 	if t.IsZero() {
 		t = time.Now()

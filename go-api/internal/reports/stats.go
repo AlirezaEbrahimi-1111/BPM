@@ -1,4 +1,4 @@
-// Package reports — پورتِ endpointهای api/reports/* به Go.
+// Package reports — پورت endpointهای api/reports/* به Go.
 package reports
 
 import (
@@ -8,13 +8,13 @@ import (
 	"bmp/go-api/internal/core"
 )
 
-// Stats — پورتِ دقیقِ api/reports/stats.php
+// Stats — پورت دقیق api/reports/stats.php
 //
 //	GET /go/api/reports/stats
 //	→ {"success":true,"stats":{"total":N,"today":N,"week":N,"month":N}}
 //
-// همان چهار COUNT، همان شرط‌های تاریخِ MySQL (CURDATE / YEARWEEK / MONTH+YEAR)،
-// همان دامنه (فقط reportهای خودِ کاربرِ احرازشده).
+// همان چهار COUNT، همان شرط‌های تاریخ MySQL (CURDATE / YEARWEEK / MONTH+YEAR)،
+// همان دامنه (فقط reportهای خود کاربر احرازشده).
 func Stats(db *sql.DB) http.HandlerFunc {
 	const (
 		qTotal = "SELECT COUNT(*) FROM reports WHERE user_id = ?"

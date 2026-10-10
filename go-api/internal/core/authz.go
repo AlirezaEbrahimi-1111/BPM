@@ -5,18 +5,18 @@ import (
 	"strings"
 )
 
-// ─── پورتِ دقیقِ includes/permissions.php ───────────────────────────
+// ─── پورت دقیق includes/permissions.php ───────────────────────────
 //
 // هر تغییری اینجا باید هم‌زمان در includes/permissions.php باشد (و برعکس).
-// تستِ authz_test.go موارد را قفل می‌کند.
+// تست authz_test.go موارد را قفل می‌کند.
 
-// SuperAdminIDs — getSuperAdminIds(). تنها جایی که شناسهٔ عددیِ سخت مجاز است.
+// SuperAdminIDs — getSuperAdminIds(). تنها جایی که شناسهٔ عددی سخت مجاز است.
 var SuperAdminIDs = []int64{1, 19}
 
 // permissionMatrix — getPermissionMatrix(): نقش → اجازه‌ها.
 var permissionMatrix = map[string][]string{
 	"supervisor": supervisorPerms,
-	"admin":      supervisorPerms, // مقدارِ قدیمی — همیشه معادلِ supervisor
+	"admin":      supervisorPerms, // مقدار قدیمی — همیشه معادل supervisor
 	"manager": {
 		"manage_users",
 		"view_section_tasks",
@@ -56,7 +56,7 @@ var supervisorPerms = []string{
 	"grant_user_permissions",
 }
 
-// individualGrantMap — getIndividualGrantMap(): ستونِ users → اجازه‌ای که می‌دهد.
+// individualGrantMap — getIndividualGrantMap(): ستون users → اجازه‌ای که می‌دهد.
 var individualGrantMap = map[string]string{
 	"can_create_routine":  "create_routine_template",
 	"can_create_workflow": "create_workflow",
@@ -72,7 +72,7 @@ type PermUser struct {
 	CanCreateWorkflow bool
 }
 
-// LoadUser — پورتِ loadUserForPermissions(): nil اگر کاربر نبود، یا غیرفعال، یا حذف‌شده.
+// LoadUser — پورت loadUserForPermissions(): nil اگر کاربر نبود، یا غیرفعال، یا حذف‌شده.
 func LoadUser(db *sql.DB, userID int64) (*PermUser, error) {
 	var (
 		u                   PermUser
@@ -116,7 +116,7 @@ func IsSuperAdmin(u *PermUser) bool {
 	return false
 }
 
-// HasPermission — پورتِ hasPermission(): سوپرادمین → اختیارِ فردی → جدولِ نقش.
+// HasPermission — پورت hasPermission(): سوپرادمین → اختیار فردی → جدول نقش.
 func HasPermission(u *PermUser, permission string) bool {
 	if u == nil {
 		return false
@@ -125,7 +125,7 @@ func HasPermission(u *PermUser, permission string) bool {
 		return true
 	}
 
-	// لایهٔ ۲: اختیارِ فردیِ صریح، بر نقش اولویت دارد.
+	// لایهٔ ۲: اختیار فردی صریح، بر نقش اولویت دارد.
 	for col, granted := range individualGrantMap {
 		if granted != permission {
 			continue
@@ -143,7 +143,7 @@ func HasPermission(u *PermUser, permission string) bool {
 	}
 	perms, ok := permissionMatrix[role]
 	if !ok {
-		return false // نقشِ ناشناخته → هیچ اجازه‌ای (اصلِ احتیاط)
+		return false // نقش ناشناخته → هیچ اجازه‌ای (اصل احتیاط)
 	}
 	for _, p := range perms {
 		if p == permission {
@@ -153,9 +153,9 @@ func HasPermission(u *PermUser, permission string) bool {
 	return false
 }
 
-// GetSubordinateIds — پورتِ دقیقِ getSubordinateIds(): همه‌ی زیردستانِ یک
-// مدیر با هر عمقی (زنجیره‌ی کاملِ manager_id)، با محافظِ حلقه (سقفِ ۵۰۰
-// مرحله) و مرزِ سازمان (هرگز از organization_id مدیر عبور نمی‌کند).
+// GetSubordinateIds — پورت دقیق getSubordinateIds(): همه‌ی زیردستان یک
+// مدیر با هر عمقی (زنجیره‌ی کامل manager_id)، با محافظ حلقه (سقف ۵۰۰
+// مرحله) و مرز سازمان (هرگز از organization_id مدیر عبور نمی‌کند).
 func GetSubordinateIds(db *sql.DB, managerID int64) ([]int64, error) {
 	var orgID sql.NullInt64
 	err := db.QueryRow("SELECT organization_id FROM users WHERE id = ?", managerID).Scan(&orgID)
@@ -221,9 +221,9 @@ func IsSameOrg(u *PermUser, resourceOrgID int64) bool {
 	return u.OrganizationID == resourceOrgID
 }
 
-// CanManageTargetUser — پورتِ دقیقِ canManageTargetUser(): سوپرادمین →
+// CanManageTargetUser — پورت دقیق canManageTargetUser(): سوپرادمین →
 // همیشه؛ خودش → همیشه؛ supervisor/admin هم‌سازمان → بله؛ manager → فقط
-// اگر targetUserId زیرِمجموعه‌اش باشد؛ بقیه → نه.
+// اگر targetUserId زیرمجموعه‌اش باشد؛ بقیه → نه.
 func CanManageTargetUser(db *sql.DB, actingUser *PermUser, targetUserID int64) (bool, error) {
 	if actingUser == nil {
 		return false, nil

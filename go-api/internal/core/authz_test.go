@@ -2,7 +2,7 @@ package core
 
 import "testing"
 
-// قفلِ تطبیق با includes/permissions.php::hasPermission (بدونِ دیتابیس).
+// قفل تطبیق با includes/permissions.php::hasPermission (بدون دیتابیس).
 
 func TestHasPermission(t *testing.T) {
 	sup := &PermUser{ID: 100, Role: "supervisor"}

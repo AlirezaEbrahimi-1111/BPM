@@ -8,11 +8,11 @@ import (
 	"bmp/go-api/internal/core"
 )
 
-// parseClock — یک رشتهٔ ساعتِ MySQL ("HH:MM:SS" یا "HH:MM") را روی یک
-// تاریخِ ثابتِ دلخواه (برایِ مقایسه/جمع‌وتفریق) پارس می‌کند. معادلِ
+// parseClock — یک رشتهٔ ساعت MySQL ("HH:MM:SS" یا "HH:MM") را روی یک
+// تاریخ ثابت دلخواه (برای مقایسه/جمع‌وتفریق) پارس می‌کند. معادل
 // `new DateTime($timeString)` در PHP وقتی فقط رشتهٔ ساعت داده می‌شود
-// (PHP خودش تاریخِ امروز را فرض می‌کند؛ اینجا یک تاریخِ ثابتِ دلخواه کافی
-// است چون فقط برایِ مقایسهٔ نسبی استفاده می‌شود).
+// (PHP خودش تاریخ امروز را فرض می‌کند؛ اینجا یک تاریخ ثابت دلخواه کافی
+// است چون فقط برای مقایسهٔ نسبی استفاده می‌شود).
 func parseClock(s string) (time.Time, bool) {
 	if s == "" {
 		return time.Time{}, false
@@ -32,7 +32,7 @@ type statusButton struct {
 	Enabled bool   `json:"enabled"`
 }
 
-// TodayStatus — پورتِ دقیقِ api/attendance/today-status.php
+// TodayStatus — پورت دقیق api/attendance/today-status.php
 //
 //	GET /go/api/attendance/today-status
 //	→ {"success":true,"shift_count":N,"buttons":[...],"window_message":str|null,
@@ -116,7 +116,7 @@ func TodayStatus(db *sql.DB) http.HandlerFunc {
 			case shift2In.Valid && !shift2Out.Valid:
 				buttons = append(buttons, statusButton{"check_out", 2, "خروج شیفت 2", true})
 			case shift2In.Valid && shift2Out.Valid:
-				// هر دو شیفت کامل شده — بدونِ دکمه
+				// هر دو شیفت کامل شده — بدون دکمه
 			case !shift1In.Valid:
 				if shift1InOpen {
 					buttons = append(buttons, statusButton{"check_in", 1, "ورود شیفت 1", true})
@@ -169,8 +169,8 @@ func TodayStatus(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-// hhmm — معادلِ substr($datetime, 11, 5) در PHP: از یک رشتهٔ
-// "YYYY-MM-DD HH:MM:SS" فقط بخشِ "HH:MM" را برمی‌دارد.
+// hhmm — معادل substr($datetime, 11, 5) در PHP: از یک رشتهٔ
+// "YYYY-MM-DD HH:MM:SS" فقط بخش "HH:MM" را برمی‌دارد.
 func hhmm(s string) string {
 	if len(s) >= 16 {
 		return s[11:16]

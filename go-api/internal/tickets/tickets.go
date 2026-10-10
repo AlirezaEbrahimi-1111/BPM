@@ -1,6 +1,6 @@
-// Package tickets — پورتِ api/tickets/list.php + api/tickets/mark-all-read.php
-// (فقط این دو — بقیه‌ی api/tickets/* عملیاتِ روی یک تیکتِ تکی‌اند، نه چیزی
-// که هدر روی هر بارگذاریِ صفحه صدا بزند).
+// Package tickets — پورت api/tickets/list.php + api/tickets/mark-all-read.php
+// (فقط این دو — بقیه‌ی api/tickets/* عملیات روی یک تیکت تکی‌اند، نه چیزی
+// که هدر روی هر بارگذاری صفحه صدا بزند).
 package tickets
 
 import (
@@ -13,7 +13,7 @@ import (
 	"bmp/go-api/internal/core"
 )
 
-// ticketObserverIds — پورتِ ticketObserverIds() در includes/ticket_notify.php.
+// ticketObserverIds — پورت ticketObserverIds() در includes/ticket_notify.php.
 var ticketObserverIds = map[int64]bool{19: true}
 
 func isTicketObserver(userID int64) bool {
@@ -35,7 +35,7 @@ func qInt(r *http.Request, key string, def int) int {
 	return def
 }
 
-// List — پورتِ دقیقِ api/tickets/list.php
+// List — پورت دقیق api/tickets/list.php
 //
 //	GET /go/api/tickets/list?page=&limit=&status=&priority=&category=&search=&mine=1
 func List(db *sql.DB) http.HandlerFunc {
@@ -157,7 +157,7 @@ func List(db *sql.DB) http.HandlerFunc {
 		}
 		awaitingExpr := "(CASE WHEN " + ballExpr + " AND " + unseenExpr + " THEN 1 ELSE 0 END) as awaiting_you"
 
-		// ── آمار (بر اساسِ فیلترِ پایه) ──
+		// ── آمار (بر اساس فیلتر پایه) ──
 		statsSQL := `
 			SELECT
 				COUNT(*) as total,
@@ -286,7 +286,7 @@ func List(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-// MarkAllRead — پورتِ دقیقِ api/tickets/mark-all-read.php
+// MarkAllRead — پورت دقیق api/tickets/mark-all-read.php
 //
 //	POST /go/api/tickets/mark-all-read
 func MarkAllRead(db *sql.DB) http.HandlerFunc {

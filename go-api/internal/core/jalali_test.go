@@ -2,7 +2,7 @@ package core
 
 import "testing"
 
-// همان لنگرهای tests/unit/JalaliTest.php — تطبیقِ Go با نسخهٔ مرجعِ PHP.
+// همان لنگرهای tests/unit/JalaliTest.php — تطبیق Go با نسخهٔ مرجع PHP.
 
 func TestGregorianToJalali(t *testing.T) {
 	cases := []struct {
@@ -11,7 +11,7 @@ func TestGregorianToJalali(t *testing.T) {
 	}{
 		{2021, 3, 21, 1400, 1, 1},   // نوروز ۱۴۰۰
 		{2024, 3, 20, 1403, 1, 1},   // نوروز ۱۴۰۳
-		{2024, 3, 19, 1402, 12, 29}, // آخرین روزِ ۱۴۰۲
+		{2024, 3, 19, 1402, 12, 29}, // آخرین روز ۱۴۰۲
 		{2000, 1, 1, 1378, 10, 11},
 		{2026, 9, 7, 1405, 6, 16},
 	}
@@ -47,7 +47,7 @@ func TestJalaliToGregorian(t *testing.T) {
 
 // رفت‌وبرگشت روی یک بازهٔ چندساله باید بی‌خطا باشد.
 func TestJalaliRoundTrip(t *testing.T) {
-	// از 1399/01/01 تا حدودِ 1410
+	// از 1399/01/01 تا حدود 1410
 	jy, jm := 1399, 1
 	for step := 0; step < 12*12; step++ {
 		gy, gm, gd := JalaliToGregorian(jy, jm, 1)
