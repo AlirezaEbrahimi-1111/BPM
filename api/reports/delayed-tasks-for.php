@@ -118,7 +118,8 @@ try {
         if (!$matches($t)) continue;
         $state = pe_state($db, $t, $holidays, $today);
         if ($state['overdue_periods'] <= 0) continue;
-        $delayDays = $state['working_days_delayed'];
+        // از قدیمی‌ترین دورهٔ معوقه تا امروز — همان مقداری که top-delayed-users.php جمع می‌زند
+        $delayDays = $state['overdue_working_days'];
         $tasks[] = [
             'id'          => (int) $t['id'],
             'title'       => $t['title'],

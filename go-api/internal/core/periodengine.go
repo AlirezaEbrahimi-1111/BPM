@@ -233,6 +233,10 @@ type PeState struct {
 	CompletedPeriods   int
 	Forgiven           int
 	WorkingDaysDelayed int
+	// OldestOverdueDate / OverdueWorkingDays — تأخیر واقعی کار دوره‌ای: از قدیمی‌ترین
+	// دورهٔ معوقهٔ بخشیده‌نشده تا امروز (WorkingDaysDelayed نسبت به موعد دورهٔ جاری است).
+	OldestOverdueDate  *string
+	OverdueWorkingDays int
 	CanComplete        bool
 }
 
@@ -312,18 +316,26 @@ func PeStateCalc(db *sql.DB, task PeStateTask, holidays map[string]bool, today s
 	out.IsTodayDone = completedPeriods[currentPeriod]
 
 	overdueRaw := 0
+	var overdueDates []string
 	for _, p := range periods {
 		if p >= currentPeriod {
 			break
 		}
 		if !completedPeriods[p] {
 			overdueRaw++
+			overdueDates = append(overdueDates, p)
 		}
 	}
 	out.OverdueRaw = overdueRaw
 	out.OverduePeriods = overdueRaw - task.OverdueForgivenCredit
 	if out.OverduePeriods < 0 {
 		out.OverduePeriods = 0
+	}
+	// بخشش (رفع دورهٔ معوقه) قدیمی‌ترین دوره‌ها را کنار می‌گذارد
+	if f := max(0, task.OverdueForgivenCredit); out.OverduePeriods > 0 && f < len(overdueDates) {
+		oldest := overdueDates[f]
+		out.OldestOverdueDate = &oldest
+		out.OverdueWorkingDays = CalcPeriodicDelayWorkingDays(oldest, today, holidays)
 	}
 
 	if out.IsTodayDone {

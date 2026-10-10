@@ -224,7 +224,7 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 						continue
 					}
 					b.Continuous++
-					b.DelayDays += state.WorkingDaysDelayed
+					b.DelayDays += state.OverdueWorkingDays
 				}
 			}
 		}

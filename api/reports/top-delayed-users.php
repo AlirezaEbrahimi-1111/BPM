@@ -178,7 +178,10 @@ try {
             $k = $bucket($t['assignee_id'], $t['activity_section']);
             if ($k === null) continue;
             $acc[$k]['continuous']++;
-            $acc[$k]['delay_days'] += $state['working_days_delayed'];
+            // 🔒 overdue_working_days (از قدیمی‌ترین دورهٔ معوقه)، نه working_days_delayed
+            // (نسبت به موعد دورهٔ جاری) — دومی برای کار روزانه/هفتگی همیشه صفر بود و
+            // کاربری که فقط کار دوره‌ای عقب‌افتاده داشت اصلا در فهرست نمی‌آمد
+            $acc[$k]['delay_days'] += $state['overdue_working_days'];
         }
     }
 

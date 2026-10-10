@@ -289,7 +289,9 @@ function pe_preloadCompletionDates(PDO $db, array $taskIds): array
  *     overdue_raw          int     دوره‌های عقب‌افتاده پیش از کسر بخشش
  *     completed_periods    int     دوره‌های تکمیل‌شده
  *     forgiven             int     دوره‌های بخشیده‌شده
- *     working_days_delayed int     تأخیر به روز کاری
+ *     working_days_delayed int     تأخیر به روز کاری (نسبت به موعد دورهٔ جاری/بعدی)
+ *     oldest_overdue_date  ?string سررسید قدیمی‌ترین دورهٔ معوقهٔ بخشیده‌نشده
+ *     overdue_working_days int     روز کاری از قدیمی‌ترین دورهٔ معوقه تا امروز (۰ = معوقه ندارد)
  *     can_complete         bool    آیا کاربر الان می‌تواند «تکمیل» بزند؟
  * }
  */
@@ -310,6 +312,8 @@ function pe_state(PDO $db, array $task, array $holidays, ?string $today = null, 
         'completed_periods'    => 0,
         'forgiven'             => (int) ($task['overdue_forgiven_credit'] ?? 0),
         'working_days_delayed' => 0,
+        'oldest_overdue_date'  => null,
+        'overdue_working_days' => 0,
         'can_complete'         => false,
     ];
 
@@ -369,10 +373,12 @@ function pe_state(PDO $db, array $task, array $holidays, ?string $today = null, 
 
         // ── معوقه: دوره‌های *قبل از* دورهٔ جاری که تکمیل نشده‌اند ──
         $overdueRaw = 0;
+        $overdueDates = [];                           // به ترتیب زمانی (قدیمی → جدید)
         foreach ($periods as $p) {
             if ($p >= $currentPeriod) break;          // دورهٔ جاری معوقه نیست
             if (!isset($completedPeriods[$p])) {
                 $overdueRaw++;
+                $overdueDates[] = $p;
             }
         }
 
@@ -380,6 +386,17 @@ function pe_state(PDO $db, array $task, array $holidays, ?string $today = null, 
 
         $out['overdue_raw']     = $overdueRaw;
         $out['overdue_periods'] = max(0, $overdueRaw - $forgiven);
+
+        // ── تأخیر واقعی کار دوره‌ای: از قدیمی‌ترین دورهٔ معوقه تا امروز ──
+        // working_days_delayed (پایین‌تر) نسبت به موعد دورهٔ *جاری* است که همیشه
+        // نزدیک امروز است — برای کار روزانه/هفتگی حتی با ده‌ها دورهٔ معوقه صفر
+        // می‌ماند. گزارش‌های «بیشترین تأخیر» باید از این مقدار استفاده کنند.
+        // بخشش (رفع دورهٔ معوقه) قدیمی‌ترین دوره‌ها را کنار می‌گذارد.
+        $oldestIdx = max(0, $forgiven);
+        if ($out['overdue_periods'] > 0 && isset($overdueDates[$oldestIdx])) {
+            $out['oldest_overdue_date']  = $overdueDates[$oldestIdx];
+            $out['overdue_working_days'] = calcPeriodicDelayWorkingDays($overdueDates[$oldestIdx], $today, $holidays);
+        }
 
         // ── موعد بعدی ──────────────────────────────────
         if ($out['is_today_done']) {
