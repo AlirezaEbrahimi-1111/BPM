@@ -133,7 +133,11 @@ try {
         // ── بروزرسانی کار: status → in_progress، assignee → همین کاربر ──
         // (پاک‌کردنِ موعد فقط برای کار مقطعی غیرروتین معنی داره — کارِ دوره‌ای
         // از end_date/دوره استفاده می‌کند، نه due_date)
-        $clearDueDate = (!$isContinuous && empty($task['is_workflow_task']));
+        // 🔒 موعد فقط وقتی پاک می‌شود که نگه‌دارنده خودِ تعریف‌کننده باشد (کار به
+        // صاحبش برگشته). واسطه‌ای که کار را نزدِ خودش نگه می‌دارد هنوز به نفرِ
+        // قبلیِ زنجیره بدهکار است، پس موعدی که برایش گذاشته شده باید بماند.
+        $keeperIsCreator = ((int) $task['creator_id'] === (int) $user_id);
+        $clearDueDate = (!$isContinuous && empty($task['is_workflow_task']) && $keeperIsCreator);
         $sql = "
             UPDATE tasks
             SET status             = 'in_progress',
