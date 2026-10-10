@@ -45,6 +45,43 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
         };
     })();
 </script>
+<!-- 🔒 هماهنگی «نشست» با «توکن»
+     صفحه را سرور با حساب نشست مرورگر (PHPSESSID) می‌سازد، ولی همهٔ داده‌های داخل صفحه
+     با توکن JWT داخل localStorage گرفته می‌شوند. نشست بین همهٔ تب‌های مرورگر مشترک است،
+     پس اگر در تب دیگری حساب دیگری وارد شده باشد (یا تازه‌سازی دوره‌ای یک تب قدیمی نشست
+     را عوض کرده باشد)، این دو می‌توانند دو حساب مختلف باشند: مثلا سوپروایزر به داشبورد
+     کاربر عادی فرستاده می‌شد در حالی که توکنش هنوز سوپروایزر بود.
+     این‌جا اگر حساب صفحه با حساب توکن یکی نبود، نشست با توکن هماهنگ و صفحه یک بار
+     تازه می‌شود. توکن مرجع است، چون آخرین ورود در همین مرورگر همان را نوشته. -->
+<script>
+    (function () {
+        var pageUserId = <?= (int) ($__me['id'] ?? $_SESSION['user_id'] ?? 0) ?>;
+        if (!pageUserId) return;
+        var token, tokenUserId = 0;
+        try {
+            token = localStorage.getItem('auth_token');
+            if (!token) return;
+            var part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+            tokenUserId = parseInt(JSON.parse(atob(part)).user_id, 10) || 0;
+        } catch (e) { return; }
+        if (!tokenUserId || tokenUserId === pageUserId) return;
+
+        // ضد حلقه: اگر همین چند ثانیهٔ پیش هماهنگ کردیم و هنوز یکی نیستند، دوباره تازه نکن
+        var now = Date.now(), last = 0;
+        try { last = parseInt(sessionStorage.getItem('hdrIdentitySyncTs') || '0', 10); } catch (e) {}
+        if (now - last < 8000) return;
+        try { sessionStorage.setItem('hdrIdentitySyncTs', String(now)); } catch (e) {}
+
+        fetch('/api/auth/set-session.php', { headers: { 'Authorization': 'Bearer ' + token } })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (d) {
+                // فقط وقتی سرور همان حساب توکن را تأیید کرد؛ توکن نامعتبر (۴۰۱) را
+                // مسیر عادی هدر (hdrHandleAuthFailure) به صفحهٔ ورود می‌برد
+                if (d && d.success && parseInt(d.user_id, 10) === tokenUserId) window.location.reload();
+            })
+            .catch(function () {});
+    })();
+</script>
 <!-- 🌗 تم روشن/تاریک — اعمال فوری از localStorage، پیش از رندر هدر (جلوگیری فلاش) -->
 <script>
     function bpmGetTheme() {
@@ -3214,6 +3251,9 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
         // همون JWT جاری زنده نگه می‌داره تا هیچ‌وقت این‌قدر بی‌کار نمونه.
         function refreshServerSession() {
             if (!authToken) return;
+            // 🔒 اگر در تب دیگری حساب عوض شده (توکن localStorage دیگر توکن این تب نیست)،
+            // این تب نباید نشست مشترک مرورگر را به حساب قدیمی خودش برگرداند
+            try { if (localStorage.getItem('auth_token') !== authToken) return; } catch (e) {}
             fetch('/api/auth/set-session.php', {
                 headers: { 'Authorization': 'Bearer ' + authToken }
             }).catch(function() {});
