@@ -123,6 +123,12 @@ try {
     if (!empty($approveNotes)) {
         $historyNote .= '. توضیحات: ' . $approveNotes;
     }
+    // 🔒 یادداشتِ ارجاع هم در همین ردیف تاریخچه ثبت می‌شود — مثل ارجاع معمولی
+    // (TaskManager::delegateTask). قبلا فقط در tasks.delegation_notes می‌رفت که هیچ
+    // صفحه‌ای در وب آن را نمایش نمی‌دهد، پس به دست نفر بعدی نمی‌رسید.
+    if (trim((string) $delegateNotes) !== '') {
+        $historyNote .= "\nیادداشت ارجاع: " . trim((string) $delegateNotes);
+    }
 
     $stmt = $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes) VALUES (?, ?, ?, 'delegated', ?)");
     $stmt->execute([
