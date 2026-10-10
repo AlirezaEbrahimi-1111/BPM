@@ -73,6 +73,20 @@ try {
     $db->prepare("UPDATE tasks SET has_pending_overdue_request = 0, updated_at = NOW() WHERE id = ?")
        ->execute([$task_id]);
 
+    // نام یک کاربر برای جملهٔ تاریخچه
+    $ocUserName = function (int $id) use ($db): string {
+        $s = $db->prepare("SELECT TRIM(CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,''))) FROM users WHERE id = ?");
+        $s->execute([$id]);
+        return (string) ($s->fetchColumn() ?: 'کاربر');
+    };
+
+    // ثبت در تاریخچهٔ کار: from_user = ردکننده، to_user = درخواست‌دهنده
+    $histNote = 'درخواست رفع دوره‌های معوقه از «' . $ocUserName((int) $req['requested_by']) . '» رد شد.';
+    if ($reason !== '') $histNote .= ' دلیل: ' . $reason;
+    $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
+                  VALUES (?, ?, ?, 'overdue_clear_rejected', ?)")
+       ->execute([$task_id, $user_id, $req['requested_by'], $histNote]);
+
     try {
         $notification = new Notification($db);
         $msg = "درخواست رفع دوره‌های معوقهٔ کار «{$req['title']}» رد شد.";

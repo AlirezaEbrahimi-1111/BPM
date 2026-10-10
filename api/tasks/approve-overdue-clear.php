@@ -94,10 +94,20 @@ try {
                   WHERE id = ?")
        ->execute([$remaining, $user_id, $request_id]);
 
+    // نام یک کاربر برای جملهٔ تاریخچه
+    $ocUserName = function (int $id) use ($db): string {
+        $s = $db->prepare("SELECT TRIM(CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,''))) FROM users WHERE id = ?");
+        $s->execute([$id]);
+        return (string) ($s->fetchColumn() ?: 'کاربر');
+    };
+
+    // from_user = تأییدکننده (کسی که این اقدام را انجام داده)، to_user = درخواست‌دهنده —
+    // همان قرارداد deadline_extended. (قبلا برعکس و با action عمومی 'updated' ثبت
+    // می‌شد که در تاریخچه برچسب «یادآوری» می‌گرفت.)
     $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
-                  VALUES (?, ?, ?, 'updated', ?)")
-       ->execute([$task_id, $req['requested_by'], $user_id,
-           'رفع دوره‌های معوقه تأیید شد — تعداد: ' . $remaining]);
+                  VALUES (?, ?, ?, 'overdue_cleared', ?)")
+       ->execute([$task_id, $user_id, $req['requested_by'],
+           'درخواست رفع ' . $remaining . ' دورهٔ معوقه از «' . $ocUserName((int) $req['requested_by']) . '» تأیید شد.']);
 
     // نوتیفیکیشن به درخواست‌دهنده
     try {

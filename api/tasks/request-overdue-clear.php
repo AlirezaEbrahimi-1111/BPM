@@ -189,12 +189,13 @@ try {
             ->execute([$task['organization_id'], $task_id, $user_id, $remaining, $reason, $user_id, $remaining]);
 
         $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
-                      VALUES (?, ?, ?, 'updated', ?)")
+                      VALUES (?, ?, ?, 'overdue_cleared', ?)")
             ->execute([
                 $task_id,
                 $user_id,
                 $user_id,
-                'رفع دوره‌های معوقه (تأیید خودکار توسط تعریف‌کننده) — تعداد: ' . $remaining
+                $remaining . ' دورهٔ معوقه رفع شد (بدون نیاز به تأیید، چون درخواست‌دهنده تعریف‌کنندهٔ کار است).'
+                    . ($reason !== '' ? ' دلیل: ' . $reason : '')
             ]);
 
         $db->commit();
@@ -217,6 +218,15 @@ try {
 
     $db->prepare("UPDATE tasks SET has_pending_overdue_request = 1, updated_at = NOW() WHERE id = ?")
         ->execute([$task_id]);
+
+    // ثبت در تاریخچهٔ کار: from_user = درخواست‌دهنده، to_user = کسی که باید بررسی کند
+    $apStmt = $db->prepare("SELECT TRIM(CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,''))) FROM users WHERE id = ?");
+    $apStmt->execute([$approver_id]);
+    $histNote = 'درخواست رفع ' . $remaining . ' دورهٔ معوقه ثبت شد و برای بررسی به «' . ($apStmt->fetchColumn() ?: 'تأییدکننده') . '» فرستاده شد.';
+    if ($reason !== '') $histNote .= ' دلیل: ' . $reason;
+    $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes)
+                  VALUES (?, ?, ?, 'overdue_clear_requested', ?)")
+        ->execute([$task_id, $user_id, $approver_id, $histNote]);
 
     // نوتیفیکیشن به تأییدکننده
     try {

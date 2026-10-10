@@ -67,7 +67,7 @@ try {
     // هر سه ستون تاریخ موعد پاک می‌شوند — enrichTaskDates() بیشینه‌ی این سه
     // را به‌عنوان موعد می‌گیرد، پس اگر یکی باقی بماند موعد همچنان نمایش داده می‌شود.
     $db->prepare("UPDATE tasks SET due_date = NULL, deadline = NULL, original_deadline = NULL, updated_at = NOW() WHERE id = ?")->execute([$task_id]);
-    $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes) VALUES (?, ?, NULL, 'updated', 'موعد انجام حذف شد')")
+    $db->prepare("INSERT INTO task_history (task_id, from_user_id, to_user_id, action, notes) VALUES (?, ?, NULL, 'due_date_cleared', 'موعد انجام کار حذف شد.')")
         ->execute([$task_id, $user_id]);
 
     echo json_encode(['success' => true, 'message' => 'موعد کار حذف شد']);

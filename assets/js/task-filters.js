@@ -466,7 +466,14 @@ window.TF = (function () {
         rejected:               { label: 'رد',                           verb: 'رد شد',                             cls: 'ab-rejected' },
         stopped:                { label: 'توقف',                         verb: 'متوقف شد',                          cls: 'ab-stopped' },
         delegated:              { label: 'ارجاع',                        verb: 'ارجاع شد',                          cls: 'ab-delegated' },
+        // updated فقط «یادآوری» است (api/tasks/send-reminder.php). رویدادهای دیگر که
+        // قبلا با همین action ثبت می‌شدند حالا نوع خودشان را دارند (پنج ردیف پایین).
         updated:                { label: 'یادآوری',                      verb: 'یادآوری شد',                        cls: 'ab-updated' },
+        task_edited:            { label: 'ویرایش کار',                   verb: 'مشخصات کار ویرایش شد',              cls: 'ab-updated' },
+        due_date_cleared:       { label: 'حذف موعد',                     verb: 'موعد انجام حذف شد',                 cls: 'ab-deadline' },
+        overdue_clear_requested: { label: 'درخواست رفع دوره‌ی معوقه',     verb: 'درخواست رفع دوره‌ی معوقه ثبت شد',    cls: 'ab-pending' },
+        overdue_cleared:        { label: 'رفع دوره‌ی معوقه',              verb: 'دوره‌های معوقه رفع شد',              cls: 'ab-approved' },
+        overdue_clear_rejected: { label: 'رد درخواست رفع دوره‌ی معوقه',   verb: 'درخواست رفع دوره‌ی معوقه رد شد',     cls: 'ab-rejected' },
         deadline_extended:      { label: 'تمدید موعد',                   verb: 'مهلت تمدید شد',                     cls: 'ab-deadline' },
         deadline_requested:     { label: 'درخواست تمدید موعد',           verb: 'درخواست تمدید موعد ثبت شد',         cls: 'ab-deadline' },
         deadline_rejected:      { label: 'رد درخواست تمدید موعد',        verb: 'درخواست تمدید مهلت رد شد',          cls: 'ab-rejected' },

@@ -245,7 +245,7 @@ class TaskManager
                 $stmt = $this->db->prepare($sql);
 
                 if ($stmt->execute($update_values)) {
-                    $this->addTaskHistory($task_id, $user_id, null, 'updated', 'کار بروزرسانی شد');
+                    $this->addTaskHistory($task_id, $user_id, null, 'task_edited', 'مشخصات کار ویرایش شد.');
                     return ['success' => true, 'message' => 'کار با موفقیت بروزرسانی شد'];
                 }
             }
