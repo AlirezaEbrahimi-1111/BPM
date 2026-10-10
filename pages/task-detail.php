@@ -494,11 +494,11 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     <!-- منطقه آپلود — فقط برای assignee نمایش داده می‌شود -->
                     <div class="upload-area" id="uploadArea" style="display:none;">
                         <input type="file" id="fileInput" class="file-input-hidden"
-                            accept=".jpg,.jpeg,.png,.pdf,.docx,.doc,.xls,.xlsx,.mp3,.m4a,.ogg" multiple>
+                            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg,.mp4,.mov" multiple>
                         <i class="bi bi-cloud-upload"></i>
                         <p><strong>فایل خود را اینجا رها کنید یا کلیک کنید</strong></p>
-                        <small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg</small>
-                        <P>(حداکثر 20MB)</P>
+                        <small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg, mp4, mov</small>
+                        <P>(ویدیو حداکثر ۵۰ مگابایت، بقیهٔ فایل‌ها حداکثر ۲۰ مگابایت)</P>
                         <div class="upload-progress" id="uploadProgress">
                             <div class="upload-progress-bar" id="uploadProgressBar"></div>
                         </div>
@@ -714,10 +714,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                             <label class="form-label">پیوست فایل (اختیاری)</label>
                             <div class="upload-area-modal" id="uploadAreaModal">
                                 <input type="file" id="fileInputModal" class="file-input-hidden"
-                                    accept=".jpg,.jpeg,.png,.pdf,.docx,.doc,.xls,.xlsx,.mp3,.m4a,.ogg" multiple>
+                                    accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg,.mp4,.mov" multiple>
                                 <i class="bi bi-paperclip"></i>
                                 <p><small>کلیک کنید یا فایل را بکشید</small></p>
-                                <small class="text-muted">حداکثر 20MB</small>
+                                <small class="text-muted">ویدیو حداکثر ۵۰ مگابایت، بقیهٔ فایل‌ها حداکثر ۲۰ مگابایت</small>
                             </div>
                             <div id="selectedFilesModal" class="mt-2"></div>
                         </div>
@@ -1302,6 +1302,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         <script src="<?= asset('/assets/js/undo-toast.js') ?>"></script>
         <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
         <script src="<?= asset('/assets/js/task-filters.js') ?>"></script>
+        <script src="<?= asset('/assets/js/task-attachments.js') ?>"></script>
         <script>
             // کاربر چندواحدی: به‌جای مقایسه با فقط واحد اصلی (user.activity_section)،
             // عضویت در فهرست کامل واحدها رو چک می‌کنه. اگه user_info قدیمی (قبل از
@@ -2064,7 +2065,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                                 </label>
                                 <input type="file" id="chk-file-${item.id}" class="file-input-hidden"
                                        onchange="onChkFileChosen(${item.id})"
-                                       accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg">
+                                       accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg,.mp4,.mov">
                             </div>
                             <div class="chk-note-actions">
                                 <button class="btn btn-primary btn-sm" onclick="saveDoneNote(${item.id}, true)">ثبت و انجام شد</button>
@@ -5726,7 +5727,6 @@ ${task.overdue_periods > 0 ? `
             async function handleFiles(files) {
                 if (!files || files.length === 0) return;
 
-                const maxSize = 20 * 1024 * 1024; // 20MB
                 const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf',
                     'application/msword',
                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -5736,14 +5736,16 @@ ${task.overdue_periods > 0 ? `
                 ];
 
                 for (let file of files) {
-                    // چک حجم
-                    if (file.size > maxSize) {
-                        showAlert(`فایل "${file.name}" بزرگتر از 20 مگابایت است`, 'warning');
+                    // چک حجم — سقف هر نوع فایل از assets/js/task-attachments.js (ویدیو ۵۰، بقیه ۲۰ مگابایت)
+                    const tooBig = TaskAttachments.tooBigMessage(file);
+                    if (tooBig) {
+                        showAlert(tooBig, 'warning');
                         continue;
                     }
 
-                    // چک نوع
-                    if (!allowedTypes.includes(file.type)) {
+                    // چک نوع — ویدیو (mp4/mov) از روی پسوند پذیرفته می‌شود (مرورگر برای mov
+                    // گاهی نوع خالی می‌دهد)؛ محتوای واقعی را سرور بررسی می‌کند
+                    if (!TaskAttachments.isVideo(file) && !allowedTypes.includes(file.type)) {
                         showAlert(`فرمت فایل "${file.name}" مجاز نیست`, 'warning');
                         continue;
                     }
@@ -5942,7 +5944,6 @@ ${task.overdue_periods > 0 ? `
 
             // اضافه کردن فایل‌ها به لیست انتخاب شده
             function addFilesToModal(files) {
-                const maxSize = 20 * 1024 * 1024; // 20MB
                 const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf',
                     'application/msword',
                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -5952,14 +5953,16 @@ ${task.overdue_periods > 0 ? `
                 ];
 
                 for (let file of files) {
-                    // چک حجم
-                    if (file.size > maxSize) {
-                        showAlert(`فایل "${file.name}" بزرگتر از 20 مگابایت است`, 'warning');
+                    // چک حجم — سقف هر نوع فایل از assets/js/task-attachments.js (ویدیو ۵۰، بقیه ۲۰ مگابایت)
+                    const tooBig = TaskAttachments.tooBigMessage(file);
+                    if (tooBig) {
+                        showAlert(tooBig, 'warning');
                         continue;
                     }
 
-                    // چک نوع
-                    if (!allowedTypes.includes(file.type)) {
+                    // چک نوع — ویدیو (mp4/mov) از روی پسوند پذیرفته می‌شود (مرورگر برای mov
+                    // گاهی نوع خالی می‌دهد)؛ محتوای واقعی را سرور بررسی می‌کند
+                    if (!TaskAttachments.isVideo(file) && !allowedTypes.includes(file.type)) {
                         showAlert(`فرمت فایل "${file.name}" مجاز نیست`, 'warning');
                         continue;
                     }
@@ -5989,7 +5992,7 @@ ${task.overdue_periods > 0 ? `
                 <div class="selected-file-info">
                     <i class="bi ${icon}"></i>
                     <span class="selected-file-name" title="${esc(file.name)}">${esc(file.name)}</span>
-<small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg (حداکثر 20MB)</small>
+<small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg, mp4, mov (ویدیو حداکثر ۵۰ مگابایت، بقیهٔ فایل‌ها حداکثر ۲۰ مگابایت)</small>
                 <button type="button" class="btn-remove-file" onclick="removeFileFromModal(${index})">
                     <i class="bi bi-x-circle"></i>
                 </button>

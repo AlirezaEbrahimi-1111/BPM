@@ -197,10 +197,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     <div class="upload-area" id="workflowUploadArea"
                         style="border:2px dashed #ccc; border-radius:8px; padding:20px; text-align:center; cursor:pointer;">
                         <input type="file" id="workflowFileInput" style="display:none;"
-                            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg" multiple>
+                            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg,.mp4,.mov" multiple>
                         <i class="bi bi-cloud-upload fs-3"></i>
                         <strong> فایل خود را اینجا رها کنید یا کلیک کنید</strong>
-                        <p><small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg (حداکثر 20MB)</small></p>
+                        <p><small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg, mp4, mov (ویدیو حداکثر ۵۰ مگابایت، بقیهٔ فایل‌ها حداکثر ۲۰ مگابایت)</small></p>
                     </div>
                     <div id="workflowFilesList" style="margin-top:1rem;"></div>
                 </div>
@@ -436,10 +436,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                                 <div class="upload-area" id="uploadArea" style="border:2px dashed #ccc; border-radius:8px; padding:30px;
     text-align:center; cursor:pointer; margin-top:10px;">
                                     <input type="file" id="fileInput" style="display:none;"
-                                        accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg" multiple>
+                                        accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg,.mp4,.mov" multiple>
                                     <i class="bi bi-cloud-upload fs-3"></i>
                                     &nbsp;<strong>فایل خود را اینجا رها کنید یا کلیک کنید</strong>
-                                    <p><small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg (حداکثر 20MB)</small></p>
+                                    <p><small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg, mp4, mov (ویدیو حداکثر ۵۰ مگابایت، بقیهٔ فایل‌ها حداکثر ۲۰ مگابایت)</small></p>
                                 </div>
                                 <div id="selectedFilesList" style="margin-top:1rem;"></div>
                             </div>
@@ -505,6 +505,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
     <!-- Scripts -->
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/table-utils.js') ?>"></script>
+    <script src="<?= asset('/assets/js/task-attachments.js') ?>"></script>
     <!-- تقویم شمسی سفارشی -->
     <script src="<?= asset('../assets/js/persian-datepicker.js') ?>"></script>
 
@@ -1733,10 +1734,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         function addPendingFiles(files) {
-            const maxSize = 20 * 1024 * 1024;
             for (let file of files) {
-                if (file.size > maxSize) {
-                    showToast(`فایل "${file.name}" بیش از ${enTofaNumber(20)}MB است و اضافه نشد.`, 'warning');
+                // سقف هر نوع فایل از assets/js/task-attachments.js (ویدیو ۵۰، بقیه ۲۰ مگابایت)
+                const tooBig = TaskAttachments.tooBigMessage(file);
+                if (tooBig) {
+                    showToast(tooBig, 'warning');
                     continue;
                 }
                 pendingFiles.push(file);
@@ -1834,10 +1836,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         function addWorkflowFiles(files) {
-            const maxSize = 20 * 1024 * 1024;
             for (let file of files) {
-                if (file.size > maxSize) {
-                    showToast(`فایل "${file.name}" بیش از ${enTofaNumber(20)}MB است.`, 'warning');
+                const tooBig = TaskAttachments.tooBigMessage(file);
+                if (tooBig) {
+                    showToast(tooBig, 'warning');
                     continue;
                 }
                 workflowPendingFiles.push({
