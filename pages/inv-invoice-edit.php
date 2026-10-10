@@ -306,7 +306,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     <tr>
                         <th style="width:34px">#</th>
                         <th style="min-width:220px">کالا (کد / نام)</th>
-                        <th>شرح</th>
                         <th class="col-qty">تعداد</th>
                         <th class="col-price">قیمت واحد</th>
                         <th class="col-disc">تخفیف</th>
@@ -554,7 +553,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             tr.innerHTML = `
                 <td class="idx text-center"></td>
                 <td><input class="it-prod-name" list="prodNameList" autocomplete="off" placeholder="نام کالا را تایپ کنید"></td>
-                <td><input class="it-title" placeholder="شرح اختیاری"></td>
                 <td class="col-qty"><input class="it-qty" inputmode="decimal" value="۱"></td>
                 <td class="col-price"><input class="it-price" inputmode="numeric" value="۰"></td>
                 <td class="col-disc"><input class="it-disc" inputmode="numeric" value="۰"></td>
@@ -631,9 +629,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 if (data.product_id) {
                     tr.dataset.productId = data.product_id;
                     tr.querySelector('.it-prod-name').value = p ? (p.name || '') : (data.title || '');
-                    // «شرح» فقط اگر با نام کالا فرق داشت (توضیح سفارشی ردیف)
-                    tr.querySelector('.it-title').value =
-                        (data.title && (!p || data.title.trim() !== (p.name || '').trim())) ? data.title : '';
                 } else {
                     // قلم متنی آزاد → نام در فیلد نام کالا
                     tr.querySelector('.it-prod-name').value = data.title || '';
@@ -726,9 +721,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const items = [];
             document.querySelectorAll('#itemsBody tr').forEach(tr => {
                 const name = tr.querySelector('.it-prod-name').value.trim();
-                const desc = tr.querySelector('.it-title').value.trim();
-                // عنوان ردیف: «شرح» اگر پر باشد، وگرنه نام کالا.
-                const title = desc || name;
+                // عنوان ردیف = نام کالا (ستون «شرح» جداگانه حذف شده است).
+                const title = name;
                 if (!title) return;
                 items.push({
                     product_id: tr.dataset.productId ? +tr.dataset.productId : null,
