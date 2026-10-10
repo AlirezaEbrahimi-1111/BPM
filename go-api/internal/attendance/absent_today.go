@@ -29,12 +29,18 @@ func inShiftWindow(nowT, start, end string) bool {
 	return nowT >= start || nowT <= end
 }
 
-// AbsentToday — پورت دقیق api/attendance/absent-today.php. فقط کاربرانی
-// که واقعا شیفت (shift_1_start) و حقوق ماهانه (monthly_salary) برایشان
-// ثبت شده وارد محاسبه می‌شوند — نه صرفا پیش‌فرض فرم ویرایش کاربر.
+// absentListExcludedUserID — کاربری که استثنائا هیچ‌وقت در لیست غایبین نمی‌آید
+// (مدیر اصلی سیستم). هم‌راستا با ABSENT_LIST_EXCLUDED_USER_ID در نسخهٔ PHP.
+const absentListExcludedUserID = 1
+
+// AbsentToday — پورت دقیق api/attendance/absent-today.php. همهٔ کاربران فعال
+// سازمان وارد محاسبه می‌شوند؛ شرط «شیفت و حقوق تعریف‌شده» برداشته شد
+// (کسی که ساعت کاری یا حقوقش ثبت نشده هم در لیست می‌آید).
 //
-// 🆕 هر نفر فقط داخل ساعتِ شیفت‌هایِ خودش قضاوت می‌شود، و «مرخصی» فقط وقتی
-// که همین لحظه داخل بازهٔ (تاریخ+ساعتِ) شروع تا پایانِ مرخصیِ تأییدشده باشد
+// 🆕 قاعدهٔ ساعتِ شیفت: داخلِ شیفتِ خودش هر کس حاضر نیست در لیست می‌آید؛
+// بیرونِ شیفت فقط کسی که امروز «هیچ» ورودی نزده. کسی که شیفت ندارد تمامِ
+// روز مثلِ «داخلِ شیفت» قضاوت می‌شود. «مرخصی» = همین لحظه داخلِ بازهٔ
+// (تاریخ+ساعتِ) یک مرخصیِ تأییدشده، یا داخلِ بازهٔ یک پاسِ امروز
 // (جزئیاتِ کامل: کامنتِ بالایِ api/attendance/absent-today.php).
 // 🆕 سرپرست‌ها هم مثل بقیه دیده می‌شوند (استثنایِ قبلی برداشته شد).
 //
@@ -81,11 +87,9 @@ func AbsentToday(db *sql.DB) http.HandlerFunc {
 			  AND is_active = 1
 			  AND COALESCE(is_deleted, 0) = 0
 			  AND id <> ?
-			  AND COALESCE(shift_count, 0) >= 1
-			  AND shift_1_start IS NOT NULL
-			  AND COALESCE(monthly_salary, 0) > 0
+			  AND id <> ?
 			ORDER BY first_name, last_name
-		`, orgID.Int64, u.ID)
+		`, orgID.Int64, u.ID, absentListExcludedUserID)
 		if err != nil {
 			core.WriteErr(w, http.StatusInternalServerError, "خطای سرور")
 			return
@@ -204,23 +208,32 @@ func AbsentToday(db *sql.DB) http.HandlerFunc {
 
 		absent := []absentEntry{}
 		for _, ur := range users {
-			// 🆕 فقط داخل ساعتِ شیفت‌هایِ خودش قضاوت می‌شود: قبل از شروعِ
-			// شیفت، بعد از پایان، یا بینِ دو شیفت هنوز/دیگر انتظارِ حضورش نیست
-			inShift1 := inShiftWindow(nowT, ur.s1Start.String, ur.s1End.String)
-			inShift2 := ur.shiftCount >= 2 && inShiftWindow(nowT, ur.s2Start.String, ur.s2End.String)
-			if !inShift1 && !inShift2 {
+			// «حاضر» = امروز ورودی زده که هنوز خروجش نخورده، در هر شیفتی
+			currentlyPresent := false
+			checkedInToday := false
+			for _, sa := range attByUser[ur.id] {
+				if sa.in_ {
+					checkedInToday = true
+					if !sa.out {
+						currentlyPresent = true
+						break
+					}
+				}
+			}
+			if currentlyPresent {
 				continue
 			}
 
-			// 🆕 «حاضر» = برایِ همون شیفتی که الان در بازه‌اشیم، ورود زده و
-			// هنوز خروج نزده — نه صرفا اینکه امروز یک بار ورود زده. کسی که
-			// ورود زده و بعد خروج هم زده (مثلا برایِ مرخصیِ میان‌روز)، دیگه
-			// «حاضر» نیست و باید دوباره طبقِ مرخصی/پاس/غیبت قضاوت بشه
-			att := attByUser[ur.id]
-			currentlyPresent := (inShift1 && att[1].in_ && !att[1].out) ||
-				(inShift2 && att[2].in_ && !att[2].out)
-			if currentlyPresent {
-				continue
+			// 🆕 قاعدهٔ ساعتِ شیفت: بیرون از ساعتِ شیفتِ خودش فقط کسی غایب
+			// است که امروز اصلا ورود نزده. کسی که شیفت ندارد تمامِ روز
+			// «داخلِ شیفت» حساب می‌شود.
+			hasShift := ur.shiftCount >= 1 && ur.s1Start.String != ""
+			if hasShift {
+				inShiftNow := inShiftWindow(nowT, ur.s1Start.String, ur.s1End.String) ||
+					(ur.shiftCount >= 2 && inShiftWindow(nowT, ur.s2Start.String, ur.s2End.String))
+				if !inShiftNow && checkedInToday {
+					continue
+				}
 			}
 
 			name := strings.TrimSpace(ur.firstName.String + " " + ur.lastName.String)
@@ -238,6 +251,8 @@ func AbsentToday(db *sql.DB) http.HandlerFunc {
 				}
 			}
 			if inPassNow {
+				// داخلِ بازهٔ پاس → مثلِ مرخصی، با بجِ «مرخصی»
+				absent = append(absent, absentEntry{ur.id, name, "leave"})
 				continue
 			}
 
