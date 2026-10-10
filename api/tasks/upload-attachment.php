@@ -19,6 +19,20 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/checklist/_helpers.php';
 try {
     $user_id = requireAuth();
 
+    // سقف حجم هر نوع فایل (بایت). ویدیو سقف جدای بزرگ‌تری دارد.
+    // ⚠️ این دو عدد باید از upload_max_filesize / post_max_size در ‎.htaccess‎ ریشه کمتر
+    // بمانند، وگرنه PHP فایل را قبل از رسیدن به این کد دور می‌ریزد.
+    $maxSizeDefault = 20 * 1024 * 1024;
+    $maxSizeVideo   = 50 * 1024 * 1024;
+
+    // وقتی کل درخواست از post_max_size بزرگ‌تر باشد، PHP هم $_POST و هم $_FILES را خالی
+    // تحویل می‌دهد؛ بدون این چک کاربر پیام بی‌ربط «شناسه کار الزامی است» می‌دید.
+    if (empty($_POST) && empty($_FILES) && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'حجم فایل بیشتر از حد مجاز است (ویدیو حداکثر ۵۰ مگابایت، بقیهٔ فایل‌ها حداکثر ۲۰ مگابایت)'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     // چک کردن task_id
     if (empty($_POST['task_id'])) {
         http_response_code(400);
@@ -56,33 +70,43 @@ try {
 
     $file = $_FILES['file'];
 
+    $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $isVideo = in_array($fileExtension, ['mp4', 'mov'], true);   // mov = ویدیوی دوربین آیفون
+    $maxSize = $isVideo ? $maxSizeVideo : $maxSizeDefault;
+    $tooBigMessage = $isVideo
+        ? 'حجم فایل ویدیویی نباید بیشتر از ۵۰ مگابایت باشد'
+        : 'حجم فایل نباید بیشتر از ۲۰ مگابایت باشد';
+
     // چک کردن خطا در آپلود
     if ($file['error'] !== UPLOAD_ERR_OK) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'خطا در آپلود فایل: ' . $file['error']]);
+        // فایل از سقف خود PHP (upload_max_filesize) بزرگ‌تر بوده
+        $msg = in_array($file['error'], [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)
+            ? $tooBigMessage
+            : 'بارگذاری فایل کامل نشد. لطفا دوباره تلاش کنید. (کد ' . $file['error'] . ')';
+        echo json_encode(['success' => false, 'message' => $msg], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
-    // چک کردن حجم فایل (20MB)
-    $maxSize = 20 * 1024 * 1024;
+    // چک کردن حجم فایل (ویدیوی mp4/mov ۵۰ مگابایت، بقیه ۲۰ مگابایت)
     if ($file['size'] > $maxSize) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'حجم فایل نباید بیشتر از 20 مگابایت باشد']);
+        echo json_encode(['success' => false, 'message' => $tooBigMessage], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
     // چک کردن نوع فایل
-    $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'docx', 'doc', 'xls', 'xlsx', 'mp3', 'm4a', 'ogg'];
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'docx', 'doc', 'xls', 'xlsx', 'mp3', 'm4a', 'ogg', 'mp4', 'mov'];
     $allowedMimeTypes = [
         'image/jpeg', 'image/png', 'application/pdf',
         'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.ms-excel',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/x-m4a'
+        'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/x-m4a',
+        'video/mp4', 'video/quicktime'
     ];
 
-    $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     if (preg_match('/\.(php|phtml|phar|cgi|pl|py|sh|exe|js|html?)(\.|$)/i', $file['name'])) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'نوع فایل مجاز نیست'], JSON_UNESCAPED_UNICODE);
@@ -99,6 +123,16 @@ try {
     if (!in_array($fileMimeType, $allowedMimeTypes)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'نوع فایل مجاز نیست']);
+        exit;
+    }
+
+    // 🔒 پسوند ویدیویی (mp4/mov) سقف حجم بزرگ‌تری دارد، پس محتوا هم باید واقعا ویدیو
+    // باشد (و برعکس) — وگرنه یک فایل غیرویدیویی با تغییر پسوند از سقف ۲۰ مگابایت رد می‌شد.
+    // (audio/mp4: فایل mp4 فقط‌صدا را finfo این‌طور تشخیص می‌دهد.)
+    $mimeIsVideo = in_array($fileMimeType, ['video/mp4', 'video/quicktime'], true);
+    if (($isVideo && !$mimeIsVideo && $fileMimeType !== 'audio/mp4') || (!$isVideo && $mimeIsVideo)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'پسوند فایل با محتوای آن هم‌خوانی ندارد'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 

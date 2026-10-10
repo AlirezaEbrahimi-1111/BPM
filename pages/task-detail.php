@@ -5672,6 +5672,8 @@ ${task.overdue_periods > 0 ? `
                     'mp3': 'bi-file-earmark-music file-icon-audio',
                     'm4a': 'bi-file-earmark-music file-icon-audio',
                     'ogg': 'bi-file-earmark-music file-icon-audio',
+                    'mp4': 'bi-file-earmark-play file-icon-audio',
+                    'mov': 'bi-file-earmark-play file-icon-audio',
                     'jpg': 'bi-file-earmark-image file-icon-image',
                     'jpeg': 'bi-file-earmark-image file-icon-image',
                     'png': 'bi-file-earmark-image file-icon-image'

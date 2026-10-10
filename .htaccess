@@ -12,19 +12,24 @@ Options -Indexes
 
 # سقف حجم آپلود PHP (پیش‌فرض سرور معمولا خیلی کمتر از حد مجاز خودِ برنامه‌ست —
 # مثلا فایل ۸ مگابایتی با ۴۰۰ رد می‌شد چون PHP قبل از رسیدن به کد ما فایل رو
-# دور می‌ریخت). چند مگابایت بیشتر از سقف ۲۰ مگابایتیِ upload-attachment.php،
-# تا حاشیه‌ی امن داشته باشیم.
+# دور می‌ریخت). چند مگابایت بیشتر از بزرگ‌ترین سقفِ upload-attachment.php
+# (ویدیوی mp4/mov = ۵۰ مگابایت؛ بقیه‌ی فایل‌ها همان ۲۰ مگابایت)، تا حاشیه‌ی امن
+# داشته باشیم. max_input_time: مهلتِ دریافتِ بدنه‌ی درخواست — ویدیوی ۵۰ مگابایتی
+# با اینترنتِ همراه در ۶۰ ثانیه‌ی پیش‌فرض نمی‌رسد.
 <IfModule mod_php7.c>
-    php_value upload_max_filesize 25M
-    php_value post_max_size 25M
+    php_value upload_max_filesize 55M
+    php_value post_max_size 56M
+    php_value max_input_time 600
 </IfModule>
 <IfModule mod_php8.c>
-    php_value upload_max_filesize 25M
-    php_value post_max_size 25M
+    php_value upload_max_filesize 55M
+    php_value post_max_size 56M
+    php_value max_input_time 600
 </IfModule>
 <IfModule mod_php.c>
-    php_value upload_max_filesize 25M
-    php_value post_max_size 25M
+    php_value upload_max_filesize 55M
+    php_value post_max_size 56M
+    php_value max_input_time 600
 </IfModule>
 
 # .htaccess
