@@ -51,7 +51,7 @@ try {
     $db = $database->getConnection();
 
     // ===== بررسی 1: آیا این کار مربوط به کاربر فعلی است (assignee)؟ =====
-    $stmt = $db->prepare("SELECT id, assignee_id, creator_id, deadline, is_workflow_task, workflow_instance_id, activity_section, organization_id, status, is_deleted FROM tasks WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, assignee_id, creator_id, deadline, is_workflow_task, workflow_instance_id, activity_section, organization_id, status, is_deleted, task_type FROM tasks WHERE id = ?");
     $stmt->execute([$task_id]);
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -64,6 +64,18 @@ try {
     if ((int) $task['is_deleted'] === 1 || in_array($task['status'], ['completed', 'approved', 'stopped', 'rejected'], true)) {
         http_response_code(400);
         throw new Exception('این کار در وضعیت پایانی است و موعدش قابل تمدید نیست');
+    }
+
+    // 🔒 کار دوره‌ای تمدید موعد ندارد (درخواست صریح، ۱۴۰۵/۰۷/۱۸) — در هیچ صفحه‌ای.
+    // موعد هر دوره را خودِ دوره تعیین می‌کند؛ دورهٔ جامانده با «رفع دورهٔ معوقه»
+    // (api/tasks/request-overdue-clear.php) رسیدگی می‌شود. این‌جا مرز واقعی است؛
+    // صفحه‌ها (داشبوردها) فقط گزینه‌اش را نشان نمی‌دهند.
+    // (پاسخ مستقیم، نه throw: بلوک catch پایین همهٔ پیام‌ها را با «خطای سرور» جایگزین می‌کند)
+    if (($task['task_type'] ?? '') === 'continuous') {
+        ob_end_clean();
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'برای کار دوره‌ای تمدید موعد وجود ندارد.'], JSON_UNESCAPED_UNICODE);
+        exit;
     }
 
     error_log("Task info: creator=" . $task['creator_id'] . ", assignee=" . $task['assignee_id']);

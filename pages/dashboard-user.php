@@ -3844,7 +3844,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             }
 
             if (Number(t.assignee_id) === myId) {
-                return ['delegate', 'extend'];
+                // 🔒 کار دوره‌ای تمدید موعد ندارد (سرور هم ردش می‌کند: api/tasks/request-deadline.php)
+                return t.task_type === 'continuous' ? ['delegate'] : ['delegate', 'extend'];
             }
 
             return []; // فقط مشاهده
