@@ -4424,7 +4424,8 @@ ${task.overdue_periods > 0 ? `
                 // taskHistory (که منطق دکمه‌ها ازش می‌خواند) دست نمی‌خورد.
                 const _hTime = h => h.created_at ? Date.parse(String(h.created_at).replace(' ', 'T')) : NaN;
                 const _pendings = history.filter(h => h.action === 'pending_approval');
-                history = history.filter(h => !(h.action === 'completed' && _pendings.some(p =>
+                // (completed_rejected = همان ردیف، بعد از این‌که تأییدکننده ردش کرده)
+                history = history.filter(h => !((h.action === 'completed' || h.action === 'completed_rejected') && _pendings.some(p =>
                     String(p.from_user_id) === String(h.from_user_id) && Math.abs(_hTime(p) - _hTime(h)) <= 2000)));
 
                 let html = '';

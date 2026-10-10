@@ -1530,6 +1530,28 @@ class TaskManager
                     $sql = "UPDATE tasks SET pending_approval_count = 0, is_pending_approval = FALSE WHERE id = ?";
                     $stmt = $this->db->prepare($sql);
                     $stmt->execute([$task_id]);
+
+                    // 🔒 دورهٔ ردشده باید دوباره باز شود. ردیف 'completed' همان لحظهٔ ارسال
+                    // برای تأیید ثبت شده (updateTaskStatus) و موتور دوره (pe_completionDates)
+                    // فقط همان را می‌بیند؛ اگر بماند، دوره «انجام‌شده» حساب می‌شود، دکمهٔ
+                    // تکمیل برنمی‌گردد و رد عملا همان اثر تأیید را دارد. ردیف حذف نمی‌شود —
+                    // نوعش 'completed_rejected' می‌شود تا در تاریخچه بماند ولی دوره را نبندد.
+                    // فقط تکمیل(های) تأییدنشدهٔ همین نوبت: جدیدترین ردیف(ها)ی 'completed' که
+                    // بعد از آخرین تصمیم قبلی (approved / rejected) ثبت شده‌اند.
+                    $stmt = $this->db->prepare("
+                        SELECT COALESCE(MAX(id), 0) FROM task_history
+                        WHERE task_id = ? AND action IN ('approved', 'rejected')
+                    ");
+                    $stmt->execute([$task_id]);
+                    $lastDecisionId = (int) $stmt->fetchColumn();
+                    $reopenLimit = max(1, (int) ($task['pending_approval_count'] ?? 1));
+                    $stmt = $this->db->prepare("
+                        UPDATE task_history SET action = 'completed_rejected'
+                        WHERE task_id = ? AND action = 'completed' AND id > ?
+                        ORDER BY id DESC
+                        LIMIT {$reopenLimit}
+                    ");
+                    $stmt->execute([$task_id, $lastDecisionId]);
                 }
 
                 // ✅ برگشت به نفر بعدی در زنجیره از دید رد‌کننده

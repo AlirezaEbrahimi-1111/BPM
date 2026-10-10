@@ -461,6 +461,8 @@ window.TF = (function () {
         created:               { label: 'ایجاد',                        verb: 'ایجاد شد',                          cls: 'ab-created' },
         assigned:               { label: 'واگذاری',                      verb: 'واگذار شد',                         cls: 'ab-assigned' },
         completed:              { label: 'تکمیل',                        verb: 'تکمیل شد',                          cls: 'ab-completed' },
+        // تکمیل دوره‌ای که تأییدکننده ردش کرده — دوره را نمی‌بندد (TaskManager::approveOrRejectTask)
+        completed_rejected:     { label: 'تکمیل ردشده',                  verb: 'تکمیل دوره رد شد',                  cls: 'ab-rejected' },
         pending_approval:       { label: 'در انتظار تأیید',              verb: 'در انتظار تأیید قرار گرفت',         cls: 'ab-pending' },
         approved:               { label: 'تأیید',                        verb: 'تأیید شد',                          cls: 'ab-approved' },
         rejected:               { label: 'رد',                           verb: 'رد شد',                             cls: 'ab-rejected' },
