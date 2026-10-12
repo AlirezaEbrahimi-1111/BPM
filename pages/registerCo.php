@@ -137,8 +137,10 @@ if (!headers_sent()) {
                 const data = await res.json();
 
                 if (data.success) {
-                    // ذخیره توکن
-                    localStorage.setItem('authToken', data.token);
+                    // ذخیره توکن — کلید باید دقیقا 'auth_token' باشد (همان چیزی که index.php و
+                    // header.php می‌خوانند)؛ قبلا 'authToken' ذخیره می‌شد و داشبورد کاربر را
+                    // لاگین‌نشده می‌دید و به صفحه ورود برمی‌گرداند.
+                    localStorage.setItem('auth_token', data.token);
 
                     alert.className = 'alert alert-success';
                     alert.textContent =
