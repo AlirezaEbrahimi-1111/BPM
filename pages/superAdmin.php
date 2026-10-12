@@ -36,7 +36,7 @@ if (!in_array((int)$user_id, getSuperAdminIds(), true)) {
 $stmt = $db->query("
     SELECT
       o.id, o.name, o.is_active, o.created_at,
-      o.plan, o.plan_users, o.plan_expires_at, o.web_trial_ends_at, o.partner_report_enabled,
+      o.plan, o.plan_users, o.plan_expires_at, o.web_trial_ends_at,
       COUNT(u.id) AS user_count,
       MAX(u.last_login) AS last_login
     FROM organizations o
@@ -82,7 +82,6 @@ foreach ($orgs as $org) {
         'is_expired'  => ($ps['effective'] === 'free' && !$ps['trial_active']) ? 1 : 0,
         'is_free'     => $ps['effective'] === 'free' ? 1 : 0,
         'is_active'   => (int)$org['is_active'],
-        'partner_report' => (int)($org['partner_report_enabled'] ?? 0),
         'last_login'  => $org['last_login']
             ? JalaliHelper::formatJalaliDate(substr((string)$org['last_login'], 0, 10)) . ' - ' . substr((string)$org['last_login'], 11, 5)
             : 'هرگز',
@@ -413,26 +412,6 @@ function cLastLogin(p) {
   const muted = (v === 'هرگز');
   return `<span style="font-size:12.5px;color:${muted ? '#A0AEC0' : '#2D3748'}">${faNum(esc(v))}</span>`;
 }
-function cPartnerReport(p) {
-  const d = p.data;
-  if (d.__detail) return '';
-  const on = d.partner_report ? 'checked' : '';
-  return `<div class="form-check form-switch mb-0" style="display:flex;justify-content:center;align-items:center;height:100%">
-    <input class="form-check-input" type="checkbox" role="switch" ${on}
-           title="نمایش «گزارش همکاران» برای این سازمان"
-           onclick="event.stopPropagation();setPartnerReport(${d.id}, this)"></div>`;
-}
-function setPartnerReport(id, el) {
-  const enabled = el.checked ? 1 : 0;
-  fetch('/api/organization/set-partner-report.php', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ org_id: id, enabled })
-  }).then(r => r.json()).then(data => {
-    showToast(data.message || (data.success ? 'انجام شد' : 'خطا'), data.success ? 'success' : 'error');
-    if (data.success) { if (byId[id]) byId[id].partner_report = enabled; }
-    else { el.checked = !enabled; }   // برگرداندن سوییچ در صورت خطا
-  }).catch(() => { el.checked = !enabled; showToast('خطا در ارتباط با سرور', 'error'); });
-}
 function cActions(p) {
   const d = p.data;
   return `
@@ -460,7 +439,6 @@ const gridApi = agGrid.createGrid(document.getElementById('orgGrid'), {
     { headerName: 'کاربران', width: 140, cellRenderer: cUsers, valueGetter: p => p.data.user_count, getQuickFilterText: () => '' },
     { headerName: 'پلن', width: 110, cellRenderer: cPlan, valueGetter: p => p.data.plan_label, getQuickFilterText: () => '' },
     { headerName: 'انقضا', width: 150, cellRenderer: cExpiry, valueGetter: p => (p.data.is_expired ? -1 : p.data.days_left), getQuickFilterText: () => '' },
-    { headerName: 'گزارش همکاران', width: 140, cellRenderer: cPartnerReport, sortable: false, getQuickFilterText: () => '' },
     { headerName: 'وضعیت', width: 120, cellRenderer: cStatus, valueGetter: p => p.data.is_active, getQuickFilterText: () => '' },
     { headerName: 'آخرین ورود کاربر', width: 185, cellRenderer: cLastLogin, valueGetter: p => p.data.last_login, getQuickFilterText: () => '' },
     { headerName: 'عملیات', width: 160, cellRenderer: cActions, sortable: false, getQuickFilterText: () => '' },
