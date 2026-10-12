@@ -836,9 +836,12 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
     .att-abs-badge.absent { background: #fee2e2; color: #b91c1c; }
     .att-abs-badge.leave  { background: #ffe4e6; color: #be123c; }
     .att-abs-badge.pass   { background: #fef3c7; color: #92400e; }
+    /* «عدم حضور» = بیرون از ساعت کاری خودش — خنثی (خاکستری)، نه هشدار */
+    .att-abs-badge.off-hours { background: #e5e7eb; color: #4b5563; }
     :root[data-theme="dark"] .att-abs-badge.absent { background: rgba(239,68,68,.18); color: #fca5a5; }
     :root[data-theme="dark"] .att-abs-badge.leave  { background: rgba(244,63,94,.18); color: #fda4af; }
     :root[data-theme="dark"] .att-abs-badge.pass   { background: rgba(245,158,11,.18); color: #fcd34d; }
+    :root[data-theme="dark"] .att-abs-badge.off-hours { background: rgba(148,163,184,.18); color: #cbd5e1; }
 
     .att-panel-empty {
         text-align: center;
@@ -2444,6 +2447,7 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
             } else {
                 const badge = t => t === 'leave' ? '<span class="att-abs-badge leave">مرخصی</span>'
                                  : t === 'pass'  ? '<span class="att-abs-badge pass">پاس</span>'
+                                 : t === 'off_hours' ? '<span class="att-abs-badge off-hours">عدم حضور</span>'
                                  : '<span class="att-abs-badge absent">غایب</span>';
                 html += '<div class="att-panel-list">' + list.map(p =>
                     '<div class="att-abs-row"><span class="name">' + esc(p.name) + '</span>' + badge(p.type) + '</div>'

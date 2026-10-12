@@ -37,10 +37,10 @@ const absentListExcludedUserID = 1
 // سازمان وارد محاسبه می‌شوند؛ شرط «شیفت و حقوق تعریف‌شده» برداشته شد
 // (کسی که ساعت کاری یا حقوقش ثبت نشده هم در لیست می‌آید).
 //
-// 🆕 قاعدهٔ ساعتِ شیفت: داخلِ شیفتِ خودش هر کس حاضر نیست در لیست می‌آید؛
-// بیرونِ شیفت فقط کسی که امروز «هیچ» ورودی نزده. کسی که شیفت ندارد تمامِ
-// روز مثلِ «داخلِ شیفت» قضاوت می‌شود. «مرخصی» = همین لحظه داخلِ بازهٔ
-// (تاریخ+ساعتِ) یک مرخصیِ تأییدشده، یا داخلِ بازهٔ یک پاسِ امروز
+// 🆕 سه حالت برایِ کسی که حاضر نیست، به ترتیب: leave «مرخصی» (همین لحظه
+// داخلِ بازهٔ مرخصیِ تأییدشده یا پاس)، absent «غایب» (داخلِ ساعتِ شیفتِ
+// خودش)، off_hours «عدم حضور» (بیرونِ ساعتِ شیفت — چه امروز آمده و رفته،
+// چه اصلا نیامده). کسی که شیفت ندارد تمامِ روز absent است.
 // (جزئیاتِ کامل: کامنتِ بالایِ api/attendance/absent-today.php).
 // 🆕 سرپرست‌ها هم مثل بقیه دیده می‌شوند (استثنایِ قبلی برداشته شد).
 //
@@ -210,31 +210,22 @@ func AbsentToday(db *sql.DB) http.HandlerFunc {
 		for _, ur := range users {
 			// «حاضر» = امروز ورودی زده که هنوز خروجش نخورده، در هر شیفتی
 			currentlyPresent := false
-			checkedInToday := false
 			for _, sa := range attByUser[ur.id] {
-				if sa.in_ {
-					checkedInToday = true
-					if !sa.out {
-						currentlyPresent = true
-						break
-					}
+				if sa.in_ && !sa.out {
+					currentlyPresent = true
+					break
 				}
 			}
 			if currentlyPresent {
 				continue
 			}
 
-			// 🆕 قاعدهٔ ساعتِ شیفت: بیرون از ساعتِ شیفتِ خودش فقط کسی غایب
-			// است که امروز اصلا ورود نزده. کسی که شیفت ندارد تمامِ روز
-			// «داخلِ شیفت» حساب می‌شود.
+			// آیا همین لحظه بیرون از ساعتِ شیفتِ خودش است؟ کسی که شیفت ندارد
+			// هیچ‌وقت «بیرونِ شیفت» نیست (تمامِ روز مثلِ داخلِ شیفت قضاوت می‌شود).
 			hasShift := ur.shiftCount >= 1 && ur.s1Start.String != ""
-			if hasShift {
-				inShiftNow := inShiftWindow(nowT, ur.s1Start.String, ur.s1End.String) ||
-					(ur.shiftCount >= 2 && inShiftWindow(nowT, ur.s2Start.String, ur.s2End.String))
-				if !inShiftNow && checkedInToday {
-					continue
-				}
-			}
+			outsideShiftNow := hasShift &&
+				!inShiftWindow(nowT, ur.s1Start.String, ur.s1End.String) &&
+				!(ur.shiftCount >= 2 && inShiftWindow(nowT, ur.s2Start.String, ur.s2End.String))
 
 			name := strings.TrimSpace(ur.firstName.String + " " + ur.lastName.String)
 
@@ -256,7 +247,12 @@ func AbsentToday(db *sql.DB) http.HandlerFunc {
 				continue
 			}
 
-			absent = append(absent, absentEntry{ur.id, name, "absent"})
+			// نه مرخصی، نه پاس: داخلِ ساعتِ شیفت = «غایب»، بیرونِ آن = «عدم حضور»
+			typ := "absent"
+			if outsideShiftNow {
+				typ = "off_hours"
+			}
+			absent = append(absent, absentEntry{ur.id, name, typ})
 		}
 
 		core.WriteJSON(w, http.StatusOK, map[string]any{
