@@ -124,14 +124,17 @@ func (s *server) requireReportAccess(next http.HandlerFunc) http.HandlerFunc {
 			next(w, r)
 			return
 		}
+		// هستهٔ ماژول (حسابداری سازمان ۱ و دارندگان مجوز فاکتور) همیشه مجازند؛
+		// بقیهٔ مدیران/سوپروایزرها فقط وقتی که سازمانشان partner_report_enabled = 1
+		// داشته باشد (سوپرادمین از superAdmin.php روشن می‌کند). هم‌راستا با
+		// crmReportAllowed در includes/crm_access.php.
 		var ok int
 		err := s.db.QueryRow(`
 			SELECT 1 FROM users u
+			JOIN organizations o ON o.id = u.organization_id
 			WHERE u.id = ? AND u.is_active = 1
 			  AND (
-			        u.role IN ('supervisor','admin','manager','management')
-			     OR COALESCE(u.is_supervisor, 0) = 1
-			     OR u.is_create_official_invoice = 1
+			        u.is_create_official_invoice = 1
 			     OR u.is_sales_manager = 1
 			     OR (u.organization_id = 1 AND (
 			            u.activity_section = 'accounting'
@@ -140,6 +143,10 @@ func (s *server) requireReportAccess(next http.HandlerFunc) http.HandlerFunc {
 			                    WHERE uas.user_id = u.id AND uas.section_key = 'accounting')
 			         OR EXISTS (SELECT 1 FROM user_activity_units uau
 			                    WHERE uau.user_id = u.id AND uau.activity_unit = 'AC')
+			        ))
+			     OR (o.partner_report_enabled = 1 AND (
+			            u.role IN ('supervisor','admin','manager','management')
+			         OR COALESCE(u.is_supervisor, 0) = 1
 			        ))
 			  )
 			LIMIT 1`, u.ID).Scan(&ok)

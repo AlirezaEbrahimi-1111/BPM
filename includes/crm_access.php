@@ -85,10 +85,13 @@ function crmModuleAllowed(PDO $db, int $userId): bool
 /**
  * دسترسی «گزارش همکاران» (pages/inv-partner-report.php).
  *
- * علاوه بر همه‌ی کسانی که ماژول را می‌بینند (crmModuleAllowed)، مدیران و
- * سوپروایزرها هم این گزارش را می‌بینند — حتی اگر منوی فروش/فاکتور برایشان
- * ظاهر نشود (به آن با لینک مستقیم می‌رسند). معادل requireReportAccess در
- * crm-service/helpers.go.
+ * دسترسی:
+ *   - کاربرانِ هستهٔ ماژول (crmModuleAllowed: id=1/19 و تیم حسابداری سازمان ۱)
+ *     همیشه می‌بینند.
+ *   - بقیهٔ مدیران/سوپروایزرها فقط وقتی می‌بینند که سازمانشان
+ *     organizations.partner_report_enabled = 1 داشته باشد (سوپرادمین از صفحهٔ
+ *     superAdmin.php روشن می‌کند). قبلا این پرچم نبود و هر مدیرِ هر سازمانی
+ *     گزارش را می‌دید. معادل requireReportAccess در crm-service/helpers.go.
  */
 function crmReportAllowed(PDO $db, int $userId): bool
 {
@@ -97,10 +100,12 @@ function crmReportAllowed(PDO $db, int $userId): bool
 
     try {
         $st = $db->prepare("
-            SELECT 1 FROM users
-            WHERE id = ? AND is_active = 1
-              AND ( role IN ('supervisor','admin','manager','management')
-                 OR COALESCE(is_supervisor, 0) = 1 )
+            SELECT 1 FROM users u
+            JOIN organizations o ON o.id = u.organization_id
+            WHERE u.id = ? AND u.is_active = 1
+              AND o.partner_report_enabled = 1
+              AND ( u.role IN ('supervisor','admin','manager','management')
+                 OR COALESCE(u.is_supervisor, 0) = 1 )
             LIMIT 1
         ");
         $st->execute([$userId]);
