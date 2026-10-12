@@ -13,10 +13,14 @@ class OrganizationHelper {
         $this->db->beginTransaction();
         
         try {
-            // 1. ایجاد سازمان
+            // 1. ایجاد سازمان + شروعِ تریالِ ۱۴ روزهٔ وب.
+            // 🔒 دسترسی وب فقط از روی organizations.web_trial_ends_at / plan سنجیده می‌شود
+            // (includes/plan-access.php) و جدول subscriptions در آن محاسبه خوانده نمی‌شود؛
+            // پس اگر این ستون این‌جا پر نشود، سازمان تازه با وجود «۱۴ روز رایگان»
+            // بلافاصله به plan-required.php می‌خورد. web_trial_used صرفاً نشان‌گر است.
             $stmt = $this->db->prepare("
-                INSERT INTO organizations (name, phone, max_users)
-                VALUES (?, ?, 10)
+                INSERT INTO organizations (name, phone, max_users, web_trial_ends_at, web_trial_used)
+                VALUES (?, ?, 10, DATE_ADD(CURDATE(), INTERVAL 14 DAY), 1)
             ");
             $stmt->execute([
                 trim($data['org_name']),
