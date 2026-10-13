@@ -24,6 +24,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
     <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
 
     <style>
         .crm-toolbar {

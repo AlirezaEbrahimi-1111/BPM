@@ -187,7 +187,7 @@ const QuickAdd = (() => {
             { name: 'code', label: 'کد کالا', required: true, col: 4, attr: 'inputmode="numeric"' },
             { name: 'name', label: 'نام کالا', required: true, col: 8 },
             { name: 'unit', label: 'واحد', col: 4, attr: 'placeholder="عدد"' },
-            { name: 'unit_price', label: 'قیمت واحد (ریال)', required: true, col: 4, attr: 'inputmode="numeric"' },
+            { name: 'unit_price', label: 'قیمت واحد (ریال)', required: true, col: 4, attr: 'inputmode="numeric" data-money' },
             { name: 'opening_stock', label: 'موجودی اولیه', col: 4, attr: 'inputmode="decimal"' },
             { name: 'is_tax_exempt', label: 'معاف از مالیات', type: 'switch' },
             { name: 'is_service', label: 'خدمت است (نه کالای فیزیکی)', type: 'switch' },

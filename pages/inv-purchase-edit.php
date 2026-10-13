@@ -26,6 +26,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
     <script src="<?= asset('../../assets/js/entity-picker.js') ?>"></script>
     <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
 
     <style>
         .inv-wrap {

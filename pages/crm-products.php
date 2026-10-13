@@ -27,6 +27,7 @@ $canWrite = true;
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/xlsx.full.min.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
 
     <style>
         .crm-toolbar {
@@ -218,7 +219,7 @@ $canWrite = true;
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">قیمت واحد (ریال) <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="f_unit_price" inputmode="numeric">
+                                <input type="text" class="form-control" id="f_unit_price" inputmode="numeric" data-money>
                             </div>
                             <div class="col-md-4" id="openingWrap">
                                 <label class="form-label">موجودی اولیه</label>
