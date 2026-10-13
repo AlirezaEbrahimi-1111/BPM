@@ -385,15 +385,6 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     <td class="num">${money(it.line_total)}</td>
                 </tr>`);
             });
-            // پر کردن تا حداقل ۵ ردیف مثل فرم رسمی
-            for (let k = items.length; k < 5; k++) {
-                rows.push(`<tr class="blank">
-                    <td>${faDigits(k + 1)}</td><td></td><td></td><td></td>
-                    <td class="num">—</td><td class="num">—</td><td class="num">—</td>
-                    <td class="num">—</td><td class="num">—</td><td class="num">—</td>
-                </tr>`);
-            }
-
             const afterDiscTotal = (Number(inv.subtotal_amount) || 0) - (Number(inv.discount_amount) || 0);
 
             const isProforma = inv.doc_type === 'proforma';
