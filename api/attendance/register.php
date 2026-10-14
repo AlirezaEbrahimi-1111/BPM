@@ -464,9 +464,12 @@ try {
 
         // ⭐⭐⭐ مسدودسازیِ خروج در صورت داشتنِ کارِ معوقه/امروزموعدِ تکمیل‌نشده ⭐⭐⭐
         // فقط روی «خروجِ نهاییِ روز» و برای کاربرانِ غیرمدیر اعمال می‌شود.
+        // 🔒 تاریخِ شروعِ اعمال: شنبه ۲۵ مهر ۱۴۰۵ (۲۰۲۶-۱۰-۱۷). قبل از این تاریخ
+        //    قانون غیرفعال است و خروج آزاد می‌ماند. برای تغییر، همین یک خط کافی است.
+        $checkoutBlockStart = '2026-10-17';
         require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checkout-block-helper.php';
         $checkoutReason = '';
-        if (!checkoutExemptRole($db, (int) $user_id)) {
+        if ($today >= $checkoutBlockStart && !checkoutExemptRole($db, (int) $user_id)) {
             $isFinalCheckout = false;
             if ($shift_count < 2) {
                 $isFinalCheckout = true;                         // تک‌شیفته: هر خروج نهایی است
