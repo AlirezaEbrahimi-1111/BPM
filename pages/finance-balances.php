@@ -78,6 +78,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
     </style>
 </head>
 <body>
+<?php include 'header.php'; ?>
 <div class="fb-wrap">
     <h3 class="fb-title"><i class="bi bi-cash-stack"></i> بدهکاران و بستانکاران</h3>
     <div class="fb-sub">سه گزارشِ خامِ شایگان را آپلود کن؛ سیستم خودش نام‌ها را پاک‌سازی و مانده/سررسید را محاسبه می‌کند. (نسخهٔ آزمایشی — فقط مدیر کل)</div>
@@ -134,11 +135,11 @@ if (!crmReportAllowed($db, (int) $user_id)) {
 
 <script>
 // ابزارِ رقم فارسی + جداکنندهٔ هزارگان
-function faMoney(n) {
+function fbMoney(n) {
     if (n === null || n === undefined || n === '' || isNaN(n)) return '۰';
     return String(Math.round(Number(n)).toLocaleString('en-US')).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
 }
-function faNum(s) { return String(s).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
+function fbNum(s) { return String(s).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
 
 var files = { trial: null, detail: null, overdue: null };
 
@@ -199,7 +200,7 @@ document.getElementById('btnCompute').addEventListener('click', async function (
     }
 });
 
-function moneyFmt(p) { return faMoney(p.value); }
+function moneyFmt(p) { return fbMoney(p.value); }
 
 function render(d) {
     document.getElementById('results').style.display = 'block';
@@ -208,11 +209,11 @@ function render(d) {
     var s = d.summary;
     var reconOk = Math.abs(s.reconciliation) < 1000;
     document.getElementById('cards').innerHTML =
-        card('جمع بدهکاری', faMoney(s.debtor_total), 'debit') +
-        card('جمع بستانکاری', faMoney(s.creditor_total), 'credit') +
-        card('تعداد بدهکاران', faNum(s.debtor_count), '') +
-        card('تعداد بستانکاران', faNum(s.creditor_count), '') +
-        card('تطابق مانده', reconOk ? 'سالم ✓' : ('اختلاف: ' + faMoney(s.reconciliation)),
+        card('جمع بدهکاری', fbMoney(s.debtor_total), 'debit') +
+        card('جمع بستانکاری', fbMoney(s.creditor_total), 'credit') +
+        card('تعداد بدهکاران', fbNum(s.debtor_count), '') +
+        card('تعداد بستانکاران', fbNum(s.creditor_count), '') +
+        card('تطابق مانده', reconOk ? 'سالم ✓' : ('اختلاف: ' + fbMoney(s.reconciliation)),
              reconOk ? '' : 'credit', reconOk ? 'fb-recon-ok' : 'fb-recon-bad');
 
     // ── ردیف‌های یکدستِ بدهکاران/بستانکاران (سررسید شده + نشده) ──
@@ -230,13 +231,13 @@ function render(d) {
 
     debtorsGrid = remakeGrid('gridDebtors', debtorsGrid, colsBal, debtorRows);
     creditorsGrid = remakeGrid('gridCreditors', creditorsGrid, colsBal, creditorRows);
-    document.getElementById('debCount').textContent = '(' + faNum(debtorRows.length) + ' مورد)';
-    document.getElementById('credCount').textContent = '(' + faNum(creditorRows.length) + ' مورد)';
+    document.getElementById('debCount').textContent = '(' + fbNum(debtorRows.length) + ' مورد)';
+    document.getElementById('credCount').textContent = '(' + fbNum(creditorRows.length) + ' مورد)';
 
     var colsDue = [
         { headerName: 'نام مشتری', field: 'name', flex: 2, minWidth: 220, filter: true },
         { headerName: 'مبلغ', field: 'amount', width: 180, valueFormatter: moneyFmt, type: 'rightAligned' },
-        { headerName: 'تاریخ سررسید', field: 'due', width: 160, valueFormatter: p => faNum(p.value || '') },
+        { headerName: 'تاریخ سررسید', field: 'due', width: 160, valueFormatter: p => fbNum(p.value || '') },
     ];
     dueGrid = remakeGrid('gridDue', dueGrid, colsDue, d.due30 || []);
 
@@ -285,9 +286,9 @@ function drawChart(debtors) {
         options: {
             indexAxis: 'y',
             plugins: { legend: { display: false },
-                tooltip: { callbacks: { label: c => faMoney(c.raw) } } },
+                tooltip: { callbacks: { label: c => fbMoney(c.raw) } } },
             scales: {
-                x: { ticks: { color: dark ? '#9aa6bd' : '#6b7490', callback: v => faMoney(v) }, grid: { color: dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.05)' } },
+                x: { ticks: { color: dark ? '#9aa6bd' : '#6b7490', callback: v => fbMoney(v) }, grid: { color: dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.05)' } },
                 y: { ticks: { color: dark ? '#e8ecf3' : '#2d3748', font: { size: 11 } }, grid: { display: false } },
             },
         },

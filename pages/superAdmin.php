@@ -433,7 +433,9 @@ function cCreator(p) {
   const phone = d.creator_phone
     ? `<div class="ut-phone" style="font-size:12px">${faNum(esc(d.creator_phone))}</div>`
     : `<div class="ut-nophone">بدون شماره</div>`;
-  return name + phone;
+  // در یک wrapperِ flex-column با line-height معمولی تا هر دو خط (نام + موبایل)
+  // داخل ارتفاع ردیف جا شوند؛ وگرنه AG Grid خط دوم را می‌بُرد.
+  return `<div style="display:flex;flex-direction:column;justify-content:center;line-height:1.3;height:100%">${name}${phone}</div>`;
 }
 function cActions(p) {
   const d = p.data;
