@@ -475,6 +475,16 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
         /* اعمال فیلتر آمده از لینک داشبورد (مودال هفته/ماه) — بعد از لود اولیهٔ کارها */
         function applyDashFilterFromUrl() {
+            // فیلترِ «کارهای مانعِ خروج» (از ریدایرکتِ ثبت خروجِ مسدودشده)
+            if (dashFilter === 'due_block') {
+                statFilter = 'due_block';
+                document.getElementById('filterStatus').value = 'all';
+                document.getElementById('dashFilterBannerText').textContent =
+                    'کارهای معوقه و امروز‌موعد که برای ثبت خروج باید تکمیل‌شان کنید';
+                document.getElementById('dashFilterBanner').style.display = 'flex';
+                applyFilters();
+                return;
+            }
             if (dashFilter !== 'week' && dashFilter !== 'month' && dashFilter !== 'day') return;
             if (dashFilter === 'day' && !dashFilterDate) return;
 
@@ -644,6 +654,11 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
                 if (statFilter === 'today' && !TF.isDueToday(t, currentUser, today)) return false;
                 if (statFilter === 'overdue' && !TF.isOverdue(t, currentUser, today)) return false;
+                // فیلترِ «کارهای مانعِ خروج» (از ریدایرکتِ ثبت خروج): معوقه یا امروزموعد
+                // که کارمند هنوز تکمیل نکرده — هم‌تعریف با includes/checkout-block-helper.php
+                if (statFilter === 'due_block' &&
+                    !((t.status === 'not_started' || t.status === 'in_progress' || t.status === 'rejected') &&
+                      (TF.isOverdue(t, currentUser, today) || TF.isDueToday(t, currentUser, today)))) return false;
                 if (statFilter === 'in_progress' && t.status !== 'in_progress') return false;
                 if (statFilter === 'completed' && t.status !== 'completed' && t.status !== 'approved') return false;
                 if (statFilter === 'not_started' && t.status !== 'not_started') return false;

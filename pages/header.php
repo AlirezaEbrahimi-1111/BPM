@@ -2627,6 +2627,10 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
                     `✅ خروج${shiftText} ثبت شد`;
                 showToast(msg, 'success');
 
+            } else if (data.blocked_by_tasks) {
+                // خروج به‌خاطر کارهای معوقه/امروزموعد مسدود شد → دیالوگ با دکمهٔ رفتن
+                showCheckoutBlockedDialog(data.message, data.redirect || '/pages/my-tasks.php?filter=overdue');
+                loadAttendanceStatus();
             } else {
                 showToast(data.message || 'خطا در ثبت', 'error');
                 loadAttendanceStatus();
@@ -2636,6 +2640,28 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
             showToast('خطا در ارتباط با سرور', 'error');
             loadAttendanceStatus();
         }
+    }
+
+    // دیالوگِ «خروج مسدود شد» با دکمهٔ رفتن به کارهای معوقه
+    function showCheckoutBlockedDialog(message, redirectUrl) {
+        var old = document.getElementById('checkoutBlockOverlay');
+        if (old) old.remove();
+        var ov = document.createElement('div');
+        ov.id = 'checkoutBlockOverlay';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;';
+        ov.innerHTML =
+            '<div style="background:var(--surface,#fff);color:var(--text-strong,#2d3748);max-width:420px;width:100%;border-radius:16px;padding:22px;box-shadow:0 10px 40px rgba(0,0,0,.25);font-family:Vazirmatn,sans-serif;text-align:center" dir="rtl">' +
+            '<div style="font-size:40px;line-height:1;margin-bottom:10px">⛔</div>' +
+            '<div style="font-weight:700;font-size:16px;margin-bottom:8px">امکان ثبت خروج نیست</div>' +
+            '<div style="font-size:13.5px;color:var(--text-muted,#6b7490);margin-bottom:18px;line-height:1.7">' + (message || '') + '</div>' +
+            '<div style="display:flex;gap:10px;justify-content:center">' +
+            '<button id="cbGo" style="background:#8e57fe;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit">رفتن به کارهای معوقه</button>' +
+            '<button id="cbClose" style="background:transparent;color:var(--text-muted,#6b7490);border:1px solid var(--border-soft,#e2e2e2);border-radius:10px;padding:10px 16px;cursor:pointer;font-family:inherit">بستن</button>' +
+            '</div></div>';
+        document.body.appendChild(ov);
+        document.getElementById('cbGo').onclick = function () { window.location.href = redirectUrl; };
+        document.getElementById('cbClose').onclick = function () { ov.remove(); };
+        ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
     }
     // ============================================
     // تابع Toast

@@ -462,13 +462,48 @@ try {
             exit;
         }
 
-        // ثبت خروج
+        // ⭐⭐⭐ مسدودسازیِ خروج در صورت داشتنِ کارِ معوقه/امروزموعدِ تکمیل‌نشده ⭐⭐⭐
+        // فقط روی «خروجِ نهاییِ روز» و برای کاربرانِ غیرمدیر اعمال می‌شود.
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/checkout-block-helper.php';
+        $checkoutReason = '';
+        if (!checkoutExemptRole($db, (int) $user_id)) {
+            $isFinalCheckout = false;
+            if ($shift_count < 2) {
+                $isFinalCheckout = true;                         // تک‌شیفته: هر خروج نهایی است
+            } elseif ($shift === 2) {
+                $isFinalCheckout = true;                         // دوشیفته: خروجِ شیفت ۲
+            } elseif ($shift === 1 && hasApprovedLeaveOrMissionToday($db, (int) $user_id, $today)) {
+                $isFinalCheckout = true;                         // شیفت ۲ مرخصی/مأموریت → شیفت ۱ نهایی
+                $checkoutReason = 'خروج نهایی شیفت ۱ (شیفت ۲ مرخصی/مأموریت)';
+            }
+            if ($isFinalCheckout) {
+                $blocking = userBlockingTasks($db, (int) $user_id, $today);
+                if (!empty($blocking)) {
+                    echo json_encode([
+                        'success'          => false,
+                        'blocked_by_tasks' => true,
+                        'tasks_count'      => count($blocking),
+                        'redirect'         => '/pages/my-tasks.php?filter=due_block',
+                        'message'          => 'به دلیل داشتن ' . count($blocking) . ' کارِ معوقه/امروز‌موعدِ تکمیل‌نشده، امکان ثبت خروج نیست. ابتدا آن‌ها را تعیین تکلیف (تکمیل) کنید.',
+                    ], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
+            }
+        }
+
+        // ثبت خروج (در صورت نیاز، دلیلِ «نهایی‌شدنِ شیفت ۱» در notes ثبت می‌شود)
         $stmt = $db->prepare("
             UPDATE attendance_records
-            SET check_out = ?, check_out_outside = ?, updated_at = NOW()
+            SET check_out = ?, check_out_outside = ?,
+                notes = TRIM(CONCAT(COALESCE(notes, ''), ?)), updated_at = NOW()
             WHERE id = ?
         ");
-        $stmt->execute([$now, $attendanceFromOutside ? 1 : 0, $record['id']]);
+        $stmt->execute([
+            $now,
+            $attendanceFromOutside ? 1 : 0,
+            $checkoutReason !== '' ? ' | ' . $checkoutReason : '',
+            $record['id'],
+        ]);
 
         echo json_encode([
             'success' => true,
