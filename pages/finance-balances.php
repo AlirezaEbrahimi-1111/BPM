@@ -1,8 +1,10 @@
 <?php
 require_once __DIR__ . '/../includes/page-bootstrap.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
 
-// 🔒 فعلاً فقط کاربر id=1. در هیچ منویی هم لینک نمی‌شود.
-if ((int) $user_id !== 1) {
+// 🔒 دسترسی موقت: مثل گزارش‌های فاکتور رسمی — id=1/19 + تیم حسابداری سازمان ۱
+// + مدیران/سوپروایزرهای سازمان ۱ (همان crmReportAllowed).
+if (!crmReportAllowed($db, (int) $user_id)) {
     header('Location: dashboard-manager.php');
     exit;
 }

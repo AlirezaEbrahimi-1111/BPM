@@ -1172,6 +1172,13 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
                                     <i class="bi bi-people ms-2"></i>گزارش همکاران
                                 </a>
                             </li>
+                            <?php if (!empty($__crmReportMenu)): ?>
+                            <li>
+                                <a class="dropdown-item" href="/pages/finance-balances.php">
+                                    <i class="bi bi-cash-stack ms-2"></i>گزارش بدهکاران/بستانکاران
+                                </a>
+                            </li>
+                            <?php endif; ?>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
@@ -1194,10 +1201,15 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
                     </li>
                 <?php endif; ?>
                 <?php if (!empty($__crmReportMenu) && empty($__crmMenu)): ?>
-                    <!-- مدیر/سوپروایزر بدون دسترسی کامل ماژول — فقط گزارش همکاران -->
+                    <!-- مدیر/سوپروایزر بدون دسترسی کامل ماژول — فقط گزارش‌ها -->
                     <li class="nav-item">
                         <a class="nav-link" href="/pages/inv-partner-report.php">
                             <i class="bi bi-people me-2"></i>گزارش همکاران
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pages/finance-balances.php">
+                            <i class="bi bi-cash-stack me-2"></i>گزارش بدهکاران/بستانکاران
                         </a>
                     </li>
                 <?php endif; ?>

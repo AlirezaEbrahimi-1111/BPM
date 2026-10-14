@@ -15,6 +15,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/api-bootstrap.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/FinanceBalances.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     @require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
@@ -28,7 +29,8 @@ $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id)                                  $user_id = $auth->getUserFromToken();
 if (!$user_id && isset($_COOKIE['auth_token'])) $user_id = $auth->validateToken($_COOKIE['auth_token']);
 
-if ((int)$user_id !== 1) {
+// دسترسی موقت: همان crmReportAllowed (حسابداری + سوپروایزرهای سازمان ۱ + id=1/19).
+if (!crmReportAllowed($db, (int) $user_id)) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز'], JSON_UNESCAPED_UNICODE);
     exit;
