@@ -44,7 +44,9 @@ $stmt = $db->query("
       (SELECT TRIM(CONCAT_WS(' ', cu.first_name, cu.last_name))
          FROM users cu WHERE cu.organization_id = o.id
          ORDER BY cu.id ASC LIMIT 1) AS creator_name,
-      (SELECT cu.phone
+      -- موبایلِ سازنده: اگر ستون phone خالی بود، username (نام‌کاربری = همان شماره‌ی
+      -- موبایل که موقع ثبت‌نام ست می‌شود) را به‌عنوان جایگزین نشان بده.
+      (SELECT COALESCE(NULLIF(TRIM(cu.phone), ''), cu.username)
          FROM users cu WHERE cu.organization_id = o.id
          ORDER BY cu.id ASC LIMIT 1) AS creator_phone
     FROM organizations o
