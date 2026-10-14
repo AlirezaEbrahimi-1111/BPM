@@ -38,7 +38,15 @@ $stmt = $db->query("
       o.id, o.name, o.is_active, o.created_at,
       o.plan, o.plan_users, o.plan_expires_at, o.web_trial_ends_at,
       COUNT(u.id) AS user_count,
-      MAX(u.last_login) AS last_login
+      MAX(u.last_login) AS last_login,
+      -- سازندهٔ سازمان = اولین کاربرِ ثبت‌شده (ادمینی که موقع ثبت‌نام ساخته می‌شود).
+      -- بدونِ فیلترِ is_active تا حتی اگر بعداً غیرفعال شد هم سازندهٔ واقعی را نشان دهد.
+      (SELECT TRIM(CONCAT_WS(' ', cu.first_name, cu.last_name))
+         FROM users cu WHERE cu.organization_id = o.id
+         ORDER BY cu.id ASC LIMIT 1) AS creator_name,
+      (SELECT cu.phone
+         FROM users cu WHERE cu.organization_id = o.id
+         ORDER BY cu.id ASC LIMIT 1) AS creator_phone
     FROM organizations o
     LEFT JOIN users u ON u.organization_id = o.id AND u.is_active = 1
     GROUP BY o.id
@@ -72,6 +80,8 @@ foreach ($orgs as $org) {
         'id'          => (int)$org['id'],
         'name'        => $org['name'],
         'first_char'  => mb_substr($org['name'], 0, 1),
+        'creator_name'  => trim((string)($org['creator_name'] ?? '')) ?: '—',
+        'creator_phone' => trim((string)($org['creator_phone'] ?? '')),
         'user_count'  => (int)$org['user_count'],
         'max_users'   => (int)$org['plan_users'],
         'plan_label'  => $planLabels[$ps['effective']] ?? '-',
@@ -412,6 +422,17 @@ function cLastLogin(p) {
   const muted = (v === 'هرگز');
   return `<span style="font-size:12.5px;color:${muted ? '#A0AEC0' : '#2D3748'}">${faNum(esc(v))}</span>`;
 }
+/* سازندهٔ سازمان: نام نفر + شمارهٔ موبایلی که باهاش ثبت‌نام شده */
+function cCreator(p) {
+  const d = p.data;
+  const name = d.creator_name && d.creator_name !== '—'
+    ? `<div style="font-weight:600;color:#2D3748">${esc(d.creator_name)}</div>`
+    : `<div style="color:#A0AEC0">نامشخص</div>`;
+  const phone = d.creator_phone
+    ? `<div class="ut-phone" style="font-size:12px">${faNum(esc(d.creator_phone))}</div>`
+    : `<div class="ut-nophone">بدون شماره</div>`;
+  return name + phone;
+}
 function cActions(p) {
   const d = p.data;
   return `
@@ -436,6 +457,7 @@ const gridApi = agGrid.createGrid(document.getElementById('orgGrid'), {
   defaultColDef: { sortable: true, resizable: true, filter: false },
   columnDefs: [
     { headerName: 'سازمان', flex: 2, minWidth: 220, cellRenderer: cOrg, valueGetter: p => p.data.name, getQuickFilterText: p => p.data.__detail ? '' : (p.data.name + ' ' + p.data.id) },
+    { headerName: 'ایجاد توسط', width: 185, cellRenderer: cCreator, valueGetter: p => p.data.creator_name, getQuickFilterText: p => p.data.__detail ? '' : ((p.data.creator_name || '') + ' ' + (p.data.creator_phone || '')) },
     { headerName: 'کاربران', width: 140, cellRenderer: cUsers, valueGetter: p => p.data.user_count, getQuickFilterText: () => '' },
     { headerName: 'پلن', width: 110, cellRenderer: cPlan, valueGetter: p => p.data.plan_label, getQuickFilterText: () => '' },
     { headerName: 'انقضا', width: 150, cellRenderer: cExpiry, valueGetter: p => (p.data.is_expired ? -1 : p.data.days_left), getQuickFilterText: () => '' },
