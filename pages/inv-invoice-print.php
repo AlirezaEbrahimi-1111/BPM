@@ -270,6 +270,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 <body>
     <div class="toolbar">
         <button class="btn btn-primary btn-sm" onclick="window.print()"><i class="bi bi-printer ms-1"></i> چاپ</button>
+        <div class="form-check form-switch m-0 d-flex align-items-center" style="gap:6px">
+            <input class="form-check-input" type="checkbox" id="fitOne" role="switch" style="cursor:pointer">
+            <label class="form-check-label" for="fitOne" style="cursor:pointer;user-select:none">جا دادن در یک صفحه</label>
+        </div>
         <a class="btn btn-outline-secondary btn-sm" href="/pages/inv-invoices.php">بازگشت به فهرست</a>
     </div>
 
@@ -330,6 +334,41 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 '<p class="text-center ' + (danger ? 'text-danger' : 'muted') + '">' + esc(txt) + '</p>';
         }
 
+        // ── «جا دادن در یک صفحه» ───────────────────────────────────────────
+        // برگهٔ پیش‌نمایش (.sheet) با aspect-ratio برابرِ یک صفحهٔ A4 افقی ساخته
+        // شده؛ پس clientHeight آن = ارتفاعِ «یک صفحه» و scrollHeight = ارتفاعِ کلِ
+        // محتوا. اگر محتوا بلندتر بود، با zoom یک‌دست کوچکش می‌کنیم تا جا شود.
+        // zoom (برخلاف transform) خودِ جعبه را هم کوچک می‌کند، پس موقعِ چاپ صفحهٔ
+        // دومِ خالی ساخته نمی‌شود. ۰٫۹۷ حاشیهٔ اطمینان؛ ۰٫۴ کفِ خوانایی.
+        const FIT_KEY = 'invPrintFitOne';
+
+        function computeFitZoom() {
+            const s = document.getElementById('sheet');
+            const prev = s.style.zoom;
+            s.style.zoom = '';                       // قبل از اندازه‌گیری، zoom را صفر کن
+            const box = s.clientHeight;              // ارتفاعِ یک صفحه (از aspect-ratio)
+            const content = s.scrollHeight;          // ارتفاعِ کلِ محتوا
+            s.style.zoom = prev;
+            if (!content || content <= box) return 1;
+            return Math.max(0.4, (box / content) * 0.97);
+        }
+
+        function applyFit(on) {
+            const s = document.getElementById('sheet');
+            s.style.zoom = on ? computeFitZoom() : '';
+            try { localStorage.setItem(FIT_KEY, on ? '1' : '0'); } catch (e) {}
+        }
+
+        function initFitToggle() {
+            const cb = document.getElementById('fitOne');
+            if (!cb) return;
+            let on = false;
+            try { on = localStorage.getItem(FIT_KEY) === '1'; } catch (e) {}
+            cb.checked = on;
+            if (on) applyFit(true);
+            cb.addEventListener('change', () => applyFit(cb.checked));
+        }
+
         async function load() {
             if (!tok()) {
                 location.href = '../index.php';
@@ -360,6 +399,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 return;
             }
             render(d.invoice, d.customer || {}, d.seller || {}, d.footer_note || '');
+            initFitToggle();                         // بعد از رندر: سوئیچ را بساز و حالتِ ذخیره‌شده را اعمال کن
             if (AUTO_PRINT) setTimeout(() => window.print(), 400);
         }
 
