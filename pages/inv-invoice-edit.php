@@ -563,7 +563,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <td class="col-total it-linetotal">۰</td>
                 <td class="col-del"><button type="button" class="btn btn-sm btn-link text-danger p-0 it-del">✕</button></td>`;
             // نام کالا: فیلد متن آزاد (مثل نام مشتری). اگر متن تایپ‌شده دقیقا
-            // با یک کالای کاتالوگ یکی بود، قیمت/معافیت خودکار پر می‌شود و ردیف به
+            // با یک کالای کاتالوگ یکی بود، معافیت خودکار پر می‌شود (قیمت نه) و ردیف به
             // آن کالا گره می‌خورد؛ وگرنه هنگام ذخیره یک کالای تازه ساخته می‌شود.
             // dir="auto": جهت از اولین حرف تعیین می‌شود؛ نام انگلیسی LTR می‌شود تا
             // آخرین کلمهٔ تایپ‌شده دیده شود (در فیلد RTL از ابتدای متن نمایش داده می‌شد).
@@ -613,9 +613,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const v = tr.querySelector('.it-prod-name').value.trim();
             const p = v ? products.find(x => String(x.name || '').trim() === v) : null;
             if (p) {
+                // قیمت واحد عمداً از کاتالوگ پر نمی‌شود (درخواست کاربران): هر بار دستی وارد شود.
                 tr.dataset.productId = p.id;
-                const priceEl = tr.querySelector('.it-price');
-                if (!num(priceEl.value)) priceEl.value = faMoney(p.unit_price);
                 if (!tr.querySelector('.it-exempt').checked) tr.querySelector('.it-exempt').checked = !!p.is_tax_exempt;
             } else {
                 delete tr.dataset.productId;
