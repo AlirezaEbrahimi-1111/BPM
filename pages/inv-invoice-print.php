@@ -38,11 +38,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             justify-content: space-between;
         }
 
-        /* پیش‌نمایش برگه با نسبت ۳:۲٫۱ (A4 افقی) */
+        /* پیش‌نمایش برگه با نسبتِ دقیقِ A4 افقی (۲۹۷ × ۲۱۰ میلی‌متر) */
         .sheet {
             width: 1123px;
             max-width: 100%;
-            aspect-ratio: 3 / 2.1;
+            aspect-ratio: 297 / 210;
             margin: 14px auto 40px;
             background: #fff;
             color: #000;
@@ -219,6 +219,19 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             color: #666;
         }
 
+        /* «همه در یک صفحه»: محتوا با عرضِ ثابتِ چاپ (--fit-w) چیده و بعد مثلِ عکس با
+           transform یک‌دست کوچک می‌شود (zoom در Chrome محتوا را پهن‌تر دوباره می‌چید و
+           کفِ فونت مانعِ کوچک‌شدن می‌شد). transform فضای اشغالی را کم نمی‌کند، پس ظرف
+           را به ارتفاعِ کوچک‌شده (--fit-h) می‌بندیم تا صفحهٔ دوم ساخته نشود. */
+        .sheet.fit-on { overflow: hidden; }
+        .sheet.fit-on > .fit-inner {
+            width: var(--fit-w);
+            margin-inline: auto;
+            transform: scale(var(--fit-k));
+            transform-origin: top center;
+        }
+        .fit-pct { font-size: 12px; }
+
         /* هاور استاندارد سایت (تینت بنفش نرم) — .btn-outline-secondary اصلا
            هاور اختصاصی نداشت (پیش‌فرض خاکستری بوت‌استرپ می‌ماند) */
         .btn-outline-primary:hover,
@@ -248,6 +261,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         @media print {
             body {
                 background: #fff;
+                /* custom.css برای نوارِ بالای سایت margin-top: 3.5rem می‌دهد؛ این برگه نوار
+                   ندارد و آن ۵۶px در چاپ هدر می‌رفت (و «همه در یک صفحه» را به صفحهٔ ۲ می‌برد). */
+                margin: 0;
             }
 
             .toolbar {
@@ -263,6 +279,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 overflow: visible;
                 padding: 0;
             }
+
+            .sheet.fit-on {
+                overflow: hidden;
+                height: var(--fit-h);
+            }
         }
     </style>
 </head>
@@ -270,9 +291,12 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 <body>
     <div class="toolbar">
         <button class="btn btn-primary btn-sm" onclick="window.print()"><i class="bi bi-printer ms-1"></i> چاپ</button>
-        <div class="form-check form-switch m-0 d-flex align-items-center" style="gap:6px">
-            <input class="form-check-input" type="checkbox" id="fitOne" role="switch" style="cursor:pointer">
-            <label class="form-check-label" for="fitOne" style="cursor:pointer;user-select:none">جا دادن در یک صفحه</label>
+        <!-- form-check عمداً حذف شد: padding/margin منفی‌اش در RTL متن را روی سوئیچ می‌انداخت.
+             در چیدمانِ RTL، اولین فرزند سمت راست است → سوئیچ راست، متن چپِ آن. -->
+        <div class="form-switch d-flex align-items-center m-0" style="gap:8px;padding:0">
+            <input class="form-check-input m-0" type="checkbox" id="fitOne" role="switch" style="margin:0;float:none;cursor:pointer">
+            <label class="form-check-label m-0" for="fitOne" style="cursor:pointer;user-select:none">همه در یک صفحه</label>
+            <span class="fit-pct muted" id="fitPct"></span>
         </div>
         <a class="btn btn-outline-secondary btn-sm" href="/pages/inv-invoices.php">بازگشت به فهرست</a>
     </div>
@@ -334,28 +358,52 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 '<p class="text-center ' + (danger ? 'text-danger' : 'muted') + '">' + esc(txt) + '</p>';
         }
 
-        // ── «جا دادن در یک صفحه» ───────────────────────────────────────────
-        // برگهٔ پیش‌نمایش (.sheet) با aspect-ratio برابرِ یک صفحهٔ A4 افقی ساخته
-        // شده؛ پس clientHeight آن = ارتفاعِ «یک صفحه» و scrollHeight = ارتفاعِ کلِ
-        // محتوا. اگر محتوا بلندتر بود، با zoom یک‌دست کوچکش می‌کنیم تا جا شود.
-        // zoom (برخلاف transform) خودِ جعبه را هم کوچک می‌کند، پس موقعِ چاپ صفحهٔ
-        // دومِ خالی ساخته نمی‌شود. ۰٫۹۷ حاشیهٔ اطمینان؛ ۰٫۴ کفِ خوانایی.
+        // ── «همه در یک صفحه» ───────────────────────────────────────────────
+        // هدف = ناحیهٔ قابلِ‌چاپِ واقعیِ کاغذ، نه جعبهٔ پیش‌نمایش:
+        //   A4 افقی ۲۹۷×۲۱۰ میلی‌متر، منهای حاشیهٔ ۸ میلی‌متریِ @page از هر طرف
+        //   → ۲۸۱ × ۱۹۴ میلی‌متر. (۹۶ پیکسل در هر اینچ = ۹۶/۲۵٫۴ پیکسل در میلی‌متر)
+        // محتوا را با همان عرضِ چاپ (PRINT_W) می‌چینیم، ارتفاعش را می‌سنجیم و ضریبِ
+        // k = ارتفاعِ صفحه ÷ ارتفاعِ محتوا را با transform اعمال می‌کنیم (CSS: .fit-on).
+        // کف نداریم: با کف، اقلامِ اضافه بریده و حذف می‌شدند؛ به‌جایش درصد را نشان می‌دهیم.
+        // ۰٫۹۸ حاشیهٔ اطمینان. اگر @page margin عوض شد، PAGE_MARGIN_MM را هم عوض کن.
         const FIT_KEY = 'invPrintFitOne';
+        const PX_PER_MM = 96 / 25.4;
+        const PAGE_MARGIN_MM = 8;
+        const PRINT_W = (297 - 2 * PAGE_MARGIN_MM) * PX_PER_MM;   // ≈ ۱۰۶۲px
+        const PRINT_H = (210 - 2 * PAGE_MARGIN_MM) * PX_PER_MM;   // ≈ ۷۳۳px
 
-        function computeFitZoom() {
+        // محتوای برگه را یک‌بار داخلِ یک لایهٔ .fit-inner می‌گذارد (همان لایه‌ای که کوچک می‌شود)
+        function fitInner() {
             const s = document.getElementById('sheet');
-            const prev = s.style.zoom;
-            s.style.zoom = '';                       // قبل از اندازه‌گیری، zoom را صفر کن
-            const box = s.clientHeight;              // ارتفاعِ یک صفحه (از aspect-ratio)
-            const content = s.scrollHeight;          // ارتفاعِ کلِ محتوا
-            s.style.zoom = prev;
-            if (!content || content <= box) return 1;
-            return Math.max(0.4, (box / content) * 0.97);
+            let inner = s.querySelector(':scope > .fit-inner');
+            if (!inner) {
+                inner = document.createElement('div');
+                inner.className = 'fit-inner';
+                while (s.firstChild) inner.appendChild(s.firstChild);
+                s.appendChild(inner);
+            }
+            return inner;
         }
 
         function applyFit(on) {
             const s = document.getElementById('sheet');
-            s.style.zoom = on ? computeFitZoom() : '';
+            const pct = document.getElementById('fitPct');
+            s.classList.remove('fit-on');
+            if (pct) pct.textContent = '';
+            if (on) {
+                const inner = fitInner();
+                inner.style.width = PRINT_W + 'px';           // اندازه‌گیری با عرضِ واقعیِ چاپ
+                const h = inner.offsetHeight;
+                inner.style.width = '';
+                if (h > PRINT_H) {                            // فقط اگر واقعاً جا نمی‌شود
+                    const k = (PRINT_H / h) * 0.98;
+                    s.style.setProperty('--fit-w', PRINT_W + 'px');
+                    s.style.setProperty('--fit-k', k);
+                    s.style.setProperty('--fit-h', Math.ceil(h * k) + 'px');
+                    s.classList.add('fit-on');
+                    if (pct) pct.textContent = '(' + faDigits(Math.round(k * 100)) + '٪)';
+                }
+            }
             try { localStorage.setItem(FIT_KEY, on ? '1' : '0'); } catch (e) {}
         }
 
