@@ -475,8 +475,8 @@ try {
                 $isFinalCheckout = true;                         // تک‌شیفته: هر خروج نهایی است
             } elseif ($shift === 2) {
                 $isFinalCheckout = true;                         // دوشیفته: خروجِ شیفت ۲
-            } elseif ($shift === 1 && hasApprovedLeaveOrMissionToday($db, (int) $user_id, $today)) {
-                $isFinalCheckout = true;                         // شیفت ۲ مرخصی/مأموریت → شیفت ۱ نهایی
+            } elseif ($shift === 1 && shift2CoveredByLeaveOrMission($db, (int) $user_id, $today, $user['shift_2_start'] ?? null, $user['shift_2_end'] ?? null)) {
+                $isFinalCheckout = true;                         // شیفتِ ۲ (عصر) با مرخصی/مأموریت پوشیده → خروجِ شیفت ۱ نهایی
                 $checkoutReason = 'خروج نهایی شیفت ۱ (شیفت ۲ مرخصی/مأموریت)';
             }
             if ($isFinalCheckout) {

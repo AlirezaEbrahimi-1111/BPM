@@ -110,30 +110,50 @@ function checkoutExemptRole(PDO $db, int $userId): bool
 }
 
 /**
- * آیا کاربر برای امروز مرخصی یا مأموریتِ تأییدشده دارد؟ (ساده — بدون تفکیکِ
- * دقیقِ ساعتِ شیفت). برای تصمیمِ «خروجِ شیفت ۱ نهایی است چون شیفت ۲ نیست».
+ * آیا مرخصی/مأموریتِ تأییدشدهٔ کاربر، «بازهٔ ساعتیِ شیفتِ دوم» را در امروز می‌پوشاند؟
+ * یعنی کاربر عصر/شیفت۲ واقعاً سرِ کار نیست → پس خروجِ شیفت ۱ «نهایی» حساب می‌شود.
+ *
+ * چرا این‌طوری؟ قبلاً فقط «آیا امروز مرخصی دارد؟» چک می‌شد که خام بود: مرخصیِ
+ * صبح (شیفت۱) را هم اشتباهاً «شیفت۲ تعطیل» می‌گرفت. حالا دقیق می‌سنجیم.
+ *
+ * شرط = دربرگیریِ کامل (containment): بازهٔ مرخصی/مأموریت باید کلِ پنجرهٔ شیفت۲ را
+ * بپوشاند، یعنی زودتر/هم‌زمان شروع شود و دیرتر/هم‌زمان تمام شود:
+ *     L_start <= S2_start   و   L_end >= S2_end
+ *   پنجرهٔ شیفت۲ = [today+shift2Start ، today+shift2End]
+ *   بازهٔ مرخصی  = [start_date+start_time ، end_date+end_time]
+ *   بازهٔ مأموریت = [start_date ، end_date]  (این‌ها مستقیماً datetime‌اند)
+ * (مرخصیِ نیمِ‌شیفت کافی نیست؛ چون کاربر برای بقیهٔ شیفت۲ برمی‌گردد و خروجِ
+ *  شیفت ۱ نهایی نیست.) اگر ساعتِ شیفت۲ تعریف نشده باشد → false (محتاطانه).
  */
-function hasApprovedLeaveOrMissionToday(PDO $db, int $userId, string $today): bool
+function shift2CoveredByLeaveOrMission(PDO $db, int $userId, string $today, ?string $shift2Start, ?string $shift2End): bool
 {
+    $shift2Start = trim((string) $shift2Start);
+    $shift2End   = trim((string) $shift2End);
+    if ($shift2Start === '' || $shift2End === '') return false;
+
     try {
+        // مرخصی: start_time/end_time ممکن است خالی/NULL باشند → کلِ روز فرض می‌شود
         $st = $db->prepare("
             SELECT 1 FROM leave_requests
             WHERE user_id = ? AND status = 'approved'
-              AND ? BETWEEN start_date AND end_date
+              AND TIMESTAMP(start_date, COALESCE(NULLIF(start_time, ''), '00:00:00')) <= TIMESTAMP(?, ?)
+              AND TIMESTAMP(end_date,   COALESCE(NULLIF(end_time,   ''), '23:59:59')) >= TIMESTAMP(?, ?)
             LIMIT 1
         ");
-        $st->execute([$userId, $today]);
+        $st->execute([$userId, $today, $shift2Start, $today, $shift2End]);
         if ($st->fetchColumn()) return true;
 
+        // مأموریت: start_date/end_date از نوع datetime‌اند
         $st = $db->prepare("
             SELECT 1 FROM mission_requests
             WHERE user_id = ? AND status = 'approved'
-              AND ? BETWEEN DATE(start_date) AND DATE(end_date)
+              AND start_date <= TIMESTAMP(?, ?)
+              AND end_date   >= TIMESTAMP(?, ?)
             LIMIT 1
         ");
-        $st->execute([$userId, $today]);
+        $st->execute([$userId, $today, $shift2Start, $today, $shift2End]);
         return (bool) $st->fetchColumn();
     } catch (Throwable $e) {
-        return false;
+        return false; // در صورت خطا، نهایی نگیر تا خروج بی‌دلیل مسدود نشود
     }
 }
