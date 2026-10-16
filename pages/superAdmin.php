@@ -46,7 +46,8 @@ $stmt = $db->query("
          ORDER BY cu.id ASC LIMIT 1) AS creator_name,
       -- موبایلِ سازنده: اگر ستون phone خالی بود، username (نام‌کاربری = همان شماره‌ی
       -- موبایل که موقع ثبت‌نام ست می‌شود) را به‌عنوان جایگزین نشان بده.
-      (SELECT COALESCE(NULLIF(TRIM(cu.phone), ''), cu.username)
+      -- سازمانِ غیرفعال‌شده: phone یک مقدار ساختگی (x…) است و شمارهٔ اصلی در released_phone.
+      (SELECT COALESCE(NULLIF(cu.released_phone, ''), NULLIF(TRIM(cu.phone), ''), cu.released_username, cu.username)
          FROM users cu WHERE cu.organization_id = o.id
          ORDER BY cu.id ASC LIMIT 1) AS creator_phone
     FROM organizations o
@@ -489,16 +490,30 @@ function goPlan(id) {
 /* فعال/غیرفعال */
 function toggleOrg(id) {
   const o = byId[id];
-  const msg = o.is_active ? 'این سازمان غیرفعال شود؟' : 'این سازمان فعال شود؟';
+  const msg = o.is_active
+    ? 'سازمان «' + esc(o.name) + '» غیرفعال شود؟ همهٔ کاربرانش غیرفعال و از سیستم خارج می‌شوند و شماره‌هایشان آزاد می‌شود تا در سازمان دیگری قابل افزودن باشند. داده‌های سازمان حذف نمی‌شوند.'
+    : 'سازمان «' + esc(o.name) + '» فعال شود؟ کاربرانی که با غیرفعال‌شدن سازمان غیرفعال شده بودند دوباره فعال می‌شوند (به‌جز کسانی که شماره‌شان در این فاصله جای دیگری ثبت شده).';
   uiConfirm(msg, async function () {
-    const res = await fetch('/admin/api/toggle-organization.php', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ org_id: id, status: o.is_active ? 0 : 1 })
-    });
-    const data = await res.json();
-    showToast(data.message, data.success ? 'success' : 'error');
-    if (data.success) setTimeout(() => location.reload(), 1200);
-  }, { danger: !!o.is_active, yesText: o.is_active ? 'بله، غیرفعال کن' : 'بله، فعال کن', noText: 'انصراف' });
+    // قبلا این آدرس (/admin/api/…) اصلا وجود نداشت: پاسخ ۴۰۴ HTML بود، res.json() خطا
+    // می‌داد و چون گرفته نمی‌شد، دکمه بی‌صدا «هیچ کاری» نمی‌کرد.
+    let data;
+    try {
+      const res = await fetch('/api/admin/toggle-organization.php', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ org_id: id, status: o.is_active ? 0 : 1 })
+      });
+      data = await res.json().catch(() => ({ success: false, message: 'پاسخ نامعتبر از سرور (' + res.status + ')' }));
+    } catch (e) {
+      data = { success: false, message: 'ارتباط با سرور برقرار نشد' };
+    }
+    showToast(data.message || 'خطا', data.success ? 'success' : 'error');
+    // پیام موفقیت ممکن است فهرست شماره‌های برنگشته را داشته باشد → فرصت خواندن
+    if (data.success) setTimeout(() => location.reload(), (data.conflict_phones && data.conflict_phones.length) ? 6000 : 2000);
+  }, {
+    danger: !!o.is_active,
+    yesText: o.is_active ? 'بله، غیرفعال کن' : 'بله، فعال کن',
+    noText: 'انصراف'
+  });
 }
 </script>
 <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>

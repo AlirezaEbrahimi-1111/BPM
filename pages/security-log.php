@@ -47,6 +47,8 @@ $validActions = [
     'password_changed' => 'تغییر رمز عبور',
     'user_activated'  => 'فعال‌سازی کاربر',
     'user_deactivated' => 'غیرفعال‌سازی کاربر',
+    'org_activated'   => 'فعال‌سازی سازمان',
+    'org_deactivated' => 'غیرفعال‌سازی سازمان',
 ];
 
 $where  = ["l.created_at > (NOW() - INTERVAL ? DAY)"];
@@ -249,6 +251,8 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 'login_failed'     => 'bad',
                 'user_deactivated' => 'bad',
                 'user_activated'   => 'ok',
+                'org_deactivated'  => 'bad',
+                'org_activated'    => 'ok',
                 'password_changed' => 'warn',
             ];
             $pillClass = $pillClassMap[$action] ?? 'info';
