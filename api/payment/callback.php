@@ -3,29 +3,29 @@
  * ============================================================
  *  بازگشت از درگاه و تأیید پرداخت
  * ============================================================
- *  این فایل برای هر دو حالت کار می‌کند:
+ *  این فایل برای سه حالت کار می‌کند:
  *    - پرداخت توسط سوپرادمین  (to=admin)
- *    - پرداخت توسط مدیر سازمان (to=org)
- *  بسته به اینکه پرداخت از کجا شروع شده، کاربر را به همان صفحه
- *  برمی‌گرداند.
+ *    - پرداخت توسط مدیر سازمان از وب (to=org)
+ *    - پرداخت از اپِ موبایل (to=app) — بدونِ سشنِ وب، فقط یک صفحه‌ی
+ *      نتیجه‌یِ سبک نشان می‌دهد که WebViewِ اپ آن را رصد می‌کند
  * ============================================================
  */
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once __DIR__ . '/zarinpal.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-pricing.php';
 
-/* ── صفحه‌های مجاز برای بازگشت ──
-   ⚠️ اگر مسیر این دو فایل در سایت تو فرق دارد، همین‌جا اصلاحشان کن. */
+/* ── صفحه‌های مجاز برای بازگشت ── */
 const RETURN_PAGES = [
     'admin' => '/admin/superAdmin.php',
     'org'   => '/pages/org-panel.php',
+    'app'   => '/pages/payment-result.php',
 ];
 
 $payment_id = (int)($_GET['pid'] ?? 0);
 $authority  = $_GET['Authority'] ?? '';
 $status     = $_GET['Status'] ?? '';   // OK یا NOK
 
-// صفحه‌ی بازگشت را از روی پارامتر to تعیین می‌کنیم (پیش‌فرض: پنل سوپرادمین)
 $panel = RETURN_PAGES[$_GET['to'] ?? 'admin'] ?? RETURN_PAGES['admin'];
 
 /* ── ۱) رکورد پرداخت متناظر را پیدا می‌کنیم ── */
@@ -62,7 +62,10 @@ if (!$verify['ok']) {
     exit;
 }
 
-/* ── ۵) ثبت پرداخت و تمدید اشتراک با هم (تراکنش اتمیک) ── */
+/* ── ۵) ثبت پرداخت + ارتقایِ واقعیِ پلنِ سازمان با هم (تراکنش اتمیک) ──
+   نکته‌ی مهم: منبعِ حقیقتِ پلن، ستون‌هایِ organizations.plan/plan_users/
+   plan_expires_at هستند (همان‌ها که PlanAccess در اپ و planState() در
+   وب می‌خوانند) — نه فقط جدولِ subscriptions. */
 try {
     $db->beginTransaction();
 
@@ -71,33 +74,48 @@ try {
          WHERE id=? AND status='pending'"
     )->execute([$verify['ref_id'], $payment_id]);
 
-    $upd = $db->prepare("
-        UPDATE subscriptions
-        SET end_date = DATE_ADD(
-                IF(end_date > CURDATE(), end_date, CURDATE()),
-                INTERVAL ? MONTH
-            ),
-            is_active   = 1,
-            payment_ref = ?
-        WHERE organization_id = ?
-          AND is_active = 1
-        ORDER BY end_date DESC
-        LIMIT 1
-    ");
-    $upd->execute([$payment['months'], $verify['ref_id'], $payment['organization_id']]);
+    $plan       = $payment['plan'];
+    $plan_users = (int)$payment['plan_users'];
+    $months     = (int)$payment['months'];
 
-    if ($upd->rowCount() === 0) {
-        $db->prepare("
-            INSERT INTO subscriptions
-              (organization_id, plan_type, max_users, price, start_date, end_date, is_active, payment_ref)
-            VALUES (?, 'monthly', 50, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL ? MONTH), 1, ?)
-        ")->execute([
-            $payment['organization_id'],
-            $payment['amount'],
-            $payment['months'],
-            $verify['ref_id'],
-        ]);
-    }
+    $org = $db->prepare("SELECT plan, plan_users, plan_expires_at FROM organizations WHERE id=? FOR UPDATE");
+    $org->execute([$payment['organization_id']]);
+    $org = $org->fetch(PDO::FETCH_ASSOC);
+
+    $today = (new DateTime('now', new DateTimeZone('Asia/Tehran')))->format('Y-m-d');
+    $currentExpires = $org['plan_expires_at'] ? substr($org['plan_expires_at'], 0, 10) : null;
+    // اگر پلنِ فعلی هنوز معتبر است، تمدید از همان تاریخ ادامه پیدا
+    // می‌کند؛ وگرنه (منقضی/رایگان) از امروز شروع می‌شود
+    $base = ($currentExpires !== null && $currentExpires > $today) ? $currentExpires : $today;
+    $newExpires = (new DateTime($base))->modify("+{$months} months")->format('Y-m-d');
+
+    $oldValue = [
+        'plan' => $org['plan'], 'plan_users' => $org['plan_users'],
+        'plan_expires_at' => $org['plan_expires_at'],
+    ];
+    $newValue = ['plan' => $plan, 'plan_users' => $plan_users, 'plan_expires_at' => $newExpires];
+
+    $db->prepare("
+        UPDATE organizations
+        SET plan = ?, plan_users = ?, plan_expires_at = ?, plan_source = 'app_purchase'
+        WHERE id = ?
+    ")->execute([$plan, $plan_users, $newExpires, $payment['organization_id']]);
+
+    $planType = $months >= 12 ? 'yearly' : 'monthly';
+    $db->prepare("
+        INSERT INTO subscriptions
+            (organization_id, plan_type, plan, plan_users, duration_months, max_users, price, start_date, end_date, is_active, payment_ref)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+    ")->execute([
+        $payment['organization_id'], $planType, $plan, $plan_users, $months,
+        $plan_users, $payment['amount'], $today, $newExpires, $verify['ref_id'],
+    ]);
+
+    $nowDt = (new DateTime('now', new DateTimeZone('Asia/Tehran')))->format('Y-m-d H:i:s');
+    $db->prepare("
+        INSERT INTO organization_plan_audit (organization_id, old_value, new_value, source, created_at)
+        VALUES (?, ?, ?, 'app_purchase', ?)
+    ")->execute([$payment['organization_id'], json_encode($oldValue), json_encode($newValue), $nowDt]);
 
     $db->commit();
 
