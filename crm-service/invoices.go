@@ -102,6 +102,7 @@ type invoiceOut struct {
 	PartnerPercent           float64  `json:"partner_percent"`             // درصد مؤثر: استثنای فاکتور، وگرنه درصد ماه صدور (زنده)
 	PartnerPercentIsOverride bool     `json:"partner_percent_is_override"` // درصد از استثنای همین فاکتور آمده؟
 	PartnerPercentOverride   *float64 `json:"partner_percent_override"`    // مقدار استثنا (nil = ندارد)
+	PartnerMonthPercent      float64  `json:"partner_month_percent"`       // درصد ماه صدور (برای نمایش کنار استثنا)
 	PartnerProfitAmount      int64    `json:"partner_profit_amount"`       // percent × (subtotal - discount)
 	PartnerProfitRecorded    bool     `json:"partner_profit_recorded"`
 	SettlementStatus         string   `json:"settlement_status"`
@@ -308,8 +309,9 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 			} else {
 				jy, jm = jalaliYMOf(time.Time{})
 			}
-			pct, isOv := s.effectivePartnerPercent(pctOverride, v, jy, jm, pctCache)
-			o.PartnerPercent, o.PartnerPercentIsOverride = pct, isOv
+			o.PartnerPercent, o.PartnerPercentIsOverride, o.PartnerMonthPercent =
+				s.effectivePartnerPercent(pctOverride, v, jy, jm, pctCache)
+			pct := o.PartnerPercent
 			if pctOverride.Valid {
 				ov := pctOverride.Float64
 				o.PartnerPercentOverride = &ov
@@ -388,7 +390,7 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 		} else {
 			jy, jm = jalaliYMOf(time.Time{})
 		}
-		o.PartnerPercent, o.PartnerPercentIsOverride = s.effectivePartnerPercent(pctOverride, v, jy, jm, nil)
+		o.PartnerPercent, o.PartnerPercentIsOverride, o.PartnerMonthPercent = s.effectivePartnerPercent(pctOverride, v, jy, jm, nil)
 		if pctOverride.Valid {
 			ov := pctOverride.Float64
 			o.PartnerPercentOverride = &ov

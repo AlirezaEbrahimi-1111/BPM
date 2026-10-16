@@ -191,23 +191,26 @@ func (s *server) partnerPercent(partnerID int64, jy, jm int) float64 {
 
 // effectivePartnerPercent: درصد مؤثر سهم همکار برای یک فاکتور = استثنای خود
 // فاکتور (inv_invoices.partner_percent_override) اگر هست، وگرنه درصد ماه شمسی
-// صدور. خروجی دوم: آیا از استثنا آمده. cache (اختیاری) برای فهرست‌هاست تا
-// برای ردیف‌های هم‌ماه یک همکار چندبار کوئری نزند. همهٔ محاسبه‌های سهم باید
-// از همین تابع بگذرند تا عدد در فهرست/جزئیات/گزارش یکی بماند.
-func (s *server) effectivePartnerPercent(override sql.NullFloat64, partnerID int64, jy, jm int, cache map[[3]int]float64) (float64, bool) {
-	if override.Valid {
-		return override.Float64, true
-	}
+// صدور. خروجی‌ها: درصد مؤثر، آیا از استثنا آمده، و درصد ماه (همیشه — برای
+// نمایش «درصد ماه» کنار استثنا). cache (اختیاری) برای فهرست‌هاست تا برای
+// ردیف‌های هم‌ماه یک همکار چندبار کوئری نزند. همهٔ محاسبه‌های سهم باید از همین
+// تابع بگذرند تا عدد در فهرست/جزئیات/گزارش یکی بماند.
+func (s *server) effectivePartnerPercent(override sql.NullFloat64, partnerID int64, jy, jm int, cache map[[3]int]float64) (eff float64, isOverride bool, month float64) {
 	if cache == nil {
-		return s.partnerPercent(partnerID, jy, jm), false
+		month = s.partnerPercent(partnerID, jy, jm)
+	} else {
+		key := [3]int{int(partnerID), jy, jm}
+		v, ok := cache[key]
+		if !ok {
+			v = s.partnerPercent(partnerID, jy, jm)
+			cache[key] = v
+		}
+		month = v
 	}
-	key := [3]int{int(partnerID), jy, jm}
-	if v, ok := cache[key]; ok {
-		return v, false
+	if override.Valid {
+		return override.Float64, true, month
 	}
-	v := s.partnerPercent(partnerID, jy, jm)
-	cache[key] = v
-	return v, false
+	return month, false, month
 }
 
 // validPartnerPercent: درصد سهم باید بین ۰ و ۱۰۰ باشد (مثل setPartnerShare).
@@ -395,7 +398,7 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		pct, isOverride := s.effectivePartnerPercent(pctOverride, partnerID, jy, jm, pctCache)
+		pct, isOverride, monthPct := s.effectivePartnerPercent(pctOverride, partnerID, jy, jm, pctCache)
 		preTax := subtotal - discount
 		if preTax < 0 {
 			preTax = 0
@@ -415,6 +418,7 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 			"jm":                      jm,
 			"percent":                 pct,
 			"percent_is_override":     isOverride,
+			"month_percent":           monthPct,
 			"invoice_amount":          total,
 			"pre_tax_amount":          preTax,
 			"tax_amount":              tax,
@@ -516,6 +520,62 @@ func (s *server) setInvoicePartnerStatus(w http.ResponseWriter, r *http.Request)
 	}
 	if n, _ := res.RowsAffected(); n == 0 {
 		writeErr(w, http.StatusNotFound, "فاکتور یافت نشد")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"success": true})
+}
+
+// PATCH /crm/api/inv/invoices/{id}/partner-percent   body: {"percent": 5}  یا  {"percent": null}
+// درصد اختصاصی سهم همکار برای یک فاکتور در هر وضعیتی، حتی تأییدشده یا ثبت‌شده در
+// مودیان: درصد همکار جزو مبالغ خود فاکتور نیست (جمع/مالیات/مودیان عوض نمی‌شود).
+// null (یا نیامدن percent) = برگشت به درصد ماه. فاکتور باطل و فاکتور بدون همکار
+// تغییر نمی‌کنند. فقط ذخیره می‌کند؛ صفحه بعدش ردیف‌ها را دوباره می‌خواند تا
+// درصد/مبلغ سود از همان مسیر همیشگی (effectivePartnerPercent) بیاید.
+func (s *server) setInvoicePartnerPercent(w http.ResponseWriter, r *http.Request) {
+	id := idParam(r)
+	u := userOf(r.Context())
+
+	var in struct {
+		Percent *float64 `json:"percent"`
+	}
+	if !decodeJSON(w, r, &in, 1<<20) {
+		return
+	}
+	if !validPartnerPercent(in.Percent) {
+		writeErr(w, http.StatusBadRequest, "درصد سهم همکار باید بین ۰ و ۱۰۰ باشد")
+		return
+	}
+
+	var status string
+	var partnerID sql.NullInt64
+	err := s.db.QueryRow(
+		"SELECT status, partner_id FROM inv_invoices WHERE id = ? AND organization_id = ?",
+		id, u.OrgID).Scan(&status, &partnerID)
+	if err == sql.ErrNoRows {
+		writeErr(w, http.StatusNotFound, "فاکتور یافت نشد")
+		return
+	}
+	if err != nil {
+		writeDBErr(w, "setInvoicePartnerPercent", err)
+		return
+	}
+	if status == "cancelled" {
+		writeErr(w, http.StatusConflict, "درصد سهم فاکتور باطل‌شده قابل تغییر نیست")
+		return
+	}
+	if !partnerID.Valid || partnerID.Int64 <= 0 {
+		writeErr(w, http.StatusUnprocessableEntity, "این فاکتور همکار ندارد")
+		return
+	}
+
+	var val any // nil → NULL = درصد ماه
+	if in.Percent != nil {
+		val = *in.Percent
+	}
+	if _, err := s.db.Exec(
+		"UPDATE inv_invoices SET partner_percent_override = ? WHERE id = ? AND organization_id = ?",
+		val, id, u.OrgID); err != nil {
+		writeDBErr(w, "setInvoicePartnerPercent", err)
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})

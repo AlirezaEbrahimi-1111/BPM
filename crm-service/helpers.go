@@ -85,28 +85,7 @@ func (s *server) requireFlags(cols []string, next http.HandlerFunc) http.Handler
 // نوشتنی ۴۰۳ می‌گرفت؛ همین ناهماهنگی گزارش شد).
 func (s *server) requireCRMAccess(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		u := userOf(r.Context())
-		if u.ID == 1 || u.ID == 19 {
-			next(w, r)
-			return
-		}
-		var ok int
-		err := s.db.QueryRow(`
-			SELECT 1 FROM users u
-			WHERE u.id = ? AND u.is_active = 1
-			  AND (
-			        u.phone IN ('09927949376')
-			     OR (u.organization_id = 1 AND (
-			            u.activity_section = 'accounting'
-			         OR u.activity_unit = 'AC'
-			         OR EXISTS (SELECT 1 FROM user_activity_sections uas
-			                    WHERE uas.user_id = u.id AND uas.section_key = 'accounting')
-			         OR EXISTS (SELECT 1 FROM user_activity_units uau
-			                    WHERE uau.user_id = u.id AND uau.activity_unit = 'AC')
-			        ))
-			  )
-			LIMIT 1`, u.ID).Scan(&ok)
-		if err == nil && ok == 1 {
+		if s.hasCRMAccess(userOf(r.Context()).ID) {
 			next(w, r)
 			return
 		}
@@ -114,41 +93,83 @@ func (s *server) requireCRMAccess(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// hasCRMAccess: شرط requireCRMAccess به‌صورت بله/خیر (تا قابل ترکیب باشد).
+func (s *server) hasCRMAccess(uid int64) bool {
+	if uid == 1 || uid == 19 {
+		return true
+	}
+	var ok int
+	err := s.db.QueryRow(`
+		SELECT 1 FROM users u
+		WHERE u.id = ? AND u.is_active = 1
+		  AND (
+		        u.phone IN ('09927949376')
+		     OR (u.organization_id = 1 AND (
+		            u.activity_section = 'accounting'
+		         OR u.activity_unit = 'AC'
+		         OR EXISTS (SELECT 1 FROM user_activity_sections uas
+		                    WHERE uas.user_id = u.id AND uas.section_key = 'accounting')
+		         OR EXISTS (SELECT 1 FROM user_activity_units uau
+		                    WHERE uau.user_id = u.id AND uau.activity_unit = 'AC')
+		        ))
+		  )
+		LIMIT 1`, uid).Scan(&ok)
+	return err == nil && ok == 1
+}
+
 // requireReportAccess: دیدن «گزارش همکاران» برای مدیران، سوپروایزرها و تیم
 // حسابداری. یعنی هر کسی که requireCRMAccess را دارد، به‌علاوهٔ نقش‌های
 // سازمانی (supervisor/admin/manager/management) و is_supervisor = 1.
 func (s *server) requireReportAccess(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		u := userOf(r.Context())
-		if u.ID == 1 || u.ID == 19 {
-			next(w, r)
-			return
-		}
-		// 🔒 فقط سازمان ۱ (شرکت اصلی). گزارش همکاران برای هیچ سازمان دیگری
-		// نمایش داده نمی‌شود. هم‌راستا با crmReportAllowed در includes/crm_access.php.
-		var ok int
-		err := s.db.QueryRow(`
-			SELECT 1 FROM users u
-			WHERE u.id = ? AND u.is_active = 1
-			  AND u.organization_id = 1
-			  AND (
-			        u.role IN ('supervisor','admin','manager','management')
-			     OR COALESCE(u.is_supervisor, 0) = 1
-			     OR u.is_create_official_invoice = 1
-			     OR u.is_sales_manager = 1
-			     OR u.activity_section = 'accounting'
-			     OR u.activity_unit = 'AC'
-			     OR EXISTS (SELECT 1 FROM user_activity_sections uas
-			                WHERE uas.user_id = u.id AND uas.section_key = 'accounting')
-			     OR EXISTS (SELECT 1 FROM user_activity_units uau
-			                WHERE uau.user_id = u.id AND uau.activity_unit = 'AC')
-			  )
-			LIMIT 1`, u.ID).Scan(&ok)
-		if err == nil && ok == 1 {
+		if s.hasReportAccess(userOf(r.Context()).ID) {
 			next(w, r)
 			return
 		}
 		writeErr(w, http.StatusForbidden, "دسترسی به این گزارش ندارید")
+	}
+}
+
+// hasReportAccess: شرط requireReportAccess به‌صورت بله/خیر.
+func (s *server) hasReportAccess(uid int64) bool {
+	if uid == 1 || uid == 19 {
+		return true
+	}
+	// 🔒 فقط سازمان ۱ (شرکت اصلی). گزارش همکاران برای هیچ سازمان دیگری
+	// نمایش داده نمی‌شود. هم‌راستا با crmReportAllowed در includes/crm_access.php.
+	var ok int
+	err := s.db.QueryRow(`
+		SELECT 1 FROM users u
+		WHERE u.id = ? AND u.is_active = 1
+		  AND u.organization_id = 1
+		  AND (
+		        u.role IN ('supervisor','admin','manager','management')
+		     OR COALESCE(u.is_supervisor, 0) = 1
+		     OR u.is_create_official_invoice = 1
+		     OR u.is_sales_manager = 1
+		     OR u.activity_section = 'accounting'
+		     OR u.activity_unit = 'AC'
+		     OR EXISTS (SELECT 1 FROM user_activity_sections uas
+		                WHERE uas.user_id = u.id AND uas.section_key = 'accounting')
+		     OR EXISTS (SELECT 1 FROM user_activity_units uau
+		                WHERE uau.user_id = u.id AND uau.activity_unit = 'AC')
+		  )
+		LIMIT 1`, uid).Scan(&ok)
+	return err == nil && ok == 1
+}
+
+// requireCRMOrReportAccess: هر کسی که یکی از دو دسترسی بالا را دارد — برای
+// کارهایی که هم از «فهرست فاکتورها» (تیم حسابداری) و هم از «گزارش همکاران»
+// (مدیران/سوپروایزرها) انجام می‌شوند، مثل درصد اختصاصی سهم همکار.
+// (requireReportAccess به‌تنهایی کافی نیست: شماره‌های EXTRA_PHONES را ندارد.)
+func (s *server) requireCRMOrReportAccess(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		uid := userOf(r.Context()).ID
+		if s.hasCRMAccess(uid) || s.hasReportAccess(uid) {
+			next(w, r)
+			return
+		}
+		writeErr(w, http.StatusForbidden, "برای این کار مجوز ندارید")
 	}
 }
 

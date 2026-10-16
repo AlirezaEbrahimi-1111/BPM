@@ -331,6 +331,10 @@ func main() {
 	mux.HandleFunc("GET /crm/api/inv/partner-share", write(s.getPartnerShare))
 	mux.HandleFunc("GET /crm/api/inv/partner-report", report(s.partnerReport))
 	mux.HandleFunc("PATCH /crm/api/inv/invoices/{id}/partner-status", report(s.setInvoicePartnerStatus))
+	// درصد اختصاصی سهم همکار (هر وضعیتی): هم از فهرست فاکتورها (تیم حسابداری)
+	// و هم از گزارش همکاران (مدیران/سوپروایزرها).
+	partnerPct := func(h http.HandlerFunc) http.HandlerFunc { return auth(s.requireCRMOrReportAccess(h)) }
+	mux.HandleFunc("PATCH /crm/api/inv/invoices/{id}/partner-percent", partnerPct(s.setInvoicePartnerPercent))
 
 	// ── تأمین‌کننده ──
 	mux.HandleFunc("GET /crm/api/inv/suppliers", auth(s.listSuppliers))

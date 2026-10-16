@@ -25,6 +25,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
     <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
     <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/partner-percent-modal.js') ?>"></script>
 
     <style>
         .crm-toolbar {
@@ -567,7 +568,29 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         }
 
         function statusActionCell(p) {
-            return `<button class="ag-action-btn" title="ویرایش وضعیت تسویه/مودیان" onclick="pmEditStatus(${p.data.id})"><i class="bi bi-pencil"></i></button>`;
+            let h = `<button class="ag-action-btn" title="ویرایش وضعیت تسویه/مودیان" onclick="pmEditStatus(${p.data.id})"><i class="bi bi-pencil"></i></button>`;
+            // درصد سهم همکار — هر وضعیتی جز باطل (حتی تأییدشده)
+            if (p.data.status !== 'cancelled') {
+                h += `<button class="ag-action-btn" style="color:#8e57fe" title="درصد سهم همکار" onclick="pmEditPct(${p.data.id})"><i class="bi bi-percent"></i></button>`;
+            }
+            return h;
+        }
+
+        // پنجرهٔ مشترک «درصد سهم همکار» (assets/js/partner-percent-modal.js)
+        function pmEditPct(id) {
+            const d = allRows.find(r => r.id === id);
+            if (!d) return;
+            PartnerPercentModal.open({
+                title: d.number ? 'فاکتور شماره ' + faDigits(d.number) : 'پیش‌نویس #' + faDigits(d.id),
+                partnerName: d.partner_name,
+                monthPercent: d.month_percent,
+                // گزارش مقدار استثنا را جدا نمی‌دهد؛ وقتی استثنا هست، درصد مؤثر همان است
+                override: d.percent_is_override ? d.percent : null,
+                preTax: d.pre_tax_amount,
+                profitRecorded: !!d.partner_profit_recorded,
+                save: p => apiSend('PATCH', '/inv/invoices/' + id + '/partner-percent', { percent: p }),
+                onSaved: loadReport,
+            });
         }
 
         const colDefs = [{
@@ -647,7 +670,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             },
             {
                 headerName: '',
-                width: 54,
+                width: 92,
                 sortable: false,
                 filter: false,
                 cellRenderer: statusActionCell

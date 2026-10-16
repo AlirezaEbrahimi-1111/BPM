@@ -22,6 +22,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/partner-percent-modal.js') ?>"></script>
 
     <style>
         .crm-toolbar {
@@ -354,8 +355,28 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     h += `<button class="ag-action-btn" style="color:#0f7a57" title="تبدیل به فاکتور رسمی" onclick="convertInv(${d.id})"><i class="bi bi-file-earmark-check"></i></button>`;
                 }
             }
+            // درصد سهم همکار — هر وضعیتی جز باطل (حتی تأییدشده)، فقط فاکتورِ دارای همکار
+            if (d.partner_id && d.status !== 'cancelled') {
+                h += `<button class="ag-action-btn" style="color:#8e57fe" title="درصد سهم همکار" onclick="editPartnerPct(${d.id})"><i class="bi bi-percent"></i></button>`;
+            }
             h += `<button class="ag-action-btn" title="ویرایش وضعیت تسویه/مودیان" onclick="stEditStatus(${d.id})"><i class="bi bi-clipboard-check"></i></button>`;
             return h;
+        }
+
+        // پنجرهٔ مشترک «درصد سهم همکار» (assets/js/partner-percent-modal.js)
+        function editPartnerPct(id) {
+            const d = allRows.find(r => r.id === id);
+            if (!d) return;
+            PartnerPercentModal.open({
+                title: d.number ? 'فاکتور شماره ' + faDigits(d.number) : 'پیش‌نویس #' + faDigits(d.id),
+                partnerName: d.partner_name,
+                monthPercent: d.partner_month_percent,
+                override: d.partner_percent_override,
+                preTax: (d.subtotal_amount || 0) - (d.discount_amount || 0),
+                profitRecorded: !!d.partner_profit_recorded,
+                save: p => apiSend('PATCH', '/inv/invoices/' + id + '/partner-percent', { percent: p }),
+                onSaved: loadAll,
+            });
         }
 
         function chkCell(p) {
@@ -475,7 +496,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             },
             {
                 headerName: 'عملیات',
-                width: 278,
+                width: 318,
                 sortable: false,
                 filter: false,
                 cellRenderer: actionCell

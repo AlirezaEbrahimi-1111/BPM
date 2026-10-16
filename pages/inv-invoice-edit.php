@@ -27,6 +27,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <script src="<?= asset('../../assets/js/entity-picker.js') ?>"></script>
     <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
     <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/partner-percent-modal.js') ?>"></script>
 
     <style>
         .inv-wrap {
@@ -449,11 +450,9 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         // ── استثنای درصد سهم همکار برای همین فاکتور ──
         // درصد را جدا از num() می‌خوانیم: num() هر غیررقمی را حذف می‌کند و «۲٫۵»
         // (جداکنندهٔ اعشار فارسی) را ۲۵ می‌کرد. خروجی null = نامعتبر/خالی.
+        // پیاده‌سازی مشترک با پنجرهٔ درصد سهم (assets/js/partner-percent-modal.js).
         function parsePercent(v) {
-            const s = toEn(v).trim().replace(/[٫\/]/g, '.').replace(/٪|%/g, '').trim();
-            if (!/^\d+(\.\d+)?$/.test(s)) return null;
-            const n = parseFloat(s);
-            return (n >= 0 && n <= 100) ? n : null;
+            return PartnerPercentModal.parsePercent(v);
         }
 
         function overrideOn() {
