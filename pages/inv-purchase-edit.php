@@ -359,7 +359,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="idx text-center"></td>
-                <td><input class="it-prod-name" list="prodNameList" autocomplete="off" placeholder="نام کالا را تایپ کنید"></td>
+                <td><input class="it-prod-name" list="prodNameList" autocomplete="off" dir="auto" placeholder="نام کالا را تایپ کنید"></td>
                 <td class="col-qty"><input class="it-qty" inputmode="decimal" value="۱"></td>
                 <td class="col-price"><input class="it-price" inputmode="numeric" value="۰"></td>
                 <td class="col-disc"><input class="it-disc" inputmode="numeric" value="۰"></td>
@@ -369,6 +369,8 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             // نام کالا: فیلد متن آزاد (مثل فاکتور فروش). اگر متن تایپ‌شده دقیقا
             // با یک کالای کاتالوگ یکی بود، قیمت خودکار پر می‌شود و ردیف به آن کالا
             // گره می‌خورد؛ وگرنه هنگام ذخیره یک کالای تازه در کاتالوگ ساخته می‌شود.
+            // dir="auto": جهت از اولین حرف تعیین می‌شود؛ نام انگلیسی LTR می‌شود تا
+            // آخرین کلمهٔ تایپ‌شده دیده شود (در فیلد RTL از ابتدای متن نمایش داده می‌شد).
             tr.querySelector('.it-prod-name').addEventListener('change', () => syncProdName(tr));
             tr.querySelectorAll('.it-qty,.it-price,.it-disc').forEach(el => {
                 el.addEventListener('input', recalc);
