@@ -107,11 +107,6 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             color: #cbd5e1;
         }
 
-        /* کنترل‌های ویرایش درجا داخل جدول */
-        .pm-chk {
-            cursor: pointer;
-        }
-
         /* تسویه/مودیان دیگر <select> داخل سلول نیستند (کشویی‌شان بیرون
            فضای ردیف AG-Grid کلیپ می‌شد) — فقط بج وضعیت + دکمهٔ ویرایش
            که مودال جداگانه باز می‌کند. */
@@ -388,6 +383,14 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 </div>
                 <div class="modal-body">
                     <div id="pmStAlert"></div>
+                    <!-- سند سود همکار (قبلا سوئیچ داخل ستون «ثبت سود» جدول).
+                         form-check عمدا نیست: padding/margin منفی‌اش در RTL متن را روی سوئیچ می‌انداخت. -->
+                    <div class="mb-3">
+                        <div class="form-switch d-flex align-items-center m-0" style="gap:8px;padding:0">
+                            <input class="form-check-input m-0" type="checkbox" id="pmStProfit" role="switch" style="margin:0;float:none;cursor:pointer">
+                            <label class="form-check-label m-0" for="pmStProfit" style="cursor:pointer;user-select:none">سند سود همکار در حسابداری شایگان ثبت شد</label>
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">وضعیت تسویه</label>
                         <select id="pmStSettlement" class="form-select">
@@ -533,14 +536,6 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             }
         }
 
-        // ───────── ستون‌های ویرایش‌پذیر درجا ─────────
-        function chkCell(p) {
-            return `<div class="form-check form-switch mb-0 d-flex justify-content-center">
-                <input class="form-check-input pm-chk" type="checkbox" role="switch"
-                    ${p.value ? 'checked' : ''} onchange="pmToggleProfit(${p.data.id}, this.checked)">
-            </div>`;
-        }
-
         const SETTLE_LABEL = {
             unsettled: 'تسویه نشده',
             settled: 'تسویه شده',
@@ -568,7 +563,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         }
 
         function statusActionCell(p) {
-            let h = `<button class="ag-action-btn" title="ویرایش وضعیت تسویه/مودیان" onclick="pmEditStatus(${p.data.id})"><i class="bi bi-pencil"></i></button>`;
+            let h = `<button class="ag-action-btn" title="سند سود همکار / تسویه / مودیان" onclick="pmEditStatus(${p.data.id})"><i class="bi bi-pencil"></i></button>`;
             // درصد سهم همکار — هر وضعیتی جز باطل (حتی تأییدشده)
             if (p.data.status !== 'cancelled') {
                 h += `<button class="ag-action-btn" style="color:#8e57fe" title="درصد سهم همکار" onclick="pmEditPct(${p.data.id})"><i class="bi bi-percent"></i></button>`;
@@ -646,13 +641,6 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 width: 145,
                 type: 'rightAligned',
                 cellRenderer: p => money(p.value)
-            },
-            {
-                headerName: 'ثبت سود',
-                field: 'partner_profit_recorded',
-                width: 90,
-                sortable: false,
-                cellRenderer: chkCell
             },
             {
                 headerName: 'تسویه',
@@ -734,20 +722,6 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             return apiSend('PATCH', path, body);
         }
 
-        async function pmToggleProfit(id, checked) {
-            try {
-                await apiPatch('/inv/invoices/' + id + '/partner-status', {
-                    partner_profit_recorded: checked
-                });
-                const row = allRows.find(r => r.id === id);
-                if (row) row.partner_profit_recorded = checked;
-                showToast('ذخیره شد', 'success');
-            } catch (e) {
-                showToast(e.message || 'خطا', 'error');
-                loadReport();
-            }
-        }
-
         // ── ویرایش تسویه/مودیان از مودال (نه <select> داخل سلول — کشویی
         //    آن داخل ردیف AG-Grid کلیپ می‌شد و بخشی از گزینه‌ها دیده نمی‌شد) ──
         let pmStRow = null;
@@ -765,6 +739,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             document.getElementById('pmStSettlement').value = row.settlement_status || 'unsettled';
             document.getElementById('pmStMoadian').value = row.moadian_status || 'unregistered';
             document.getElementById('pmStCode').value = row.moadian_code || '';
+            document.getElementById('pmStProfit').checked = !!row.partner_profit_recorded;
             pmStToggleCode();
             document.getElementById('pmStAlert').innerHTML = '';
             new bootstrap.Modal(document.getElementById('pmStatusModal')).show();
@@ -782,12 +757,15 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 return;
             }
             alertBox('');
+            const profit = document.getElementById('pmStProfit').checked;
             try {
                 await apiPatch('/inv/invoices/' + pmStRow.id + '/partner-status', {
+                    partner_profit_recorded: profit,
                     settlement_status: settlement,
                     moadian_status: moadian,
                     moadian_code: moadian === 'registered' ? code : '',
                 });
+                pmStRow.partner_profit_recorded = profit;
                 pmStRow.settlement_status = settlement;
                 pmStRow.moadian_status = moadian;
                 pmStRow.moadian_code = moadian === 'registered' ? code : '';

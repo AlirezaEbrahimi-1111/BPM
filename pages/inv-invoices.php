@@ -171,10 +171,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             color: #cbd5e1;
         }
 
-        .pm-chk {
-            cursor: pointer;
-        }
-
         .ag-theme-alpine,
         .ag-theme-alpine .ag-cell,
         .ag-theme-alpine .ag-header-cell,
@@ -237,6 +233,14 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 </div>
                 <div class="modal-body">
                     <div id="stAlert"></div>
+                    <!-- سند سود همکار (قبلا سوئیچ داخل ستون «ثبت سود» جدول) — فقط فاکتورِ دارای همکار.
+                         form-check عمدا نیست: padding/margin منفی‌اش در RTL متن را روی سوئیچ می‌انداخت. -->
+                    <div class="mb-3" id="stProfitWrap" hidden>
+                        <div class="form-switch d-flex align-items-center m-0" style="gap:8px;padding:0">
+                            <input class="form-check-input m-0" type="checkbox" id="stProfit" role="switch" style="margin:0;float:none;cursor:pointer">
+                            <label class="form-check-label m-0" for="stProfit" style="cursor:pointer;user-select:none">سند سود همکار در حسابداری شایگان ثبت شد</label>
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">وضعیت تسویه</label>
                         <select id="stSettlement" class="form-select">
@@ -359,7 +363,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             if (d.partner_id && d.status !== 'cancelled') {
                 h += `<button class="ag-action-btn" style="color:#8e57fe" title="درصد سهم همکار" onclick="editPartnerPct(${d.id})"><i class="bi bi-percent"></i></button>`;
             }
-            h += `<button class="ag-action-btn" title="ویرایش وضعیت تسویه/مودیان" onclick="stEditStatus(${d.id})"><i class="bi bi-clipboard-check"></i></button>`;
+            h += `<button class="ag-action-btn" title="${d.partner_id ? 'سند سود همکار / تسویه / مودیان' : 'ویرایش وضعیت تسویه/مودیان'}" onclick="stEditStatus(${d.id})"><i class="bi bi-clipboard-check"></i></button>`;
             return h;
         }
 
@@ -377,14 +381,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 save: p => apiSend('PATCH', '/inv/invoices/' + id + '/partner-percent', { percent: p }),
                 onSaved: loadAll,
             });
-        }
-
-        function chkCell(p) {
-            if (!p.data.partner_id) return '—';
-            return `<div class="form-check form-switch mb-0 d-flex justify-content-center">
-                <input class="form-check-input pm-chk" type="checkbox" role="switch"
-                    ${p.value ? 'checked' : ''} onchange="toggleProfitRecorded(${p.data.id}, this.checked)">
-            </div>`;
         }
 
         const SETTLE_LABEL = {
@@ -466,13 +462,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 cellRenderer: p => p.data.partner_id ? money(p.value) : '—'
             },
             {
-                headerName: 'ثبت سود',
-                field: 'partner_profit_recorded',
-                width: 90,
-                sortable: false,
-                cellRenderer: chkCell
-            },
-            {
                 headerName: 'تسویه',
                 field: 'settlement_status',
                 width: 130,
@@ -514,8 +503,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             paginationPageSizeSelector: [20, 50, 100],
             onPaginationChanged: () => AgGridFa.persianizePaging(),
             onRowClicked: (e) => {
-                // کلیک روی دکمه‌های ستون «عملیات» یا هر کنترل فرمی (مثل سوئیچ
-                // «ثبت سود») نباید صفحه را عوض کند — فقط خود همان کنترل کار کند
+                // کلیک روی دکمه‌های ستون «عملیات» یا هر کنترل فرمی داخل سلول
+                // نباید صفحه را عوض کند — فقط خود همان کنترل کار کند
                 if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn, input, .form-check')) return;
                 // اگر کاربر متنی را انتخاب کرده، رهایش کن
                 if (window.getSelection && String(window.getSelection()).length > 0) return;
@@ -626,20 +615,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             });
         }
 
-        async function toggleProfitRecorded(id, checked) {
-            try {
-                await apiSend('PATCH', '/inv/invoices/' + id + '/partner-status', {
-                    partner_profit_recorded: checked
-                });
-                const row = allRows.find(r => r.id === id);
-                if (row) row.partner_profit_recorded = checked;
-                showToast('ذخیره شد', 'success');
-            } catch (e) {
-                showToast(e.message || 'خطا', 'error');
-                loadAll();
-            }
-        }
-
         // ── ویرایش تسویه/مودیان از مودال (نه <select> داخل سلول — کشویی
         //    آن داخل ردیف AG-Grid کلیپ می‌شد و بخشی از گزینه‌ها دیده نمی‌شد) ──
         let stRow = null;
@@ -657,6 +632,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             document.getElementById('stSettlement').value = row.settlement_status || 'unsettled';
             document.getElementById('stMoadian').value = row.moadian_status || 'unregistered';
             document.getElementById('stCode').value = row.moadian_code || '';
+            document.getElementById('stProfitWrap').hidden = !row.partner_id;
+            document.getElementById('stProfit').checked = !!row.partner_profit_recorded;
             stToggleCode();
             document.getElementById('stAlert').innerHTML = '';
             new bootstrap.Modal(document.getElementById('stModal')).show();
@@ -674,15 +651,20 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 return;
             }
             alertBox('');
+            const body = {
+                settlement_status: settlement,
+                moadian_status: moadian,
+                moadian_code: moadian === 'registered' ? code : '',
+            };
+            // سند سود همکار فقط برای فاکتورِ دارای همکار فرستاده می‌شود
+            const profit = document.getElementById('stProfit').checked;
+            if (stRow.partner_id) body.partner_profit_recorded = profit;
             try {
-                await apiSend('PATCH', '/inv/invoices/' + stRow.id + '/partner-status', {
-                    settlement_status: settlement,
-                    moadian_status: moadian,
-                    moadian_code: moadian === 'registered' ? code : '',
-                });
+                await apiSend('PATCH', '/inv/invoices/' + stRow.id + '/partner-status', body);
                 stRow.settlement_status = settlement;
                 stRow.moadian_status = moadian;
                 stRow.moadian_code = moadian === 'registered' ? code : '';
+                if (stRow.partner_id) stRow.partner_profit_recorded = profit;
                 gridApi.setGridOption('rowData', allRows);
                 bootstrap.Modal.getInstance(document.getElementById('stModal')).hide();
                 showToast('ذخیره شد', 'success');
