@@ -47,6 +47,25 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             min-width: 0;
         }
 
+        /* استثنای درصد سهم همکار (زیر انتخاب همکار) */
+        .pov-box {
+            margin-top: 6px;
+            font-size: .82rem;
+        }
+
+        .pov-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            white-space: nowrap;
+        }
+
+        .pov-row input {
+            width: 72px;
+            text-align: center;
+        }
+
         /* یادداشت «این فاکتور قبلا نهایی بوده و به پیش‌نویس برگشته» */
         #revertNote {
             font-size: .85rem;
@@ -299,6 +318,20 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <div>
                     <label class="form-label">همکار <span class="text-muted" style="font-weight:400">(اختیاری)</span></label>
                     <div id="partnerPicker"></div>
+                    <!-- استثنای درصد سهم همکار فقط برای همین فاکتور (فقط وقتی همکار انتخاب شده).
+                         form-check عمدا نیست: padding/margin منفی‌اش در RTL متن را روی سوئیچ می‌انداخت. -->
+                    <div class="pov-box" id="partnerOverrideBox" hidden>
+                        <div class="form-switch d-flex align-items-center m-0" style="gap:6px;padding:0">
+                            <input class="form-check-input m-0" type="checkbox" id="f_pct_override_on" role="switch" style="margin:0;float:none;cursor:pointer">
+                            <label class="form-check-label m-0" for="f_pct_override_on" style="cursor:pointer;user-select:none"
+                                title="فقط برای همین فاکتور، به‌جای درصد ماه، درصد دیگری برای سهم همکار بگذارید">درصد اختصاصی</label>
+                        </div>
+                        <div class="pov-row" id="partnerOverrideRow" hidden>
+                            <input type="text" class="form-control form-control-sm" id="f_pct_override" inputmode="decimal" dir="ltr" autocomplete="off" aria-label="درصد سهم همکار برای این فاکتور">
+                            <span>٪</span>
+                            <span class="text-muted" id="partnerMonthPctHint"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -327,7 +360,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 <div class="tl"><span>جمع کل</span><span id="t_subtotal">۰</span></div>
                 <div class="tl"><span>تخفیف</span><span id="t_discount">۰</span></div>
                 <div class="tl"><span>مالیات بر ارزش افزوده (<span id="t_vatrate">۰</span>٪)</span><span id="t_tax">۰</span></div>
-                <div class="tl" id="row_partner_pct" hidden><span>سهم همکار (ماه صدور)</span><span id="t_partner_pct">۰٪</span></div>
+                <div class="tl" id="row_partner_pct" hidden><span id="t_partner_pct_lbl">سهم همکار (ماه صدور)</span><span id="t_partner_pct">۰٪</span></div>
                 <div class="tl" id="row_partner_profit" hidden><span>مبلغ سود همکار</span><span id="t_partner_profit">۰</span></div>
                 <div class="tl grand"><span>مبلغ قابل پرداخت</span><span id="t_total">۰</span></div>
             </div>
@@ -412,6 +445,41 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
         let partners = [];
         let partnerPercent = 0; // درصد سهم همکار در ماه صدور (زنده — از سرور)
         let hasPartner = false;
+
+        // ── استثنای درصد سهم همکار برای همین فاکتور ──
+        // درصد را جدا از num() می‌خوانیم: num() هر غیررقمی را حذف می‌کند و «۲٫۵»
+        // (جداکنندهٔ اعشار فارسی) را ۲۵ می‌کرد. خروجی null = نامعتبر/خالی.
+        function parsePercent(v) {
+            const s = toEn(v).trim().replace(/[٫\/]/g, '.').replace(/٪|%/g, '').trim();
+            if (!/^\d+(\.\d+)?$/.test(s)) return null;
+            const n = parseFloat(s);
+            return (n >= 0 && n <= 100) ? n : null;
+        }
+
+        function overrideOn() {
+            return hasPartner && document.getElementById('f_pct_override_on').checked;
+        }
+
+        // درصد مؤثر = استثنای فاکتور اگر روشن و معتبر است، وگرنه درصد ماه
+        function effectivePartnerPercent() {
+            if (overrideOn()) {
+                const p = parsePercent(document.getElementById('f_pct_override').value);
+                if (p !== null) return p;
+            }
+            return partnerPercent;
+        }
+
+        function syncOverrideUI() {
+            if (!hasPartner) {
+                // همکار برداشته شد → استثنای قبلی هم پاک شود (سرور هم بدون همکار NULL ذخیره می‌کند)
+                document.getElementById('f_pct_override_on').checked = false;
+                document.getElementById('f_pct_override').value = '';
+            }
+            document.getElementById('partnerOverrideBox').hidden = !hasPartner;
+            document.getElementById('partnerOverrideRow').hidden = !overrideOn();
+            document.getElementById('partnerMonthPctHint').textContent =
+                hasPartner ? '(ماه: ' + faDigits(partnerPercent) + '٪)' : '';
+        }
 
         // آیتم‌های EntityPicker از فهرست مشتریان ثبت‌شده (انتخاب اجباری از لیست)
         function custItems() {
@@ -517,6 +585,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     }
                 }
             }
+            syncOverrideUI();
             recalc();
         }
 
@@ -706,8 +775,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const rowProfit = document.getElementById('row_partner_profit');
             if (hasPartner && !INV_ID) {
                 const preTax = Math.max(0, subtotal - discount);
-                const profit = Math.round(preTax * partnerPercent / 100);
-                document.getElementById('t_partner_pct').textContent = faDigits(partnerPercent) + '٪';
+                const pct = effectivePartnerPercent();
+                const profit = Math.round(preTax * pct / 100);
+                document.getElementById('t_partner_pct_lbl').textContent =
+                    overrideOn() ? 'سهم همکار (اختصاصی این فاکتور)' : 'سهم همکار (ماه صدور)';
+                document.getElementById('t_partner_pct').textContent = faDigits(pct) + '٪';
                 document.getElementById('t_partner_profit').textContent = money(profit);
                 rowPct.hidden = false;
                 rowProfit.hidden = false;
@@ -751,6 +823,13 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     customer_id: cust ? cust.id : 0,
                     customer_name: '',
                     partner_id: (partnerPicker && partnerPicker.getValue()) ? partnerPicker.getValue().id : 0,
+                    // undefined = کلید اصلا ارسال نمی‌شود = درصد ماه (سرور هم NULL ذخیره می‌کند و
+                    // استثنای قبلی پاک می‌شود). عمدا null نیست: crm-service فیلد ناشناخته را رد
+                    // می‌کند (DisallowUnknownFields)، پس اگر صفحهٔ تازه به سرویس قدیمی برسد (لحظهٔ
+                    // دیپلوی)، فقط فاکتورِ دارای استثنا خطا بدهد نه همهٔ فاکتورها.
+                    // NaN = سوئیچ روشن ولی عدد نامعتبر (در save جلویش گرفته می‌شود).
+                    partner_percent_override: overrideOn() ?
+                        (parsePercent(document.getElementById('f_pct_override').value) ?? NaN) : undefined,
                     issue_date: issue,
                     payment_type: document.getElementById('f_payment_type').value,
                     note: document.getElementById('f_note').value.trim(),
@@ -775,6 +854,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             if (body.seq_no !== null && !(body.seq_no >= 1)) {
                 alertBox('شماره فاکتور باید یک عدد بزرگ‌تر از صفر باشد.');
                 document.getElementById('f_seq_no').focus();
+                return;
+            }
+            if (Number.isNaN(body.partner_percent_override)) {
+                alertBox('درصد اختصاصی سهم همکار باید عددی بین ۰ تا ۱۰۰ باشد (مثلا ۲٫۵). یا سوئیچ «درصد اختصاصی» را خاموش کنید.');
+                document.getElementById('f_pct_override').focus();
                 return;
             }
             alertBox('');
@@ -863,6 +947,25 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 onSelect: () => refreshPartnerProfit(),
             });
 
+            // استثنای درصد سهم همکار: روشن‌کردن سوئیچ، فیلد را با درصد ماه پر می‌کند تا
+            // کاربر فقط عدد را عوض کند؛ خاموش‌کردن = برگشت به درصد ماه.
+            const ovOn = document.getElementById('f_pct_override_on');
+            const ovIn = document.getElementById('f_pct_override');
+            ovOn.addEventListener('change', () => {
+                if (ovOn.checked && !ovIn.value.trim()) ovIn.value = faDigits(partnerPercent);
+                syncOverrideUI();
+                recalc();
+                if (ovOn.checked) {
+                    ovIn.focus();
+                    ovIn.select();
+                }
+            });
+            ovIn.addEventListener('input', recalc);
+            ovIn.addEventListener('blur', () => {
+                const p = parsePercent(ovIn.value);
+                if (p !== null) ovIn.value = faDigits(p);
+            });
+
             // کالاها — در حالت ویرایش، خود این فاکتور از محاسبه‌ی رزرو کنار می‌رود.
             const exParam = INV_ID ? '&exclude_invoice=' + INV_ID : '';
             await reloadProducts(exParam);
@@ -914,6 +1017,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     }
                     // همکار — بعد از ست تاریخ صدور تا درصد ماه درست خوانده شود
                     if (partnerPicker && inv.partner_id) partnerPicker.setValue(inv.partner_id);
+                    // استثنای درصد سهم همکار برای همین فاکتور (اگر قبلا گذاشته شده)
+                    if (inv.partner_id && inv.partner_percent_override != null) {
+                        document.getElementById('f_pct_override_on').checked = true;
+                        document.getElementById('f_pct_override').value = faDigits(inv.partner_percent_override);
+                    }
                     (inv.items || []).forEach(addRow);
                 } catch (e) {
                     alertBox('بارگذاری فاکتور ناموفق بود: ' + (e.message || ''));

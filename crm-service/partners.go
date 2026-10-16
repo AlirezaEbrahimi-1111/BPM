@@ -189,6 +189,32 @@ func (s *server) partnerPercent(partnerID int64, jy, jm int) float64 {
 	return 0
 }
 
+// effectivePartnerPercent: درصد مؤثر سهم همکار برای یک فاکتور = استثنای خود
+// فاکتور (inv_invoices.partner_percent_override) اگر هست، وگرنه درصد ماه شمسی
+// صدور. خروجی دوم: آیا از استثنا آمده. cache (اختیاری) برای فهرست‌هاست تا
+// برای ردیف‌های هم‌ماه یک همکار چندبار کوئری نزند. همهٔ محاسبه‌های سهم باید
+// از همین تابع بگذرند تا عدد در فهرست/جزئیات/گزارش یکی بماند.
+func (s *server) effectivePartnerPercent(override sql.NullFloat64, partnerID int64, jy, jm int, cache map[[3]int]float64) (float64, bool) {
+	if override.Valid {
+		return override.Float64, true
+	}
+	if cache == nil {
+		return s.partnerPercent(partnerID, jy, jm), false
+	}
+	key := [3]int{int(partnerID), jy, jm}
+	if v, ok := cache[key]; ok {
+		return v, false
+	}
+	v := s.partnerPercent(partnerID, jy, jm)
+	cache[key] = v
+	return v, false
+}
+
+// validPartnerPercent: درصد سهم باید بین ۰ و ۱۰۰ باشد (مثل setPartnerShare).
+func validPartnerPercent(p *float64) bool {
+	return p == nil || (*p >= 0 && *p <= 100)
+}
+
 // GET /crm/api/inv/partners/{id}/shares?jy=1405   → همهٔ ۱۲ ماه آن سال
 func (s *server) listPartnerShares(w http.ResponseWriter, r *http.Request) {
 	id := idParam(r)
@@ -321,7 +347,8 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 		       COALESCE(DATE_FORMAT(i.issue_date,'%Y-%m-%d'), DATE_FORMAT(i.created_at,'%Y-%m-%d')),
 		       i.partner_id, COALESCE(p.name,'—'),
 		       i.subtotal_amount, i.discount_amount, i.tax_amount, i.total_amount,
-		       i.partner_profit_recorded, i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,'')
+		       i.partner_profit_recorded, i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,''),
+		       i.partner_percent_override
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
 		LEFT JOIN inv_partners  p ON p.id = i.partner_id
@@ -346,10 +373,11 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 			subtotal, discount, tax, total int64
 			recorded                       int
 			settlement, moadian, mcode     string
+			pctOverride                    sql.NullFloat64
 		)
 		if err := rows.Scan(&id, &docType, &number, &status, &customerName, &issueDate,
 			&partnerID, &partnerName, &subtotal, &discount, &tax, &total,
-			&recorded, &settlement, &moadian, &mcode); err != nil {
+			&recorded, &settlement, &moadian, &mcode, &pctOverride); err != nil {
 			writeDBErr(w, "partnerReport", err)
 			return
 		}
@@ -367,12 +395,7 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		key := [3]int{int(partnerID), jy, jm}
-		pct, ok := pctCache[key]
-		if !ok {
-			pct = s.partnerPercent(partnerID, jy, jm)
-			pctCache[key] = pct
-		}
+		pct, isOverride := s.effectivePartnerPercent(pctOverride, partnerID, jy, jm, pctCache)
 		preTax := subtotal - discount
 		if preTax < 0 {
 			preTax = 0
@@ -391,6 +414,7 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 			"jy":                      jy,
 			"jm":                      jm,
 			"percent":                 pct,
+			"percent_is_override":     isOverride,
 			"invoice_amount":          total,
 			"pre_tax_amount":          preTax,
 			"tax_amount":              tax,

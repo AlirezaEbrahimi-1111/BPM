@@ -191,6 +191,11 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         .site-footer { position: fixed !important; left: 0; right: 0; bottom: 0; top: auto !important; margin-top: 0 !important; z-index: 80; }
         body { padding-bottom: 46px; }
         .grid-fill { height: calc(100vh - 340px); min-height: 260px; padding-top: 1rem; }
+
+        /* نشان «درصد اختصاصی این فاکتور» کنار درصد سود همکار */
+        .pct-ov { font-size: .7rem; padding: 1px 5px; border-radius: 6px; margin-inline-start: 4px;
+                  background: rgba(142, 87, 254, .12); color: var(--primary, #8e57fe); }
+        :root[data-theme="dark"] .pct-ov { background: rgba(142, 87, 254, .18); }
     </style>
 </head>
 
@@ -426,9 +431,11 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             {
                 headerName: 'درصد سود',
                 field: 'partner_percent',
-                width: 100,
+                width: 125,
                 type: 'rightAligned',
-                cellRenderer: p => p.data.partner_id ? (faDigits(p.value || 0) + '٪') : '—'
+                cellRenderer: p => !p.data.partner_id ? '—' : faDigits(p.value || 0) + '٪' +
+                    (p.data.partner_percent_is_override ?
+                        '<span class="pct-ov" title="این فاکتور درصد اختصاصی دارد و از درصد ماه پیروی نمی‌کند">اختصاصی</span>' : '')
             },
             {
                 headerName: 'مبلغ سود (ریال)',

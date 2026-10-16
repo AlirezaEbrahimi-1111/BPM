@@ -22,15 +22,26 @@ type invoiceItemIn struct {
 }
 
 type invoiceIn struct {
-	DocType      string          `json:"doc_type"`
-	CustomerID   int64           `json:"customer_id"`
-	CustomerName string          `json:"customer_name"` // اگر شناسه نبود، از این نام یک مشتری «حقیقی» ساخته می‌شود
-	PartnerID    int64           `json:"partner_id"`    // همکار — ۰ یعنی «فاکتور خود شرکت»
-	IssueDate    string          `json:"issue_date"`    // "YYYY-MM-DD" یا ""
-	SeqNo        *int            `json:"seq_no"`        // شماره‌ی فاکتور (ترتیبی در سال شمسی صدور)؛ خالی = شماره‌ی آزاد بعدی
-	PaymentType  string          `json:"payment_type"`  // "cash" | "credit" | ""
-	Note         string          `json:"note"`
-	Items        []invoiceItemIn `json:"items"`
+	DocType      string `json:"doc_type"`
+	CustomerID   int64  `json:"customer_id"`
+	CustomerName string `json:"customer_name"` // اگر شناسه نبود، از این نام یک مشتری «حقیقی» ساخته می‌شود
+	PartnerID    int64  `json:"partner_id"`    // همکار — ۰ یعنی «فاکتور خود شرکت»
+	// درصد سهم همکار اختصاصی همین فاکتور؛ nil = درصد ماه (رفتار عادی)
+	PartnerPercentOverride *float64        `json:"partner_percent_override"`
+	IssueDate              string          `json:"issue_date"`   // "YYYY-MM-DD" یا ""
+	SeqNo                  *int            `json:"seq_no"`       // شماره‌ی فاکتور (ترتیبی در سال شمسی صدور)؛ خالی = شماره‌ی آزاد بعدی
+	PaymentType            string          `json:"payment_type"` // "cash" | "credit" | ""
+	Note                   string          `json:"note"`
+	Items                  []invoiceItemIn `json:"items"`
+}
+
+// partnerOverrideArg: مقدار ستون partner_percent_override برای ذخیره. بدون همکار
+// یا بدون استثنا → NULL (تا با برداشتن همکار، استثنای قدیمی سرگردان نماند).
+func (in *invoiceIn) partnerOverrideArg() any {
+	if in.PartnerID <= 0 || in.PartnerPercentOverride == nil {
+		return nil
+	}
+	return *in.PartnerPercentOverride
 }
 
 func normalizePaymentType(t string) any {
@@ -86,14 +97,16 @@ type invoiceOut struct {
 	RevertCount int    `json:"revert_count"`
 
 	// همکار (اگر فاکتور به‌درخواست یک همکار صادر شده)
-	PartnerID             *int64  `json:"partner_id"`
-	PartnerName           string  `json:"partner_name"`
-	PartnerPercent        float64 `json:"partner_percent"`       // درصد سهم ماه صدور (زنده)
-	PartnerProfitAmount   int64   `json:"partner_profit_amount"` // percent × (subtotal - discount)
-	PartnerProfitRecorded bool    `json:"partner_profit_recorded"`
-	SettlementStatus      string  `json:"settlement_status"`
-	MoadianStatus         string  `json:"moadian_status"`
-	MoadianCode           string  `json:"moadian_code"`
+	PartnerID                *int64   `json:"partner_id"`
+	PartnerName              string   `json:"partner_name"`
+	PartnerPercent           float64  `json:"partner_percent"`             // درصد مؤثر: استثنای فاکتور، وگرنه درصد ماه صدور (زنده)
+	PartnerPercentIsOverride bool     `json:"partner_percent_is_override"` // درصد از استثنای همین فاکتور آمده؟
+	PartnerPercentOverride   *float64 `json:"partner_percent_override"`    // مقدار استثنا (nil = ندارد)
+	PartnerProfitAmount      int64    `json:"partner_profit_amount"`       // percent × (subtotal - discount)
+	PartnerProfitRecorded    bool     `json:"partner_profit_recorded"`
+	SettlementStatus         string   `json:"settlement_status"`
+	MoadianStatus            string   `json:"moadian_status"`
+	MoadianCode              string   `json:"moadian_code"`
 
 	Items []invoiceItemOut `json:"items,omitempty"`
 }
@@ -239,7 +252,8 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 		       DATE_FORMAT(i.created_at,'%Y-%m-%d %H:%i'),
 		       COALESCE(DATE_FORMAT(i.approved_at,'%Y-%m-%d %H:%i'),''),
 		       i.converted_to_id, i.partner_id, COALESCE(p.name,''),
-		       i.partner_profit_recorded, i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,'')
+		       i.partner_profit_recorded, i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,''),
+		       i.partner_percent_override
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
 		LEFT JOIN inv_partners  p ON p.id = i.partner_id
@@ -260,12 +274,13 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var o invoiceOut
 		var sy, sn, conv, pid sql.NullInt64
+		var pctOverride sql.NullFloat64
 		var partnerName string
 		var recordedInt int
 		if err := rows.Scan(&o.ID, &o.DocType, &o.Number, &sy, &sn, &o.CustomerID, &o.CustomerName,
 			&o.IssueDate, &o.Status, &o.Source, &o.PaymentType, &o.Subtotal, &o.DiscountAmount, &o.TaxAmount,
 			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv, &pid, &partnerName,
-			&recordedInt, &o.SettlementStatus, &o.MoadianStatus, &o.MoadianCode); err != nil {
+			&recordedInt, &o.SettlementStatus, &o.MoadianStatus, &o.MoadianCode, &pctOverride); err != nil {
 			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 			return
 		}
@@ -293,13 +308,12 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 			} else {
 				jy, jm = jalaliYMOf(time.Time{})
 			}
-			key := [3]int{int(v), jy, jm}
-			pct, ok := pctCache[key]
-			if !ok {
-				pct = s.partnerPercent(v, jy, jm)
-				pctCache[key] = pct
+			pct, isOv := s.effectivePartnerPercent(pctOverride, v, jy, jm, pctCache)
+			o.PartnerPercent, o.PartnerPercentIsOverride = pct, isOv
+			if pctOverride.Valid {
+				ov := pctOverride.Float64
+				o.PartnerPercentOverride = &ov
 			}
-			o.PartnerPercent = pct
 			preTax := o.Subtotal - o.DiscountAmount
 			if preTax < 0 {
 				preTax = 0
@@ -318,6 +332,7 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 
 	var o invoiceOut
 	var sy, sn, conv, pid sql.NullInt64
+	var pctOverride sql.NullFloat64
 	var partnerName, settlement, moadian, mcode string
 	var recordedInt int
 	err := s.db.QueryRow(`
@@ -329,7 +344,8 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 		       COALESCE(DATE_FORMAT(i.approved_at,'%Y-%m-%d %H:%i'),''),
 		       i.converted_to_id,
 		       i.partner_id, COALESCE(p.name,''), i.partner_profit_recorded,
-		       i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,'')
+		       i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,''),
+		       i.partner_percent_override
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
 		LEFT JOIN inv_partners  p ON p.id = i.partner_id
@@ -337,7 +353,7 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 		Scan(&o.ID, &o.DocType, &o.Number, &sy, &sn, &o.CustomerID, &o.CustomerName,
 			&o.IssueDate, &o.Status, &o.Source, &o.PaymentType, &o.Subtotal, &o.DiscountAmount, &o.TaxAmount,
 			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv,
-			&pid, &partnerName, &recordedInt, &settlement, &moadian, &mcode)
+			&pid, &partnerName, &recordedInt, &settlement, &moadian, &mcode, &pctOverride)
 	if err == sql.ErrNoRows {
 		writeErr(w, http.StatusNotFound, "فاکتور یافت نشد")
 		return
@@ -372,7 +388,11 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 		} else {
 			jy, jm = jalaliYMOf(time.Time{})
 		}
-		o.PartnerPercent = s.partnerPercent(v, jy, jm)
+		o.PartnerPercent, o.PartnerPercentIsOverride = s.effectivePartnerPercent(pctOverride, v, jy, jm, nil)
+		if pctOverride.Valid {
+			ov := pctOverride.Float64
+			o.PartnerPercentOverride = &ov
+		}
 		preTax := o.Subtotal - o.DiscountAmount
 		if preTax < 0 {
 			preTax = 0
@@ -563,14 +583,18 @@ func (s *server) createInvoice(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "همکار انتخاب‌شده معتبر نیست")
 		return
 	}
+	if !validPartnerPercent(in.PartnerPercentOverride) {
+		writeErr(w, http.StatusBadRequest, "درصد سهم همکار باید بین ۰ و ۱۰۰ باشد")
+		return
+	}
 
 	res, err := tx.Exec(`
 		INSERT INTO inv_invoices
-		  (organization_id, doc_type, customer_id, partner_id, warehouse_id, issue_date, status, source,
+		  (organization_id, doc_type, customer_id, partner_id, partner_percent_override, warehouse_id, issue_date, status, source,
 		   payment_type, subtotal_amount, discount_amount, tax_amount, total_amount, note, created_by,
 		   seq_year, seq_no, number)
-		VALUES (?, ?, ?, ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		u.OrgID, docType, custID, nullableID(in.PartnerID), s.officialWarehouseID, issueNS,
+		VALUES (?, ?, ?, ?, ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		u.OrgID, docType, custID, nullableID(in.PartnerID), in.partnerOverrideArg(), s.officialWarehouseID, issueNS,
 		normalizePaymentType(in.PaymentType), sub, disc, tax, total, nullIfEmpty(in.Note), u.ID,
 		jy, seqNo, number)
 	if isDuplicateKey(err) {
@@ -661,13 +685,17 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "همکار انتخاب‌شده معتبر نیست")
 		return
 	}
+	if !validPartnerPercent(in.PartnerPercentOverride) {
+		writeErr(w, http.StatusBadRequest, "درصد سهم همکار باید بین ۰ و ۱۰۰ باشد")
+		return
+	}
 
 	if _, err := tx.Exec(`
 		UPDATE inv_invoices
-		SET doc_type = ?, customer_id = ?, partner_id = ?, issue_date = ?, payment_type = ?, note = ?,
+		SET doc_type = ?, customer_id = ?, partner_id = ?, partner_percent_override = ?, issue_date = ?, payment_type = ?, note = ?,
 		    subtotal_amount = ?, discount_amount = ?, tax_amount = ?, total_amount = ?
 		WHERE id = ?`,
-		docType, custID, nullableID(in.PartnerID), issueNS, normalizePaymentType(in.PaymentType), nullIfEmpty(in.Note),
+		docType, custID, nullableID(in.PartnerID), in.partnerOverrideArg(), issueNS, normalizePaymentType(in.PaymentType), nullIfEmpty(in.Note),
 		sub, disc, tax, total, id); err != nil {
 		writeErr(w, http.StatusInternalServerError, "به‌روزرسانی ناموفق بود")
 		return
@@ -1014,15 +1042,17 @@ func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 
 	var docType, status, issueDate, note, number, paymentType string
 	var convertedTo, partnerID sql.NullInt64
+	var pctOverride sql.NullFloat64
 	var customerID, warehouseID int64
 	var subtotal, discount, tax, total int64
 	err = tx.QueryRow(`
 		SELECT doc_type, status, COALESCE(issue_date,''), COALESCE(note,''), COALESCE(number,''),
 		       COALESCE(payment_type,''), customer_id, warehouse_id,
-		       subtotal_amount, discount_amount, tax_amount, total_amount, converted_to_id, partner_id
+		       subtotal_amount, discount_amount, tax_amount, total_amount, converted_to_id, partner_id,
+		       partner_percent_override
 		FROM inv_invoices WHERE id = ? AND organization_id = ? FOR UPDATE`, id, u.OrgID).
 		Scan(&docType, &status, &issueDate, &note, &number, &paymentType, &customerID, &warehouseID,
-			&subtotal, &discount, &tax, &total, &convertedTo, &partnerID)
+			&subtotal, &discount, &tax, &total, &convertedTo, &partnerID, &pctOverride)
 	if err == sql.ErrNoRows {
 		writeErr(w, http.StatusNotFound, "پیش‌فاکتور یافت نشد")
 		return
@@ -1058,16 +1088,19 @@ func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 		newNote += "\n" + note
 	}
 
-	var partnerVal any
+	var partnerVal, overrideVal any
 	if partnerID.Valid && partnerID.Int64 > 0 {
 		partnerVal = partnerID.Int64
+		if pctOverride.Valid {
+			overrideVal = pctOverride.Float64 // استثنای درصد همکار هم با پیش‌فاکتور منتقل می‌شود
+		}
 	}
 	res, err := tx.Exec(`
 		INSERT INTO inv_invoices
-		  (organization_id, doc_type, customer_id, partner_id, warehouse_id, issue_date, status, source,
+		  (organization_id, doc_type, customer_id, partner_id, partner_percent_override, warehouse_id, issue_date, status, source,
 		   payment_type, subtotal_amount, discount_amount, tax_amount, total_amount, note, created_by)
-		VALUES (?, 'official', ?, ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?, ?)`,
-		u.OrgID, customerID, partnerVal, warehouseID, nullIfEmpty(issueDate),
+		VALUES (?, 'official', ?, ?, ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?, ?)`,
+		u.OrgID, customerID, partnerVal, overrideVal, warehouseID, nullIfEmpty(issueDate),
 		normalizePaymentType(paymentType), subtotal, discount, tax, total, newNote, u.ID)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "ساخت فاکتور رسمی ناموفق بود")

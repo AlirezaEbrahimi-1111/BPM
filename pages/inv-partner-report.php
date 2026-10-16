@@ -259,6 +259,11 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             background: rgba(142, 87, 254, .18) !important;
             border-color: rgba(142, 87, 254, .18) !important;
         }
+
+        /* نشان «درصد اختصاصی این فاکتور» کنار درصد سود */
+        .pct-ov { font-size: .7rem; padding: 1px 5px; border-radius: 6px; margin-inline-start: 4px;
+                  background: rgba(142, 87, 254, .12); color: var(--primary, #8e57fe); }
+        :root[data-theme="dark"] .pct-ov { background: rgba(142, 87, 254, .18); }
     </style>
 </head>
 
@@ -599,9 +604,11 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             {
                 headerName: 'درصد سود',
                 field: 'percent',
-                width: 100,
+                width: 125,
                 type: 'rightAligned',
-                cellRenderer: p => faDigits(p.value || 0) + '٪'
+                cellRenderer: p => faDigits(p.value || 0) + '٪' +
+                    (p.data.percent_is_override ?
+                        '<span class="pct-ov" title="این فاکتور درصد اختصاصی دارد و از درصد ماه پیروی نمی‌کند">اختصاصی</span>' : '')
             },
             {
                 headerName: 'مبلغ فاکتور (ریال)',
