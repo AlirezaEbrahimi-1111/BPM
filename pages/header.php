@@ -111,6 +111,11 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
 <link rel="stylesheet" href="<?= asset('/assets/fonts/Vazirmatn-font-face.css') ?>">
 
 <style>
+    /* دیالوگِ «خروج مسدود شد»: فهرستِ عنوانِ کارهای مانع */
+    #checkoutBlockOverlay .cb-task { display: block; padding: 7px 10px; border-radius: 8px; font-size: 13px; color: var(--text-strong, #2d3748); text-decoration: none; text-align: start; }
+    #checkoutBlockOverlay .cb-task:hover { background: rgba(142, 87, 254, .12); color: #8e57fe; }
+    :root[data-theme="dark"] #checkoutBlockOverlay .cb-task:hover { background: rgba(142, 87, 254, .18); }
+
     /* یکدست‌سازی بج زنگ اعلان/مگافون اطلاعیه/چت: هر سه از حالا کلاس
        .notification-badge رو مشترک استفاده می‌کنن (تعریف اصلی در custom.css،
        سمت راست، سایز ۲۰px) — این بلاک قبلا یک نسخهٔ دوم و ناقص از همون
@@ -2629,7 +2634,7 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
 
             } else if (data.blocked_by_tasks) {
                 // خروج به‌خاطر کارهای معوقه/امروزموعد مسدود شد → دیالوگ با دکمهٔ رفتن
-                showCheckoutBlockedDialog(data.message, data.redirect || '/pages/my-tasks.php?filter=overdue');
+                showCheckoutBlockedDialog(data.message, data.redirect || '/pages/my-tasks.php?filter=overdue', data.tasks, data.tasks_count);
                 loadAttendanceStatus();
             } else {
                 showToast(data.message || 'خطا در ثبت', 'error');
@@ -2643,7 +2648,22 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
     }
 
     // دیالوگِ «خروج مسدود شد» با دکمهٔ رفتن به کارهای معوقه
-    function showCheckoutBlockedDialog(message, redirectUrl) {
+    function showCheckoutBlockedDialog(message, redirectUrl, tasks, total) {
+        var h = function (v) {
+            return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        };
+        // فهرستِ عنوانِ کارهای مانع (هر کدام لینک به صفحهٔ جزئیات کار)
+        var list = '';
+        if (tasks && tasks.length) {
+            list = '<div style="text-align:right;margin:-6px 0 16px;max-height:190px;overflow-y:auto;border:1px solid var(--border-soft,#e2e2e2);border-radius:10px;padding:6px">' +
+                tasks.map(function (t) {
+                    return '<a class="cb-task" href="/pages/task-detail.php?id=' + encodeURIComponent(t.id) + '" dir="auto">' + h(t.title || ('کار ' + t.id)) + '</a>';
+                }).join('') +
+                (total > tasks.length ? '<div style="font-size:12px;color:var(--text-muted,#6b7490);padding:4px 8px">و ' + h(typeof faDigits === 'function' ? faDigits(String(total - tasks.length)) : total - tasks.length) + ' کار دیگر…</div>' : '') +
+                '</div>';
+        }
         var old = document.getElementById('checkoutBlockOverlay');
         if (old) old.remove();
         var ov = document.createElement('div');
@@ -2653,7 +2673,8 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
             '<div style="background:var(--surface,#fff);color:var(--text-strong,#2d3748);max-width:420px;width:100%;border-radius:16px;padding:22px;box-shadow:0 10px 40px rgba(0,0,0,.25);font-family:Vazirmatn,sans-serif;text-align:center" dir="rtl">' +
             '<div style="font-size:40px;line-height:1;margin-bottom:10px">⛔</div>' +
             '<div style="font-weight:700;font-size:16px;margin-bottom:8px">امکان ثبت خروج نیست</div>' +
-            '<div style="font-size:13.5px;color:var(--text-muted,#6b7490);margin-bottom:18px;line-height:1.7">' + (message || '') + '</div>' +
+            '<div style="font-size:13.5px;color:var(--text-muted,#6b7490);margin-bottom:18px;line-height:1.7">' + h(message) + '</div>' +
+            list +
             '<div style="display:flex;gap:10px;justify-content:center">' +
             '<button id="cbGo" style="background:#8e57fe;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit">رفتن به کارهای معوقه</button>' +
             '<button id="cbClose" style="background:transparent;color:var(--text-muted,#6b7490);border:1px solid var(--border-soft,#e2e2e2);border-radius:10px;padding:10px 16px;cursor:pointer;font-family:inherit">بستن</button>' +

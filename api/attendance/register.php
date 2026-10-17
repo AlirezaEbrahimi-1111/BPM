@@ -486,6 +486,10 @@ try {
                         'success'          => false,
                         'blocked_by_tasks' => true,
                         'tasks_count'      => count($blocking),
+                        // عنوانِ کارهای مانع برای نمایش در دیالوگ (حداکثر ۱۰ تا)
+                        'tasks'            => array_map(function ($t) {
+                            return ['id' => $t['id'], 'title' => $t['title']];
+                        }, array_slice($blocking, 0, 10)),
                         'redirect'         => '/pages/my-tasks.php?filter=due_block',
                         'message'          => 'به دلیل داشتن ' . count($blocking) . ' کارِ معوقه/امروز‌موعدِ تکمیل‌نشده، امکان ثبت خروج نیست. ابتدا آن‌ها را تعیین تکلیف (تکمیل) کنید.',
                     ], JSON_UNESCAPED_UNICODE);

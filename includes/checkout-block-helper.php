@@ -14,7 +14,12 @@
  *    کاری که تأییدکننده رد می‌کند به in_progress برمی‌گردد، نه rejected. فهرست
  *    «کارهای من» (go-api mytasks: t.status != 'rejected') هم این‌ها را نشان نمی‌دهد؛
  *    مانع‌حساب‌کردنشان خروج را برای همیشه می‌بست بی‌آن‌که کاربر کاری ببیند.
- * ⚠️ این تعریف باید با فیلتر due_block در pages/my-tasks.php یکی بماند.
+ * ⚠️ کاری که «درخواست تمدید موعد»ش در انتظار تأییدِ نفر دیگری است مانع نیست
+ *    (اصلاح ۱۴۰۵/۰۷/۲۵): «کارهای من» (go-api mytasks: dr.current_approver_id IS NULL)
+ *    آن را از فهرست انجام‌دهنده برمی‌دارد و نوبت با تأییدکننده است؛ مانع‌حساب‌کردنش
+ *    خروج را می‌بست بی‌آن‌که کاربر کاری ببیند. با جوابِ مدیر دوباره حساب می‌شود.
+ * ⚠️ این تعریف باید با go-api/internal/tasks/mytasks.go و فیلتر due_block در
+ *    pages/my-tasks.php یکی بماند.
  *
  * سه نوع کار پوشش داده می‌شود (مثل includes/delayed-tasks-helper.php، ولی
  * تعریفِ «مانع» این‌جا عمداً فرق دارد: شاملِ موعدِ امروز):
@@ -33,23 +38,30 @@ function userBlockingTasks(PDO $db, int $userId, ?string $today = null): array
     if ($userId <= 0) return [];
     $today = $today ?: date('Y-m-d');
     $BLOCK = "'not_started','in_progress'";
+    // هم‌تعریف با go-api mytasks: درخواست تمدیدِ در انتظارِ نفرِ دیگر → از فهرستِ کاربر پنهان است
+    $NO_PENDING_DR = "NOT EXISTS (
+            SELECT 1 FROM deadline_requests dr
+            WHERE dr.task_id = t.id AND dr.status = 'pending'
+              AND dr.current_approver_id IS NOT NULL AND dr.current_approver_id <> ?
+        )";
     $out = [];
 
     // ── ۱) کارهای مقطعی (periodic، غیرِ روتین) با موعدِ امروز یا گذشته ──
     $st = $db->prepare("
-        SELECT id, title,
+        SELECT t.id, t.title,
             GREATEST(
-                COALESCE(CAST(due_date AS DATE), CAST('1000-01-01' AS DATE)),
-                COALESCE(CAST(deadline AS DATE), CAST('1000-01-01' AS DATE)),
-                COALESCE(CAST(original_deadline AS DATE), CAST('1000-01-01' AS DATE))
+                COALESCE(CAST(t.due_date AS DATE), CAST('1000-01-01' AS DATE)),
+                COALESCE(CAST(t.deadline AS DATE), CAST('1000-01-01' AS DATE)),
+                COALESCE(CAST(t.original_deadline AS DATE), CAST('1000-01-01' AS DATE))
             ) AS eff
-        FROM tasks
-        WHERE assignee_id = ? AND is_deleted = 0
-          AND task_type = 'periodic' AND COALESCE(is_workflow_task, 0) = 0
-          AND status IN ($BLOCK)
+        FROM tasks t
+        WHERE t.assignee_id = ? AND t.is_deleted = 0
+          AND t.task_type = 'periodic' AND COALESCE(t.is_workflow_task, 0) = 0
+          AND t.status IN ($BLOCK)
+          AND $NO_PENDING_DR
         HAVING eff > '1000-01-01' AND eff <= ?
     ");
-    $st->execute([$userId, $today]);
+    $st->execute([$userId, $userId, $today]);
     foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $t) {
         $out[] = ['id' => (int) $t['id'], 'title' => $t['title'], 'type' => 'periodic'];
     }
@@ -67,9 +79,10 @@ function userBlockingTasks(PDO $db, int $userId, ?string $today = null): array
         WHERE t.assignee_id = ? AND t.is_deleted = 0 AND t.is_workflow_task = 1
           AND wis.status IN ('active', 'pending', 'delayed')
           AND t.status IN ($BLOCK)
+          AND $NO_PENDING_DR
         HAVING eff > '1000-01-01' AND eff <= ?
     ");
-    $st->execute([$userId, $today]);
+    $st->execute([$userId, $userId, $today]);
     foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $t) {
         $out[] = ['id' => (int) $t['id'], 'title' => $t['title'], 'type' => 'workflow'];
     }
@@ -77,11 +90,12 @@ function userBlockingTasks(PDO $db, int $userId, ?string $today = null): array
     // ── ۳) کارهای دوره‌ای (continuous) — با موتورِ دوره‌ای ──
     $holidays = getHolidaySet($db);
     $st = $db->prepare("
-        SELECT * FROM tasks
-        WHERE assignee_id = ? AND is_deleted = 0
-          AND task_type = 'continuous' AND status IN ($BLOCK)
+        SELECT t.* FROM tasks t
+        WHERE t.assignee_id = ? AND t.is_deleted = 0
+          AND t.task_type = 'continuous' AND t.status IN ($BLOCK)
+          AND $NO_PENDING_DR
     ");
-    $st->execute([$userId]);
+    $st->execute([$userId, $userId]);
     foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $t) {
         $state = pe_state($db, $t, $holidays, $today);
         // دوره‌ی امروز فقط وقتی مانع است که هنوز انجام نشده (قبلا is_today_done چک
