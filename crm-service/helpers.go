@@ -158,6 +158,18 @@ func (s *server) hasReportAccess(uid int64) bool {
 	return err == nil && ok == 1
 }
 
+// requireSuperAdmin: فقط مدیر کل (همان شناسه‌های getSuperAdminIds در PHP و میان‌بر
+// hasCRMAccess) — برای کارهای پرخطر یکباره مثل ورود فاکتورهای قدیمی از اکسل.
+func (s *server) requireSuperAdmin(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if uid := userOf(r.Context()).ID; uid == 1 || uid == 19 {
+			next(w, r)
+			return
+		}
+		writeErr(w, http.StatusForbidden, "فقط مدیر کل به این بخش دسترسی دارد")
+	}
+}
+
 // requireCRMOrReportAccess: هر کسی که یکی از دو دسترسی بالا را دارد — برای
 // کارهایی که هم از «فهرست فاکتورها» (تیم حسابداری) و هم از «گزارش همکاران»
 // (مدیران/سوپروایزرها) انجام می‌شوند، مثل درصد اختصاصی سهم همکار.
