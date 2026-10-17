@@ -618,6 +618,8 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 field: 'number',
                 width: 130,
                 comparator: AgGridFa.numericTextComparator, // عددی، نه حرف‌به‌حرف (۲ قبل از ۱۰)
+                sort: 'desc',
+                sortIndex: 1, // در یک تاریخ، شماره‌ی بزرگ‌تر بالا
                 cellRenderer: p => p.value ? faDigits(p.value) :
                     `<span class="st-badge draft">${ST_LABEL[p.data.status]||'—'}</span>`
             },
@@ -631,6 +633,8 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 headerName: 'تاریخ صدور',
                 field: 'issue_date',
                 width: 115,
+                sort: 'desc', // پیش‌فرض: جدیدترین بالا (تاریخ، بعد شماره)
+                sortIndex: 0,
                 cellRenderer: p => jDate(p.value)
             },
             {

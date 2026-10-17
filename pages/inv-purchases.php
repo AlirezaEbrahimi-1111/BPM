@@ -252,6 +252,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 headerName: 'تاریخ',
                 field: 'issue_date',
                 width: 120,
+                // پیش‌فرض: جدیدترین بالا؛ در یک تاریخ، ترتیب سرور (آخرین ثبت‌شده) حفظ می‌شود
+                sort: 'desc',
                 cellRenderer: p => jDate(p.value)
             },
             {

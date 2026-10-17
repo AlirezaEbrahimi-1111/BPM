@@ -432,6 +432,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 field: 'number',
                 width: 130,
                 comparator: AgGridFa.numericTextComparator, // عددی، نه حرف‌به‌حرف (۲ قبل از ۱۰)
+                sort: 'desc',
+                sortIndex: 1, // در یک تاریخ، شماره‌ی بزرگ‌تر بالا
                 cellRenderer: p => p.value ? faDigits(p.value) : '<span class="st-badge draft">پیش‌نویس</span>'
             },
             {
@@ -444,7 +446,13 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 headerName: 'تاریخ صدور',
                 field: 'issue_date',
                 width: 120,
-                cellRenderer: p => jDate(p.value || (p.data.created_at || '').split(' ')[0])
+                // پیش‌فرض: جدیدترین بالا (تاریخ، بعد شماره). ترتیب سرور id است و فاکتورهای قدیمیِ
+                // واردشده از اکسل (id بزرگ، تاریخ قدیمی) را بالای فهرست می‌آورد.
+                // پیش‌نویسِ بی‌تاریخ با تاریخ ساختش مرتب می‌شود، همان که نمایش داده می‌شود.
+                valueGetter: p => p.data.issue_date || (p.data.created_at || '').split(' ')[0],
+                sort: 'desc',
+                sortIndex: 0,
+                cellRenderer: p => jDate(p.value)
             },
             {
                 headerName: 'مشتری',
