@@ -64,5 +64,28 @@
         }, overrides || {}));
     }
 
-    w.AgGridFa = { persianizePaging: persianizePaging, toFaDigits: toFaDigits, theme: theme };
+    /**
+     * مقایسه‌گر عددیِ ستونی که مقدارش «متن» است ولی معنای عدد دارد (مثل شماره‌ی فاکتور
+     * که با پیشوند تنظیمات ساخته می‌شود). AG Grid متن را حرف‌به‌حرف مرتب می‌کند و
+     * «۱۰» را قبل از «۲» می‌گذاشت. این تابع عدد را بیرون می‌کشد (رقم فارسی/عربی هم)
+     * و عددی مقایسه می‌کند؛ مقدار بی‌عدد (مثل پیش‌نویسِ بی‌شماره) همیشه آخر می‌ماند.
+     * استفاده:  { field: 'number', comparator: AgGridFa.numericTextComparator }
+     */
+    function numericTextComparator(a, b, nodeA, nodeB, isDescending) {
+        var n = function (v) {
+            var d = String(v == null ? '' : v)
+                .replace(/[۰-۹]/g, function (c) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(c); })
+                .replace(/[٠-٩]/g, function (c) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(c); })
+                .match(/\d+/g);
+            return d ? parseInt(d.join(''), 10) : null;
+        };
+        var x = n(a), y = n(b);
+        if (x === null && y === null) return 0;
+        // بی‌عدد در هر دو جهت مرتب‌سازی آخر بماند (AG Grid در نزولی نتیجه را برعکس می‌کند)
+        if (x === null) return isDescending ? -1 : 1;
+        if (y === null) return isDescending ? 1 : -1;
+        return x - y;
+    }
+
+    w.AgGridFa = { persianizePaging: persianizePaging, toFaDigits: toFaDigits, theme: theme, numericTextComparator: numericTextComparator };
 })(window);

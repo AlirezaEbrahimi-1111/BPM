@@ -412,6 +412,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 headerName: 'شماره',
                 field: 'number',
                 width: 130,
+                comparator: AgGridFa.numericTextComparator, // عددی، نه حرف‌به‌حرف (۲ قبل از ۱۰)
                 cellRenderer: p => p.value ? faDigits(p.value) : '<span class="st-badge draft">پیش‌نویس</span>'
             },
             {

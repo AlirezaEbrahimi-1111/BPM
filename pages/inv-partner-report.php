@@ -598,6 +598,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 headerName: 'شمارهٔ فاکتور',
                 field: 'number',
                 width: 130,
+                comparator: AgGridFa.numericTextComparator, // عددی، نه حرف‌به‌حرف (۲ قبل از ۱۰)
                 cellRenderer: p => p.value ? faDigits(p.value) :
                     `<span class="st-badge draft">${ST_LABEL[p.data.status]||'—'}</span>`
             },
