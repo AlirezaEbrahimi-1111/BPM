@@ -209,7 +209,10 @@ function ilParseReport(ws) {
         var row = rows[r], no = ilNum(row[1]);
         if (!no) return;
         var g = function (c) { return ilNorm(row[c] === undefined ? '' : row[c]); };
-        rep[Math.trunc(no)] = { cust: g(2), date: g(3), total: ilNum(row[5]), settle: g(9), moadian: g(10), code: g(12), note: g(13) };
+        // ستون ۴ همکار («-» = خود شرکت)، ۶ درصد اکسل (فقط برای مقایسه؛ درصد از سیستم خوانده می‌شود)،
+        // ۸ «سند / هزینه» (* = سند سود همکار در شایگان ثبت شده)
+        rep[Math.trunc(no)] = { cust: g(2), date: g(3), partner: g(4), pct: ilNum(row[6]), sanad: g(8),
+                                total: ilNum(row[5]), settle: g(9), moadian: g(10), code: g(12), note: g(13) };
     });
     return rep;
 }
@@ -265,7 +268,11 @@ function ilBuildPayload(rep, inv, cls, year) {
             return;
         }
         var s = inv[no], r = rep[no], R = function (v) { return Math.round(Number(v) || 0); };
+        var partner = (r.partner && r.partner !== '-') ? r.partner : '';
         invoices.push({
+            partner_name: partner,
+            partner_profit_recorded: !!partner && r.sanad === '*',
+            excel_percent: partner ? r.pct : null,
             no: no, kind: c.kind, issue_date: s.date,
             customer: { name: s.buyer.name, national_id: s.buyer.national_id, economic_code: s.buyer.economic_code,
                         postal_code: s.buyer.postal_code, province: s.buyer.province, city: s.buyer.city,
@@ -324,11 +331,12 @@ function ilRender() {
 
     var all = Object.keys(cls).map(Number);
     document.getElementById('allCount').textContent = '(' + ilFa(all.length) + ' شماره)';
-    document.getElementById('allTable').innerHTML = '<tr><th>شماره</th><th>نوع</th><th>تاریخ</th><th>مشتری</th><th>اقلام</th><th>جمع (ریال)</th><th>مؤدیان</th></tr>' +
+    document.getElementById('allTable').innerHTML = '<tr><th>شماره</th><th>نوع</th><th>تاریخ</th><th>مشتری</th><th>همکار</th><th>اقلام</th><th>جمع (ریال)</th><th>مؤدیان</th></tr>' +
         all.map(function (n) {
-            var c = cls[n], s = p.inv[n];
+            var c = cls[n], s = p.inv[n], r = p.rep[n];
+            var partner = (c.kind !== 'reserve' && r && r.partner && r.partner !== '-') ? r.partner : '—';
             return '<tr><td>' + ilFa(n) + '</td><td>' + ilBadge(c.kind) + '</td><td class="num">' + ilEsc(ilFa((s && s.date) || c.rep_date || '')) + '</td>' +
-                '<td>' + ilEsc(c.kind === 'reserve' ? '—' : (s ? s.buyer.name : c.cust)) + '</td><td>' + (s ? ilFa(s.items.length) : '—') + '</td>' +
+                '<td>' + ilEsc(c.kind === 'reserve' ? '—' : (s ? s.buyer.name : c.cust)) + '</td><td>' + ilEsc(partner) + '</td><td>' + (s ? ilFa(s.items.length) : '—') + '</td>' +
                 '<td class="num">' + ilMoney(s && s.total ? s.total.grand : null) + '</td><td>' + (c.has_code ? 'ثبت‌شده' : '—') + '</td></tr>';
         }).join('');
     document.getElementById('preview').style.display = 'block';
@@ -350,6 +358,18 @@ function ilServerReport(d) {
     if (nc.length) h += '<h6 class="mt-2" style="font-weight:700">مشتری‌هایی که در BPM پیدا نشدند و ساخته می‌شوند</h6><div class="il-scroll"><table class="il-table">' +
         '<tr><th>نام</th><th>شناسه‌ی ملی</th><th>شماره‌ی اقتصادی</th><th>فاکتورها</th></tr>' +
         nc.map(function (c) { return '<tr><td>' + ilEsc(c.name) + '</td><td class="num">' + ilEsc(ilFa(c.national_id || '—')) + '</td><td class="num">' + ilEsc(ilFa(c.economic_code || '—')) + '</td><td>' + ilEsc(ilFa((c.invoices || []).join('، '))) + '</td></tr>'; }).join('') + '</table></div>';
+    var pm = d.partners || [], pw = d.partner_warnings || [];
+    if (pm.length) h += '<h6 class="mt-3" style="font-weight:700">همکارها: نام در اکسل ← همکار در BPM (درصد از سیستم، به‌ازای ماه)</h6><div class="il-scroll"><table class="il-table">' +
+        '<tr><th>نام در اکسل</th><th>همکار در BPM</th><th>فاکتورها</th><th>درصد سیستم / اکسل در هر ماه</th></tr>' +
+        pm.map(function (m) {
+            var months = (m.months || []).map(function (x) {
+                return 'ماه ' + ilFa(x.jm) + ': ' + (x.percent ? ilFa(x.percent) + '٪' : '<span class="il-bad">تعریف نشده</span>') +
+                    (x.excel_percent != null ? ' <span style="color:var(--il-muted)">(اکسل ' + ilFa(x.excel_percent) + '٪)</span>' : '');
+            }).join('<br>');
+            return '<tr><td>' + ilEsc(m.excel_name) + '</td><td class="' + (m.partner_id ? 'il-ok' : 'il-bad') + '">' + ilEsc(m.partner_name || 'پیدا نشد') + '</td>' +
+                '<td>' + ilFa((m.invoices || []).length) + '</td><td>' + (months || '—') + '</td></tr>';
+        }).join('') + '</table></div>';
+    if (pw.length) h += '<div class="alert alert-warning py-2 mt-2" style="line-height:1.9">' + pw.map(ilEsc).join('<br>') + '</div>';
     if (d.dry_run && ok) h += '<div class="alert alert-success py-2 mt-2">بررسی بی‌خطا بود. با «ورود نهایی» همه در یک مرحله ثبت می‌شوند.</div>';
     box.innerHTML = h;
     box.style.display = 'block';

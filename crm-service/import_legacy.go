@@ -62,6 +62,26 @@ type legacyInvoice struct {
 	MoadianCode string         `json:"moadian_code"`
 	Items       []legacyItem   `json:"items"`
 	Total       int64          `json:"total"` // جمع کل برگه‌ی فاکتور (برای چک سازگاری)
+	// همکار (ستون «همکار» برگه‌ی گزارش؛ خالی = فاکتور خود شرکت). درصد از سیستم خوانده
+	// می‌شود (درصد ماهِ همان همکار)، نه از اکسل؛ ExcelPercent فقط برای مقایسه در گزارش است.
+	PartnerName    string   `json:"partner_name"`
+	ProfitRecorded bool     `json:"partner_profit_recorded"` // ستون «سند / هزینه» = *
+	ExcelPercent   *float64 `json:"excel_percent"`
+}
+
+// نگاشت «نام همکار در اکسل → همکار BPM» برای گزارش پیش‌نمایش
+type legacyPartnerMap struct {
+	ExcelName   string             `json:"excel_name"`
+	PartnerID   int64              `json:"partner_id"`
+	PartnerName string             `json:"partner_name"`
+	Invoices    []int              `json:"invoices"`
+	Months      []legacyPartnerPct `json:"months"`
+}
+
+type legacyPartnerPct struct {
+	JM           int      `json:"jm"`
+	Percent      float64  `json:"percent"`       // درصد سیستم برای این ماه (۰ = تعریف نشده)
+	ExcelPercent *float64 `json:"excel_percent"` // درصدی که اکسل برای فاکتورهای این ماه نوشته بود
 }
 
 type legacyImportIn struct {
@@ -343,7 +363,115 @@ func (s *server) importLegacy(w http.ResponseWriter, r *http.Request) {
 		newList = append(newList, *newCust[k])
 	}
 
+	// ── ۴) همکار: نام اکسل → همکار BPM. همکار خودکار ساخته نمی‌شود (با یک غلط
+	// املایی همکار تکراری درست نشود)؛ پیدانشده یا چندپهلو = خطا (ورود متوقف).
+	// تطبیق: نام یکسان (نرمال‌شده)، وگرنه تنها همکاری که نامش نام اکسل را دربر دارد
+	// یا برعکس (مثلا «بغدادی» ← «علی بغدادی»).
+	type partnerRow struct {
+		id   int64
+		name string
+		key  string
+	}
+	var partners []partnerRow
+	if rows, err := s.db.Query("SELECT id, name FROM inv_partners WHERE organization_id = ? AND is_deleted = 0", u.OrgID); err != nil {
+		writeDBErr(w, "importLegacy partners", err)
+		return
+	} else {
+		for rows.Next() {
+			var p partnerRow
+			if rows.Scan(&p.id, &p.name) == nil {
+				p.key = nameKey(p.name)
+				partners = append(partners, p)
+			}
+		}
+		rows.Close()
+	}
+	partnerOf := map[int]int64{} // شماره‌ی فاکتور → همکار
+	pmap := map[string]*legacyPartnerMap{}
+	pOrder := []string{}
+	pctByMonth := map[string]map[int][]*float64{} // نام اکسل → ماه → درصدهای اکسل
+	for _, inv := range in.Invoices {
+		name := strings.TrimSpace(inv.PartnerName)
+		if inv.Kind == "reserve" || name == "" || name == "-" {
+			continue
+		}
+		if _, ok := pmap[name]; !ok {
+			key := nameKey(name)
+			var exact, partial []partnerRow
+			for _, p := range partners {
+				if p.key == key {
+					exact = append(exact, p)
+				} else if key != "" && (strings.Contains(p.key, key) || strings.Contains(key, p.key)) {
+					partial = append(partial, p)
+				}
+			}
+			m := &legacyPartnerMap{ExcelName: name}
+			cands := exact
+			if len(cands) == 0 {
+				cands = partial
+			}
+			if len(cands) == 1 {
+				m.PartnerID, m.PartnerName = cands[0].id, cands[0].name
+			} else if len(cands) > 1 {
+				names := make([]string, 0, len(cands))
+				for _, c := range cands {
+					names = append(names, c.name)
+				}
+				m.PartnerName = "چندپهلو: " + strings.Join(names, "، ")
+			}
+			pmap[name] = m
+			pOrder = append(pOrder, name)
+			pctByMonth[name] = map[int][]*float64{}
+		}
+		m := pmap[name]
+		m.Invoices = append(m.Invoices, inv.No)
+		if m.PartnerID > 0 {
+			partnerOf[inv.No] = m.PartnerID
+		}
+		if p := strings.Split(onlyDigitsKeepSlash(inv.IssueDate), "/"); len(p) == 3 {
+			var jm int
+			fmt.Sscanf(p[1], "%d", &jm)
+			pctByMonth[name][jm] = append(pctByMonth[name][jm], inv.ExcelPercent)
+		}
+	}
+	partnerList := make([]legacyPartnerMap, 0, len(pOrder))
+	var pctWarnings []string
+	for _, name := range pOrder {
+		m := pmap[name]
+		if m.PartnerID == 0 {
+			if m.PartnerName == "" {
+				addErr(m.Invoices[0], "همکار «%s» در BPM پیدا نشد (%d فاکتور: %v). اول آن را در «مدیریت همکاران» تعریف کنید.", name, len(m.Invoices), m.Invoices)
+			} else {
+				addErr(m.Invoices[0], "همکار «%s» با بیش از یک همکار BPM جور است (%s).", name, strings.TrimPrefix(m.PartnerName, "چندپهلو: "))
+			}
+		} else {
+			for jm := 1; jm <= 12; jm++ {
+				ex, ok := pctByMonth[name][jm]
+				if !ok {
+					continue
+				}
+				var exPct *float64
+				for _, e := range ex {
+					if e != nil {
+						exPct = e
+						break
+					}
+				}
+				sys := s.partnerPercent(m.PartnerID, in.SeqYear, jm)
+				m.Months = append(m.Months, legacyPartnerPct{JM: jm, Percent: sys, ExcelPercent: exPct})
+				if sys == 0 {
+					pctWarnings = append(pctWarnings, fmt.Sprintf("درصد همکار «%s» برای ماه %d سال %d در سیستم تعریف نشده؛ سود %d فاکتورِ این ماه صفر حساب می‌شود.", m.PartnerName, jm, in.SeqYear, len(ex)))
+				} else if exPct != nil && math.Abs(*exPct-sys) > 0.0001 {
+					pctWarnings = append(pctWarnings, fmt.Sprintf("همکار «%s» در ماه %d: سیستم %g٪ ولی اکسل %g٪ (سیستم ملاک است).", m.PartnerName, jm, sys, *exPct))
+				}
+			}
+		}
+		partnerList = append(partnerList, *m)
+	}
+
 	report := map[string]any{
+		"partners":          partnerList,
+		"partner_warnings":  pctWarnings,
 		"dry_run":           in.DryRun,
 		"seq_year":          in.SeqYear,
 		"counts":            counts,
@@ -420,8 +548,9 @@ func (s *server) importLegacy(w http.ResponseWriter, r *http.Request) {
 	insInv, err := tx.Prepare(`INSERT INTO inv_invoices
 		  (organization_id, doc_type, customer_id, warehouse_id, issue_date, status, source, payment_type,
 		   subtotal_amount, discount_amount, tax_amount, total_amount, note, created_by, approved_by, approved_at,
-		   seq_year, seq_no, number, settlement_status, moadian_status, moadian_code)
-		VALUES (?, ?, ?, ?, ?, ?, 'import', NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+		   seq_year, seq_no, number, settlement_status, moadian_status, moadian_code,
+		   partner_id, partner_profit_recorded)
+		VALUES (?, ?, ?, ?, ?, ?, 'import', NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		writeDBErr(w, "importLegacy", err)
 		return
@@ -472,9 +601,18 @@ func (s *server) importLegacy(w http.ResponseWriter, r *http.Request) {
 			moadian = "registered"
 		}
 		t := totals[inv.No]
+		var partnerVal any // NULL = فاکتور خود شرکت
+		recorded := 0
+		if pid, ok := partnerOf[inv.No]; ok {
+			partnerVal = pid
+			if inv.ProfitRecorded {
+				recorded = 1
+			}
+		}
 		res, err := insInv.Exec(u.OrgID, docType, cid, s.officialWarehouseID, date, status,
 			t.sub, t.disc, t.tax, t.total, nullIfEmpty(note), u.ID, approvedBy, approvedAt,
-			in.SeqYear, inv.No, formatInvoiceNumber(tx, inv.No), settle, moadian, nullIfEmpty(inv.MoadianCode))
+			in.SeqYear, inv.No, formatInvoiceNumber(tx, inv.No), settle, moadian, nullIfEmpty(inv.MoadianCode),
+			partnerVal, recorded)
 		if isDuplicateKey(err) {
 			writeErr(w, http.StatusConflict, fmt.Sprintf("شماره‌ی %d همین الان در سال %d ثبت شد؛ هیچ فاکتوری وارد نشد", inv.No, in.SeqYear))
 			return
