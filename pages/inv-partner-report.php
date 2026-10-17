@@ -140,6 +140,20 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             color: #cbd5e1;
         }
 
+        /* فاکتورِ ثبت‌شده در مؤدیان: به‌جای بج «ثبت شده»، خود کد پررنگ و سبز */
+        .moadian-code {
+            color: #0f7a57;
+            font-weight: 700;
+            font-size: 12px;
+            direction: ltr;
+            unicode-bidi: isolate;
+            white-space: nowrap;
+        }
+
+        :root[data-theme="dark"] .moadian-code {
+            color: #68d391;
+        }
+
         .ag-action-btn {
             display: inline-flex;
             align-items: center;
@@ -555,11 +569,13 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         function moadianCell(p) {
             const d = p.data;
             const v = d.moadian_status || 'unregistered';
-            let html = `<span class="pm-badge ${v}">${MOADIAN_LABEL[v] || v}</span>`;
+            // ثبت‌شده با کد: فقط خود کد، پررنگ و سبز (بج «ثبت شده» حذف شد). ثبت‌شده‌ی بی‌کد
+            // (نباید پیش بیاید — سرور ثبت بی‌کد را رد می‌کند) و ثبت‌نشده همان بج قبلی را دارند.
             if (v === 'registered' && d.moadian_code) {
-                html += ` <span class="text-muted" style="font-size:11px">${faDigits(esc(d.moadian_code))}</span>`;
+                const code = esc(d.moadian_code); // رقم انگلیسی، همان‌طور که در سامانه است (برای کپی)
+                return `<span class="moadian-code" title="کد ثبت در سامانه‌ی مؤدیان: ${code}">${code}</span>`;
             }
-            return html;
+            return `<span class="pm-badge ${v}">${MOADIAN_LABEL[v] || v}</span>`;
         }
 
         function statusActionCell(p) {
@@ -653,7 +669,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             {
                 headerName: 'مودیان',
                 field: 'moadian_status',
-                width: 150,
+                width: 215,
                 sortable: false,
                 cellRenderer: moadianCell
             },
@@ -676,6 +692,14 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             paginationPageSize: 20,
             paginationPageSizeSelector: [20, 50, 100],
             onPaginationChanged: () => AgGridFa.persianizePaging(),
+            // کلیک روی ردیف = باز کردن فاکتور (مثل فهرست فاکتورها)؛ دکمه‌های ستون عملیات
+            // و متنِ انتخاب‌شده (مثلا برای کپی کد مؤدیان) صفحه را عوض نمی‌کنند
+            rowStyle: { cursor: 'pointer' },
+            onRowClicked: (e) => {
+                if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn, input, .form-check')) return;
+                if (window.getSelection && String(window.getSelection()).length > 0) return;
+                location.href = '/pages/inv-invoice-print.php?id=' + e.data.id;
+            },
             defaultColDef: {
                 resizable: true,
                 sortable: true

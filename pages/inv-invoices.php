@@ -171,6 +171,20 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             color: #cbd5e1;
         }
 
+        /* فاکتورِ ثبت‌شده در مؤدیان: به‌جای بج «ثبت شده»، خود کد پررنگ و سبز */
+        .moadian-code {
+            color: #0f7a57;
+            font-weight: 700;
+            font-size: 12px;
+            direction: ltr;
+            unicode-bidi: isolate;
+            white-space: nowrap;
+        }
+
+        :root[data-theme="dark"] .moadian-code {
+            color: #68d391;
+        }
+
         .ag-theme-alpine,
         .ag-theme-alpine .ag-cell,
         .ag-theme-alpine .ag-header-cell,
@@ -401,11 +415,13 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         function moadianCell(p) {
             const d = p.data;
             const v = d.moadian_status || 'unregistered';
-            let html = `<span class="pm-badge ${v}">${MOADIAN_LABEL[v] || v}</span>`;
+            // ثبت‌شده با کد: فقط خود کد، پررنگ و سبز (بج «ثبت شده» حذف شد). ثبت‌شده‌ی بی‌کد
+            // (نباید پیش بیاید — سرور ثبت بی‌کد را رد می‌کند) و ثبت‌نشده همان بج قبلی را دارند.
             if (v === 'registered' && d.moadian_code) {
-                html += ` <span class="text-muted" style="font-size:11px">${faDigits(esc(d.moadian_code))}</span>`;
+                const code = esc(d.moadian_code); // رقم انگلیسی، همان‌طور که در سامانه است (برای کپی)
+                return `<span class="moadian-code" title="کد ثبت در سامانه‌ی مؤدیان: ${code}">${code}</span>`;
             }
-            return html;
+            return `<span class="pm-badge ${v}">${MOADIAN_LABEL[v] || v}</span>`;
         }
 
         const colDefs = [{
@@ -472,7 +488,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             {
                 headerName: 'مودیان',
                 field: 'moadian_status',
-                width: 150,
+                width: 215,
                 sortable: false,
                 cellRenderer: moadianCell
             },
