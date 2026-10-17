@@ -106,6 +106,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         </div>
         <div class="mt-3 d-flex gap-2 align-items-center">
             <button class="btn btn-primary" id="btnCompute" disabled><i class="bi bi-calculator"></i> محاسبه</button>
+            <button class="btn btn-outline-success" id="btnExport" hidden><i class="bi bi-file-earmark-excel"></i> خروجی اکسل</button>
             <span id="status" style="font-size:13px;color:var(--fb-muted)"></span>
         </div>
     </div>
@@ -204,6 +205,8 @@ function moneyFmt(p) { return fbMoney(p.value); }
 
 function render(d) {
     document.getElementById('results').style.display = 'block';
+    lastResult = d;                                            // برای «خروجی اکسل»
+    document.getElementById('btnExport').hidden = false;
 
     // ── کارت‌های خلاصه ──
     var s = d.summary;
@@ -272,6 +275,102 @@ function remakeGrid(elId, existing, cols, rows) {
         overlayNoRowsTemplate: '<div style="padding:1.5rem;color:#888">موردی نیست</div>',
     });
 }
+
+// ── خروجی اکسل ─────────────────────────────────────────────────────────
+// یک فایل چهاربرگی: خلاصه + بدهکاران + بستانکاران + سررسیدهای ۳۰ روزه، با همان
+// SheetJS که فایل‌های شایگان را می‌خواند. برگه‌ها همان چیزی‌اند که در جدول دیده
+// می‌شود (فیلتر و مرتب‌سازی فعلی). مبلغ‌ها «عدد» با قالب هزارگان‌اند (نه متن) تا
+// در اکسل جمع بخورند؛ آخر هر برگه یک ردیف «جمع». تاریخ از ساعت سرور (TimeSync).
+var lastResult = null;
+
+function xlsxDateParts() {
+    var j = (window.TimeSync && TimeSync.serverJalali) ? TimeSync.serverJalali() : null;
+    if (!j) return null;
+    var p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+    return { slash: j[0] + '/' + p2(j[1]) + '/' + p2(j[2]), dash: j[0] + '-' + p2(j[1]) + '-' + p2(j[2]) };
+}
+
+// aoa = آرایهٔ سطرها؛ moneyCols = اندیس ستون‌های مبلغ؛ widths = عرض ستون‌ها (کاراکتر)
+function xlsxSheet(aoa, moneyCols, widths) {
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    var range = XLSX.utils.decode_range(ws['!ref']);
+    for (var r = range.s.r; r <= range.e.r; r++) {
+        moneyCols.forEach(function (c) {
+            var cell = ws[XLSX.utils.encode_cell({ r: r, c: c })];
+            if (cell && cell.t === 'n') cell.z = '#,##0';
+        });
+    }
+    ws['!cols'] = widths.map(function (w) { return { wch: w }; });
+    return ws;
+}
+
+// سطرهای یک جدول AG Grid به ترتیب و فیلترِ فعلی؛ cols = [{h: عنوان, v: data => مقدار, money: bool}]
+function gridAoa(api, cols) {
+    var aoa = [cols.map(function (c) { return c.h; })];
+    var totals = cols.map(function () { return 0; });
+    if (api) {
+        api.forEachNodeAfterFilterAndSort(function (n) {
+            aoa.push(cols.map(function (c, i) {
+                var v = c.v(n.data);
+                if (c.money) {
+                    if (v === null || v === undefined || v === '' || isNaN(v)) return '';
+                    v = Math.round(Number(v));
+                    totals[i] += v;
+                }
+                return v;
+            }));
+        });
+    }
+    aoa.push(cols.map(function (c, i) { return i === 0 ? 'جمع' : (c.money ? totals[i] : ''); }));
+    return aoa;
+}
+
+function exportExcel() {
+    if (!lastResult || typeof XLSX === 'undefined') return;
+    var s = lastResult.summary;
+    var dp = xlsxDateParts();
+    var wb = XLSX.utils.book_new();
+    wb.Workbook = { Views: [{ RTL: true }] };              // برگه‌ها راست‌به‌چپ
+
+    var summary = [
+        ['گزارش بدهکاران و بستانکاران'],
+        ['تاریخ تهیه', dp ? dp.slash : ''],
+        [],
+        ['جمع بدهکاری', Math.round(s.debtor_total)],
+        ['جمع بستانکاری', Math.round(s.creditor_total)],
+        ['تعداد بدهکاران', s.debtor_count],
+        ['تعداد بستانکاران', s.creditor_count],
+        ['اختلاف تطابق مانده', Math.round(s.reconciliation)],
+        [],
+        ['فایل تراز کلیه حساب‌ها', files.trial ? files.trial.name : ''],
+        ['فایل تفصیل شناور', files.detail ? files.detail.name : ''],
+        ['فایل فاکتورهای معوق', files.overdue ? files.overdue.name : ''],
+    ];
+    XLSX.utils.book_append_sheet(wb, xlsxSheet(summary, [1], [26, 30]), 'خلاصه');
+
+    var balCols = [
+        { h: 'نام حساب', v: function (d) { return d.name; } },
+        { h: 'وضعیت', v: function (d) { return d.status; } },
+        { h: 'مانده', v: function (d) { return d.mande; }, money: true },
+        { h: 'سررسید', v: function (d) { return d.sarresid; }, money: true },
+        { h: 'سررسید واقعی', v: function (d) { return d.actual; }, money: true },
+        { h: 'هشدار', v: function (d) { return d.alarm ? 'دارد' : ''; } },
+    ];
+    var balWidths = [40, 14, 18, 18, 18, 8];
+    XLSX.utils.book_append_sheet(wb, xlsxSheet(gridAoa(debtorsGrid, balCols), [2, 3, 4], balWidths), 'بدهکاران');
+    XLSX.utils.book_append_sheet(wb, xlsxSheet(gridAoa(creditorsGrid, balCols), [2, 3, 4], balWidths), 'بستانکاران');
+
+    var dueCols = [
+        { h: 'نام مشتری', v: function (d) { return d.name; } },
+        { h: 'مبلغ', v: function (d) { return d.amount; }, money: true },
+        { h: 'تاریخ سررسید', v: function (d) { return d.due || ''; } },
+    ];
+    XLSX.utils.book_append_sheet(wb, xlsxSheet(gridAoa(dueGrid, dueCols), [1], [40, 18, 14]), 'سررسیدهای ۳۰ روزه');
+
+    XLSX.writeFile(wb, 'بدهکاران-و-بستانکاران' + (dp ? '-' + dp.dash : '') + '.xlsx');
+}
+
+document.getElementById('btnExport').addEventListener('click', exportExcel);
 
 function drawChart(debtors) {
     var top = debtors.filter(r => r.mande > 0).sort((a, b) => b.mande - a.mande).slice(0, 10);
