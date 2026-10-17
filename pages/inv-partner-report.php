@@ -148,6 +148,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             direction: ltr;
             unicode-bidi: isolate;
             white-space: nowrap;
+            cursor: copy;
         }
 
         :root[data-theme="dark"] .moadian-code {
@@ -573,7 +574,9 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             // (نباید پیش بیاید — سرور ثبت بی‌کد را رد می‌کند) و ثبت‌نشده همان بج قبلی را دارند.
             if (v === 'registered' && d.moadian_code) {
                 const code = esc(d.moadian_code); // رقم انگلیسی، همان‌طور که در سامانه است (برای کپی)
-                return `<span class="moadian-code" title="کد ثبت در سامانه‌ی مؤدیان: ${code}">${code}</span>`;
+                // کلیک = کپی در کلیپ‌بورد (در onRowClicked مستثناست تا فاکتور باز نشود)
+                return `<span class="moadian-code" role="button" title="کد ثبت در سامانه‌ی مؤدیان — برای کپی کلیک کنید"
+                    onclick="AgGridFa.copyText(this.textContent.trim(), 'کد مؤدیان در کلیپ‌بورد کپی شد')">${code}</span>`;
             }
             return `<span class="pm-badge ${v}">${MOADIAN_LABEL[v] || v}</span>`;
         }
@@ -696,7 +699,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             // و متنِ انتخاب‌شده (مثلا برای کپی کد مؤدیان) صفحه را عوض نمی‌کنند
             rowStyle: { cursor: 'pointer' },
             onRowClicked: (e) => {
-                if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn, input, .form-check')) return;
+                if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn, input, .form-check, .moadian-code')) return;
                 if (window.getSelection && String(window.getSelection()).length > 0) return;
                 location.href = '/pages/inv-invoice-print.php?id=' + e.data.id;
             },

@@ -87,5 +87,36 @@
         return x - y;
     }
 
-    w.AgGridFa = { persianizePaging: persianizePaging, toFaDigits: toFaDigits, theme: theme, numericTextComparator: numericTextComparator };
+    /**
+     * کپی یک متن در کلیپ‌بورد + اعلام نتیجه با showToast (مثلا کلیک روی کد مؤدیان در جدول).
+     * navigator.clipboard فقط در https (یا localhost) هست؛ وگرنه روش قدیمی execCommand.
+     * سلولی که این را صدا می‌زند باید در onRowClicked جدول مستثنا شود تا ردیف باز نشود.
+     */
+    function copyText(text, okMsg) {
+        var report = function (ok) {
+            if (typeof w.showToast === 'function') {
+                w.showToast(ok ? (okMsg || 'در کلیپ‌بورد کپی شد') : 'کپی نشد؛ متن را دستی انتخاب و کپی کنید', ok ? 'success' : 'error');
+            }
+        };
+        var legacy = function () {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            var ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+            document.body.removeChild(ta);
+            return ok;
+        };
+        if (w.navigator.clipboard && w.isSecureContext) {
+            w.navigator.clipboard.writeText(text).then(function () { report(true); }, function () { report(legacy()); });
+        } else {
+            report(legacy());
+        }
+    }
+
+    w.AgGridFa = { persianizePaging: persianizePaging, toFaDigits: toFaDigits, theme: theme, numericTextComparator: numericTextComparator, copyText: copyText };
 })(window);
