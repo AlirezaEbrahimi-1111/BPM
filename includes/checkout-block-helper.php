@@ -7,11 +7,17 @@
  * کارِ مانع = کاری که:
  *   • مسئولش همین کاربر است (assignee_id)،
  *   • موعدش امروز یا گذشته است،
- *   • و کارمند هنوز تکمیلش نکرده → status ∈ (not_started, in_progress, rejected).
- *     (rejected هم مانع است: کار از تأیید برگشته و دوباره دستِ کاربر است.)
+ *   • و کارمند هنوز تکمیلش نکرده → status ∈ (not_started, in_progress).
+ *
+ * ⚠️ rejected مانع نیست (اصلاح ۱۴۰۵/۰۷/۲۵): در این سیستم status='rejected' یعنی
+ *    «اتمام اجباریِ کار دوره‌ای» (api/tasks/terminate-period.php) — کارِ تمام‌شده.
+ *    کاری که تأییدکننده رد می‌کند به in_progress برمی‌گردد، نه rejected. فهرست
+ *    «کارهای من» (go-api mytasks: t.status != 'rejected') هم این‌ها را نشان نمی‌دهد؛
+ *    مانع‌حساب‌کردنشان خروج را برای همیشه می‌بست بی‌آن‌که کاربر کاری ببیند.
+ * ⚠️ این تعریف باید با فیلتر due_block در pages/my-tasks.php یکی بماند.
  *
  * سه نوع کار پوشش داده می‌شود (مثل includes/delayed-tasks-helper.php، ولی
- * تعریفِ «مانع» این‌جا عمداً فرق دارد: شاملِ rejected و شاملِ موعدِ امروز):
+ * تعریفِ «مانع» این‌جا عمداً فرق دارد: شاملِ موعدِ امروز):
  *   ۱) مقطعی      task_type='periodic'  و غیرِ workflow
  *   ۲) روتین      is_workflow_task=1
  *   ۳) دوره‌ای    task_type='continuous'  → با period-engine (دورهٔ معوقه/امروز)
@@ -26,7 +32,7 @@ function userBlockingTasks(PDO $db, int $userId, ?string $today = null): array
 {
     if ($userId <= 0) return [];
     $today = $today ?: date('Y-m-d');
-    $BLOCK = "'not_started','in_progress','rejected'";
+    $BLOCK = "'not_started','in_progress'";
     $out = [];
 
     // ── ۱) کارهای مقطعی (periodic، غیرِ روتین) با موعدِ امروز یا گذشته ──
@@ -78,7 +84,10 @@ function userBlockingTasks(PDO $db, int $userId, ?string $today = null): array
     $st->execute([$userId]);
     foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $t) {
         $state = pe_state($db, $t, $holidays, $today);
-        $dueToday = isset($state['current_period_date']) && $state['current_period_date'] === $today;
+        // دوره‌ی امروز فقط وقتی مانع است که هنوز انجام نشده (قبلا is_today_done چک
+        // نمی‌شد و کسی که کار روزانه‌اش را همین امروز انجام داده بود هم خروجش بسته بود)
+        $dueToday = isset($state['current_period_date']) && $state['current_period_date'] === $today
+            && empty($state['is_today_done']);
         if (($state['overdue_periods'] ?? 0) > 0 || $dueToday) {
             $out[] = ['id' => (int) $t['id'], 'title' => $t['title'], 'type' => 'continuous'];
         }

@@ -656,8 +656,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 if (statFilter === 'overdue' && !TF.isOverdue(t, currentUser, today)) return false;
                 // فیلترِ «کارهای مانعِ خروج» (از ریدایرکتِ ثبت خروج): معوقه یا امروزموعد
                 // که کارمند هنوز تکمیل نکرده — هم‌تعریف با includes/checkout-block-helper.php
+                // (rejected = اتمام اجباری کار دوره‌ای، نه «برگشت‌خورده» — مانع نیست)
                 if (statFilter === 'due_block' &&
-                    !((t.status === 'not_started' || t.status === 'in_progress' || t.status === 'rejected') &&
+                    !((t.status === 'not_started' || t.status === 'in_progress') &&
                       (TF.isOverdue(t, currentUser, today) || TF.isDueToday(t, currentUser, today)))) return false;
                 if (statFilter === 'in_progress' && t.status !== 'in_progress') return false;
                 if (statFilter === 'completed' && t.status !== 'completed' && t.status !== 'approved') return false;
