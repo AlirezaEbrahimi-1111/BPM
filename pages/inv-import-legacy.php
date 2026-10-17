@@ -196,32 +196,73 @@ function ilParseInvoiceSheet(ws, sheetName) {
         });
     }
     var no = ilNum(ilCell(ws, 1, 21));
+    no = no ? Math.trunc(no) : null;
+    // نام برگه گاهی چند عدد دارد («شهرداری منطقه 5 502»، «… شعبه 0037»): همان عددی که با شماره‌ی
+    // داخل برگه یکی است؛ وگرنه بزرگ‌ترین (و اختلاف شماره به فهرست حسابداری می‌رود).
+    var runs = sheetName.match(/\d+/g).map(function (x) { return parseInt(x, 10); });
+    var sheetNo = runs.indexOf(no) >= 0 ? no : Math.max.apply(null, runs);
     return {
-        sheet: sheetName.trim(), sheet_no: parseInt(sheetName.match(/\d+/)[0], 10), no: no ? Math.trunc(no) : null,
+        sheet: sheetName.trim(), sheet_no: sheetNo, no: no,
         date: ilNorm(ilCell(ws, 2, 21) || ''), title: ilNorm(ilCell(ws, 1, 5) || ''), buyer: buyer, items: items, total: total
     };
 }
 
+// ستون‌های «گزارش» با نام سرستون پیدا می‌شوند، نه جای ثابت: فایل سوم (برج ۷ به بعد)
+// یک ستون اضافه در ابتدا دارد و همه یکی جابه‌جا شده‌اند.
+var IL_REPORT_COLS = {
+    no:      function (t) { return t === 'شماره'; },
+    cust:    function (t) { return t === 'نام مشتری'; },
+    date:    function (t) { return t.indexOf('تاریخ') === 0; },
+    partner: function (t) { return t === 'همکار'; },            // «-» = خود شرکت
+    total:   function (t) { return t === 'مبلغ کل'; },
+    pct:     function (t) { return t === 'درصد'; },             // فقط برای مقایسه؛ درصد از سیستم خوانده می‌شود
+    sanad:   function (t) { return t.indexOf('سند') === 0; },   // «سند / هزینه»: * = سند سود همکار ثبت شده
+    settle:  function (t) { return t === 'تسویه'; },
+    moadian: function (t) { return t.indexOf('ثبت م') === 0 && t.indexOf('دیان') >= 0; },
+    code:    function (t) { return t.indexOf('کد سامانه') === 0; },
+    note:    function (t) { return t === 'توضیحات'; }
+};
 function ilParseReport(ws) {
-    var rows = ilSheetRows(ws), rep = {};
-    ilSortedRows(rows).forEach(function (r) {
-        if (r < 2) return;                                    // ردیف ۱ = سرستون
-        var row = rows[r], no = ilNum(row[1]);
+    var rows = ilSheetRows(ws), order = ilSortedRows(rows), rep = {};
+    var hdr = null;
+    for (var i = 0; i < order.length && hdr === null; i++)
+        for (var c in rows[order[i]]) if (ilNorm(rows[order[i]][c]) === 'شماره') { hdr = order[i]; break; }
+    if (hdr === null) throw new Error('سرستون «شماره» در برگه‌ی «گزارش» پیدا نشد');
+    var cols = {}, missing = [];
+    Object.keys(IL_REPORT_COLS).forEach(function (k) {
+        var cs = Object.keys(rows[hdr]).map(Number).sort(function (a, b) { return a - b; });
+        for (var j = 0; j < cs.length; j++) if (IL_REPORT_COLS[k](ilNorm(rows[hdr][cs[j]]))) { cols[k] = cs[j]; return; }
+        missing.push(k);
+    });
+    if (cols.no === undefined || cols.total === undefined) throw new Error('ستون‌های «شماره» یا «مبلغ کل» در «گزارش» پیدا نشد');
+    order.forEach(function (r) {
+        if (r <= hdr) return;
+        var row = rows[r], no = ilNum(row[cols.no]);
         if (!no) return;
-        var g = function (c) { return ilNorm(row[c] === undefined ? '' : row[c]); };
-        // ستون ۴ همکار («-» = خود شرکت)، ۶ درصد اکسل (فقط برای مقایسه؛ درصد از سیستم خوانده می‌شود)،
-        // ۸ «سند / هزینه» (* = سند سود همکار در شایگان ثبت شده)
-        rep[Math.trunc(no)] = { cust: g(2), date: g(3), partner: g(4), pct: ilNum(row[6]), sanad: g(8),
-                                total: ilNum(row[5]), settle: g(9), moadian: g(10), code: g(12), note: g(13) };
+        var g = function (k) { return cols[k] === undefined ? '' : ilNorm(row[cols[k]] === undefined ? '' : row[cols[k]]); };
+        rep[Math.trunc(no)] = { cust: g('cust'), date: g('date'), partner: g('partner'), pct: cols.pct === undefined ? null : ilNum(row[cols.pct]),
+                                sanad: g('sanad'), total: ilNum(row[cols.total]), settle: g('settle'), moadian: g('moadian'),
+                                code: g('code'), note: g('note') };
     });
     return rep;
 }
+
+// کلمه‌هایی که در «تسویه» یا «توضیحات» یعنی فاکتور باطل شده (فایل‌ها هر کدام یک‌جور نوشته‌اند)
+var IL_CANCEL_WORDS = ['کنسل', 'ابطال', 'باطل', 'حذف شد'];
 
 // دسته‌بندی هر شماره — همان قواعدی که با کاربر توافق شد (۱۴۰۵/۰۷/۲۵)
 function ilClassify(rep, inv) {
     var nos = {}, out = {};
     Object.keys(rep).forEach(function (k) { nos[k] = 1; });
     Object.keys(inv).forEach(function (k) { nos[k] = 1; });
+    // شماره‌ای که بین کمترین و بیشترین شماره‌ی «گزارش» است ولی هیچ‌جا نیست (مثل ۶۶۰ تا ۶۶۹)
+    var repNos = Object.keys(rep).map(Number);
+    if (repNos.length) {
+        for (var g = Math.min.apply(null, repNos); g <= Math.max.apply(null, repNos); g++) {
+            if (!rep[g] && !inv[g]) out[g] = { kind: 'exclude', problems: ['نه در «گزارش» هست و نه برگه‌ی فاکتور دارد'], cust: '',
+                                               rep_total: null, sheet_total: null, rep_date: '', sheet_date: '' };
+        }
+    }
     Object.keys(nos).map(Number).sort(function (a, b) { return a - b; }).forEach(function (no) {
         var r = rep[no], s = inv[no], problems = [];
         if (!r) {
@@ -230,11 +271,13 @@ function ilClassify(rep, inv) {
             return;
         }
         if (!s) { out[no] = { kind: 'reserve', problems: [], cust: r.cust }; return; }
-        var cancelled = r.settle.indexOf('کنسل') >= 0 || r.note.indexOf('کنسل') >= 0 || r.note.indexOf('ابطال') >= 0;
-        if (s.no !== no) problems.push('داخل برگه شماره‌ی ' + s.no + ' نوشته شده، ولی نام برگه ' + no + ' است');
+        var cancelled = IL_CANCEL_WORDS.some(function (w) { return r.settle.indexOf(w) >= 0 || r.note.indexOf(w) >= 0; });
+        if (s.no === null) problems.push('داخل برگه شماره‌ای نوشته نشده (نام برگه ' + no + ' است)');
+        else if (s.no !== no) problems.push('داخل برگه شماره‌ی ' + s.no + ' نوشته شده، ولی نام برگه ' + no + ' است');
         if (r.total === null && s.title.indexOf('پیش') < 0 && !cancelled) problems.push('در «گزارش» مبلغ ندارد ولی برگه «صورتحساب» (فاکتور رسمی) است');
         if (r.total !== null && s.total && Math.abs(r.total - s.total.grand) > 1) problems.push('مبلغ کل در «گزارش» با برگه‌ی فاکتور فرق دارد');
         if (r.date && ilNDate(r.date) !== s.date) problems.push('تاریخ در «گزارش» با برگه‌ی فاکتور فرق دارد');
+        if (!s.buyer.name && s.items.length) problems.push('نام خریدار در برگه‌ی فاکتور خالی است');
         // BPM ریال را عدد صحیح نگه می‌دارد: قیمت واحد اعشاری (مثل ۴۱٬۵۸۶٬۰۷۳٫۵ در ۱۸۴) با گرد شدن
         // دیگر «تعداد × قیمت = مبلغ کل» را نگه نمی‌دارد → ناهماهنگی، برای حسابداری.
         s.items.forEach(function (it, i) {
@@ -352,7 +395,11 @@ function ilServerReport(d) {
         ilCard('شماره‌ی تکراری در BPM', ilFa(conf.length), conf.length ? 'il-bad' : 'il-ok') +
         ilCard('خطا', ilFa(errs.length), errs.length ? 'il-bad' : 'il-ok') + '</div>';
     if (d.message) h += '<div class="alert ' + (d.success ? 'alert-success' : 'alert-danger') + ' py-2">' + ilEsc(d.message) + '</div>';
-    if (conf.length) h += '<div class="alert alert-danger py-2">این شماره‌ها در BPM از قبل وجود دارند: ' + ilEsc(ilFa(conf.join('، '))) + '</div>';
+    if (conf.length) {
+        h += '<div class="alert alert-danger py-2">این شماره‌ها در BPM از قبل وجود دارند: ' + ilEsc(ilFa(conf.join('، '))) + '</div>';
+        if (d.dry_run) h += '<button class="btn btn-sm btn-outline-danger mb-2" id="btnSkipConf"><i class="bi bi-skip-forward"></i> کنار گذاشتن این ' +
+            ilFa(conf.length) + ' شماره (به فهرست «وارد نمی‌شود») و بررسی دوباره</button>';
+    }
     if (errs.length) h += '<div class="il-scroll mb-2"><table class="il-table"><tr><th>شماره</th><th>خطا</th></tr>' +
         errs.map(function (e) { return '<tr><td>' + ilFa(e.no) + '</td><td>' + ilEsc(e.message) + '</td></tr>'; }).join('') + '</table></div>';
     if (nc.length) h += '<h6 class="mt-2" style="font-weight:700">مشتری‌هایی که در BPM پیدا نشدند و ساخته می‌شوند</h6><div class="il-scroll"><table class="il-table">' +
@@ -373,8 +420,24 @@ function ilServerReport(d) {
     if (d.dry_run && ok) h += '<div class="alert alert-success py-2 mt-2">بررسی بی‌خطا بود. با «ورود نهایی» همه در یک مرحله ثبت می‌شوند.</div>';
     box.innerHTML = h;
     box.style.display = 'block';
+    var skip = document.getElementById('btnSkipConf');
+    if (skip) skip.addEventListener('click', function () { ilSkipConflicts(conf); });
     IL.checked = !!(d.dry_run && ok);
     document.getElementById('btnImport').disabled = !IL.checked;
+}
+
+// شماره‌هایی که در BPM از قبل هست (مثلا ۶۸۴ که پرسنل در خود BPM صادر کرده‌اند): از ورود
+// کنار گذاشته و به فهرست «وارد نمی‌شود» برده می‌شوند، بعد بررسی سرور دوباره اجرا می‌شود.
+function ilSkipConflicts(conf) {
+    if (!IL.parsed) return;
+    conf.forEach(function (no) {
+        var c = IL.parsed.cls[no] || {};
+        IL.parsed.cls[no] = { kind: 'exclude', problems: ['این شماره در BPM از قبل ثبت شده است'], cust: c.cust || '',
+                              rep_total: c.rep_total == null ? null : c.rep_total, sheet_total: c.sheet_total == null ? null : c.sheet_total,
+                              rep_date: c.rep_date || '', sheet_date: c.sheet_date || '' };
+    });
+    ilRender();
+    document.getElementById('btnCheck').click();
 }
 
 async function ilPost(path, body) {
