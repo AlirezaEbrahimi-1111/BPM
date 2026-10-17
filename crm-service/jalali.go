@@ -21,9 +21,9 @@ func gregorianToJalali(gy, gm, gd int) (jy, jm, jd int) {
 	for i := 0; i < gm-1; i++ {
 		days += gdm[i]
 	}
-	if gm > 2 && ((gy%4 == 0 && gy%100 != 0) || gy%400 == 0) {
-		days++
-	}
+	// روز کبیسه‌ی میلادی همین بالا با gy2 (= gy+1 بعد از فوریه) حساب شده؛ یک `days++`
+	// اضافه این‌جا بود که در سال‌های کبیسه از ۱ مارس تا آخر سال، تاریخ شمسی را یک
+	// روز جلو می‌برد (۱۵۳۰ روز اشتباه در ۲۰۱۵–۲۰۳۵؛ با تقویم Intl کروم مقایسه شد).
 	jy += 33 * (days / 12053)
 	days %= 12053
 	jy += 4 * (days / 1461)
@@ -40,6 +40,29 @@ func gregorianToJalali(gy, gm, gd int) (jy, jm, jd int) {
 		jd = 1 + (days-186)%30
 	}
 	return
+}
+
+// jalaliToGregorian تبدیل شمسی → میلادی. عمدا الگوریتم مستقل دومی نیست: روزهای
+// میلادی اطراف را می‌گردد تا همان روزی پیدا شود که gregorianToJalali به این تاریخ
+// شمسی می‌برد؛ پس دو جهت هرگز با هم ناسازگار نمی‌شوند. ok=false یعنی تاریخ نامعتبر
+// (مثلا ۱۴۰۵/۰۷/۳۱ یا ۱۴۰۵/۱۲/۳۰ در سال غیرکبیسه).
+func jalaliToGregorian(jy, jm, jd int) (t time.Time, ok bool) {
+	if jm < 1 || jm > 12 || jd < 1 || jd > 31 || (jm > 6 && jd > 30) {
+		return time.Time{}, false
+	}
+	// ۱ فروردین همیشه بین ۱۹ تا ۲۲ مارس است؛ از ۱۵ مارس شروع و حداکثر ۳۸۰ روز جلو برو
+	d := time.Date(jy+621, 3, 15, 12, 0, 0, 0, time.UTC)
+	for i := 0; i < 380; i++ {
+		y, m, dd := gregorianToJalali(d.Year(), int(d.Month()), d.Day())
+		if y == jy && m == jm && dd == jd {
+			return time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC), true
+		}
+		if y > jy {
+			break
+		}
+		d = d.AddDate(0, 0, 1)
+	}
+	return time.Time{}, false
 }
 
 // jalaliYearOf سال شمسی یک تاریخ میلادی را می‌دهد؛ اگر t صفر باشد، «حالا».
