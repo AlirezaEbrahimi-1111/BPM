@@ -3,7 +3,7 @@ error_log
 debug.txt
 config/config.php
 includes/sms.php
-includes/pushfa-config.php
+includes/metrix-config.php
 tests/config.php
 .htaccess
 .user.ini

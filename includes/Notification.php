@@ -230,16 +230,16 @@ class Notification
     private function sendPushAsync($notification_data, $notification_id)
     {
         try {
-            require_once __DIR__ . '/pushfa-push.php';
-            $linkUrl = null;
+            require_once __DIR__ . '/metrix-push.php';
+            $customContent = [];
             if (($notification_data['related_type'] ?? null) === 'task' && !empty($notification_data['related_id'])) {
-                $linkUrl = 'malekbpm://task?id=' . (string) $notification_data['related_id'];
+                $customContent = ['task_id' => (string) $notification_data['related_id']];
             }
-            $result = pushfa_send_push(
+            $result = metrix_send_push(
                 $notification_data['to_user_id'],
                 $notification_data['title'] ?? '',
                 $notification_data['message'] ?? '',
-                $linkUrl
+                $customContent
             );
             error_log(
                 ($result['ok'] ? "✅" : "⚠️") . " Push sent for notification #$notification_id" .
