@@ -93,6 +93,11 @@ func (s *server) requireCRMAccess(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// crmSections: واحدهایی (سازمان ۱) که دسترسی کامل ماژول فاکتور رسمی دارند —
+// 'l_accounting' = «حسابداری رسمی». ثابتِ کامپایل‌شده (نه ورودی کاربر) پس درج
+// مستقیم در SQL امن است. ⚠️ هم‌راستا با crmModuleSections در includes/crm_access.php.
+const crmSections = `'accounting','l_accounting'`
+
 // hasCRMAccess: شرط requireCRMAccess به‌صورت بله/خیر (تا قابل ترکیب باشد).
 func (s *server) hasCRMAccess(uid int64) bool {
 	if uid == 1 || uid == 19 {
@@ -105,10 +110,10 @@ func (s *server) hasCRMAccess(uid int64) bool {
 		  AND (
 		        u.phone IN ('09927949376')
 		     OR (u.organization_id = 1 AND (
-		            u.activity_section = 'accounting'
+		            u.activity_section IN (`+crmSections+`)
 		         OR u.activity_unit = 'AC'
 		         OR EXISTS (SELECT 1 FROM user_activity_sections uas
-		                    WHERE uas.user_id = u.id AND uas.section_key = 'accounting')
+		                    WHERE uas.user_id = u.id AND uas.section_key IN (`+crmSections+`))
 		         OR EXISTS (SELECT 1 FROM user_activity_units uau
 		                    WHERE uau.user_id = u.id AND uau.activity_unit = 'AC')
 		        ))
@@ -147,10 +152,10 @@ func (s *server) hasReportAccess(uid int64) bool {
 		     OR COALESCE(u.is_supervisor, 0) = 1
 		     OR u.is_create_official_invoice = 1
 		     OR u.is_sales_manager = 1
-		     OR u.activity_section = 'accounting'
+		     OR u.activity_section IN (`+crmSections+`)
 		     OR u.activity_unit = 'AC'
 		     OR EXISTS (SELECT 1 FROM user_activity_sections uas
-		                WHERE uas.user_id = u.id AND uas.section_key = 'accounting')
+		                WHERE uas.user_id = u.id AND uas.section_key IN (`+crmSections+`))
 		     OR EXISTS (SELECT 1 FROM user_activity_units uau
 		                WHERE uau.user_id = u.id AND uau.activity_unit = 'AC')
 		  )

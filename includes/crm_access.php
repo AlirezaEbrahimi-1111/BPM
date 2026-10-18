@@ -5,9 +5,9 @@
  * تا وقتی این ماژول در حال ساخت است، فقط افراد زیر منو و صفحه‌ها را می‌بینند:
  *   - کاربر id = 1
  *   - کاربر id = 19 (رضا فضایلی)
- *   - کل تیم حسابداری سازمان ۱  →  هر کاربر فعالی که «بخش فعالیتش»
- *     حسابداری باشد: users.activity_section = 'accounting' یا یک ردیف در
- *     user_activity_sections با section_key = 'accounting'.
+ *   - کل تیم حسابداری سازمان ۱  →  هر کاربر فعالی که «بخش فعالیتش» یکی از
+ *     crmModuleSections() باشد (حسابداری / حسابداری رسمی): users.activity_section
+ *     یا یک ردیف در user_activity_sections.
  *     (توجه: در این سیستم حسابداری با «بخش/section» مشخص می‌شود نه
  *      «واحد/unit»؛ ستون users.activity_unit عملا برای همه 'all' است.
  *      چک قدیمی 'AC' هم نگه داشته شده تا اگر جایی از آن استفاده شد نشکند.)
@@ -20,6 +20,16 @@
  * برای افزودن/حذف یک نفر خاص: id را در آرایه‌ی $ids یا موبایل را در
  * $EXTRA_PHONES عوض کن.
  */
+
+/**
+ * واحدهایی که دسترسی کامل ماژول فاکتور رسمی دارند (سازمان ۱).
+ * 'l_accounting' = «حسابداری رسمی» (واحد سفارشی سازمان ۱، ۱۴۰۵/۰۷/۲۶).
+ * ⚠️ هم‌راستا با crmSections در crm-service/helpers.go نگه دار.
+ */
+function crmModuleSections(): array
+{
+    return ['accounting', 'l_accounting'];
+}
 
 /** @return int[] شناسه‌ی کاربرانی که به ماژول دسترسی دارند */
 function crmModuleUserIds(PDO $db): array
@@ -48,16 +58,18 @@ function crmModuleUserIds(PDO $db): array
 
     // کل تیم حسابداری سازمان ۱ — بر پایهٔ «بخش فعالیت» (نه واحد).
     try {
-        $st = $db->query("
+        $sec = crmModuleSections();
+        $in  = implode(',', array_fill(0, count($sec), '?'));
+        $st = $db->prepare("
             SELECT u.id
             FROM users u
             WHERE u.is_active = 1
               AND u.organization_id = 1
               AND (
-                    u.activity_section = 'accounting'
+                    u.activity_section IN ($in)
                     OR EXISTS (
                         SELECT 1 FROM user_activity_sections uas
-                        WHERE uas.user_id = u.id AND uas.section_key = 'accounting'
+                        WHERE uas.user_id = u.id AND uas.section_key IN ($in)
                     )
                     OR u.activity_unit = 'AC'
                     OR EXISTS (
@@ -66,6 +78,7 @@ function crmModuleUserIds(PDO $db): array
                     )
                   )
         ");
+        $st->execute(array_merge($sec, $sec));
         foreach ($st->fetchAll(PDO::FETCH_COLUMN) as $pid) {
             $ids[] = (int) $pid;
         }
