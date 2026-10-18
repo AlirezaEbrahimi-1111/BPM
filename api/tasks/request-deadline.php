@@ -32,6 +32,7 @@ set_error_handler(function ($errno, $errstr, $errfile, $errline) {
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
         throw new Exception('فقط POST مجاز است');
     }
 
@@ -70,7 +71,6 @@ try {
     // موعد هر دوره را خودِ دوره تعیین می‌کند؛ دورهٔ جامانده با «رفع دورهٔ معوقه»
     // (api/tasks/request-overdue-clear.php) رسیدگی می‌شود. این‌جا مرز واقعی است؛
     // صفحه‌ها (داشبوردها) فقط گزینه‌اش را نشان نمی‌دهند.
-    // (پاسخ مستقیم، نه throw: بلوک catch پایین همهٔ پیام‌ها را با «خطای سرور» جایگزین می‌کند)
     if (($task['task_type'] ?? '') === 'continuous') {
         ob_end_clean();
         http_response_code(400);
@@ -105,9 +105,13 @@ try {
             throw new Exception('این مرحله هنوز فعال نشده است');
         }
 
-        // کار روتین: assignee ندارد؛ مجوز = عضو یکی از واحدهای همین مرحله (یا مدیر)
+        // کار روتین: مجوز = عضو واحدِ همین مرحله، یا مسئولِ مستقیمِ کار، یا مدیر.
+        // مرحله‌ای که مسئولش «کاربر مشخص»/«ایجادکننده» است (یا برای اصلاح به ایجادکننده
+        // برگشته) واحد ندارد (activity_section خالی) و assignee_id دارد — قبلا فقط واحد
+        // چک می‌شد و خودِ مسئولِ کار هم نمی‌توانست تمدید بخواهد (کار ۳۷۷۰).
         $inSection = us_userInSection($db, $user_id, $task['activity_section']);
-        if (!$inSection && !$requester_is_manager) {
+        $isDirectAssignee = (int) $task['assignee_id'] === (int) $user_id;
+        if (!$inSection && !$isDirectAssignee && !$requester_is_manager) {
             http_response_code(403);
             throw new Exception('فقط کاربران بخش این مرحله می‌توانند درخواست تمدید بدهند');
         }
@@ -441,15 +445,22 @@ try {
         'current_approver' => $current_approver_id
     ], JSON_UNESCAPED_UNICODE);
 
-} catch (Exception $e) {
-    ob_end_clean();
-    http_response_code(isset($http_code) ? $http_code : 500);
+} catch (Throwable $e) {
+    // خطاهای اعتبارسنجی (بالا قبل از throw کد 4xx گذاشته‌اند) پیامِ فارسیِ خودشان را
+    // به کاربر نشان می‌دهند. قبلا همه با «خطای سرور» (۵۰۰) جایگزین می‌شدند و کاربر
+    // نمی‌فهمید مشکل چیست (مثلا «درخواست قبلی منتظر است»). خطای غیرمنتظره (دیتابیس،
+    // خطای PHP) همچنان «خطای سرور» است و جزئیاتش فقط در لاگ. Throwable (نه Exception)
+    // تا خطای PHP هم پاسخ JSON بدهد، نه بدنهٔ خالی که مرورگر «خطا در ارتباط با سرور» نشان دهد.
+    while (ob_get_level() > 0) ob_end_clean();
+    $code = http_response_code();
+    $isUserError = !($e instanceof PDOException) && $code >= 400 && $code < 500;
+    http_response_code($isUserError ? $code : 500);
     error_log("❌ Deadline request error: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
 
     echo json_encode([
         'success' => false,
-        'message' => 'خطای سرور'
+        'message' => $isUserError ? $e->getMessage() : 'خطای سرور'
     ], JSON_UNESCAPED_UNICODE);
 }
 
