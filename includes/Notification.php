@@ -246,16 +246,16 @@ class Notification
                 error_log("📤 Push async dispatched for notification #$notification_id");
             } else {
                 error_log("⚠️ exec not available, falling back to sync Push");
-                require_once __DIR__ . '/onesignal-push.php';
-                $data = [];
+                require_once __DIR__ . '/pushfa-push.php';
+                $linkUrl = null;
                 if (($notification_data['related_type'] ?? null) === 'task' && !empty($notification_data['related_id'])) {
-                    $data = ['route' => 'task_detail', 'task_id' => (string) $notification_data['related_id']];
+                    $linkUrl = 'malekbpm://task?id=' . (string) $notification_data['related_id'];
                 }
-                onesignal_send_push(
+                pushfa_send_push(
                     $notification_data['to_user_id'],
                     $notification_data['title'] ?? '',
                     $notification_data['message'] ?? '',
-                    $data
+                    $linkUrl
                 );
             }
         } catch (Exception $e) {

@@ -9,21 +9,21 @@ try {
     if (empty($_SERVER['DOCUMENT_ROOT'])) {
         $_SERVER['DOCUMENT_ROOT'] = dirname(__DIR__);
     }
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/onesignal-push.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/pushfa-push.php';
 
     // 🔧 دیپ‌لینک فقط برایِ نوتیف‌هایِ مربوط به یک «کار» مشخص — بقیه‌ی
     // انواع (checklist, workflow, ticket, ...) فعلاً بدونِ دیپ‌لینکِ
     // اختصاصی باز می‌شوند (فقط خودِ اپ باز می‌شود)
-    $data = [];
+    $linkUrl = null;
     if (($payload['related_type'] ?? null) === 'task' && !empty($payload['related_id'])) {
-        $data = ['route' => 'task_detail', 'task_id' => (string) $payload['related_id']];
+        $linkUrl = 'malekbpm://task?id=' . (string) $payload['related_id'];
     }
 
-    $result = onesignal_send_push(
+    $result = pushfa_send_push(
         $payload['to_user_id'],
         $payload['title'] ?? '',
         $payload['message'] ?? '',
-        $data
+        $linkUrl
     );
 
     error_log(
