@@ -215,49 +215,37 @@ class Notification
      * همان الگویِ sendSMSAsync (پروسه‌ی پس‌زمینه با exec، و fallbackِ
      * sync کوتاه اگر exec غیرفعال بود)
      */
+    /**
+     * 🔧 رفعِ باگ: این متد قبلاً سعی می‌کرد با exec(...&) یک پروسه‌ی
+     * پس‌زمینه بسازد (عیناً مثلِ sendSMSAsync) — ولی رویِ این سرور،
+     * exec() که از *داخلِ یک درخواستِ واقعیِ Apache/mod_php* صدا زده
+     * شود، اصلاً پروسه را اجرا نمی‌کند (تستِ مستقیم تایید کرد: همان
+     * دستور از شلِ SSH درست کار می‌کند، ولی از دلِ یک درخواستِ HTTP
+     * واقعی هیچ خروجی/فایلی تولید نمی‌شود — احتمالاً Apache گروهِ
+     * پروسه را با پایانِ درخواست می‌بندد). پس به‌جایِ تلاشِ ناموفقِ
+     * async، مستقیم و همزمان ارسال می‌کند — چون زرین‌پال و این هر دو
+     * با تایم‌اوتِ کوتاه (۱۵ ثانیه) محدود شده‌اند، تاخیرِ عملیِ آن در
+     * اکثرِ موارد زیرِ یک ثانیه است.
+     */
     private function sendPushAsync($notification_data, $notification_id)
     {
         try {
-            $worker_path = $_SERVER['DOCUMENT_ROOT'] . '/includes/push-worker.php';
-
-            $disabled = explode(',', ini_get('disable_functions'));
-            $disabled = array_map('trim', $disabled);
-            $exec_available = !in_array('exec', $disabled) && file_exists($worker_path);
-
-            $payload = json_encode([
-                'to_user_id'      => $notification_data['to_user_id'],
-                'title'           => $notification_data['title'] ?? '',
-                'message'         => $notification_data['message'] ?? '',
-                'related_type'    => $notification_data['related_type'] ?? '',
-                'related_id'      => $notification_data['related_id'] ?? '',
-                'notification_id' => $notification_id
-            ], JSON_UNESCAPED_UNICODE);
-
-            if ($exec_available) {
-                $encoded = base64_encode($payload);
-                $php_bin = PHP_BINARY ?: '/usr/bin/php';
-                $cmd = sprintf(
-                    '%s %s %s > /dev/null 2>&1 &',
-                    escapeshellarg($php_bin),
-                    escapeshellarg($worker_path),
-                    escapeshellarg($encoded)
-                );
-                exec($cmd);
-                error_log("📤 Push async dispatched for notification #$notification_id");
-            } else {
-                error_log("⚠️ exec not available, falling back to sync Push");
-                require_once __DIR__ . '/pushfa-push.php';
-                $linkUrl = null;
-                if (($notification_data['related_type'] ?? null) === 'task' && !empty($notification_data['related_id'])) {
-                    $linkUrl = 'malekbpm://task?id=' . (string) $notification_data['related_id'];
-                }
-                pushfa_send_push(
-                    $notification_data['to_user_id'],
-                    $notification_data['title'] ?? '',
-                    $notification_data['message'] ?? '',
-                    $linkUrl
-                );
+            require_once __DIR__ . '/pushfa-push.php';
+            $linkUrl = null;
+            if (($notification_data['related_type'] ?? null) === 'task' && !empty($notification_data['related_id'])) {
+                $linkUrl = 'malekbpm://task?id=' . (string) $notification_data['related_id'];
             }
+            $result = pushfa_send_push(
+                $notification_data['to_user_id'],
+                $notification_data['title'] ?? '',
+                $notification_data['message'] ?? '',
+                $linkUrl
+            );
+            error_log(
+                ($result['ok'] ? "✅" : "⚠️") . " Push sent for notification #$notification_id" .
+                " http=" . $result['http_code'] .
+                " resp=" . json_encode($result['response'], JSON_UNESCAPED_UNICODE)
+            );
         } catch (Exception $e) {
             error_log("❌ sendPushAsync error: " . $e->getMessage());
         }
