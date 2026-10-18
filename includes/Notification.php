@@ -80,13 +80,17 @@ class Notification
                 !empty($data['skip_self_check']) ? 1 : 0
             ]);
 
-            // 🆕 اگر نوتیفیکیشن ساخته شد، پیامک هم بفرست
+            // 🆕 اگر نوتیفیکیشن ساخته شد، پیامک و Push هم بفرست
             if ($result) {
                 $notification_id = $this->db->lastInsertId();
                 error_log("📧 Notification created with ID: $notification_id - Sending SMS...");
-                
+
                 // ارسال پیامک (به صورت async تا سرعت بالا باشه)
                 $this->sendSMSAsync($data, $notification_id);
+
+                // 🔧 فازِ ۰: ارسالِ Push از طریقِ OneSignal (به همان روشِ
+                // async که SMS استفاده می‌کند)
+                $this->sendPushAsync($data, $notification_id);
             }
 
             return $result;
@@ -205,7 +209,60 @@ class Notification
             error_log("❌ sendSMSAsync error: " . $e->getMessage());
         }
     }
-    
+
+    /**
+     * 🔧 فازِ ۰ (Push): ارسالِ Push غیرهمزمان از طریقِ OneSignal — عیناً
+     * همان الگویِ sendSMSAsync (پروسه‌ی پس‌زمینه با exec، و fallbackِ
+     * sync کوتاه اگر exec غیرفعال بود)
+     */
+    private function sendPushAsync($notification_data, $notification_id)
+    {
+        try {
+            $worker_path = $_SERVER['DOCUMENT_ROOT'] . '/includes/push-worker.php';
+
+            $disabled = explode(',', ini_get('disable_functions'));
+            $disabled = array_map('trim', $disabled);
+            $exec_available = !in_array('exec', $disabled) && file_exists($worker_path);
+
+            $payload = json_encode([
+                'to_user_id'      => $notification_data['to_user_id'],
+                'title'           => $notification_data['title'] ?? '',
+                'message'         => $notification_data['message'] ?? '',
+                'related_type'    => $notification_data['related_type'] ?? '',
+                'related_id'      => $notification_data['related_id'] ?? '',
+                'notification_id' => $notification_id
+            ], JSON_UNESCAPED_UNICODE);
+
+            if ($exec_available) {
+                $encoded = base64_encode($payload);
+                $php_bin = PHP_BINARY ?: '/usr/bin/php';
+                $cmd = sprintf(
+                    '%s %s %s > /dev/null 2>&1 &',
+                    escapeshellarg($php_bin),
+                    escapeshellarg($worker_path),
+                    escapeshellarg($encoded)
+                );
+                exec($cmd);
+                error_log("📤 Push async dispatched for notification #$notification_id");
+            } else {
+                error_log("⚠️ exec not available, falling back to sync Push");
+                require_once __DIR__ . '/onesignal-push.php';
+                $data = [];
+                if (($notification_data['related_type'] ?? null) === 'task' && !empty($notification_data['related_id'])) {
+                    $data = ['route' => 'task_detail', 'task_id' => (string) $notification_data['related_id']];
+                }
+                onesignal_send_push(
+                    $notification_data['to_user_id'],
+                    $notification_data['title'] ?? '',
+                    $notification_data['message'] ?? '',
+                    $data
+                );
+            }
+        } catch (Exception $e) {
+            error_log("❌ sendPushAsync error: " . $e->getMessage());
+        }
+    }
+
     private function sendSMSSync($notification_data, $notification_id)
         {
             try {
