@@ -98,7 +98,7 @@ window.TF = (function () {
      * فهرست جدا کپی شده بود و با هم فرق کرده بودند).
      *
      *  • تکمیل‌شده                     → «تکمیل»
-     *  • کار دوره‌ای با دورهٔ معوقه     → «N دوره معوقه»
+     *  • کار دوره‌ای با دورهٔ معوقه     → «N دوره معوقه» (N شاملِ دورهٔ جاریِ موعدگذشته هم هست)
      *      (نه اختلاف تقویمی next_due_date: آن تاریخ همیشه نزدیک امروز است،
      *       حتی وقتی ده‌ها دوره معوقه مانده)
      *  • کار دوره‌ای با بازهٔ تمام‌شده  → «نیازمند تمدید» (اگر سرور گفته باشد) یا «-»
@@ -115,8 +115,16 @@ window.TF = (function () {
         if (t.status === 'completed' || t.status === 'approved') return badge('days-normal', 'تکمیل');
 
         if (t.task_type === 'continuous') {
-            const op = t.overdue_periods || 0;
-            if (op > 0) return badge('days-overdue', `${toFa(op)} دوره معوقه`);
+            // دوره‌های انجام‌نشدهٔ موعدگذشته = معوقه‌ها (سرور) + دورهٔ جاری اگر موعدش گذشته.
+            // سرور دورهٔ جاری را تا رسیدنِ دورهٔ بعد «معوقه» نمی‌شمارد؛ قبلا در آن فاصله
+            // (هفتگی/ماهانه چند روز) این بج به شاخهٔ مقطعی می‌افتاد و «n روز کاری تاخیر»
+            // نشان می‌داد (کار ۳۳۱۷). next_due_date وقتی دورهٔ جاری انجام نشده = همان دوره است.
+            const op = Number(t.overdue_periods) || 0;
+            const curLate = !!t.next_due_date && (window.TimeSync
+                ? TimeSync.daysFromToday(t.next_due_date)
+                : Math.ceil((new Date(t.next_due_date).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5)) < 0;
+            const late = op + (curLate ? 1 : 0);
+            if (late > 0) return badge('days-overdue', `${toFa(late)} دوره معوقه`);
             if (!t.next_due_date) {
                 return needsRenewalDecision(t) ? badge('days-soon', 'نیازمند تمدید') : badge('', '-');
             }
