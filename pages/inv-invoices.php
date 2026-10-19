@@ -463,6 +463,12 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 cellRenderer: p => p.value ? faDigits(p.value) : '<span class="st-badge draft">پیش‌نویس</span>'
             },
             {
+                headerName: 'مشتری',
+                field: 'customer_name',
+                flex: 2,
+                minWidth: 160
+            },
+            {
                 headerName: 'نوع',
                 field: 'doc_type',
                 width: 100,
@@ -479,12 +485,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 sort: 'desc',
                 sortIndex: 0,
                 cellRenderer: p => jDate(p.value)
-            },
-            {
-                headerName: 'مشتری',
-                field: 'customer_name',
-                flex: 2,
-                minWidth: 160
             },
             {
                 headerName: 'مبلغ کل (ریال)',
