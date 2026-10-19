@@ -303,21 +303,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
             // ✅ حفظ state بعد از برگشت به صفحه
             onGridReady: params => {
-                // 🔒 قبلاً اینجا 'allTasksGridState' (کلیدِ صفحه‌ی tasks.php) خونده
-                // می‌شد ولی پایین‌تر تو 'myTasksGridState' ذخیره می‌شد؛ یعنی تنظیماتِ
-                // ستونِ همین صفحه هیچ‌وقت برنمی‌گشت و به‌جاش چیدمانِ صفحه‌ی دیگه
-                // اعمال می‌شد. الان خوندن/نوشتن هر دو با کلیدِ خودِ این صفحه‌ست.
-                const saved = localStorage.getItem('myTasksGridState');
-                // 🔒 عرضِ ذخیره‌شده‌ی قدیمیِ «مهلت» (۱۲۰ = پیش‌فرضِ قدیم) با
-                // پیش‌فرضِ جدید (۱۶۸) عوض می‌شه؛ عرضِ دست‌کاری‌شده دست‌نخورده می‌مونه
-                if (saved) params.api.applyColumnState({
-                    state: JSON.parse(saved).map(c => (c.colId === 'col_mohlat' && c.width === 120) ? { ...c, width: 168 } : c),
-                    applyOrder: true
-                });
+                // عرض/ترتیب/سورت/فیلترِ ذخیره‌شده را assets/js/ag-grid-fa.js (ماندگاری مشترک همهٔ جدول‌ها)
+                // پیش از همین onGridReady اعمال می‌کند؛ این‌جا فقط منطق خاص صفحه می‌ماند.
                 applyResponsiveColumns(); // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
             },
-            onSortChanged: params => localStorage.setItem('myTasksGridState', JSON.stringify(params.api.getColumnState())),
-            onColumnResized: params => localStorage.setItem('myTasksGridState', JSON.stringify(params.api.getColumnState())),
 
             // ✅ کلیک روی ردیف
             onRowClicked: params => viewTask(params.data.id),

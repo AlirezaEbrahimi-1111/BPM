@@ -269,19 +269,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             overlayLoadingTemplate: '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:#8e57fe;font-size:.85rem;"><div class="spinner-border" style="width:2.2rem;height:2.2rem;" role="status"></div><span>در حال بارگذاری...</span></div>',
             overlayNoRowsTemplate: '<span class="text-muted">اطلاعاتی یافت نشد</span>',
             onGridReady: params => {
-                const saved = localStorage.getItem('allTasksGridState');
-                // 🔒 عرضِ ذخیره‌شده‌ی قدیمیِ «مهلت» (۱۲۰ = پیش‌فرضِ قدیم، یعنی
-                // کاربر دستی تغییرش نداده) با پیش‌فرضِ جدید (۱۶۸) عوض می‌شه؛
-                // وگرنه state ذخیره‌شده تویِ localStorage، عرضِ جدید رو برایِ
-                // کاربرانِ قبلی نادیده می‌گرفت. عرضِ دست‌کاری‌شده دست‌نخورده می‌مونه.
-                if (saved) params.api.applyColumnState({
-                    state: JSON.parse(saved).map(c => (c.colId === 'col_mohlat' && c.width === 120) ? { ...c, width: 168 } : c),
-                    applyOrder: true
-                });
+                // عرض/ترتیب/سورت/فیلترِ ذخیره‌شده را assets/js/ag-grid-fa.js (ماندگاری مشترک همهٔ جدول‌ها)
+                // پیش از همین onGridReady اعمال می‌کند؛ این‌جا فقط منطق خاص صفحه می‌ماند.
                 applyResponsiveColumns(); // 🆕 تنظیم ستون‌ها بر اساس اندازه صفحه
             },
-            onSortChanged: params => localStorage.setItem('allTasksGridState', JSON.stringify(params.api.getColumnState())),
-            onColumnResized: params => localStorage.setItem('allTasksGridState', JSON.stringify(params.api.getColumnState())),
             onRowClicked: params => viewTask(params.data.id),
             onPaginationChanged: () => {
                 setTimeout(() => {
