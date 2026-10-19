@@ -130,7 +130,11 @@ try {
     // باشد (و برعکس) — وگرنه یک فایل غیرویدیویی با تغییر پسوند از سقف ۲۰ مگابایت رد می‌شد.
     // (audio/mp4: فایل mp4 فقط‌صدا را finfo این‌طور تشخیص می‌دهد.)
     $mimeIsVideo = in_array($fileMimeType, ['video/mp4', 'video/quicktime'], true);
-    if (($isVideo && !$mimeIsVideo && $fileMimeType !== 'audio/mp4') || (!$isVideo && $mimeIsVideo)) {
+    // 🔧 صدایِ ضبط‌شده با اپ (اندروید) در کانتینرِ MP4 با برندِ isom/mp42 ذخیره
+    // می‌شود و finfo آن را video/mp4 تشخیص می‌دهد — پس m4a با video/mp4 هم
+    // پذیرفته می‌شود. ریسکی ندارد چون m4a همچنان سقفِ حجمِ غیرویدیویی را دارد.
+    $m4aInMp4 = ($fileExtension === 'm4a' && $fileMimeType === 'video/mp4');
+    if (($isVideo && !$mimeIsVideo && $fileMimeType !== 'audio/mp4') || (!$isVideo && $mimeIsVideo && !$m4aInMp4)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'پسوند فایل با محتوای آن هم‌خوانی ندارد'], JSON_UNESCAPED_UNICODE);
         exit;
