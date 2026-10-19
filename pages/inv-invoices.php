@@ -92,6 +92,33 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             cursor: pointer;
         }
 
+        .ag-action-btn.profit {
+            color: #6b7280;
+        }
+
+        .ag-action-btn.profit.done {
+            color: #0f7a57;
+        }
+
+        .profit-st {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .profit-st.done {
+            color: #0f7a57;
+            font-weight: 700;
+        }
+
+        :root[data-theme="dark"] .profit-st {
+            color: #9aa3b8;
+        }
+
+        :root[data-theme="dark"] .profit-st.done,
+        :root[data-theme="dark"] .ag-action-btn.profit.done {
+            color: #34d399;
+        }
+
         :root[data-theme="dark"] .ag-action-btn {
             background: var(--surface);
             border-color: var(--border-soft);
@@ -214,7 +241,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 <body>
     <?php include 'header.php'; ?>
 
-    <div class="overview-container" style="margin-top:70px">
+    <div class="overview-container container-full" style="margin-top:70px">
 
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
@@ -378,6 +405,11 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             if (d.partner_id && d.status !== 'cancelled') {
                 h += `<button class="ag-action-btn" style="color:#8e57fe" title="درصد سهم همکار" onclick="editPartnerPct(${d.id})"><i class="bi bi-percent"></i></button>`;
             }
+            if (d.partner_id && d.status !== 'cancelled') {
+                h += d.partner_profit_recorded ?
+                    `<button class="ag-action-btn profit done" title="سود همکار ثبت شده — برای برگرداندن به «ثبت نشده» کلیک کنید" onclick="toggleProfitRecorded(${d.id})"><i class="bi bi-journal-check"></i></button>` :
+                    `<button class="ag-action-btn profit" title="ثبت سود همکار" onclick="toggleProfitRecorded(${d.id})"><i class="bi bi-journal-plus"></i></button>`;
+            }
             h += `<button class="ag-action-btn" title="${d.partner_id ? 'سند سود همکار / تسویه / مودیان' : 'ویرایش وضعیت تسویه/مودیان'}" onclick="stEditStatus(${d.id})"><i class="bi bi-clipboard-check"></i></button>`;
             return h;
         }
@@ -490,6 +522,16 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 cellRenderer: p => p.data.partner_id ? money(p.value) : '—'
             },
             {
+                // وضعیت ثبت سود همکار در نرم‌افزار حسابداری — با آیکن «ثبت سود» در عملیات
+                headerName: 'ثبت سود',
+                field: 'partner_profit_recorded',
+                width: 110,
+                valueGetter: p => !p.data.partner_id ? null : (p.data.partner_profit_recorded ? 1 : 0),
+                cellRenderer: p => !p.data.partner_id ? '—' : (p.data.partner_profit_recorded ?
+                    '<span class="profit-st done">ثبت شده</span>' :
+                    '<span class="profit-st">ثبت نشده</span>')
+            },
+            {
                 headerName: 'تسویه',
                 field: 'settlement_status',
                 width: 130,
@@ -513,7 +555,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             },
             {
                 headerName: 'عملیات',
-                width: 318,
+                width: 350,
                 sortable: false,
                 filter: false,
                 cellRenderer: actionCell
@@ -650,6 +692,32 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         function stToggleCode() {
             const reg = document.getElementById('stMoadian').value === 'registered';
             document.getElementById('stCodeWrap').hidden = !reg;
+        }
+
+        // آیکن «ثبت سود»: بعد از تأیید کاربر، وضعیت سود همکار را «ثبت شده» می‌کند
+        // (و اگر از قبل ثبت شده بود، با تأیید به «ثبت نشده» برمی‌گرداند — برای اصلاح اشتباه).
+        // همان PATCH و همان فیلدِ partner_profit_recorded که سوئیچ مودال تسویه می‌فرستد.
+        function toggleProfitRecorded(id) {
+            const row = allRows.find(r => r.id === id);
+            if (!row || !row.partner_id) return;
+            const next = !row.partner_profit_recorded;
+            const no = row.number ? ' #' + faDigits(row.number) : '';
+            const who = row.partner_name ? ' (' + esc(row.partner_name) + ')' : '';
+            const msg = next ?
+                `سود همکار${who} برای فاکتور${no} در نرم‌افزار حسابداری ثبت شده است؟` :
+                `وضعیت ثبت سود همکار${who} برای فاکتور${no} به «ثبت نشده» برگردد؟`;
+            uiConfirm(msg, async () => {
+                try {
+                    await apiSend('PATCH', '/inv/invoices/' + id + '/partner-status', {
+                        partner_profit_recorded: next
+                    });
+                    row.partner_profit_recorded = next;
+                    gridApi.setGridOption('rowData', allRows);
+                    showToast(next ? 'سود همکار «ثبت شده» شد' : 'وضعیت سود همکار «ثبت نشده» شد', 'success');
+                } catch (e) {
+                    showToast(e.message || 'خطا', 'error');
+                }
+            }, { yesText: next ? 'بله، ثبت شده' : 'بله، برگردد', noText: 'انصراف' });
         }
 
         function stEditStatus(id) {

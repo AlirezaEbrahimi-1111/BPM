@@ -1,7 +1,7 @@
 /*
  * money-shortcut.js — میانبر «سه صفر» برای فیلدهای مبلغِ فاکتور رسمی.
  * ------------------------------------------------------------------
- * وقتی مکان‌نما داخل یک فیلد مبلغ است و کاربر Ctrl + * را می‌زند، مبلغ در
+ * وقتی مکان‌نما داخل یک فیلد مبلغ است و کاربر * را می‌زند (با یا بدون Ctrl)، مبلغ در
  * ۱۰۰۰ ضرب می‌شود (سه صفر به آخرش اضافه می‌شود) و با جداکنندهٔ هزارگان و
  * رقم فارسی نمایش داده می‌شود. مثال: ۲۱۵ → ۲۱۵٬۰۰۰.
  *
@@ -42,14 +42,16 @@
         return el && typeof el.matches === 'function' && el.matches(SELECTOR);
     }
 
-    // تشخیص Ctrl + *  (هم ستارهٔ ردیف اصلی = Shift+۸، هم ستارهٔ کیبورد عددی)
-    function isCtrlStar(e) {
-        if (!e.ctrlKey) return false;
+    // تشخیص *  (هم ستارهٔ ردیف اصلی = Shift+۸، هم ستارهٔ کیبورد عددی). Ctrl لازم نیست
+    // (قبلا فقط Ctrl + * کار می‌کرد)؛ با Ctrl هم مثل قبل کار می‌کند. فیلد مبلغ هیچ‌وقت
+    // خودِ کاراکتر * را لازم ندارد، پس تایپ‌نشدنش ضرری ندارد. Alt/Meta دست نمی‌خورند.
+    function isStar(e) {
+        if (e.altKey || e.metaKey) return false;
         return e.key === '*' || e.code === 'NumpadMultiply' || (e.shiftKey && e.code === 'Digit8');
     }
 
     document.addEventListener('keydown', function (e) {
-        if (!isCtrlStar(e)) return;
+        if (!isStar(e)) return;
         var el = e.target;
         if (!isMoneyField(el)) return;
         e.preventDefault();

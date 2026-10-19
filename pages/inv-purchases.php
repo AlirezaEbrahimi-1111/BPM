@@ -144,7 +144,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 <body>
     <?php include 'header.php'; ?>
 
-    <div class="overview-container" style="margin-top:70px">
+    <div class="overview-container container-full" style="margin-top:70px">
 
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">

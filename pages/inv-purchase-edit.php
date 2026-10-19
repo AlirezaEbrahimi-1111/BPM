@@ -186,7 +186,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 <body>
     <?php include 'header.php'; ?>
 
-    <div class="overview-container" style="margin-top:70px">
+    <div class="overview-container container-full" style="margin-top:70px">
         <div class="inv-wrap">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h1 style="font-size:1.3rem;margin:0"><i class="bi bi-cart-plus ms-2"></i><span><?= $purId ? 'ویرایش فاکتور خرید' : 'فاکتور خرید جدید' ?></span></h1>

@@ -7659,3 +7659,9 @@ body.login-page::after {
 .custom-toast.toast-info {
     background: #8e57fe;
 }
+/* کانتینر تمام‌عرض — استثنا از عرض استاندارد ۷۰٪ .overview-container (برای صفحاتِ
+   پرستونِ فاکتور فروش/خرید رسمی، درخواست ۱۴۰۵/۰۷/۲۷). دو کلاسه تا هم بر قاعدهٔ
+   اصلی و هم بر نسخهٔ موبایل (۹۰٪) غلبه کند. */
+.overview-container.container-full {
+    max-width: 100% !important;
+}

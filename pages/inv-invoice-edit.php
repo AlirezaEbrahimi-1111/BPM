@@ -256,7 +256,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 <body>
     <?php include 'header.php'; ?>
 
-    <div class="overview-container" style="margin-top:70px">
+    <div class="overview-container container-full" style="margin-top:70px">
         <div class="inv-wrap">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h1 style="font-size:1.3rem;margin:0"><i class="bi bi-receipt ms-2"></i><span id="pageTitle"><?= $invId ? 'ویرایش فاکتور' : 'فاکتور جدید' ?></span></h1>
