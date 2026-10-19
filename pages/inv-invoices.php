@@ -23,6 +23,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/partner-percent-modal.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/month-filter.js') ?>"></script>
 
     <style>
         .crm-toolbar {
@@ -253,6 +254,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 <option value="approved">تأییدشده</option>
                 <option value="cancelled">باطل‌شده</option>
             </select>
+            <!-- فیلتر ماه (چندانتخابی): پیش‌فرض ماه جاری — assets/js/month-filter.js -->
+            <div id="monthFilter" style="width:190px"></div>
             <div class="spacer"></div>
             <a class="btn btn-primary" href="/pages/inv-invoice-edit.php"><i class="bi bi-plus-lg ms-1"></i> فاکتور جدید</a>
         </div>
@@ -369,6 +372,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             official: 'رسمی',
             proforma: 'پیش‌فاکتور'
         };
+        let monthFilter = null, monthFilterInit = false;
         let gridApi = null,
             allRows = [],
             searchTimer;
@@ -596,6 +600,11 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     page++;
                 }
                 allRows = out;
+                // ماه‌های موجود (+ ماه جاری حتی اگر هنوز فاکتوری ندارد)؛ بار اول فقط ماه جاری انتخاب
+                const cur = MonthFilter.currentKey();
+                const keys = allRows.map(r => MonthFilter.keyOf(invDate(r))).concat(cur ? [cur] : []);
+                monthFilter.setMonths(keys, monthFilterInit ? null : (cur ? [cur] : []));
+                monthFilterInit = true;
                 applyFilter();
             } catch (e) {
                 showToast(e.message || 'خطا در بارگذاری', 'error');
@@ -603,10 +612,16 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             }
         }
 
+        // تاریخ فاکتور برای دسته‌بندی ماهانه — همان ستون «تاریخ صدور» (پیش‌نویس بی‌تاریخ = تاریخ ساخت)
+        function invDate(r) {
+            return r.issue_date || (r.created_at || '').split(' ')[0];
+        }
+
         function applyFilter() {
             const q = document.getElementById('crmSearch').value.trim().toLowerCase();
             const st = document.getElementById('stFilter').value;
             let rows = allRows;
+            if (monthFilter) rows = rows.filter(r => monthFilter.matches(invDate(r)));
             if (st) rows = rows.filter(r => r.status === st);
             if (q) rows = rows.filter(r =>
                 (r.number || '').toLowerCase().includes(q) ||
@@ -770,6 +785,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 searchTimer = setTimeout(applyFilter, 200);
             });
             document.getElementById('stFilter').addEventListener('change', applyFilter);
+            monthFilter = MonthFilter.create({ container: '#monthFilter', onChange: applyFilter });
             document.getElementById('stMoadian').addEventListener('change', stToggleCode);
             document.getElementById('stSaveBtn').addEventListener('click', stSaveStatus);
             document.getElementById('stModal').addEventListener('shown.bs.modal', () => {

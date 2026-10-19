@@ -196,7 +196,7 @@ $canWrite = true;
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">کد / شناسه ملی <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="f_national_id" inputmode="numeric">
+                                <input type="text" class="form-control" id="f_national_id" autocomplete="off" inputmode="numeric">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">شماره اقتصادی</label>
@@ -212,7 +212,7 @@ $canWrite = true;
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">کد پستی <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="f_postal_code" inputmode="numeric">
+                                <input type="text" class="form-control" id="f_postal_code" autocomplete="off" inputmode="numeric">
                             </div>
                             <div class="col-12">
                                 <label class="form-label">آدرس</label>

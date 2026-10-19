@@ -163,7 +163,7 @@ $canWrite = true;
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">کد / شناسه ملی</label>
-                                <input type="text" class="form-control" id="f_national_id">
+                                <input type="text" class="form-control" id="f_national_id" autocomplete="off">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">شماره اقتصادی</label>

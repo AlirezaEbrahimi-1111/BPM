@@ -118,7 +118,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     </div>
                     <div>
                         <label class="form-label">شناسه ملی</label>
-                        <input type="text" class="form-control" id="s_national_id">
+                        <input type="text" class="form-control" id="s_national_id" autocomplete="off">
                     </div>
                     <div>
                         <label class="form-label">شماره اقتصادی</label>
@@ -146,7 +146,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     </div>
                     <div>
                         <label class="form-label">کدپستی</label>
-                        <input type="text" class="form-control" id="s_postal_code">
+                        <input type="text" class="form-control" id="s_postal_code" autocomplete="off">
                     </div>
                     <div>
                         <label class="form-label">تلفن / نمابر</label>

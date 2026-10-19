@@ -144,9 +144,9 @@ const QuickAdd = (() => {
         open('مشتری سریع', 'bi-person-plus', [
             { name: 'type', label: 'نوع', type: 'select', col: 4, options: [{ v: 'legal', t: 'حقوقی (شرکت)' }, { v: 'individual', t: 'حقیقی (شخص)' }] },
             { name: 'name', label: 'نام', required: true, col: 8 },
-            { name: 'national_id', label: 'شناسه / کد ملی', required: true, col: 6, attr: 'inputmode="numeric"' },
+            { name: 'national_id', label: 'شناسه / کد ملی', required: true, col: 6, attr: 'inputmode="numeric" autocomplete="off"' },
             { name: 'economic_code', label: 'شماره اقتصادی', col: 6, attr: 'inputmode="numeric"' },
-            { name: 'postal_code', label: 'کد پستی', required: true, col: 6, attr: 'inputmode="numeric"' },
+            { name: 'postal_code', label: 'کد پستی', required: true, col: 6, attr: 'inputmode="numeric" autocomplete="off"' },
             { name: 'phone', label: 'تلفن', col: 6, attr: 'inputmode="numeric"' },
             { name: 'address', label: 'آدرس', type: 'textarea' },
         ], async d => {
@@ -167,7 +167,7 @@ const QuickAdd = (() => {
             { name: 'name', label: 'نام', required: true },
             { name: 'phone', label: 'تلفن', col: 6, attr: 'inputmode="numeric"' },
             { name: 'mobile', label: 'موبایل', col: 6, attr: 'inputmode="numeric"' },
-            { name: 'national_id', label: 'کد / شناسه ملی', col: 6, attr: 'inputmode="numeric"' },
+            { name: 'national_id', label: 'کد / شناسه ملی', col: 6, attr: 'inputmode="numeric" autocomplete="off"' },
             { name: 'economic_code', label: 'شماره اقتصادی', col: 6, attr: 'inputmode="numeric"' },
             { name: 'address', label: 'آدرس', type: 'textarea' },
         ], async d => {
