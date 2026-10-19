@@ -30,7 +30,8 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
     <style>
         .inv-wrap {
-            max-width: 1050px;
+            /* تمام‌عرض (درخواست ۱۴۰۵/۰۷/۲۷) — قبلا 1050px بود و جلوی container-full را می‌گرفت */
+            max-width: none;
             margin: 0 auto;
         }
 

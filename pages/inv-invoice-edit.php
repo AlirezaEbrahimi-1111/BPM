@@ -31,7 +31,8 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
     <style>
         .inv-wrap {
-            max-width: 1100px;
+            /* تمام‌عرض (درخواست ۱۴۰۵/۰۷/۲۷) — قبلا 1100px بود و جلوی container-full را می‌گرفت */
+            max-width: none;
             margin: 0 auto;
         }
 
