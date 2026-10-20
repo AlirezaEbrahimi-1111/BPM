@@ -155,6 +155,11 @@ const QuickAdd = (() => {
                 national_id: toEn(d.national_id), economic_code: toEn(d.economic_code),
                 postal_code: toEn(d.postal_code), phone: toEn(d.phone), address: d.address,
             };
+            // شناسهٔ ملی شرکت / کد ملی شخص و کد پستی — assets/js/iran-id-validate.js (اگر لود شده)
+            if (window.IranId) {
+                const errs = window.IranId.checkCustomer(body);
+                if (errs.length) throw new Error(errs.join(' '));
+            }
             const res = await post('/customers', body);
             const rec = { id: res.id, mobile: '', city: '', province: '', ...body };
             onDone(rec);

@@ -13,6 +13,7 @@ header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/support-accounts.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
@@ -70,6 +71,7 @@ function oc_resolve_approver(PDO $db, array $task): int
             WHERE organization_id = ? AND activity_section = ?
               AND role IN ($approverRoles)
               AND is_active = 1 AND (is_deleted = 0 OR is_deleted IS NULL)
+              AND " . supportOnlySqlExclude('id') . "
             ORDER BY id LIMIT 1
         ");
         $m->execute([$task['organization_id'], $task['activity_section']]);
@@ -83,6 +85,7 @@ function oc_resolve_approver(PDO $db, array $task): int
         WHERE organization_id = ?
           AND role IN ($approverRoles)
           AND is_active = 1 AND (is_deleted = 0 OR is_deleted IS NULL)
+          AND " . supportOnlySqlExclude('id') . "
         ORDER BY id LIMIT 1
     ");
     $o->execute([$task['organization_id']]);

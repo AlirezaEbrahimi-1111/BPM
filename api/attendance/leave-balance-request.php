@@ -17,6 +17,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/support-accounts.php';
 
 try {
     $user_id = requireAuth();
@@ -44,7 +45,8 @@ try {
     $myName = trim($me['first_name'] . ' ' . $me['last_name']);
 
     // مقصد درخواست: همیشه سرپرست(های) سازمان — نه مدیر بخش
-    $stmt = $db->prepare("SELECT id FROM users WHERE organization_id = ? AND role = 'supervisor' AND is_active = 1 AND is_deleted = 0");
+    // حساب «فقط پشتیبان» (id=1) گیرنده نیست — includes/support-accounts.php
+    $stmt = $db->prepare("SELECT id FROM users WHERE organization_id = ? AND role = 'supervisor' AND is_active = 1 AND is_deleted = 0 AND " . supportOnlySqlExclude('id') . "");
     $stmt->execute([$me['organization_id']]);
     $recipients = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
 

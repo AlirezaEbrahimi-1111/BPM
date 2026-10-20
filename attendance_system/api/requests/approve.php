@@ -1,6 +1,7 @@
 <?php
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/support-accounts.php';
 header('Content-Type: application/json; charset=utf-8');
 date_default_timezone_set('Asia/Tehran');
 
@@ -364,6 +365,7 @@ try {
                       AND is_active = 1
                       AND organization_id = ?
                       AND exclude_from_approval_routing = 0
+                      AND " . supportOnlySqlExclude('id') . "
                     LIMIT 1
                 ");
                 $stmt->execute([$request_owner['organization_id']]);
@@ -382,6 +384,7 @@ try {
                       AND is_active = 1
                       AND organization_id = ?
                       AND exclude_from_approval_routing = 0
+                      AND " . supportOnlySqlExclude('id') . "
                     LIMIT 1
                 ");
                 $stmt->execute([$request_owner['organization_id']]);

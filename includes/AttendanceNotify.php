@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/support-accounts.php';
 // /includes/AttendanceNotify.php — نوتیفیکیشن + پیامک پترن‌محور تأیید دستگاه‌های حضور و غیاب
 // پیامک از طریق Notification::create و کلیدهای sms_pattern/sms_args ارسال می‌شود (مثل بقیهٔ سیستم)
 
@@ -22,7 +23,8 @@ if (!function_exists('attendance_notify_managers_new_device')) {
             $st = $db->prepare("
                 SELECT id FROM users
                 WHERE organization_id = ? AND is_active = 1
-                  AND (role IN ('supervisor','management') OR id = 1)
+                  AND role IN ('supervisor','management')
+                  AND " . supportOnlySqlExclude('id') . "
             ");
             $st->execute([$org]);
             $managers = $st->fetchAll(PDO::FETCH_COLUMN);
@@ -69,7 +71,8 @@ if (!function_exists('attendance_notify_managers_new_device')) {
             $st = $db->prepare("
                 SELECT id FROM users
                 WHERE organization_id = ? AND is_active = 1
-                  AND (role IN ('supervisor','management') OR id = 1)
+                  AND role IN ('supervisor','management')
+                  AND " . supportOnlySqlExclude('id') . "
             ");
             $st->execute([$org]);
             $managers = $st->fetchAll(PDO::FETCH_COLUMN);

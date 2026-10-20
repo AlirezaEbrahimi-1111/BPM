@@ -3,6 +3,7 @@
 
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/session_start.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/support-accounts.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php'; // ✅ این خط را اضافه کنید
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
@@ -229,6 +230,7 @@ function notifyNextApprover($db, $user_id, $request_type, $request_id, $request_
                   AND organization_id = ?
                   AND NOT (role = 'manager' AND manager_id = id)
                   AND exclude_from_approval_routing = 0
+                  AND " . supportOnlySqlExclude('id') . "
             ");
             $stmt->execute([$user_id, $requester['organization_id']]);
             $supervisors = $stmt->fetchAll(PDO::FETCH_ASSOC);

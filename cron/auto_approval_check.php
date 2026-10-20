@@ -17,6 +17,7 @@ if (php_sapi_name() !== 'cli') {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/support-accounts.php'; // حساب فقط‌پشتیبان (id=1) در مسیر تأیید نیست
 require_once __DIR__ . '/../includes/settings_helper.php';
 require_once __DIR__ . '/../includes/leave-balance-helper.php';
 
@@ -287,7 +288,7 @@ class AutoApprovalChecker {
             $stmt->execute([$request['user_id']]);
             $requester_org_id = $stmt->fetchColumn();
 
-            $stmt = $this->db->prepare("SELECT id FROM users WHERE is_supervisor = 1 AND organization_id = ? AND exclude_from_approval_routing = 0 LIMIT 1");
+            $stmt = $this->db->prepare("SELECT id FROM users WHERE is_supervisor = 1 AND organization_id = ? AND exclude_from_approval_routing = 0 AND " . supportOnlySqlExclude('id') . " LIMIT 1");
             $stmt->execute([$requester_org_id]);
             $supervisor = $stmt->fetch();
             

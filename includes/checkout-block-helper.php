@@ -32,6 +32,7 @@
 
 require_once __DIR__ . '/working-days-helper.php';
 require_once __DIR__ . '/period-engine.php';
+require_once __DIR__ . '/support-accounts.php';
 
 function userBlockingTasks(PDO $db, int $userId, ?string $today = null): array
 {
@@ -111,25 +112,14 @@ function userBlockingTasks(PDO $db, int $userId, ?string $today = null): array
 }
 
 /**
- * مدیران/سوپروایزرها از مسدودسازیِ خروج معاف‌اند.
+ * چه کسی از مسدودسازیِ خروج معاف است؟ فقط حساب «فقط پشتیبان» (id=1).
+ * (اصلاح ۱۴۰۵/۰۷/۲۸: قبلا همهٔ مدیران/سوپروایزرها معاف بودند؛ حالا قانون برای
+ *  سوپروایزرها هم اعمال می‌شود — includes/support-accounts.php)
+ * $db برای سازگاری امضا با فراخوانی موجود نگه داشته شده.
  */
 function checkoutExemptRole(PDO $db, int $userId): bool
 {
-    if ($userId <= 0) return false;
-    try {
-        $st = $db->prepare("
-            SELECT 1 FROM users
-            WHERE id = ?
-              AND ( role IN ('supervisor','admin','manager','management')
-                 OR COALESCE(is_supervisor, 0) = 1
-                 OR COALESCE(is_manager, 0) = 1 )
-            LIMIT 1
-        ");
-        $st->execute([$userId]);
-        return (bool) $st->fetchColumn();
-    } catch (Throwable $e) {
-        return false; // در صورت خطا، سخت‌گیرانه (معاف نکن) تا قانون دور نخورد
-    }
+    return $userId > 0 && isSupportOnlyUser($userId);
 }
 
 /**

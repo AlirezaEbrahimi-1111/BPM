@@ -27,6 +27,7 @@ $canWrite = true;
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/xlsx.full.min.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/iran-id-validate.js') ?>"></script>
 
     <style>
         .crm-toolbar {
@@ -282,6 +283,9 @@ $canWrite = true;
         let allRows = [];
         let custModal;
         let searchTimer;
+        // مقادیر اولیهٔ مشتری در حال ویرایش — اعتبارسنجی فقط برای فیلدهای تغییرکرده (داده‌های قدیمی
+        // نامعتبر، ویرایش بقیهٔ فیلدها را قفل نکند). null = افزودن مشتری جدید → همه بررسی می‌شوند.
+        let editOrig = null;
 
         function actionCell(p) {
             if (!CAN_WRITE) return '';
@@ -388,6 +392,7 @@ $canWrite = true;
         function openAdd() {
             document.getElementById('custForm').reset();
             document.getElementById('f_id').value = '';
+            editOrig = null;
             document.getElementById('custModalTitle').textContent = 'مشتری جدید';
             document.getElementById('custModalAlert').innerHTML = '';
             custModal.show();
@@ -398,6 +403,7 @@ $canWrite = true;
             if (!r) return;
             document.getElementById('f_id').value = r.id;
             document.getElementById('f_type').value = r.type || 'legal';
+            editOrig = { type: r.type || 'legal', national_id: toEn(r.national_id || ''), postal_code: toEn(r.postal_code || '') };
             document.getElementById('f_name').value = r.name || '';
             document.getElementById('f_phone').value = faDigits(r.phone || '');
             document.getElementById('f_mobile').value = faDigits(r.mobile || '');
@@ -434,6 +440,18 @@ $canWrite = true;
                 document.getElementById('custModalAlert').innerHTML =
                     '<div class="alert alert-danger py-2">این فیلدها الزامی‌اند: ' + missing.join('، ') + '</div>';
                 return;
+            }
+            // اعتبارسنجی شناسهٔ ملی شرکت (حقوقی) / کد ملی (حقیقی) و کد پستی — assets/js/iran-id-validate.js
+            if (window.IranId) {
+                const chk = { type: body.type };
+                if (!editOrig || body.national_id !== editOrig.national_id || body.type !== editOrig.type) chk.national_id = body.national_id;
+                if (!editOrig || body.postal_code !== editOrig.postal_code) chk.postal_code = body.postal_code;
+                const errs = IranId.checkCustomer(chk);
+                if (errs.length) {
+                    document.getElementById('custModalAlert').innerHTML =
+                        '<div class="alert alert-danger py-2">' + errs.join('<br>') + '</div>';
+                    return;
+                }
             }
             try {
                 if (id) await apiSend('PUT', '/customers/' + id, body);
