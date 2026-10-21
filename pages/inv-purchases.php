@@ -165,7 +165,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             <a class="btn btn-primary" href="/pages/inv-purchase-edit.php"><i class="bi bi-plus-lg ms-1"></i> فاکتور خرید جدید</a>
         </div>
 
-        <div id="invGrid" class="ag-theme-alpine grid-fill" style="width:100%;"></div>
+        <div id="invGrid" class="ag-theme-alpine grid-fill inv-grid" style="width:100%;"></div>
     </div>
 
     <?php include 'footer.php'; ?>
@@ -277,10 +277,11 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             },
             {
                 headerName: 'عملیات',
-                width: 150,
+                width: 80,
                 sortable: false,
                 filter: false,
-                cellRenderer: actionCell
+                // یک دکمهٔ «⋮» که همهٔ عملیات را به‌صورت منو باز می‌کند (assets/js/ag-grid-fa.js)
+                cellRenderer: AgGridFa.actionMenuCell(actionCell)
             },
         ];
 

@@ -28,6 +28,7 @@ $canWrite = true;
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/xlsx.full.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/iran-id-validate.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/entity-picker.js') ?>"></script>
 
     <style>
         .crm-toolbar {
@@ -133,6 +134,15 @@ $canWrite = true;
         .site-footer { position: fixed !important; left: 0; right: 0; bottom: 0; top: auto !important; margin-top: 0 !important; z-index: 80; }
         body { padding-bottom: 46px; }
         .grid-fill { height: calc(100vh - 340px); min-height: 260px; padding-top: 1rem; }
+        /* مودال حذف/ادغام مشتری */
+        .del-inv-wrap { max-height: 300px; overflow-y: auto; border: 1px solid var(--border-soft, #e9e9e9); border-radius: 10px; }
+        .del-inv-table { font-size: 12.5px; }
+        .del-inv-table thead th { position: sticky; top: 0; background: #f8f9fa; color: #374151 !important; font-weight: 600; z-index: 1; }
+        .del-inv-table td, .del-inv-table th { padding: 6px 10px; }
+        .del-summary { background: rgba(220, 38, 38, .08); border: 1px solid rgba(220, 38, 38, .25); border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.9; }
+        :root[data-theme="dark"] .del-inv-table thead th { background: var(--surface); color: var(--text-strong) !important; }
+        :root[data-theme="dark"] .del-inv-table td { color: var(--text-strong); background: transparent; }
+        :root[data-theme="dark"] .del-summary { background: rgba(248, 113, 113, .10); border-color: rgba(248, 113, 113, .3); color: var(--text-strong); }
     </style>
 </head>
 
@@ -160,7 +170,7 @@ $canWrite = true;
         </div>
         <div id="importResult"></div>
 
-        <div id="crmGrid" class="ag-theme-alpine grid-fill" style="width:100%;"></div>
+        <div id="crmGrid" class="ag-theme-alpine grid-fill inv-grid" style="width:100%;"></div>
     </div>
 
     <!-- مودال افزودن/ویرایش -->
@@ -230,6 +240,39 @@ $canWrite = true;
         </div>
     </div>
 
+    <!-- حذف مشتریِ دارای فاکتور: ۱) فهرست فاکتورها + تأیید ۲) انتخاب مشتری جایگزین → انتقال و حذف -->
+    <div class="modal fade" id="delModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header-custom modal-header border-0">
+                    <h5 class="modal-title text-white"><i class="bi bi-person-x ms-2"></i><span id="delTitle">حذف مشتری</span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="delIntro" class="mb-3"></div>
+                    <div id="delPickWrap" class="mb-3" hidden>
+                        <label class="form-label fw-bold">به کدام مشتری منتقل شوند؟ <span class="text-danger">*</span></label>
+                        <div id="delTargetPicker"></div>
+                        <div class="form-text">جست‌وجو با نام، شناسه/کد ملی یا موبایل.</div>
+                    </div>
+                    <div class="del-inv-wrap">
+                        <table class="table table-sm align-middle mb-0 del-inv-table">
+                            <thead><tr><th>شماره</th><th>نوع</th><th>تاریخ</th><th>وضعیت</th><th class="text-start">مبلغ (ریال)</th></tr></thead>
+                            <tbody id="delInvBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="delOthers" class="small text-muted mt-2"></div>
+                    <div id="delAlert" class="mt-2"></div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="button" class="btn btn-danger" id="delNext">تأیید حذف و انتخاب مشتری جایگزین</button>
+                    <button type="button" class="btn btn-danger" id="delDo" hidden>انتقال فاکتورها و حذف مشتری</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php include 'footer.php'; ?>
 
     <script>
@@ -294,6 +337,9 @@ $canWrite = true;
                 <button class="ag-action-btn del" title="حذف" onclick="removeRow(${p.data.id})"><i class="bi bi-trash"></i></button>`;
         }
 
+        // کلیک روی نام / شناسه ملی / شماره اقتصادی / کد پستی = کپی در کلیپ‌بورد + پیام
+        // (AgGridFa.copyCell مشترک). مقدار خام کپی می‌شود (رقم لاتین) تا در شایگان/مؤدیان
+        // درست جای‌گذاری شود؛ نمایش با رقم فارسی می‌ماند.
         const colDefs = [{
                 headerName: 'نوع',
                 field: 'type',
@@ -304,31 +350,27 @@ $canWrite = true;
                 headerName: 'نام',
                 field: 'name',
                 flex: 2,
-                minWidth: 180
-            },
-            {
-                headerName: 'تلفن',
-                field: 'phone',
-                width: 140,
-                cellRenderer: p => faDigits(p.value) || '—'
-            },
-            {
-                headerName: 'موبایل',
-                field: 'mobile',
-                width: 140,
-                cellRenderer: p => faDigits(p.value) || '—'
+                minWidth: 180,
+                cellRenderer: p => AgGridFa.copyCell(p.value, esc(p.value), 'نام')
             },
             {
                 headerName: 'کد / شناسه ملی',
                 field: 'national_id',
                 width: 150,
-                cellRenderer: p => faDigits(p.value) || '—'
+                cellRenderer: p => AgGridFa.copyCell(p.value, esc(faDigits(p.value)), 'شناسه / کد ملی')
             },
             {
                 headerName: 'شماره اقتصادی',
                 field: 'economic_code',
                 width: 140,
-                cellRenderer: p => faDigits(p.value) || '—'
+                cellRenderer: p => AgGridFa.copyCell(p.value, esc(faDigits(p.value)), 'شماره اقتصادی')
+            },
+            {
+                // به‌جای تلفن و موبایل (درخواست ۱۴۰۵/۰۷/۲۹)
+                headerName: 'کد پستی',
+                field: 'postal_code',
+                width: 130,
+                cellRenderer: p => AgGridFa.copyCell(p.value, esc(faDigits(p.value)), 'کد پستی')
             },
             {
                 headerName: 'عملیات',
@@ -393,6 +435,7 @@ $canWrite = true;
             document.getElementById('custForm').reset();
             document.getElementById('f_id').value = '';
             editOrig = null;
+            if (window.IranId) IranId.resetLive(document.getElementById('custForm'));
             document.getElementById('custModalTitle').textContent = 'مشتری جدید';
             document.getElementById('custModalAlert').innerHTML = '';
             custModal.show();
@@ -414,6 +457,7 @@ $canWrite = true;
             document.getElementById('f_postal_code').value = faDigits(r.postal_code || '');
             document.getElementById('f_address').value = r.address || '';
             document.getElementById('custModalTitle').textContent = 'ویرایش مشتری';
+            if (window.IranId) IranId.resetLive(document.getElementById('custForm'));
             document.getElementById('custModalAlert').innerHTML = '';
             custModal.show();
         }
@@ -465,16 +509,127 @@ $canWrite = true;
             }
         }
 
-        function removeRow(id) {
-            uiConfirm('این مشتری حذف شود؟', async () => {
+        // ── حذف مشتری ──
+        // بدون فاکتور/سابقه → حذف ساده مثل قبل. با فاکتور → ۱) فهرست فاکتورها و تأیید حذف
+        // ۲) فهرست دوباره + انتخاب مشتری جایگزین (جست‌وجوپذیر، EntityPicker) → انتقال همه و حذف
+        // (crm-service/customer_merge.go: GET /customers/{id}/usage و POST /customers/{id}/merge)
+        const DOC_FA = { official: 'رسمی', proforma: 'پیش‌فاکتور' };
+        const ST_FA = { draft: 'پیش‌نویس', approved: 'تأییدشده', cancelled: 'باطل' };
+        let delId = null, delName = '', delUsage = null, delPicker = null, delModal = null;
+
+        function delInvRows(list) {
+            return list.map(i => `<tr>
+                <td>${i.number ? faDigits(i.number) : '<span class="text-muted">پیش‌نویس</span>'}</td>
+                <td>${DOC_FA[i.doc_type] || esc(i.doc_type)}</td>
+                <td>${i.issue_date ? (window.TimeSync ? TimeSync.formatJalali(i.issue_date) : faDigits(i.issue_date)) : '—'}</td>
+                <td>${ST_FA[i.status] || esc(i.status)}</td>
+                <td class="text-start">${faDigits(Math.round(i.total_amount || 0).toLocaleString('en-US'))}</td>
+            </tr>`).join('');
+        }
+
+        function delOthersText(others) {
+            if (!others || !others.length) return '';
+            return 'سوابق دیگرِ این مشتری که همراه فاکتورها منتقل می‌شوند: ' +
+                others.map(o => faDigits(o.count) + ' ' + o.label).join('، ') + '.';
+        }
+
+        async function removeRow(id) {
+            const r = allRows.find(x => x.id === id);
+            let u;
+            try {
+                u = await apiGet('/customers/' + id + '/usage');
+            } catch (e) {
+                showToast(e.message || 'خطا در بررسی فاکتورهای مشتری', 'error');
+                return;
+            }
+            if (!u.total_refs) {
+                uiConfirm('مشتری «' + esc(u.name || (r && r.name) || '') + '» فاکتوری ندارد. حذف شود؟', async () => {
+                    try {
+                        await apiSend('DELETE', '/customers/' + id, {});
+                        showToast('حذف شد', 'success');
+                        loadAll();
+                    } catch (e) {
+                        showToast(e.message || 'خطا در حذف', 'error');
+                    }
+                }, { danger: true, yesText: 'حذف', noText: 'انصراف' });
+                return;
+            }
+            delId = id;
+            delName = u.name;
+            delUsage = u;
+            delStep1();
+            delModal = delModal || new bootstrap.Modal(document.getElementById('delModal'));
+            delModal.show();
+        }
+
+        // مرحلهٔ ۱: فهرست فاکتورها + تأیید حذف
+        function delStep1() {
+            const n = delUsage.invoices.length;
+            document.getElementById('delTitle').textContent = 'حذف مشتری «' + delName + '»';
+            document.getElementById('delIntro').innerHTML = `<div class="del-summary">
+                مشتری <b>«${esc(delName)}»</b> ${n ? faDigits(n) + ' فاکتور دارد' : 'فاکتوری ندارد ولی سوابق دیگری دارد'}.
+                با حذف، ${n ? 'این فاکتورها' : 'این سوابق'} باید به یک مشتری دیگر منتقل شوند تا بی‌صاحب نمانند.
+                اگر مطمئنی این مشتری تکراری است و باید حذف شود، تأیید کن تا مشتری جایگزین را انتخاب کنی.</div>`;
+            document.getElementById('delInvBody').innerHTML = delInvRows(delUsage.invoices);
+            document.querySelector('.del-inv-wrap').hidden = !n;
+            document.getElementById('delOthers').textContent = delOthersText(delUsage.others);
+            document.getElementById('delPickWrap').hidden = true;
+            document.getElementById('delAlert').innerHTML = '';
+            document.getElementById('delNext').hidden = false;
+            document.getElementById('delDo').hidden = true;
+        }
+
+        // مرحلهٔ ۲: فهرست دوباره + انتخاب مشتری جایگزین
+        function delStep2() {
+            const n = delUsage.invoices.length;
+            document.getElementById('delIntro').innerHTML = `<div class="del-summary">
+                ${n ? faDigits(n) + ' فاکتور زیر' : 'سوابق این مشتری'} به مشتریِ انتخابی منتقل
+                و سپس <b>«${esc(delName)}»</b> حذف می‌شود.</div>`;
+            document.getElementById('delPickWrap').hidden = false;
+            document.getElementById('delNext').hidden = true;
+            document.getElementById('delDo').hidden = false;
+            const items = allRows.filter(c => c.id !== delId).map(c => ({
+                id: c.id,
+                label: c.name,
+                meta: c.national_id ? ('شناسه ملی: ' + faDigits(c.national_id)) : (c.mobile ? faDigits(c.mobile) : ''),
+                search: c.name + ' ' + (c.national_id || '') + ' ' + (c.mobile || '') + ' ' + (c.phone || ''),
+            }));
+            if (!delPicker) {
+                delPicker = EntityPicker.create({ container: '#delTargetPicker', items, placeholder: 'جست‌وجوی مشتری جایگزین…' });
+            } else {
+                delPicker.updateItems(items);
+                delPicker.reset();
+            }
+            setTimeout(() => delPicker.focus(), 50);
+        }
+
+        async function delDoMerge() {
+            const t = delPicker && delPicker.getValue();
+            const alertEl = document.getElementById('delAlert');
+            if (!t) {
+                alertEl.innerHTML = '<div class="alert alert-warning py-2 mb-0">مشتری جایگزین را انتخاب کن.</div>';
+                return;
+            }
+            alertEl.innerHTML = '';
+            uiConfirm('همهٔ فاکتورها و سوابق «' + esc(delName) + '» به «' + esc(t.label) + '» منتقل و «' + esc(delName) + '» حذف شود؟', async () => {
+                const btn = document.getElementById('delDo');
+                btn.disabled = true;
                 try {
-                    await apiSend('DELETE', '/customers/' + id, {});
-                    showToast('حذف شد', 'success');
+                    const d = await apiSend('POST', '/customers/' + delId + '/merge', { target_id: t.id });
+                    delModal.hide();
+                    const moved = (d.moved || []).map(m => faDigits(m.count) + ' ' + m.label).join('، ');
+                    showToast('«' + esc(delName) + '» حذف شد' + (moved ? ' و ' + moved + ' به «' + esc(t.label) + '» منتقل شد' : ''), 'success');
+                    if (d.left_on_deleted && d.left_on_deleted.length) {
+                        showToast('چون «' + esc(t.label) + '» از قبل داشت، این موارد منتقل نشد و روی مشتری حذف‌شده ماند: ' +
+                            d.left_on_deleted.map(m => faDigits(m.count) + ' ' + m.label).join('، '), 'warning');
+                    }
                     loadAll();
                 } catch (e) {
-                    showToast(e.message || 'خطا در حذف', 'error');
+                    alertEl.innerHTML = '<div class="alert alert-danger py-2 mb-0">' + esc(e.message || 'خطا') + '</div>';
+                } finally {
+                    btn.disabled = false;
                 }
-            });
+            }, { danger: true, yesText: 'بله، منتقل و حذف شود', noText: 'انصراف' });
         }
 
         // ── بارگذاری از اکسل ──
@@ -545,6 +700,14 @@ $canWrite = true;
             }
             gridApi = agGrid.createGrid(document.getElementById('crmGrid'), gridOptions);
             custModal = new bootstrap.Modal(document.getElementById('custModal'));
+            document.getElementById('delNext').addEventListener('click', delStep2);
+            document.getElementById('delDo').addEventListener('click', delDoMerge);
+            // اعتبارسنجی زندهٔ کد/شناسه ملی و کد پستی هنگام تایپ — assets/js/iran-id-validate.js
+            if (window.IranId) IranId.attachLive({
+                type: document.getElementById('f_type'),
+                national: document.getElementById('f_national_id'),
+                postal: document.getElementById('f_postal_code')
+            });
             document.getElementById('custModal').addEventListener('shown.bs.modal', () => {
                 const el = document.querySelector('#custModal .modal-body input:not([type=hidden]), #custModal .modal-body select, #custModal .modal-body textarea');
                 if (el) el.focus();

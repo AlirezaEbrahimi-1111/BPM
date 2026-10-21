@@ -301,6 +301,9 @@ func main() {
 	mux.HandleFunc("POST /crm/api/customers", write(s.createCustomer))
 	mux.HandleFunc("PUT /crm/api/customers/{id}", write(s.updateCustomer))
 	mux.HandleFunc("DELETE /crm/api/customers/{id}", write(s.deleteCustomer))
+	// ادغام مشتری تکراری: فاکتورها/سوابق → مشتری دیگر، بعد حذف (customer_merge.go)
+	mux.HandleFunc("GET /crm/api/customers/{id}/usage", auth(s.customerUsage))
+	mux.HandleFunc("POST /crm/api/customers/{id}/merge", write(s.mergeCustomer))
 	mux.HandleFunc("POST /crm/api/customers/import", write(s.importCustomers))
 
 	// ── تنظیمات فاکتور + سربرگ فروشنده ──

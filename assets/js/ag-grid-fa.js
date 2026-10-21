@@ -354,5 +354,176 @@
         document.addEventListener('DOMContentLoaded', hookCreateGrid);
     }
 
-    w.AgGridFa = { persianizePaging: persianizePaging, toFaDigits: toFaDigits, theme: theme, numericTextComparator: numericTextComparator, copyText: copyText };
+    /* ═══════════════════════════════════════════════════════════════════
+     * سلول «کلیک = کپی» (مشتریان: نام/شناسه ملی/شماره اقتصادی/کد پستی؛
+     * فاکتورهای فروش: مبلغ کل/مبلغ سود)
+     * -------------------------------------------------------------------
+     *   cellRenderer: p => AgGridFa.copyCell(rawValue, shownHtml, 'کد پستی')
+     * shownHtml = همان متن نمایشی (مثلا رقم فارسی/جداکننده)؛ rawValue = چیزی که کپی می‌شود
+     * (مقدار خام: رقم لاتین بدون جداکننده تا در شایگان/مؤدیان درست جای‌گذاری شود).
+     * یک شنوندهٔ کلیک سراسری کپی و پیام را انجام می‌دهد — صفحه کاری لازم ندارد. اگر جدول
+     * با دوبار کلیک کاری می‌کند، '.copy-cell' را در onRowDoubleClicked مستثنا کنید.
+     * ═══════════════════════════════════════════════════════════════════ */
+    function escAttr(v) {
+        return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    function copyCell(raw, shownHtml, label) {
+        if (raw == null || String(raw).trim() === '') return '—';
+        ensureCopyStyle();
+        return '<span class="copy-cell" title="کلیک برای کپی" data-copy="' + escAttr(String(raw).trim()) +
+            '" data-copy-label="' + escAttr(label || '') + '">' + shownHtml + '</span>';
+    }
+
+    function ensureCopyStyle() {
+        if (document.getElementById('agfa-copy-style')) return;
+        var s = document.createElement('style');
+        s.id = 'agfa-copy-style';
+        s.textContent =
+            '.copy-cell{cursor:copy;border-bottom:1px dashed transparent;transition:border-color .12s,color .12s}' +
+            '.copy-cell:hover{color:#8e57fe;border-bottom-color:rgba(142,87,254,.5)}' +
+            ':root[data-theme="dark"] .copy-cell:hover{color:#b794ff;border-bottom-color:rgba(183,148,255,.5)}';
+        document.head.appendChild(s);
+    }
+
+    document.addEventListener('click', function (e) {
+        var el = e.target && e.target.closest ? e.target.closest('.copy-cell[data-copy]') : null;
+        if (!el) return;
+        var raw = el.getAttribute('data-copy');
+        var label = el.getAttribute('data-copy-label');
+        copyText(raw, (label ? label + ' ' : '') + '«' + raw + '» در کلیپ‌بورد کپی شد');
+    });
+
+    /* ═══════════════════════════════════════════════════════════════════
+     * ستون عملیات به‌شکل منوی «⋮» (درخواست ۱۴۰۵/۰۷/۲۹ — فاکتورهای فروش و خرید)
+     * -------------------------------------------------------------------
+     *   cellRenderer: AgGridFa.actionMenuCell(actionCell)
+     * actionCell همان تابع قبلی صفحه است که HTML دکمه‌ها را می‌سازد؛ این‌جا فقط یک
+     * دکمهٔ «⋮» نمایش داده می‌شود و با کلیک، همان دکمه‌ها (همان title/آیکن/رنگ/onclick)
+     * به‌صورت فهرست زیر هم در یک منوی شناور باز می‌شوند. منطق عملیات صفحه دست نمی‌خورد؛
+     * کلیک روی هر مورد، دکمهٔ اصلی را (در حافظه) کلیک می‌کند. منو هنگام کلیک باز ساخته
+     * می‌شود تا همیشه با وضعیت فعلی ردیف بخواند.
+     * ═══════════════════════════════════════════════════════════════════ */
+    var openMenu = null;
+
+    function closeActionMenu() {
+        if (openMenu) {
+            openMenu.remove();
+            openMenu = null;
+        }
+    }
+
+    function ensureMenuStyle() {
+        if (document.getElementById('agfa-menu-style')) return;
+        var s = document.createElement('style');
+        s.id = 'agfa-menu-style';
+        s.textContent =
+            '.agfa-kebab{font-size:16px!important;line-height:1}' +
+            '.agfa-menu{position:fixed;z-index:2000;min-width:210px;max-width:320px;padding:4px;direction:rtl;' +
+            'background:var(--surface,#fff);border:1px solid var(--border-soft,#e2e2e2);border-radius:10px;' +
+            'box-shadow:0 8px 28px rgba(0,0,0,.16);font-family:inherit}' +
+            '.agfa-mi{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;border:0;background:none;' +
+            'border-radius:7px;font-size:13px;text-align:start;cursor:pointer;color:var(--text-strong,#2d3748);font-family:inherit}' +
+            '.agfa-mi:hover,.agfa-mi:focus{background:rgba(142,87,254,.12);outline:0}' +
+            '.agfa-mi i{width:18px;text-align:center;font-size:14px;flex-shrink:0}' +
+            '.agfa-mi.dim{opacity:.55}' +
+            '.agfa-menu-empty{padding:8px 12px;font-size:12.5px;color:var(--text-muted,#6b7490)}' +
+            ':root[data-theme="dark"] .agfa-menu{box-shadow:0 8px 28px rgba(0,0,0,.5)}' +
+            ':root[data-theme="dark"] .agfa-mi:hover,:root[data-theme="dark"] .agfa-mi:focus{background:rgba(142,87,254,.18)}';
+        document.head.appendChild(s);
+    }
+
+    function openActionMenu(anchor, html) {
+        closeActionMenu();
+        ensureMenuStyle();
+        // دکمه‌های اصلی در DOM (پنهان) ساخته می‌شوند تا رنگ کلاس‌های صفحه (.ag-action-btn.del و …) خوانده شود
+        var holder = document.createElement('div');
+        holder.style.cssText = 'position:fixed;left:-9999px;top:0;visibility:hidden';
+        holder.innerHTML = html || '';
+        document.body.appendChild(holder);
+        var btns = Array.prototype.slice.call(holder.querySelectorAll('button'));
+
+        var menu = document.createElement('div');
+        menu.className = 'agfa-menu';
+        menu.setAttribute('role', 'menu');
+        if (!btns.length) {
+            menu.innerHTML = '<div class="agfa-menu-empty">عملیاتی برای این ردیف نیست</div>';
+        }
+        btns.forEach(function (b) {
+            var item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'agfa-mi' + (parseFloat(b.style.opacity || '1') < 1 ? ' dim' : '');
+            item.setAttribute('role', 'menuitem');
+            var icon = b.querySelector('i');
+            var color = w.getComputedStyle(b).color;
+            item.innerHTML = (icon ? icon.outerHTML : '<i class="bi bi-dot"></i>') + '<span></span>';
+            item.querySelector('span').textContent = b.getAttribute('title') || b.textContent.trim() || 'عملیات';
+            if (icon) item.querySelector('i').style.color = color;
+            item.addEventListener('click', function (ev) {
+                ev.stopPropagation();
+                closeActionMenu();
+                b.click(); // همان onclick دکمهٔ اصلی صفحه
+                holder.remove();
+            });
+            menu.appendChild(item);
+        });
+        document.body.appendChild(menu);
+        openMenu = menu;
+        menu.__holder = holder;
+        var origRemove = menu.remove.bind(menu);
+        menu.remove = function () { origRemove(); if (holder.parentNode) holder.remove(); };
+
+        // جای منو: زیر دکمه، لبهٔ راست هم‌تراز؛ اگر جا نبود بالا/داخل صفحه
+        var r = anchor.getBoundingClientRect();
+        var mw = menu.offsetWidth, mh = menu.offsetHeight;
+        var left = Math.min(Math.max(8, r.right - mw), w.innerWidth - mw - 8);
+        var top = r.bottom + 4;
+        if (top + mh > w.innerHeight - 8) top = Math.max(8, r.top - mh - 4);
+        menu.style.left = left + 'px';
+        menu.style.top = top + 'px';
+        var first = menu.querySelector('.agfa-mi');
+        if (first) first.focus();
+    }
+
+    function actionMenuCell(buildHtml) {
+        return function (p) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'ag-action-btn agfa-kebab';
+            b.title = 'عملیات';
+            b.setAttribute('aria-haspopup', 'menu');
+            b.innerHTML = '<i class="bi bi-three-dots-vertical"></i>';
+            b.addEventListener('click', function (ev) {
+                ev.stopPropagation();
+                if (openMenu && openMenu.__anchor === b) { closeActionMenu(); return; }
+                openActionMenu(b, buildHtml(p));
+                if (openMenu) openMenu.__anchor = b;
+            });
+            return b;
+        };
+    }
+
+    document.addEventListener('click', function (e) {
+        if (openMenu && !openMenu.contains(e.target)) closeActionMenu();
+    });
+    document.addEventListener('keydown', function (e) {
+        if (!openMenu) return;
+        if (e.key === 'Escape') { closeActionMenu(); return; }
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            var items = Array.prototype.slice.call(openMenu.querySelectorAll('.agfa-mi'));
+            var i = items.indexOf(document.activeElement);
+            var n = e.key === 'ArrowDown' ? (i + 1) % items.length : (i - 1 + items.length) % items.length;
+            if (items[n]) { items[n].focus(); e.preventDefault(); }
+        }
+    });
+    // اسکرول جدول/صفحه یا تغییر اندازه → منو بسته شود (جایش دیگر درست نیست)
+    w.addEventListener('scroll', closeActionMenu, true);
+    w.addEventListener('resize', closeActionMenu);
+
+    w.AgGridFa = {
+        persianizePaging: persianizePaging, toFaDigits: toFaDigits, theme: theme, numericTextComparator: numericTextComparator, copyText: copyText,
+        actionMenuCell: actionMenuCell, closeActionMenu: closeActionMenu, copyCell: copyCell
+    };
 })(window);

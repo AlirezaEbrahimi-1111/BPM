@@ -260,7 +260,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             <a class="btn btn-primary" href="/pages/inv-invoice-edit.php"><i class="bi bi-plus-lg ms-1"></i> فاکتور جدید</a>
         </div>
 
-        <div id="invGrid" class="ag-theme-alpine grid-fill" style="width:100%;"></div>
+        <div id="invGrid" class="ag-theme-alpine grid-fill inv-grid" style="width:100%;"></div>
     </div>
 
     <!-- ── مودال ویرایش وضعیت تسویه/مودیان (نه <select> داخل سلول جدول) ── -->
@@ -491,7 +491,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 field: 'total_amount',
                 width: 150,
                 type: 'rightAligned',
-                cellRenderer: p => money(p.value)
+                // کلیک = کپی مبلغ خام (رقم لاتین بدون جداکننده) — assets/js/ag-grid-fa.js
+                cellRenderer: p => AgGridFa.copyCell(Math.round(Number(p.value) || 0), money(p.value), 'مبلغ کل')
             },
             {
                 headerName: 'همکار',
@@ -513,7 +514,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 field: 'partner_profit_amount',
                 width: 140,
                 type: 'rightAligned',
-                cellRenderer: p => p.data.partner_id ? money(p.value) : '—'
+                cellRenderer: p => p.data.partner_id ?
+                    AgGridFa.copyCell(Math.round(Number(p.value) || 0), money(p.value), 'مبلغ سود') : '—'
             },
             {
                 // وضعیت ثبت سود همکار در نرم‌افزار حسابداری: ثبت‌نشده → آیکن «ثبت سود» (با تأیید)،
@@ -554,10 +556,11 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             },
             {
                 headerName: 'عملیات',
-                width: 318,
+                width: 80,
                 sortable: false,
                 filter: false,
-                cellRenderer: actionCell
+                // یک دکمهٔ «⋮» که همهٔ عملیات را به‌صورت منو باز می‌کند (assets/js/ag-grid-fa.js)
+                cellRenderer: AgGridFa.actionMenuCell(actionCell)
             },
         ];
 
@@ -575,7 +578,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             // دکمه‌های عملیات، کنترل‌های فرم و کد مؤدیان (کپی) مستثنا هستند.
             rowSelection: { mode: 'singleRow', checkboxes: false, enableClickSelection: true },
             onRowDoubleClicked: (e) => {
-                if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn, input, .form-check, .moadian-code')) return;
+                if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn, input, .form-check, .moadian-code, .copy-cell')) return;
                 // دوبار کلیک یک کلمه را هم انتخاب می‌کند — پاکش کن (جلوی رفتن را نگیرد)
                 if (window.getSelection) window.getSelection().removeAllRanges();
                 location.href = '/pages/inv-invoice-print.php?id=' + e.data.id;

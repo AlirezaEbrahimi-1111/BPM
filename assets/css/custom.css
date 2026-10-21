@@ -1667,6 +1667,18 @@ s-normal {
     --ag-row-hover-color: rgba(142, 87, 254, 0.12);
 }
 
+/* بخش فاکتور رسمی (کلاس .inv-grid روی جدول‌های این بخش): ردیف انتخاب‌شده دو برابر
+   پررنگ‌تر از بقیهٔ سیستم (۰٫۲۰ به‌جای ۰٫۱۰) — درخواست ۱۴۰۵/۰۷/۲۹. تاریک هم کمی بیشتر
+   تا روی زمینهٔ تیره دیده شود. */
+.ag-theme-alpine.inv-grid,
+.ag-theme-quartz.inv-grid {
+    --ag-selected-row-background-color: rgba(142, 87, 254, 0.20);
+}
+:root[data-theme="dark"] .ag-theme-alpine.inv-grid,
+:root[data-theme="dark"] .ag-theme-quartz.inv-grid {
+    --ag-selected-row-background-color: rgba(142, 87, 254, 0.30);
+}
+
 /* ریشهٔ «فاصلهٔ زیاد ارقام» در ستون‌های عددی (مثل «مبلغ کل»):
    تم Quartz AG Grid روی هر سلول راست‌چین این را ست می‌کند:
        .ag-right-aligned-cell { font-variant-numeric: tabular-nums }

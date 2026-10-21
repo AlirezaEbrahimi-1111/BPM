@@ -334,7 +334,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             <span>تعداد ردیف: <b id="sCount">۰</b></span>
         </div>
 
-        <div id="repGrid" class="ag-theme-alpine grid-fill" style="width:100%;"></div>
+        <div id="repGrid" class="ag-theme-alpine grid-fill inv-grid" style="width:100%;"></div>
     </div>
 
     <!-- ── مودال مدیریت همکاران و درصدهای ماهانه ── -->

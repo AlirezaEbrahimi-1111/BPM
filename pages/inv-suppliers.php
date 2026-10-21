@@ -134,7 +134,7 @@ $canWrite = true;
             <?php endif; ?>
         </div>
 
-        <div id="crmGrid" class="ag-theme-alpine grid-fill" style="width:100%;"></div>
+        <div id="crmGrid" class="ag-theme-alpine grid-fill inv-grid" style="width:100%;"></div>
     </div>
 
     <div class="modal fade" id="supModal" tabindex="-1">

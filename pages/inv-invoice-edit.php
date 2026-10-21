@@ -658,10 +658,46 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 renumber();
                 recalc();
             });
-            // پیمایش با Enter: نام کالا → تعداد → قیمت واحد
+            // کیبورد ردیف (درخواست ۱۴۰۵/۰۷/۲۹):
+            //   Tab   → ستون بعدی همین ردیف: نام کالا → تعداد → قیمت واحد → تخفیف → معاف؛
+            //           از «معاف» به نام کالای ردیف بعد (Shift+Tab مثل قبل، پیش‌فرض مرورگر).
+            //   Enter → ردیف تازه + فوکوس روی «نام کالا»ی آن.
+            //   استثنا: Enter در خود «نام کالا» مثل قبل به «تعداد» می‌رود، چون Enter آن‌جا
+            //   برای انتخاب کالا از فهرست پیشنهادی هم استفاده می‌شود (وگرنه با انتخاب کالا
+            //   ردیف خالی ساخته می‌شد).
+            const order = ['.it-prod-name', '.it-qty', '.it-price', '.it-disc', '.it-exempt'];
+            order.forEach((sel, i) => {
+                const el = tr.querySelector(sel);
+                el.addEventListener('keydown', e => {
+                    if (e.key === 'Tab' && !e.shiftKey && !e.altKey && !e.ctrlKey) {
+                        const next = i < order.length - 1 ? tr.querySelector(order[i + 1]) :
+                            (tr.nextElementSibling ? tr.nextElementSibling.querySelector('.it-prod-name') : null);
+                        if (!next) return; // آخرین خانهٔ آخرین ردیف: Tab عادی (به دکمه‌های پایین فرم)
+                        e.preventDefault();
+                        focusSel(next);
+                    } else if (e.key === 'Enter' && sel !== '.it-prod-name') {
+                        e.preventDefault();
+                        if (el.classList.contains('it-price') || el.classList.contains('it-disc')) el.blur(); // قالب‌بندی مبلغ
+                        focusSel(newRowForEntry());
+                    }
+                });
+            });
             focusOnEnter(tr.querySelector('.it-prod-name'), () => tr.querySelector('.it-qty'));
-            focusOnEnter(tr.querySelector('.it-qty'), () => tr.querySelector('.it-price'));
             return tr;
+        }
+
+        function focusSel(n) {
+            if (!n) return;
+            n.focus();
+            if (typeof n.select === 'function') n.select();
+        }
+
+        // ردیف خالی برای ورود قلم بعد: اگر آخرین ردیف هنوز نام کالا ندارد همان، وگرنه ردیف تازه
+        function newRowForEntry() {
+            const rows = document.querySelectorAll('#itemsBody tr');
+            const last = rows[rows.length - 1];
+            if (last && !last.querySelector('.it-prod-name').value.trim()) return last.querySelector('.it-prod-name');
+            return addRow().querySelector('.it-prod-name');
         }
 
         // فوکوس فیلد بعدی با زدن Enter

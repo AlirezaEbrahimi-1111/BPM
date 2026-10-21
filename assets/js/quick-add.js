@@ -102,6 +102,14 @@ const QuickAdd = (() => {
   </div>
 </div>`;
         document.body.appendChild(el);
+        // فرم مشتری (نوع + کد/شناسه ملی + کد پستی): اعتبارسنجی زنده هنگام تایپ
+        if (window.IranId && el.querySelector('[data-f="type"]') && el.querySelector('[data-f="national_id"]')) {
+            window.IranId.attachLive({
+                type: el.querySelector('[data-f="type"]'),
+                national: el.querySelector('[data-f="national_id"]'),
+                postal: el.querySelector('[data-f="postal_code"]')
+            });
+        }
         const modal = new bootstrap.Modal(el);
         const errBox = el.querySelector('.qa-err');
         const val = name => {
