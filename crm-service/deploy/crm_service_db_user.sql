@@ -37,6 +37,12 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_invoice
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_partners`               TO 'crm_service'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_partner_month_share`    TO 'crm_service'@'localhost';
 
+-- CRM جدید (حسابداری غیررسمی) — جدول‌های ucrm_* (مهاجرت 20261023_100000)
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_customers`        TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_customer_phones`  TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_customer_events`  TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_settings`         TO 'crm_service'@'localhost';
+
 -- خواندن فقط جدول‌هایی که برای احراز هویت و شناخت کارشناس/سازمان/بخش فعالیت لازم است
 GRANT SELECT ON `computeryekta_todo_system`.`users`                  TO 'crm_service'@'localhost';
 GRANT SELECT ON `computeryekta_todo_system`.`organizations`          TO 'crm_service'@'localhost';

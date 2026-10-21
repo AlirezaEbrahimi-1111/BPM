@@ -8,6 +8,9 @@ $__crmMenu = isset($db) && ($db instanceof PDO) && crmModuleAllowed($db, $__crmU
 // «گزارش همکاران» را مدیران و سوپروایزرها هم می‌بینند (حتی بدون منوی فاکتور).
 $__crmReportMenu = isset($db) && ($db instanceof PDO)
     && function_exists('crmReportAllowed') && crmReportAllowed($db, $__crmUid);
+// منوی «CRM» جدید (حسابداری غیررسمی) — سرپرست‌ها، تیم فروش و تیم حسابداری سازمان ۱
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ucrm_access.php';
+$__ucrmMenu = isset($db) && ($db instanceof PDO) && ucrmAllowed($db, $__crmUid);
 // 🔒 دسترسی وب بر اساس پلن: بدون web_access به صفحه‌ی توضیح پلن می‌رویم
 if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
     && !headers_sent() && basename($_SERVER['SCRIPT_NAME'] ?? '') !== 'plan-required.php') {
@@ -1200,6 +1203,22 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
                             <li>
                                 <a class="dropdown-item" href="/pages/inv-suppliers.php">
                                     <i class="bi bi-truck ms-2"></i>تأمین‌کنندگان
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php endif; ?>
+                <?php if (!empty($__ucrmMenu)): ?>
+                    <!-- CRM جدید (حسابداری غیررسمی) — جدا از فاکتور رسمی؛ سازمان ۱: سرپرست‌ها، فروش، حسابداری (includes/ucrm_access.php) -->
+                    <li class="nav-item dropdown" id="navUcrm">
+                        <a class="nav-link dropdown-toggle" href="#" id="ucrmDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-lines-fill me-2"></i>CRM
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end admin-submenu" aria-labelledby="ucrmDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/pages/ucrm-customers.php">
+                                    <i class="bi bi-people ms-2"></i>مشتریان
                                 </a>
                             </li>
                         </ul>

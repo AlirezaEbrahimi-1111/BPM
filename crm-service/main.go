@@ -40,13 +40,14 @@ type Config struct {
 	DBUser    string `json:"db_user"`
 	DBPass    string `json:"db_pass"`
 	JWTSecret string `json:"jwt_secret"` // باید دقیقا برابر jwt_secret در config/config.php باشد
+	BaseURL   string `json:"base_url"`   // آدرس اپ PHP برای ارسال اعلان (ucrm_notify.go)؛ پیش‌فرض https://bpm.itmalek.com
 }
 
 // loadConfig ابتدا config.json (یا مسیر CRM_CONFIG) را می‌خواند،
 // سپس متغیرهای محیطی (CRM_*) هر مقدار موجود را بازنویسی می‌کنند —
 // برای اجرا زیر systemd روی سرور مناسب است.
 func loadConfig() Config {
-	c := Config{Port: "8090", DBHost: "127.0.0.1", DBPort: "3306"}
+	c := Config{Port: "8090", DBHost: "127.0.0.1", DBPort: "3306", BaseURL: "https://bpm.itmalek.com"}
 
 	path := os.Getenv("CRM_CONFIG")
 	if path == "" {
@@ -70,6 +71,7 @@ func loadConfig() Config {
 	set("CRM_DB_USER", &c.DBUser)
 	set("CRM_DB_PASS", &c.DBPass)
 	set("CRM_JWT_SECRET", &c.JWTSecret)
+	set("CRM_BASE_URL", &c.BaseURL)
 
 	if c.JWTSecret == "" || c.DBName == "" || c.DBUser == "" {
 		log.Fatal("config: jwt_secret و db_name و db_user الزامی‌اند (در config.json یا متغیرهای محیطی)")
@@ -357,6 +359,22 @@ func main() {
 	mux.HandleFunc("POST /crm/api/inv/purchases/{id}/confirm", write(s.confirmPurchase))
 	mux.HandleFunc("POST /crm/api/inv/purchases/{id}/cancel", write(s.cancelPurchase))
 	mux.HandleFunc("DELETE /crm/api/inv/purchases/{id}", write(s.deletePurchase))
+
+	// ── CRM جدید (حسابداری غیررسمی) — جدا از فاکتور رسمی، جدول‌های ucrm_* (ucrm_customers.go) ──
+	// اجازهٔ ریز هر کار (تأیید/ویرایش/حذف) داخل خود هندلر بر اساس نقش و وضعیت مشتری.
+	ucrm := func(h http.HandlerFunc) http.HandlerFunc { return auth(s.requireUCRM(h)) }
+	mux.HandleFunc("GET /crm/api/ucrm/me", ucrm(s.ucrmMe))
+	mux.HandleFunc("GET /crm/api/ucrm/reps", ucrm(s.ucrmReps))
+	mux.HandleFunc("PUT /crm/api/ucrm/settings", ucrm(s.ucrmPutSettings))
+	mux.HandleFunc("GET /crm/api/ucrm/customers", ucrm(s.ucrmListCustomers))
+	mux.HandleFunc("GET /crm/api/ucrm/customers/phone-check", ucrm(s.ucrmPhoneCheck))
+	mux.HandleFunc("POST /crm/api/ucrm/customers/import", ucrm(s.ucrmImport))
+	mux.HandleFunc("GET /crm/api/ucrm/customers/{id}", ucrm(s.ucrmGetCustomer))
+	mux.HandleFunc("POST /crm/api/ucrm/customers", ucrm(s.ucrmCreateCustomer))
+	mux.HandleFunc("PUT /crm/api/ucrm/customers/{id}", ucrm(s.ucrmUpdateCustomer))
+	mux.HandleFunc("DELETE /crm/api/ucrm/customers/{id}", ucrm(s.ucrmDeleteCustomer))
+	mux.HandleFunc("POST /crm/api/ucrm/customers/{id}/approve", ucrm(s.ucrmApprove))
+	mux.HandleFunc("POST /crm/api/ucrm/customers/{id}/reject", ucrm(s.ucrmReject))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{
