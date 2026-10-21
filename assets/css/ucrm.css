@@ -142,3 +142,41 @@
 :root[data-theme="dark"] .uc-ap-box .hd { background: rgba(142, 87, 254, .08); }
 :root[data-theme="dark"] .uc-ap-strip .ic { background: var(--surface); border-color: var(--border-soft); color: var(--text-strong); }
 :root[data-theme="dark"] .uc-ap-box .hd i, :root[data-theme="dark"] .uc-crumb a { color: #b79bff; }
+
+/* ── صفحهٔ تارگت‌ها (pages/ucrm-targets.php) — طبق طرح ── */
+.uc-top-gap { padding-top: 1.1rem; } /* فاصله از هدر ثابت (margin بالا collapse می‌شد) */
+.uc-tg-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+.uc-tg-title { display: flex; align-items: center; gap: 16px; }
+.uc-tg-title h1 { font-size: 1.2rem; font-weight: 700; margin: 0 0 10px; color: var(--text-strong, #2d3748); }
+.uc-tg-ico { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 14px; background: rgba(142, 87, 254, .12); color: #8e57fe; font-size: 1.9rem; flex-shrink: 0; }
+.uc-tg-filters { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.uc-tg-f { display: flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--text-muted, #6b7490); }
+.uc-tg-f .form-select { width: auto; min-width: 140px; }
+.uc-tg-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.uc-tg-actions .btn-outline-secondary { border: 1px solid var(--border-soft, #d6d6e0) !important; background: transparent; }
+:root[data-theme="dark"] .uc-tg-actions .btn-outline-secondary { color: var(--text-strong); }
+.uc-amt { direction: rtl; font-weight: 600; }
+.uc-src-ico { color: #8e57fe; font-size: .8rem; margin-right: 4px; cursor: help; }
+:root[data-theme="dark"] .uc-src-ico { color: #b79bff; }
+:root[data-theme="dark"] .modal .input-group-text { background: var(--surface); color: var(--text-strong); border-color: var(--border-soft); }
+.uc-src { display: inline-block; padding: 0 6px; margin-right: 4px; border-radius: 6px; font-size: .68rem; background: rgba(107, 114, 128, .12); color: #4b5563; cursor: help; }
+.uc-dot { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+.uc-dot::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.uc-dot.on { background: #e8f7ee; color: #15803d; }
+.uc-dot.off { background: #fff4e0; color: #b45309; }
+:root[data-theme="dark"] .uc-src { background: rgba(203, 213, 225, .12); color: #cbd5e1; }
+:root[data-theme="dark"] .uc-dot.on { background: rgba(52, 211, 153, .14); color: #34d399; }
+:root[data-theme="dark"] .uc-dot.off { background: rgba(251, 191, 36, .14); color: #fbbf24; }
+:root[data-theme="dark"] .uc-tg-ico { color: #b79bff; }
+/* فرم قاعده — هم‌شکل طرح «تنظیمات هدف‌گذاری» */
+.uc-rule-form { display: flex; flex-direction: column; gap: 12px; }
+.uc-rule-row { display: flex; align-items: center; gap: 16px; }
+.uc-rule-row > label { flex: 0 0 130px; font-weight: 600; font-size: .9rem; color: var(--text-strong, #2d3748); }
+.uc-rule-row > .form-select, .uc-rule-row > .input-group { flex: 1; max-width: 360px; }
+.uc-rule-row > .input-group { flex-wrap: nowrap; }
+.uc-rule-row > .input-group .form-control { min-width: 0; }
+.uc-rule-list { border: 1px solid var(--border-soft, #e9e9e9); border-radius: 12px; overflow: hidden; }
+.uc-rule-list th { font-size: .8rem; font-weight: 600; }
+.uc-rule-list td { font-size: .85rem; }
+:root[data-theme="dark"] .uc-rule-list td { color: var(--text-strong); background: transparent; border-color: var(--border-soft); }
+@media (max-width: 576px) { .uc-rule-row { flex-direction: column; align-items: stretch; gap: 6px; } .uc-rule-row > label { flex: none; } }

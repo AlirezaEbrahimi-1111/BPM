@@ -65,9 +65,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                             <button class="btn btn-outline-secondary" id="btnImport"><i class="bi bi-file-earmark-spreadsheet ms-1"></i> بارگذاری از اکسل</button>
                             <button class="btn btn-primary" id="btnAdd"><i class="bi bi-plus-lg ms-1"></i> مشتری جدید</button>
                         <?php endif; ?>
-                        <?php if ($__ucrmRoles['manager']): ?>
-                            <button class="btn btn-outline-secondary" id="btnSettings" title="تنظیمات CRM"><i class="bi bi-gear"></i></button>
-                        <?php endif; ?>
                         <input type="file" id="excelFile" accept=".xlsx,.xls" hidden>
                     </div>
                 </div>
@@ -219,37 +216,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
         </div>
     </div>
 
-    <!-- تنظیمات CRM (مدیر): بازه‌های رنگ تارگت -->
-    <div class="modal fade" id="setModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header-custom modal-header border-0">
-                    <h5 class="modal-title text-white"><i class="bi bi-gear ms-2"></i>تنظیمات CRM — رنگ وضعیت تارگت</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="small text-muted mb-3">رنگ هر مشتری بر اساس «درصد خرید این ماه نسبت به تارگت ماه» تعیین می‌شود.</p>
-                    <div class="row g-3 align-items-end">
-                        <div class="col-6">
-                            <label class="form-label">قرمز: کمتر از (درصد)</label>
-                            <input type="number" class="form-control" id="s_red" min="1" max="999">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">سبز: از (درصد) به بالا</label>
-                            <input type="number" class="form-control" id="s_green" min="2" max="1000">
-                        </div>
-                    </div>
-                    <div class="uc-bands mt-3" id="bandPreview"></div>
-                    <div id="setAlert" class="mt-2"></div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                    <button type="button" class="btn btn-primary" id="setSave">ذخیره</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <?php include 'footer.php'; ?>
 
     <script src="<?= asset('../../assets/js/ucrm-common.js') ?>"></script>
@@ -261,7 +227,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
         let allRows = [];
         let reps = [];
         let settings = { target_red_below: 80, target_green_from: 100 };
-        let custModal, approveModal, rejectModal, setModal;
+        let custModal, approveModal, rejectModal;
         let editRow = null; // null = مشتری جدید
         let phones = [];
         let searchTimer, phoneTimer;
@@ -696,40 +662,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             }, { danger: true, yesText: 'حذف', noText: 'انصراف' });
         }
 
-        // ── تنظیمات ──
-        function bandPreview() {
-            const r = +document.getElementById('s_red').value || 0;
-            const g = +document.getElementById('s_green').value || 0;
-            document.getElementById('bandPreview').innerHTML =
-                `<span class="uc-target red">کمتر از ${faDigits(r)}٪</span>
-                 <span class="uc-target orange">${faDigits(r)}٪ تا کمتر از ${faDigits(g)}٪</span>
-                 <span class="uc-target green">${faDigits(g)}٪ و بیشتر</span>`;
-        }
-
-        function openSettings() {
-            document.getElementById('s_red').value = settings.target_red_below;
-            document.getElementById('s_green').value = settings.target_green_from;
-            document.getElementById('setAlert').innerHTML = '';
-            bandPreview();
-            setModal.show();
-        }
-
-        async function saveSettings() {
-            const body = {
-                target_red_below: parseInt(UCRM.toEn(document.getElementById('s_red').value), 10) || 0,
-                target_green_from: parseInt(UCRM.toEn(document.getElementById('s_green').value), 10) || 0,
-            };
-            try {
-                const d = await UCRM.send('PUT', '/settings', body);
-                settings = d.settings;
-                setModal.hide();
-                showToast('تنظیمات ذخیره شد', 'success');
-                gridApi.refreshCells({ columns: ['target'], force: true });
-            } catch (e) {
-                document.getElementById('setAlert').innerHTML = '<div class="alert alert-danger py-2 mb-0">' + esc(e.message || 'خطا') + '</div>';
-            }
-        }
-
         // ── اکسل ──
         const XL_COLS = ['نوع', 'نام', 'شماره تماس', 'کد / شناسه ملی', 'استان', 'شهر', 'آدرس', 'کارشناس فروش', 'تارگت ماهانه پیشنهادی (تومان)', 'توضیحات'];
         const XL_MAP = {
@@ -818,7 +750,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             custModal = new bootstrap.Modal(document.getElementById('custModal'));
             approveModal = new bootstrap.Modal(document.getElementById('approveModal'));
             rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
-            setModal = new bootstrap.Modal(document.getElementById('setModal'));
 
             IranProvinces.bind(document.getElementById('f_province'), document.getElementById('f_city'));
             UCRM.bindMoney(document.getElementById('f_target'));
@@ -834,7 +765,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             document.getElementById('custModal').addEventListener('shown.bs.modal', () => document.getElementById('f_name').focus());
             document.getElementById('approveModal').addEventListener('shown.bs.modal', () => document.getElementById('apRep').focus());
             document.getElementById('rejectModal').addEventListener('shown.bs.modal', () => document.getElementById('rjReason').focus());
-            document.getElementById('setModal').addEventListener('shown.bs.modal', () => document.getElementById('s_red').focus());
 
             document.getElementById('btnSave').addEventListener('click', saveCust);
             document.getElementById('apDo').addEventListener('click', doApprove);
@@ -848,11 +778,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 if (e.target.files[0]) handleExcel(e.target.files[0]);
                 e.target.value = '';
             });
-            if (ROLES.manager) {
-                document.getElementById('btnSettings').addEventListener('click', openSettings);
-                document.getElementById('setSave').addEventListener('click', saveSettings);
-                ['s_red', 's_green'].forEach(id => document.getElementById(id).addEventListener('input', bandPreview));
-            }
             document.getElementById('crmSearch').addEventListener('input', () => {
                 clearTimeout(searchTimer);
                 searchTimer = setTimeout(applyFilter, 200);

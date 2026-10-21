@@ -77,10 +77,13 @@
     }
 
     function targetBadge(c, set) {
+        if (c && c.target_suspended && c.target_amount > 0) {
+            return '<span class="uc-target gray" title="تارگت ' + e(c.target_period || '') + ' معلق است و حساب نمی‌شود">معلق</span>';
+        }
         var p = targetPct(c);
         // تارگت تعیین شده ولی فروش ماه هنوز از فاکتورهای CRM نمی‌آید → فقط خود تارگت (خاکستری)
         if (p == null && c && c.target_amount > 0) {
-            return '<span class="uc-target gray" title="تارگت ماهانه؛ فروش این ماه هنوز ثبت نمی‌شود">' + money(c.target_amount) + '</span>';
+            return '<span class="uc-target gray" title="تارگت ' + e(c.target_period || '') + '؛ فروش هنوز از فاکتورهای CRM حساب نمی‌شود">' + money(c.target_amount) + '</span>';
         }
         if (p == null) return '<span class="text-muted small">تعیین نشده</span>';
         var red = (set && set.target_red_below) || 80, green = (set && set.target_green_from) || 100;

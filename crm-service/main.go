@@ -375,6 +375,13 @@ func main() {
 	mux.HandleFunc("DELETE /crm/api/ucrm/customers/{id}", ucrm(s.ucrmDeleteCustomer))
 	mux.HandleFunc("POST /crm/api/ucrm/customers/{id}/approve", ucrm(s.ucrmApprove))
 	mux.HandleFunc("POST /crm/api/ucrm/customers/{id}/reject", ucrm(s.ucrmReject))
+	// تارگت‌ها و قواعد هدف‌گذاری (ucrm_targets.go) — نوشتن فقط مدیر (داخل هندلر)
+	mux.HandleFunc("GET /crm/api/ucrm/targets", ucrm(s.ucrmListTargets))
+	mux.HandleFunc("PUT /crm/api/ucrm/targets", ucrm(s.ucrmPutTargets))
+	mux.HandleFunc("GET /crm/api/ucrm/target-rules", ucrm(s.ucrmListRules))
+	mux.HandleFunc("POST /crm/api/ucrm/target-rules", ucrm(s.ucrmSaveRule))
+	mux.HandleFunc("PUT /crm/api/ucrm/target-rules/{id}", ucrm(s.ucrmSaveRule))
+	mux.HandleFunc("DELETE /crm/api/ucrm/target-rules/{id}", ucrm(s.ucrmDeleteRule))
 
 	addr := "127.0.0.1:" + cfg.Port
 	srv := &http.Server{

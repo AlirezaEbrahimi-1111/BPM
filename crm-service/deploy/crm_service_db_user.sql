@@ -42,6 +42,9 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_custom
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_customer_phones`  TO 'crm_service'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_customer_events`  TO 'crm_service'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_settings`         TO 'crm_service'@'localhost';
+-- تارگت‌ها و قواعد هدف‌گذاری (مهاجرت 20261023_120000)
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_targets`          TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_target_rules`     TO 'crm_service'@'localhost';
 
 -- خواندن فقط جدول‌هایی که برای احراز هویت و شناخت کارشناس/سازمان/بخش فعالیت لازم است
 GRANT SELECT ON `computeryekta_todo_system`.`users`                  TO 'crm_service'@'localhost';

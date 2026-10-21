@@ -1221,6 +1221,11 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
                                     <i class="bi bi-people ms-2"></i>مشتریان
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" href="/pages/ucrm-targets.php">
+                                    <i class="bi bi-bullseye ms-2"></i>تارگت‌های فروش
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 <?php endif; ?>

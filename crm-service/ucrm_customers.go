@@ -99,7 +99,9 @@ type ucrmCustomerOut struct {
 	// تارگت (تومان): پیشنهاد کارشناس، و تارگت ماهانهٔ تأییدشدهٔ مدیر (target_amount).
 	// فروش واقعی ماه از فاکتورهای CRM پر می‌شود (فعلا null).
 	ProposedTarget *int64   `json:"proposed_target"`
-	TargetAmount   *int64   `json:"target_amount"`
+	TargetAmount   *int64   `json:"target_amount"`    // تارگت مؤثر دورهٔ جاری (ucrm_targets.go)
+	TargetPeriod   string   `json:"target_period"`    // «مهر ۱۴۰۵» / «پاییز ۱۴۰۵» / «سال ۱۴۰۵»
+	TargetSuspend  bool     `json:"target_suspended"` // «معلق» → در رنگ وضعیت حساب نمی‌شود
 	SalesAmount    *float64 `json:"sales_amount"`
 	// اجازه‌های کاربر جاری روی همین ردیف (تا دکمه‌ها در صفحه درست نشان داده شوند)
 	CanEdit     bool `json:"can_edit"`
@@ -394,9 +396,7 @@ func scanUcrm(sc interface{ Scan(...any) error }) (ucrmCustomerOut, error) {
 	if pt.Valid {
 		c.ProposedTarget = &pt.Int64
 	}
-	if mt.Valid {
-		c.TargetAmount = &mt.Int64
-	}
+	_ = mt // ستون monthly_target فقط سابقه است؛ تارگت مؤثر از ucrm_targets می‌آید
 	c.LastFollowupAt = fmtTime(lf)
 	c.CreatedAt = created.Format("2006-01-02 15:04:05")
 	c.Phones = []string{}
@@ -454,6 +454,7 @@ func (s *server) ucrmListCustomers(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	s.ucrmApplyCurrentTargets(items)
 	writeJSON(w, http.StatusOK, map[string]any{"items": items, "roles": ro, "settings": s.ucrmLoadSettings()})
 }
 
@@ -481,6 +482,9 @@ func (s *server) ucrmLoad(id, uid int64, ro ucrmRoles) (*ucrmCustomerOut, error)
 			c.Phones = append(c.Phones, p)
 		}
 	}
+	one := []ucrmCustomerOut{c}
+	s.ucrmApplyCurrentTargets(one)
+	c = one[0]
 	return &c, nil
 }
 
@@ -590,6 +594,13 @@ func (s *server) ucrmCreateCustomer(w http.ResponseWriter, r *http.Request) {
 		note = s.userName(uid) + " (مدیر) مشتری «" + in.Name + "» را با کارشناس فروش «" + s.userName(in.RepID) +
 			"» ثبت کرد و برای تأیید حسابداری فرستاد."
 	}
+	if ro.Manager && in.Target > 0 {
+		t := in.Target
+		if err := ucrmUpsertTarget(tx, id, "monthly", s.ucrmCurrentPeriods()["monthly"], &t, nil, nil, uid); err != nil {
+			writeDBErr(w, "ucrmCreate target", err)
+			return
+		}
+	}
 	evs = append(evs, s.ucrmEvent(tx, id, uid, "created", note))
 	if err := tx.Commit(); err != nil {
 		writeDBErr(w, "ucrmCreate commit", err)
@@ -662,18 +673,22 @@ func (s *server) ucrmUpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 	var evs []int64 // رویدادهای این درخواست → اعلان بعد از commit
-	// تارگت: مدیر روی مشتریِ ردشدهٔ مرحلهٔ مدیر گذشته → «تارگت ماهانه»؛ بقیه → «پیشنهاد»
-	targetCol := "proposed_target"
-	if ro.Manager && cur.Status != ucStPendingManager && !(cur.Status == ucStRejected && cur.RejectedStage == "manager") {
-		targetCol = "monthly_target"
+	// تارگت پیشنهادی فقط تا قبل از تأیید مدیر عوض می‌شود؛ بعد از آن تارگت هر دوره از صفحهٔ
+	// «تارگت‌ها» (ucrm_targets.go) تعیین می‌شود → این‌جا دست نمی‌خورد.
+	proposed := any(cur.ProposedTarget)
+	if cur.ProposedTarget == nil {
+		proposed = nil
+	}
+	if cur.Status == ucStPendingManager || (cur.Status == ucStRejected && cur.RejectedStage != "accounting") {
+		proposed = nullIfZero(in.Target)
 	}
 	if _, err := tx.Exec(`
 		UPDATE ucrm_customers
 		SET type = ?, name = ?, national_id = ?, province = ?, city = ?, address = ?, note = ?, rep_id = ?, status = ?,
-		    `+targetCol+` = ?
+		    proposed_target = ?
 		WHERE id = ?`,
 		in.Type, in.Name, nullIfEmpty(in.NationalID), nullIfEmpty(in.Province), nullIfEmpty(in.City),
-		nullIfEmpty(in.Address), nullIfEmpty(in.Note), in.RepID, status, nullIfZero(in.Target), cur.ID); err != nil {
+		nullIfEmpty(in.Address), nullIfEmpty(in.Note), in.RepID, status, proposed, cur.ID); err != nil {
 		writeDBErr(w, "ucrmUpdate", err)
 		return
 	}
@@ -766,6 +781,12 @@ func (s *server) ucrmApprove(w http.ResponseWriter, r *http.Request) {
 			next, repID, nullIfZero(target), cur.ID); err != nil {
 			writeDBErr(w, "ucrmApprove", err)
 			return
+		}
+		if target > 0 {
+			if err := ucrmUpsertTarget(tx, cur.ID, "monthly", s.ucrmCurrentPeriods()["monthly"], &target, nil, nil, uid); err != nil {
+				writeDBErr(w, "ucrmApprove target", err)
+				return
+			}
 		}
 		tgt := " و بدون تارگت ماهانه"
 		if target > 0 {
