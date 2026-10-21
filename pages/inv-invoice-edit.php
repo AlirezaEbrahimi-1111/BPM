@@ -658,13 +658,11 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 renumber();
                 recalc();
             });
-            // کیبورد ردیف (درخواست ۱۴۰۵/۰۷/۲۹):
+            // کیبورد ردیف (درخواست ۱۴۰۵/۰۷/۲۹، اصلاح ۱۴۰۵/۰۷/۳۰):
             //   Tab   → ستون بعدی همین ردیف: نام کالا → تعداد → قیمت واحد → تخفیف → معاف؛
             //           از «معاف» به نام کالای ردیف بعد (Shift+Tab مثل قبل، پیش‌فرض مرورگر).
-            //   Enter → ردیف تازه + فوکوس روی «نام کالا»ی آن.
-            //   استثنا: Enter در خود «نام کالا» مثل قبل به «تعداد» می‌رود، چون Enter آن‌جا
-            //   برای انتخاب کالا از فهرست پیشنهادی هم استفاده می‌شود (وگرنه با انتخاب کالا
-            //   ردیف خالی ساخته می‌شد).
+            //   Enter → در هر ستون (از جمله نام کالا) → «نام کالا»ی ردیف بعد؛ اگر ردیف آخر
+            //           است، ردیف تازه ساخته می‌شود (مگر خود ردیف هنوز نام کالا نداشته باشد).
             const order = ['.it-prod-name', '.it-qty', '.it-price', '.it-disc', '.it-exempt'];
             order.forEach((sel, i) => {
                 const el = tr.querySelector(sel);
@@ -675,14 +673,17 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         if (!next) return; // آخرین خانهٔ آخرین ردیف: Tab عادی (به دکمه‌های پایین فرم)
                         e.preventDefault();
                         focusSel(next);
-                    } else if (e.key === 'Enter' && sel !== '.it-prod-name') {
+                    } else if (e.key === 'Enter' && !e.shiftKey && !e.altKey && !e.ctrlKey) {
                         e.preventDefault();
-                        if (el.classList.contains('it-price') || el.classList.contains('it-disc')) el.blur(); // قالب‌بندی مبلغ
-                        focusSel(newRowForEntry());
+                        // یک تیک صبر: اگر Enter برای انتخاب کالا از فهرست پیشنهادی بود، اول مقدار
+                        // انتخاب‌شده در فیلد بنشیند؛ blur هم change (هماهنگی با کاتالوگ) و قالب مبلغ را اجرا می‌کند
+                        setTimeout(() => {
+                            el.blur();
+                            focusSel(nextRowName(tr));
+                        }, 0);
                     }
                 });
             });
-            focusOnEnter(tr.querySelector('.it-prod-name'), () => tr.querySelector('.it-qty'));
             return tr;
         }
 
@@ -692,11 +693,12 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             if (typeof n.select === 'function') n.select();
         }
 
-        // ردیف خالی برای ورود قلم بعد: اگر آخرین ردیف هنوز نام کالا ندارد همان، وگرنه ردیف تازه
-        function newRowForEntry() {
-            const rows = document.querySelectorAll('#itemsBody tr');
-            const last = rows[rows.length - 1];
-            if (last && !last.querySelector('.it-prod-name').value.trim()) return last.querySelector('.it-prod-name');
+        // «نام کالا»ی ردیف بعد از tr؛ اگر tr ردیف آخر است، ردیف تازه — مگر خود tr هنوز نام کالا
+        // نداشته باشد (تا با Enterهای پشت‌سرهم ردیف‌های خالی ساخته نشود)
+        function nextRowName(tr) {
+            const next = tr.nextElementSibling;
+            if (next) return next.querySelector('.it-prod-name');
+            if (!tr.querySelector('.it-prod-name').value.trim()) return tr.querySelector('.it-prod-name');
             return addRow().querySelector('.it-prod-name');
         }
 
