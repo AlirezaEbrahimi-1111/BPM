@@ -50,20 +50,37 @@ function convertToGregorian(jalaliDate) {
 }
 
 /**
- * تبدیل تاریخ شمسی به میلادی (الگوریتم دقیق)
+ * تبدیل تاریخ شمسی به میلادی → 'YYYY-MM-DD'
+ * ⚠️ نسخهٔ قبلی خراب بود (روز ژولیانی را میلی‌ثانیه حساب می‌کرد: ۱۴۰۵/۰۷/۲۹ → «7701-06-06»).
+ *    این همان الگوریتم مرجع jdf است (هم‌خانوادهٔ TimeSync.gregorianToJalali در time-sync.js)
+ *    و فقط عدد برمی‌گرداند — به ساعت/منطقهٔ زمانی دستگاه وابسته نیست (۱۴۰۵/۰۷/۳۰).
  */
 function jalaliToGregorian(jy, jm, jd) {
-    const epbase = jy - 979;
-    const epyear = 33 * Math.floor(epbase / 33) + (((epbase % 33) + 3) > 32 ? 1 : 0);
-    const aux1 = 682 * (((epbase % 33) + 3) > 32 ? (epbase % 33) - 29 : (epbase % 33) + 4);
-    const aux2 = -110;
-    const daysOfYear = 365 * epyear + Math.floor((epyear + 38 + ((aux1 - aux2) >= 0 ? 1 : 0)) / 128) * ((aux1 - aux2) % 128) + Math.floor((aux1 - aux2) / 128) - (((aux1 - aux2) % 128) >= 0 ? 1 : 0) + 1948321 + jd - 1;
-    
-    if (jm <= 6) {
-        return new Date(daysOfYear * 86400000 - 86400000).toISOString().split('T')[0];
-    } else {
-        return new Date((daysOfYear + (jm - 6) * 31 + (jm - 7) * -1) * 86400000 - 86400000).toISOString().split('T')[0];
+    jy = +jy; jm = +jm; jd = +jd;
+    var gy = (jy > 979) ? 1600 : 621;
+    jy = (jy > 979) ? jy - 979 : jy;
+    var days = (365 * jy) + (Math.floor(jy / 33) * 8) + Math.floor(((jy % 33) + 3) / 4) + 78 + jd +
+        ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
+    gy += 400 * Math.floor(days / 146097);
+    days %= 146097;
+    if (days > 36524) {
+        gy += 100 * Math.floor(--days / 36524);
+        days %= 36524;
+        if (days >= 365) days++;
     }
+    gy += 4 * Math.floor(days / 1461);
+    days %= 1461;
+    if (days > 365) {
+        gy += Math.floor((days - 1) / 365);
+        days = (days - 1) % 365;
+    }
+    var gd = days + 1;
+    var leap = (gy % 4 === 0 && gy % 100 !== 0) || (gy % 400 === 0);
+    var monthDays = [0, 31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    var gm;
+    for (gm = 0; gm < 13 && gd > monthDays[gm]; gm++) gd -= monthDays[gm];
+    var p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+    return gy + '-' + p2(gm) + '-' + p2(gd);
 }
 // function jalaliToGregorian(jy, jm, jd) {
 //     try {
@@ -244,7 +261,9 @@ function initPersianDatePicker(selector = '.persian-date', options = {}) {
         },
         onSelect: function(unixDate) {
             // تبدیل به تاریخ میلادی و ذخیره در فیلد مخفی
-            const gregorianDate = new Date(unixDate).toISOString().split('T')[0];
+            // روز تقویمی محلیِ انتخاب‌شده (toISOString به گرینویچ می‌برد و در تهران روز قبل می‌شد)
+            const __d = new Date(unixDate);
+            const gregorianDate = __d.getFullYear() + '-' + String(__d.getMonth() + 1).padStart(2, '0') + '-' + String(__d.getDate()).padStart(2, '0');
             const altField = document.querySelector(this.altField);
             if (altField) {
                 altField.value = gregorianDate;

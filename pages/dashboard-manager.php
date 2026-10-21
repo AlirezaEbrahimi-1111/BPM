@@ -4094,7 +4094,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             const due = TF.effectiveDue(t);
             if (!due) return false;
 
-            const d = new Date(due);
+            const d = TF.parseDay(due); // روز تقویمی، مستقل از منطقهٔ زمانی دستگاه
+            if (!d) return false;
             d.setHours(0, 0, 0, 0);
             if (isNaN(d)) return false;
 
@@ -4943,14 +4944,15 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 day.setHours(0, 0, 0, 0);
 
                 const [jy, jm, jd] = jalaliOf(day);
-                const dateStr = day.toISOString().slice(0, 10);
+                const dateStr = TF.dayKey(day);
 
                 // کارهای این روز (فقط کارهای کاربر جاری)
                 const dayTasks = store.mine.filter(t => {
                     const due = TF.effectiveDue(t);
                     if (!due) return false;
                     if (TF.isDone(t)) return false;
-                    const d = new Date(due);
+                    const d = TF.parseDay(due); // روز تقویمی، مستقل از منطقهٔ زمانی دستگاه
+                    if (!d) return false;
                     d.setHours(0, 0, 0, 0);
                     return d.getTime() === day.getTime();
                 });
@@ -5279,7 +5281,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     const due = TF.effectiveDue(t);
                     if (!due) return false;
                     if (TF.isDone(t)) return false;
-                    const dd = new Date(due);
+                    const dd = TF.parseDay(due); // روز تقویمی، مستقل از منطقهٔ زمانی دستگاه
+                    if (!dd) return false;
                     dd.setHours(0, 0, 0, 0);
                     return dd.getTime() === d.getTime();
                 });

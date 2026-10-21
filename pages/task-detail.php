@@ -1533,7 +1533,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
                             // ── تشخیص تعطیل بودن روز ──
                             const gregDate = jalaliToGregorian(year, month, day);
-                            const gregStr = gregDate.toISOString().split('T')[0];
+                            const gregStr = TF.dayKey(gregDate); // روز تقویمی محلی (نه گرینویچ)
                             const isFriday = gregDate.getDay() === 5;
                             const isHoliday = holidays.includes(gregStr);
 
@@ -1599,7 +1599,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                             throw new Error('Invalid date');
                         }
 
-                        const dateStr = gregorianDate.toISOString().split('T')[0];
+                        const dateStr = TF.dayKey(gregorianDate); // روز تقویمی محلی (نه گرینویچ)
 
                         input.setAttribute('data-date', dateStr);
                         input.value = toPersian(day) + ' ' + jalaliMonths[month - 1] + ' ' + toPersian(year);
@@ -4302,7 +4302,7 @@ ${task.overdue_periods > 0 ? `
 
                 if (task.task_type !== 'continuous') return;
 
-                const today = new Date().toISOString().split('T')[0];
+                const today = TF.today(); // «امروز» سرور (تهران)، نه ساعت/منطقهٔ زمانی دستگاه
                 const isReady = task.end_date &&
                     task.end_date <= today &&
                     task.is_pending_approval != 1;

@@ -657,7 +657,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 if (statFilter === 'week') {
                     const due = TF.effectiveDue(t);
                     if (!due) return false;
-                    const d = new Date(due);
+                    const d = TF.parseDay(due); // روز تقویمی، مستقل از منطقهٔ زمانی دستگاه
+                    if (!d) return false;
                     d.setHours(0, 0, 0, 0);
                     if (isNaN(d)) return false;
                     // «اکنون» از تاریخ سرور (تهران)، نه ساعت دستگاه
@@ -674,7 +675,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 if (statFilter === 'month') {
                     const due = TF.effectiveDue(t);
                     if (!due) return false;
-                    const d = new Date(due);
+                    const d = TF.parseDay(due); // روز تقویمی، مستقل از منطقهٔ زمانی دستگاه
+                    if (!d) return false;
                     if (isNaN(d)) return false;
                     const [jy, jm] = jalaliOf(d);
                     const nowJ = window.TimeSync ? TimeSync.serverJalali() : jalaliOf(new Date());
@@ -686,7 +688,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 if (statFilter === 'day' && dashFilterDate) {
                     const due = TF.effectiveDue(t);
                     if (!due) return false;
-                    const d = new Date(due);
+                    const d = TF.parseDay(due); // روز تقویمی، مستقل از منطقهٔ زمانی دستگاه
+                    if (!d) return false;
                     if (isNaN(d)) return false;
                     if (localYMD(d) !== dashFilterDate) return false;
                 }

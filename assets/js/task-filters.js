@@ -42,6 +42,26 @@ window.TF = (function () {
         return String(v).split(' ')[0].split('T')[0];
     }
 
+    /**
+     * «روز تقویمی» یک تاریخ سرور ('YYYY-MM-DD' یا 'YYYY-MM-DD HH:MM:SS') → Date نیمه‌شبِ محلی همان روز.
+     * ⚠️ هرگز new Date('YYYY-MM-DD') نزنید: جاوااسکریپت تاریخِ بی‌ساعت را نیمه‌شبِ گرینویچ (UTC)
+     *    می‌خواند؛ روی دستگاهی که منطقهٔ زمانی‌اش عقب‌تر از گرینویچ است، روز قبل می‌شود
+     *    (کار ۲۹ مهر در تقویم داشبورد روی ۲۸ مهر می‌افتاد — ۱۴۰۵/۰۷/۳۰).
+     *    این تابع فقط سال/ماه/روز را برمی‌دارد، پس به منطقهٔ زمانی دستگاه وابسته نیست.
+     */
+    function parseDay(v) {
+        const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(v || ''));
+        if (!m) return null;
+        return new Date(+m[1], +m[2] - 1, +m[3]);
+    }
+
+    /** Date محلی → 'YYYY-MM-DD' همان روز تقویمی (به‌جای toISOString که به گرینویچ می‌برد و روز را جابه‌جا می‌کند) */
+    function dayKey(d) {
+        if (!(d instanceof Date) || isNaN(d)) return '';
+        const p = n => (n < 10 ? '0' : '') + n;
+        return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+    }
+
     /** تبدیل ارقام انگلیسی به فارسی */
     function toFa(n) {
         if (n === null || n === undefined || n === '') return '۰';
@@ -659,6 +679,8 @@ window.TF = (function () {
         // تاریخ
         today,
         dateOnly,
+        parseDay,
+        dayKey,
         toFa,
         effectiveDue,
         effectiveDueMs,

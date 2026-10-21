@@ -564,7 +564,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             const pr = document.getElementById('filterPriority').value;
             const ty = document.getElementById('filterType').value;
             const gr = document.getElementById('filterGroup')?.value || ''; // 🆕
-            const today = new Date().toISOString().split('T')[0];
+            const today = TF.today(); // «امروز» سرور (تهران)، نه ساعت/منطقهٔ زمانی دستگاه
 
             filteredTasks = allTasks.filter(t => {
                 const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + t.id + ' ' + (t.workflow_instance_id ? (t.workflow_instance_id + ' روتین' + t.workflow_instance_id) : '') + ' ' + (t.history_text || '');

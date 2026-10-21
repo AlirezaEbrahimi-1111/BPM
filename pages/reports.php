@@ -1212,7 +1212,9 @@ ${highlightedContent}${contentPreview.length > 4096 ? '...' : ''}
         function convertPersianToGregorian(persianDate) {
             try {
                 const pDate = new persianDate(persianDate);
-                return pDate.toDate().toISOString().split('T')[0];
+                // toDate() نیمه‌شبِ محلی است؛ toISOString آن را به گرینویچ می‌برد و در تهران روز قبل می‌شد
+                const d = pDate.toDate();
+                return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
             } catch {
                 return persianDate;
             }

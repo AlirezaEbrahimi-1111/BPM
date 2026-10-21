@@ -619,7 +619,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
             const pr = document.getElementById('filterPriority').value;
             const ty = document.getElementById('filterType').value;
 
-            const today = new Date().toISOString().slice(0, 10);
+            const today = TF.today(); // «امروز» سرور (تهران)، نه ساعت/منطقهٔ زمانی دستگاه
 
             filteredTasks = allTasks.filter(t => {
                 const otherText = (t.title || '') + ' ' + (t.description || '') + ' ' + t.id + ' ' + (t.workflow_instance_id ? (t.workflow_instance_id + ' روتین' + t.workflow_instance_id) : '') + ' ' + (t.history_text || '');
