@@ -1,24 +1,25 @@
 <?php
 /**
- * api/ucrm/notify-events.php — اعلان‌های CRM جدید (حسابداری غیررسمی).
+ * api/ucrm/notify-events.php — کارهای جانبی CRM جدید بعد از هر رویداد: «تسک» و «اعلان».
  * ────────────────────────────────────────────────────────────────────
- * فراخوان: crm-service (crm-service/ucrm_notify.go) بعد از هر ثبت/تأیید/رد،
+ * فراخوان: crm-service (crm-service/ucrm_notify.go) بعد از هر ثبت/تأیید/رد/حذف،
  * با «توکن همان کاربری که کار را انجام داد».
  *   POST { "event_ids": [12, 13, ...] }
  *
- * امنیت: فقط رویدادهایی پردازش می‌شوند که actor_id آن‌ها = همین کاربر و هنوز
- * اعلان نشده‌اند (notified_at IS NULL) — پس نه می‌شود اعلان دلخواه ساخت، نه یک
- * رویداد دوبار اعلان می‌شود. گیرنده‌ها و متن همین‌جا از روی دیتابیس تعیین می‌شوند.
+ * امنیت: فقط رویدادهایی پردازش می‌شوند که actor_id = همین کاربر و هنوز پردازش
+ * نشده‌اند (notified_at IS NULL) — نه می‌شود تسک/اعلان دلخواه ساخت، نه یک رویداد
+ * دوبار پردازش می‌شود. گیرنده‌ها و متن همین‌جا از روی دیتابیس تعیین می‌شوند.
  *
- * ارسال: Notification::create (اعلان داخل برنامه + پیامک + Push، مثل بقیهٔ سیستم).
- * اگر یک نفر چند اعلان هم‌نوع بگیرد (مثلا بارگذاری اکسل)، یک اعلانِ خلاصه می‌رود.
- *
- * گیرنده‌ها:
- *   ثبت/ارسال دوباره (در انتظار مدیر)       → سرپرست‌های سازمان ۱
- *   ثبت توسط مدیر / تأیید مدیر               → تیم حسابداری (+ کارشناس، برای تأیید مدیر)
- *   تأیید حسابداری                           → کارشناس
- *   رد (مدیر یا حسابداری)                    → کارشناس، با دلیل
- *   تغییر کارشناس (ویرایش مستقیم مدیر)       → کارشناس جدید
+ * مرحله‌ها = تسک واقعی در «کارهای من» (includes/ucrm_tasks.php):
+ *   ثبت/ارسال دوباره (در انتظار مدیر)  → تسک «تأیید انتساب مشتری» برای هر سرپرست
+ *   تأیید مدیر / ثبت توسط مدیر        → تسک «تأیید حسابداری مشتری» برای هر عضو حسابداری
+ *   رد (مدیر یا حسابداری)              → تسک «اصلاح مشتری» برای کارشناس (با دلیل)
+ *   هر اقدام، تسک‌های باز همان مرحله را (برای همهٔ نسخه‌ها) می‌بندد.
+ * اعلان: مرحله‌هایی که تسک دارند فقط اعلان «کار جدید» می‌گیرند (بدون اعلان تکراری).
+ * اعلان CRM فقط برای خبرهای بدون تسک: «تأیید مدیر شد»، «مشتری فعال شد» و
+ * «مشتری به شما سپرده شد» برای کارشناس.
+ * اعلان = Notification::create (داخل برنامه + پیامک + Push). چند مورد هم‌نوع برای
+ * یک نفر (مثلا بارگذاری اکسل) → یک اعلان خلاصه.
  * حساب پشتیبان (id=1) و خودِ انجام‌دهنده هیچ‌وقت گیرنده نیستند.
  */
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/api-bootstrap.php';
@@ -26,12 +27,18 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/support-accounts.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ucrm_tasks.php';
 
 function ucrmOut(int $code, array $body)
 {
     http_response_code($code);
     echo json_encode($body, JSON_UNESCAPED_UNICODE);
     exit;
+}
+
+function ucrmFa($n): string
+{
+    return str_replace(range(0, 9), ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'], (string) $n);
 }
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') ucrmOut(405, ['success' => false, 'message' => 'متد غیرمجاز']);
@@ -44,159 +51,226 @@ if ($uid <= 0) ucrmOut(401, ['success' => false, 'message' => 'توکن نامع
 
 $input = json_decode(file_get_contents('php://input'), true) ?: [];
 $ids = array_values(array_unique(array_filter(array_map('intval', (array) ($input['event_ids'] ?? [])))));
-if (!$ids) ucrmOut(200, ['success' => true, 'sent' => 0]);
+if (!$ids) ucrmOut(200, ['success' => true, 'tasks' => 0, 'sent' => 0]);
 $ids = array_slice($ids, 0, 2000);
-
-// ── رویدادها را «برای خودمان» قفل و علامت بزن تا دوبار ارسال نشوند ──
-$in = implode(',', $ids);
-$db->beginTransaction();
-$events = $db->query("
-    SELECT e.id, e.customer_id, e.action, c.name, c.status, c.rep_id, COALESCE(c.reject_reason, '') AS reject_reason,
-           TRIM(CONCAT(COALESCE(r.first_name,''), ' ', COALESCE(r.last_name,''))) AS rep_name
-    FROM ucrm_customer_events e
-    JOIN ucrm_customers c ON c.id = e.customer_id
-    LEFT JOIN users r ON r.id = c.rep_id
-    WHERE e.id IN ($in) AND e.actor_id = $uid AND e.notified_at IS NULL
-    FOR UPDATE
-")->fetchAll(PDO::FETCH_ASSOC);
-if ($events) {
-    $db->exec("UPDATE ucrm_customer_events SET notified_at = NOW() WHERE id IN (" . implode(',', array_column($events, 'id')) . ")");
-}
-$db->commit();
-if (!$events) ucrmOut(200, ['success' => true, 'sent' => 0]);
-
-// ── گیرنده‌های نقش‌محور (سازمان ۱) ──
-$sx = supportOnlySqlExclude('u.id');
-$managers = $db->query("
-    SELECT u.id FROM users u
-    WHERE u.is_active = 1 AND u.organization_id = 1 AND $sx
-      AND (u.role IN ('supervisor','admin','manager','management') OR COALESCE(u.is_supervisor, 0) = 1)
-")->fetchAll(PDO::FETCH_COLUMN);
-$accounting = $db->query("
-    SELECT u.id FROM users u
-    WHERE u.is_active = 1 AND u.organization_id = 1 AND $sx
-      AND (u.activity_section = 'accounting'
-        OR EXISTS (SELECT 1 FROM user_activity_sections s WHERE s.user_id = u.id AND s.section_key = 'accounting'))
-")->fetchAll(PDO::FETCH_COLUMN);
 
 $st = $db->prepare("SELECT TRIM(CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,''))) FROM users WHERE id = ?");
 $st->execute([$uid]);
 $actor = $st->fetchColumn() ?: 'یک کاربر';
 
-// مشتری‌هایی که در همین دسته «تأیید مدیر» دارند: پیام «تغییر کارشناس» جدا لازم ندارند
-$approvedNow = [];
-foreach ($events as $e) {
-    if ($e['action'] === 'manager_approved') $approvedNow[$e['customer_id']] = true;
-}
+// ── گیرنده‌های نقش‌محور (سازمان ۱) ──
+$sx = supportOnlySqlExclude('u.id');
+$managers = array_map('intval', $db->query("
+    SELECT u.id FROM users u
+    WHERE u.is_active = 1 AND u.organization_id = 1 AND $sx
+      AND (u.role IN ('supervisor','admin','manager','management') OR COALESCE(u.is_supervisor, 0) = 1)
+")->fetchAll(PDO::FETCH_COLUMN));
+$accounting = array_map('intval', $db->query("
+    SELECT u.id FROM users u
+    WHERE u.is_active = 1 AND u.organization_id = 1 AND $sx
+      AND (u.activity_section = 'accounting'
+        OR EXISTS (SELECT 1 FROM user_activity_sections s WHERE s.user_id = u.id AND s.section_key = 'accounting'))
+")->fetchAll(PDO::FETCH_COLUMN));
 
-// $queue[گیرنده][نوع] = [ ['customer_id','title','message'], ... ]
-$queue = [];
-$add = function ($to, string $kind, array $e, string $title, string $msg) use (&$queue, $uid) {
+$ok = function ($to) use ($uid) {
     $to = (int) $to;
-    if ($to <= 0 || $to === $uid || isSupportOnlyUser($to)) return;
-    $queue[$to][$kind][] = ['customer_id' => (int) $e['customer_id'], 'title' => $title, 'message' => $msg];
+    return $to > 0 && $to !== $uid && !isSupportOnlyUser($to);
 };
 
-foreach ($events as $e) {
-    $name = '«' . $e['name'] . '»';
-    $rep = $e['rep_name'] !== '' ? $e['rep_name'] : 'تعیین نشده';
-    switch ($e['action']) {
-        case 'created':
-        case 'resubmitted':
-            $again = $e['action'] === 'resubmitted';
-            if ($e['status'] === 'pending_manager') {
-                foreach ($managers as $m) {
-                    $add($m, 'to_manager', $e, 'مشتری جدید در انتظار تأیید',
-                        $again ? "$actor مشتری $name را اصلاح کرد و دوباره برای تأیید شما فرستاد."
-                               : "$actor مشتری $name را ثبت کرد و منتظر تأیید شماست.");
-                }
-            } elseif ($e['status'] === 'pending_accounting') {
-                foreach ($accounting as $a) {
-                    $add($a, 'to_accounting', $e, 'مشتری در انتظار تأیید حسابداری',
-                        $again ? "$actor مشتری $name (کارشناس: {$rep}) را اصلاح کرد و دوباره برای تأیید حسابداری فرستاد."
-                               : "$actor مشتری $name را با کارشناس فروش «{$rep}» ثبت کرد و منتظر تأیید حسابداری است.");
-                }
-            }
-            break;
+// $queue[گیرنده][نوع] = [ [...], ... ]  — بعد از commit فرستاده می‌شود
+$queue = [];
+$sentTasks = 0;
 
-        case 'manager_approved':
-            foreach ($accounting as $a) {
-                $add($a, 'to_accounting', $e, 'مشتری در انتظار تأیید حسابداری',
-                    "مشتری $name (کارشناس: {$rep}) توسط $actor تأیید شد و منتظر تأیید حسابداری است.");
-            }
-            $add($e['rep_id'], 'rep_mgr_ok', $e, 'تأیید مشتری توسط مدیر',
-                "مشتری $name توسط $actor تأیید شد و برای تأیید نهایی به حسابداری رفت.");
-            break;
-
-        case 'accounting_approved':
-            $add($e['rep_id'], 'rep_active', $e, 'مشتری فعال شد',
-                "مشتری $name توسط حسابداری ($actor) تأیید و فعال شد.");
-            break;
-
-        case 'manager_rejected':
-        case 'accounting_rejected':
-            $who = $e['action'] === 'accounting_rejected' ? 'حسابداری' : 'مدیر';
-            $why = $e['reject_reason'] !== '' ? ' دلیل: «' . $e['reject_reason'] . '».' : '';
-            $add($e['rep_id'], 'rep_rejected', $e, 'مشتری رد شد',
-                "مشتری $name توسط $actor ($who) رد شد.$why لطفا اصلاح کنید و دوباره بفرستید.");
-            break;
-
-        case 'rep_changed':
-            if (empty($approvedNow[$e['customer_id']])) {
-                $add($e['rep_id'], 'rep_assigned', $e, 'مشتری به شما سپرده شد',
-                    "$actor مشتری $name را به شما سپرد.");
-            }
-            break;
+$db->beginTransaction();
+try {
+    // رویدادها را «برای خودمان» قفل و علامت بزن تا دوبار پردازش نشوند
+    $in = implode(',', $ids);
+    $events = $db->query("
+        SELECT e.id, e.customer_id, e.action, c.name, c.type, c.status, c.rep_id, COALESCE(c.reject_reason, '') AS reject_reason,
+               COALESCE(c.national_id, '') AS national_id, COALESCE(c.monthly_target, c.proposed_target, 0) AS target,
+               TRIM(CONCAT(COALESCE(r.first_name,''), ' ', COALESCE(r.last_name,''))) AS rep_name
+        FROM ucrm_customer_events e
+        JOIN ucrm_customers c ON c.id = e.customer_id
+        LEFT JOIN users r ON r.id = c.rep_id
+        WHERE e.id IN ($in) AND e.actor_id = $uid AND e.notified_at IS NULL
+        ORDER BY e.id
+        FOR UPDATE
+    ")->fetchAll(PDO::FETCH_ASSOC);
+    if (!$events) {
+        $db->commit();
+        ucrmOut(200, ['success' => true, 'tasks' => 0, 'sent' => 0]);
     }
+    $db->exec("UPDATE ucrm_customer_events SET notified_at = NOW() WHERE id IN (" . implode(',', array_column($events, 'id')) . ")");
+
+    $approvedNow = [];
+    foreach ($events as $e) {
+        if ($e['action'] === 'manager_approved') $approvedNow[$e['customer_id']] = true;
+    }
+
+    $phonesOf = $db->prepare("SELECT phone FROM ucrm_customer_phones WHERE customer_id = ? ORDER BY sort, id");
+    $due = null;
+
+    // تسک یک مرحله برای چند نفر + صف اعلان «کار جدید»
+    $makeTasks = function (array $e, string $stage, array $people, string $title, string $desc, bool $pending)
+                 use ($db, $uid, $ok, &$queue, &$sentTasks, &$due) {
+        if ($due === null) $due = ucrmNextWorkingDay($db);
+        foreach (array_unique($people) as $p) {
+            if (!$ok($p)) continue;
+            $tid = ucrmCreateTask($db, (int) $e['customer_id'], $stage, (int) $p, $uid, $title, $desc, $pending, $due);
+            $queue[(int) $p]['task'][] = ['task_id' => $tid, 'title' => $title];
+            $sentTasks++;
+        }
+    };
+
+    foreach ($events as $e) {
+        $cid = (int) $e['customer_id'];
+        $name = '«' . $e['name'] . '»';
+        $rep = $e['rep_name'] !== '' ? $e['rep_name'] : 'تعیین نشده';
+        $phonesOf->execute([$cid]);
+        $phones = implode('، ', $phonesOf->fetchAll(PDO::FETCH_COLUMN));
+        $info = "کارشناس فروش: {$rep}\nنوع مشتری: " . ($e['type'] === 'individual' ? 'حقیقی' : 'حقوقی')
+              . ($e['national_id'] !== '' ? "\nکد/شناسه ملی: {$e['national_id']}" : '')
+              . ($phones !== '' ? "\nشماره تماس: {$phones}" : '')
+              . ((int) $e['target'] > 0 ? "\nتارگت ماهانه: " . ucrmFa(number_format((int) $e['target'])) . ' تومان' : '');
+
+        switch ($e['action']) {
+            case 'created':
+            case 'resubmitted':
+                $again = $e['action'] === 'resubmitted';
+                if ($again) {
+                    ucrmCloseStage($db, $cid, ['rep_fix', 'manager', 'accounting'], $uid, 'completed',
+                        "$actor مشتری $name را اصلاح کرد و دوباره برای تأیید فرستاد.",
+                        "$actor مشتری $name را اصلاح کرد و دوباره فرستاد؛ نیازی به اقدام شما نیست.");
+                }
+                $verb = $again ? 'را اصلاح کرد و دوباره برای تأیید فرستاد' : 'را ثبت کرد و برای تأیید فرستاد';
+                if ($e['status'] === 'pending_manager') {
+                    $makeTasks($e, 'manager', $managers, "تأیید انتساب مشتری: {$e['name']}",
+                        "$actor مشتری $name $verb.\n$info\nبرای تأیید یا رد، همین کار را باز کنید.", true);
+                } elseif ($e['status'] === 'pending_accounting') {
+                    $makeTasks($e, 'accounting', $accounting, "تأیید حسابداری مشتری: {$e['name']}",
+                        "$actor (مدیر) مشتری $name $verb.\n$info\nبرای تأیید یا رد، همین کار را باز کنید.", true);
+                }
+                break;
+
+            case 'manager_approved':
+                ucrmCloseStage($db, $cid, ['manager'], $uid, 'approved',
+                    "$actor مشتری $name را با کارشناس فروش «{$rep}» تأیید کرد و برای حسابداری فرستاد.",
+                    "این درخواست توسط $actor تأیید شد؛ نیازی به اقدام شما نیست.");
+                $makeTasks($e, 'accounting', $accounting, "تأیید حسابداری مشتری: {$e['name']}",
+                    "مشتری $name توسط $actor (مدیر) تأیید شده و منتظر تأیید حسابداری است.\n$info\nبرای تأیید یا رد، همین کار را باز کنید.", true);
+                if ($ok($e['rep_id'])) {
+                    $queue[(int) $e['rep_id']]['rep_mgr_ok'][] = ['customer_id' => $cid, 'title' => 'تأیید مشتری توسط مدیر',
+                        'message' => "مشتری $name توسط $actor تأیید شد و برای تأیید نهایی به حسابداری رفت."];
+                }
+                break;
+
+            case 'accounting_approved':
+                ucrmCloseStage($db, $cid, ['accounting'], $uid, 'approved',
+                    "$actor (حسابداری) مشتری $name را تأیید کرد؛ مشتری فعال شد.",
+                    "این درخواست توسط $actor تأیید شد؛ نیازی به اقدام شما نیست.");
+                if ($ok($e['rep_id'])) {
+                    $queue[(int) $e['rep_id']]['rep_active'][] = ['customer_id' => $cid, 'title' => 'مشتری فعال شد',
+                        'message' => "مشتری $name توسط حسابداری ($actor) تأیید و فعال شد."];
+                }
+                break;
+
+            case 'manager_rejected':
+            case 'accounting_rejected':
+                $stage = $e['action'] === 'accounting_rejected' ? 'accounting' : 'manager';
+                $who = $stage === 'accounting' ? 'حسابداری' : 'مدیر';
+                $why = $e['reject_reason'] !== '' ? ' دلیل: «' . $e['reject_reason'] . '»' : '';
+                ucrmCloseStage($db, $cid, [$stage], $uid, 'rejected',
+                    "$actor ($who) مشتری $name را رد کرد.$why",
+                    "این درخواست توسط $actor رد شد؛ نیازی به اقدام شما نیست.");
+                $makeTasks($e, 'rep_fix', [(int) $e['rep_id']], "اصلاح مشتری: {$e['name']}",
+                    "مشتری $name توسط $actor ($who) رد شد.$why\nمشتری را اصلاح کنید و دوباره برای تأیید بفرستید، یا درخواست را پس بگیرید.", false);
+                break;
+
+            case 'rep_changed':
+                if (empty($approvedNow[$cid]) && $ok($e['rep_id'])) {
+                    $queue[(int) $e['rep_id']]['rep_assigned'][] = ['customer_id' => $cid, 'title' => 'مشتری به شما سپرده شد',
+                        'message' => "$actor مشتری $name را به شما سپرد."];
+                }
+                break;
+
+            case 'deleted':
+                ucrmCloseStage($db, $cid, ['manager', 'accounting', 'rep_fix'], $uid, 'completed',
+                    "$actor مشتری $name را حذف کرد.",
+                    "مشتری $name توسط $actor حذف شد؛ این کار دیگر لازم نیست.");
+                break;
+        }
+    }
+    $db->commit();
+} catch (Throwable $ex) {
+    if ($db->inTransaction()) $db->rollBack();
+    error_log('ucrm notify-events: ' . $ex->getMessage());
+    ucrmOut(500, ['success' => false, 'message' => 'خطا در ساخت تسک/اعلان CRM']);
 }
 
-// خلاصهٔ چندتایی (مثلا بارگذاری اکسل) — یک اعلان به‌جای ده‌ها پیامک
+// ── ارسال اعلان‌ها (بعد از commit) ──
 $summary = [
-    'to_manager'    => ['مشتری‌های جدید در انتظار تأیید', '%d مشتری جدید از طرف %s منتظر تأیید شماست.'],
-    'to_accounting' => ['مشتری‌ها در انتظار تأیید حسابداری', '%d مشتری (کار %s) منتظر تأیید حسابداری است.'],
-    'rep_mgr_ok'    => ['تأیید مشتری‌ها توسط مدیر', '%d مشتری شما توسط %s تأیید شد و برای حسابداری رفت.'],
-    'rep_active'    => ['مشتری‌ها فعال شدند', '%d مشتری شما توسط حسابداری (%s) تأیید و فعال شد.'],
-    'rep_rejected'  => ['مشتری‌ها رد شدند', '%d مشتری شما توسط %s رد شد؛ دلیل‌ها را در فهرست مشتریان ببینید.'],
-    'rep_assigned'  => ['مشتری‌ها به شما سپرده شدند', '%s %d مشتری را به شما سپرد.'],
+    'rep_mgr_ok'   => ['تأیید مشتری‌ها توسط مدیر', '%1$s مشتری شما توسط %2$s تأیید شد و برای حسابداری رفت.'],
+    'rep_active'   => ['مشتری‌ها فعال شدند', '%1$s مشتری شما توسط حسابداری (%2$s) تأیید و فعال شد.'],
+    'rep_assigned' => ['مشتری‌ها به شما سپرده شدند', '%2$s %1$s مشتری را به شما سپرد.'],
 ];
 
 $n = new Notification($db);
 $sent = 0;
 foreach ($queue as $to => $kinds) {
     foreach ($kinds as $kind => $items) {
-        if (count($items) === 1) {
-            $it = $items[0];
-            $title = $it['title'];
-            $msg = $it['message'];
-            $link = '../pages/ucrm-customer.php?id=' . $it['customer_id'];
-            $rid = $it['customer_id'];
+        $cnt = count($items);
+        if ($kind === 'task') {
+            // هم‌شکل api/tasks/create.php — اعلان «کار جدید»
+            if ($cnt === 1) {
+                $data = [
+                    'title'        => 'کار جدید برای شما',
+                    'message'      => "یک کار جدید با عنوان «{$items[0]['title']}» توسط {$actor} برای شما ایجاد شد",
+                    'link'         => '/pages/task-detail.php?id=' . $items[0]['task_id'],
+                    'related_type' => 'task',
+                    'related_id'   => $items[0]['task_id'],
+                    'sms_pattern'  => 'task_created',
+                    'sms_args'     => [$items[0]['title'], $actor],
+                ];
+            } else {
+                $msg = ucrmFa($cnt) . " کار تأیید مشتری از CRM (فرستادهٔ {$actor}) برای شما ایجاد شد.";
+                $data = [
+                    'title'        => 'کارهای جدید برای شما',
+                    'message'      => $msg,
+                    'link'         => '/pages/my-tasks.php',
+                    'related_type' => 'ucrm_customer',
+                    'related_id'   => 0,
+                    'sms_pattern'  => 'general',
+                    'sms_args'     => ['کارهای جدید برای شما', $msg],
+                ];
+            }
+            $data['type'] = 'info';
         } else {
-            $title = $summary[$kind][0];
-            $cnt = str_replace(range(0, 9), ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'], (string) count($items));
-            $msg = $kind === 'rep_assigned'
-                ? sprintf(str_replace('%d', '%s', $summary[$kind][1]), $actor, $cnt)
-                : sprintf(str_replace('%d', '%s', $summary[$kind][1]), $cnt, $actor);
-            $link = '../pages/ucrm-customers.php';
-            $rid = 0;
+            if ($cnt === 1) {
+                $title = $items[0]['title'];
+                $msg = $items[0]['message'];
+                $link = '../pages/ucrm-customer.php?id=' . $items[0]['customer_id'];
+                $rid = $items[0]['customer_id'];
+            } else {
+                $title = $summary[$kind][0];
+                $msg = sprintf($summary[$kind][1], ucrmFa($cnt), $actor);
+                $link = '../pages/ucrm-customers.php';
+                $rid = 0;
+            }
+            $data = [
+                'title' => $title, 'message' => $msg, 'type' => 'info', 'link' => $link,
+                'related_type' => 'ucrm_customer', 'related_id' => $rid,
+                'sms_pattern' => 'general', 'sms_args' => [$title, $msg],
+            ];
         }
         try {
-            $n->create([
-                'to_user_id'   => $to,
-                'title'        => $title,
-                'message'      => $msg,
-                'type'         => $kind === 'rep_rejected' ? 'warning' : 'info',
-                'link'         => $link,
-                'related_type' => 'ucrm_customer',
-                'related_id'   => $rid,
-                'is_read'      => 0,
-                'sms_pattern'  => 'general',
-                'sms_args'     => [$title, $msg],
-            ]);
+            $data['to_user_id'] = $to;
+            $data['is_read'] = 0;
+            $n->create($data);
             $sent++;
-        } catch (Throwable $e) {
-            error_log('ucrm notify: ' . $e->getMessage());
+        } catch (Throwable $ex) {
+            error_log('ucrm notify: ' . $ex->getMessage());
         }
     }
 }
 
-ucrmOut(200, ['success' => true, 'sent' => $sent]);
+ucrmOut(200, ['success' => true, 'tasks' => $sentTasks, 'sent' => $sent]);

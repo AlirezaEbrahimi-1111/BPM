@@ -60,6 +60,9 @@ try {
 
     $database = new Database();
     $db = $database->getConnection();
+    // 🆕 تسک‌های CRM (تأیید/اصلاح مشتری) فقط از صفحهٔ CRM تصمیم می‌گیرند — includes/ucrm_tasks.php
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ucrm_tasks.php';
+    ucrmGuardTaskAction($db, $input['task_id']);
 
     // 🔒 قفل هم‌زمانی: دو درخواست تأیید/رد هم‌زمان برای یک کار (دابل‌کلیک،
     // دو تب، دو تأییدکننده) نباید با هم پردازش شوند؛ وگرنه رکوردهای تکراری

@@ -1,6 +1,13 @@
 <?php
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 
+// 🆕 تسک‌های CRM (تأیید انتساب / تأیید حسابداری / اصلاح مشتری) صفحهٔ مخصوص خودشان را دارند
+require_once __DIR__ . '/../includes/ucrm_tasks.php';
+if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
+    header('Location: ucrm-approval.php?task=' . (int) $_GET['id']);
+    exit;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">

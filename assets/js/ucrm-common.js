@@ -78,6 +78,10 @@
 
     function targetBadge(c, set) {
         var p = targetPct(c);
+        // تارگت تعیین شده ولی فروش ماه هنوز از فاکتورهای CRM نمی‌آید → فقط خود تارگت (خاکستری)
+        if (p == null && c && c.target_amount > 0) {
+            return '<span class="uc-target gray" title="تارگت ماهانه؛ فروش این ماه هنوز ثبت نمی‌شود">' + money(c.target_amount) + '</span>';
+        }
         if (p == null) return '<span class="text-muted small">تعیین نشده</span>';
         var red = (set && set.target_red_below) || 80, green = (set && set.target_green_from) || 100;
         var cls = p < red ? 'red' : (p >= green ? 'green' : 'orange');
@@ -113,7 +117,29 @@
         return [c.province, c.city && c.city !== c.province ? c.city : '', c.address].filter(Boolean).join('، ');
     }
 
+    // فیلد مبلغ (تومان): هنگام تایپ رقم فارسی + جداکنندهٔ هزارگان. میان‌بر «*» = سه صفر
+    // از assets/js/money-shortcut.js می‌آید (صفت data-money).
+    function bindMoney(el) {
+        if (!el || el.dataset.ucMoney) return;
+        el.dataset.ucMoney = '1';
+        el.setAttribute('data-money', '');
+        el.setAttribute('inputmode', 'numeric');
+        el.addEventListener('input', function () {
+            var n = moneyVal(el);
+            var v = n ? money(n) : '';
+            if (el.value !== v) el.value = v;
+        });
+    }
+
+    function moneyVal(el) {
+        var n = parseInt(toEn(el && el.value).replace(/[^\d]/g, ''), 10);
+        return isNaN(n) ? 0 : n;
+    }
+
+    function setMoney(el, n) { el.value = n > 0 ? money(n) : ''; }
+
     w.UCRM = {
+        bindMoney: bindMoney, moneyVal: moneyVal, setMoney: setMoney,
         tok: tok, get: get, send: send, toEn: toEn, money: money,
         TYPE_LABEL: TYPE_LABEL, STATUS_LABEL: STATUS_LABEL,
         typeBadge: typeBadge, statusBadge: statusBadge, targetPct: targetPct, targetBadge: targetBadge,

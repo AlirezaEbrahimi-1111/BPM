@@ -96,9 +96,11 @@ type ucrmCustomerOut struct {
 	LastFollowupAt string   `json:"last_followup_at"`
 	CreatedBy      int64    `json:"created_by"`
 	CreatedAt      string   `json:"created_at"`
-	// تارگت ماه جاری و فروش واقعی — از مرحله‌های تارگت و فاکتور CRM پر می‌شوند (فعلا null)
-	TargetAmount *float64 `json:"target_amount"`
-	SalesAmount  *float64 `json:"sales_amount"`
+	// تارگت (تومان): پیشنهاد کارشناس، و تارگت ماهانهٔ تأییدشدهٔ مدیر (target_amount).
+	// فروش واقعی ماه از فاکتورهای CRM پر می‌شود (فعلا null).
+	ProposedTarget *int64   `json:"proposed_target"`
+	TargetAmount   *int64   `json:"target_amount"`
+	SalesAmount    *float64 `json:"sales_amount"`
 	// اجازه‌های کاربر جاری روی همین ردیف (تا دکمه‌ها در صفحه درست نشان داده شوند)
 	CanEdit     bool `json:"can_edit"`
 	CanDelete   bool `json:"can_delete"`
@@ -118,6 +120,8 @@ type ucrmCustomerIn struct {
 	RepName    string   `json:"rep_name"` // فقط اکسل: نام کارشناس
 	Phones     []string `json:"phones"`
 	Resubmit   bool     `json:"resubmit"` // ویرایش مشتری ردشده + ارسال دوباره برای تأیید
+	// تارگت ماهانه (تومان، ۰ = بدون تارگت). کارشناس → پیشنهاد؛ مدیر روی مشتری تأییدشده → تارگت ماهانه
+	Target int64 `json:"target"`
 }
 
 func (c *ucrmCustomerIn) normalize() {
@@ -205,6 +209,9 @@ func validateUcrmCustomer(in ucrmCustomerIn) string {
 			return "شماره تماس «" + p + "» معتبر نیست."
 		}
 	}
+	if in.Target < 0 || in.Target > 1_000_000_000_000_000 {
+		return "تارگت ماهانه معتبر نیست."
+	}
 	if in.NationalID != "" {
 		if in.Type == "individual" && !validNationalCode(in.NationalID) {
 			return "کد ملی معتبر نیست."
@@ -268,6 +275,27 @@ func (s *server) ucrmNationalIDTaken(nid string, exclude int64) string {
 		WHERE organization_id = ? AND is_deleted = 0 AND national_id = ? AND id <> ? LIMIT 1`,
 		ucrmOrg, nid, exclude).Scan(&name)
 	return name
+}
+
+// nullIfZeroIf: فقط وقتی cond درست است مقدار را می‌نویسد، وگرنه NULL (nullIfZero در stock.go)
+func nullIfZeroIf(v int64, cond bool) any {
+	if !cond {
+		return nil
+	}
+	return nullIfZero(v)
+}
+
+// faMoney: ۵۰۰۰۰۰۰۰ → «۵۰,۰۰۰,۰۰۰» (رقم فارسی + جداکنندهٔ هزارگان)، برای متن تاریخچه
+func faMoney(n int64) string {
+	d := strconv.FormatInt(n, 10)
+	var b strings.Builder
+	for i, r := range d {
+		if i > 0 && (len(d)-i)%3 == 0 {
+			b.WriteRune(',')
+		}
+		b.WriteRune('۰' + (r - '0'))
+	}
+	return b.String()
 }
 
 func savePhones(tx *sql.Tx, customerID int64, phones []string) error {
@@ -349,7 +377,7 @@ func (s *server) ucrmReps(w http.ResponseWriter, r *http.Request) {
 
 const ucrmSelect = `
 	SELECT c.id, c.type, c.name, COALESCE(c.national_id,''), COALESCE(c.province,''), COALESCE(c.city,''),
-	       COALESCE(c.address,''), COALESCE(c.note,''), COALESCE(c.rep_id,0),
+	       COALESCE(c.address,''), COALESCE(c.note,''), c.proposed_target, c.monthly_target, COALESCE(c.rep_id,0),
 	       TRIM(CONCAT(COALESCE(u.first_name,''), ' ', COALESCE(u.last_name,''))),
 	       c.status, COALESCE(c.rejected_stage,''), COALESCE(c.reject_reason,''), c.source,
 	       c.last_followup_at, COALESCE(c.created_by,0), c.created_at
@@ -360,8 +388,15 @@ func scanUcrm(sc interface{ Scan(...any) error }) (ucrmCustomerOut, error) {
 	var c ucrmCustomerOut
 	var lf sql.NullTime
 	var created time.Time
-	err := sc.Scan(&c.ID, &c.Type, &c.Name, &c.NationalID, &c.Province, &c.City, &c.Address, &c.Note,
+	var pt, mt sql.NullInt64
+	err := sc.Scan(&c.ID, &c.Type, &c.Name, &c.NationalID, &c.Province, &c.City, &c.Address, &c.Note, &pt, &mt,
 		&c.RepID, &c.RepName, &c.Status, &c.RejectedStage, &c.RejectReason, &c.Source, &lf, &c.CreatedBy, &created)
+	if pt.Valid {
+		c.ProposedTarget = &pt.Int64
+	}
+	if mt.Valid {
+		c.TargetAmount = &mt.Int64
+	}
 	c.LastFollowupAt = fmtTime(lf)
 	c.CreatedAt = created.Format("2006-01-02 15:04:05")
 	c.Phones = []string{}
@@ -534,10 +569,13 @@ func (s *server) ucrmCreateCustomer(w http.ResponseWriter, r *http.Request) {
 	var evs []int64 // رویدادهای این درخواست → اعلان بعد از commit
 	res, err := tx.Exec(`
 		INSERT INTO ucrm_customers
-		  (organization_id, type, name, national_id, province, city, address, note, rep_id, status, source, created_by)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'manual', ?)`,
+		  (organization_id, type, name, national_id, province, city, address, note, proposed_target, monthly_target,
+		   rep_id, status, source, created_by)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'manual', ?)`,
 		ucrmOrg, in.Type, in.Name, nullIfEmpty(in.NationalID), nullIfEmpty(in.Province), nullIfEmpty(in.City),
-		nullIfEmpty(in.Address), nullIfEmpty(in.Note), in.RepID, status, uid)
+		nullIfEmpty(in.Address), nullIfEmpty(in.Note), nullIfZero(in.Target),
+		// مدیر خودش ثبت کرده → مرحلهٔ مدیر ندارد، پس پیشنهادش همان تارگت ماهانه است
+		nullIfZeroIf(in.Target, ro.Manager), in.RepID, status, uid)
 	if err != nil {
 		writeDBErr(w, "ucrmCreate insert", err)
 		return
@@ -624,12 +662,18 @@ func (s *server) ucrmUpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 	var evs []int64 // رویدادهای این درخواست → اعلان بعد از commit
+	// تارگت: مدیر روی مشتریِ ردشدهٔ مرحلهٔ مدیر گذشته → «تارگت ماهانه»؛ بقیه → «پیشنهاد»
+	targetCol := "proposed_target"
+	if ro.Manager && cur.Status != ucStPendingManager && !(cur.Status == ucStRejected && cur.RejectedStage == "manager") {
+		targetCol = "monthly_target"
+	}
 	if _, err := tx.Exec(`
 		UPDATE ucrm_customers
-		SET type = ?, name = ?, national_id = ?, province = ?, city = ?, address = ?, note = ?, rep_id = ?, status = ?
+		SET type = ?, name = ?, national_id = ?, province = ?, city = ?, address = ?, note = ?, rep_id = ?, status = ?,
+		    `+targetCol+` = ?
 		WHERE id = ?`,
 		in.Type, in.Name, nullIfEmpty(in.NationalID), nullIfEmpty(in.Province), nullIfEmpty(in.City),
-		nullIfEmpty(in.Address), nullIfEmpty(in.Note), in.RepID, status, cur.ID); err != nil {
+		nullIfEmpty(in.Address), nullIfEmpty(in.Note), in.RepID, status, nullIfZero(in.Target), cur.ID); err != nil {
 		writeDBErr(w, "ucrmUpdate", err)
 		return
 	}
@@ -668,9 +712,14 @@ func (s *server) ucrmApprove(w http.ResponseWriter, r *http.Request) {
 	uid := userOf(r.Context()).ID
 	ro := s.ucrmRolesOf(uid)
 	var body struct {
-		RepID int64 `json:"rep_id"`
+		RepID  int64  `json:"rep_id"`
+		Target *int64 `json:"target"` // فقط مرحلهٔ مدیر: تارگت ماهانه (تومان)؛ خالی = همان پیشنهاد کارشناس
 	}
 	if !decodeJSON(w, r, &body, 1<<16) {
+		return
+	}
+	if body.Target != nil && (*body.Target < 0 || *body.Target > 1_000_000_000_000_000) {
+		writeErr(w, http.StatusBadRequest, "تارگت ماهانه معتبر نیست.")
 		return
 	}
 	cur, err := s.ucrmLoad(idParam(r), uid, ro)
@@ -707,12 +756,22 @@ func (s *server) ucrmApprove(w http.ResponseWriter, r *http.Request) {
 			repID = body.RepID
 			evs = append(evs, s.ucrmEvent(tx, cur.ID, uid, "rep_changed", actor+" کارشناس فروش را از «"+cur.RepName+"» به «"+s.userName(repID)+"» تغییر داد."))
 		}
-		if _, err := tx.Exec("UPDATE ucrm_customers SET status = ?, rep_id = ?, rejected_stage = NULL, reject_reason = NULL WHERE id = ?",
-			next, repID, cur.ID); err != nil {
+		var target int64
+		if body.Target != nil {
+			target = *body.Target
+		} else if cur.ProposedTarget != nil {
+			target = *cur.ProposedTarget
+		}
+		if _, err := tx.Exec("UPDATE ucrm_customers SET status = ?, rep_id = ?, monthly_target = ?, rejected_stage = NULL, reject_reason = NULL WHERE id = ?",
+			next, repID, nullIfZero(target), cur.ID); err != nil {
 			writeDBErr(w, "ucrmApprove", err)
 			return
 		}
-		evs = append(evs, s.ucrmEvent(tx, cur.ID, uid, "manager_approved", actor+" (مدیر) مشتری «"+cur.Name+"» را با کارشناس فروش «"+s.userName(repID)+"» تأیید کرد و برای حسابداری فرستاد."))
+		tgt := " و بدون تارگت ماهانه"
+		if target > 0 {
+			tgt = " و تارگت ماهانهٔ " + faMoney(target) + " تومان"
+		}
+		evs = append(evs, s.ucrmEvent(tx, cur.ID, uid, "manager_approved", actor+" (مدیر) مشتری «"+cur.Name+"» را با کارشناس فروش «"+s.userName(repID)+"»"+tgt+" تأیید کرد و برای حسابداری فرستاد."))
 		msg = "تأیید شد و برای حسابداری ارسال شد."
 	} else {
 		next = ucStActive
@@ -944,10 +1003,10 @@ func (s *server) ucrmImport(w http.ResponseWriter, r *http.Request) {
 		}
 		res, err := tx.Exec(`
 			INSERT INTO ucrm_customers
-			  (organization_id, type, name, national_id, province, city, address, note, rep_id, status, source, created_by)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'excel', ?)`,
+			  (organization_id, type, name, national_id, province, city, address, note, proposed_target, rep_id, status, source, created_by)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'excel', ?)`,
 			ucrmOrg, row.Type, row.Name, nullIfEmpty(row.NationalID), nullIfEmpty(row.Province), nullIfEmpty(row.City),
-			nullIfEmpty(row.Address), nullIfEmpty(row.Note), rep, ucStPendingManager, uid)
+			nullIfEmpty(row.Address), nullIfEmpty(row.Note), nullIfZero(row.Target), rep, ucStPendingManager, uid)
 		if err != nil {
 			writeDBErr(w, "ucrmImport insert", err)
 			return

@@ -34,6 +34,9 @@ try {
 
     $database = new Database();
     $db = $database->getConnection();
+    // 🆕 تسک‌های CRM (تأیید/اصلاح مشتری) فقط از صفحهٔ CRM تصمیم می‌گیرند — includes/ucrm_tasks.php
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ucrm_tasks.php';
+    ucrmGuardTaskAction($db, $input['task_id']);
     $taskManager = new TaskManager($db);
 
     $task = $taskManager->getTask($input['task_id']);

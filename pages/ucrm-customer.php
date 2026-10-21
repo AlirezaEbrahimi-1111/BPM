@@ -29,7 +29,8 @@ $__cid = (int) ($_GET['id'] ?? 0);
 <body>
     <?php include 'header.php'; ?>
 
-    <div class="overview-container" style="margin-top:70px">
+    <!-- چیدمان و اندازهٔ کادر صفحه هم‌شکل pages/tasks.php (همهٔ صفحه‌های CRM) -->
+    <div class="overview-container">
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
                 <h1><i class="bi bi-person-vcard"></i> جزئیات مشتری</h1>
@@ -90,6 +91,8 @@ $__cid = (int) ($_GET['id'] ?? 0);
                         ${kv('کارشناس فروش', c.rep_name ? esc(c.rep_name) : none)}
                         ${kv('استان / شهر', [c.province, c.city].filter(Boolean).map(esc).join(' / ') || none)}
                         ${kv('آدرس', c.address ? esc(c.address) : none)}
+                        ${kv('تارگت ماهانه', c.target_amount ? UCRM.money(c.target_amount) + ' تومان' :
+                            (c.proposed_target ? 'پیشنهاد کارشناس: ' + UCRM.money(c.proposed_target) + ' تومان' : none))}
                         ${kv('وضعیت تارگت ماه', UCRM.targetBadge(c, d.settings))}
                         ${kv('آخرین پیگیری', UCRM.lastFollowup(c.last_followup_at))}
                         ${kv('توضیحات', c.note ? esc(c.note) : none)}

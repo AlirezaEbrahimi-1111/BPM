@@ -27,45 +27,57 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
     <script src="<?= asset('../assets/js/cdn/xlsx.full.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/iran-id-validate.js') ?>"></script>
     <script src="<?= asset('../../assets/js/iran-provinces.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/ucrm.css') ?>">
 </head>
 
-<body class="uc-list">
+<body>
     <?php include 'header.php'; ?>
 
-    <div class="overview-container container-full" style="margin-top:70px">
+    <!-- چیدمان و اندازهٔ کادر صفحه هم‌شکل pages/tasks.php -->
+    <div class="overview-container">
 
         <div class="filters-wrapper two-col">
             <div class="filters-title-col">
                 <h1><i class="bi bi-person-lines-fill"></i> مشتریان CRM</h1>
                 <p>بانک مشتریان، کارشناس فروش مسئول و وضعیت تارگت ماه جاری</p>
             </div>
+
+            <div style="flex: 1;">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="crmSearch" placeholder="جستجو در نام، شماره تماس، کد ملی، کارشناس یا آدرس">
+                </div>
+                <div class="filters-row">
+                    <div class="filter-item uc-st">
+                        <select id="stFilter" title="وضعیت">
+                            <option value="">همهٔ وضعیت‌ها</option>
+                            <option value="mine">در انتظار تأیید من</option>
+                            <option value="pending_manager">در انتظار مدیر</option>
+                            <option value="pending_accounting">در انتظار حسابداری</option>
+                            <option value="rejected">رد شده</option>
+                            <option value="active">فعال</option>
+                        </select>
+                    </div>
+                    <div class="uc-actions">
+                        <?php if ($__ucrmRoles['manager'] || $__ucrmRoles['sales']): /* حسابداری فقط تأیید می‌کند، ثبت نه */ ?>
+                            <button class="btn btn-link btn-sm" id="btnTemplate" type="button">دریافت الگوی اکسل</button>
+                            <button class="btn btn-outline-secondary" id="btnImport"><i class="bi bi-file-earmark-spreadsheet ms-1"></i> بارگذاری از اکسل</button>
+                            <button class="btn btn-primary" id="btnAdd"><i class="bi bi-plus-lg ms-1"></i> مشتری جدید</button>
+                        <?php endif; ?>
+                        <?php if ($__ucrmRoles['manager']): ?>
+                            <button class="btn btn-outline-secondary" id="btnSettings" title="تنظیمات CRM"><i class="bi bi-gear"></i></button>
+                        <?php endif; ?>
+                        <input type="file" id="excelFile" accept=".xlsx,.xls" hidden>
+                    </div>
+                </div>
+                <div id="importResult"></div>
+            </div>
         </div>
 
-        <div class="crm-toolbar">
-            <input type="text" id="crmSearch" class="form-control crm-search" placeholder="جست‌وجو در نام، شماره تماس، کد ملی، کارشناس…">
-            <select id="stFilter" class="form-select crm-status-filter" title="وضعیت">
-                <option value="">همهٔ وضعیت‌ها</option>
-                <option value="mine">در انتظار تأیید من</option>
-                <option value="pending_manager">در انتظار مدیر</option>
-                <option value="pending_accounting">در انتظار حسابداری</option>
-                <option value="rejected">رد شده</option>
-                <option value="active">فعال</option>
-            </select>
-            <div class="spacer"></div>
-            <?php if ($__ucrmRoles['manager'] || $__ucrmRoles['sales']): /* حسابداری فقط تأیید می‌کند، ثبت نه */ ?>
-                <button class="btn btn-primary" id="btnAdd"><i class="bi bi-plus-lg ms-1"></i> مشتری جدید</button>
-                <button class="btn btn-outline-secondary" id="btnImport"><i class="bi bi-file-earmark-spreadsheet ms-1"></i> بارگذاری از اکسل</button>
-                <button class="btn btn-link btn-sm" id="btnTemplate" type="button">دریافت الگوی اکسل</button>
-            <?php endif; ?>
-            <?php if ($__ucrmRoles['manager']): ?>
-                <button class="btn btn-outline-secondary" id="btnSettings" title="تنظیمات CRM"><i class="bi bi-gear"></i></button>
-            <?php endif; ?>
-            <input type="file" id="excelFile" accept=".xlsx,.xls" hidden>
-        </div>
-        <div id="importResult"></div>
+        <!-- Table -->
+        <div id="ucrmGrid" class="ag-theme-alpine inv-grid" style="height: 620px; width: 100%; padding-top: 1rem;"></div>
 
-        <div id="ucrmGrid" class="ag-theme-alpine grid-fill inv-grid" style="width:100%;"></div>
     </div>
 
     <!-- افزودن / ویرایش مشتری — دو حالت: تعریف دستی، انتخاب از حسابداری -->
@@ -134,6 +146,11 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                                 <div class="form-text" id="repHint"></div>
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label" id="lblTarget">تارگت ماهانهٔ پیشنهادی (تومان)</label>
+                                <input type="text" class="form-control" id="f_target" placeholder="مثلا ۵۰,۰۰۰,۰۰۰ — با * سه صفر اضافه می‌شود" autocomplete="off">
+                                <div class="form-text" id="targetHint">مدیر هنگام تأیید، تارگت نهایی را تعیین می‌کند.</div>
+                            </div>
+                            <div class="col-12">
                                 <label class="form-label">توضیحات / یادداشت اولیه</label>
                                 <textarea class="form-control" id="f_note" rows="2" placeholder="توضیحات اولیه را وارد کنید"></textarea>
                             </div>
@@ -261,7 +278,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             if (d.can_resubmit) h += `<button class="ag-action-btn edit" title="اصلاح و ارسال دوباره" onclick="openEdit(${d.id}, true)"><i class="bi bi-arrow-repeat"></i></button>`;
             else if (d.can_edit) h += `<button class="ag-action-btn edit" title="ویرایش" onclick="openEdit(${d.id})"><i class="bi bi-pencil"></i></button>`;
             if (d.can_delete) h += `<button class="ag-action-btn del" title="${d.status === 'active' || ROLES.manager ? 'حذف' : 'انصراف از درخواست (حذف)'}" onclick="removeRow(${d.id})"><i class="bi bi-trash"></i></button>`;
-            return h || '<span class="text-muted small">بدون عملیات</span>';
+            return h;
         }
 
         const colDefs = [{
@@ -275,26 +292,27 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 headerName: 'نام مشتری',
                 field: 'name',
                 flex: 2,
-                minWidth: 180,
+                minWidth: 130,
                 cellRenderer: p => `<span class="uc-name">${esc(p.value)}</span>`
             },
             {
                 headerName: 'کارشناس فروش',
                 field: 'rep_name',
-                width: 150,
+                flex: 1,
+                minWidth: 125,
                 cellRenderer: p => p.value ? esc(p.value) : '<span class="text-muted">تعیین نشده</span>'
             },
             {
                 headerName: 'وضعیت',
                 field: 'status',
-                width: 150,
+                width: 140,
                 valueFormatter: p => UCRM.STATUS_LABEL[p.value] || '',
                 cellRenderer: p => UCRM.statusBadge(p.data)
             },
             {
                 headerName: 'وضعیت تارگت',
                 colId: 'target',
-                width: 150,
+                width: 115,
                 sortable: true,
                 filter: false,
                 valueGetter: p => UCRM.targetPct(p.data),
@@ -303,32 +321,33 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             {
                 headerName: 'آخرین پیگیری',
                 field: 'last_followup_at',
-                width: 130,
+                width: 105,
                 filter: false,
                 cellRenderer: p => UCRM.lastFollowup(p.value)
             },
             {
                 headerName: 'شماره تماس',
                 colId: 'phones',
-                width: 160,
+                width: 130,
                 valueGetter: p => (p.data.phones || []).join(' '),
                 cellRenderer: p => UCRM.phonesCell(p.data.phones)
             },
             {
                 headerName: 'آدرس',
                 colId: 'address',
-                flex: 2,
-                minWidth: 180,
+                flex: 1,
+                minWidth: 100,
                 valueGetter: p => UCRM.fullAddress(p.data),
                 cellRenderer: p => p.value ? `<span title="${esc(p.value)}">${esc(p.value)}</span>` : '<span class="text-muted">ثبت نشده</span>'
             },
             {
                 headerName: 'عملیات',
                 colId: 'actions',
-                width: 175,
+                width: 80,
                 sortable: false,
                 filter: false,
-                cellRenderer: actionCell
+                // منوی «⋮» مشترک پروژه (assets/js/ag-grid-fa.js) — مثل فهرست فاکتورها
+                cellRenderer: AgGridFa.actionMenuCell(actionCell)
             },
         ];
 
@@ -455,6 +474,16 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 'توجه: پس از ثبت، درخواست تخصیص مشتری به کارتابل مدیر ارسال می‌شود.';
         }
 
+        // مدیر روی مشتری‌ای که از مرحلهٔ مدیر گذشته → «تارگت ماهانه» (همان که تأیید شده)؛ بقیه → «پیشنهادی»
+        function targetMode(r) {
+            const monthly = ROLES.manager && r && r.status !== 'pending_manager' &&
+                !(r.status === 'rejected' && r.rejected_stage === 'manager');
+            document.getElementById('lblTarget').textContent = monthly ? 'تارگت ماهانه (تومان)' : 'تارگت ماهانهٔ پیشنهادی (تومان)';
+            document.getElementById('targetHint').textContent = monthly ? 'تارگت ماهانهٔ تأییدشدهٔ این مشتری.' :
+                (ROLES.manager && !r ? 'چون خودتان ثبت می‌کنید، همین عدد تارگت ماهانه می‌شود.' : 'مدیر هنگام تأیید، تارگت نهایی را تعیین می‌کند.');
+            UCRM.setMoney(document.getElementById('f_target'), monthly ? (r.target_amount || 0) : ((r && r.proposed_target) || 0));
+        }
+
         function resetForm() {
             document.getElementById('custForm').reset();
             document.getElementById('custModalAlert').innerHTML = '';
@@ -480,6 +509,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 sel.disabled = true;
                 document.getElementById('repHint').textContent = 'نام شما به‌عنوان کارشناس ثبت می‌شود؛ مدیر هنگام تأیید می‌تواند عوضش کند.';
             }
+            targetMode(null);
             document.getElementById('custModalTitle').textContent = 'افزودن و انتساب مشتری جدید';
             document.querySelector('#btnSave span').textContent = 'ثبت و ارسال درخواست';
             document.getElementById('btnSave').dataset.resubmit = '';
@@ -501,6 +531,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             IranProvinces.setValue(document.getElementById('f_province'), document.getElementById('f_city'), r.province, r.city);
             document.getElementById('f_address').value = r.address || '';
             document.getElementById('f_note').value = r.note || '';
+            targetMode(r);
             phones = (r.phones || []).slice();
             renderPhones();
             const sel = document.getElementById('f_rep');
@@ -538,6 +569,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 address: document.getElementById('f_address').value.trim(),
                 note: document.getElementById('f_note').value.trim(),
                 rep_id: +document.getElementById('f_rep').value || 0,
+                target: UCRM.moneyVal(document.getElementById('f_target')),
                 phones: phones.slice(),
             };
             const missing = [];
@@ -699,19 +731,20 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
         }
 
         // ── اکسل ──
-        const XL_COLS = ['نوع', 'نام', 'شماره تماس', 'کد / شناسه ملی', 'استان', 'شهر', 'آدرس', 'کارشناس فروش', 'توضیحات'];
+        const XL_COLS = ['نوع', 'نام', 'شماره تماس', 'کد / شناسه ملی', 'استان', 'شهر', 'آدرس', 'کارشناس فروش', 'تارگت ماهانه پیشنهادی (تومان)', 'توضیحات'];
         const XL_MAP = {
             'نوع': 'type', 'نام': 'name', 'نام مشتری': 'name', 'شماره تماس': 'phones', 'تلفن': 'phones', 'موبایل': 'phones',
             'کد / شناسه ملی': 'national_id', 'کد/شناسه ملی': 'national_id', 'کد ملی': 'national_id', 'شناسه ملی': 'national_id',
             'استان': 'province', 'شهر': 'city', 'آدرس': 'address', 'کارشناس فروش': 'rep_name', 'کارشناس': 'rep_name', 'توضیحات': 'note',
+            'تارگت ماهانه پیشنهادی (تومان)': 'target', 'تارگت ماهانه پیشنهادی': 'target', 'تارگت': 'target',
         };
 
         function downloadTemplate() {
             const ws = XLSX.utils.aoa_to_sheet([
                 XL_COLS,
-                ['حقوقی', 'شرکت نمونه', '02122223333، 09121234567', '', 'تهران', 'تهران', 'خیابان نمونه، پلاک ۱', ROLES.manager ? 'نام و نام خانوادگی کارشناس' : '', ''],
+                ['حقوقی', 'شرکت نمونه', '02122223333، 09121234567', '', 'تهران', 'تهران', 'خیابان نمونه، پلاک ۱', ROLES.manager ? 'نام و نام خانوادگی کارشناس' : '', 50000000, ''],
             ]);
-            ws['!cols'] = XL_COLS.map((c, i) => ({ wch: [8, 28, 28, 16, 14, 14, 36, 24, 24][i] }));
+            ws['!cols'] = XL_COLS.map((c, i) => ({ wch: [8, 28, 28, 16, 14, 14, 36, 24, 26, 24][i] }));
             const wb = XLSX.utils.book_new();
             wb.Workbook = { Views: [{ RTL: true }] };
             XLSX.utils.book_append_sheet(wb, ws, 'مشتریان');
@@ -745,6 +778,8 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                                     if (p.length === 10 && p[0] !== '0') p = '0' + p; // 9121234567 → 09121234567
                                     if (p) o.phones.push(p);
                                 });
+                            } else if (key === 'target') {
+                                o.target = parseInt(UCRM.toEn(v).replace(/\D/g, ''), 10) || 0;
                             } else o[key] = v;
                         }
                         if (o.national_id) {
@@ -786,6 +821,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             setModal = new bootstrap.Modal(document.getElementById('setModal'));
 
             IranProvinces.bind(document.getElementById('f_province'), document.getElementById('f_city'));
+            UCRM.bindMoney(document.getElementById('f_target'));
             if (window.IranId) IranId.attachLive({ type: document.getElementById('f_type'), national: document.getElementById('f_national_id') });
 
             document.querySelectorAll('#typeSeg .uc-seg-btn').forEach(b => b.addEventListener('click', () => setType(b.dataset.type)));
@@ -831,7 +867,15 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             } catch (e) {
                 showToast(e.message || 'خطا در بارگذاری کارشناسان', 'error');
             }
-            loadAll();
+            await loadAll();
+            // از تسک «اصلاح مشتری» (ucrm-approval.php): ?edit=ID&resubmit=1 → فرم اصلاح خودکار باز شود
+            const qp = new URLSearchParams(location.search);
+            const eid = +qp.get('edit');
+            if (eid) {
+                const r = allRows.find(x => x.id === eid);
+                if (r && (r.can_resubmit || r.can_edit)) openEdit(eid, qp.get('resubmit') === '1' && r.can_resubmit);
+                history.replaceState(null, '', location.pathname);
+            }
         });
     </script>
 </body>
