@@ -153,9 +153,9 @@ const QuickAdd = (() => {
             { name: 'type', label: 'نوع', type: 'select', col: 4, options: [{ v: 'legal', t: 'حقوقی (شرکت)' }, { v: 'individual', t: 'حقیقی (شخص)' }] },
             { name: 'name', label: 'نام', required: true, col: 8 },
             { name: 'national_id', label: 'شناسه / کد ملی', required: true, col: 6, attr: 'inputmode="numeric" autocomplete="off"' },
-            { name: 'economic_code', label: 'شماره اقتصادی', col: 6, attr: 'inputmode="numeric"' },
+            { name: 'economic_code', label: 'شماره اقتصادی', col: 6, attr: 'inputmode="numeric" autocomplete="off"' },
             { name: 'postal_code', label: 'کد پستی', required: true, col: 6, attr: 'inputmode="numeric" autocomplete="off"' },
-            { name: 'phone', label: 'تلفن', col: 6, attr: 'inputmode="numeric"' },
+            { name: 'phone', label: 'تلفن', col: 6, attr: 'inputmode="numeric" autocomplete="off"' },
             { name: 'address', label: 'آدرس', type: 'textarea' },
         ], async d => {
             const body = {
@@ -178,10 +178,10 @@ const QuickAdd = (() => {
     function supplier(onDone) {
         open('تأمین‌کننده سریع', 'bi-truck', [
             { name: 'name', label: 'نام', required: true },
-            { name: 'phone', label: 'تلفن', col: 6, attr: 'inputmode="numeric"' },
-            { name: 'mobile', label: 'موبایل', col: 6, attr: 'inputmode="numeric"' },
+            { name: 'phone', label: 'تلفن', col: 6, attr: 'inputmode="numeric" autocomplete="off"' },
+            { name: 'mobile', label: 'موبایل', col: 6, attr: 'inputmode="numeric" autocomplete="off"' },
             { name: 'national_id', label: 'کد / شناسه ملی', col: 6, attr: 'inputmode="numeric" autocomplete="off"' },
-            { name: 'economic_code', label: 'شماره اقتصادی', col: 6, attr: 'inputmode="numeric"' },
+            { name: 'economic_code', label: 'شماره اقتصادی', col: 6, attr: 'inputmode="numeric" autocomplete="off"' },
             { name: 'address', label: 'آدرس', type: 'textarea' },
         ], async d => {
             const body = {
@@ -197,7 +197,7 @@ const QuickAdd = (() => {
 
     function product(onDone) {
         open('کالای سریع', 'bi-box-seam', [
-            { name: 'code', label: 'کد کالا', required: true, col: 4, attr: 'inputmode="numeric"' },
+            { name: 'code', label: 'کد کالا', required: true, col: 4, attr: 'inputmode="numeric" autocomplete="off"' },
             { name: 'name', label: 'نام کالا', required: true, col: 8 },
             { name: 'unit', label: 'واحد', col: 4, attr: 'placeholder="عدد"' },
             { name: 'unit_price', label: 'قیمت واحد (ریال)', required: true, col: 4, attr: 'inputmode="numeric" data-money' },
@@ -227,7 +227,7 @@ const QuickAdd = (() => {
     function partner(onDone) {
         open('همکار سریع', 'bi-people', [
             { name: 'name', label: 'نام', required: true },
-            { name: 'phone', label: 'تلفن (اختیاری)', attr: 'inputmode="numeric"' },
+            { name: 'phone', label: 'تلفن (اختیاری)', attr: 'inputmode="numeric" autocomplete="off"' },
         ], async d => {
             const body = { name: d.name, phone: toEn(d.phone) };
             const res = await post('/inv/partners', body);

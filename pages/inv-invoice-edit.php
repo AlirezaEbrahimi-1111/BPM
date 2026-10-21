@@ -623,7 +623,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="idx text-center"></td>
-                <td><input class="it-prod-name" list="prodNameList" autocomplete="off" dir="auto" placeholder="نام کالا را تایپ کنید"></td>
+                <td><input class="it-prod-name" list="prodNameList" dir="auto" placeholder="نام کالا را تایپ کنید"></td>
                 <td class="col-qty"><input class="it-qty" inputmode="decimal" value="۱"></td>
                 <td class="col-price"><input class="it-price" inputmode="numeric" value="۰"></td>
                 <td class="col-disc"><input class="it-disc" inputmode="numeric" value="۰"></td>

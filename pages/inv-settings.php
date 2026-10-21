@@ -122,15 +122,15 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     </div>
                     <div>
                         <label class="form-label">شماره اقتصادی</label>
-                        <input type="text" class="form-control" id="s_economic_code">
+                        <input type="text" class="form-control" id="s_economic_code" autocomplete="off">
                     </div>
                     <div>
                         <label class="form-label">شماره ثبت</label>
-                        <input type="text" class="form-control" id="s_reg_number">
+                        <input type="text" class="form-control" id="s_reg_number" autocomplete="off">
                     </div>
                     <div>
                         <label class="form-label">کد شعبه <span class="text-muted small">(سامانه مودیان — بعدا)</span></label>
-                        <input type="text" class="form-control" id="s_branch_code">
+                        <input type="text" class="form-control" id="s_branch_code" autocomplete="off">
                     </div>
                     <div>
                         <label class="form-label">استان</label>
@@ -150,7 +150,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     </div>
                     <div>
                         <label class="form-label">تلفن / نمابر</label>
-                        <input type="text" class="form-control" id="s_phone">
+                        <input type="text" class="form-control" id="s_phone" autocomplete="off">
                     </div>
                     <div style="grid-column:1/-1">
                         <label class="form-label">نشانی کامل</label>
@@ -158,11 +158,11 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     </div>
                     <div>
                         <label class="form-label">شماره شبا</label>
-                        <input type="text" class="form-control" id="s_iban" placeholder="IR...">
+                        <input type="text" class="form-control" id="s_iban" autocomplete="off" placeholder="IR...">
                     </div>
                     <div>
                         <label class="form-label">شماره کارت</label>
-                        <input type="text" class="form-control" id="s_card_number">
+                        <input type="text" class="form-control" id="s_card_number" autocomplete="off">
                     </div>
                     <div>
                         <label class="form-label">نام بانک</label>

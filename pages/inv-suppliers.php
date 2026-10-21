@@ -155,11 +155,11 @@ $canWrite = true;
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">تلفن</label>
-                                <input type="text" class="form-control" id="f_phone">
+                                <input type="text" class="form-control" id="f_phone" autocomplete="off">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">موبایل</label>
-                                <input type="text" class="form-control" id="f_mobile">
+                                <input type="text" class="form-control" id="f_mobile" autocomplete="off">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">کد / شناسه ملی</label>
@@ -167,7 +167,7 @@ $canWrite = true;
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">شماره اقتصادی</label>
-                                <input type="text" class="form-control" id="f_economic_code">
+                                <input type="text" class="form-control" id="f_economic_code" autocomplete="off">
                             </div>
                             <div class="col-12">
                                 <label class="form-label">آدرس</label>

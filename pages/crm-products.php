@@ -207,7 +207,7 @@ $canWrite = true;
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label class="form-label">کد کالا <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="f_code" required>
+                                <input type="text" class="form-control" id="f_code" autocomplete="off" required>
                             </div>
                             <div class="col-md-8">
                                 <label class="form-label">نام کالا <span class="text-danger">*</span></label>
