@@ -903,7 +903,8 @@ foreach ($all_requests as $req) {
                     list($__ljy, $__ljm) = gregorianToJalaliCalc((int) $__m[1], (int) $__m[2], (int) $__m[3]);
                     if ($__ljy == $j_y && $__ljm == $j_m) {
                         $can_delete = true;
-                        $delete_burns_quota = true;
+                        // فقط مرخصیِ تأیید نهایی‌شده سهمیه را می‌سوزاند؛ قبل از آن سهمیه برمی‌گردد
+                        $delete_burns_quota = ($status === 'approved');
                     }
                 }
             }

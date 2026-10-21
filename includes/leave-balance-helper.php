@@ -116,8 +116,35 @@ function ensureMonthlyLeaveAccrual(PDO $db, int $userId): void {
     $guard  = 0;
     while ($cursor < $currentYm && ++$guard < 240) {
         $cursor = nextJalaliPeriod($cursor);
+        resetLeaveDeficitBeforeAccrual($db, $userId, $cursor);
         insertLeaveAccrual($db, $userId, $cursor, $accrualMinutes);
     }
+}
+
+/**
+ * قانون (۱۴۰۵/۰۷/۳۰): «کسری» سهمیهٔ یک ماه به ماه بعد منتقل نمی‌شود؛ فقط «اضافه» منتقل می‌شود.
+ * پیش از تعلق ماه جدید، اگر موجودی منفی است، یک تراکنش اصلاحی آن را صفر می‌کند (کسری در
+ * گزارش/حقوقِ همان ماه خودش دیده و حساب شده). چیزی پاک نمی‌شود — ردش در تاریخچه می‌ماند.
+ * نوع manual_adjustment است (ستون type یک ENUM است) با یادداشت روشن و period_ym همان ماه.
+ */
+function resetLeaveDeficitBeforeAccrual(PDO $db, int $userId, string $periodYm): void {
+    // اگر تعلق این ماه قبلا ثبت شده، کاری نکن (اجرای تکراری/هم‌زمان)
+    $stmt = $db->prepare("
+        SELECT id FROM leave_balance_transactions
+        WHERE user_id = ? AND type = 'monthly_accrual' AND period_ym = ?
+    ");
+    $stmt->execute([$userId, $periodYm]);
+    if ($stmt->fetch()) return;
+
+    $balance = getLeaveBalance($db, $userId);
+    if ($balance >= 0) return;
+
+    $stmt = $db->prepare("
+        INSERT INTO leave_balance_transactions (user_id, type, amount, period_ym, note)
+        VALUES (?, 'manual_adjustment', ?, ?, ?)
+    ");
+    $stmt->execute([$userId, -$balance, $periodYm,
+        'صفر شدن کسری سهمیهٔ ماه قبل (' . formatMinutesHM($balance) . ') — کسری به ماه بعد منتقل نمی‌شود']);
 }
 
 function insertLeaveAccrual(PDO $db, int $userId, string $periodYm, int $minutes): void {
