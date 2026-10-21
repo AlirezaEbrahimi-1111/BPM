@@ -16,6 +16,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php'; // isSuper
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/leave-balance-helper.php'; // jalaliPeriodKey()
+require_once $_SERVER['DOCUMENT_ROOT'] . '/attendance_system/includes/request-supervisor-helper.php';
 
 try {
     $database = new Database();
@@ -89,12 +90,13 @@ try {
     $me = $me_stmt->fetch(PDO::FETCH_ASSOC) ?: [];
     $is_supervisor_user = !empty($me) && (isSuperAdmin($me) || ($me['role'] ?? '') === 'supervisor');
 
-    if ($is_supervisor_user && in_array($request_type, ['mission', 'forget', 'technical'], true)) {
+    // مسئول: همهٔ انواع درخواست (از ۱۴۰۵/۰۷/۳۰ مرخصی و پاس هم) در هر مرحله، ماه جاری
+    if ($is_supervisor_user && in_array($request_type, ['mission', 'forget', 'technical', 'leave', 'pass'], true)) {
         $own_org_stmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
         $own_org_stmt->execute([$owner_id]);
-        $same_org = ((int) $own_org_stmt->fetchColumn() === (int) ($me['organization_id'] ?? 0));
+        $same_org = ((int) $own_org_stmt->fetchColumn() === (int) ($me['organization_id'] ?? 0)) || isSuperAdmin($me);
         if ($same_org) {
-            $req_date = substr($request['start_date'] ?? '', 0, 10);
+            $req_date = substr($request['start_date'] ?? ($request['pass_date'] ?? ''), 0, 10);
             if ($req_date !== '' && jalaliPeriodKey($req_date) === jalaliPeriodKey(date('Y-m-d'))) {
                 $sup_delete = true;
             } elseif (!$is_own) {
@@ -178,6 +180,13 @@ try {
         }
     }
 
+    // حذف درخواست دیگری توسط مسئول: دلیل الزامی است (در اعلان و پیامک صاحب درخواست می‌آید)
+    $sup_reason = trim((string) ($data['reason'] ?? ''));
+    if ($sup_delete && !$is_own && mb_strlen($sup_reason) < 3) {
+        echo json_encode(['success' => false, 'message' => 'دلیل حذف را بنویسید']);
+        exit;
+    }
+
     if (!$can_delete) {
         error_log("Attendance request delete denied ({$error_message}) | user_id={$user_id} | request_id={$request_id} | request_type={$request_type}");
         echo json_encode(['success' => false, 'message' => $error_message]);
@@ -203,23 +212,10 @@ try {
 
     // 🆕 حذف درخواستِ دیگری توسط مسئول: ردپا در لاگ + اطلاع به صاحب درخواست
     if ($sup_delete && !$is_own) {
-        $type_labels = ['mission' => 'مأموریت', 'forget' => 'فراموشی', 'technical' => 'مشکل فنی'];
         $by_name = trim(($me['first_name'] ?? '') . ' ' . ($me['last_name'] ?? ''));
         error_log("Attendance request deleted by supervisor | supervisor_id={$user_id} | owner_id={$owner_id} | request_id={$request_id} | request_type={$request_type} | request_code=" . ($request['request_code'] ?? '') . " | status=" . ($request['status'] ?? ''));
-        try {
-            require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
-            $notif = new Notification($db);
-            $notif->create([
-                'to_user_id' => $owner_id,
-                'title' => 'درخواست شما حذف شد',
-                'message' => "درخواست {$type_labels[$request_type]} شما (کد " . ($request['request_code'] ?? '—') . ") توسط {$by_name} حذف شد.",
-                'type' => 'warning',
-                'link' => '/attendance_system/pages/requests.php',
-                'skip_self_check' => true
-            ]);
-        } catch (Exception $notifError) {
-            error_log("Notification error in attendance delete (supervisor): " . $notifError->getMessage());
-        }
+        // اعلان + پیامک با دلیل (attendance_system/includes/request-supervisor-helper.php)
+        reqNotifyOwner($db, (int) $owner_id, 'deleted', $request_type, (string) ($request['request_code'] ?? '—'), $by_name, $sup_reason);
     }
 
     $ok_message = $burn_quota

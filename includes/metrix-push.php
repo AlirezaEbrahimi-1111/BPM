@@ -5,8 +5,13 @@
  * Metrix.setUserCustomId(user.id) ثبت می‌کند.
  */
 
-// 🔒 مثلِ config/config.php: کلیدها در فایلِ جدا و gitignore‌شده
-require_once __DIR__ . '/metrix-config.php';
+// 🔒 مثلِ config/config.php: کلیدها در فایلِ جدا و gitignore‌شده.
+// ⚠️ اگر این فایل روی سرور ساخته نشده باشد، require_once خطای «مرگبار» می‌داد و هر درخواستی
+// که اعلان می‌فرستاد (ساخت کار، تأییدها، درخواست‌ها…) نیمه‌کاره می‌مرد. حالا بدون کلید فقط
+// پوش ارسال نمی‌شود (در لاگ ثبت می‌شود) و بقیهٔ کار درست انجام می‌شود (۱۴۰۵/۰۷/۳۰).
+if (is_file(__DIR__ . '/metrix-config.php')) {
+    require_once __DIR__ . '/metrix-config.php';
+}
 
 /**
  * @param int|string $userId شناسه‌ی کاربرِ ما (customUserId سمتِ اپ)
@@ -14,6 +19,9 @@ require_once __DIR__ . '/metrix-config.php';
  */
 function metrix_send_push($userId, string $title, string $message, array $customContent = []): array
 {
+    if (!defined('METRIX_APP_ID') || !defined('METRIX_SERVER_API_KEY')) {
+        return ['ok' => false, 'http_code' => 0, 'response' => 'includes/metrix-config.php روی سرور نیست — پوش ارسال نشد'];
+    }
     $msg = ['title' => $title, 'body' => $message];
     if ($customContent) {
         $msg['customContent'] = $customContent;

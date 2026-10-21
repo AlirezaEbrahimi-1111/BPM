@@ -20,3 +20,6 @@ go-api/go-api.exe
 go-api/go-api-linux
 find.php
 uploads/
+
+# ابزارهای محلی (مثل GitHub CLI برای ورود Git) — باینری، کامیت نشود
+/.tools/

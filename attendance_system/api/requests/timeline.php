@@ -13,6 +13,7 @@ date_default_timezone_set('Asia/Tehran');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/attendance_system/includes/request-supervisor-helper.php';
 
 try {
     $database = new Database();
@@ -79,7 +80,10 @@ try {
         $request['supervisor_id'] ?? null,
         $request['admin_id'] ?? null,
     ]);
-    if (!in_array((int)$user_id, array_map('intval', $related_ids), true)) {
+    // + سرپرستِ سازمانِ صاحب درخواست (و مدیر کل) — ۱۴۰۵/۰۷/۳۰: قبلا سرپرستی که تأییدکنندهٔ
+    //   همان درخواست نبود (مثلا رد در مرحلهٔ جانشین/مدیر) «دسترسی غیرمجاز» می‌گرفت و دلیل رد را نمی‌دید
+    if (!in_array((int)$user_id, array_map('intval', $related_ids), true)
+        && !reqIsOrgSupervisor($db, (int) $user_id, (int) ($request['user_id'] ?? 0))) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
         exit;
@@ -238,6 +242,19 @@ try {
             'date' => formatDateTimeJalali($request['created_at']),
             'approver_name' => null,
             'notes' => null
+        ];
+    }
+
+    // ===== لغو توسط مسئول (هر نوع درخواست) — چه کسی، کِی، چرا =====
+    if (($request['status'] ?? '') === 'cancelled' && !empty($request['cancelled_at'])) {
+        $timeline[] = [
+            'role' => 'cancel',
+            'role_label' => 'لغو توسط مسئول',
+            'status' => 'cancelled',
+            'status_label' => 'لغو شده',
+            'date' => formatDateTimeJalali($request['cancelled_at']),
+            'approver_name' => getUserName($db, $request['cancelled_by'] ?? null),
+            'notes' => $request['cancel_reason'] ?? null
         ];
     }
 

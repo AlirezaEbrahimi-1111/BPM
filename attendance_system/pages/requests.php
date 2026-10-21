@@ -915,7 +915,7 @@ foreach ($all_requests as $req) {
     // (همه‌ی کاربران سازمان، با هر وضعیتی — حتی تأییدشده). هم‌راستا با
     // api/requests/delete.php؛ ماه شمسی از تاریخ شروع درخواست.
     $delete_by_supervisor = false;
-    if (($__is_supervisor_deleter ?? false) && in_array($type, ['mission', 'forget', 'technical'], true)) {
+    if (($__is_supervisor_deleter ?? false) && in_array($type, ['mission', 'forget', 'technical', 'leave', 'pass'], true)) {
         $__sd = substr($req['request_date'] ?? '', 0, 10);
         if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $__sd, $__sm)) {
             list($__sjy, $__sjm) = gregorianToJalaliCalc((int) $__sm[1], (int) $__sm[2], (int) $__sm[3]);
@@ -954,9 +954,14 @@ foreach ($all_requests as $req) {
         }
     } elseif ($status === 'approved') {
         $status_label = 'تأیید شده';
+    } elseif ($status === 'cancelled') {
+        $status_label = 'لغو شده';
     } else {
         $status_label = 'تأیید خودکار';
     }
+    // 🆕 لغو با دلیل توسط مسئول (سرپرست سازمان/مدیر کل) — هر مرحله، حتی بعد از تأیید
+    // (api/requests/cancel.php). فهرست برای مسئول فقط درخواست‌های سازمان خودش است.
+    $can_cancel = ($__is_supervisor_deleter ?? false) && $status !== 'cancelled';
 
     $date_only  = substr($req['request_date'] ?? '', 0, 10);
     $start_time = (strlen($req['request_date'] ?? '') > 10) ? substr($req['request_date'], 11, 5) : '';
@@ -984,8 +989,26 @@ foreach ($all_requests as $req) {
         'can_delete'     => (bool) $can_delete,
         'delete_burns_quota' => (bool) $delete_burns_quota,
         'delete_by_supervisor' => (bool) $delete_by_supervisor,
+        'can_cancel'     => (bool) $can_cancel,
+        'cancel_reason'  => '',
         '_debug'         => "type={$type} status={$status} sub=" . ($req['substitute_approval'] ?? 'NULL') . " mgr=" . ($req['manager_approval'] ?? 'NULL') . " sup=" . ($req['supervisor_approval'] ?? 'NULL') . " can_del=" . ($can_delete ? '1' : '0'),
     ];
+}
+
+// 🆕 دلیل لغو برای ردیف‌های لغوشده (کوئری جدا تا اگر ستون‌ها هنوز نیامده بودند صفحه نشکند)
+$__cancel_ids = [];
+foreach ($requests_for_grid as $__i => $__g) {
+    if ($__g['status'] === 'cancelled') $__cancel_ids[$__g['type']][$__g['id']] = $__i;
+}
+$__req_tables = ['mission' => 'mission_requests', 'leave' => 'leave_requests', 'pass' => 'pass_requests', 'forget' => 'forget_requests', 'technical' => 'technical_issues'];
+foreach ($__cancel_ids as $__t => $__map) {
+    try {
+        $__in = implode(',', array_map('intval', array_keys($__map)));
+        foreach ($db->query("SELECT id, cancel_reason FROM {$__req_tables[$__t]} WHERE id IN ($__in)")->fetchAll(PDO::FETCH_ASSOC) as $__c) {
+            $requests_for_grid[$__map[$__c['id']]]['cancel_reason'] = (string) ($__c['cancel_reason'] ?? '');
+        }
+    } catch (Exception $e) {
+    }
 }
 
 // ادامه کدهای قبلی (status_info, type_labels, formatDateJalali)
@@ -2657,6 +2680,28 @@ function formatDateJalali($gregorianDate)
             box-shadow: 0 0 0 2px #FEE2E2;
         }
 
+        .reason-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .reason-box { background: var(--surface, #fff); color: var(--text-strong, #2d3748); border-radius: 14px; padding: 18px; width: 100%; max-width: 440px; box-shadow: 0 10px 40px rgba(0, 0, 0, .25); }
+        .reason-title { font-weight: 700; font-size: 15px; margin-bottom: 10px; }
+        .reason-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+        :root[data-theme="dark"] .reason-box .reason-input { background: var(--surface); color: var(--text-strong); border-color: var(--border-soft); }
+        .action-icon-btn.cancel-btn { color: #6B7280; }
+        .action-icon-btn.cancel-btn:hover { color: #DC2626; }
+
+        .timeline-dot.cancelled {
+            background: #6B7280;
+            box-shadow: 0 0 0 2px rgba(107, 114, 128, .25);
+        }
+
+        .timeline-status.cancelled {
+            color: #6B7280;
+            font-weight: 600;
+        }
+
+        :root[data-theme="dark"] .timeline-status.cancelled {
+            color: #9CA3AF;
+        }
+
         .timeline-dot.waiting {
             background: #e9e9e9;
             box-shadow: 0 0 0 2px var(--border-soft);
@@ -3588,6 +3633,10 @@ function formatDateJalali($gregorianDate)
                 }
                 if (d.status === 'approved')
                     return `<span class="status-badge status-with-timeline" style="color:#1b7b39;" ${tl}>تأیید شده</span>`;
+                if (d.status === 'cancelled') {
+                    const cr = d.cancel_reason ? `<i class="bi bi-chat-dots reject-reason-icon" data-tooltip="${esc(d.cancel_reason)}"></i>` : '';
+                    return `<span class="status-badge status-with-timeline" style="color:#6B7280;" ${tl}>${cr} لغو شده</span>`;
+                }
                 return `<span class="status-badge" style="color:#6b8dcf;">تأیید خودکار</span>`;
             }
 
@@ -3595,7 +3644,8 @@ function formatDateJalali($gregorianDate)
                 let h = '';
                 if (d.can_edit) h += `<button class="action-icon-btn edit-btn" onclick="editRequest(${d.id}, '${d.type}')" title="ویرایش"><i class="bi bi-pencil"></i></button>`;
                 if (d.can_delete) h += `<button class="action-icon-btn delete-btn" onclick="deleteRequest(${d.id}, '${d.type}', ${d.delete_burns_quota ? 'true' : 'false'}, ${d.delete_by_supervisor ? 'true' : 'false'})" title="حذف"><i class="bi bi-trash"></i></button>`;
-                if (!d.can_edit && !d.can_delete) return '<span class="no-action">—</span>';
+                if (d.can_cancel) h += `<button class="action-icon-btn cancel-btn" onclick="cancelRequest(${d.id}, '${d.type}')" title="لغو با دلیل (مسئول)"><i class="bi bi-x-circle"></i></button>`;
+                if (!d.can_edit && !d.can_delete && !d.can_cancel) return '<span class="no-action">—</span>';
                 return `<div style="display:flex;gap:6px;justify-content:center;align-items:center;height:100%;">${h}</div>`;
             }
 
@@ -3683,7 +3733,7 @@ function formatDateJalali($gregorianDate)
                     cellRenderer: p => farsi(p.value || '—')
                 }, {
                     headerName: 'عملیات',
-                    width: 120,
+                    width: 150, // ویرایش + حذف + لغو (مسئول)
                     sortable: false,
                     cellClass: 'req-actions-cell',
                     cellRenderer: p => actionsCell(p.data)
@@ -5677,7 +5727,82 @@ function formatDateJalali($gregorianDate)
         }
 
         // حذف درخواست
+        // پنجرهٔ گرفتن دلیل (لغو/حذف توسط مسئول) — دلیل الزامی، فوکوس روی کادر
+        function askReason(title, okLabel, onOk) {
+            const overlay = document.createElement('div');
+            overlay.className = 'reason-overlay';
+            overlay.innerHTML = `
+                <div class="reason-box" dir="rtl">
+                    <div class="reason-title"></div>
+                    <textarea rows="4" class="form-control reason-input" placeholder="دلیل را بنویسید (برای صاحب درخواست پیامک و اعلان می‌شود)"></textarea>
+                    <div class="reason-err text-danger small mt-1" hidden>دلیل را بنویسید.</div>
+                    <div class="reason-actions">
+                        <button type="button" class="btn btn-secondary reason-no">انصراف</button>
+                        <button type="button" class="btn btn-danger reason-ok"></button>
+                    </div>
+                </div>`;
+            overlay.querySelector('.reason-title').textContent = title;
+            overlay.querySelector('.reason-ok').textContent = okLabel;
+            document.body.appendChild(overlay);
+            const ta = overlay.querySelector('.reason-input');
+            ta.focus();
+            const close = () => overlay.remove();
+            overlay.querySelector('.reason-no').onclick = close;
+            overlay.addEventListener('click', ev => { if (ev.target === overlay) close(); });
+            overlay.addEventListener('keydown', ev => { if (ev.key === 'Escape') close(); });
+            overlay.querySelector('.reason-ok').onclick = async () => {
+                const r = ta.value.trim();
+                if (r.length < 3) { overlay.querySelector('.reason-err').hidden = false; ta.focus(); return; }
+                close();
+                await onOk(r);
+            };
+        }
+
+        // لغو درخواست توسط مسئول (هر مرحله، حتی بعد از تأیید) — ردیف می‌ماند با وضعیت «لغو شده»
+        function cancelRequest(id, type) {
+            askReason('لغو درخواست — دلیل لغو چیست؟', 'لغو درخواست', async reason => {
+                try {
+                    const res = await fetch('/attendance_system/api/requests/cancel.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, type, reason })
+                    });
+                    const r = await res.json();
+                    if (r.success) {
+                        showToast('✅ ' + r.message, 'success');
+                        setTimeout(() => location.reload(), 1200);
+                    } else {
+                        showToast('❌ ' + r.message, 'error');
+                    }
+                } catch (err) {
+                    showToast('❌ خطا در ارتباط با سرور', 'error');
+                }
+            });
+        }
+
         async function deleteRequest(id, type, burnsQuota, bySupervisor) {
+            // حذف درخواست دیگری توسط مسئول: اول دلیل (برای پیامک/اعلان صاحب درخواست)
+            if (bySupervisor) {
+                askReason('حذف قطعی درخواست — دلیل حذف چیست؟', 'حذف درخواست', async reason => {
+                    try {
+                        const res = await fetch('/attendance_system/api/requests/delete.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id, type, reason })
+                        });
+                        const r = await res.json();
+                        if (r.success) {
+                            showToast('✅ ' + r.message, 'success');
+                            setTimeout(() => location.reload(), 1200);
+                        } else {
+                            showToast('❌ ' + r.message, 'error');
+                        }
+                    } catch (err) {
+                        showToast('❌ خطا در ارتباط با سرور', 'error');
+                    }
+                });
+                return;
+            }
             const confirmMsg = burnsQuota ?
                 'این درخواست تأیید نهایی شده است و در صورت حذف، سهمیهٔ مرخصی آن باطل می‌شود. آیا مطمئن هستید؟' :
                 (bySupervisor ?
@@ -5894,8 +6019,11 @@ function formatDateJalali($gregorianDate)
             fetch(`/attendance_system/api/requests/timeline.php?id=${requestId}&type=${requestType}`)
                 .then(res => res.json())
                 .then(result => {
+                    // متن‌ها (دلیل رد/لغو، نام‌ها) از کاربران می‌آیند → escape تا HTML اجرا نشود
+                    const e = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                    const cls = s => String(s || '').replace(/[^a-z_]/gi, '');
                     if (!result.success) {
-                        content.innerHTML = `<div class="text-danger text-center">${result.message}</div>`;
+                        content.innerHTML = `<div class="text-danger text-center">${e(result.message)}</div>`;
                         return;
                     }
 
@@ -5903,13 +6031,13 @@ function formatDateJalali($gregorianDate)
                     result.data.forEach(item => {
                         html += `
                             <div class="timeline-item">
-                                <div class="timeline-dot ${item.status}"></div>
+                                <div class="timeline-dot ${cls(item.status)}"></div>
                                 <div class="timeline-content">
-                                    <div class="timeline-role">${item.role_label}</div>
-                                    <div class="timeline-status ${item.status}">${item.status_label}</div>
-                                    ${item.date ? `<div class="timeline-date">${item.date}</div>` : ''}
-                                    ${item.approver_name ? `<div class="timeline-approver">توسط: ${item.approver_name}</div>` : ''}
-                                    ${item.notes ? `<div class="timeline-notes">"${item.notes}"</div>` : ''}
+                                    <div class="timeline-role">${e(item.role_label)}</div>
+                                    <div class="timeline-status ${cls(item.status)}">${e(item.status_label)}</div>
+                                    ${item.date ? `<div class="timeline-date">${e(item.date)}</div>` : ''}
+                                    ${item.approver_name ? `<div class="timeline-approver">توسط: ${e(item.approver_name)}</div>` : ''}
+                                    ${item.notes ? `<div class="timeline-notes">${item.status === 'cancelled' || item.status === 'rejected' ? 'دلیل: ' : ''}«${e(item.notes)}»</div>` : ''}
                                 </div>
                             </div>
                         `;
