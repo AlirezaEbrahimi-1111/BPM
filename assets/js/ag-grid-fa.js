@@ -435,6 +435,7 @@
         document.head.appendChild(s);
     }
 
+    // anchor: دکمه (منو زیرش باز می‌شود) یا {x, y} — محل کلیک راست (منو همان‌جا باز می‌شود)
     function openActionMenu(anchor, html) {
         closeActionMenu();
         ensureMenuStyle();
@@ -476,7 +477,8 @@
         menu.remove = function () { origRemove(); if (holder.parentNode) holder.remove(); };
 
         // جای منو: زیر دکمه، لبهٔ راست هم‌تراز؛ اگر جا نبود بالا/داخل صفحه
-        var r = anchor.getBoundingClientRect();
+        var r = typeof anchor.getBoundingClientRect === 'function' ? anchor.getBoundingClientRect()
+            : { left: anchor.x, right: anchor.x, top: anchor.y, bottom: anchor.y };
         var mw = menu.offsetWidth, mh = menu.offsetHeight;
         var left = Math.min(Math.max(8, r.right - mw), w.innerWidth - mw - 8);
         var top = r.bottom + 4;
@@ -495,6 +497,7 @@
             b.title = 'عملیات';
             b.setAttribute('aria-haspopup', 'menu');
             b.innerHTML = '<i class="bi bi-three-dots-vertical"></i>';
+            b.__agfaBuild = function () { return buildHtml(p); }; // برای منوی کلیک راست ردیف
             b.addEventListener('click', function (ev) {
                 ev.stopPropagation();
                 if (openMenu && openMenu.__anchor === b) { closeActionMenu(); return; }
@@ -522,8 +525,51 @@
     w.addEventListener('scroll', closeActionMenu, true);
     w.addEventListener('resize', closeActionMenu);
 
+    /* ═══════════════════════════════════════════════════════════════════
+     * کلیک راست روی ردیف = همان موارد ستون «عملیات» (درخواست ۱۴۰۵/۰۷/۳۰ —
+     * حسابداری رسمی و غیررسمی)
+     * -------------------------------------------------------------------
+     *   AgGridFa.rowContextMenu(gridEl, gridApi)            // ستون colId='actions' یا سرستون «عملیات»
+     *   AgGridFa.rowContextMenu(gridEl, gridApi, 'colId')   // ستون دیگری
+     * منو از همان cellRenderer ستون عملیات ساخته می‌شود (پس دقیقا همان دکمه‌ها با همان
+     * شرط‌های دسترسی/وضعیت ردیف)، حتی اگر ستون الان روی صفحه دیده نشود (اسکرول افقی).
+     * ستون پنهان (مثلا عملیات فقط برای مدیر) → منوی مرورگر، نه منوی ما.
+     * کلیک راست روی فیلد ورودی/لینک → منوی معمول مرورگر (برای کپی/باز کردن لینک).
+     * ═══════════════════════════════════════════════════════════════════ */
+    function rowContextMenu(el, api, colKey) {
+        if (typeof el === 'string') el = document.querySelector(el);
+        if (!el || !api || el.__agfaRowMenu) return;
+        el.__agfaRowMenu = true;
+        el.addEventListener('contextmenu', function (e) {
+            if (e.target.closest('input, textarea, select, a[href]')) return;
+            var rowEl = e.target.closest('.ag-row');
+            if (!rowEl || !el.contains(rowEl)) return;
+            var node = api.getDisplayedRowAtIndex(parseInt(rowEl.getAttribute('row-index'), 10));
+            if (!node || !node.data || node.group) return;
+            var col = colKey ? api.getColumn(colKey) : (api.getColumns() || []).filter(function (c) {
+                return c.getColId() === 'actions' || (c.getColDef().headerName || '') === 'عملیات';
+            })[0];
+            if (!col || !col.isVisible()) return;
+            var def = col.getColDef();
+            if (typeof def.cellRenderer !== 'function') return;
+            var out;
+            try {
+                out = def.cellRenderer({ data: node.data, node: node, api: api, column: col, colDef: def,
+                    value: def.field ? node.data[def.field] : undefined, rowIndex: node.rowIndex });
+            } catch (err) {
+                return;
+            }
+            var html = '';
+            if (out && out.__agfaBuild) html = out.__agfaBuild();          // ستون «⋮»
+            else if (typeof out === 'string') html = out;                 // دکمه‌های HTML معمول
+            else if (out && out.outerHTML) html = out.outerHTML;
+            e.preventDefault();
+            openActionMenu({ x: e.clientX, y: e.clientY }, html);
+        });
+    }
+
     w.AgGridFa = {
         persianizePaging: persianizePaging, toFaDigits: toFaDigits, theme: theme, numericTextComparator: numericTextComparator, copyText: copyText,
-        actionMenuCell: actionMenuCell, closeActionMenu: closeActionMenu, copyCell: copyCell
+        actionMenuCell: actionMenuCell, closeActionMenu: closeActionMenu, copyCell: copyCell, rowContextMenu: rowContextMenu
     };
 })(window);

@@ -402,6 +402,8 @@ $canWrite = true;
                 return;
             }
             gridApi = agGrid.createGrid(document.getElementById('crmGrid'), gridOptions);
+            // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
+            AgGridFa.rowContextMenu(document.getElementById('crmGrid'), gridApi);
             supModal = new bootstrap.Modal(document.getElementById('supModal'));
             document.getElementById('supModal').addEventListener('shown.bs.modal', () => {
                 const el = document.querySelector('#supModal .modal-body input:not([type=hidden]), #supModal .modal-body select, #supModal .modal-body textarea');

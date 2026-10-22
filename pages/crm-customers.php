@@ -699,6 +699,8 @@ $canWrite = true;
                 return;
             }
             gridApi = agGrid.createGrid(document.getElementById('crmGrid'), gridOptions);
+            // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
+            AgGridFa.rowContextMenu(document.getElementById('crmGrid'), gridApi);
             custModal = new bootstrap.Modal(document.getElementById('custModal'));
             document.getElementById('delNext').addEventListener('click', delStep2);
             document.getElementById('delDo').addEventListener('click', delDoMerge);

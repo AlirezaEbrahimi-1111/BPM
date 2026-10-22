@@ -747,6 +747,8 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 return;
             }
             gridApi = agGrid.createGrid(document.getElementById('ucrmGrid'), gridOptions);
+            // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
+            AgGridFa.rowContextMenu(document.getElementById('ucrmGrid'), gridApi);
             custModal = new bootstrap.Modal(document.getElementById('custModal'));
             approveModal = new bootstrap.Modal(document.getElementById('approveModal'));
             rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));

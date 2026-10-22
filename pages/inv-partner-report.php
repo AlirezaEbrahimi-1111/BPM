@@ -682,6 +682,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             },
             {
                 headerName: '',
+                colId: 'actions', // ستون عملیات (برای منوی کلیک راست ردیف)
                 width: 92,
                 sortable: false,
                 filter: false,
@@ -961,6 +962,8 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             }
 
             gridApi = agGrid.createGrid(document.getElementById('repGrid'), gridOptions);
+            // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
+            AgGridFa.rowContextMenu(document.getElementById('repGrid'), gridApi);
 
             ['fYear', 'fMonth', 'fPartner', 'fDocType', 'fStatus'].forEach(id =>
                 document.getElementById(id).addEventListener('change', loadReport));

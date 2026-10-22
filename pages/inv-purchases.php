@@ -376,6 +376,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 return;
             }
             gridApi = agGrid.createGrid(document.getElementById('invGrid'), gridOptions);
+            // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
+            AgGridFa.rowContextMenu(document.getElementById('invGrid'), gridApi);
             document.getElementById('crmSearch').addEventListener('input', () => {
                 clearTimeout(searchTimer);
                 searchTimer = setTimeout(applyFilter, 200);

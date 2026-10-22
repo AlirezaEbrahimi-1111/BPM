@@ -285,6 +285,25 @@
         select.addEventListener('change', syncLabel);
         select.addEventListener('sb:refresh', refresh);
 
+        // تغییر مقدار «با کد» (select.value = … / selectedIndex = …) رویداد change ندارد؛
+        // بدون این، متن ظاهری کهنه می‌ماند — مثلا پنجرهٔ «وضعیت فاکتور» برای فاکتورِ
+        // تسویه‌شده «تسویه نشده» نشان می‌داد (۱۴۰۵/۰۷/۳۰). setterِ همین المان را می‌پیچیم
+        // تا بعد از هر تنظیم با کد، متن و گزینهٔ انتخاب‌شدهٔ منو هم به‌روز شود.
+        ['value', 'selectedIndex'].forEach(function (prop) {
+            var d = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, prop);
+            if (!d || !d.get || !d.set) return;
+            try {
+                Object.defineProperty(select, prop, {
+                    configurable: true,
+                    enumerable: d.enumerable,
+                    get: function () { return d.get.call(this); },
+                    set: function (v) { d.set.call(this, v); refresh(); }
+                });
+            } catch (e) { /* مرورگر قدیمی: همان رفتار قبلی */ }
+        });
+        // form.reset() هم مقدار را بی‌صدا عوض می‌کند (رویداد reset قبل از اعمال مقدار می‌آید)
+        if (select.form) select.form.addEventListener('reset', function () { setTimeout(refresh, 0); });
+
         // تغییر لیست گزینه‌ها از بیرون (کد صفحه)
         var mo = new MutationObserver(function () { refresh(); });
         mo.observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
