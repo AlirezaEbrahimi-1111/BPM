@@ -962,6 +962,13 @@ foreach ($all_requests as $req) {
     // 🆕 لغو با دلیل توسط مسئول (سرپرست سازمان/مدیر کل) — هر مرحله، حتی بعد از تأیید
     // (api/requests/cancel.php). فهرست برای مسئول فقط درخواست‌های سازمان خودش است.
     $can_cancel = ($__is_supervisor_deleter ?? false) && $status !== 'cancelled';
+    // درخواست کاربر (۱۴۰۵/۰۷/۳۰): در «درخواست‌های سازمان» مسئول فقط «لغو» دارد، «حذف» نه —
+    // حذف ردی باقی نمی‌گذاشت؛ لغو با دلیل ثبت و به صاحب درخواست اطلاع داده می‌شود.
+    if ($__is_supervisor_deleter ?? false) {
+        $can_delete = false;
+        $delete_by_supervisor = false;
+        $delete_burns_quota = false;
+    }
 
     $date_only  = substr($req['request_date'] ?? '', 0, 10);
     $start_time = (strlen($req['request_date'] ?? '') > 10) ? substr($req['request_date'], 11, 5) : '';
