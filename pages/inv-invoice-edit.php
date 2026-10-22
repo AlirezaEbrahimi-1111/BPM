@@ -974,6 +974,14 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     customerPicker.setValue(c.id);
                 }),
                 onSelect: () => focusFirstProductName(),
+                // ویرایش درجای نام شرکت/مشتری از داخل همین فهرست (بدون مودال) — فقط نام عوض می‌شود
+                onRename: async (it, name) => {
+                    const d = await apiSend('PATCH', '/customers/' + it.id + '/name', { name });
+                    const c = customers.find(x => x.id === it.id);
+                    if (c) c.name = d.name;
+                    showToast('نام مشتری به «' + d.name + '» تغییر کرد', 'success');
+                    return d.name;
+                },
             });
             // همکار — اختیاری. انتخاب از فهرست، با دکمهٔ + برای افزودن سریع.
             await reloadPartners();

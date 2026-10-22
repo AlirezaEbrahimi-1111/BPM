@@ -161,6 +161,44 @@ func (s *server) updateCustomer(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
 }
 
+// PATCH /crm/api/customers/{id}/name  body: {"name": "..."}
+// فقط نام — برای ویرایش درجای نام از داخل انتخابگر مشتری (فاکتور). عمدا جدا از PUT
+// که همهٔ ستون‌ها را بازنویسی می‌کند (تا بقیهٔ اطلاعات مشتری دست نخورد).
+func (s *server) renameCustomer(w http.ResponseWriter, r *http.Request) {
+	id := idParam(r)
+	var in struct {
+		Name string `json:"name"`
+	}
+	if !decodeJSON(w, r, &in, 1<<14) {
+		return
+	}
+	in.Name = strings.Join(strings.Fields(in.Name), " ")
+	if in.Name == "" {
+		writeErr(w, http.StatusBadRequest, "نام مشتری نمی‌تواند خالی باشد")
+		return
+	}
+	if len([]rune(in.Name)) > 255 {
+		writeErr(w, http.StatusBadRequest, "نام مشتری خیلی طولانی است")
+		return
+	}
+	u := userOf(r.Context())
+	res, err := s.db.Exec("UPDATE crm_customers SET name = ? WHERE id = ? AND organization_id = ? AND is_deleted = 0",
+		in.Name, id, u.OrgID)
+	if err != nil {
+		writeDBErr(w, "renameCustomer", err)
+		return
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		// نام تغییری نکرده یا مشتری نیست — بین این دو فرق بگذار
+		var ok int
+		if s.db.QueryRow("SELECT 1 FROM crm_customers WHERE id = ? AND organization_id = ? AND is_deleted = 0", id, u.OrgID).Scan(&ok) != nil {
+			writeErr(w, http.StatusNotFound, "مشتری یافت نشد")
+			return
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "id": id, "name": in.Name})
+}
+
 // DELETE /crm/api/customers/{id}  — حذف نرم.
 func (s *server) deleteCustomer(w http.ResponseWriter, r *http.Request) {
 	id := idParam(r)

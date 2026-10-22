@@ -13,6 +13,10 @@
  *     onSelect:    (item | null) => {},   // انتخاب یا پاک‌کردن
  *     freeText:    false,                 // اگر true: متن تایپ‌شده که با هیچ موردی
  *                                         //   نمی‌خواند هم مجاز است و در فیلد می‌ماند
+ *     onRename:    async (item, newLabel) => newLabel,
+ *                                         // اگر ست شود: دکمهٔ مداد آخر هر ردیف؛ نام همان‌جا
+ *                                         //   ویرایش و ذخیره می‌شود (Enter ذخیره، Esc انصراف).
+ *                                         //   خطا را throw کن تا زیر ردیف نشان داده شود.
  *   });
  *
  *   p.getValue()        → { id, label, meta } | null
@@ -66,6 +70,23 @@ const EntityPicker = (() => {
 .ep-item-name{font-weight:500}
 .ep-item-meta{font-size:11px;color:#9ca3af;margin-top:1px}
 .ep-empty{padding:14px;text-align:center;color:#9ca3af;font-size:13px}
+.ep-item.ep-can-edit{display:flex;align-items:center;gap:8px}
+.ep-item-body{flex:1;min-width:0}
+.ep-edit,.ep-ok,.ep-cancel{background:none;border:none;cursor:pointer;padding:3px 5px;border-radius:5px;font-size:13px;line-height:1;flex-shrink:0}
+.ep-edit{color:#8e57fe;opacity:.55}
+.ep-item:hover .ep-edit,.ep-item.ep-focused .ep-edit{opacity:1}
+.ep-edit:hover,.ep-ok:hover,.ep-cancel:hover{background:rgba(142,87,254,.12)}
+.ep-ok{color:#0f7a57}.ep-cancel{color:#dc2626}
+.ep-item.ep-renaming{cursor:default;background:rgba(142,87,254,.06)}
+.ep-rename-row{display:flex;align-items:center;gap:4px}
+.ep-rename-in{flex:1;min-width:0;padding:5px 8px;border:1px solid #8e57fe;border-radius:6px;font-size:13px;font-family:inherit;direction:rtl;outline:none;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)}
+.ep-rename-err{font-size:11px;color:#dc2626;margin-top:3px}
+.ep-rename-err:empty{display:none}
+:root[data-theme="dark"] .ep-edit{color:#b79bff}
+:root[data-theme="dark"] .ep-rename-in{background:var(--surface);color:var(--text-strong)}
+:root[data-theme="dark"] .ep-item.ep-renaming{background:rgba(142,87,254,.12)}
+:root[data-theme="dark"] .ep-ok{color:#34d399}
+:root[data-theme="dark"] .ep-cancel,:root[data-theme="dark"] .ep-rename-err{color:#f87171}
 :root[data-theme="dark"] .ep-input{background:var(--surface);border-color:var(--border-soft);color:var(--text-strong)}
 :root[data-theme="dark"] .ep-clear:hover{background:#2b3242;color:var(--text-strong)}
 :root[data-theme="dark"] .ep-dropdown{background:var(--surface);border-color:var(--border-soft);box-shadow:0 6px 24px rgba(0,0,0,.4)}
@@ -183,18 +204,87 @@ const EntityPicker = (() => {
                 _dd.innerHTML = `<div class="ep-empty">نتیجه‌ای یافت نشد</div>`;
                 return;
             }
+            const canEdit = typeof cfg.onRename === 'function';
             _dd.innerHTML = list.slice(0, 200).map(it => `
-<div class="ep-item${_selected && String(_selected.id) === String(it.id) ? ' ep-selected' : ''}" data-id="${_esc(it.id)}">
-  <div class="ep-item-name">${_esc(it.label)}</div>
-  ${it.meta ? `<div class="ep-item-meta">${_esc(it.meta)}</div>` : ''}
+<div class="ep-item${canEdit ? ' ep-can-edit' : ''}${_selected && String(_selected.id) === String(it.id) ? ' ep-selected' : ''}" data-id="${_esc(it.id)}">
+  <div class="ep-item-body">
+    <div class="ep-item-name">${_esc(it.label)}</div>
+    ${it.meta ? `<div class="ep-item-meta">${_esc(it.meta)}</div>` : ''}
+  </div>
+  ${canEdit ? `<button class="ep-edit bi bi-pencil" type="button" title="ویرایش نام"></button>` : ''}
 </div>`).join('');
             _dd.querySelectorAll('.ep-item').forEach(el => {
                 el.addEventListener('mousedown', ev => {
+                    // دکمه/فیلد ویرایش نام نباید ردیف را «انتخاب» کند
+                    if (ev.target.closest('.ep-edit, .ep-rename-row, .ep-rename-err') || el.classList.contains('ep-renaming')) return;
                     ev.preventDefault();
                     const it = _items.find(x => String(x.id) === el.dataset.id);
                     if (it) _pick(it);
                 });
+                const eb = el.querySelector('.ep-edit');
+                if (eb) eb.addEventListener('mousedown', ev => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    _startRename(el.dataset.id);
+                });
             });
+        }
+
+        // ویرایش درجای نام (فقط وقتی cfg.onRename داده شده) — بدون مودال، داخل همان ردیف
+        function _startRename(id) {
+            const it = _items.find(x => String(x.id) === String(id));
+            if (!it) return;
+            if (_dd.querySelector('.ep-item.ep-renaming')) _render(_input.value); // فقط یک ردیف در حال ویرایش
+            const el = [..._dd.querySelectorAll('.ep-item')].find(x => x.dataset.id === String(id));
+            if (!el) return;
+            el.classList.add('ep-renaming');
+            el.innerHTML = `
+<div class="ep-item-body">
+  <div class="ep-rename-row">
+    <input class="ep-rename-in" type="text" autocomplete="off">
+    <button class="ep-ok bi bi-check-lg" type="button" title="ذخیره (Enter)"></button>
+    <button class="ep-cancel bi bi-x-lg" type="button" title="انصراف (Esc)"></button>
+  </div>
+  <div class="ep-rename-err"></div>
+</div>`;
+            const inp = el.querySelector('.ep-rename-in');
+            const err = el.querySelector('.ep-rename-err');
+            inp.value = it.label;
+            let busy = false;
+            const done = () => { _render(_input.value); _input.focus(); };
+            const save = async () => {
+                if (busy) return;
+                const v = inp.value.split(/\s+/).filter(Boolean).join(' ');
+                if (!v) { err.textContent = 'نام نمی‌تواند خالی باشد.'; inp.focus(); return; }
+                if (v === it.label) { done(); return; }
+                busy = true;
+                inp.disabled = true;
+                err.textContent = '';
+                try {
+                    const res = await cfg.onRename(it, v);
+                    const old = it.label;
+                    it.label = (typeof res === 'string' && res) ? res : v;
+                    if (typeof it.search === 'string') it.search = it.search.replace(old, it.label);
+                    if (_selected && String(_selected.id) === String(it.id)) _selected = it;
+                    done();
+                } catch (e) {
+                    busy = false;
+                    inp.disabled = false;
+                    err.textContent = (e && e.message) || 'ذخیره نشد.';
+                    inp.focus();
+                }
+            };
+            el.querySelector('.ep-ok').addEventListener('mousedown', ev => { ev.preventDefault(); ev.stopPropagation(); save(); });
+            el.querySelector('.ep-cancel').addEventListener('mousedown', ev => { ev.preventDefault(); ev.stopPropagation(); done(); });
+            inp.addEventListener('mousedown', ev => ev.stopPropagation());
+            inp.addEventListener('click', ev => ev.stopPropagation());
+            inp.addEventListener('keydown', ev => {
+                ev.stopPropagation();
+                if (ev.key === 'Enter') { ev.preventDefault(); save(); }
+                else if (ev.key === 'Escape') { ev.preventDefault(); done(); }
+            });
+            inp.focus();
+            inp.select();
         }
 
         function _pick(it) {
