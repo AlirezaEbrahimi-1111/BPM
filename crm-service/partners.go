@@ -321,7 +321,8 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 	u := userOf(r.Context())
 	q := r.URL.Query()
 
-	where := "i.organization_id = ? AND i.partner_id IS NOT NULL"
+	// پیش‌فاکتور سود همکار ندارد → هیچ‌وقت در گزارش همکاران نمی‌آید (درخواست ۱۴۰۵/۰۸/۰۱)
+	where := "i.organization_id = ? AND i.partner_id IS NOT NULL AND i.doc_type <> 'proforma'"
 	args := []any{u.OrgID}
 
 	if v := strings.TrimSpace(q.Get("partner_id")); v != "" {
@@ -329,10 +330,6 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 			where += " AND i.partner_id = ?"
 			args = append(args, pid)
 		}
-	}
-	if v := strings.TrimSpace(q.Get("doc_type")); v == "official" || v == "proforma" {
-		where += " AND i.doc_type = ?"
-		args = append(args, v)
 	}
 	if v := strings.TrimSpace(q.Get("status")); v == "draft" || v == "approved" || v == "cancelled" {
 		where += " AND i.status = ?"

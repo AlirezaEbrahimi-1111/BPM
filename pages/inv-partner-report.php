@@ -307,14 +307,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                     <option value="">همهٔ همکاران</option>
                 </select>
             </div>
-            <div class="fld">
-                <label>نوع سند</label>
-                <select id="fDocType" class="form-select">
-                    <option value="">فاکتور و پیش‌فاکتور</option>
-                    <option value="official">فقط فاکتور رسمی</option>
-                    <option value="proforma">فقط پیش‌فاکتور</option>
-                </select>
-            </div>
+            <!-- فیلتر «نوع سند» حذف شد: پیش‌فاکتور سود همکار ندارد و در این گزارش نمی‌آید (۱۴۰۵/۰۸/۰۱) -->
             <div class="fld">
                 <label>وضعیت فاکتور</label>
                 <select id="fStatus" class="form-select">
@@ -722,12 +715,10 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             const y = document.getElementById('fYear').value;
             const m = document.getElementById('fMonth').value;
             const pr = document.getElementById('fPartner').value;
-            const dt = document.getElementById('fDocType').value;
             const st = document.getElementById('fStatus').value;
             if (y) p.set('jy', y);
             if (m) p.set('jm', m);
             if (pr) p.set('partner_id', pr);
-            if (dt) p.set('doc_type', dt);
             if (st) p.set('status', st);
             return p.toString();
         }
@@ -965,7 +956,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
             AgGridFa.rowContextMenu(document.getElementById('repGrid'), gridApi);
 
-            ['fYear', 'fMonth', 'fPartner', 'fDocType', 'fStatus'].forEach(id =>
+            ['fYear', 'fMonth', 'fPartner', 'fStatus'].forEach(id =>
                 document.getElementById(id).addEventListener('change', loadReport));
 
             document.getElementById('btnManagePartners').addEventListener('click', () => {

@@ -400,12 +400,18 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     h += `<button class="ag-action-btn" style="color:#0f7a57" title="تبدیل به فاکتور رسمی" onclick="convertInv(${d.id})"><i class="bi bi-file-earmark-check"></i></button>`;
                 }
             }
-            // درصد سهم همکار — هر وضعیتی جز باطل (حتی تأییدشده)، فقط فاکتورِ دارای همکار
-            if (d.partner_id && d.status !== 'cancelled') {
+            // درصد سهم همکار — هر وضعیتی جز باطل (حتی تأییدشده)، فقط فاکتورِ دارای همکار (نه پیش‌فاکتور)
+            if (hasPartnerProfit(d) && d.status !== 'cancelled') {
                 h += `<button class="ag-action-btn" style="color:#8e57fe" title="درصد سهم همکار" onclick="editPartnerPct(${d.id})"><i class="bi bi-percent"></i></button>`;
             }
-            h += `<button class="ag-action-btn" title="${d.partner_id ? 'سند سود همکار / تسویه / مودیان' : 'ویرایش وضعیت تسویه/مودیان'}" onclick="stEditStatus(${d.id})"><i class="bi bi-clipboard-check"></i></button>`;
+            h += `<button class="ag-action-btn" title="${hasPartnerProfit(d) ? 'سند سود همکار / تسویه / مودیان' : 'ویرایش وضعیت تسویه/مودیان'}" onclick="stEditStatus(${d.id})"><i class="bi bi-clipboard-check"></i></button>`;
             return h;
+        }
+
+        // پیش‌فاکتور «سود همکار» ندارد (درخواست ۱۴۰۵/۰۸/۰۱): نه درصد، نه مبلغ، نه ثبت سود —
+        // سلول‌ها خالی، و دکمهٔ درصد/سوئیچ «سند سود همکار» هم برایش نمی‌آید.
+        function hasPartnerProfit(d) {
+            return !!d.partner_id && d.doc_type !== 'proforma';
         }
 
         // پنجرهٔ مشترک «درصد سهم همکار» (assets/js/partner-percent-modal.js)
@@ -503,18 +509,20 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             {
                 headerName: 'درصد سود',
                 field: 'partner_percent',
+                valueGetter: p => p.data.doc_type === 'proforma' ? null : p.data.partner_percent,
                 width: 125,
                 type: 'rightAligned',
-                cellRenderer: p => !p.data.partner_id ? '—' : faDigits(p.value || 0) + '٪' +
+                cellRenderer: p => p.data.doc_type === 'proforma' ? '' : !p.data.partner_id ? '—' : faDigits(p.value || 0) + '٪' +
                     (p.data.partner_percent_is_override ?
                         '<span class="pct-ov" title="این فاکتور درصد اختصاصی دارد و از درصد ماه پیروی نمی‌کند">اختصاصی</span>' : '')
             },
             {
                 headerName: 'مبلغ سود (ریال)',
                 field: 'partner_profit_amount',
+                valueGetter: p => p.data.doc_type === 'proforma' ? null : p.data.partner_profit_amount,
                 width: 140,
                 type: 'rightAligned',
-                cellRenderer: p => p.data.partner_id ?
+                cellRenderer: p => p.data.doc_type === 'proforma' ? '' : p.data.partner_id ?
                     AgGridFa.copyCell(Math.round(Number(p.value) || 0), money(p.value), 'مبلغ سود') : '—'
             },
             {
@@ -523,9 +531,10 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 headerName: 'ثبت سود',
                 field: 'partner_profit_recorded',
                 width: 110,
-                valueGetter: p => !p.data.partner_id ? null : (p.data.partner_profit_recorded ? 1 : 0),
+                valueGetter: p => !hasPartnerProfit(p.data) ? null : (p.data.partner_profit_recorded ? 1 : 0),
                 cellRenderer: p => {
                     const d = p.data;
+                    if (d.doc_type === 'proforma') return '';
                     if (!d.partner_id) return '—';
                     if (d.partner_profit_recorded) return '<span class="profit-st done">ثبت شده</span>';
                     if (d.status === 'cancelled') return '<span class="profit-st">ثبت نشده</span>';
@@ -712,7 +721,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         // (همان PATCH و فیلدِ partner_profit_recorded که سوئیچ مودال تسویه می‌فرستد).
         function markProfitRecorded(id) {
             const row = allRows.find(r => r.id === id);
-            if (!row || !row.partner_id || row.partner_profit_recorded) return;
+            if (!row || !hasPartnerProfit(row) || row.partner_profit_recorded) return;
             const who = row.partner_name ? ' (' + esc(row.partner_name) + ')' : '';
             const no = row.number ? ' ' + faDigits(row.number) : '';
             uiConfirm(`آیا سود همکار${who} برای فاکتور${no} ثبت شود؟`, async () => {
@@ -737,7 +746,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             document.getElementById('stSettlement').value = row.settlement_status || 'unsettled';
             document.getElementById('stMoadian').value = row.moadian_status || 'unregistered';
             document.getElementById('stCode').value = row.moadian_code || '';
-            document.getElementById('stProfitWrap').hidden = !row.partner_id;
+            document.getElementById('stProfitWrap').hidden = !hasPartnerProfit(row);
             document.getElementById('stProfit').checked = !!row.partner_profit_recorded;
             stToggleCode();
             document.getElementById('stAlert').innerHTML = '';
@@ -763,13 +772,13 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             };
             // سند سود همکار فقط برای فاکتورِ دارای همکار فرستاده می‌شود
             const profit = document.getElementById('stProfit').checked;
-            if (stRow.partner_id) body.partner_profit_recorded = profit;
+            if (hasPartnerProfit(stRow)) body.partner_profit_recorded = profit;
             try {
                 await apiSend('PATCH', '/inv/invoices/' + stRow.id + '/partner-status', body);
                 stRow.settlement_status = settlement;
                 stRow.moadian_status = moadian;
                 stRow.moadian_code = moadian === 'registered' ? code : '';
-                if (stRow.partner_id) stRow.partner_profit_recorded = profit;
+                if (hasPartnerProfit(stRow)) stRow.partner_profit_recorded = profit;
                 gridApi.setGridOption('rowData', allRows);
                 bootstrap.Modal.getInstance(document.getElementById('stModal')).hide();
                 showToast('ذخیره شد', 'success');
