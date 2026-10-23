@@ -386,6 +386,23 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         if (typeof el.select === 'function') el.select();
                     });
                 }
+                // تعداد (درخواست ۱۴۰۵/۰۸/۰۱): مقدار پیش‌فرض «۱» با اولین کلیک پاک شود؛ وقتی کاربر
+                // عددی وارد کرد (یا ردیف از فاکتور ذخیره‌شده آمد)، دیگر با کلیک پاک نشود (فقط انتخاب).
+                // اگر خالی رها شد، دوباره «۱» (پیش‌فرض) می‌شود.
+                if (el.classList.contains('it-qty')) {
+                    el.addEventListener('input', () => { el.dataset.userSet = '1'; });
+                    el.addEventListener('focus', () => {
+                        if (!el.dataset.userSet) el.value = '';
+                        else if (typeof el.select === 'function') el.select();
+                    });
+                    el.addEventListener('blur', () => {
+                        if (!toEn(el.value).trim()) {
+                            el.value = faDigits(1);
+                            delete el.dataset.userSet;
+                            recalc();
+                        }
+                    });
+                }
             });
             tr.querySelector('.it-del').addEventListener('click', () => {
                 tr.remove();
@@ -429,6 +446,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const tr = rowTemplate();
             document.getElementById('itemsBody').appendChild(tr);
             if (data) {
+                tr.querySelector('.it-qty').dataset.userSet = '1';
                 if (data.product_id) tr.dataset.productId = data.product_id;
                 tr.querySelector('.it-prod-name').value = data.name || '';
                 tr.querySelector('.it-qty').value = faDigits(data.qty ?? 1);
@@ -632,7 +650,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 placeholder: 'کد/نام تأمین‌کننده…',
                 addTitle: 'افزودن تأمین‌کننده‌ی جدید',
                 onAdd: () => QuickAdd.supplier(s => {
-                    suppliers.push(s);
+                    if (!suppliers.some(x => x.id === s.id)) suppliers.push(s); // «انتخاب همین تأمین‌کننده» = موجود
                     supplierPicker.updateItems(supItems());
                     supplierPicker.setValue(s.id);
                 }),

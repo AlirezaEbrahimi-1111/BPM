@@ -96,6 +96,9 @@ func (s *server) createSupplier(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := userOf(r.Context())
+	if s.checkCustomerDup(w, dupOfficialSuppliers, "تأمین‌کننده", u.OrgID, 0, in.Name, in.NationalID, "", "", false) {
+		return
+	}
 
 	res, err := s.db.Exec(`
 		INSERT INTO inv_suppliers
@@ -124,8 +127,17 @@ func (s *server) updateSupplier(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := userOf(r.Context())
+	var oldName, oldNID string
+	if err := s.db.QueryRow("SELECT name, COALESCE(national_id,'') FROM inv_suppliers WHERE id = ? AND organization_id = ? AND is_deleted = 0",
+		id, u.OrgID).Scan(&oldName, &oldNID); err != nil {
+		writeErr(w, http.StatusNotFound, "تأمین‌کننده یافت نشد")
+		return
+	}
+	if s.checkCustomerDup(w, dupOfficialSuppliers, "تأمین‌کننده", u.OrgID, id, in.Name, in.NationalID, oldName, oldNID, true) {
+		return
+	}
 
-	res, err := s.db.Exec(`
+	_, err := s.db.Exec(`
 		UPDATE inv_suppliers
 		SET name = ?, phone = ?, mobile = ?, national_id = ?, economic_code = ?, address = ?, note = ?
 		WHERE id = ? AND organization_id = ? AND is_deleted = 0`,
@@ -135,10 +147,8 @@ func (s *server) updateSupplier(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
 	}
-	if n, _ := res.RowsAffected(); n == 0 {
-		writeErr(w, http.StatusNotFound, "تأمین‌کننده یافت نشد")
-		return
-	}
+	// «صفر ردیف تغییر کرد» یعنی همان مقادیر قبلی ذخیره شد، نه «یافت نشد» — وجود رکورد بالاتر
+	// (قبل از بررسی تکراری) چک شده است. قبلا ذخیرهٔ بدون تغییر پیام «تأمین‌کننده یافت نشد» می‌داد.
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
 }
 

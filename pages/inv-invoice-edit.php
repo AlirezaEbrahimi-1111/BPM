@@ -652,6 +652,23 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         if (typeof el.select === 'function') el.select();
                     });
                 }
+                // تعداد (درخواست ۱۴۰۵/۰۸/۰۱): مقدار پیش‌فرض «۱» با اولین کلیک پاک شود؛ وقتی کاربر
+                // عددی وارد کرد (یا ردیف از فاکتور ذخیره‌شده آمد)، دیگر با کلیک پاک نشود (فقط انتخاب).
+                // اگر خالی رها شد، دوباره «۱» (پیش‌فرض) می‌شود.
+                if (el.classList.contains('it-qty')) {
+                    el.addEventListener('input', () => { el.dataset.userSet = '1'; });
+                    el.addEventListener('focus', () => {
+                        if (!el.dataset.userSet) el.value = '';
+                        else if (typeof el.select === 'function') el.select();
+                    });
+                    el.addEventListener('blur', () => {
+                        if (!toEn(el.value).trim()) {
+                            el.value = faDigits(1);
+                            delete el.dataset.userSet;
+                            recalc();
+                        }
+                    });
+                }
             });
             tr.querySelector('.it-exempt').addEventListener('change', recalc);
             tr.querySelector('.it-del').addEventListener('click', () => {
@@ -736,6 +753,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             const tr = rowTemplate();
             document.getElementById('itemsBody').appendChild(tr);
             if (data) {
+                tr.querySelector('.it-qty').dataset.userSet = '1';
                 const p = data.product_id ? products.find(x => x.id === +data.product_id) : null;
                 if (data.product_id) {
                     tr.dataset.productId = data.product_id;
@@ -1040,7 +1058,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 placeholder: 'کد/نام مشتری…',
                 addTitle: 'افزودن مشتری جدید',
                 onAdd: () => QuickAdd.customer(c => {
-                    customers.push(c);
+                    if (!customers.some(x => x.id === c.id)) customers.push(c); // «انتخاب همین مشتری» = موجود
                     customerPicker.updateItems(custItems());
                     customerPicker.setValue(c.id);
                 }),

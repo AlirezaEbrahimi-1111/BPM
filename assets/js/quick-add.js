@@ -55,8 +55,19 @@ const QuickAdd = (() => {
             body: JSON.stringify(body)
         });
         const d = await r.json().catch(() => ({}));
-        if (!r.ok || d.success === false) throw new Error(d.message || ('خطای ' + r.status));
+        if (!r.ok || d.success === false) {
+            const err = new Error(d.message || ('خطای ' + r.status));
+            err.data = d; // مثلا {duplicate:{id,name}} برای مشتری/تأمین‌کنندهٔ تکراری
+            throw err;
+        }
         return d;
+    }
+
+    // تکراری (۴۰۹ با duplicate): به‌جای ساخت دوباره، دکمهٔ «انتخاب همین …» کنار پیام
+    function dupAction(e, label, onPick) {
+        const dup = e && e.data && e.data.duplicate;
+        if (dup && dup.id) e.action = { label, fn: () => onPick({ id: dup.id, name: dup.name, existing: true }) };
+        return e;
     }
 
     // fields: [{name, label, type:'text'|'select'|'textarea'|'switch', options?, required?, col?}]
@@ -136,6 +147,14 @@ const QuickAdd = (() => {
                 if (window.showToast) showToast('افزوده شد', 'success');
             } catch (e) {
                 errBox.textContent = e.message || 'خطا در ذخیره';
+                if (e.action) {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'btn btn-sm btn-primary me-2';
+                    b.textContent = e.action.label;
+                    b.addEventListener('click', () => { modal.hide(); e.action.fn(); });
+                    errBox.appendChild(b);
+                }
                 errBox.hidden = false;
                 btn.disabled = false;
             }
@@ -168,7 +187,12 @@ const QuickAdd = (() => {
                 const errs = window.IranId.checkCustomer(body);
                 if (errs.length) throw new Error(errs.join(' '));
             }
-            const res = await post('/customers', body);
+            let res;
+            try {
+                res = await post('/customers', body);
+            } catch (e) {
+                throw dupAction(e, 'انتخاب همین مشتری', onDone);
+            }
             const rec = { id: res.id, mobile: '', city: '', province: '', ...body };
             onDone(rec);
             return rec;
@@ -188,7 +212,12 @@ const QuickAdd = (() => {
                 name: d.name, phone: toEn(d.phone), mobile: toEn(d.mobile),
                 national_id: toEn(d.national_id), economic_code: toEn(d.economic_code), address: d.address, note: '',
             };
-            const res = await post('/inv/suppliers', body);
+            let res;
+            try {
+                res = await post('/inv/suppliers', body);
+            } catch (e) {
+                throw dupAction(e, 'انتخاب همین تأمین‌کننده', onDone);
+            }
             const rec = { id: res.id, ...body };
             onDone(rec);
             return rec;

@@ -109,6 +109,9 @@ func (s *server) createCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := userOf(r.Context())
+	if s.checkCustomerDup(w, dupOfficialCustomers, "مشتری", u.OrgID, 0, in.Name, in.NationalID, "", "", false) {
+		return
+	}
 
 	res, err := s.db.Exec(`
 		INSERT INTO crm_customers
@@ -140,8 +143,17 @@ func (s *server) updateCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := userOf(r.Context())
+	var oldName, oldNID string
+	if err := s.db.QueryRow("SELECT name, COALESCE(national_id,'') FROM crm_customers WHERE id = ? AND organization_id = ? AND is_deleted = 0",
+		id, u.OrgID).Scan(&oldName, &oldNID); err != nil {
+		writeErr(w, http.StatusNotFound, "مشتری یافت نشد")
+		return
+	}
+	if s.checkCustomerDup(w, dupOfficialCustomers, "مشتری", u.OrgID, id, in.Name, in.NationalID, oldName, oldNID, true) {
+		return
+	}
 
-	res, err := s.db.Exec(`
+	_, err := s.db.Exec(`
 		UPDATE crm_customers
 		SET type = ?, name = ?, phone = ?, mobile = ?, national_id = ?, economic_code = ?,
 		    province = ?, city = ?, postal_code = ?, address = ?
@@ -154,10 +166,8 @@ func (s *server) updateCustomer(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
 	}
-	if n, _ := res.RowsAffected(); n == 0 {
-		writeErr(w, http.StatusNotFound, "مشتری یافت نشد")
-		return
-	}
+	// «صفر ردیف تغییر کرد» یعنی همان مقادیر قبلی ذخیره شد، نه «یافت نشد» — وجود رکورد بالاتر
+	// (قبل از بررسی تکراری) چک شده است. قبلا ذخیرهٔ بدون تغییر پیام «مشتری یافت نشد» می‌داد.
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
 }
 
@@ -182,6 +192,17 @@ func (s *server) renameCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := userOf(r.Context())
+	var oldName string
+	if err := s.db.QueryRow("SELECT name FROM crm_customers WHERE id = ? AND organization_id = ? AND is_deleted = 0", id, u.OrgID).Scan(&oldName); err != nil {
+		writeErr(w, http.StatusNotFound, "مشتری یافت نشد")
+		return
+	}
+	if normName(in.Name) != normName(oldName) {
+		if h := s.findDupName(dupOfficialCustomers, u.OrgID, id, in.Name); h != nil {
+			writeDup(w, "مشتری «"+h.Name+"» قبلاً ثبت شده است.", h)
+			return
+		}
+	}
 	res, err := s.db.Exec("UPDATE crm_customers SET name = ? WHERE id = ? AND organization_id = ? AND is_deleted = 0",
 		in.Name, id, u.OrgID)
 	if err != nil {
@@ -246,10 +267,15 @@ func (s *server) importCustomers(w http.ResponseWriter, r *http.Request) {
 
 	inserted := 0
 	errs := []map[string]any{}
+	ix := s.loadDupIndex(dupOfficialCustomers, u.OrgID) // تکراری با موجودی‌ها یا ردیف‌های همین فایل
 	for i, row := range body.Rows {
 		row.normalize()
 		if row.Name == "" {
 			errs = append(errs, map[string]any{"row": i + 1, "message": "نام مشتری خالی است"})
+			continue
+		}
+		if msg := ix.check("مشتری", row.Name, row.NationalID); msg != "" {
+			errs = append(errs, map[string]any{"row": i + 1, "message": msg})
 			continue
 		}
 		if _, e := ins.Exec(u.OrgID, row.Type, row.Name, nullIfEmpty(row.Phone), nullIfEmpty(row.Mobile),

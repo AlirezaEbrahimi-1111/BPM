@@ -12,7 +12,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
@@ -265,18 +264,6 @@ func (s *server) ucrmEvent(ex interface {
 	}
 	id, _ := res.LastInsertId()
 	return id
-}
-
-// nationalIDTaken: نام مشتری دیگری (حذف‌نشده) با همین کد/شناسه ملی، یا "".
-func (s *server) ucrmNationalIDTaken(nid string, exclude int64) string {
-	if nid == "" {
-		return ""
-	}
-	var name string
-	_ = s.db.QueryRow(`SELECT name FROM ucrm_customers
-		WHERE organization_id = ? AND is_deleted = 0 AND national_id = ? AND id <> ? LIMIT 1`,
-		ucrmOrg, nid, exclude).Scan(&name)
-	return name
 }
 
 // nullIfZeroIf: فقط وقتی cond درست است مقدار را می‌نویسد، وگرنه NULL (nullIfZero در stock.go)
@@ -555,8 +542,7 @@ func (s *server) ucrmCreateCustomer(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "کارشناس انتخاب‌شده عضو تیم فروش نیست.")
 		return
 	}
-	if other := s.ucrmNationalIDTaken(in.NationalID, 0); other != "" {
-		writeErr(w, http.StatusConflict, "این کد/شناسه ملی قبلا برای مشتری «"+other+"» ثبت شده است.")
+	if s.checkCustomerDup(w, dupUnofficialCustomers, "مشتری", ucrmOrg, 0, in.Name, in.NationalID, "", "", false) {
 		return
 	}
 
@@ -652,8 +638,7 @@ func (s *server) ucrmUpdateCustomer(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "کارشناس انتخاب‌شده عضو تیم فروش نیست.")
 		return
 	}
-	if other := s.ucrmNationalIDTaken(in.NationalID, cur.ID); other != "" {
-		writeErr(w, http.StatusConflict, "این کد/شناسه ملی قبلا برای مشتری «"+other+"» ثبت شده است.")
+	if s.checkCustomerDup(w, dupUnofficialCustomers, "مشتری", ucrmOrg, cur.ID, in.Name, in.NationalID, cur.Name, cur.NationalID, true) {
 		return
 	}
 
@@ -990,7 +975,7 @@ func (s *server) ucrmImport(w http.ResponseWriter, r *http.Request) {
 	actor := s.userName(uid)
 	inserted := 0
 	errs := []map[string]any{}
-	nidSeen := map[string]int{}
+	ix := s.loadDupIndex(dupUnofficialCustomers, ucrmOrg)
 	for i, row := range body.Rows {
 		n := i + 2 // ردیف ۱ اکسل = عنوان ستون‌ها
 		row.normalize()
@@ -1011,16 +996,10 @@ func (s *server) ucrmImport(w http.ResponseWriter, r *http.Request) {
 			}
 			rep = id
 		}
-		if row.NationalID != "" {
-			if prev, ok := nidSeen[row.NationalID]; ok {
-				errs = append(errs, map[string]any{"row": n, "message": fmt.Sprintf("کد/شناسه ملی تکراری با ردیف %d همین فایل.", prev)})
-				continue
-			}
-			if other := s.ucrmNationalIDTaken(row.NationalID, 0); other != "" {
-				errs = append(errs, map[string]any{"row": n, "message": "کد/شناسه ملی قبلا برای «" + other + "» ثبت شده."})
-				continue
-			}
-			nidSeen[row.NationalID] = n
+		// نام یا کد/شناسهٔ ملی تکراری (با مشتری‌های موجود یا ردیف‌های قبلی همین فایل)
+		if msg := ix.check("مشتری", row.Name, row.NationalID); msg != "" {
+			errs = append(errs, map[string]any{"row": n, "message": msg})
+			continue
 		}
 		res, err := tx.Exec(`
 			INSERT INTO ucrm_customers

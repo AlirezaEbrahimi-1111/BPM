@@ -140,6 +140,12 @@ $canWrite = true;
         .del-inv-table { font-size: 12.5px; }
         .del-inv-table thead th { position: sticky; top: 0; background: #f8f9fa; color: #374151 !important; font-weight: 600; z-index: 1; }
         .del-inv-table td, .del-inv-table th { padding: 6px 10px; }
+        .dup-banner { margin: .75rem 0 0; border: 1px solid rgba(245, 158, 11, .35); background: rgba(245, 158, 11, .08); border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #92400e; }
+        .dup-banner summary { cursor: pointer; font-weight: 600; }
+        .dup-banner .dup-group { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(245, 158, 11, .35); }
+        .dup-banner .dup-item { display: flex; align-items: center; gap: 8px; padding: 3px 0; color: var(--text-strong, #2d3748); }
+        .dup-banner .dup-item .meta { color: var(--text-muted, #6b7490); font-size: 12px; }
+        :root[data-theme="dark"] .dup-banner { color: #fbbf24; background: rgba(251, 191, 36, .08); border-color: rgba(251, 191, 36, .3); }
         .del-summary { background: rgba(220, 38, 38, .08); border: 1px solid rgba(220, 38, 38, .25); border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.9; }
         :root[data-theme="dark"] .del-inv-table thead th { background: var(--surface); color: var(--text-strong) !important; }
         :root[data-theme="dark"] .del-inv-table td { color: var(--text-strong); background: transparent; }
@@ -170,6 +176,8 @@ $canWrite = true;
             <?php endif; ?>
         </div>
         <div id="importResult"></div>
+        <!-- مشتری‌های تکراری موجود (نام یکسان‌سازی‌شده یا شناسهٔ یکسان) — برای یکی کردن -->
+        <div id="dupBanner" class="dup-banner" hidden></div>
 
         <div id="crmGrid" class="ag-theme-alpine grid-fill inv-grid" style="width:100%;"></div>
     </div>
@@ -416,10 +424,29 @@ $canWrite = true;
                 }
                 allRows = out;
                 applyFilter();
+                loadDups();
             } catch (e) {
                 showToast(e.message || 'خطا در بارگذاری', 'error');
                 gridApi.setGridOption('rowData', []);
             }
+        }
+
+        // ── مشتری‌های تکراری موجود (جلوی تکراری جدید را خود سرور می‌گیرد؛ این‌ها قدیمی‌اند) ──
+        async function loadDups() {
+            const box = document.getElementById('dupBanner');
+            if (!CAN_WRITE) return;
+            let d;
+            try { d = await apiGet('/customers/duplicates'); } catch (e) { box.hidden = true; return; }
+            const groups = d.groups || [];
+            if (!groups.length) { box.hidden = true; box.innerHTML = ''; return; }
+            box.innerHTML = `<details><summary><i class="bi bi-exclamation-triangle ms-1"></i>${faDigits(groups.length)} گروه مشتری تکراری پیدا شد — برای یکی کردن، روی «حذف و انتقال» مشتری اضافه بزنید تا فاکتورهایش به مشتری دیگر منتقل شود.</summary>` +
+                groups.map(g => `<div class="dup-group"><div class="small mb-1">${esc(g.reason)}:</div>` +
+                    g.items.map(it => `<div class="dup-item">
+                        <span>${esc(it.name)}</span>
+                        <span class="meta">${it.national_id ? 'شناسه ملی: ' + faDigits(it.national_id) : 'بدون شناسه ملی'}</span>
+                        <button type="button" class="ag-action-btn del" title="حذف و انتقال فاکتورها به مشتری دیگر" onclick="removeRow(${it.id})"><i class="bi bi-trash"></i></button>
+                    </div>`).join('') + '</div>').join('') + '</details>';
+            box.hidden = false;
         }
 
         function applyFilter() {
