@@ -28,6 +28,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
     <script src="<?= asset('../../assets/js/iran-id-validate.js') ?>"></script>
     <script src="<?= asset('../../assets/js/iran-provinces.js') ?>"></script>
     <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/edit-guard.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/ucrm.css') ?>">
 </head>
 
@@ -523,6 +524,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             document.querySelector('#custModal .modal-body').scrollTop = 0;
         }
 
+        // خروجی: true اگر ذخیره شد (برای «ذخیره و خروج» پنجرهٔ ترک صفحه — EditGuard)
         async function saveCust() {
             // شماره‌ای که تایپ شده ولی هنوز + نخورده هم حساب شود
             if (document.getElementById('f_phone_in').value.trim()) addPhone();
@@ -542,11 +544,11 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             if (!body.name) missing.push('نام');
             if (!body.phones.length) missing.push('شماره تماس');
             if (!body.rep_id) missing.push('کارشناس فروش');
-            if (missing.length) return formAlert('این فیلدها الزامی‌اند: ' + missing.join('، '));
+            if (missing.length) { formAlert('این فیلدها الزامی‌اند: ' + missing.join('، ')); return false; }
             if (window.IranId && body.national_id &&
                 !(editRow && body.national_id === editRow.national_id && body.type === editRow.type)) {
                 const errs = IranId.checkCustomer({ type: body.type, national_id: body.national_id });
-                if (errs.length) return formAlert(errs.join('<br>'));
+                if (errs.length) { formAlert(errs.join('<br>')); return false; }
             }
             const btn = document.getElementById('btnSave');
             btn.disabled = true;
@@ -558,14 +560,64 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 } else {
                     d = await UCRM.send('POST', '/customers', body);
                 }
+                EditGuard.saved();
                 custModal.hide();
                 showToast(d.message || 'ذخیره شد', 'success');
                 loadAll();
+                return true;
             } catch (e) {
                 formAlert(esc(e.message || 'خطا'));
+                return false;
             } finally {
                 btn.disabled = false;
             }
+        }
+
+        // ── محافظ ترک صفحه + پیش‌نویس خودکار فرم مشتری (assets/js/edit-guard.js) ──
+        // فقط وقتی پنجرهٔ «مشتری جدید / ویرایش» باز است تغییر حساب می‌شود. مبنا هر بار بعد
+        // از پر شدن فرم (باز شدن پنجره) و بعد از بستن/ذخیره تازه می‌شود.
+        let guardRestoring = false;
+
+        function guardSnapshot() {
+            if (!document.getElementById('custModal').classList.contains('show')) return null;
+            return {
+                m: editRow ? editRow.id : 0,
+                rs: document.getElementById('btnSave').dataset.resubmit === '1',
+                ty: document.getElementById('f_type').value,
+                na: document.getElementById('f_name').value,
+                ni: document.getElementById('f_national_id').value,
+                pr: document.getElementById('f_province').value,
+                ci: document.getElementById('f_city').value,
+                ad: document.getElementById('f_address').value,
+                no: document.getElementById('f_note').value,
+                re: document.getElementById('f_rep').value,
+                ta: document.getElementById('f_target').value,
+                ph: phones.slice(),
+                pi: document.getElementById('f_phone_in').value,
+            };
+        }
+
+        function guardRestore(st) {
+            if (!st) return;
+            if (st.m && !allRows.some(r => r.id === st.m)) return; // مشتری دیگر نیست/دیده نمی‌شود
+            guardRestoring = true;
+            if (st.m) openEdit(st.m, st.rs); else openAdd();
+            setType(st.ty || 'legal');
+            document.getElementById('f_name').value = st.na || '';
+            document.getElementById('f_national_id').value = st.ni || '';
+            IranProvinces.setValue(document.getElementById('f_province'), document.getElementById('f_city'), st.pr || '', st.ci || '');
+            document.getElementById('f_address').value = st.ad || '';
+            document.getElementById('f_note').value = st.no || '';
+            if (st.re && !document.getElementById('f_rep').disabled) document.getElementById('f_rep').value = st.re;
+            document.getElementById('f_target').value = st.ta || '';
+            phones = (st.ph || []).slice();
+            renderPhones();
+            document.getElementById('f_phone_in').value = st.pi || '';
+        }
+
+        function guardLabel() {
+            const n = document.getElementById('f_name').value.trim();
+            return editRow ? 'مشتری «' + (n || editRow.name) + '»' : (n ? 'مشتری جدید «' + n + '»' : 'مشتری جدید');
         }
 
         // ── تأیید / رد ──
@@ -803,6 +855,21 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 if (r && (r.can_resubmit || r.can_edit)) openEdit(eid, qp.get('resubmit') === '1' && r.can_resubmit);
                 history.replaceState(null, '', location.pathname);
             }
+
+            EditGuard.init({
+                key: 'ucrm-customer-form',
+                label: guardLabel,
+                snapshot: guardSnapshot,
+                restore: guardRestore,
+                save: () => saveCust(),
+            });
+            // پر شدن فرم با باز شدن پنجره = «بدون تغییر»؛ بستن پنجره (انصراف) = کنار گذاشتن تغییرات
+            document.getElementById('custModal').addEventListener('shown.bs.modal', () => {
+                if (guardRestoring) { guardRestoring = false; return; } // نسخهٔ بازیابی‌شده «تغییر ذخیره‌نشده» بماند
+                EditGuard.saved();
+            });
+            document.getElementById('custModal').addEventListener('hidden.bs.modal', () => EditGuard.saved());
+            EditGuard.ready();
         });
     </script>
 </body>

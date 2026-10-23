@@ -28,6 +28,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <script src="<?= asset('../../assets/js/iran-id-validate.js') ?>"></script>
     <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
     <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/edit-guard.js') ?>"></script>
     <script src="<?= asset('../../assets/js/partner-percent-modal.js') ?>"></script>
 
     <style>
@@ -877,28 +878,30 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             };
         }
 
-        async function save(goBack) {
+        // noNav = true: فقط ذخیره، بدون رفتن به صفحهٔ دیگر («ذخیره و خروج» پنجرهٔ ترک صفحه)
+        // خروجی: true اگر ذخیره شد
+        async function save(goBack, noNav) {
             const {
                 cust,
                 body
             } = collect();
             if (!cust) {
                 alertBox('یک مشتری از فهرست انتخاب کنید. اگر نیست، با دکمهٔ + بسازیدش.');
-                return;
+                return false;
             }
             if (!body.items.length) {
                 alertBox('حداقل یک ردیف با نام کالا لازم است.');
-                return;
+                return false;
             }
             if (body.seq_no !== null && !(body.seq_no >= 1)) {
                 alertBox('شماره فاکتور باید یک عدد بزرگ‌تر از صفر باشد.');
                 document.getElementById('f_seq_no').focus();
-                return;
+                return false;
             }
             if (Number.isNaN(body.partner_percent_override)) {
                 alertBox('درصد اختصاصی سهم همکار باید عددی بین ۰ تا ۱۰۰ باشد (مثلا ۲٫۵). یا سوئیچ «درصد اختصاصی» را خاموش کنید.');
                 document.getElementById('f_pct_override').focus();
-                return;
+                return false;
             }
             alertBox('');
             try {
@@ -909,11 +912,79 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     id = d.id;
                 }
                 showToast('ذخیره شد', 'success');
-                if (goBack) location.href = '/pages/inv-invoices.php';
-                else if (!INV_ID) location.href = '/pages/inv-invoice-edit.php?id=' + id;
+                EditGuard.saved();
+                if (!noNav) {
+                    if (goBack) EditGuard.go('/pages/inv-invoices.php');
+                    else if (!INV_ID) EditGuard.go('/pages/inv-invoice-edit.php?id=' + id);
+                }
+                return true;
             } catch (e) {
                 alertBox(e.message || 'خطا در ذخیره');
+                return false;
             }
+        }
+
+        // ── محافظ ترک صفحه + پیش‌نویس خودکار (assets/js/edit-guard.js) ──
+        function guardSnapshot() {
+            const rows = [];
+            document.querySelectorAll('#itemsBody tr').forEach(tr => {
+                const t = tr.querySelector('.it-prod-name').value.trim();
+                if (!t) return;
+                rows.push({
+                    p: tr.dataset.productId ? +tr.dataset.productId : null,
+                    t,
+                    q: num(tr.querySelector('.it-qty').value),
+                    u: num(tr.querySelector('.it-price').value),
+                    d: num(tr.querySelector('.it-disc').value),
+                    x: tr.querySelector('.it-exempt').checked,
+                });
+            });
+            const c = customerPicker && customerPicker.getValue();
+            const pa = partnerPicker && partnerPicker.getValue();
+            return {
+                c: c ? c.id : 0,
+                pa: pa ? pa.id : 0,
+                dt: document.getElementById('f_doc_type').value,
+                pt: document.getElementById('f_payment_type').value,
+                n: document.getElementById('f_note').value,
+                d: document.getElementById('f_issue_date').getAttribute('data-date') || '',
+                // شمارهٔ پیشنهادی خودکار «تغییر» حساب نمی‌شود؛ فقط شماره‌ای که کاربر تایپ کرده
+                s: seqTouched ? document.getElementById('f_seq_no').value : '',
+                o: document.getElementById('f_pct_override_on').checked ? document.getElementById('f_pct_override').value : '',
+                rows,
+            };
+        }
+
+        function guardRestore(st) {
+            document.getElementById('f_doc_type').value = st.dt || document.getElementById('f_doc_type').value;
+            document.getElementById('f_payment_type').value = st.pt || '';
+            if (customerPicker) st.c ? customerPicker.setValue(st.c) : customerPicker.reset();
+            if (partnerPicker) st.pa ? partnerPicker.setValue(st.pa) : partnerPicker.reset();
+            document.getElementById('f_note').value = st.n || '';
+            if (st.d) {
+                const di = document.getElementById('f_issue_date');
+                di.setAttribute('data-date', st.d);
+                di.value = (typeof convertToJalali === 'function') ? convertToJalali(st.d) : st.d;
+            }
+            if (st.s) {
+                document.getElementById('f_seq_no').value = st.s;
+                seqTouched = true;
+            }
+            document.getElementById('f_pct_override_on').checked = !!st.o;
+            document.getElementById('f_pct_override').value = st.o || '';
+            document.getElementById('itemsBody').innerHTML = '';
+            (st.rows || []).forEach(r => addRow({
+                product_id: r.p, title: r.t, qty: r.q, unit_price: r.u, discount: r.d, is_tax_exempt: r.x,
+            }));
+            if (!document.querySelectorAll('#itemsBody tr').length) addRow();
+            syncOverrideUI();
+            refreshPartnerProfit();
+            recalc();
+        }
+
+        function guardLabel() {
+            const no = toEn(document.getElementById('f_seq_no').value).trim();
+            return INV_ID ? ('فاکتور فروش' + (no ? ' شماره ' + faDigits(no) : '')) : 'فاکتور فروش جدید';
         }
 
         async function reloadCustomers() {
@@ -1119,6 +1190,16 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             });
             document.getElementById('btnSave').addEventListener('click', () => save(false));
             document.getElementById('btnSaveBack').addEventListener('click', () => save(true));
+
+            // محافظ ترک صفحه: فرم کامل بارگذاری شده → مبنای «بدون تغییر» + پیشنهاد بازیابی نسخهٔ ذخیره‌نشده
+            EditGuard.init({
+                key: 'inv-sale:' + (INV_ID || 'new'),
+                label: guardLabel,
+                snapshot: guardSnapshot,
+                restore: guardRestore,
+                save: () => save(false, true),
+            });
+            EditGuard.ready();
 
             // پیمایش با Enter در سربرگ: تاریخ صدور → نام کالای ردیف اول
             // (فیلد مشتری اکنون EntityPicker است و کیبورد خودش را دارد)

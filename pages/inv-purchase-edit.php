@@ -25,6 +25,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
     <script src="<?= asset('../../assets/js/entity-picker.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/edit-guard.js') ?>"></script>
     <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
     <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
 
@@ -513,18 +514,20 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             };
         }
 
-        async function save(goBack) {
+        // noNav = true: فقط ذخیره، بدون رفتن به صفحهٔ دیگر («ذخیره و خروج» پنجرهٔ ترک صفحه)
+        // خروجی: true اگر ذخیره شد
+        async function save(goBack, noNav) {
             const {
                 sup,
                 body
             } = collect();
             if (!sup) {
                 alertBox('یک تأمین‌کننده از فهرست انتخاب کنید. اگر نیست، با دکمه‌ی + بسازیدش.');
-                return;
+                return false;
             }
             if (!body.items.length) {
                 alertBox('حداقل یک ردیف با کالا و تعداد معتبر لازم است.');
-                return;
+                return false;
             }
             alertBox('');
             try {
@@ -535,11 +538,60 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     id = d.id;
                 }
                 showToast('ذخیره شد', 'success');
-                if (goBack) location.href = '/pages/inv-purchases.php';
-                else if (!PUR_ID) location.href = '/pages/inv-purchase-edit.php?id=' + id;
+                EditGuard.saved();
+                if (!noNav) {
+                    if (goBack) EditGuard.go('/pages/inv-purchases.php');
+                    else if (!PUR_ID) EditGuard.go('/pages/inv-purchase-edit.php?id=' + id);
+                }
+                return true;
             } catch (e) {
                 alertBox(e.message || 'خطا در ذخیره');
+                return false;
             }
+        }
+
+        // ── محافظ ترک صفحه + پیش‌نویس خودکار (assets/js/edit-guard.js) ──
+        function guardSnapshot() {
+            const rows = [];
+            document.querySelectorAll('#itemsBody tr').forEach(tr => {
+                const t = tr.querySelector('.it-prod-name').value.trim();
+                if (!t) return;
+                rows.push({
+                    p: tr.dataset.productId ? +tr.dataset.productId : null,
+                    t,
+                    q: num(tr.querySelector('.it-qty').value),
+                    u: num(tr.querySelector('.it-price').value),
+                    d: num(tr.querySelector('.it-disc').value),
+                });
+            });
+            const sp = supplierPicker && supplierPicker.getValue();
+            return {
+                s: sp ? sp.id : 0,
+                r: document.getElementById('f_ref').value,
+                n: document.getElementById('f_note').value,
+                d: document.getElementById('f_issue_date').getAttribute('data-date') || '',
+                rows,
+            };
+        }
+
+        function guardRestore(st) {
+            if (supplierPicker) st.s ? supplierPicker.setValue(st.s) : supplierPicker.reset();
+            document.getElementById('f_ref').value = st.r || '';
+            document.getElementById('f_note').value = st.n || '';
+            if (st.d) {
+                const di = document.getElementById('f_issue_date');
+                di.setAttribute('data-date', st.d);
+                di.value = (typeof convertToJalali === 'function') ? convertToJalali(st.d) : st.d;
+            }
+            document.getElementById('itemsBody').innerHTML = '';
+            (st.rows || []).forEach(r => addRow({ product_id: r.p, name: r.t, qty: r.q, unit_price: r.u, discount: r.d }));
+            if (!document.querySelectorAll('#itemsBody tr').length) addRow();
+            recalc();
+        }
+
+        function guardLabel() {
+            const ref = document.getElementById('f_ref').value.trim();
+            return PUR_ID ? ('فاکتور خرید' + (ref ? ' «' + ref + '»' : ' #' + faDigits(PUR_ID))) : 'فاکتور خرید جدید';
         }
 
         async function loadPaged(path) {
@@ -632,6 +684,16 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             });
             document.getElementById('btnSave').addEventListener('click', () => save(false));
             document.getElementById('btnSaveBack').addEventListener('click', () => save(true));
+
+            // محافظ ترک صفحه: فرم کامل بارگذاری شده → مبنای «بدون تغییر» + پیشنهاد بازیابی نسخهٔ ذخیره‌نشده
+            EditGuard.init({
+                key: 'inv-purchase:' + (PUR_ID || 'new'),
+                label: guardLabel,
+                snapshot: guardSnapshot,
+                restore: guardRestore,
+                save: () => save(false, true),
+            });
+            EditGuard.ready();
         }
 
         document.addEventListener('DOMContentLoaded', init);
