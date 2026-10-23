@@ -29,6 +29,7 @@ $canWrite = true;
     <script src="<?= asset('../assets/js/cdn/xlsx.full.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/iran-id-validate.js') ?>"></script>
     <script src="<?= asset('../../assets/js/entity-picker.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/edit-guard.js') ?>"></script>
 
     <style>
         .crm-toolbar {
@@ -462,6 +463,33 @@ $canWrite = true;
             custModal.show();
         }
 
+        // خروجی: true اگر ذخیره شد (برای «ذخیره و خروج» پنجرهٔ ترک صفحه — EditGuard)
+        // ── محافظ ترک صفحه + پیش‌نویس خودکار فرم مشتری (assets/js/edit-guard.js) ──
+        // فقط وقتی پنجرهٔ «مشتری جدید / ویرایش مشتری» باز است تغییر حساب می‌شود.
+        const GUARD_FIELDS = ['f_type', 'f_name', 'f_phone', 'f_mobile', 'f_national_id', 'f_economic_code',
+            'f_province', 'f_city', 'f_postal_code', 'f_address'];
+        let guardRestoring = false;
+
+        function guardSnapshot() {
+            if (!document.getElementById('custModal').classList.contains('show')) return null;
+            const st = { id: +document.getElementById('f_id').value || 0 };
+            GUARD_FIELDS.forEach(f => st[f] = document.getElementById(f).value);
+            return st;
+        }
+
+        function guardRestore(st) {
+            if (!st) return;
+            if (st.id && !allRows.some(r => r.id === st.id)) return; // مشتری دیگر نیست
+            guardRestoring = true;
+            if (st.id) openEdit(st.id); else openAdd();
+            GUARD_FIELDS.forEach(f => { if (st[f] != null) document.getElementById(f).value = st[f]; });
+        }
+
+        function guardLabel() {
+            const n = document.getElementById('f_name').value.trim();
+            return document.getElementById('f_id').value ? 'مشتری «' + n + '»' : (n ? 'مشتری جدید «' + n + '»' : 'مشتری جدید');
+        }
+
         async function saveCust() {
             const id = document.getElementById('f_id').value;
             const body = {
@@ -483,7 +511,7 @@ $canWrite = true;
             if (missing.length) {
                 document.getElementById('custModalAlert').innerHTML =
                     '<div class="alert alert-danger py-2">این فیلدها الزامی‌اند: ' + missing.join('، ') + '</div>';
-                return;
+                return false;
             }
             // اعتبارسنجی شناسهٔ ملی شرکت (حقوقی) / کد ملی (حقیقی) و کد پستی — assets/js/iran-id-validate.js
             if (window.IranId) {
@@ -494,18 +522,21 @@ $canWrite = true;
                 if (errs.length) {
                     document.getElementById('custModalAlert').innerHTML =
                         '<div class="alert alert-danger py-2">' + errs.join('<br>') + '</div>';
-                    return;
+                    return false;
                 }
             }
             try {
                 if (id) await apiSend('PUT', '/customers/' + id, body);
                 else await apiSend('POST', '/customers', body);
+                EditGuard.saved();
                 custModal.hide();
                 showToast('ذخیره شد', 'success');
                 loadAll();
+                return true;
             } catch (e) {
                 document.getElementById('custModalAlert').innerHTML =
                     '<div class="alert alert-danger py-2">' + (e.message || 'خطا') + '</div>';
+                return false;
             }
         }
 
@@ -730,7 +761,22 @@ $canWrite = true;
                 });
             }
 
-            loadAll();
+            EditGuard.init({
+                key: 'inv-customer-form',
+                label: guardLabel,
+                snapshot: guardSnapshot,
+                restore: guardRestore,
+                save: () => saveCust(),
+            });
+            // پر شدن فرم با باز شدن پنجره = «بدون تغییر»؛ بستن پنجره (انصراف) = کنار گذاشتن تغییرات
+            document.getElementById('custModal').addEventListener('shown.bs.modal', () => {
+                if (guardRestoring) { guardRestoring = false; return; } // نسخهٔ بازیابی‌شده «تغییر ذخیره‌نشده» بماند
+                EditGuard.saved();
+            });
+            document.getElementById('custModal').addEventListener('hidden.bs.modal', () => EditGuard.saved());
+
+            // بعد از بارگذاری فهرست (برای بازیابی فرم «ویرایش» باید مشتری‌ها آمده باشند)
+            loadAll().then(() => EditGuard.ready());
         });
     </script>
 </body>
