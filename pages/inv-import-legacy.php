@@ -164,6 +164,47 @@ function ilDigits(cells, c0, c1) {
     for (var c = c0; c <= c1; c++) { var v = ilNorm(cells[c] === undefined ? '' : cells[c]); if (/^\d$/.test(v)) s += v; }
     return s;
 }
+// رقم کنترل شناسه/کد ملی: ۱۰ رقم = کد ملی اشخاص، ۱۱ رقم = شناسهٔ ملی شرکت.
+// فقط برای تشخیص «جهت خانه‌های رقم» در برگه به کار می‌رود (نه رد کردن مقدار).
+function ilNidValid(d) {
+    if (/^\d{10}$/.test(d)) {
+        if (/^(\d)\1{9}$/.test(d)) return false;
+        var s = 0; for (var i = 0; i < 9; i++) s += (+d[i]) * (10 - i);
+        var r = s % 11, c = +d[9];
+        return r < 2 ? c === r : c === 11 - r;
+    }
+    if (/^\d{11}$/.test(d)) {
+        var co = [29, 27, 23, 19, 17, 29, 27, 23, 19, 17], dec = (+d[9]) + 2, t = 0;
+        for (var j = 0; j < 10; j++) t += ((+d[j]) + dec) * co[j];
+        var rr = t % 11; if (rr === 10) rr = 0;
+        return rr === +d[10];
+    }
+    return false;
+}
+function ilRev(s) { return String(s || '').split('').reverse().join(''); }
+
+// جهت خانه‌های رقم (شناسهٔ ملی، شماره اقتصادی، کد پستی) در برگه‌ها — درخواست ۱۴۰۵/۰۸/۰۲:
+// در بعضی فایل‌ها خانه‌ها برعکس چیده شده‌اند و عددها وارونه خوانده می‌شدند. برای هر برگه
+// که شناسه‌اش فقط در یک جهت رقم کنترل درست دارد همان جهت؛ بقیه طبق جهت غالب کل فایل.
+function ilFixDigitOrder(inv) {
+    var fwd = 0, rev = 0, dir = {};
+    Object.keys(inv).forEach(function (k) {
+        var n = inv[k].buyer.national_id;
+        if (!n) return;
+        var a = ilNidValid(n), b = ilNidValid(ilRev(n));
+        if (a && !b) { fwd++; dir[k] = 'f'; }
+        else if (b && !a) { rev++; dir[k] = 'r'; }
+    });
+    var major = rev > fwd ? 'r' : 'f', flipped = 0;
+    Object.keys(inv).forEach(function (k) {
+        if ((dir[k] || major) !== 'r') return;
+        var b = inv[k].buyer;
+        b.national_id = ilRev(b.national_id); b.economic_code = ilRev(b.economic_code); b.postal_code = ilRev(b.postal_code);
+        flipped++;
+    });
+    return flipped;
+}
+
 function ilAfterColon(s) { s = ilNorm(s); var i = s.indexOf(':'); return i >= 0 ? s.slice(i + 1).trim() : ''; }
 function ilNDate(s) { var d = ilNorm(s).replace(/\D/g, ''); return d.length === 8 ? d.slice(0, 4) + '/' + d.slice(4, 6) + '/' + d.slice(6, 8) : ilNorm(s); }
 
@@ -343,7 +384,8 @@ function ilParseWorkbook(wb) {
         var p = ilParseInvoiceSheet(wb.Sheets[n], n);
         if (p) inv[p.sheet_no] = p; else bad.push(n.trim());
     });
-    return { rep: rep, inv: inv, bad: bad };
+    var flipped = ilFixDigitOrder(inv);
+    return { rep: rep, inv: inv, bad: bad, flipped: flipped };
 }
 
 /* ── نمایش ── */
@@ -362,7 +404,10 @@ function ilRender() {
         ilCard('فاکتور رسمی', ilFa(cnt.official), 'il-ok') + ilCard('پیش‌فاکتور', ilFa(cnt.proforma)) +
         ilCard('باطل', ilFa(cnt.cancelled)) + ilCard('رزرو (باطل)', ilFa(cnt.reserve)) +
         ilCard('وارد نمی‌شود', ilFa(cnt.exclude), cnt.exclude ? 'il-bad' : '') + ilCard('اقلام', ilFa(items)) +
-        ilCard('جمع فاکتورهای رسمی (ریال)', ilMoney(sum));
+        ilCard('جمع فاکتورهای رسمی (ریال)', ilMoney(sum)) +
+        (p.flipped ? '<div class="alert alert-info py-2 mt-2 w-100" style="line-height:1.9">' +
+            '<i class="bi bi-arrow-left-right ms-1"></i>در ' + ilFa(p.flipped) + ' برگه خانه‌های رقم شناسهٔ ملی، شماره اقتصادی و کد پستی ' +
+            'برعکس چیده شده بودند و درست (از راست به چپ) خوانده شدند.</div>' : '');
 
     var ex = Object.keys(cls).map(Number).filter(function (n) { return cls[n].kind === 'exclude'; });
     document.getElementById('exclCount').textContent = '(' + ilFa(ex.length) + ' مورد)';
@@ -419,6 +464,8 @@ function ilServerReport(d) {
                 '<td>' + ilFa((m.invoices || []).length) + '</td><td>' + (months || '—') + '</td></tr>';
         }).join('') + '</table></div>';
     if (pw.length) h += '<div class="alert alert-warning py-2 mt-2" style="line-height:1.9">' + pw.map(ilEsc).join('<br>') + '</div>';
+    var cw = d.customer_warnings || [];
+    if (cw.length) h += '<div class="alert alert-warning py-2 mt-2" style="line-height:1.9">' + cw.map(ilEsc).join('<br>') + '</div>';
     if (d.dry_run && ok) h += '<div class="alert alert-success py-2 mt-2">بررسی بی‌خطا بود. با «ورود نهایی» همه در یک مرحله ثبت می‌شوند.</div>';
     box.innerHTML = h;
     box.style.display = 'block';

@@ -122,16 +122,20 @@ func faToEnDigits(s string) string {
 func onlyDigits(s string) string { return nonDigit.ReplaceAllString(faToEnDigits(s), "") }
 
 // نام برای مقایسه: ی/ک عربی → فارسی، بدون نیم‌فاصله/فاصله/نقطه‌گذاری، حروف کوچک
+// همان یکسان‌سازی چک تکراری کل سیستم (dedup.go::normName) + بدون هیچ فاصله‌ای، تا
+// «بهره برداری» / «بهره‌برداری» / «بهرهبرداری» یکی شوند
 func nameKey(s string) string {
-	s = strings.NewReplacer("ي", "ی", "ك", "ک", "‌", "", "ـ", "").Replace(strings.ToLower(s))
-	var b strings.Builder
-	for _, r := range s {
-		if r == ' ' || r == '.' || r == '-' || r == '_' || r == '(' || r == ')' || r == '،' || r == ',' {
-			continue
-		}
-		b.WriteRune(r)
+	return strings.ReplaceAll(normName(s), " ", "")
+}
+
+// reverseDigits: «۰۱۲۳» → «۳۲۱۰» — برای فایلی که خانه‌های رقم شناسه/کد اقتصادی در آن برعکس
+// چیده شده (۱۴۰۵/۰۸/۰۲)؛ تطبیق با هر دو جهت امتحان می‌شود
+func reverseDigits(s string) string {
+	r := []rune(s)
+	for i, j := 0, len(r)-1; i < j; i, j = i+1, j-1 {
+		r[i], r[j] = r[j], r[i]
 	}
-	return b.String()
+	return string(r)
 }
 
 func parseJalaliSlash(s string) (time.Time, int, bool) {
@@ -291,8 +295,9 @@ func (s *server) importLegacy(w http.ResponseWriter, r *http.Request) {
 	// ── ۳) تطبیق مشتری: شناسه‌ی ملی → شماره‌ی اقتصادی → نام (فقط اگر یکتا) ──
 	byNID, byEco, byName := map[string]int64{}, map[string]int64{}, map[string]int64{}
 	nameDup := map[string]bool{}
+	// به ترتیب id: در نام تکراری، قدیمی‌ترین مشتری ملاک است
 	if rows, err := s.db.Query(`SELECT id, name, COALESCE(national_id,''), COALESCE(economic_code,'')
-		FROM crm_customers WHERE organization_id = ? AND is_deleted = 0`, u.OrgID); err != nil {
+		FROM crm_customers WHERE organization_id = ? AND is_deleted = 0 ORDER BY id`, u.OrgID); err != nil {
 		writeDBErr(w, "importLegacy", err)
 		return
 	} else {
@@ -315,8 +320,9 @@ func (s *server) importLegacy(w http.ResponseWriter, r *http.Request) {
 			if k := nameKey(name); k != "" {
 				if _, ok := byName[k]; ok {
 					nameDup[k] = true
+				} else {
+					byName[k] = id
 				}
-				byName[k] = id
 			}
 		}
 		rows.Close()
@@ -327,18 +333,29 @@ func (s *server) importLegacy(w http.ResponseWriter, r *http.Request) {
 	newOrder := []string{}
 	newData := map[string]legacyCustomer{}
 	matched := 0
+	custWarnings := []string{}
+	warnedDup := map[string]bool{}
 	for _, inv := range in.Invoices {
 		c := inv.Customer
 		if inv.Kind == "reserve" && c.Name == "" {
 			continue
 		}
 		nid, eco, nk := onlyDigits(c.NationalID), onlyDigits(c.EconomicCode), nameKey(c.Name)
+		// شناسه → شناسهٔ برعکس → کد اقتصادی → کد اقتصادی برعکس → نام (در نام تکراری: قدیمی‌ترین)
 		if id, ok := byNID[nid]; ok && nid != "" {
+			custOf[inv.No] = id
+		} else if id, ok := byNID[reverseDigits(nid)]; ok && nid != "" {
 			custOf[inv.No] = id
 		} else if id, ok := byEco[eco]; ok && eco != "" {
 			custOf[inv.No] = id
-		} else if id, ok := byName[nk]; ok && nk != "" && !nameDup[nk] {
+		} else if id, ok := byEco[reverseDigits(eco)]; ok && eco != "" {
 			custOf[inv.No] = id
+		} else if id, ok := byName[nk]; ok && nk != "" {
+			custOf[inv.No] = id
+			if nameDup[nk] && !warnedDup[nk] {
+				warnedDup[nk] = true
+				custWarnings = append(custWarnings, fmt.Sprintf("مشتری «%s» در سیستم چند بار تعریف شده؛ فاکتورها به قدیمی‌ترین وصل شد — بهتر است در صفحهٔ مشتریان ادغام شوند.", c.Name))
+			}
 		}
 		if _, ok := custOf[inv.No]; ok {
 			matched++
@@ -482,6 +499,7 @@ func (s *server) importLegacy(w http.ResponseWriter, r *http.Request) {
 		"conflicts":         conflicts,
 		"matched_customers": matched,
 		"new_customers":     newList,
+		"customer_warnings": custWarnings,
 	}
 	if in.DryRun {
 		report["success"] = true
