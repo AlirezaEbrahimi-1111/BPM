@@ -124,6 +124,10 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                                 <input type="text" class="form-control" id="f_national_id" autocomplete="off" inputmode="numeric" placeholder="اختیاری">
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label">شماره اقتصادی</label>
+                                <input type="text" class="form-control" id="f_economic_code" autocomplete="off" inputmode="numeric" placeholder="اختیاری — ۱۰ تا ۱۲ رقم">
+                            </div>
+                            <div class="col-md-6">
                                 <label class="form-label">استان</label>
                                 <select class="form-select" id="f_province">
                                     <option value="">انتخاب استان</option>
@@ -260,7 +264,8 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 field: 'name',
                 flex: 2,
                 minWidth: 130,
-                cellRenderer: p => `<span class="uc-name">${esc(p.value)}</span>`
+                // نام = لینک صفحهٔ جزئیات مشتری (کلیک ردیف هم همان‌جا می‌رود)
+                cellRenderer: p => `<a class="uc-name uc-name-link" href="ucrm-customer.php?id=${p.data.id}">${esc(p.value)}</a>`
             },
             {
                 headerName: 'کارشناس فروش',
@@ -495,6 +500,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             setType(r.type || 'legal');
             document.getElementById('f_name').value = r.name || '';
             document.getElementById('f_national_id').value = faDigits(r.national_id || '');
+            document.getElementById('f_economic_code').value = faDigits(r.economic_code || '');
             IranProvinces.setValue(document.getElementById('f_province'), document.getElementById('f_city'), r.province, r.city);
             document.getElementById('f_address').value = r.address || '';
             document.getElementById('f_note').value = r.note || '';
@@ -532,6 +538,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 type: document.getElementById('f_type').value,
                 name: document.getElementById('f_name').value.trim(),
                 national_id: UCRM.toEn(document.getElementById('f_national_id').value.trim()),
+                economic_code: UCRM.toEn(document.getElementById('f_economic_code').value.trim()),
                 province: document.getElementById('f_province').value,
                 city: document.getElementById('f_city').value.trim(),
                 address: document.getElementById('f_address').value.trim(),
@@ -548,6 +555,11 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             if (window.IranId && body.national_id &&
                 !(editRow && body.national_id === editRow.national_id && body.type === editRow.type)) {
                 const errs = IranId.checkCustomer({ type: body.type, national_id: body.national_id });
+                if (errs.length) { formAlert(errs.join('<br>')); return false; }
+            }
+            // شماره اقتصادی: فقط وقتی عوض شده بررسی شود (دادهٔ قدیمی ذخیرهٔ بقیه را قفل نکند)
+            if (window.IranId && body.economic_code && !(editRow && body.economic_code === (editRow.economic_code || ''))) {
+                const errs = IranId.checkCustomer({ type: body.type, economic_code: body.economic_code });
                 if (errs.length) { formAlert(errs.join('<br>')); return false; }
             }
             const btn = document.getElementById('btnSave');
@@ -586,6 +598,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 ty: document.getElementById('f_type').value,
                 na: document.getElementById('f_name').value,
                 ni: document.getElementById('f_national_id').value,
+                ec: document.getElementById('f_economic_code').value,
                 pr: document.getElementById('f_province').value,
                 ci: document.getElementById('f_city').value,
                 ad: document.getElementById('f_address').value,
@@ -605,6 +618,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             setType(st.ty || 'legal');
             document.getElementById('f_name').value = st.na || '';
             document.getElementById('f_national_id').value = st.ni || '';
+            document.getElementById('f_economic_code').value = st.ec || '';
             IranProvinces.setValue(document.getElementById('f_province'), document.getElementById('f_city'), st.pr || '', st.ci || '');
             document.getElementById('f_address').value = st.ad || '';
             document.getElementById('f_note').value = st.no || '';
@@ -715,10 +729,11 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
         }
 
         // ── اکسل ──
-        const XL_COLS = ['نوع', 'نام', 'شماره تماس', 'کد / شناسه ملی', 'استان', 'شهر', 'آدرس', 'کارشناس فروش', 'تارگت ماهانه پیشنهادی (تومان)', 'توضیحات'];
+        const XL_COLS = ['نوع', 'نام', 'شماره تماس', 'کد / شناسه ملی', 'شماره اقتصادی', 'استان', 'شهر', 'آدرس', 'کارشناس فروش', 'تارگت ماهانه پیشنهادی (تومان)', 'توضیحات'];
         const XL_MAP = {
             'نوع': 'type', 'نام': 'name', 'نام مشتری': 'name', 'شماره تماس': 'phones', 'تلفن': 'phones', 'موبایل': 'phones',
             'کد / شناسه ملی': 'national_id', 'کد/شناسه ملی': 'national_id', 'کد ملی': 'national_id', 'شناسه ملی': 'national_id',
+            'شماره اقتصادی': 'economic_code', 'کد اقتصادی': 'economic_code',
             'استان': 'province', 'شهر': 'city', 'آدرس': 'address', 'کارشناس فروش': 'rep_name', 'کارشناس': 'rep_name', 'توضیحات': 'note',
             'تارگت ماهانه پیشنهادی (تومان)': 'target', 'تارگت ماهانه پیشنهادی': 'target', 'تارگت': 'target',
         };
@@ -726,7 +741,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
         function downloadTemplate() {
             const ws = XLSX.utils.aoa_to_sheet([
                 XL_COLS,
-                ['حقوقی', 'شرکت نمونه', '02122223333، 09121234567', '', 'تهران', 'تهران', 'خیابان نمونه، پلاک ۱', ROLES.manager ? 'نام و نام خانوادگی کارشناس' : '', 50000000, ''],
+                ['حقوقی', 'شرکت نمونه', '02122223333، 09121234567', '', '', 'تهران', 'تهران', 'خیابان نمونه، پلاک ۱', ROLES.manager ? 'نام و نام خانوادگی کارشناس' : '', 50000000, ''],
             ]);
             ws['!cols'] = XL_COLS.map((c, i) => ({ wch: [8, 28, 28, 16, 14, 14, 36, 24, 26, 24][i] }));
             const wb = XLSX.utils.book_new();
@@ -807,7 +822,8 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
 
             IranProvinces.bind(document.getElementById('f_province'), document.getElementById('f_city'));
             UCRM.bindMoney(document.getElementById('f_target'));
-            if (window.IranId) IranId.attachLive({ type: document.getElementById('f_type'), national: document.getElementById('f_national_id') });
+            if (window.IranId) IranId.attachLive({ type: document.getElementById('f_type'), national: document.getElementById('f_national_id'),
+                economic: document.getElementById('f_economic_code') });
 
             document.querySelectorAll('#typeSeg .uc-seg-btn').forEach(b => b.addEventListener('click', () => setType(b.dataset.type)));
             document.querySelectorAll('#modeSeg .uc-seg-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
@@ -853,6 +869,12 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             if (eid) {
                 const r = allRows.find(x => x.id === eid);
                 if (r && (r.can_resubmit || r.can_edit)) openEdit(eid, qp.get('resubmit') === '1' && r.can_resubmit);
+                // از مداد «اطلاعات پایه» صفحهٔ جزئیات مشتری (?back=detail): بعد از بستن فرم برگردد همان‌جا
+                if (qp.get('back') === 'detail') {
+                    document.getElementById('custModal').addEventListener('hidden.bs.modal', () => {
+                        location.href = 'ucrm-customer.php?id=' + eid;
+                    }, { once: true });
+                }
                 history.replaceState(null, '', location.pathname);
             }
 

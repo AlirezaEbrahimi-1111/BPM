@@ -14,6 +14,7 @@
  *   ثبت/ارسال دوباره (در انتظار مدیر)  → تسک «تأیید انتساب مشتری» برای هر سرپرست
  *   تأیید مدیر / ثبت توسط مدیر        → تسک «تأیید حسابداری مشتری» برای هر عضو حسابداری
  *   رد (مدیر یا حسابداری)              → تسک «اصلاح مشتری» برای کارشناس (با دلیل)
+ *   درخواست تغییر اطلاعات مشتری فعال  → تسک «تأیید تغییر اطلاعات مشتری» برای هر عضو حسابداری (مرحلهٔ change)
  *   هر اقدام، تسک‌های باز همان مرحله را (برای همهٔ نسخه‌ها) می‌بندد.
  * اعلان: مرحله‌هایی که تسک دارند فقط اعلان «کار جدید» می‌گیرند (بدون اعلان تکراری).
  * اعلان CRM فقط برای خبرهای بدون تسک: «تأیید مدیر شد»، «مشتری فعال شد» و
@@ -108,6 +109,17 @@ try {
     }
 
     $phonesOf = $db->prepare("SELECT phone FROM ucrm_customer_phones WHERE customer_id = ? ORDER BY sort, id");
+    // آخرین درخواست تغییر مشتری (crm-service/ucrm_changes.go) — برای متن کار و گیرندهٔ نتیجه
+    $chgOf = $db->prepare("SELECT id, requested_by, changes, status, COALESCE(reject_reason,'') AS reject_reason
+                           FROM ucrm_change_requests WHERE customer_id = ? ORDER BY id DESC LIMIT 1");
+    $chgText = function (string $json): string {
+        $lines = [];
+        foreach ((array) json_decode($json, true) as $ch) {
+            $v = function ($x) { return is_array($x) ? implode('، ', $x) : ((string) $x !== '' ? (string) $x : '—'); };
+            $lines[] = '• ' . ($ch['label'] ?? $ch['field'] ?? '') . ': ' . $v($ch['old'] ?? '') . ' ← ' . $v($ch['new'] ?? '');
+        }
+        return implode("\n", $lines);
+    };
     $due = null;
 
     // تسک یک مرحله برای چند نفر + صف اعلان «کار جدید»
@@ -193,8 +205,50 @@ try {
                 }
                 break;
 
+            // ── درخواست تغییر اطلاعات مشتری فعال (حسابداری تأیید می‌کند؛ مدیر در این مسیر نیست) ──
+            case 'change_requested':
+                $chgOf->execute([$cid]);
+                $q = $chgOf->fetch(PDO::FETCH_ASSOC);
+                if (!$q || $q['status'] !== 'pending') break;
+                $makeTasks($e, 'change', $accounting, "تأیید تغییر اطلاعات مشتری: {$e['name']}",
+                    "$actor درخواست تغییر اطلاعات مشتری $name را فرستاد:\n" . $chgText($q['changes']) .
+                    "\nبرای تأیید یا رد، همین کار را باز کنید.", true);
+                break;
+
+            case 'change_approved':
+            case 'change_rejected':
+            case 'change_cancelled':
+                $chgOf->execute([$cid]);
+                $q = $chgOf->fetch(PDO::FETCH_ASSOC);
+                $why = ($q && $q['reject_reason'] !== '') ? ' دلیل: «' . $q['reject_reason'] . '»' : '';
+                if ($e['action'] === 'change_approved') {
+                    ucrmCloseStage($db, $cid, ['change'], $uid, 'approved',
+                        "$actor (حسابداری) تغییر اطلاعات مشتری $name را تأیید کرد؛ تغییرات اعمال شد.",
+                        "این درخواست توسط $actor تأیید شد؛ نیازی به اقدام شما نیست.");
+                    $kind = 'chg_ok';
+                    $title = 'تغییر اطلاعات مشتری تأیید شد';
+                    $msg = "تغییر اطلاعات مشتری $name توسط حسابداری ($actor) تأیید و اعمال شد.";
+                } elseif ($e['action'] === 'change_rejected') {
+                    ucrmCloseStage($db, $cid, ['change'], $uid, 'rejected',
+                        "$actor (حسابداری) تغییر اطلاعات مشتری $name را رد کرد.$why",
+                        "این درخواست توسط $actor رد شد؛ نیازی به اقدام شما نیست.");
+                    $kind = 'chg_rej';
+                    $title = 'تغییر اطلاعات مشتری رد شد';
+                    $msg = "درخواست تغییر اطلاعات مشتری $name توسط حسابداری ($actor) رد شد.$why";
+                } else {
+                    ucrmCloseStage($db, $cid, ['change'], $uid, 'completed',
+                        "$actor درخواست تغییر اطلاعات مشتری $name را لغو کرد.",
+                        "$actor درخواست تغییر اطلاعات مشتری $name را لغو کرد؛ نیازی به اقدام شما نیست.");
+                    $kind = '';
+                }
+                // نتیجه برای درخواست‌دهنده (اگر خودش تصمیم نگرفته)
+                if ($kind && $q && $ok($q['requested_by'])) {
+                    $queue[(int) $q['requested_by']][$kind][] = ['customer_id' => $cid, 'title' => $title, 'message' => $msg];
+                }
+                break;
+
             case 'deleted':
-                ucrmCloseStage($db, $cid, ['manager', 'accounting', 'rep_fix'], $uid, 'completed',
+                ucrmCloseStage($db, $cid, ['manager', 'accounting', 'rep_fix', 'change'], $uid, 'completed',
                     "$actor مشتری $name را حذف کرد.",
                     "مشتری $name توسط $actor حذف شد؛ این کار دیگر لازم نیست.");
                 break;
@@ -212,6 +266,8 @@ $summary = [
     'rep_mgr_ok'   => ['تأیید مشتری‌ها توسط مدیر', '%1$s مشتری شما توسط %2$s تأیید شد و برای حسابداری رفت.'],
     'rep_active'   => ['مشتری‌ها فعال شدند', '%1$s مشتری شما توسط حسابداری (%2$s) تأیید و فعال شد.'],
     'rep_assigned' => ['مشتری‌ها به شما سپرده شدند', '%2$s %1$s مشتری را به شما سپرد.'],
+    'chg_ok'       => ['تغییر اطلاعات مشتری‌ها تأیید شد', 'تغییر اطلاعات %1$s مشتری توسط حسابداری (%2$s) تأیید و اعمال شد.'],
+    'chg_rej'      => ['تغییر اطلاعات مشتری‌ها رد شد', 'درخواست تغییر اطلاعات %1$s مشتری توسط حسابداری (%2$s) رد شد.'],
 ];
 
 $n = new Notification($db);

@@ -132,8 +132,12 @@
 .uc-ap-row .k { flex: 0 0 140px; font-size: .8rem; color: var(--text-muted, #6b7490); padding-top: 2px; }
 .uc-ap-row .v { flex: 1; font-size: .88rem; color: var(--text-strong, #2d3748); word-break: break-word; }
 .uc-ap-foot { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-soft, #e9e9e9); }
-.uc-ap-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-.uc-ap-btn { min-width: 160px; justify-content: center; }
+/* دکمه‌های تأیید/رد سمت چپ پایین کادر، بزرگ (طرح ۱۴۰۵/۰۸/۰۲) */
+.uc-ap-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: flex-end; }
+.uc-ap-btn { min-width: 200px; justify-content: center; padding: .7rem 1.5rem; font-size: 1rem; border-radius: 10px; }
+/* برچسب «در انتظار اقدام …» — زرد */
+.uc-badge.st-wait { background: #fbbf24; color: #fff; }
+:root[data-theme="dark"] .uc-badge.st-wait { background: rgba(251, 191, 36, .25); color: #fcd34d; }
 /* دکمهٔ «رد» طبق طرح: کادر قرمز (استایل عمومی .btn کادر را برمی‌دارد) */
 .uc-ap-btn.btn-outline-danger { border: 1px solid #dc2626 !important; color: #dc2626; background: transparent; }
 .uc-ap-btn.btn-outline-danger:hover { background: rgba(220, 38, 38, .08); color: #dc2626; }
@@ -180,3 +184,179 @@
 .uc-rule-list td { font-size: .85rem; }
 :root[data-theme="dark"] .uc-rule-list td { color: var(--text-strong); background: transparent; border-color: var(--border-soft); }
 @media (max-width: 576px) { .uc-rule-row { flex-direction: column; align-items: stretch; gap: 6px; } .uc-rule-row > label { flex: none; } }
+
+/* ═══ صفحهٔ جزئیات مشتری (طرح ۱۴۰۵/۰۸/۰۲) — pages/ucrm-customer.php ═══ */
+.uc-cust-head { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; padding: 20px 24px; }
+.uc-cust-head .av { width: 72px; height: 72px; border-radius: 16px; background: rgba(142, 87, 254, .14); color: #8e57fe; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; flex: 0 0 auto; }
+.uc-cust-head h2 { font-size: 1.3rem; font-weight: 800; margin: 0 0 8px; color: var(--text-strong, #2d3748); }
+.uc-cust-head .meta { margin-bottom: 8px; }
+.uc-cust-head .rep { font-size: .85rem; font-weight: 600; color: var(--text-strong, #2d3748); }
+.uc-cust-head .rep i { color: var(--text-muted, #6b7490); }
+.uc-cust-head .spacer { flex: 1; }
+.uc-cust-head .acts { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.uc-cust-head .acts .btn { border-radius: 10px; padding: .55rem 1.1rem; }
+.uc-btn-soft { background: rgba(142, 87, 254, .06) !important; border: 1px solid transparent !important; color: var(--text-strong, #2d3748) !important; }
+.uc-btn-soft:hover { background: rgba(142, 87, 254, .12) !important; }
+.uc-more-btn { padding: .55rem .9rem !important; }
+.uc-pill { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; border-radius: 999px; font-size: .8rem; font-weight: 600; }
+.uc-pill.ok { background: rgba(16, 185, 129, .14); color: #047857; }
+.uc-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+.uc-tabs { display: flex; padding: 0 !important; overflow-x: auto; gap: 0; }
+.uc-tabs .tb { flex: 1 0 auto; background: none; border: 0; border-bottom: 3px solid transparent; padding: 16px 20px; font-weight: 600; font-size: .92rem; color: var(--text-muted, #6b7490); white-space: nowrap; }
+.uc-tabs .tb:hover { background: rgba(142, 87, 254, .12); color: var(--text-strong, #2d3748); }
+.uc-tabs .tb.active { color: var(--text-strong, #2d3748); border-bottom-color: #8e57fe; }
+
+.uc-panel { padding: 0 !important; overflow: hidden; }
+.uc-panel-hd { display: flex; align-items: center; gap: 8px; padding: 16px 20px; border-bottom: 1px solid var(--border-soft, #eee); }
+.uc-panel-hd h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+.uc-head-ico { width: 36px; height: 36px; border-radius: 10px; background: rgba(142, 87, 254, .1); color: #8e57fe; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+a.uc-head-ico:hover { background: rgba(142, 87, 254, .2); color: #6d3fd6; }
+.uc-info-row { display: flex; gap: 14px; padding: 16px 22px; }
+.uc-info-row .ic { width: 28px; color: var(--text-muted, #6b7490); font-size: 1.15rem; padding-top: 2px; text-align: center; }
+.uc-info-row .k { font-size: .8rem; color: var(--text-muted, #6b7490); margin-bottom: 4px; }
+.uc-info-row .v { font-size: .98rem; font-weight: 700; color: var(--text-strong, #2d3748); word-break: break-word; }
+.uc-mini-edit { border: 0; background: none; color: #8e57fe; padding: 0 4px; font-size: .8rem; }
+.uc-mini-edit:hover { color: #6d3fd6; }
+
+.uc-goal { margin: 16px 20px; padding: 14px 18px; border-radius: 12px; background: rgba(142, 87, 254, .04); border: 1px solid var(--border-soft, #f0f0f0); }
+.uc-goal .top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.uc-goal .ic { color: var(--text-muted, #6b7490); font-size: 1.2rem; }
+.uc-goal .tx { flex: 1; }
+.uc-goal .t { font-weight: 700; font-size: .92rem; color: var(--text-strong, #2d3748); }
+.uc-goal .t .per { font-weight: 500; font-size: .78rem; color: var(--text-muted, #6b7490); }
+.uc-goal .a { font-weight: 700; font-size: .9rem; color: var(--text-strong, #2d3748); margin-top: 2px; }
+.uc-goal .pct { font-weight: 800; color: #6d3fd6; }
+.uc-goal .bar { height: 8px; border-radius: 999px; background: rgba(0, 0, 0, .07); overflow: hidden; }
+.uc-goal .bar span { display: block; height: 100%; border-radius: 999px; }
+.uc-goal .bar .sales { background: #6d3fd6; }
+.uc-goal .bar .time { background: #3b9eea; }
+.uc-goal .cap { font-size: .75rem; color: var(--text-muted, #6b7490); margin-top: 6px; min-height: 1em; }
+
+.uc-soon-box { text-align: center; padding: 48px 20px !important; color: var(--text-muted, #6b7490); }
+.uc-soon-box > i { font-size: 2.4rem; color: #8e57fe; opacity: .6; }
+.uc-soon-box h3 { margin: 12px 0 8px; color: var(--text-strong, #2d3748); }
+.uc-soon-box p { max-width: 520px; margin: 0 auto 14px; line-height: 1.9; }
+.uc-soon-tag { display: inline-block; padding: 4px 12px; border-radius: 999px; background: rgba(245, 158, 11, .14); color: #b45309; font-size: .78rem; font-weight: 600; }
+.uc-soon-tag.sm { padding: 1px 8px; font-size: .68rem; margin-right: 6px; }
+.uc-soon { opacity: .75; }
+.btn.uc-soon { cursor: help; }
+
+.uc-fab { position: fixed; left: 24px; bottom: 24px; width: 56px; height: 56px; border-radius: 50%; border: 0; background: #6d3fd6; color: #fff; font-size: 1.5rem; box-shadow: 0 8px 22px rgba(109, 63, 214, .35); z-index: 1030; }
+.uc-fab:hover { background: #5b32b8; }
+
+:root[data-theme="dark"] .uc-cust-head .av { background: rgba(142, 87, 254, .22); color: #b79bff; }
+:root[data-theme="dark"] .uc-pill.ok { background: rgba(16, 185, 129, .18); color: #34d399; }
+:root[data-theme="dark"] .uc-btn-soft { background: rgba(142, 87, 254, .14) !important; color: var(--text-strong) !important; }
+:root[data-theme="dark"] .uc-tabs .tb:hover { background: rgba(142, 87, 254, .18); }
+:root[data-theme="dark"] .uc-head-ico { background: rgba(142, 87, 254, .2); color: #b79bff; }
+:root[data-theme="dark"] .uc-goal { background: rgba(142, 87, 254, .08); }
+:root[data-theme="dark"] .uc-goal .bar { background: rgba(255, 255, 255, .1); }
+:root[data-theme="dark"] .uc-goal .pct, :root[data-theme="dark"] .uc-mini-edit { color: #b79bff; }
+:root[data-theme="dark"] .uc-soon-tag { background: rgba(245, 158, 11, .2); color: #fcd34d; }
+.uc-more-btn:focus, .uc-more-btn.show, .uc-more-btn:active { background: rgba(142, 87, 254, .12) !important; color: #6d3fd6 !important; border-color: #8e57fe !important; box-shadow: none !important; }
+:root[data-theme="dark"] .uc-more-btn:focus, :root[data-theme="dark"] .uc-more-btn.show { background: rgba(142, 87, 254, .2) !important; color: #b79bff !important; }
+/* نام مشتری = لینک صفحهٔ جزئیات (همهٔ صفحه‌های حسابداری غیررسمی) */
+a.uc-name-link { color: inherit; text-decoration: none; font-weight: 600; }
+a.uc-name-link:hover { color: #6d3fd6; text-decoration: underline; }
+:root[data-theme="dark"] a.uc-name-link:hover { color: #b79bff; }
+
+/* جدول «مقدار فعلی / مقدار جدید» درخواست تغییر اطلاعات مشتری (ucrm-approval.php، ucrm-customer.php) */
+.uc-chg-table { width: 100%; font-size: .88rem; }
+.uc-chg-table th { font-weight: 600; font-size: .78rem; color: var(--text-muted, #6b7490); padding: 10px 16px; border-bottom: 1px solid var(--border-soft, #eee); }
+.uc-chg-table td { padding: 11px 16px; border-bottom: 1px solid var(--border-soft, #f3f3f3); vertical-align: top; }
+.uc-chg-table tr:last-child td { border-bottom: 0; }
+.uc-chg-table td.lbl { color: var(--text-muted, #6b7490); width: 30%; }
+.uc-chg-table td.new { font-weight: 700; color: #047857; }
+.uc-chg-table tr:hover td { background: rgba(142, 87, 254, .12); }
+:root[data-theme="dark"] .uc-chg-table td.new { color: #34d399; }
+:root[data-theme="dark"] .uc-chg-table tr:hover td { background: rgba(142, 87, 254, .18); }
+
+/* ویرایش درجای «اطلاعات پایه» + بنر درخواست تغییر (ucrm-customer.php) */
+button.uc-head-ico { border: 0; }
+button.uc-head-ico:hover { background: rgba(142, 87, 254, .2); }
+.uc-info-row.edit { padding: 10px 22px; }
+.uc-info-row.edit .tx { flex: 1; }
+.uc-info-row.edit .k { display: block; }
+.uc-info-row.edit .form-control, .uc-info-row.edit .form-select { border-radius: 10px; }
+.uc-edit-acts { display: flex; gap: 14px; padding: 14px 22px 20px; }
+.uc-edit-acts .btn { flex: 1; padding: .7rem 1rem; border-radius: 10px; font-weight: 600; }
+.uc-chg-banner { margin: 14px 18px 4px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(245, 158, 11, .35); }
+.uc-chg-banner .t { padding: 10px 14px; font-size: .85rem; line-height: 1.8; }
+.uc-chg-banner.wait .t { background: rgba(245, 158, 11, .12); color: #92400e; }
+.uc-chg-banner.rej { border-color: rgba(220, 38, 38, .3); }
+.uc-chg-banner.rej .t { background: rgba(220, 38, 38, .08); color: #991b1b; }
+:root[data-theme="dark"] .uc-chg-banner.wait .t { background: rgba(245, 158, 11, .16); color: #fcd34d; }
+:root[data-theme="dark"] .uc-chg-banner.rej .t { background: rgba(220, 38, 38, .14); color: #fca5a5; }
+
+/* تب «برنامهٔ پیگیری» (طرح ۱۴۰۵/۰۸/۰۲) — جدول پیگیری‌ها */
+.uc-plan-card { padding: 28px !important; }
+.uc-plan-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid var(--border-soft, #eee); border-radius: 12px; overflow: hidden; }
+.uc-plan-table th { background: rgba(142, 87, 254, .07); font-weight: 700; font-size: .88rem; color: var(--text-strong, #2d3748); padding: 16px 20px; }
+.uc-plan-table th.ops { width: 140px; }
+.uc-plan-table td { padding: 16px 20px; border-top: 1px solid var(--border-soft, #f0f0f0); font-size: .9rem; color: var(--text-strong, #2d3748); vertical-align: middle; }
+.uc-plan-table tbody tr:hover td { background: rgba(142, 87, 254, .12); }
+.uc-plan-table td.empty { text-align: center; color: var(--text-muted, #6b7490); padding: 40px 20px; }
+.uc-plan-table td.empty i { display: block; font-size: 2rem; color: #8e57fe; opacity: .55; margin-bottom: 8px; }
+.uc-plan-table td.empty .uc-soon-tag { margin-right: 8px; }
+:root[data-theme="dark"] .uc-plan-table th { background: rgba(142, 87, 254, .14); }
+:root[data-theme="dark"] .uc-plan-table tbody tr:hover td { background: rgba(142, 87, 254, .18); }
+
+/* تب «تاریخچهٔ پیگیری» (طرح ۱۴۰۵/۰۸/۰۲) — نوار جستجو + زیرتب تماس‌ها/پیامک‌ها؛ فهرست با minimal-list (custom.css) */
+.uc-hist-card { padding: 20px 24px !important; }
+.uc-hist-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.uc-hist-bar .spacer { flex: 1; }
+.uc-hist-search { position: relative; width: 300px; max-width: 100%; }
+.uc-hist-search i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted, #6b7490); }
+.uc-hist-search .form-control { padding-right: 38px; border-radius: 10px; background: rgba(142, 87, 254, .04); }
+.uc-hist-seg { display: inline-flex; gap: 8px; }
+.uc-hist-seg button { border: 0; border-radius: 10px; padding: .55rem 1.4rem; font-weight: 600; font-size: .88rem; background: rgba(142, 87, 254, .06); color: var(--text-strong, #2d3748); }
+.uc-hist-seg button:hover { background: rgba(142, 87, 254, .12); }
+.uc-hist-seg button.active { background: #6d3fd6; color: #fff; }
+.uc-hist-list { border: 1px solid var(--border-soft, #eee); border-radius: 12px; padding: 4px 20px; }
+.uc-hist-empty { text-align: center; color: var(--text-muted, #6b7490); padding: 40px 10px; }
+.uc-hist-empty i { display: block; font-size: 2rem; color: #8e57fe; opacity: .55; margin-bottom: 8px; }
+.uc-hist-empty .uc-soon-tag { margin-right: 8px; }
+:root[data-theme="dark"] .uc-hist-search .form-control { background: rgba(142, 87, 254, .08); }
+:root[data-theme="dark"] .uc-hist-seg button { background: rgba(142, 87, 254, .14); }
+:root[data-theme="dark"] .uc-hist-seg button:hover { background: rgba(142, 87, 254, .18); }
+:root[data-theme="dark"] .uc-hist-seg button.active { background: #6d3fd6; color: #fff; }
+
+/* پیگیری‌ها: جدول تب «برنامهٔ پیگیری» + پنجرهٔ «ثبت پیگیری جدید» (طرح ۱۴۰۵/۰۸/۰۲) */
+.uc-plan-table .fu-t { font-weight: 700; }
+.uc-plan-table .fu-m { font-size: .8rem; color: var(--text-muted, #6b7490); margin-top: 4px; }
+.uc-plan-table .fu-d b { display: block; font-weight: 700; }
+.uc-plan-table .fu-d span { font-size: .8rem; color: var(--text-muted, #6b7490); }
+.uc-fu-type { display: inline-block; padding: 1px 8px; border-radius: 6px; background: rgba(142, 87, 254, .1); color: #6d3fd6; font-size: .72rem; font-weight: 600; margin-left: 4px; }
+.uc-st { display: inline-flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 999px; font-size: .8rem; font-weight: 600; white-space: nowrap; }
+.uc-st .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.uc-st.done { background: rgba(16, 185, 129, .14); color: #047857; }
+.uc-st.wait { background: rgba(245, 158, 11, .15); color: #b45309; }
+.uc-st.late { background: rgba(220, 38, 38, .12); color: #b91c1c; }
+.uc-st.cancel { background: rgba(220, 38, 38, .08); color: #dc2626; }
+.uc-fu-ops { display: flex; align-items: center; gap: 6px; }
+.uc-fu-ops .ic { border: 0; background: none; width: 32px; height: 32px; border-radius: 8px; color: var(--text-strong, #2d3748); font-size: 1.05rem; }
+.uc-fu-ops .ic:hover { background: rgba(142, 87, 254, .12); }
+.uc-fu-ops .ic.edit { color: #6d3fd6; }
+.uc-fu-ops .ic.del { color: #dc2626; }
+.uc-fu-modal .modal-header { border-bottom: 0; }
+.uc-fu-modal .modal-title { font-weight: 800; color: #4c2a9e; }
+.uc-fu-modal .form-label { font-weight: 600; font-size: .88rem; }
+.uc-fu-modal .form-control, .uc-fu-modal .form-select { border-radius: 10px; }
+.fu-ico { position: relative; }
+.fu-ico > i { position: absolute; left: 12px; top: 12px; color: var(--text-muted, #6b7490); pointer-events: none; }
+.fu-ico .form-control { padding-left: 36px; }
+.fu-when { display: flex; gap: 8px; }
+.fu-when .fu-date { flex: 1; }
+.fu-when .fu-time { width: 120px; flex: 0 0 auto; text-align: center; }
+.fu-save { padding: .7rem 1rem; border-radius: 10px; font-weight: 700; }
+:root[data-theme="dark"] .uc-fu-type { background: rgba(142, 87, 254, .2); color: #b79bff; }
+:root[data-theme="dark"] .uc-st.done { background: rgba(16, 185, 129, .18); color: #34d399; }
+:root[data-theme="dark"] .uc-st.wait { background: rgba(245, 158, 11, .18); color: #fcd34d; }
+:root[data-theme="dark"] .uc-st.late, :root[data-theme="dark"] .uc-st.cancel { background: rgba(220, 38, 38, .18); color: #fca5a5; }
+:root[data-theme="dark"] .uc-fu-ops .ic:hover { background: rgba(142, 87, 254, .18); }
+:root[data-theme="dark"] .uc-fu-ops .ic.edit { color: #b79bff; }
+:root[data-theme="dark"] .uc-fu-modal .modal-title { color: #b79bff; }
+.fu-when .fu-date { position: relative; }
+.fu-when .fu-cal { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted, #6b7490); pointer-events: none; }
+

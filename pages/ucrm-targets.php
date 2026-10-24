@@ -245,7 +245,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 hide: !CAN_EDIT,
                 resizable: false,
             },
-            { headerName: 'نام مشتری', field: 'name', flex: 2, minWidth: 140, cellRenderer: p => `<span class="uc-name">${esc(p.value)}</span>` },
+            { headerName: 'نام مشتری', field: 'name', flex: 2, minWidth: 140, cellRenderer: p => `<a class="uc-name uc-name-link" href="ucrm-customer.php?id=${p.data.customer_id}">${esc(p.value)}</a>` },
             { headerName: 'کارشناس', field: 'rep_name', flex: 1, minWidth: 110, hide: !SEES_ALL },
             { headerName: 'تارگت هدف', field: 'target', width: 175, filter: false, cellRenderer: p => amountCell(p.value, p.data.target_src) },
             { headerName: 'کف فروش', field: 'floor', width: 175, filter: false, cellRenderer: p => amountCell(p.value, p.data.floor_src) },

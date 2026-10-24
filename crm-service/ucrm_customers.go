@@ -81,6 +81,8 @@ type ucrmCustomerOut struct {
 	Type           string   `json:"type"`
 	Name           string   `json:"name"`
 	NationalID     string   `json:"national_id"`
+	EconomicCode   string   `json:"economic_code"`
+	AccountingName string   `json:"accounting_name"` // نام در نرم‌افزار حسابداری (دستی تا اتصال شایگان)
 	Province       string   `json:"province"`
 	City           string   `json:"city"`
 	Address        string   `json:"address"`
@@ -110,17 +112,19 @@ type ucrmCustomerOut struct {
 }
 
 type ucrmCustomerIn struct {
-	Type       string   `json:"type"`
-	Name       string   `json:"name"`
-	NationalID string   `json:"national_id"`
-	Province   string   `json:"province"`
-	City       string   `json:"city"`
-	Address    string   `json:"address"`
-	Note       string   `json:"note"`
-	RepID      int64    `json:"rep_id"`
-	RepName    string   `json:"rep_name"` // فقط اکسل: نام کارشناس
-	Phones     []string `json:"phones"`
-	Resubmit   bool     `json:"resubmit"` // ویرایش مشتری ردشده + ارسال دوباره برای تأیید
+	Type       string `json:"type"`
+	Name       string `json:"name"`
+	NationalID string `json:"national_id"`
+	// کد اقتصادی (اختیاری، ۱۰ تا ۱۲ رقم — همان قاعدهٔ حسابداری رسمی، iran-id-validate.js)
+	EconomicCode string   `json:"economic_code"`
+	Province     string   `json:"province"`
+	City         string   `json:"city"`
+	Address      string   `json:"address"`
+	Note         string   `json:"note"`
+	RepID        int64    `json:"rep_id"`
+	RepName      string   `json:"rep_name"` // فقط اکسل: نام کارشناس
+	Phones       []string `json:"phones"`
+	Resubmit     bool     `json:"resubmit"` // ویرایش مشتری ردشده + ارسال دوباره برای تأیید
 	// تارگت ماهانه (تومان، ۰ = بدون تارگت). کارشناس → پیشنهاد؛ مدیر روی مشتری تأییدشده → تارگت ماهانه
 	Target int64 `json:"target"`
 }
@@ -129,6 +133,7 @@ func (c *ucrmCustomerIn) normalize() {
 	c.Type = customerType(c.Type)
 	c.Name = faLetters(strings.Join(strings.Fields(c.Name), " "))
 	c.NationalID = digitsOnly(c.NationalID)
+	c.EconomicCode = digitsOnly(c.EconomicCode)
 	c.Province = strings.TrimSpace(c.Province)
 	c.City = strings.TrimSpace(c.City)
 	c.Address = faLetters(strings.TrimSpace(c.Address))
@@ -185,6 +190,9 @@ func validateUcrmCustomer(in ucrmCustomerIn) string {
 	}
 	if in.Target < 0 || in.Target > 1_000_000_000_000_000 {
 		return "تارگت ماهانه معتبر نیست."
+	}
+	if n := len(in.EconomicCode); n > 0 && (n < 10 || n > 12) {
+		return "شماره اقتصادی باید ۱۰، ۱۱ یا ۱۲ رقم باشد."
 	}
 	if in.NationalID != "" {
 		if in.Type == "individual" && !validNationalCode(in.NationalID) {
@@ -338,7 +346,8 @@ func (s *server) ucrmReps(w http.ResponseWriter, r *http.Request) {
 // ──────────────── GET /ucrm/customers ────────────────
 
 const ucrmSelect = `
-	SELECT c.id, c.type, c.name, COALESCE(c.national_id,''), COALESCE(c.province,''), COALESCE(c.city,''),
+	SELECT c.id, c.type, c.name, COALESCE(c.national_id,''), COALESCE(c.economic_code,''), COALESCE(c.accounting_name,''),
+	       COALESCE(c.province,''), COALESCE(c.city,''),
 	       COALESCE(c.address,''), COALESCE(c.note,''), c.proposed_target, c.monthly_target, COALESCE(c.rep_id,0),
 	       TRIM(CONCAT(COALESCE(u.first_name,''), ' ', COALESCE(u.last_name,''))),
 	       c.status, COALESCE(c.rejected_stage,''), COALESCE(c.reject_reason,''), c.source,
@@ -351,7 +360,7 @@ func scanUcrm(sc interface{ Scan(...any) error }) (ucrmCustomerOut, error) {
 	var lf sql.NullTime
 	var created time.Time
 	var pt, mt sql.NullInt64
-	err := sc.Scan(&c.ID, &c.Type, &c.Name, &c.NationalID, &c.Province, &c.City, &c.Address, &c.Note, &pt, &mt,
+	err := sc.Scan(&c.ID, &c.Type, &c.Name, &c.NationalID, &c.EconomicCode, &c.AccountingName, &c.Province, &c.City, &c.Address, &c.Note, &pt, &mt,
 		&c.RepID, &c.RepName, &c.Status, &c.RejectedStage, &c.RejectReason, &c.Source, &lf, &c.CreatedBy, &created)
 	if pt.Valid {
 		c.ProposedTarget = &pt.Int64
@@ -482,7 +491,10 @@ func (s *server) ucrmGetCustomer(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"customer": c, "events": events, "roles": ro, "settings": s.ucrmLoadSettings()})
+	writeJSON(w, http.StatusOK, map[string]any{"customer": c, "events": events, "roles": ro, "settings": s.ucrmLoadSettings(),
+		"month": s.jalaliMonthProgress(), "change_request": s.latestChangeReq(c.ID, uid, ro),
+		// ویرایش درجای «اطلاعات پایه» (درخواست تغییر → حسابداری): مشتری فعال + کارشناس خودش یا مدیر
+		"can_request_change": c.Status == ucStActive && (c.RepID == uid || ro.Manager)})
 }
 
 // ──────────────── POST /ucrm/customers ────────────────
@@ -532,10 +544,10 @@ func (s *server) ucrmCreateCustomer(w http.ResponseWriter, r *http.Request) {
 	var evs []int64 // رویدادهای این درخواست → اعلان بعد از commit
 	res, err := tx.Exec(`
 		INSERT INTO ucrm_customers
-		  (organization_id, type, name, national_id, province, city, address, note, proposed_target, monthly_target,
+		  (organization_id, type, name, national_id, economic_code, province, city, address, note, proposed_target, monthly_target,
 		   rep_id, status, source, created_by)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'manual', ?)`,
-		ucrmOrg, in.Type, in.Name, nullIfEmpty(in.NationalID), nullIfEmpty(in.Province), nullIfEmpty(in.City),
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'manual', ?)`,
+		ucrmOrg, in.Type, in.Name, nullIfEmpty(in.NationalID), nullIfEmpty(in.EconomicCode), nullIfEmpty(in.Province), nullIfEmpty(in.City),
 		nullIfEmpty(in.Address), nullIfEmpty(in.Note), nullIfZero(in.Target),
 		// مدیر خودش ثبت کرده → مرحلهٔ مدیر ندارد، پس پیشنهادش همان تارگت ماهانه است
 		nullIfZeroIf(in.Target, ro.Manager), in.RepID, status, uid)
@@ -601,6 +613,9 @@ func (s *server) ucrmUpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	if in.NationalID == cur.NationalID && in.Type == cur.Type {
 		chk.NationalID = ""
 	}
+	if in.EconomicCode == cur.EconomicCode {
+		chk.EconomicCode = ""
+	}
 	if msg := validateUcrmCustomer(chk); msg != "" {
 		writeErr(w, http.StatusBadRequest, msg)
 		return
@@ -642,10 +657,10 @@ func (s *server) ucrmUpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 	if _, err := tx.Exec(`
 		UPDATE ucrm_customers
-		SET type = ?, name = ?, national_id = ?, province = ?, city = ?, address = ?, note = ?, rep_id = ?, status = ?,
+		SET type = ?, name = ?, national_id = ?, economic_code = ?, province = ?, city = ?, address = ?, note = ?, rep_id = ?, status = ?,
 		    proposed_target = ?
 		WHERE id = ?`,
-		in.Type, in.Name, nullIfEmpty(in.NationalID), nullIfEmpty(in.Province), nullIfEmpty(in.City),
+		in.Type, in.Name, nullIfEmpty(in.NationalID), nullIfEmpty(in.EconomicCode), nullIfEmpty(in.Province), nullIfEmpty(in.City),
 		nullIfEmpty(in.Address), nullIfEmpty(in.Note), in.RepID, status, proposed, cur.ID); err != nil {
 		writeDBErr(w, "ucrmUpdate", err)
 		return
@@ -976,9 +991,9 @@ func (s *server) ucrmImport(w http.ResponseWriter, r *http.Request) {
 		}
 		res, err := tx.Exec(`
 			INSERT INTO ucrm_customers
-			  (organization_id, type, name, national_id, province, city, address, note, proposed_target, rep_id, status, source, created_by)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'excel', ?)`,
-			ucrmOrg, row.Type, row.Name, nullIfEmpty(row.NationalID), nullIfEmpty(row.Province), nullIfEmpty(row.City),
+			  (organization_id, type, name, national_id, economic_code, province, city, address, note, proposed_target, rep_id, status, source, created_by)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'excel', ?)`,
+			ucrmOrg, row.Type, row.Name, nullIfEmpty(row.NationalID), nullIfEmpty(row.EconomicCode), nullIfEmpty(row.Province), nullIfEmpty(row.City),
 			nullIfEmpty(row.Address), nullIfEmpty(row.Note), nullIfZero(row.Target), rep, ucStPendingManager, uid)
 		if err != nil {
 			writeDBErr(w, "ucrmImport insert", err)
@@ -1040,4 +1055,25 @@ func (s *server) ucrmPutSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"success": true, "settings": in})
+}
+
+// jalaliMonthProgress: روز چندم ماه شمسی جاری از چند روز (با تاریخ دیتابیس، نه ساعت پردازه) —
+// برای نوار «چقدر از ماه گذشته» کنار تارگت در صفحهٔ جزئیات مشتری
+func (s *server) jalaliMonthProgress() map[string]int {
+	var today string
+	if err := s.db.QueryRow("SELECT DATE_FORMAT(CURDATE(),'%Y-%m-%d')").Scan(&today); err != nil {
+		today = time.Now().Format("2006-01-02")
+	}
+	t, _ := time.Parse("2006-01-02", today)
+	jy, jm, jd := gregorianToJalali(t.Year(), int(t.Month()), t.Day())
+	days := 31
+	if jm > 6 && jm < 12 {
+		days = 30
+	} else if jm == 12 {
+		days = 29
+		if _, ok := jalaliToGregorian(jy, 12, 30); ok {
+			days = 30
+		}
+	}
+	return map[string]int{"jy": jy, "jm": jm, "day": jd, "days": days}
 }

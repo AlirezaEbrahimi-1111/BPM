@@ -27,7 +27,11 @@ if (!$__task || ((int) $__task['assignee_id'] !== (int) $user_id && !ucrmAllowed
     header('Location: my-tasks.php');
     exit;
 }
+// نقش درخواست‌دهنده کنار نامش — «زهرا بادپر (کارشناس فروش)» (طرح ۱۴۰۵/۰۸/۰۲)
+$__cr = ucrmRoles($db, (int) $__task['creator_id']);
+$__creatorRole = $__cr['manager'] ? 'مدیر' : ($__cr['sales'] ? 'کارشناس فروش' : ($__cr['accounting'] ? 'حسابداری' : ''));
 $__page = [
+    'creator_role' => $__creatorRole,
     'task_id'      => (int) $__task['id'],
     'customer_id'  => (int) $__link['customer_id'],
     'stage'        => $__link['stage'],
@@ -60,7 +64,7 @@ $__page = [
 
     <!-- چیدمان و اندازهٔ کادر صفحه هم‌شکل pages/tasks.php (همهٔ صفحه‌های CRM) -->
     <div class="overview-container">
-        <div class="uc-crumb"><i class="bi bi-people ms-1"></i><a href="my-tasks.php">کارهای من</a> ‹ <span id="crumbTitle">درخواست تأیید مشتری</span></div>
+        <div class="uc-crumb"><i class="bi bi-people ms-1"></i><a href="my-tasks.php">کارهای من</a> ‹ <a href="my-tasks.php">کارتابل تأیید تأییدیه‌ها</a> ‹ <span id="crumbTitle">تأیید و تخصیص جدید</span></div>
 
         <div id="apBody" class="uc-card">
             <div class="text-center text-muted py-5"><div class="spinner-border spinner-border-sm"></div> در حال بارگذاری…</div>
@@ -94,27 +98,84 @@ $__page = [
     <script>
         const PAGE = <?= json_encode($__page, JSON_UNESCAPED_UNICODE) ?>;
         const STAGE = {
-            manager: { title: 'درخواست تأیید و انتساب مشتری', wait: 'در انتظار اقدام مدیر', status: 'pending_manager', icon: 'bi-file-earmark-text' },
-            accounting: { title: 'درخواست تأیید حسابداری مشتری', wait: 'در انتظار اقدام حسابداری', status: 'pending_accounting', icon: 'bi-calculator' },
-            rep_fix: { title: 'اصلاح مشتری', wait: 'در انتظار اصلاح کارشناس', status: 'rejected', icon: 'bi-pencil-square' },
+            manager: { title: 'درخواست تأیید و انتساب مشتری', crumb: 'تأیید و تخصیص جدید', wait: 'در انتظار اقدام مدیر', status: 'pending_manager', icon: 'bi-file-earmark-text' },
+            accounting: { title: 'درخواست تأیید حسابداری مشتری', crumb: 'تأیید حسابداری', wait: 'در انتظار اقدام حسابداری', status: 'pending_accounting', icon: 'bi-calculator' },
+            rep_fix: { title: 'اصلاح مشتری', crumb: 'اصلاح مشتری', wait: 'در انتظار اصلاح کارشناس', status: 'rejected', icon: 'bi-pencil-square' },
+            // درخواست تغییر اطلاعات مشتری فعال (crm-service/ucrm_changes.go) — فقط حسابداری
+            change: { title: 'درخواست تأیید تغییر اطلاعات مشتری', crumb: 'تأیید تغییر اطلاعات', wait: 'در انتظار اقدام حسابداری', status: 'active', icon: 'bi-pencil-square' },
         };
-        let cust = null, reps = [], rejectModal;
+        let cust = null, reps = [], rejectModal, CR = null;
+
+        // مقدار یک فیلد در جدول «فعلی / جدید» (شماره‌ها فهرست‌اند)
+        function chVal(v) {
+            if (Array.isArray(v)) v = v.join('، ');
+            return v ? `<span class="num-ltr-auto">${esc(faDigits(String(v)))}</span>` : '<span class="text-muted">—</span>';
+        }
+
+        function renderChange(d) {
+            cust = d.customer;
+            CR = d.change_request;
+            const sg = STAGE.change;
+            const open = !PAGE.closed && CR && CR.status === 'pending';
+            document.getElementById('crumbTitle').textContent = sg.crumb;
+            document.title = sg.title + ': ' + cust.name;
+            const badge = open ? `<span class="uc-badge st-wait">${sg.wait}</span>` : `<span class="uc-badge st-active">انجام شده</span>`;
+            const rows = (CR && CR.changes || []).map(ch => `<tr><td class="lbl">${esc(ch.label)}</td><td>${chVal(ch.old)}</td><td class="new">${chVal(ch.new)}</td></tr>`).join('');
+            const canDecide = open && CR.can_decide;
+            const actions = canDecide ? `<div class="uc-ap-actions">
+                    <button class="btn btn-success uc-ap-btn" id="btnOk"><i class="bi bi-check-lg ms-1"></i> تأیید و اعمال تغییرات</button>
+                    <button class="btn btn-outline-danger uc-ap-btn" id="btnNo"><i class="bi bi-x-lg ms-1"></i> رد</button>
+                </div>` : (open ? '<div class="text-muted small">این درخواست منتظر اقدام حسابداری است.</div>' :
+                `<div class="alert alert-secondary py-2 mb-0">${esc(PAGE.last_note || 'این درخواست قبلا بررسی شده است.')} <a href="ucrm-customer.php?id=${cust.id}">مشاهدهٔ مشتری</a></div>`);
+            document.getElementById('apBody').innerHTML = `
+                <div class="uc-ap-title"><span class="uc-ap-ico"><i class="bi ${sg.icon}"></i></span>${sg.title}: <a class="uc-name-link" href="ucrm-customer.php?id=${cust.id}">${esc(cust.name)}</a></div>
+                <div class="uc-ap-strip">
+                    <div class="it"><span class="ic"><i class="bi bi-person"></i></span><div><div class="k">درخواست‌دهنده:</div><div class="v">${esc(PAGE.creator_name || '')}${PAGE.creator_role ? ' (' + esc(PAGE.creator_role) + ')' : ''}</div></div></div>
+                    <div class="it"><span class="ic"><i class="bi bi-calendar3"></i></span><div><div class="k">تاریخ درخواست:</div><div class="v">${TimeSync.formatJalali(PAGE.created_at)} ساعت ${TimeSync.formatTimeOnly(PAGE.created_at)}</div></div></div>
+                    <div class="it"><span class="ic"><i class="bi bi-clock"></i></span><div><div class="k">وضعیت:</div><div class="v">${badge}</div></div></div>
+                </div>
+                <div class="uc-ap-box">
+                    <div class="hd"><i class="bi bi-arrow-left-right ms-1"></i> تغییرات درخواست‌شده</div>
+                    ${rows ? `<table class="uc-chg-table"><thead><tr><th>فیلد</th><th>مقدار فعلی</th><th>مقدار جدید</th></tr></thead><tbody>${rows}</tbody></table>` :
+                        '<div class="p-3 text-muted">درخواست تغییری پیدا نشد.</div>'}
+                </div>
+                <div class="uc-ap-foot">${actions}</div>`;
+            if (canDecide) {
+                document.getElementById('btnOk').addEventListener('click', () => {
+                    uiConfirm('تغییرات اطلاعات مشتری «' + esc(cust.name) + '» تأیید و اعمال شود؟', async () => {
+                        try {
+                            const r = await UCRM.send('POST', '/change-requests/' + CR.id + '/approve', {});
+                            done(r.message || 'تأیید شد');
+                        } catch (e) {
+                            showToast(e.message || 'خطا', 'error');
+                        }
+                    }, { yesText: 'تأیید', noText: 'انصراف' });
+                });
+                document.getElementById('btnNo').addEventListener('click', () => {
+                    document.getElementById('rjReason').value = '';
+                    document.getElementById('rjAlert').innerHTML = '';
+                    document.getElementById('rjDo').textContent = 'رد درخواست تغییر';
+                    rejectModal.show();
+                });
+            }
+        }
 
         function row(k, v) {
             return `<div class="uc-ap-row"><div class="k">${k}</div><div class="v">${v}</div></div>`;
         }
 
         function render(d) {
+            if (PAGE.stage === 'change') return renderChange(d);
             cust = d.customer;
             const sg = STAGE[PAGE.stage] || STAGE.manager;
             // تسک هنوز باز است و مشتری هم واقعا در همین مرحله است → اقدام ممکن
             const open = !PAGE.closed && cust.status === sg.status;
             const none = '<span class="text-muted">ثبت نشده</span>';
-            document.getElementById('crumbTitle').textContent = sg.title;
+            document.getElementById('crumbTitle').textContent = sg.crumb;
             document.title = sg.title + ': ' + cust.name;
 
             const badge = open ?
-                `<span class="uc-badge st-pending_manager">${sg.wait}</span>` :
+                `<span class="uc-badge st-wait">${sg.wait}</span>` :
                 `<span class="uc-badge st-active">انجام شده</span>`;
             const canDecide = open && PAGE.stage !== 'rep_fix' && cust.can_approve;
             const isRep = open && PAGE.stage === 'rep_fix' && cust.can_resubmit;
@@ -158,9 +219,9 @@ $__page = [
             }
 
             document.getElementById('apBody').innerHTML = `
-                <div class="uc-ap-title"><span class="uc-ap-ico"><i class="bi ${sg.icon}"></i></span>${sg.title}: ${esc(cust.name)}</div>
+                <div class="uc-ap-title"><span class="uc-ap-ico"><i class="bi ${sg.icon}"></i></span>${sg.title}: <a class="uc-name-link" href="ucrm-customer.php?id=${cust.id}">${esc(cust.name)}</a></div>
                 <div class="uc-ap-strip">
-                    <div class="it"><span class="ic"><i class="bi bi-person"></i></span><div><div class="k">درخواست‌دهنده:</div><div class="v">${esc(PAGE.creator_name || '')}</div></div></div>
+                    <div class="it"><span class="ic"><i class="bi bi-person"></i></span><div><div class="k">درخواست‌دهنده:</div><div class="v">${esc(PAGE.creator_name || '')}${PAGE.creator_role ? ' (' + esc(PAGE.creator_role) + ')' : ''}</div></div></div>
                     <div class="it"><span class="ic"><i class="bi bi-calendar3"></i></span><div><div class="k">تاریخ درخواست:</div><div class="v">${TimeSync.formatJalali(PAGE.created_at)} ساعت ${TimeSync.formatTimeOnly(PAGE.created_at)}</div></div></div>
                     <div class="it"><span class="ic"><i class="bi bi-clock"></i></span><div><div class="k">وضعیت:</div><div class="v">${badge}</div></div></div>
                 </div>
@@ -168,18 +229,15 @@ $__page = [
                 <div class="row g-3">
                     <div class="col-lg-6">
                         <div class="uc-ap-box">
-                            <div class="hd"><i class="bi bi-person ms-1"></i> مشخصات مشتری</div>
+                            <div class="hd"><i class="bi bi-person ms-1"></i> مشخصات مشتری و اعتبار</div>
                             ${row('نوع مشتری:', UCRM.typeBadge(cust.type))}
-                            ${row('نام:', esc(cust.name))}
-                            ${row(cust.type === 'individual' ? 'کد ملی:' : 'شناسهٔ ملی:', cust.national_id ? faDigits(cust.national_id) : none)}
-                            ${row('شماره تماس:', (cust.phones || []).map(p => `<span class="num-ltr">${faDigits(p)}</span>`).join('، ') || none)}
-                            ${row('استان / شهر:', [cust.province, cust.city].filter(Boolean).map(esc).join(' / ') || none)}
-                            ${row('آدرس:', cust.address ? esc(cust.address) : none)}
+                            ${row(cust.type === 'individual' ? 'کد ملی:' : 'شناسه ملی:', cust.national_id ? `<b>${faDigits(cust.national_id)}</b>` : none)}
+                            ${row('تلفن:', (cust.phones || []).map(p => `<b class="num-ltr">${faDigits(p)}</b>`).join('، ') || none)}
                         </div>
                     </div>
                     <div class="col-lg-6">
                         <div class="uc-ap-box">
-                            <div class="hd"><i class="bi bi-bullseye ms-1"></i> پیشنهاد انتساب</div>
+                            <div class="hd"><i class="bi bi-bullseye ms-1"></i> پیشنهاد انتساب و تارگت</div>
                             ${row('کارشناس پیشنهادی:', repCell)}
                             ${row(targetLabel, targetCell)}
                             ${row('توضیحات کارشناس:', cust.note ? esc(cust.note) : none)}
@@ -238,7 +296,9 @@ $__page = [
             const btn = document.getElementById('rjDo');
             btn.disabled = true;
             try {
-                const d = await UCRM.send('POST', '/customers/' + cust.id + '/reject', { reason });
+                const d = PAGE.stage === 'change' ?
+                    await UCRM.send('POST', '/change-requests/' + CR.id + '/reject', { reason }) :
+                    await UCRM.send('POST', '/customers/' + cust.id + '/reject', { reason });
                 rejectModal.hide();
                 done(d.message || 'رد شد');
             } catch (e) {
