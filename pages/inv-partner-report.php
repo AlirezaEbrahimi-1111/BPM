@@ -27,6 +27,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
     <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
     <script src="<?= asset('../../assets/js/partner-percent-modal.js') ?>"></script>
     <script src="<?= asset('../../assets/js/assignee-picker.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/multi-filter.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
     <script src="<?= asset('../../assets/js/invoice-payments.js') ?>"></script>
@@ -313,19 +314,8 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             <!-- فیلتر «نوع سند» حذف شد: پیش‌فاکتور سود همکار ندارد و در این گزارش نمی‌آید (۱۴۰۵/۰۸/۰۱) -->
             <div class="fld">
                 <label>وضعیت فاکتور</label>
-                <select id="fStatus" class="form-select" style="min-width:200px">
-                    <option value="">به‌جز باطل‌شده</option>
-                    <option value="draft">پیش‌نویس</option>
-                    <option value="approved">تأییدشده</option>
-                    <option value="cancelled">باطل‌شده</option>
-                    <!-- تسویه/ثبت (۱۴۰۵/۰۸/۰۲) — باطل‌شده‌ها در این‌ها نمی‌آیند -->
-                    <optgroup label="تسویه و ثبت">
-                        <option value="settled">تسویه شده</option>
-                        <option value="unsettled">تسویه نشده</option>
-                        <option value="profit_unrecorded">ثبت نشده سود شایگان</option>
-                        <option value="moadian_unregistered">ثبت نشده مودیان</option>
-                    </optgroup>
-                </select>
+                <!-- چندانتخابی (assets/js/multi-filter.js، ۱۴۰۵/۰۸/۰۲) — بدون انتخاب = به‌جز باطل‌شده -->
+                <div id="fStatus" style="min-width:200px"></div>
             </div>
             <div class="spacer"></div>
             <button class="btn btn-outline-secondary" id="btnManagePartners"><i class="bi bi-gear ms-1"></i> مدیریت همکاران و درصدها</button>
@@ -744,7 +734,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         };
 
         // همکار انتخاب‌شده در فیلتر ('' = همه) — assets/js/assignee-picker.js
-        let filterPartnerId = '';
+        let filterPartnerId = '', statusFilter = null;
         let partnerPicker = null;
 
         function qs() {
@@ -752,7 +742,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             const y = document.getElementById('fYear').value;
             const m = document.getElementById('fMonth').value;
             const pr = filterPartnerId;
-            const st = document.getElementById('fStatus').value;
+            const st = statusFilter ? statusFilter.getSelected().join(',') : '';
             if (y) p.set('jy', y);
             if (m) p.set('jm', m);
             if (pr) p.set('partner_id', pr);
@@ -1004,7 +994,20 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
             AgGridFa.rowContextMenu(document.getElementById('repGrid'), gridApi);
 
-            ['fYear', 'fMonth', 'fStatus'].forEach(id =>
+            statusFilter = MultiFilter.create({
+                container: '#fStatus', allLabel: 'به‌جز باطل‌شده', unit: 'وضعیت', onChange: loadReport,
+                groups: { settle: 'تسویه', record: 'ثبت' },
+                options: [
+                    { value: 'draft', label: 'پیش‌نویس', group: 'status' },
+                    { value: 'approved', label: 'تأییدشده', group: 'status' },
+                    { value: 'cancelled', label: 'باطل‌شده', group: 'status' },
+                    { value: 'settled', label: 'تسویه شده', group: 'settle' },
+                    { value: 'unsettled', label: 'تسویه نشده', group: 'settle' },
+                    { value: 'profit_unrecorded', label: 'ثبت نشده سود شایگان', group: 'record' },
+                    { value: 'moadian_unregistered', label: 'ثبت نشده مودیان', group: 'record' },
+                ],
+            });
+            ['fYear', 'fMonth'].forEach(id =>
                 document.getElementById(id).addEventListener('change', loadReport));
             partnerPicker = AssigneePicker.create({
                 container: '#fPartnerPicker',

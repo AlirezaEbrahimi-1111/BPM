@@ -24,6 +24,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/partner-percent-modal.js') ?>"></script>
     <script src="<?= asset('../../assets/js/month-filter.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/multi-filter.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/search-persist.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
@@ -269,19 +271,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         <div class="crm-toolbar">
             <input type="text" id="crmSearch" class="form-control crm-search" placeholder="جست‌وجو در شماره، مشتری، همکار یا مبلغ…">
-            <select id="stFilter" class="form-select" style="max-width:200px">
-                <option value="">همه‌ی وضعیت‌ها</option>
-                <option value="draft">پیش‌نویس</option>
-                <option value="approved">تأییدشده</option>
-                <option value="cancelled">باطل‌شده</option>
-                <!-- همان چهار گزینهٔ «گزارش همکاران» (۱۴۰۵/۰۸/۰۲) — باطل‌شده‌ها در این‌ها نمی‌آیند -->
-                <optgroup label="تسویه و ثبت">
-                    <option value="settled">تسویه شده</option>
-                    <option value="unsettled">تسویه نشده</option>
-                    <option value="profit_unrecorded">ثبت نشده سود شایگان</option>
-                    <option value="moadian_unregistered">ثبت نشده مودیان</option>
-                </optgroup>
-            </select>
+            <!-- فیلتر وضعیت چندانتخابی (assets/js/multi-filter.js، ۱۴۰۵/۰۸/۰۲) -->
+            <div id="stFilter" style="min-width:200px"></div>
             <!-- فیلتر ماه (چندانتخابی): پیش‌فرض ماه جاری — assets/js/month-filter.js -->
             <div id="monthFilter" style="width:190px"></div>
             <div class="spacer"></div>
@@ -400,7 +391,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             official: 'رسمی',
             proforma: 'پیش‌فاکتور'
         };
-        let monthFilter = null, monthFilterInit = false;
+        let monthFilter = null, monthFilterInit = false, statusFilter = null;
         let gridApi = null,
             allRows = [],
             searchTimer;
@@ -660,10 +651,10 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     page++;
                 }
                 allRows = out;
-                // ماه‌های موجود (+ ماه جاری حتی اگر هنوز فاکتوری ندارد)؛ بار اول فقط ماه جاری انتخاب
+                // ماه‌های موجود (+ ماه جاری حتی اگر هنوز فاکتوری ندارد)؛ پیش‌فرض «همه‌ی ماه‌ها» (درخواست ۱۴۰۵/۰۸/۰۲)
                 const cur = MonthFilter.currentKey();
                 const keys = allRows.map(r => MonthFilter.keyOf(invDate(r))).concat(cur ? [cur] : []);
-                monthFilter.setMonths(keys, monthFilterInit ? null : (cur ? [cur] : []));
+                monthFilter.setMonths(keys, monthFilterInit ? null : []);
                 monthFilterInit = true;
                 applyFilter();
             } catch (e) {
@@ -706,10 +697,10 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             // مبلغ: جداکنندهٔ هزارگان و فاصله نادیده گرفته می‌شود («۱٬۵۰۰٬۰۰۰» = «1500000»)
             const qAmount = q.replace(/[,٬،\s]/g, '');
             const isAmount = /^\d+$/.test(qAmount);
-            const st = document.getElementById('stFilter').value;
             let rows = allRows;
             if (monthFilter) rows = rows.filter(r => monthFilter.matches(invDate(r)));
-            if (st) rows = rows.filter(r => matchesStatusFilter(r, st));
+            // چند وضعیت: داخل هر گروه «یا»، بین گروه‌ها «و» (multi-filter.js)
+            if (statusFilter) rows = rows.filter(r => statusFilter.matches(st => matchesStatusFilter(r, st)));
             // جست‌وجو در شماره، نام مشتری، نام همکار و مبلغ کل (درخواست ۱۴۰۵/۰۸/۰۱)
             if (q) rows = rows.filter(r =>
                 String(r.number || '').toLowerCase().includes(q) ||
@@ -879,11 +870,25 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             gridApi = agGrid.createGrid(document.getElementById('invGrid'), gridOptions);
             // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
             AgGridFa.rowContextMenu(document.getElementById('invGrid'), gridApi);
+            // متن جستجو بعد از رفرش/برگشت می‌ماند تا × زده شود (search-persist.js)
+            SearchPersist.bind(document.getElementById('crmSearch'), 'inv-invoices');
             document.getElementById('crmSearch').addEventListener('input', () => {
                 clearTimeout(searchTimer);
                 searchTimer = setTimeout(applyFilter, 200);
             });
-            document.getElementById('stFilter').addEventListener('change', applyFilter);
+            statusFilter = MultiFilter.create({
+                container: '#stFilter', allLabel: 'همه‌ی وضعیت‌ها', unit: 'وضعیت', onChange: applyFilter,
+                groups: { settle: 'تسویه', record: 'ثبت' },
+                options: [
+                    { value: 'draft', label: 'پیش‌نویس', group: 'status' },
+                    { value: 'approved', label: 'تأییدشده', group: 'status' },
+                    { value: 'cancelled', label: 'باطل‌شده', group: 'status' },
+                    { value: 'settled', label: 'تسویه شده', group: 'settle' },
+                    { value: 'unsettled', label: 'تسویه نشده', group: 'settle' },
+                    { value: 'profit_unrecorded', label: 'ثبت نشده سود شایگان', group: 'record' },
+                    { value: 'moadian_unregistered', label: 'ثبت نشده مودیان', group: 'record' },
+                ],
+            });
             monthFilter = MonthFilter.create({ container: '#monthFilter', onChange: applyFilter });
             document.getElementById('stMoadian').addEventListener('change', stToggleCode);
             document.getElementById('stSaveBtn').addEventListener('click', stSaveStatus);

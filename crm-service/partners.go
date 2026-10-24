@@ -331,22 +331,7 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 			args = append(args, pid)
 		}
 	}
-	switch v := strings.TrimSpace(q.Get("status")); v {
-	case "draft", "approved", "cancelled":
-		where += " AND i.status = ?"
-		args = append(args, v)
-	// فیلترهای تسویه/ثبت (درخواست ۱۴۰۵/۰۸/۰۲) — همه به‌جز باطل‌شده‌ها
-	case "settled":
-		where += " AND i.status <> 'cancelled' AND i.settlement_status = 'settled'"
-	case "unsettled": // تسویه‌نشده = هنوز کامل تسویه نشده (شامل «بخشی تسویه شده»)
-		where += " AND i.status <> 'cancelled' AND COALESCE(i.settlement_status,'unsettled') <> 'settled'"
-	case "profit_unrecorded": // سند سود همکار هنوز در شایگان ثبت نشده
-		where += " AND i.status <> 'cancelled' AND COALESCE(i.partner_profit_recorded,0) = 0"
-	case "moadian_unregistered": // هنوز در سامانهٔ مؤدیان ثبت نشده
-		where += " AND i.status <> 'cancelled' AND COALESCE(i.moadian_status,'unregistered') <> 'registered'"
-	default:
-		where += " AND i.status <> 'cancelled'"
-	}
+	where += partnerStatusWhere(q.Get("status"))
 
 	filterJY, _ := strconv.Atoi(q.Get("jy"))
 	filterJM, _ := strconv.Atoi(q.Get("jm"))
@@ -585,4 +570,50 @@ func (s *server) setInvoicePartnerPercent(w http.ResponseWriter, r *http.Request
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
+}
+
+// partnerStatusWhere: فیلتر «وضعیت فاکتور» گزارش همکاران — چندانتخابی (status=draft,settled,…، ۱۴۰۵/۰۸/۰۲).
+// گروه‌ها مثل assets/js/multi-filter.js: داخل هر گروه «یا»، بین گروه‌ها «و».
+// گزینه‌های تسویه/ثبت باطل‌شده‌ها را نمی‌آورند؛ بدون انتخاب = همه به‌جز باطل‌شده‌ها.
+func partnerStatusWhere(raw string) string {
+	cond := map[string]string{
+		"draft":     "i.status = 'draft'",
+		"approved":  "i.status = 'approved'",
+		"cancelled": "i.status = 'cancelled'",
+		// تسویه‌نشده = هنوز کامل تسویه نشده (شامل «بخشی تسویه شده»)
+		"settled":   "(i.status <> 'cancelled' AND i.settlement_status = 'settled')",
+		"unsettled": "(i.status <> 'cancelled' AND COALESCE(i.settlement_status,'unsettled') <> 'settled')",
+		// سند سود همکار هنوز در شایگان ثبت نشده / هنوز در سامانهٔ مؤدیان ثبت نشده
+		"profit_unrecorded":    "(i.status <> 'cancelled' AND COALESCE(i.partner_profit_recorded,0) = 0)",
+		"moadian_unregistered": "(i.status <> 'cancelled' AND COALESCE(i.moadian_status,'unregistered') <> 'registered')",
+	}
+	group := map[string]string{"draft": "status", "approved": "status", "cancelled": "status",
+		"settled": "settle", "unsettled": "settle", "profit_unrecorded": "record", "moadian_unregistered": "record"}
+	byGroup := map[string][]string{}
+	order := []string{}
+	seen := map[string]bool{}
+	for _, v := range strings.Split(raw, ",") {
+		v = strings.TrimSpace(v)
+		c, ok := cond[v]
+		if !ok || seen[v] {
+			continue // مقدار ناشناخته/تکراری (فقط از همین فهرست ثابت ساخته می‌شود؛ ورودی کاربر وارد SQL نمی‌شود)
+		}
+		seen[v] = true
+		g := group[v]
+		if _, ok := byGroup[g]; !ok {
+			order = append(order, g)
+		}
+		byGroup[g] = append(byGroup[g], c)
+	}
+	if len(byGroup) == 0 {
+		return " AND i.status <> 'cancelled'"
+	}
+	out := ""
+	for _, g := range order {
+		out += " AND (" + strings.Join(byGroup[g], " OR ") + ")"
+	}
+	if _, hasStatus := byGroup["status"]; !hasStatus {
+		out += " AND i.status <> 'cancelled'"
+	}
+	return out
 }

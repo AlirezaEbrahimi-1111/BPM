@@ -21,6 +21,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/multi-filter.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/search-persist.js') ?>"></script>
 
     <style>
         .crm-toolbar {
@@ -155,12 +157,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         <div class="crm-toolbar">
             <input type="text" id="crmSearch" class="form-control crm-search" placeholder="جست‌وجو در شماره‌ی فروشنده یا نام…">
-            <select id="stFilter" class="form-select" style="max-width:170px">
-                <option value="">همه‌ی وضعیت‌ها</option>
-                <option value="draft">پیش‌نویس</option>
-                <option value="confirmed">تأییدشده</option>
-                <option value="cancelled">باطل‌شده</option>
-            </select>
+            <!-- فیلتر وضعیت چندانتخابی (assets/js/multi-filter.js، ۱۴۰۵/۰۸/۰۲) -->
+            <div id="stFilter" style="min-width:180px"></div>
             <div class="spacer"></div>
             <a class="btn btn-primary" href="/pages/inv-purchase-edit.php"><i class="bi bi-plus-lg ms-1"></i> فاکتور خرید جدید</a>
         </div>
@@ -227,7 +225,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         };
         let gridApi = null,
             allRows = [],
-            searchTimer;
+            searchTimer, statusFilter = null;
 
         function actionCell(p) {
             const d = p.data;
@@ -325,9 +323,9 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         function applyFilter() {
             const q = document.getElementById('crmSearch').value.trim().toLowerCase();
-            const st = document.getElementById('stFilter').value;
+            const st = statusFilter ? statusFilter.getSelected() : [];
             let rows = allRows;
-            if (st) rows = rows.filter(r => r.status === st);
+            if (st.length) rows = rows.filter(r => st.includes(r.status));
             if (q) rows = rows.filter(r =>
                 (r.supplier_ref_number || '').toLowerCase().includes(q) ||
                 (r.supplier_name || '').toLowerCase().includes(q));
@@ -378,11 +376,20 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             gridApi = agGrid.createGrid(document.getElementById('invGrid'), gridOptions);
             // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
             AgGridFa.rowContextMenu(document.getElementById('invGrid'), gridApi);
+            // متن جستجو بعد از رفرش/برگشت می‌ماند تا × زده شود (search-persist.js)
+            SearchPersist.bind(document.getElementById('crmSearch'), 'inv-purchases');
             document.getElementById('crmSearch').addEventListener('input', () => {
                 clearTimeout(searchTimer);
                 searchTimer = setTimeout(applyFilter, 200);
             });
-            document.getElementById('stFilter').addEventListener('change', applyFilter);
+            statusFilter = MultiFilter.create({
+                container: '#stFilter', allLabel: 'همه‌ی وضعیت‌ها', unit: 'وضعیت', onChange: applyFilter,
+                options: [
+                    { value: 'draft', label: 'پیش‌نویس' },
+                    { value: 'confirmed', label: 'تأییدشده' },
+                    { value: 'cancelled', label: 'باطل‌شده' },
+                ],
+            });
             loadAll();
         });
     </script>
