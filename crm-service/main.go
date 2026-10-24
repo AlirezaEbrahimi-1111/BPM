@@ -342,6 +342,10 @@ func main() {
 	mux.HandleFunc("GET /crm/api/inv/partner-share", write(s.getPartnerShare))
 	mux.HandleFunc("GET /crm/api/inv/partner-report", report(s.partnerReport))
 	mux.HandleFunc("PATCH /crm/api/inv/invoices/{id}/partner-status", report(s.setInvoicePartnerStatus))
+	// واریزهای فاکتور (تسویهٔ چندمرحله‌ای) — همان دسترسی ویرایش وضعیت (invoice_payments.go)
+	mux.HandleFunc("GET /crm/api/inv/invoices/{id}/payments", report(s.listInvoicePayments))
+	mux.HandleFunc("POST /crm/api/inv/invoices/{id}/payments", report(s.addInvoicePayment))
+	mux.HandleFunc("DELETE /crm/api/inv/invoices/{id}/payments/{pid}", report(s.deleteInvoicePayment))
 	// درصد اختصاصی سهم همکار (هر وضعیتی): هم از فهرست فاکتورها (تیم حسابداری)
 	// و هم از گزارش همکاران (مدیران/سوپروایزرها).
 	partnerPct := func(h http.HandlerFunc) http.HandlerFunc { return auth(s.requireCRMOrReportAccess(h)) }

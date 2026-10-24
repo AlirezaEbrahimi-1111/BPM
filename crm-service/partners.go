@@ -358,10 +358,11 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 		       i.partner_id, COALESCE(p.name,'—'),
 		       i.subtotal_amount, i.discount_amount, i.tax_amount, i.total_amount,
 		       i.partner_profit_recorded, i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,''),
-		       i.partner_percent_override
+		       i.partner_percent_override, COALESCE(pay.paid, 0), COALESCE(pay.cnt, 0)
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
 		LEFT JOIN inv_partners  p ON p.id = i.partner_id
+		LEFT JOIN (`+paymentSumsSQL+`) pay ON pay.invoice_id = i.id
 		WHERE `+where+`
 		ORDER BY i.issue_date DESC, i.id DESC`, args...)
 	if err != nil {
@@ -384,10 +385,12 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 			recorded                       int
 			settlement, moadian, mcode     string
 			pctOverride                    sql.NullFloat64
+			paid                           int64
+			payCount                       int
 		)
 		if err := rows.Scan(&id, &docType, &number, &status, &customerName, &issueDate,
 			&partnerID, &partnerName, &subtotal, &discount, &tax, &total,
-			&recorded, &settlement, &moadian, &mcode, &pctOverride); err != nil {
+			&recorded, &settlement, &moadian, &mcode, &pctOverride, &paid, &payCount); err != nil {
 			writeDBErr(w, "partnerReport", err)
 			return
 		}
@@ -432,6 +435,8 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 			"profit_amount":           profit,
 			"partner_profit_recorded": recorded == 1,
 			"settlement_status":       settlement,
+			"paid_amount":             paid,
+			"payment_count":           payCount,
 			"moadian_status":          moadian,
 			"moadian_code":            mcode,
 		})
@@ -441,6 +446,9 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 
 // PATCH /crm/api/inv/invoices/{id}/partner-status
 // body (همه اختیاری): {partner_profit_recorded, settlement_status, moadian_status, moadian_code}
+// settlement_status از ۱۴۰۵/۰۸/۰۲ نادیده گرفته می‌شود: وضعیت تسویه از جمع واریزها
+// خودکار حساب می‌شود (invoice_payments.go). فیلد فقط برای این‌که صفحهٔ قدیمیِ کش‌شده
+// در فاصلهٔ deploy با DisallowUnknownFields خطا نگیرد، در struct مانده است.
 func (s *server) setInvoicePartnerStatus(w http.ResponseWriter, r *http.Request) {
 	id := idParam(r)
 	u := userOf(r.Context())
@@ -476,15 +484,6 @@ func (s *server) setInvoicePartnerStatus(w http.ResponseWriter, r *http.Request)
 			v = 1
 		}
 		sets = append(sets, "partner_profit_recorded = ?")
-		args = append(args, v)
-	}
-	if in.Settlement != nil {
-		v := strings.TrimSpace(*in.Settlement)
-		if v != "unsettled" && v != "settled" && v != "partial" {
-			writeErr(w, http.StatusBadRequest, "وضعیت تسویه نامعتبر است")
-			return
-		}
-		sets = append(sets, "settlement_status = ?")
 		args = append(args, v)
 	}
 

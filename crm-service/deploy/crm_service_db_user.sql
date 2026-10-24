@@ -36,6 +36,8 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_invoice
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_invoice_request_items`  TO 'crm_service'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_partners`               TO 'crm_service'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_partner_month_share`    TO 'crm_service'@'localhost';
+-- واریزهای فاکتور / تسویهٔ چندمرحله‌ای (مهاجرت 20261024_110000)
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`inv_invoice_payments`       TO 'crm_service'@'localhost';
 
 -- CRM جدید (حسابداری غیررسمی) — جدول‌های ucrm_* (مهاجرت 20261023_100000)
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_customers`        TO 'crm_service'@'localhost';

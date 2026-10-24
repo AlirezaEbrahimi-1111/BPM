@@ -26,6 +26,9 @@ if (!crmReportAllowed($db, (int) $user_id)) {
     <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
     <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
     <script src="<?= asset('../../assets/js/partner-percent-modal.js') ?>"></script>
+    <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
+    <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/invoice-payments.js') ?>"></script>
 
     <style>
         .crm-toolbar {
@@ -331,6 +334,8 @@ if (!crmReportAllowed($db, (int) $user_id)) {
         <div class="report-summary" id="summary">
             <span>مجموع مبلغ فاکتور: <b id="sInvoice">۰</b></span>
             <span>مجموع مبلغ سود: <b id="sProfit">۰</b></span>
+            <span>واریز شده: <b id="sPaid">۰</b></span>
+            <span>مانده: <b id="sRemain">۰</b></span>
             <span>تعداد ردیف: <b id="sCount">۰</b></span>
         </div>
 
@@ -408,11 +413,11 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                     </div>
                     <div class="mb-3">
                         <label class="form-label">وضعیت تسویه</label>
-                        <select id="pmStSettlement" class="form-select">
-                            <option value="unsettled">تسویه نشده</option>
-                            <option value="settled">تسویه شده</option>
-                            <option value="partial">بخشی تسویه شده</option>
-                        </select>
+                        <div class="d-flex align-items-center flex-wrap" style="gap:8px">
+                            <span id="pmStSettleInfo"></span>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="pmStPaymentsBtn"><i class="bi bi-cash-coin ms-1"></i>واریزها</button>
+                        </div>
+                        <div class="form-text">از روی مبالغ واریزشده خودکار حساب می‌شود.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">وضعیت مودیان</label>
@@ -551,20 +556,40 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             }
         }
 
-        const SETTLE_LABEL = {
-            unsettled: 'تسویه نشده',
-            settled: 'تسویه شده',
-            partial: 'بخشی تسویه شده'
-        };
         const MOADIAN_LABEL = {
             unregistered: 'ثبت نشده',
             registered: 'ثبت شده'
         };
 
         // فقط نمایش — ویرایش از مودال pmStatusModal (pmEditStatus) انجام می‌شود.
+        // بج تسویه + «واریز/مانده»؛ کلیک = پنجرهٔ واریزها (assets/js/invoice-payments.js)
         function settleCell(p) {
-            const v = p.value || 'unsettled';
-            return `<span class="pm-badge ${v}">${SETTLE_LABEL[v] || v}</span>`;
+            return InvoicePayments.cellHtml(p.data, `pmOpenPayments(${p.data.id})`);
+        }
+
+        // ماندهٔ یک ردیف: «تسویه شده»ِ قدیمیِ بدون واریز = صفر
+        function rowRemaining(r) {
+            if (r.status === 'cancelled') return 0;
+            if (r.settlement_status === 'settled' && !(r.payment_count > 0)) return 0;
+            return Math.max(0, (Number(r.invoice_amount) || 0) - (Number(r.paid_amount) || 0));
+        }
+
+        function pmOpenPayments(id) {
+            const d = allRows.find(r => r.id === id);
+            if (!d) return;
+            InvoicePayments.open({
+                invoiceId: id,
+                title: (d.number ? 'فاکتور شماره ' + faDigits(d.number) : 'پیش‌نویس #' + faDigits(d.id)) + ' — ' + (d.customer_name || ''),
+                api: apiSend,
+                onChanged: s => {
+                    d.settlement_status = s.settlement_status;
+                    d.paid_amount = s.paid_amount;
+                    d.payment_count = s.payment_count;
+                    gridApi.refreshCells({ force: true });
+                    renderSummary();
+                    if (pmStRow && pmStRow.id === id) pmStRenderSettle();
+                },
+            });
         }
 
         function moadianCell(p) {
@@ -583,6 +608,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
 
         function statusActionCell(p) {
             let h = `<button class="ag-action-btn" title="سند سود همکار / تسویه / مودیان" onclick="pmEditStatus(${p.data.id})"><i class="bi bi-pencil"></i></button>`;
+            h += `<button class="ag-action-btn" style="color:#0f7a57" title="واریزها و تسویه" onclick="pmOpenPayments(${p.data.id})"><i class="bi bi-cash-coin"></i></button>`;
             // درصد سهم همکار — هر وضعیتی جز باطل (حتی تأییدشده)
             if (p.data.status !== 'cancelled') {
                 h += `<button class="ag-action-btn" style="color:#8e57fe" title="درصد سهم همکار" onclick="pmEditPct(${p.data.id})"><i class="bi bi-percent"></i></button>`;
@@ -669,7 +695,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             {
                 headerName: 'تسویه',
                 field: 'settlement_status',
-                width: 130,
+                width: 205,
                 sortable: false,
                 cellRenderer: settleCell
             },
@@ -683,7 +709,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             {
                 headerName: '',
                 colId: 'actions', // ستون عملیات (برای منوی کلیک راست ردیف)
-                width: 92,
+                width: 120,
                 sortable: false,
                 filter: false,
                 cellRenderer: statusActionCell
@@ -705,7 +731,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             // دکمه‌های عملیات، کنترل‌های فرم و کد مؤدیان (کپی) مستثنا هستند.
             rowSelection: { mode: 'singleRow', checkboxes: false, enableClickSelection: true },
             onRowDoubleClicked: (e) => {
-                if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn, input, .form-check, .moadian-code')) return;
+                if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn, input, .form-check, .moadian-code, .ipm-cell')) return;
                 // دوبار کلیک یک کلمه را هم انتخاب می‌کند — پاکش کن (جلوی رفتن را نگیرد)
                 if (window.getSelection) window.getSelection().removeAllRanges();
                 location.href = '/pages/inv-invoice-print.php?id=' + e.data.id;
@@ -730,21 +756,31 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             return p.toString();
         }
 
+        function renderSummary() {
+            let inv = 0,
+                prof = 0,
+                paid = 0,
+                rem = 0;
+            allRows.forEach(r => {
+                inv += Number(r.invoice_amount) || 0;
+                prof += Number(r.profit_amount) || 0;
+                paid += Number(r.paid_amount) || 0;
+                rem += rowRemaining(r);
+            });
+            document.getElementById('sInvoice').textContent = money(inv);
+            document.getElementById('sProfit').textContent = money(prof);
+            document.getElementById('sPaid').textContent = money(paid);
+            document.getElementById('sRemain').textContent = money(rem);
+            document.getElementById('sCount').textContent = faDigits(allRows.length);
+        }
+
         async function loadReport() {
             gridApi.showLoadingOverlay();
             try {
                 const d = await apiGet('/inv/partner-report?' + qs());
                 allRows = d.items || [];
                 gridApi.setGridOption('rowData', allRows);
-                let inv = 0,
-                    prof = 0;
-                allRows.forEach(r => {
-                    inv += Number(r.invoice_amount) || 0;
-                    prof += Number(r.profit_amount) || 0;
-                });
-                document.getElementById('sInvoice').textContent = money(inv);
-                document.getElementById('sProfit').textContent = money(prof);
-                document.getElementById('sCount').textContent = faDigits(allRows.length);
+                renderSummary();
             } catch (e) {
                 showToast(e.message || 'خطا در بارگذاری', 'error');
                 gridApi.setGridOption('rowData', []);
@@ -769,7 +805,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             if (!row) return;
             pmStRow = row;
             document.getElementById('pmStIdLbl').textContent = row.number ? ('#' + faDigits(row.number)) : '';
-            document.getElementById('pmStSettlement').value = row.settlement_status || 'unsettled';
+            pmStRenderSettle();
             document.getElementById('pmStMoadian').value = row.moadian_status || 'unregistered';
             document.getElementById('pmStCode').value = row.moadian_code || '';
             document.getElementById('pmStProfit').checked = !!row.partner_profit_recorded;
@@ -778,9 +814,13 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             new bootstrap.Modal(document.getElementById('pmStatusModal')).show();
         }
 
+        // وضعیت تسویه فقط نمایشی است (از جمع واریزها) — همان سلول جدول
+        function pmStRenderSettle() {
+            document.getElementById('pmStSettleInfo').innerHTML = pmStRow ? InvoicePayments.cellHtml(pmStRow, '') : '';
+        }
+
         async function pmSaveStatus() {
             if (!pmStRow) return;
-            const settlement = document.getElementById('pmStSettlement').value;
             const moadian = document.getElementById('pmStMoadian').value;
             const code = document.getElementById('pmStCode').value.trim();
             const alertBox = msg => document.getElementById('pmStAlert').innerHTML =
@@ -794,12 +834,10 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             try {
                 await apiPatch('/inv/invoices/' + pmStRow.id + '/partner-status', {
                     partner_profit_recorded: profit,
-                    settlement_status: settlement,
                     moadian_status: moadian,
                     moadian_code: moadian === 'registered' ? code : '',
                 });
                 pmStRow.partner_profit_recorded = profit;
-                pmStRow.settlement_status = settlement;
                 pmStRow.moadian_status = moadian;
                 pmStRow.moadian_code = moadian === 'registered' ? code : '';
                 gridApi.setGridOption('rowData', allRows);
@@ -974,7 +1012,14 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 document.getElementById('pmSelPartner').focus();
             });
             document.getElementById('pmStatusModal').addEventListener('shown.bs.modal', () => {
-                document.getElementById('pmStSettlement').focus();
+                document.getElementById('pmStProfit').focus();
+            });
+            document.getElementById('pmStPaymentsBtn').addEventListener('click', () => {
+                // پنجرهٔ وضعیت بسته شود تا دو پنجره روی هم نیفتند
+                if (!pmStRow) return;
+                const id = pmStRow.id;
+                bootstrap.Modal.getInstance(document.getElementById('pmStatusModal')).hide();
+                pmOpenPayments(id);
             });
             document.getElementById('pmAddBtn').addEventListener('click', pmAddPartner);
             document.getElementById('pmSelPartner').addEventListener('change', pmOnSelectPartner);

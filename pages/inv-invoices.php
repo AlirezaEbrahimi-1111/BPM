@@ -24,6 +24,11 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/partner-percent-modal.js') ?>"></script>
     <script src="<?= asset('../../assets/js/month-filter.js') ?>"></script>
+    <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
+    <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/invoice-payments.js') ?>"></script>
 
     <style>
         .crm-toolbar {
@@ -299,11 +304,11 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     </div>
                     <div class="mb-3">
                         <label class="form-label">وضعیت تسویه</label>
-                        <select id="stSettlement" class="form-select">
-                            <option value="unsettled">تسویه نشده</option>
-                            <option value="settled">تسویه شده</option>
-                            <option value="partial">بخشی تسویه شده</option>
-                        </select>
+                        <div class="d-flex align-items-center flex-wrap" style="gap:8px">
+                            <span id="stSettleInfo"></span>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="stPaymentsBtn"><i class="bi bi-cash-coin ms-1"></i>واریزها</button>
+                        </div>
+                        <div class="form-text">از روی مبالغ واریزشده خودکار حساب می‌شود.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">وضعیت مودیان</label>
@@ -420,6 +425,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             if (hasPartnerProfit(d) && d.status !== 'cancelled') {
                 h += `<button class="ag-action-btn" style="color:#8e57fe" title="درصد سهم همکار" onclick="editPartnerPct(${d.id})"><i class="bi bi-percent"></i></button>`;
             }
+            h += `<button class="ag-action-btn" style="color:#0f7a57" title="واریزها و تسویه" onclick="openPayments(${d.id})"><i class="bi bi-cash-coin"></i></button>`;
             h += `<button class="ag-action-btn" title="${hasPartnerProfit(d) ? 'سند سود همکار / تسویه / مودیان' : 'ویرایش وضعیت تسویه/مودیان'}" onclick="stEditStatus(${d.id})"><i class="bi bi-clipboard-check"></i></button>`;
             return h;
         }
@@ -446,19 +452,32 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             });
         }
 
-        const SETTLE_LABEL = {
-            unsettled: 'تسویه نشده',
-            settled: 'تسویه شده',
-            partial: 'بخشی تسویه شده'
-        };
         const MOADIAN_LABEL = {
             unregistered: 'ثبت نشده',
             registered: 'ثبت شده'
         };
 
+        // بج تسویه + «واریز/مانده»؛ کلیک = پنجرهٔ واریزها (assets/js/invoice-payments.js)
         function settleCell(p) {
-            const v = p.value || 'unsettled';
-            return `<span class="pm-badge ${v}">${SETTLE_LABEL[v] || v}</span>`;
+            return InvoicePayments.cellHtml(p.data, `openPayments(${p.data.id})`);
+        }
+
+        // پنجرهٔ مشترک «واریزها و تسویه» — بعد از هر ثبت/حذف، همان ردیف به‌روز می‌شود
+        function openPayments(id) {
+            const d = allRows.find(r => r.id === id);
+            if (!d) return;
+            InvoicePayments.open({
+                invoiceId: id,
+                title: (d.number ? 'فاکتور شماره ' + faDigits(d.number) : 'پیش‌نویس #' + faDigits(d.id)) + ' — ' + (d.customer_name || ''),
+                api: apiSend,
+                onChanged: s => {
+                    d.settlement_status = s.settlement_status;
+                    d.paid_amount = s.paid_amount;
+                    d.payment_count = s.payment_count;
+                    gridApi.refreshCells({ force: true });
+                    if (stRow && stRow.id === id) stRenderSettle();
+                },
+            });
         }
 
         function moadianCell(p) {
@@ -565,7 +584,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             {
                 headerName: 'تسویه',
                 field: 'settlement_status',
-                width: 130,
+                width: 205,
                 sortable: false,
                 cellRenderer: settleCell
             },
@@ -608,7 +627,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             // دکمه‌های عملیات، کنترل‌های فرم و کد مؤدیان (کپی) مستثنا هستند.
             rowSelection: { mode: 'singleRow', checkboxes: false, enableClickSelection: true },
             onRowDoubleClicked: (e) => {
-                if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn, input, .form-check, .moadian-code, .copy-cell')) return;
+                if (e.event && e.event.target.closest && e.event.target.closest('.ag-action-btn, input, .form-check, .moadian-code, .copy-cell, .ipm-cell')) return;
                 // دوبار کلیک یک کلمه را هم انتخاب می‌کند — پاکش کن (جلوی رفتن را نگیرد)
                 if (window.getSelection) window.getSelection().removeAllRanges();
                 location.href = '/pages/inv-invoice-print.php?id=' + e.data.id;
@@ -779,7 +798,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             if (!row) return;
             stRow = row;
             document.getElementById('stIdLbl').textContent = row.number ? ('#' + faDigits(row.number)) : '';
-            document.getElementById('stSettlement').value = row.settlement_status || 'unsettled';
+            stRenderSettle();
             document.getElementById('stMoadian').value = row.moadian_status || 'unregistered';
             document.getElementById('stCode').value = row.moadian_code || '';
             document.getElementById('stProfitWrap').hidden = !hasPartnerProfit(row);
@@ -789,9 +808,13 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             new bootstrap.Modal(document.getElementById('stModal')).show();
         }
 
+        // وضعیت تسویه فقط نمایشی است (از جمع واریزها) — همان سلول جدول
+        function stRenderSettle() {
+            document.getElementById('stSettleInfo').innerHTML = stRow ? InvoicePayments.cellHtml(stRow, '') : '';
+        }
+
         async function stSaveStatus() {
             if (!stRow) return;
-            const settlement = document.getElementById('stSettlement').value;
             const moadian = document.getElementById('stMoadian').value;
             const code = document.getElementById('stCode').value.trim();
             const alertBox = msg => document.getElementById('stAlert').innerHTML =
@@ -802,7 +825,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             }
             alertBox('');
             const body = {
-                settlement_status: settlement,
                 moadian_status: moadian,
                 moadian_code: moadian === 'registered' ? code : '',
             };
@@ -811,7 +833,6 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             if (hasPartnerProfit(stRow)) body.partner_profit_recorded = profit;
             try {
                 await apiSend('PATCH', '/inv/invoices/' + stRow.id + '/partner-status', body);
-                stRow.settlement_status = settlement;
                 stRow.moadian_status = moadian;
                 stRow.moadian_code = moadian === 'registered' ? code : '';
                 if (hasPartnerProfit(stRow)) stRow.partner_profit_recorded = profit;
@@ -840,7 +861,16 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             document.getElementById('stMoadian').addEventListener('change', stToggleCode);
             document.getElementById('stSaveBtn').addEventListener('click', stSaveStatus);
             document.getElementById('stModal').addEventListener('shown.bs.modal', () => {
-                document.getElementById('stSettlement').focus();
+                // اولین فیلد قابل‌ویرایش: سوئیچ سند سود (اگر هست)، وگرنه وضعیت مودیان
+                const pw = document.getElementById('stProfitWrap');
+                document.getElementById(pw.hidden ? 'stMoadian' : 'stProfit').focus();
+            });
+            document.getElementById('stPaymentsBtn').addEventListener('click', () => {
+                // پنجرهٔ وضعیت بسته شود تا دو پنجره روی هم نیفتند
+                if (!stRow) return;
+                const id = stRow.id;
+                bootstrap.Modal.getInstance(document.getElementById('stModal')).hide();
+                openPayments(id);
             });
             loadAll();
         });

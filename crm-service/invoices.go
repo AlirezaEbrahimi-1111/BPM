@@ -109,6 +109,8 @@ type invoiceOut struct {
 	PartnerProfitAmount      int64    `json:"partner_profit_amount"`       // percent × (subtotal - discount)
 	PartnerProfitRecorded    bool     `json:"partner_profit_recorded"`
 	SettlementStatus         string   `json:"settlement_status"`
+	PaidAmount               int64    `json:"paid_amount"`   // جمع واریزهای ثبت‌شده (invoice_payments.go)
+	PaymentCount             int      `json:"payment_count"` // تعداد واریزها؛ ۰ + «تسویه شده» = تسویهٔ قدیمی بدون مبلغ
 	MoadianStatus            string   `json:"moadian_status"`
 	MoadianCode              string   `json:"moadian_code"`
 
@@ -260,11 +262,13 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 		       i.partner_percent_override,
 		       COALESCE(DATE_FORMAT(i.converted_at,'%Y-%m-%d %H:%i'),''),
 		       TRIM(CONCAT(COALESCE(cu.first_name,''),' ',COALESCE(cu.last_name,''))),
-		       COALESCE(DATE_FORMAT(i.proforma_issue_date,'%Y-%m-%d'),'')
+		       COALESCE(DATE_FORMAT(i.proforma_issue_date,'%Y-%m-%d'),''),
+		       COALESCE(pay.paid, 0), COALESCE(pay.cnt, 0)
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
 		LEFT JOIN inv_partners  p ON p.id = i.partner_id
 		LEFT JOIN users cu ON cu.id = i.converted_by
+		LEFT JOIN (`+paymentSumsSQL+`) pay ON pay.invoice_id = i.id
 		WHERE `+where+`
 		ORDER BY i.id DESC
 		LIMIT ? OFFSET ?`, append(args, pg.Limit, pg.Offset)...)
@@ -289,7 +293,7 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 			&o.IssueDate, &o.Status, &o.Source, &o.PaymentType, &o.Subtotal, &o.DiscountAmount, &o.TaxAmount,
 			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv, &pid, &partnerName,
 			&recordedInt, &o.SettlementStatus, &o.MoadianStatus, &o.MoadianCode, &pctOverride,
-			&o.ConvertedAt, &o.ConvertedBy, &o.ProformaDate); err != nil {
+			&o.ConvertedAt, &o.ConvertedBy, &o.ProformaDate, &o.PaidAmount, &o.PaymentCount); err != nil {
 			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 			return
 		}
@@ -746,6 +750,20 @@ func (s *server) updateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := insertItems(tx, u.OrgID, u.ID, id, lines); err != nil {
 		writeErr(w, http.StatusInternalServerError, "درج ردیف‌ها ناموفق بود")
+		return
+	}
+	// واریزهای ثبت‌شده (invoice_payments.go): مبلغ تازهٔ فاکتور نباید از جمعشان کمتر شود؛
+	// وضعیت تسویه هم با مبلغ تازه دوباره حساب می‌شود
+	if paid, _, err := invoicePaidSum(tx, id); err != nil {
+		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		return
+	} else if paid > total {
+		writeErr(w, http.StatusUnprocessableEntity, "جمع واریزهای این فاکتور ("+faMoney(paid)+
+			" ریال) از مبلغ تازهٔ فاکتور بیشتر است؛ اول واریز اضافه را حذف کنید")
+		return
+	}
+	if _, err := recomputeSettlement(tx, id, false); err != nil {
+		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
 	}
 	if err := tx.Commit(); err != nil {
