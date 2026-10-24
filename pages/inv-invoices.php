@@ -152,6 +152,22 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             color: #0f7a57;
         }
 
+        .conv-tag {
+            display: inline-block;
+            padding: 0 6px;
+            margin-right: 2px;
+            border-radius: 6px;
+            font-size: .68rem;
+            background: rgba(37, 99, 235, .12);
+            color: #2563eb;
+            cursor: help;
+        }
+
+        :root[data-theme="dark"] .conv-tag {
+            color: #93b4ff;
+            background: rgba(147, 180, 255, .14);
+        }
+
         .st-badge.cancelled {
             background: rgba(220, 38, 38, .14);
             color: #dc2626;
@@ -477,8 +493,13 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             {
                 headerName: 'نوع',
                 field: 'doc_type',
-                width: 100,
-                cellRenderer: p => TYPE_LABEL[p.value] || p.value
+                width: 125,
+                // فاکتوری که از پیش‌فاکتور «درجا» تبدیل شده: برچسب کوچک با سابقه در راهنما
+                cellRenderer: p => (TYPE_LABEL[p.value] || p.value) + (p.data.converted_at ?
+                    ` <span class="conv-tag" title="${esc('تبدیل‌شده از پیش‌فاکتور' +
+                        (p.data.proforma_issue_date ? ' (تاریخ پیش‌فاکتور: ' + jDate(p.data.proforma_issue_date) + ')' : '') +
+                        ' — در ' + jDate(p.data.converted_at.slice(0, 10)) + ' ساعت ' + faDigits(p.data.converted_at.slice(11, 16)) +
+                        (p.data.converted_by_name ? ' توسط ' + p.data.converted_by_name : ''))}">از پیش‌فاکتور</span>` : '')
             },
             {
                 headerName: 'تاریخ صدور',
@@ -694,16 +715,21 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             });
         }
 
+        // تبدیل «درجا» (۱۴۰۵/۰۸/۰۲): همان سند با همان شماره، فاکتور رسمیِ تأییدشده می‌شود؛
+        // تاریخ صدور = امروز، موجودی همان لحظه کم می‌شود. صفحه عوض نمی‌شود — فقط فهرست تازه می‌شود.
         function convertInv(id) {
-            uiConfirm('از این پیش‌فاکتور یک «فاکتور رسمی پیش‌نویس» ساخته شود؟ پیش‌فاکتور بایگانی می‌شود و دیگر موجودی رزرو نمی‌کند.', async () => {
+            const r = allRows.find(x => x.id === id);
+            const no = r && r.number ? ' شمارهٔ ' + faDigits(r.number) : '';
+            uiConfirm(`پیش‌فاکتور${no} با همان شماره به «فاکتور رسمی» تبدیل و همان لحظه تأیید شود؟<br>
+                <span class="small text-muted">تاریخ صدور امروز می‌شود و موجودی کالاها از انبار کم می‌شود.</span>`, async () => {
                 try {
                     const d = await apiSend('POST', '/inv/invoices/' + id + '/to-official');
-                    showToast('فاکتور رسمی ساخته شد', 'success');
-                    location.href = '/pages/inv-invoice-edit.php?id=' + d.id;
+                    showToast(d.message || 'به فاکتور رسمی تبدیل شد', 'success');
+                    loadAll();
                 } catch (e) {
                     showToast(e.message || 'خطا', 'error');
                 }
-            });
+            }, { yesText: 'تبدیل و تأیید', noText: 'انصراف' });
         }
 
         function deleteInv(id) {

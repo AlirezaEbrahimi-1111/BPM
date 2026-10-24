@@ -3693,11 +3693,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         /* کلیک روی کاربر/واحد → صفحه نظارت بر کارها با فیلتر */
         function openDelayedUser(kind, refId, name) {
-            if (kind === 'section') {
-                location.href = `tasks-overview.php?section=${encodeURIComponent(refId)}&filter=overdue`;
-            } else {
-                location.href = `tasks-overview.php?assignee=${refId}&filter=overdue`;
-            }
+            // همان صفحهٔ «مشاهده همه» (delayed-users.php) با مودال همین ردیف —
+            // قبلا tasks-overview.php باز می‌شد که تعریف تأخیر و دسترسی‌اش با
+            // این باکس فرق داشت و کارهای روتین را نشان نمی‌داد
+            location.href = `delayed-users.php?kind=${encodeURIComponent(kind)}&ref_id=${encodeURIComponent(refId)}&name=${encodeURIComponent(name || '')}`;
         }
         function renderBottlenecks() {
             const box = document.getElementById('bottleneckList');

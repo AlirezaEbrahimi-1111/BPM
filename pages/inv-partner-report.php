@@ -310,11 +310,18 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             <!-- فیلتر «نوع سند» حذف شد: پیش‌فاکتور سود همکار ندارد و در این گزارش نمی‌آید (۱۴۰۵/۰۸/۰۱) -->
             <div class="fld">
                 <label>وضعیت فاکتور</label>
-                <select id="fStatus" class="form-select">
+                <select id="fStatus" class="form-select" style="min-width:200px">
                     <option value="">به‌جز باطل‌شده</option>
                     <option value="draft">پیش‌نویس</option>
                     <option value="approved">تأییدشده</option>
                     <option value="cancelled">باطل‌شده</option>
+                    <!-- تسویه/ثبت (۱۴۰۵/۰۸/۰۲) — باطل‌شده‌ها در این‌ها نمی‌آیند -->
+                    <optgroup label="تسویه و ثبت">
+                        <option value="settled">تسویه شده</option>
+                        <option value="unsettled">تسویه نشده</option>
+                        <option value="profit_unrecorded">ثبت نشده سود شایگان</option>
+                        <option value="moadian_unregistered">ثبت نشده مودیان</option>
+                    </optgroup>
                 </select>
             </div>
             <div class="spacer"></div>

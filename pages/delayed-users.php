@@ -319,11 +319,24 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
                 duGridApi.setGridOption('rowData', duList);
                 if (!duList.length) duGridApi.showNoRowsOverlay();
                 else duGridApi.hideOverlay();
+                duOpenFromUrl();
             } catch (e) {
                 console.error('duLoad:', e);
                 showToast('خطا در ارتباط با سرور', 'error');
                 duGridApi.showNoRowsOverlay();
             }
+        }
+
+        // کلیک روی ردیف باکس «کاربران با بیشترین تأخیر» در داشبورد با
+        // ?kind=&ref_id= به این صفحه می‌آید — مودال همان کاربر/واحد خودکار باز
+        // می‌شود (همان منبع عدد باکس، تا عدد و فهرست همیشه یکی باشند)
+        function duOpenFromUrl() {
+            const p = new URLSearchParams(window.location.search);
+            const kind = p.get('kind'), refId = p.get('ref_id');
+            if (!kind || !refId) return;
+            const row = duList.find(u => u.kind === kind && String(u.ref_id) === refId)
+                || { kind: kind, ref_id: refId, name: p.get('name') || '' };
+            duOpenModal(row);
         }
 
         function duApplySearch() {

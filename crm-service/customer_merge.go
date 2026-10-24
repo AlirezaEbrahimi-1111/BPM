@@ -80,7 +80,7 @@ func (s *server) customerUsage(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := s.db.Query(`
 		SELECT id, doc_type, COALESCE(number,''), status, COALESCE(issue_date,''), total_amount
-		FROM inv_invoices WHERE customer_id = ?
+		FROM inv_invoices WHERE customer_id = ? AND is_deleted = 0
 		ORDER BY COALESCE(issue_date, DATE(created_at)) DESC, id DESC`, id)
 	if err != nil {
 		writeDBErr(w, "customerUsage invoices", err)

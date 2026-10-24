@@ -322,7 +322,7 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
 	// پیش‌فاکتور سود همکار ندارد → هیچ‌وقت در گزارش همکاران نمی‌آید (درخواست ۱۴۰۵/۰۸/۰۱)
-	where := "i.organization_id = ? AND i.partner_id IS NOT NULL AND i.doc_type <> 'proforma'"
+	where := "i.organization_id = ? AND i.is_deleted = 0 AND i.partner_id IS NOT NULL AND i.doc_type <> 'proforma'"
 	args := []any{u.OrgID}
 
 	if v := strings.TrimSpace(q.Get("partner_id")); v != "" {
@@ -331,10 +331,20 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 			args = append(args, pid)
 		}
 	}
-	if v := strings.TrimSpace(q.Get("status")); v == "draft" || v == "approved" || v == "cancelled" {
+	switch v := strings.TrimSpace(q.Get("status")); v {
+	case "draft", "approved", "cancelled":
 		where += " AND i.status = ?"
 		args = append(args, v)
-	} else {
+	// فیلترهای تسویه/ثبت (درخواست ۱۴۰۵/۰۸/۰۲) — همه به‌جز باطل‌شده‌ها
+	case "settled":
+		where += " AND i.status <> 'cancelled' AND i.settlement_status = 'settled'"
+	case "unsettled": // تسویه‌نشده = هنوز کامل تسویه نشده (شامل «بخشی تسویه شده»)
+		where += " AND i.status <> 'cancelled' AND COALESCE(i.settlement_status,'unsettled') <> 'settled'"
+	case "profit_unrecorded": // سند سود همکار هنوز در شایگان ثبت نشده
+		where += " AND i.status <> 'cancelled' AND COALESCE(i.partner_profit_recorded,0) = 0"
+	case "moadian_unregistered": // هنوز در سامانهٔ مؤدیان ثبت نشده
+		where += " AND i.status <> 'cancelled' AND COALESCE(i.moadian_status,'unregistered') <> 'registered'"
+	default:
 		where += " AND i.status <> 'cancelled'"
 	}
 

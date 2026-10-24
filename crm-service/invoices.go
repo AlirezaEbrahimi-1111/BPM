@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -90,6 +89,10 @@ type invoiceOut struct {
 	CreatedAt      string `json:"created_at"`
 	ApprovedAt     string `json:"approved_at"`
 	ConvertedToID  *int64 `json:"converted_to_id"`
+	// تبدیل درجای پیش‌فاکتور به فاکتور رسمی (۱۴۰۵/۰۸/۰۲): زمان، کاربر و تاریخ اصلی پیش‌فاکتور
+	ConvertedAt  string `json:"converted_at"`
+	ConvertedBy  string `json:"converted_by_name"`
+	ProformaDate string `json:"proforma_issue_date"`
 
 	// اگر این فاکتور قبلا تأییدشده بوده و برای ویرایش به پیش‌نویس برگشته
 	RevertedAt  string `json:"reverted_at"`
@@ -224,7 +227,7 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 	u := userOf(r.Context())
 	status := strings.TrimSpace(r.URL.Query().Get("status"))
 
-	where := "i.organization_id = ?"
+	where := "i.organization_id = ? AND i.is_deleted = 0"
 	args := []any{u.OrgID}
 	if status != "" {
 		where += " AND i.status = ?"
@@ -254,10 +257,14 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 		       COALESCE(DATE_FORMAT(i.approved_at,'%Y-%m-%d %H:%i'),''),
 		       i.converted_to_id, i.partner_id, COALESCE(p.name,''),
 		       i.partner_profit_recorded, i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,''),
-		       i.partner_percent_override
+		       i.partner_percent_override,
+		       COALESCE(DATE_FORMAT(i.converted_at,'%Y-%m-%d %H:%i'),''),
+		       TRIM(CONCAT(COALESCE(cu.first_name,''),' ',COALESCE(cu.last_name,''))),
+		       COALESCE(DATE_FORMAT(i.proforma_issue_date,'%Y-%m-%d'),'')
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
 		LEFT JOIN inv_partners  p ON p.id = i.partner_id
+		LEFT JOIN users cu ON cu.id = i.converted_by
 		WHERE `+where+`
 		ORDER BY i.id DESC
 		LIMIT ? OFFSET ?`, append(args, pg.Limit, pg.Offset)...)
@@ -281,7 +288,8 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&o.ID, &o.DocType, &o.Number, &sy, &sn, &o.CustomerID, &o.CustomerName,
 			&o.IssueDate, &o.Status, &o.Source, &o.PaymentType, &o.Subtotal, &o.DiscountAmount, &o.TaxAmount,
 			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv, &pid, &partnerName,
-			&recordedInt, &o.SettlementStatus, &o.MoadianStatus, &o.MoadianCode, &pctOverride); err != nil {
+			&recordedInt, &o.SettlementStatus, &o.MoadianStatus, &o.MoadianCode, &pctOverride,
+			&o.ConvertedAt, &o.ConvertedBy, &o.ProformaDate); err != nil {
 			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 			return
 		}
@@ -351,7 +359,7 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
 		LEFT JOIN inv_partners  p ON p.id = i.partner_id
-		WHERE i.id = ? AND i.organization_id = ?`, id, u.OrgID).
+		WHERE i.id = ? AND i.organization_id = ? AND i.is_deleted = 0`, id, u.OrgID).
 		Scan(&o.ID, &o.DocType, &o.Number, &sy, &sn, &o.CustomerID, &o.CustomerName,
 			&o.IssueDate, &o.Status, &o.Source, &o.PaymentType, &o.Subtotal, &o.DiscountAmount, &o.TaxAmount,
 			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv,
@@ -409,6 +417,12 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 		       TRIM(CONCAT(COALESCE(ru.first_name,''),' ',COALESCE(ru.last_name,''))), i.revert_count
 		FROM inv_invoices i LEFT JOIN users ru ON ru.id = i.reverted_by
 		WHERE i.id = ?`, id).Scan(&o.RevertedAt, &o.RevertedBy, &o.RevertCount)
+	_ = s.db.QueryRow(`
+		SELECT COALESCE(DATE_FORMAT(i.converted_at,'%Y-%m-%d %H:%i'),''),
+		       TRIM(CONCAT(COALESCE(cu.first_name,''),' ',COALESCE(cu.last_name,''))),
+		       COALESCE(DATE_FORMAT(i.proforma_issue_date,'%Y-%m-%d'),'')
+		FROM inv_invoices i LEFT JOIN users cu ON cu.id = i.converted_by
+		WHERE i.id = ?`, id).Scan(&o.ConvertedAt, &o.ConvertedBy, &o.ProformaDate)
 
 	rows, err := s.db.Query(`
 		SELECT it.id, it.product_id, COALESCE(pr.code,''), it.title, it.qty, it.unit_price,
@@ -807,32 +821,9 @@ func (s *server) approveInvoice(w http.ResponseWriter, r *http.Request) {
 	// listProducts محاسبه می‌شود) و با تأیید هم موجودی فیزیکی را کم نمی‌کند.
 	// کمبود موجودی هرگز بلاک نمی‌کند.
 	if docType == "official" {
-		rows, err := tx.Query(
-			"SELECT product_id, qty FROM inv_invoice_items WHERE invoice_id = ? AND product_id IS NOT NULL", id)
-		if err != nil {
-			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		if err := s.deductInvoiceStock(tx, id, u.ID); err != nil {
+			writeErr(w, http.StatusInternalServerError, "ثبت حرکت انبار ناموفق بود")
 			return
-		}
-		type mv struct {
-			pid int64
-			qty float64
-		}
-		var moves []mv
-		for rows.Next() {
-			var m mv
-			if err := rows.Scan(&m.pid, &m.qty); err != nil {
-				rows.Close()
-				writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
-				return
-			}
-			moves = append(moves, m)
-		}
-		rows.Close()
-		for _, m := range moves {
-			if err := addStock(tx, m.pid, s.officialWarehouseID, -m.qty, "invoice", "invoice", id, u.ID); err != nil {
-				writeErr(w, http.StatusInternalServerError, "ثبت حرکت انبار ناموفق بود")
-				return
-			}
 		}
 	}
 
@@ -1027,10 +1018,12 @@ func (s *server) deleteInvoice(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"success": true})
 }
 
-// POST /crm/api/inv/invoices/{id}/to-official
-// از یک پیش‌فاکتور، یک فاکتور رسمی «پیش‌نویس» تازه می‌سازد (با همان مشتری و
-// ردیف‌ها، به‌صورت اسنپ‌شات). پیش‌فاکتور مبدأ با converted_to_id به فاکتور
-// تازه پیوند می‌خورد و دیگر موجودی رزرو نمی‌کند.
+// POST /crm/api/inv/invoices/{id}/to-official — تبدیل «درجا» (درخواست ۱۴۰۵/۰۸/۰۲):
+// همان ردیف پیش‌فاکتور، با همان شماره، «فاکتور رسمیِ تأییدشده» می‌شود و موجودی همان لحظه
+// از انبار کم می‌شود (مثل تأیید عادی). تاریخ صدور = روز تبدیل؛ تاریخ اصلی پیش‌فاکتور در
+// proforma_issue_date و زمان/کاربر تبدیل در converted_at/converted_by می‌ماند (سابقه).
+// شماره: اگر سال شمسی روز تبدیل همان سال شمارهٔ پیش‌فاکتور است، همان شماره؛ وگرنه شمارهٔ
+// آزاد بعدی سال جدید. مشتری ناقص (شرکت بدون شناسه/کد پستی/آدرس) → پیام کامل کردن.
 func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 	id := idParam(r)
 	u := userOf(r.Context())
@@ -1042,25 +1035,19 @@ func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	var docType, status, issueDate, note, number, paymentType string
-	var convertedTo, partnerID sql.NullInt64
-	var pctOverride sql.NullFloat64
-	var customerID, warehouseID int64
-	var subtotal, discount, tax, total int64
+	var docType, status, issueDate, number string
+	var seqYear, seqNo, convertedTo sql.NullInt64
+	var customerID int64
 	err = tx.QueryRow(`
-		SELECT doc_type, status, COALESCE(issue_date,''), COALESCE(note,''), COALESCE(number,''),
-		       COALESCE(payment_type,''), customer_id, warehouse_id,
-		       subtotal_amount, discount_amount, tax_amount, total_amount, converted_to_id, partner_id,
-		       partner_percent_override
-		FROM inv_invoices WHERE id = ? AND organization_id = ? FOR UPDATE`, id, u.OrgID).
-		Scan(&docType, &status, &issueDate, &note, &number, &paymentType, &customerID, &warehouseID,
-			&subtotal, &discount, &tax, &total, &convertedTo, &partnerID, &pctOverride)
+		SELECT doc_type, status, COALESCE(issue_date,''), COALESCE(number,''), seq_year, seq_no, converted_to_id, customer_id
+		FROM inv_invoices WHERE id = ? AND organization_id = ? AND is_deleted = 0 FOR UPDATE`, id, u.OrgID).
+		Scan(&docType, &status, &issueDate, &number, &seqYear, &seqNo, &convertedTo, &customerID)
 	if err == sql.ErrNoRows {
 		writeErr(w, http.StatusNotFound, "پیش‌فاکتور یافت نشد")
 		return
 	}
 	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
+		writeDBErr(w, "convertToOfficial load", err)
 		return
 	}
 	if docType != "proforma" {
@@ -1080,47 +1067,44 @@ func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newNote := "برگرفته از پیش‌فاکتور"
-	if number != "" {
-		newNote += " شماره " + number
-	} else {
-		newNote += " #" + strconv.FormatInt(id, 10)
-	}
-	if note != "" {
-		newNote += "\n" + note
-	}
-
-	var partnerVal, overrideVal any
-	if partnerID.Valid && partnerID.Int64 > 0 {
-		partnerVal = partnerID.Int64
-		if pctOverride.Valid {
-			overrideVal = pctOverride.Float64 // استثنای درصد همکار هم با پیش‌فاکتور منتقل می‌شود
-		}
-	}
-	res, err := tx.Exec(`
-		INSERT INTO inv_invoices
-		  (organization_id, doc_type, customer_id, partner_id, partner_percent_override, warehouse_id, issue_date, status, source,
-		   payment_type, subtotal_amount, discount_amount, tax_amount, total_amount, note, created_by)
-		VALUES (?, 'official', ?, ?, ?, ?, ?, 'draft', 'staff', ?, ?, ?, ?, ?, ?, ?)`,
-		u.OrgID, customerID, partnerVal, overrideVal, warehouseID, nullIfEmpty(issueDate),
-		normalizePaymentType(paymentType), subtotal, discount, tax, total, newNote, u.ID)
-	if err != nil {
-		writeErr(w, http.StatusInternalServerError, "ساخت فاکتور رسمی ناموفق بود")
+	// امروزِ دیتابیس (تهران) — ساعت پروسهٔ سرور ممکن است تهران نباشد
+	var today string
+	if err := tx.QueryRow("SELECT DATE_FORMAT(CURDATE(), '%Y-%m-%d')").Scan(&today); err != nil {
+		writeDBErr(w, "convertToOfficial today", err)
 		return
 	}
-	newID, _ := res.LastInsertId()
+	jy := seqYearOf(today)
+	no := 0
+	if seqYear.Valid && seqNo.Valid && seqNo.Int64 > 0 && int(seqYear.Int64) == jy {
+		no = int(seqNo.Int64) // همان سال → همان شماره
+		if number == "" {
+			number = formatInvoiceNumber(tx, no)
+		}
+	} else {
+		if err := tx.QueryRow("SELECT COALESCE(MAX(seq_no),0)+1 FROM inv_invoices WHERE seq_year = ? FOR UPDATE", jy).Scan(&no); err != nil {
+			writeErr(w, http.StatusInternalServerError, "تعیین شماره‌ی فاکتور ناموفق بود")
+			return
+		}
+		number = formatInvoiceNumber(tx, no)
+	}
 
 	if _, err := tx.Exec(`
-		INSERT INTO inv_invoice_items
-		  (invoice_id, product_id, title, qty, unit_price, discount, is_tax_exempt, tax_rate, tax_amount, line_total, sort_order)
-		SELECT ?, product_id, title, qty, unit_price, discount, is_tax_exempt, tax_rate, tax_amount, line_total, sort_order
-		FROM inv_invoice_items WHERE invoice_id = ?`, newID, id); err != nil {
-		writeErr(w, http.StatusInternalServerError, "کپی ردیف‌ها ناموفق بود")
+		UPDATE inv_invoices
+		SET doc_type = 'official', status = 'approved', issue_date = ?, seq_year = ?, seq_no = ?, number = ?,
+		    approved_by = ?, approved_at = NOW(),
+		    converted_at = NOW(), converted_by = ?, proforma_issue_date = ?
+		WHERE id = ?`, today, jy, no, number, u.ID, u.ID, nullIfEmpty(issueDate), id); err != nil {
+		if strings.Contains(err.Error(), "1062") {
+			writeErr(w, http.StatusConflict, "تداخل شماره‌ی فاکتور — دوباره تلاش کنید")
+			return
+		}
+		writeDBErr(w, "convertToOfficial update", err)
 		return
 	}
 
-	if _, err := tx.Exec("UPDATE inv_invoices SET converted_to_id = ? WHERE id = ?", newID, id); err != nil {
-		writeErr(w, http.StatusInternalServerError, "پیوند پیش‌فاکتور ناموفق بود")
+	// حالا فاکتور رسمیِ تأییدشده است → موجودی همان لحظه کم می‌شود (مثل تأیید عادی)
+	if err := s.deductInvoiceStock(tx, id, u.ID); err != nil {
+		writeErr(w, http.StatusInternalServerError, "ثبت حرکت انبار ناموفق بود")
 		return
 	}
 
@@ -1128,7 +1112,38 @@ func (s *server) convertToOfficial(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "id": newID})
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "id": id, "number": number,
+		"message": "پیش‌فاکتور به فاکتور رسمی شمارهٔ " + faDigits(number) + " تبدیل و تأیید شد."})
+}
+
+// deductInvoiceStock: کسر موجودی اقلام کالایی یک فاکتور رسمی از انبار رسمی (کمبود بلاک نمی‌کند).
+// مشترک بین «تأیید فاکتور» و «تبدیل پیش‌فاکتور».
+func (s *server) deductInvoiceStock(tx *sql.Tx, invoiceID, userID int64) error {
+	rows, err := tx.Query(
+		"SELECT product_id, qty FROM inv_invoice_items WHERE invoice_id = ? AND product_id IS NOT NULL", invoiceID)
+	if err != nil {
+		return err
+	}
+	type mv struct {
+		pid int64
+		qty float64
+	}
+	var moves []mv
+	for rows.Next() {
+		var m mv
+		if err := rows.Scan(&m.pid, &m.qty); err != nil {
+			rows.Close()
+			return err
+		}
+		moves = append(moves, m)
+	}
+	rows.Close()
+	for _, m := range moves {
+		if err := addStock(tx, m.pid, s.officialWarehouseID, -m.qty, "invoice", "invoice", invoiceID, userID); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // ───────────────────────── کمکی ─────────────────────────
