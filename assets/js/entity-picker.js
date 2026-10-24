@@ -17,6 +17,9 @@
  *                                         // اگر ست شود: دکمهٔ مداد آخر هر ردیف؛ نام همان‌جا
  *                                         //   ویرایش و ذخیره می‌شود (Enter ذخیره، Esc انصراف).
  *                                         //   خطا را throw کن تا زیر ردیف نشان داده شود.
+ *     onEdit:      (item) => {},            // اگر ست شود: همان دکمهٔ مداد، ولی به‌جای ویرایش درجا
+ *                                         //   فهرست بسته و این تابع صدا زده می‌شود (مثلا باز کردن مودال)
+ *     editTitle:   'ویرایش',                // متن راهنمای دکمهٔ مداد
  *   });
  *
  *   p.getValue()        → { id, label, meta } | null
@@ -204,14 +207,14 @@ const EntityPicker = (() => {
                 _dd.innerHTML = `<div class="ep-empty">نتیجه‌ای یافت نشد</div>`;
                 return;
             }
-            const canEdit = typeof cfg.onRename === 'function';
+            const canEdit = typeof cfg.onRename === 'function' || typeof cfg.onEdit === 'function';
             _dd.innerHTML = list.slice(0, 200).map(it => `
 <div class="ep-item${canEdit ? ' ep-can-edit' : ''}${_selected && String(_selected.id) === String(it.id) ? ' ep-selected' : ''}" data-id="${_esc(it.id)}">
   <div class="ep-item-body">
     <div class="ep-item-name">${_esc(it.label)}</div>
     ${it.meta ? `<div class="ep-item-meta">${_esc(it.meta)}</div>` : ''}
   </div>
-  ${canEdit ? `<button class="ep-edit bi bi-pencil" type="button" title="ویرایش نام"></button>` : ''}
+  ${canEdit ? `<button class="ep-edit bi bi-pencil" type="button" title="${_esc(cfg.editTitle || (cfg.onEdit ? 'ویرایش' : 'ویرایش نام'))}"></button>` : ''}
 </div>`).join('');
             _dd.querySelectorAll('.ep-item').forEach(el => {
                 el.addEventListener('mousedown', ev => {
@@ -225,6 +228,12 @@ const EntityPicker = (() => {
                 if (eb) eb.addEventListener('mousedown', ev => {
                     ev.preventDefault();
                     ev.stopPropagation();
+                    if (typeof cfg.onEdit === 'function') {
+                        const it = _items.find(x => String(x.id) === el.dataset.id);
+                        _closeDd();
+                        if (it) cfg.onEdit(it);
+                        return;
+                    }
                     _startRename(el.dataset.id);
                 });
             });

@@ -247,7 +247,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         </div>
 
         <div class="crm-toolbar">
-            <input type="text" id="crmSearch" class="form-control crm-search" placeholder="جست‌وجو در شماره یا نام مشتری…">
+            <input type="text" id="crmSearch" class="form-control crm-search" placeholder="جست‌وجو در شماره، مشتری، همکار یا مبلغ…">
             <select id="stFilter" class="form-select" style="max-width:170px">
                 <option value="">همه‌ی وضعیت‌ها</option>
                 <option value="draft">پیش‌نویس</option>
@@ -631,14 +631,24 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         }
 
         function applyFilter() {
-            const q = document.getElementById('crmSearch').value.trim().toLowerCase();
+            // رقم فارسی/عربی → لاتین تا «۷۰۴» و «704» هر دو پیدا شوند
+            const q = String(document.getElementById('crmSearch').value || '')
+                .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+                .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+                .trim().toLowerCase();
+            // مبلغ: جداکنندهٔ هزارگان و فاصله نادیده گرفته می‌شود («۱٬۵۰۰٬۰۰۰» = «1500000»)
+            const qAmount = q.replace(/[,٬،\s]/g, '');
+            const isAmount = /^\d+$/.test(qAmount);
             const st = document.getElementById('stFilter').value;
             let rows = allRows;
             if (monthFilter) rows = rows.filter(r => monthFilter.matches(invDate(r)));
             if (st) rows = rows.filter(r => r.status === st);
+            // جست‌وجو در شماره، نام مشتری، نام همکار و مبلغ کل (درخواست ۱۴۰۵/۰۸/۰۱)
             if (q) rows = rows.filter(r =>
-                (r.number || '').toLowerCase().includes(q) ||
-                (r.customer_name || '').toLowerCase().includes(q));
+                String(r.number || '').toLowerCase().includes(q) ||
+                (r.customer_name || '').toLowerCase().includes(q) ||
+                (r.partner_name || '').toLowerCase().includes(q) ||
+                (isAmount && String(Math.round(Number(r.total_amount) || 0)).includes(qAmount)));
             gridApi.setGridOption('rowData', rows);
         }
 

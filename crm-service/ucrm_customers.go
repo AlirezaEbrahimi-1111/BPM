@@ -164,38 +164,11 @@ func digitsOnly(v string) string {
 
 // ──────────────── اعتبارسنجی (هم‌ارز assets/js/iran-id-validate.js) ────────────────
 
-func validNationalCode(s string) bool {
-	if len(s) != 10 || strings.Count(s, s[:1]) == 10 {
-		return false
-	}
-	sum := 0
-	for i := 0; i < 9; i++ {
-		sum += int(s[i]-'0') * (10 - i)
-	}
-	r := sum % 11
-	check := r
-	if r >= 2 {
-		check = 11 - r
-	}
-	return check == int(s[9]-'0')
-}
+// کد ملی (۱۰ رقم) / شناسهٔ ملی (۱۱ رقم): فقط تعداد رقم — تصمیم ۱۴۰۵/۰۸/۰۱، هم‌ارز
+// assets/js/iran-id-validate.js (رقم کنترل دیگر بررسی نمی‌شود). ورودی قبلا digitsOnly شده است.
+func validNationalCode(s string) bool { return len(s) == 10 }
 
-func validLegalID(s string) bool {
-	if len(s) != 11 || strings.Count(s, s[:1]) == 11 {
-		return false
-	}
-	c := []int{29, 27, 23, 19, 17}
-	k := int(s[9]-'0') + 2
-	sum := 0
-	for i := 0; i < 10; i++ {
-		sum += (int(s[i]-'0') + k) * c[i%5]
-	}
-	r := sum % 11
-	if r == 10 {
-		r = 0
-	}
-	return r == int(s[10]-'0')
-}
+func validLegalID(s string) bool { return len(s) == 11 }
 
 // validateCustomer: خطای فارسی یا "" — همان قواعد فرم.
 func validateUcrmCustomer(in ucrmCustomerIn) string {
@@ -215,10 +188,10 @@ func validateUcrmCustomer(in ucrmCustomerIn) string {
 	}
 	if in.NationalID != "" {
 		if in.Type == "individual" && !validNationalCode(in.NationalID) {
-			return "کد ملی معتبر نیست."
+			return "کد ملی باید ۱۰ رقم باشد."
 		}
 		if in.Type == "legal" && !validLegalID(in.NationalID) {
-			return "شناسهٔ ملی شرکت معتبر نیست."
+			return "شناسهٔ ملی شرکت باید ۱۱ رقم باشد."
 		}
 	}
 	return ""

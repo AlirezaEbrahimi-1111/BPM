@@ -1063,13 +1063,21 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                     customerPicker.setValue(c.id);
                 }),
                 onSelect: () => focusFirstProductName(),
-                // ویرایش درجای نام شرکت/مشتری از داخل همین فهرست (بدون مودال) — فقط نام عوض می‌شود
-                onRename: async (it, name) => {
-                    const d = await apiSend('PATCH', '/customers/' + it.id + '/name', { name });
+                // مداد هر ردیف = پنجرهٔ ویرایش کامل اطلاعات مشتری (درخواست ۱۴۰۵/۰۸/۰۱، جای ویرایش
+                // درجای نام). تکراری بودن نام/شناسه را سرور می‌گیرد؛ پیامش در همان پنجره می‌آید.
+                editTitle: 'ویرایش اطلاعات مشتری',
+                onEdit: it => {
                     const c = customers.find(x => x.id === it.id);
-                    if (c) c.name = d.name;
-                    showToast('نام مشتری به «' + d.name + '» تغییر کرد', 'success');
-                    return d.name;
+                    if (!c) return;
+                    QuickAdd.editCustomer(c, upd => {
+                        Object.assign(c, upd);
+                        customerPicker.updateItems(custItems());
+                    }, existing => {
+                        // «انتخاب همین مشتری»: مشتری موجود با همان نام/شناسه برای این فاکتور
+                        if (!customers.some(x => x.id === existing.id)) customers.push(existing);
+                        customerPicker.updateItems(custItems());
+                        customerPicker.setValue(existing.id);
+                    });
                 },
             });
             // همکار — اختیاری. انتخاب از فهرست، با دکمهٔ + برای افزودن سریع.

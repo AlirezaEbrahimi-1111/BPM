@@ -156,6 +156,12 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
            تا حاشیه‌ها هم‌تراز بمانند (جدول تودرتو خط‌های اضافه می‌ساخت). */
         .inv-top { table-layout: fixed; }
         .inv-top .hc-empty { width: 210px; }
+        /* سربرگ شرکت (۱۴۰۵/۰۸/۰۱): «هو الملک الحق المبین» + لوگوی یکتا همراهان ملک —
+           لوگو = assets/images/invoice-logo-print.png (طرح مشکی روی پس‌زمینهٔ شفاف) */
+        .inv-top .hc-brand { padding: 2px 6px; vertical-align: middle; }
+        .hc-brand .brand { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+        .hc-brand .brand-txt { font-weight: 800; font-size: 13px; white-space: nowrap; }
+        .hc-brand img { height: 46px; width: auto; display: block; }
         .inv-top .mlbl { width: 86px; }
         .inv-top .mval { width: 124px; }
 
@@ -482,7 +488,10 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             document.getElementById('sheet').innerHTML = `
             <table class="inv-top">
                 <tr>
-                    <td class="hc-empty" rowspan="2"></td>
+                    <td class="hc-empty hc-brand" rowspan="2"><div class="brand">
+                        <span class="brand-txt">"هو الملک الحق المبین"</span>
+                        <img src="/assets/images/invoice-logo-print.png" alt="یکتا همراهان ملک">
+                    </div></td>
                     <td class="inv-title" rowspan="2">${DT[inv.doc_type] || 'صورتحساب فروش کالا و خدمات'}</td>
                     <td class="lbl mlbl">${numLabel}</td>
                     <td class="mval">${inv.number ? faDigits(inv.number) : ''}</td>

@@ -6,6 +6,8 @@
  *   QuickAdd.supplier(rec => { ... })
  *   QuickAdd.product(rec  => { ... })
  *   QuickAdd.partner(rec  => { ... })
+ *   QuickAdd.editCustomer(rec, updated => { ... }, existing => { ... })
+ *       // ویرایش کامل مشتری (همان فیلدهای «مشتری سریع») — از مداد انتخابگر مشتری فاکتور
  *
  * وابستگی: bootstrap.bundle (برای Modal) + توکن در localStorage['auth_token'].
  */
@@ -45,9 +47,9 @@ const QuickAdd = (() => {
         document.head.appendChild(s);
     }
 
-    async function post(path, body) {
+    async function post(path, body, method) {
         const r = await fetch(API + path, {
-            method: 'POST',
+            method: method || 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + tok()
@@ -70,8 +72,10 @@ const QuickAdd = (() => {
         return e;
     }
 
-    // fields: [{name, label, type:'text'|'select'|'textarea'|'switch', options?, required?, col?}]
-    function open(title, icon, fields, onSave) {
+    // fields: [{name, label, type:'text'|'select'|'textarea'|'switch', options?, required?, col?, value?}]
+    // opts: {successMsg}
+    function open(title, icon, fields, onSave, opts) {
+        opts = opts || {};
         _style();
         const rows = fields.map(f => {
             const col = f.col || 12;
@@ -113,6 +117,13 @@ const QuickAdd = (() => {
   </div>
 </div>`;
         document.body.appendChild(el);
+        // مقدار اولیه (حالت ویرایش)
+        fields.forEach(f => {
+            if (f.value == null) return;
+            const c = el.querySelector(`[data-f="${f.name}"]`);
+            if (!c) return;
+            if (c.type === 'checkbox') c.checked = !!f.value; else c.value = f.value;
+        });
         // فرم مشتری (نوع + کد/شناسه ملی + کد پستی): اعتبارسنجی زنده هنگام تایپ
         if (window.IranId && el.querySelector('[data-f="type"]') && el.querySelector('[data-f="national_id"]')) {
             window.IranId.attachLive({
@@ -144,7 +155,7 @@ const QuickAdd = (() => {
             try {
                 const rec = await onSave(data);
                 modal.hide();
-                if (window.showToast) showToast('افزوده شد', 'success');
+                if (window.showToast) showToast(opts.successMsg || 'افزوده شد', 'success');
             } catch (e) {
                 errBox.textContent = e.message || 'خطا در ذخیره';
                 if (e.action) {
@@ -197,6 +208,46 @@ const QuickAdd = (() => {
             onDone(rec);
             return rec;
         });
+    }
+
+    // ویرایش کامل مشتری — همان فیلدهای «مشتری سریع» با مقدار فعلی. فیلدهایی که این‌جا
+    // نیستند (موبایل، استان، شهر) دست‌نخورده همان مقدار قبلی فرستاده می‌شوند (PUT همه را می‌نویسد).
+    // تکراری بودن نام/شناسه را سرور می‌گیرد (crm-service/dedup.go) و پیامش این‌جا می‌آید.
+    function editCustomer(rec, onDone, onPickExisting) {
+        const v = k => (rec && rec[k] != null) ? String(rec[k]) : '';
+        open('ویرایش مشتری', 'bi-pencil-square', [
+            { name: 'type', label: 'نوع', type: 'select', col: 4, value: v('type') || 'legal', options: [{ v: 'legal', t: 'حقوقی (شرکت)' }, { v: 'individual', t: 'حقیقی (شخص)' }] },
+            { name: 'name', label: 'نام', required: true, col: 8, value: v('name') },
+            { name: 'national_id', label: 'شناسه / کد ملی', required: true, col: 6, value: v('national_id'), attr: 'inputmode="numeric" autocomplete="off"' },
+            { name: 'economic_code', label: 'شماره اقتصادی', col: 6, value: v('economic_code'), attr: 'inputmode="numeric" autocomplete="off"' },
+            { name: 'postal_code', label: 'کد پستی', required: true, col: 6, value: v('postal_code'), attr: 'inputmode="numeric" autocomplete="off"' },
+            { name: 'phone', label: 'تلفن', col: 6, value: v('phone'), attr: 'inputmode="numeric" autocomplete="off"' },
+            { name: 'address', label: 'آدرس', type: 'textarea', value: v('address') },
+        ], async d => {
+            const body = {
+                type: d.type, name: d.name,
+                phone: toEn(d.phone), mobile: v('mobile'),
+                national_id: toEn(d.national_id), economic_code: toEn(d.economic_code),
+                province: v('province'), city: v('city'),
+                postal_code: toEn(d.postal_code), address: d.address,
+            };
+            // اعتبارسنجی فقط برای فیلدهای عوض‌شده (دادهٔ قدیمیِ نامعتبر، ویرایش بقیه را قفل نکند)
+            if (window.IranId) {
+                const chk = { type: body.type };
+                if (body.national_id !== toEn(v('national_id')) || body.type !== v('type')) chk.national_id = body.national_id;
+                if (body.postal_code !== toEn(v('postal_code'))) chk.postal_code = body.postal_code;
+                const errs = window.IranId.checkCustomer(chk);
+                if (errs.length) throw new Error(errs.join(' '));
+            }
+            try {
+                await post('/customers/' + rec.id, body, 'PUT');
+            } catch (e) {
+                throw onPickExisting ? dupAction(e, 'انتخاب همین مشتری', onPickExisting) : e;
+            }
+            const upd = { ...rec, ...body };
+            onDone(upd);
+            return upd;
+        }, { successMsg: 'اطلاعات مشتری ذخیره شد' });
     }
 
     function supplier(onDone) {
@@ -266,5 +317,5 @@ const QuickAdd = (() => {
         });
     }
 
-    return { customer, supplier, product, partner };
+    return { customer, editCustomer, supplier, product, partner };
 })();
