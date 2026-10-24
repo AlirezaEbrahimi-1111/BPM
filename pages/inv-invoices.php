@@ -269,11 +269,18 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         <div class="crm-toolbar">
             <input type="text" id="crmSearch" class="form-control crm-search" placeholder="جست‌وجو در شماره، مشتری، همکار یا مبلغ…">
-            <select id="stFilter" class="form-select" style="max-width:170px">
+            <select id="stFilter" class="form-select" style="max-width:200px">
                 <option value="">همه‌ی وضعیت‌ها</option>
                 <option value="draft">پیش‌نویس</option>
                 <option value="approved">تأییدشده</option>
                 <option value="cancelled">باطل‌شده</option>
+                <!-- همان چهار گزینهٔ «گزارش همکاران» (۱۴۰۵/۰۸/۰۲) — باطل‌شده‌ها در این‌ها نمی‌آیند -->
+                <optgroup label="تسویه و ثبت">
+                    <option value="settled">تسویه شده</option>
+                    <option value="unsettled">تسویه نشده</option>
+                    <option value="profit_unrecorded">ثبت نشده سود شایگان</option>
+                    <option value="moadian_unregistered">ثبت نشده مودیان</option>
+                </optgroup>
             </select>
             <!-- فیلتر ماه (چندانتخابی): پیش‌فرض ماه جاری — assets/js/month-filter.js -->
             <div id="monthFilter" style="width:190px"></div>
@@ -670,6 +677,26 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             return r.issue_date || (r.created_at || '').split(' ')[0];
         }
 
+        // فیلتر وضعیت — همان معنای فیلتر «گزارش همکاران» (crm-service/partners.go):
+        // چهار گزینهٔ «تسویه و ثبت» باطل‌شده‌ها را نمی‌آورند. «ثبت نشده سود شایگان» فقط
+        // فاکتورهای دارای سود همکار (hasPartnerProfit)؛ «ثبت نشده مودیان» فقط فاکتور رسمی (نه پیش‌فاکتور).
+        function matchesStatusFilter(r, st) {
+            switch (st) {
+                case 'draft':
+                case 'approved':
+                case 'cancelled':
+                    return r.status === st;
+            }
+            if (r.status === 'cancelled') return false;
+            switch (st) {
+                case 'settled': return r.settlement_status === 'settled';
+                case 'unsettled': return (r.settlement_status || 'unsettled') !== 'settled';
+                case 'profit_unrecorded': return hasPartnerProfit(r) && !r.partner_profit_recorded;
+                case 'moadian_unregistered': return r.doc_type !== 'proforma' && (r.moadian_status || 'unregistered') !== 'registered';
+            }
+            return true;
+        }
+
         function applyFilter() {
             // رقم فارسی/عربی → لاتین تا «۷۰۴» و «704» هر دو پیدا شوند
             const q = String(document.getElementById('crmSearch').value || '')
@@ -682,7 +709,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             const st = document.getElementById('stFilter').value;
             let rows = allRows;
             if (monthFilter) rows = rows.filter(r => monthFilter.matches(invDate(r)));
-            if (st) rows = rows.filter(r => r.status === st);
+            if (st) rows = rows.filter(r => matchesStatusFilter(r, st));
             // جست‌وجو در شماره، نام مشتری، نام همکار و مبلغ کل (درخواست ۱۴۰۵/۰۸/۰۱)
             if (q) rows = rows.filter(r =>
                 String(r.number || '').toLowerCase().includes(q) ||
