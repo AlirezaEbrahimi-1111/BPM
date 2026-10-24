@@ -360,3 +360,29 @@ button.uc-head-ico:hover { background: rgba(142, 87, 254, .2); }
 .fu-when .fu-date { position: relative; }
 .fu-when .fu-cal { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted, #6b7490); pointer-events: none; }
 
+/* پنجرهٔ «ویرایش گروهی تارگت‌ها» (طرح ۱۴۰۵/۰۸/۰۲) — pages/ucrm-targets.php */
+.uc-tg-modal .modal-header { align-items: flex-start; border-bottom: 1px solid var(--border-soft, #eee); }
+.uc-tg-modal .modal-title { font-weight: 800; color: #4c2a9e; }
+.uc-tg-modal .sub { font-size: .82rem; color: var(--text-muted, #6b7490); margin-top: 6px; }
+.uc-tg-modal .tg-sel { display: flex; align-items: center; gap: 10px; font-weight: 700; margin-bottom: 18px; cursor: pointer; }
+.uc-tg-modal .tg-sel input { width: 20px; height: 20px; accent-color: #6d3fd6; cursor: pointer; }
+.uc-tg-modal .tg-row { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+.uc-tg-modal .tg-row > label { flex: 0 0 130px; font-weight: 700; font-size: .9rem; margin: 0; }
+.uc-tg-modal .tg-row > :last-child { flex: 1; }
+.uc-tg-modal .form-control { border-radius: 10px; }
+.uc-tg-modal .input-group .form-control { border-radius: 0 10px 10px 0; }
+.uc-tg-modal .input-group-text { border-radius: 10px 0 0 10px; font-size: .85rem; background: rgba(142, 87, 254, .05); }
+.uc-tg-modal .tg-date { position: relative; }
+.uc-tg-modal .tg-date i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted, #6b7490); }
+.uc-tg-modal .tg-date .form-control { background: rgba(0, 0, 0, .02); cursor: default; }
+.uc-tg-modal .modal-footer { justify-content: flex-start; gap: 12px; border-top: 1px solid var(--border-soft, #eee); }
+.uc-tg-modal .tg-btn { min-width: 150px; padding: .6rem 1.2rem; border-radius: 10px; font-weight: 700; }
+:root[data-theme="dark"] .uc-tg-modal .modal-title { color: #b79bff; }
+:root[data-theme="dark"] .uc-tg-modal .input-group-text { background: rgba(142, 87, 254, .12); }
+:root[data-theme="dark"] .uc-tg-modal .tg-date .form-control { background: rgba(255, 255, 255, .04); }
+
+/* custom.css: «.modal input[type=text]{width:100%}» واحد (تومان/مورد) را به خط بعد می‌برد */
+.uc-tg-modal .input-group { flex-wrap: nowrap; }
+.uc-tg-modal .input-group > .form-control { width: 1% !important; flex: 1 1 auto; }
+.uc-tg-modal .tg-btn.btn-outline-secondary { border: 1px solid var(--border-soft, #d9d9e3) !important; color: var(--text-strong, #2d3748); background: transparent; }
+.uc-tg-modal .tg-btn.btn-outline-secondary:hover { background: rgba(142, 87, 254, .12); }

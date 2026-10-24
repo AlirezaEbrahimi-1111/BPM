@@ -92,6 +92,8 @@ type effTarget struct {
 	TargetSrc string `json:"target_src"` // own | carry | rule | ""
 	Floor     *int64 `json:"floor"`
 	FloorSrc  string `json:"floor_src"`
+	Count     *int64 `json:"target_count"`     // تارگت تعداد فروش (مورد) — بدون قاعدهٔ پیش‌فرض
+	CountSrc  string `json:"target_count_src"` // own | carry | ""
 	Active    bool   `json:"is_active"`
 }
 
@@ -102,7 +104,7 @@ func (s *server) ucrmEffective(reps map[int64]int64, ptype, key string) (map[int
 		out[id] = &effTarget{Active: true}
 	}
 	rows, err := s.db.Query(`
-		SELECT t.customer_id, t.period_key, t.target_amount, t.floor_amount, t.is_active
+		SELECT t.customer_id, t.period_key, t.target_amount, t.floor_amount, t.target_count, t.is_active
 		FROM ucrm_targets t JOIN ucrm_customers c ON c.id = t.customer_id
 		WHERE c.organization_id = ? AND c.is_deleted = 0 AND t.period_type = ? AND t.period_key <= ?
 		ORDER BY t.customer_id, t.period_key DESC`, ucrmOrg, ptype, key)
@@ -114,9 +116,9 @@ func (s *server) ucrmEffective(reps map[int64]int64, ptype, key string) (map[int
 	for rows.Next() {
 		var cid int64
 		var pk string
-		var tg, fl sql.NullInt64
+		var tg, fl, cnt sql.NullInt64
 		var act int
-		if err := rows.Scan(&cid, &pk, &tg, &fl, &act); err != nil {
+		if err := rows.Scan(&cid, &pk, &tg, &fl, &cnt, &act); err != nil {
 			return nil, err
 		}
 		e, ok := out[cid]
@@ -138,6 +140,10 @@ func (s *server) ucrmEffective(reps map[int64]int64, ptype, key string) (map[int
 		if e.Floor == nil && fl.Valid {
 			v := fl.Int64
 			e.Floor, e.FloorSrc = &v, src
+		}
+		if e.Count == nil && cnt.Valid {
+			v := cnt.Int64
+			e.Count, e.CountSrc = &v, src
 		}
 	}
 	rows.Close()
@@ -220,7 +226,7 @@ func (s *server) ucrmApplyCurrentTargets(items []ucrmCustomerOut) {
 // ucrmUpsertTarget: یک رکورد دوره را می‌نویسد؛ nil = دست نزن، ۰ = خالی کن (برگشت به ادامه/قاعده)
 func ucrmUpsertTarget(ex interface {
 	Exec(string, ...any) (sql.Result, error)
-}, cid int64, ptype, key string, target, floor *int64, active *bool, uid int64) error {
+}, cid int64, ptype, key string, target, floor, count *int64, active *bool, uid int64) error {
 	if _, err := ex.Exec(`INSERT IGNORE INTO ucrm_targets (customer_id, period_type, period_key, updated_by) VALUES (?, ?, ?, ?)`,
 		cid, ptype, key, uid); err != nil {
 		return err
@@ -234,6 +240,10 @@ func ucrmUpsertTarget(ex interface {
 	if floor != nil {
 		set = append(set, "floor_amount = ?")
 		args = append(args, nullIfZero(*floor))
+	}
+	if count != nil {
+		set = append(set, "target_count = ?")
+		args = append(args, nullIfZero(*count))
 	}
 	if active != nil {
 		set = append(set, "is_active = ?")
@@ -320,9 +330,11 @@ func (s *server) ucrmListTargets(w http.ResponseWriter, r *http.Request) {
 			items[i].effTarget = *e
 		}
 	}
+	ps, pe := periodRangeJalali(ptype, key)
 	writeJSON(w, http.StatusOK, map[string]any{
 		"items": items, "period_type": ptype, "period": key, "period_label": periodLabel(ptype, key),
 		"current": cur, "roles": ro, "settings": s.ucrmLoadSettings(),
+		"period_start": ps, "period_end": pe,
 	})
 }
 
@@ -342,6 +354,7 @@ func (s *server) ucrmPutTargets(w http.ResponseWriter, r *http.Request) {
 		Period      string  `json:"period"`
 		Target      *int64  `json:"target"`
 		Floor       *int64  `json:"floor"`
+		TargetCount *int64  `json:"target_count"` // تارگت تعداد فروش (مورد)
 		IsActive    *bool   `json:"is_active"`
 	}
 	if !decodeJSON(w, r, &in, 1<<20) {
@@ -355,7 +368,7 @@ func (s *server) ucrmPutTargets(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "دست‌کم یک مشتری را انتخاب کنید.")
 		return
 	}
-	if in.Target == nil && in.Floor == nil && in.IsActive == nil {
+	if in.Target == nil && in.Floor == nil && in.TargetCount == nil && in.IsActive == nil {
 		writeErr(w, http.StatusBadRequest, "چیزی برای ذخیره نیست.")
 		return
 	}
@@ -364,6 +377,10 @@ func (s *server) ucrmPutTargets(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, http.StatusBadRequest, "مبلغ معتبر نیست.")
 			return
 		}
+	}
+	if in.TargetCount != nil && (*in.TargetCount < 0 || *in.TargetCount > 10_000_000) {
+		writeErr(w, http.StatusBadRequest, "تارگت تعداد فروش معتبر نیست.")
+		return
 	}
 	if in.Target != nil && in.Floor != nil && *in.Target > 0 && *in.Floor > *in.Target {
 		writeErr(w, http.StatusBadRequest, "کف فروش نمی‌تواند از تارگت بیشتر باشد.")
@@ -396,7 +413,7 @@ func (s *server) ucrmPutTargets(w http.ResponseWriter, r *http.Request) {
 		if chk.QueryRow(cid, ucrmOrg).Scan(&name) != nil {
 			continue
 		}
-		if err := ucrmUpsertTarget(tx, cid, in.PeriodType, in.Period, in.Target, in.Floor, in.IsActive, uid); err != nil {
+		if err := ucrmUpsertTarget(tx, cid, in.PeriodType, in.Period, in.Target, in.Floor, in.TargetCount, in.IsActive, uid); err != nil {
 			writeDBErr(w, "ucrmPutTargets upsert", err)
 			return
 		}
@@ -413,6 +430,13 @@ func (s *server) ucrmPutTargets(w http.ResponseWriter, r *http.Request) {
 				parts = append(parts, "کف فروش را "+faMoney(*in.Floor)+" تومان")
 			} else {
 				parts = append(parts, "کف فروش اختصاصی را خالی")
+			}
+		}
+		if in.TargetCount != nil {
+			if *in.TargetCount > 0 {
+				parts = append(parts, "تارگت تعداد فروش را "+faDigits(strconv.FormatInt(*in.TargetCount, 10))+" مورد")
+			} else {
+				parts = append(parts, "تارگت تعداد فروش اختصاصی را خالی")
 			}
 		}
 		if in.IsActive != nil {
@@ -563,4 +587,39 @@ func (s *server) ucrmDeleteRule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"success": true, "message": "قاعده حذف شد."})
+}
+
+// jalaliMonthDays: تعداد روزهای یک ماه شمسی (اسفند کبیسه = ۳۰)
+func jalaliMonthDays(jy, jm int) int {
+	switch {
+	case jm <= 6:
+		return 31
+	case jm <= 11:
+		return 30
+	}
+	if _, ok := jalaliToGregorian(jy, 12, 30); ok {
+		return 30
+	}
+	return 29
+}
+
+// periodRangeJalali: روز اول و آخر یک دوره به شمسی «۱۴۰۵/۰۸/۰۱» — برای نمایش در پنجرهٔ تارگت
+func periodRangeJalali(ptype, key string) (string, string) {
+	var jy, m1, m2 int
+	switch ptype {
+	case "monthly":
+		fmt.Sscanf(key, "%d-%d", &jy, &m1)
+		m2 = m1
+	case "quarterly":
+		var q int
+		fmt.Sscanf(key, "%d-Q%d", &jy, &q)
+		m1, m2 = q*3-2, q*3
+	case "yearly":
+		fmt.Sscanf(key, "%d", &jy)
+		m1, m2 = 1, 12
+	}
+	if jy < 1300 || m1 < 1 || m2 > 12 {
+		return "", ""
+	}
+	return fmt.Sprintf("%04d/%02d/%02d", jy, m1, 1), fmt.Sprintf("%04d/%02d/%02d", jy, m2, jalaliMonthDays(jy, m2))
 }

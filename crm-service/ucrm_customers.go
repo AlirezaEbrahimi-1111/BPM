@@ -567,7 +567,7 @@ func (s *server) ucrmCreateCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 	if ro.Manager && in.Target > 0 {
 		t := in.Target
-		if err := ucrmUpsertTarget(tx, id, "monthly", s.ucrmCurrentPeriods()["monthly"], &t, nil, nil, uid); err != nil {
+		if err := ucrmUpsertTarget(tx, id, "monthly", s.ucrmCurrentPeriods()["monthly"], &t, nil, nil, nil, uid); err != nil {
 			writeDBErr(w, "ucrmCreate target", err)
 			return
 		}
@@ -756,7 +756,7 @@ func (s *server) ucrmApprove(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if target > 0 {
-			if err := ucrmUpsertTarget(tx, cur.ID, "monthly", s.ucrmCurrentPeriods()["monthly"], &target, nil, nil, uid); err != nil {
+			if err := ucrmUpsertTarget(tx, cur.ID, "monthly", s.ucrmCurrentPeriods()["monthly"], &target, nil, nil, nil, uid); err != nil {
 				writeDBErr(w, "ucrmApprove target", err)
 				return
 			}

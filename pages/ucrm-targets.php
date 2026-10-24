@@ -75,43 +75,48 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
         <div id="tgGrid" class="ag-theme-alpine inv-grid" style="height: 620px; width: 100%; padding-top: 1rem;"></div>
     </div>
 
-    <!-- ویرایش تکی / گروهی / افزودن تارگت -->
-    <div class="modal fade" id="tgModal" tabindex="-1">
-        <div class="modal-dialog">
+    <!-- ویرایش تکی / گروهی / افزودن تارگت — طرح «ویرایش گروهی تارگت‌ها» (۱۴۰۵/۰۸/۰۲) -->
+    <div class="modal fade uc-tg-modal" id="tgModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header-custom modal-header border-0">
-                    <h5 class="modal-title text-white"><i class="bi bi-bullseye ms-2"></i><span id="tgTitle">ویرایش تارگت</span></h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="tgTitle">ویرایش تارگت</h5>
+                        <div class="sub" id="tgSub"></div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
                 </div>
                 <div class="modal-body">
                     <div id="tgWho" class="small text-muted mb-3"></div>
+                    <label class="tg-sel" id="tgSelWrap" hidden>
+                        <input type="checkbox" id="tgOnlySel" checked> <span>اعمال برای مشتری انتخاب شده</span>
+                    </label>
                     <div id="tgPickWrap" class="mb-3" hidden>
                         <label class="form-label">مشتری <span class="text-danger">*</span></label>
                         <div id="tgPicker"></div>
                         <div class="form-text">فقط مشتری‌هایی که برای این دوره عدد اختصاصی ندارند.</div>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <label class="form-label">تارگت هدف (تومان)</label>
-                            <input type="text" class="form-control" id="tTarget" autocomplete="off">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">کف فروش (تومان)</label>
-                            <input type="text" class="form-control" id="tFloor" autocomplete="off">
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="tActive" checked>
-                                <label class="form-check-label" for="tActive" id="tActiveLbl">فعال</label>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="tg-row"><label for="tTarget">میزان تارگت فروش</label>
+                        <div class="input-group"><input type="text" class="form-control" id="tTarget" autocomplete="off"><span class="input-group-text">تومان</span></div></div>
+                    <div class="tg-row"><label for="tCount">تارگت تعداد فروش</label>
+                        <div class="input-group"><input type="text" class="form-control" id="tCount" inputmode="numeric" autocomplete="off"><span class="input-group-text">مورد</span></div></div>
+                    <div class="tg-row"><label>تاریخ شروع</label>
+                        <div class="tg-date"><input type="text" class="form-control" id="tStart" readonly tabindex="-1"><i class="bi bi-calendar3"></i></div></div>
+                    <div class="tg-row"><label>تاریخ پایان</label>
+                        <div class="tg-date"><input type="text" class="form-control" id="tEnd" readonly tabindex="-1"><i class="bi bi-calendar3"></i></div></div>
+                    <div class="tg-row"><label for="tFloor">کف فروش</label>
+                        <div class="input-group"><input type="text" class="form-control" id="tFloor" autocomplete="off"><span class="input-group-text">تومان</span></div></div>
+                    <div class="tg-row"><label>وضعیت</label>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" id="tActive" checked>
+                            <label class="form-check-label" for="tActive" id="tActiveLbl">فعال</label>
+                        </div></div>
                     <div class="form-text mt-2" id="tgHint"></div>
                     <div id="tgAlert" class="mt-2"></div>
                 </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                    <button type="button" class="btn btn-primary" id="tgSave">ذخیره</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary tg-btn" id="tgSave"><i class="bi bi-check2 ms-1"></i><span>اعمال تغییرات</span></button>
+                    <button type="button" class="btn btn-outline-secondary tg-btn" data-bs-dismiss="modal">انصراف</button>
                 </div>
             </div>
         </div>
@@ -199,6 +204,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
         const JQ = ['بهار', 'تابستان', 'پاییز', 'زمستان'];
 
         let gridApi, rows = [], reps = [], current = null, settings = { target_red_below: 80, target_green_from: 100 };
+        let periodStart = '', periodEnd = '', tgSelIds = [], tgAllIds = [];
         let periodLabel = '', tgModal, rulesModal, tgMode = 'one', tgIds = [], picker = null, rules = [];
 
         // ── دوره‌ها ──
@@ -234,6 +240,13 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             return `<span class="uc-amt">${UCRM.money(v)} تومان</span>${tag}`;
         }
 
+        function countCell(v, src) {
+            if (v == null) return '<span class="text-muted small">تعیین نشده</span>';
+            const t = SRC_TAG[src];
+            const tag = t ? ` <i class="bi ${t[0]} uc-src-ico" title="${t[1]}"></i>` : '';
+            return `<span class="uc-amt">${faDigits(v)} مورد</span>${tag}`;
+        }
+
         const colDefs = [{
                 headerName: '',
                 colId: 'sel',
@@ -248,6 +261,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             { headerName: 'نام مشتری', field: 'name', flex: 2, minWidth: 140, cellRenderer: p => `<a class="uc-name uc-name-link" href="ucrm-customer.php?id=${p.data.customer_id}">${esc(p.value)}</a>` },
             { headerName: 'کارشناس', field: 'rep_name', flex: 1, minWidth: 110, hide: !SEES_ALL },
             { headerName: 'تارگت هدف', field: 'target', width: 175, filter: false, cellRenderer: p => amountCell(p.value, p.data.target_src) },
+            { headerName: 'تارگت تعداد', field: 'target_count', width: 130, filter: false, cellRenderer: p => countCell(p.value, p.data.target_count_src) },
             { headerName: 'کف فروش', field: 'floor', width: 175, filter: false, cellRenderer: p => amountCell(p.value, p.data.floor_src) },
             {
                 headerName: 'حجم فروش',
@@ -303,6 +317,8 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 const d = await UCRM.get('/targets?' + q);
                 rows = d.items || [];
                 periodLabel = d.period_label;
+                periodStart = d.period_start || '';
+                periodEnd = d.period_end || '';
                 if (d.settings) settings = d.settings;
                 gridApi.setGridOption('rowData', rows);
             } catch (e) {
@@ -316,17 +332,33 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             tgMode = mode;
             tgIds = ids || [];
             const one = mode === 'one' ? rows.find(r => r.customer_id === tgIds[0]) : null;
-            document.getElementById('tgTitle').textContent = mode === 'bulk' ? 'ویرایش گروهی تارگت' : (mode === 'add' ? 'افزودن تارگت' : 'ویرایش تارگت');
-            document.getElementById('tgWho').textContent = (mode === 'bulk' ? faDigits(tgIds.length) + ' مشتری انتخاب‌شده' :
-                (one ? 'مشتری: ' + one.name : '')) + ' — ' + periodLabel;
+            document.getElementById('tgTitle').textContent = mode === 'bulk' ? 'ویرایش گروهی تارگت‌ها' : (mode === 'add' ? 'افزودن تارگت' : 'ویرایش تارگت');
+            document.getElementById('tgSub').textContent = mode === 'bulk' ? 'مقادیر جدید را برای همه مشتری‌های انتخاب شده اعمال کنید.' : '';
+            document.querySelector('#tgSave span').textContent = mode === 'bulk' ? 'اعمال تغییرات' : 'ذخیره';
+            // گروهی: تیک = ردیف‌های انتخاب‌شده؛ بدون تیک = همهٔ ردیف‌های دیده‌شده (با فیلترهای صفحه)
+            const selWrap = document.getElementById('tgSelWrap'), onlySel = document.getElementById('tgOnlySel');
+            selWrap.hidden = mode !== 'bulk';
+            if (mode === 'bulk') {
+                tgSelIds = tgIds.slice();
+                tgAllIds = [];
+                gridApi.forEachNodeAfterFilterAndSort(n => n.data && tgAllIds.push(n.data.customer_id));
+                onlySel.checked = tgSelIds.length > 0;
+                onlySel.disabled = tgSelIds.length === 0;
+                bulkWho();
+            } else {
+                document.getElementById('tgWho').textContent = (one ? 'مشتری: ' + one.name + ' — ' : '') + periodLabel;
+            }
             document.getElementById('tgPickWrap').hidden = mode !== 'add';
-            ['tTarget', 'tFloor'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('tStart').value = faDigits(periodStart);
+            document.getElementById('tEnd').value = faDigits(periodEnd);
+            ['tTarget', 'tFloor', 'tCount'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('tActive').checked = one ? one.is_active : true;
             document.getElementById('tActive').indeterminate = mode === 'bulk';
             activeLbl('tActive', 'tActiveLbl');
             if (one) {
                 if (one.target_src === 'own') UCRM.setMoney(document.getElementById('tTarget'), one.target);
                 if (one.floor_src === 'own') UCRM.setMoney(document.getElementById('tFloor'), one.floor);
+                if (one.target_count_src === 'own' && one.target_count) document.getElementById('tCount').value = faDigits(one.target_count);
             }
             document.getElementById('tgHint').textContent = mode === 'bulk' ?
                 'هر فیلدی را خالی بگذارید، برای این مشتری‌ها تغییر نمی‌کند. وضعیت فقط اگر کلیدش را بزنید عوض می‌شود.' :
@@ -344,6 +376,14 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
 
         function openEdit(ids) { openTg('one', ids); }
 
+        // متن «N مشتری» پنجرهٔ گروهی، بسته به تیک «اعمال برای مشتری انتخاب شده»
+        function bulkWho() {
+            const only = document.getElementById('tgOnlySel').checked;
+            tgIds = only ? tgSelIds.slice() : tgAllIds.slice();
+            document.getElementById('tgWho').textContent = faDigits(tgIds.length) + ' مشتری' +
+                (only ? ' انتخاب‌شده' : ' (همهٔ مشتری‌های فهرست با فیلترهای فعلی)') + ' — ' + periodLabel;
+        }
+
         function activeLbl(chk, lbl) {
             const c = document.getElementById(chk);
             document.getElementById(lbl).textContent = c.indeterminate ? 'بدون تغییر' : (c.checked ? 'فعال' : 'معلق');
@@ -358,17 +398,22 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 ids = [v.id];
             }
             const t = document.getElementById('tTarget'), f = document.getElementById('tFloor'), a = document.getElementById('tActive');
+            const cn = document.getElementById('tCount');
+            const cnt = parseInt(UCRM.toEn(cn.value).replace(/\D/g, ''), 10) || 0;
+            if (tgMode === 'bulk' && !ids.length) { al.innerHTML = '<div class="alert alert-warning py-2 mb-0">مشتری‌ای برای اعمال نیست.</div>'; return; }
             const body = { customer_ids: ids, period_type: document.getElementById('fType').value, period: document.getElementById('fPeriod').value };
             if (tgMode === 'bulk') {
                 if (t.value.trim()) body.target = UCRM.moneyVal(t);
                 if (f.value.trim()) body.floor = UCRM.moneyVal(f);
+                if (cn.value.trim()) body.target_count = cnt;
                 if (!a.indeterminate) body.is_active = a.checked;
             } else {
                 body.target = UCRM.moneyVal(t);
                 body.floor = UCRM.moneyVal(f);
+                body.target_count = cnt;
                 body.is_active = a.checked;
-                if (tgMode === 'add' && !body.target && !body.floor) {
-                    al.innerHTML = '<div class="alert alert-warning py-2 mb-0">تارگت یا کف فروش را وارد کنید.</div>';
+                if (tgMode === 'add' && !body.target && !body.floor && !body.target_count) {
+                    al.innerHTML = '<div class="alert alert-warning py-2 mb-0">تارگت، تارگت تعداد یا کف فروش را وارد کنید.</div>';
                     return;
                 }
             }
@@ -544,10 +589,14 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             if (CAN_EDIT) {
                 document.getElementById('btnRules').addEventListener('click', openRules);
                 document.getElementById('btnAddT').addEventListener('click', () => openTg('add'));
+                document.getElementById('tgOnlySel').addEventListener('change', bulkWho);
+                // تارگت تعداد: فقط رقم، نمایش فارسی
+                document.getElementById('tCount').addEventListener('input', e => {
+                    const v = UCRM.toEn(e.target.value).replace(/\D/g, '').slice(0, 8);
+                    e.target.value = v ? faDigits(v) : '';
+                });
                 document.getElementById('btnBulk').addEventListener('click', () => {
-                    const ids = gridApi.getSelectedRows().map(r => r.customer_id);
-                    if (!ids.length) { showToast('اول مشتری‌ها را از ستون انتخاب تیک بزنید.', 'warning'); return; }
-                    openTg('bulk', ids);
+                    openTg('bulk', gridApi.getSelectedRows().map(r => r.customer_id));
                 });
                 document.querySelectorAll('#rulesSeg .uc-seg-btn').forEach(b => b.addEventListener('click', () => rulesTab(b.dataset.tab)));
                 document.getElementById('ruleSave').addEventListener('click', saveRule);
