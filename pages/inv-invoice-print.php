@@ -453,6 +453,14 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                 return;
             }
             render(d.invoice, d.customer || {}, d.seller || {}, d.footer_note || '');
+            // نام پیش‌فرض فایل در «ذخیره به PDF» مرورگر = عنوان صفحه: «شماره فاکتور - نام مشتری»
+            // (درخواست ۱۴۰۵/۰۸/۰۲). نویسه‌های غیرمجاز نام فایل ویندوز حذف می‌شوند.
+            {
+                const safe = v => String(v || '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+                const num = safe(d.invoice.number) || 'پیش‌نویس';
+                const cust = safe(d.invoice.customer_name || (d.customer || {}).name);
+                document.title = cust ? num + ' - ' + cust : num;
+            }
             initFitToggle();                         // بعد از رندر: سوئیچ را بساز و حالتِ ذخیره‌شده را اعمال کن
             if (AUTO_PRINT) setTimeout(() => window.print(), 400);
         }

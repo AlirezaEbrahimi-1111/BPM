@@ -489,6 +489,11 @@ func normalizeDocType(t string) string {
 }
 
 func (in *invoiceIn) validate() string {
+	// «ي/ك» عربی (کپی از شایگان) → فارسی، پیش از هر بررسی و ذخیره
+	in.CustomerName = faLetters(in.CustomerName)
+	for i := range in.Items {
+		in.Items[i].Title = faLetters(in.Items[i].Title)
+	}
 	if in.CustomerID == 0 && strings.TrimSpace(in.CustomerName) == "" {
 		return "نام مشتری را وارد کنید"
 	}

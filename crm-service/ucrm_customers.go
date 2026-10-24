@@ -127,13 +127,13 @@ type ucrmCustomerIn struct {
 
 func (c *ucrmCustomerIn) normalize() {
 	c.Type = customerType(c.Type)
-	c.Name = strings.Join(strings.Fields(c.Name), " ")
+	c.Name = faLetters(strings.Join(strings.Fields(c.Name), " "))
 	c.NationalID = digitsOnly(c.NationalID)
 	c.Province = strings.TrimSpace(c.Province)
 	c.City = strings.TrimSpace(c.City)
-	c.Address = strings.TrimSpace(c.Address)
+	c.Address = faLetters(strings.TrimSpace(c.Address))
 	c.Note = strings.TrimSpace(c.Note)
-	c.RepName = strings.TrimSpace(c.RepName)
+	c.RepName = faLetters(strings.TrimSpace(c.RepName))
 	seen := map[string]bool{}
 	out := []string{}
 	for _, p := range c.Phones {

@@ -35,7 +35,7 @@ type customerIn struct {
 }
 
 func (c *customerIn) normalize() {
-	c.Name = strings.TrimSpace(c.Name)
+	c.Name = faLetters(strings.TrimSpace(c.Name))
 	c.Type = customerType(c.Type)
 	c.Phone = strings.TrimSpace(c.Phone)
 	c.Mobile = strings.TrimSpace(c.Mobile)
@@ -44,7 +44,7 @@ func (c *customerIn) normalize() {
 	c.Province = strings.TrimSpace(c.Province)
 	c.City = strings.TrimSpace(c.City)
 	c.PostalCode = strings.TrimSpace(c.PostalCode)
-	c.Address = strings.TrimSpace(c.Address)
+	c.Address = faLetters(strings.TrimSpace(c.Address))
 }
 
 // GET /crm/api/customers?q=&page=&per=
@@ -182,7 +182,7 @@ func (s *server) renameCustomer(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSON(w, r, &in, 1<<14) {
 		return
 	}
-	in.Name = strings.Join(strings.Fields(in.Name), " ")
+	in.Name = faLetters(strings.Join(strings.Fields(in.Name), " "))
 	if in.Name == "" {
 		writeErr(w, http.StatusBadRequest, "نام مشتری نمی‌تواند خالی باشد")
 		return

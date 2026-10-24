@@ -7,7 +7,8 @@
  *   IranId.nationalCode('0499370899')   // کد ملی اشخاص حقیقی — فقط ۱۰ رقمی بودن
  *   IranId.legalId('10380284790')       // شناسهٔ ملی اشخاص حقوقی — فقط ۱۱ رقمی بودن
  *   IranId.postalCode('1193653471')     // کد پستی — فقط ۱۰ رقمی بودن
- *   IranId.checkCustomer({ type: 'legal'|'individual', national_id, postal_code })  // [خطاها]
+ *   IranId.economicCode('411111111111') // شماره اقتصادی — ۱۰، ۱۱ یا ۱۲ رقم
+ *   IranId.checkCustomer({ type: 'legal'|'individual', national_id, postal_code, economic_code })  // [خطاها]
  *
  * فقط var/function (بدون let/const سطح‌بالا) و گارد ضدِ دوبار لود — مثل بقیهٔ فایل‌های مشترک.
  */
@@ -43,6 +44,13 @@
         return '';
     }
 
+    /* شماره اقتصادی: فقط تعداد رقم — ۱۰، ۱۱ یا ۱۲ (تصمیم ۱۴۰۵/۰۸/۰۲)؛ خالی مجاز است
+       (این‌جا فقط مقدار پرشده بررسی می‌شود). */
+    function economicCode(v) {
+        var s = digits(v);
+        return /^\d{10,12}$/.test(s) ? '' : 'شماره اقتصادی باید ۱۰، ۱۱ یا ۱۲ رقم باشد.';
+    }
+
     /* خطاهای فرم مشتری (فقط فیلدهای پرشده بررسی می‌شوند؛ الزامی‌بودن را خود فرم می‌سنجد) */
     function checkCustomer(c) {
         var errs = [];
@@ -55,6 +63,11 @@
         if (pc) {
             var p = postalCode(pc);
             if (p) errs.push(p);
+        }
+        var ec = digits(c && c.economic_code);
+        if (ec) {
+            var x = economicCode(ec);
+            if (x) errs.push(x);
         }
         return errs;
     }
@@ -107,9 +120,10 @@
         input.classList.toggle('is-valid', kind === 'ok');
     }
 
-    // مشخصات هر نوع فیلد: طول لازم + تابع بررسی + نام
+    // مشخصات هر نوع فیلد: طول لازم (len = کمینه، max = بیشینه) + تابع بررسی + نام
     function specOf(field, typeVal) {
         if (field === 'postal') return { len: 10, check: postalCode, name: 'کد پستی' };
+        if (field === 'economic') return { len: 10, max: 12, check: economicCode, name: 'شماره اقتصادی' };
         return typeVal === 'individual'
             ? { len: 10, check: nationalCode, name: 'کد ملی' }
             : { len: 11, check: legalId, name: 'شناسهٔ ملی شرکت' };
@@ -122,6 +136,7 @@
         var fields = [];
         if (opts.national) fields.push({ el: opts.national, field: 'national' });
         if (opts.postal) fields.push({ el: opts.postal, field: 'postal' });
+        if (opts.economic) fields.push({ el: opts.economic, field: 'economic' });
 
         function evaluate(f, final) {
             var el = f.el;
@@ -129,6 +144,11 @@
             var d = digits(el.value);
             if (!d) { setFb(el, '', ''); return; }
             if (d.length < sp.len) {
+                if (sp.max) { // بازه (شماره اقتصادی ۱۰ تا ۱۲ رقم)
+                    if (final) setFb(el, 'err', sp.name + ' باید ۱۰، ۱۱ یا ۱۲ رقم باشد (' + faNum(d.length) + ' رقم وارد شده).');
+                    else setFb(el, 'warn', sp.name + ' حداقل ' + faNum(sp.len) + ' رقمی است — ' + faNum(sp.len - d.length) + ' رقم دیگر.');
+                    return;
+                }
                 if (final) setFb(el, 'err', sp.name + ' باید ' + faNum(sp.len) + ' رقم باشد (' + faNum(d.length) + ' رقم وارد شده).');
                 else setFb(el, 'warn', sp.name + ' ' + faNum(sp.len) + ' رقمی است — ' + faNum(sp.len - d.length) + ' رقم دیگر.');
                 return;
@@ -145,7 +165,8 @@
             el.addEventListener('input', function () {
                 // فقط رقم (فارسی/عربی/انگلیسی) + سقف طول؛ اسکریپت رقمی که کاربر تایپ کرده حفظ می‌شود
                 var v = el.value.replace(/[^0-9۰-۹٠-٩]/g, '');
-                var max = specOf(f.field, typeVal()).len;
+                var sp0 = specOf(f.field, typeVal());
+                var max = sp0.max || sp0.len;
                 if (f.field === 'national') max = 11; // تا وقتی نوع عوض نشده، ۱۱ رقم شرکت هم جا شود
                 if (v.length > max) v = v.slice(0, max);
                 if (v !== el.value) el.value = v;
@@ -175,7 +196,7 @@
     }
 
     w.IranId = {
-        nationalCode: nationalCode, legalId: legalId, postalCode: postalCode, checkCustomer: checkCustomer, digits: digits,
+        nationalCode: nationalCode, legalId: legalId, postalCode: postalCode, economicCode: economicCode, checkCustomer: checkCustomer, digits: digits,
         attachLive: attachLive, resetLive: resetLive
     };
 })(window);

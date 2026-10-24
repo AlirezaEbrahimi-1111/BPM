@@ -191,7 +191,7 @@ func (s *server) importLegacy(w http.ResponseWriter, r *http.Request) {
 	var grand int64
 	for i := range in.Invoices {
 		inv := &in.Invoices[i]
-		inv.Customer.Name = strings.TrimSpace(inv.Customer.Name)
+		inv.Customer.Name = faLetters(strings.TrimSpace(inv.Customer.Name))
 		inv.MoadianCode = strings.ToUpper(strings.TrimSpace(inv.MoadianCode))
 		if inv.No < 1 {
 			addErr(inv.No, "شماره‌ی فاکتور نامعتبر است")
@@ -630,7 +630,7 @@ func (s *server) importLegacy(w http.ResponseWriter, r *http.Request) {
 				rate = math.Round(float64(it.TaxAmount)*10000/float64(after)) / 100 // دو رقم اعشار، مثلا ۱۰٫۰۰
 			}
 			exempt := it.TaxAmount == 0 && after > 0
-			title := strings.TrimSpace(it.Title)
+			title := faLetters(strings.TrimSpace(it.Title))
 			if len([]rune(title)) > 255 {
 				title = string([]rune(title)[:255])
 			}

@@ -32,7 +32,7 @@ type pageParams struct {
 }
 
 func parsePage(r *http.Request) pageParams {
-	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	q := faLetters(strings.TrimSpace(r.URL.Query().Get("q"))) // «ي/ك» عربیِ چسبانده‌شده هم پیدا کند
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	per, _ := strconv.Atoi(r.URL.Query().Get("per"))
 	if page < 1 {
@@ -245,3 +245,11 @@ func customerType(v any) string {
 		return "legal"
 	}
 }
+
+// faLetters: «ي/ى» و «ك» عربی → «ی» و «ک» فارسی (درخواست ۱۴۰۵/۰۸/۰۲). متن کپی‌شده از
+// شایگان این حروف عربی را دارد؛ ظاهرشان یکی است ولی جستجوی «کیبورد» نام «كيبورد» را
+// پیدا نمی‌کرد. روی نام‌ها و شرح ردیف‌ها هنگام ذخیره زده می‌شود. (یکسان‌سازی کامل‌تر
+// برای مقایسهٔ تکراری‌ها: normName در dedup.go)
+var faLetterReplacer = strings.NewReplacer("ي", "ی", "ى", "ی", "ك", "ک")
+
+func faLetters(s string) string { return faLetterReplacer.Replace(s) }

@@ -1453,6 +1453,8 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
 <script src="<?= asset('/assets/js/time-sync.js') ?>"></script>
 <script src="<?= asset('/assets/js/common-bundle.js') ?>"></script>
 <script src="<?= asset('/assets/js/select-box.js') ?>"></script>
+<!-- اصلاح متن فارسیِ چسبانده‌شده (کپی از شایگان: رمزگذاری قدیمی + «ي/ك» عربی) -->
+<script src="<?= asset('/assets/js/fa-paste-fix.js') ?>"></script>
 <script src="<?= asset('/assets/js/ag-grid-fa.js') ?>"></script>
 
 

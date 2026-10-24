@@ -28,6 +28,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <script src="<?= asset('../../assets/js/iran-id-validate.js') ?>"></script>
     <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
     <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/row-arrow-nav.js') ?>"></script>
     <script src="<?= asset('../../assets/js/edit-guard.js') ?>"></script>
     <script src="<?= asset('../../assets/js/partner-percent-modal.js') ?>"></script>
 
@@ -354,7 +355,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         <th class="col-del"></th>
                     </tr>
                 </thead>
-                <tbody id="itemsBody"></tbody>
+                <tbody id="itemsBody" data-arrow-nav></tbody>
             </table>
 
             <datalist id="prodNameList"></datalist>
@@ -681,6 +682,7 @@ $invId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             //           از «معاف» به نام کالای ردیف بعد (Shift+Tab مثل قبل، پیش‌فرض مرورگر).
             //   Enter → در هر ستون (از جمله نام کالا) → «نام کالا»ی ردیف بعد؛ اگر ردیف آخر
             //           است، ردیف تازه ساخته می‌شود (مگر خود ردیف هنوز نام کالا نداشته باشد).
+            //   ↑ / ↓ → همان ستون در ردیف قبل/بعد (assets/js/row-arrow-nav.js، درخواست ۱۴۰۵/۰۸/۰۲).
             const order = ['.it-prod-name', '.it-qty', '.it-price', '.it-disc', '.it-exempt'];
             order.forEach((sel, i) => {
                 const el = tr.querySelector(sel);

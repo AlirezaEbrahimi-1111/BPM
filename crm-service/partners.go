@@ -38,7 +38,7 @@ type partnerIn struct {
 }
 
 func (p *partnerIn) normalize() {
-	p.Name = strings.TrimSpace(p.Name)
+	p.Name = faLetters(strings.TrimSpace(p.Name))
 	p.Phone = strings.TrimSpace(p.Phone)
 	p.Note = strings.TrimSpace(p.Note)
 }

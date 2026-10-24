@@ -474,7 +474,7 @@ $canWrite = true;
             if (!r) return;
             document.getElementById('f_id').value = r.id;
             document.getElementById('f_type').value = r.type || 'legal';
-            editOrig = { type: r.type || 'legal', national_id: toEn(r.national_id || ''), postal_code: toEn(r.postal_code || '') };
+            editOrig = { type: r.type || 'legal', national_id: toEn(r.national_id || ''), postal_code: toEn(r.postal_code || ''), economic_code: toEn(r.economic_code || '') };
             document.getElementById('f_name').value = r.name || '';
             document.getElementById('f_phone').value = faDigits(r.phone || '');
             document.getElementById('f_mobile').value = faDigits(r.mobile || '');
@@ -545,6 +545,7 @@ $canWrite = true;
                 const chk = { type: body.type };
                 if (!editOrig || body.national_id !== editOrig.national_id || body.type !== editOrig.type) chk.national_id = body.national_id;
                 if (!editOrig || body.postal_code !== editOrig.postal_code) chk.postal_code = body.postal_code;
+                if (!editOrig || body.economic_code !== editOrig.economic_code) chk.economic_code = body.economic_code;
                 const errs = IranId.checkCustomer(chk);
                 if (errs.length) {
                     document.getElementById('custModalAlert').innerHTML =
@@ -766,7 +767,8 @@ $canWrite = true;
             if (window.IranId) IranId.attachLive({
                 type: document.getElementById('f_type'),
                 national: document.getElementById('f_national_id'),
-                postal: document.getElementById('f_postal_code')
+                postal: document.getElementById('f_postal_code'),
+                economic: document.getElementById('f_economic_code')
             });
             document.getElementById('custModal').addEventListener('shown.bs.modal', () => {
                 const el = document.querySelector('#custModal .modal-body input:not([type=hidden]), #custModal .modal-body select, #custModal .modal-body textarea');

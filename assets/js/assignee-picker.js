@@ -50,6 +50,9 @@
  *   picker.reset()                               → پاک کردن انتخاب
  *   picker.updateData(users?, sections?, map?)   → به‌روزرسانی داده بدون reinit
  *
+ * ─── فهرست غیرکاربری (مثلا همکاران در inv-partner-report.php) ──────────────
+ *   usersGroupLabel: 'همکاران'   → عنوان گروه در فهرست به‌جای «کاربران» (اختیاری)
+ *
  * ─── سازگاری با نسخه قبل (single-instance) ────────────────────────────────
  *   AssigneePicker.init(cfg)    → معادل AssigneePicker.create(cfg)
  *   AssigneePicker.getValue()   → آخرین instance ساخته‌شده
@@ -383,7 +386,7 @@ ${_isFilterMode ? '' : '<small class="ap-hint"></small>'}`;
             });
 
             if (userItems.length)
-                html += `<div class="ap-group-header">👤 کاربران</div>` + userItems.join('');
+                html += `<div class="ap-group-header">👤 ${_cfg.usersGroupLabel || 'کاربران'}</div>` + userItems.join('');
 
             _dropdown.innerHTML = html || `<div class="ap-empty">نتیجه‌ای یافت نشد</div>`;
 

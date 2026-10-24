@@ -174,6 +174,10 @@ func resolvePurchaseItems(tx *sql.Tx, orgID, userID int64, items []purchaseItemI
 }
 
 func (in *purchaseIn) validate() string {
+	// «ي/ك» عربی (کپی از شایگان) → فارسی، پیش از هر بررسی و ذخیره
+	for i := range in.Items {
+		in.Items[i].Title = faLetters(in.Items[i].Title)
+	}
 	if in.SupplierID == 0 {
 		return "انتخاب تأمین‌کننده الزامی است"
 	}

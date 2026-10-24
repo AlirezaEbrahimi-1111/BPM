@@ -29,7 +29,7 @@ type supplierIn struct {
 }
 
 func (c *supplierIn) normalize() {
-	c.Name = strings.TrimSpace(c.Name)
+	c.Name = faLetters(strings.TrimSpace(c.Name))
 	c.Phone = strings.TrimSpace(c.Phone)
 	c.Mobile = strings.TrimSpace(c.Mobile)
 	c.NationalID = strings.TrimSpace(c.NationalID)

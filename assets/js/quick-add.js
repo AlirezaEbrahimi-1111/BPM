@@ -129,7 +129,8 @@ const QuickAdd = (() => {
             window.IranId.attachLive({
                 type: el.querySelector('[data-f="type"]'),
                 national: el.querySelector('[data-f="national_id"]'),
-                postal: el.querySelector('[data-f="postal_code"]')
+                postal: el.querySelector('[data-f="postal_code"]'),
+                economic: el.querySelector('[data-f="economic_code"]')
             });
         }
         const modal = new bootstrap.Modal(el);
@@ -236,6 +237,7 @@ const QuickAdd = (() => {
                 const chk = { type: body.type };
                 if (body.national_id !== toEn(v('national_id')) || body.type !== v('type')) chk.national_id = body.national_id;
                 if (body.postal_code !== toEn(v('postal_code'))) chk.postal_code = body.postal_code;
+                if (body.economic_code !== toEn(v('economic_code'))) chk.economic_code = body.economic_code;
                 const errs = window.IranId.checkCustomer(chk);
                 if (errs.length) throw new Error(errs.join(' '));
             }

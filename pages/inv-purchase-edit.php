@@ -28,6 +28,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     <script src="<?= asset('../../assets/js/edit-guard.js') ?>"></script>
     <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
     <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/row-arrow-nav.js') ?>"></script>
 
     <style>
         .inv-wrap {
@@ -246,7 +247,7 @@ $purId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
                         <th class="col-del"></th>
                     </tr>
                 </thead>
-                <tbody id="itemsBody"></tbody>
+                <tbody id="itemsBody" data-arrow-nav></tbody>
             </table>
 
             <datalist id="prodNameList"></datalist>

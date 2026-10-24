@@ -26,6 +26,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
     <script src="<?= asset('../../assets/js/quick-add.js') ?>"></script>
     <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
     <script src="<?= asset('../../assets/js/partner-percent-modal.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/assignee-picker.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
     <script src="<?= asset('../../assets/js/invoice-payments.js') ?>"></script>
@@ -306,9 +307,8 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             </div>
             <div class="fld">
                 <label>همکار</label>
-                <select id="fPartner" class="form-select">
-                    <option value="">همهٔ همکاران</option>
-                </select>
+                <!-- انتخاب همکار با جستجو — همان AssigneePicker فیلترهای کارها (درخواست ۱۴۰۵/۰۸/۰۲) -->
+                <div id="fPartnerPicker" style="min-width:210px"></div>
             </div>
             <!-- فیلتر «نوع سند» حذف شد: پیش‌فاکتور سود همکار ندارد و در این گزارش نمی‌آید (۱۴۰۵/۰۸/۰۱) -->
             <div class="fld">
@@ -743,11 +743,15 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             overlayNoRowsTemplate: '<span class="text-muted">ردیفی برای این فیلترها نیست</span>',
         };
 
+        // همکار انتخاب‌شده در فیلتر ('' = همه) — assets/js/assignee-picker.js
+        let filterPartnerId = '';
+        let partnerPicker = null;
+
         function qs() {
             const p = new URLSearchParams();
             const y = document.getElementById('fYear').value;
             const m = document.getElementById('fMonth').value;
-            const pr = document.getElementById('fPartner').value;
+            const pr = filterPartnerId;
             const st = document.getElementById('fStatus').value;
             if (y) p.set('jy', y);
             if (m) p.set('jm', m);
@@ -864,11 +868,10 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             } catch (e) {}
             partners = out;
 
-            const fp = document.getElementById('fPartner');
-            const keep = fp.value;
-            fp.innerHTML = '<option value="">همهٔ همکاران</option>' +
-                partners.map(p => `<option value="${p.id}">${(p.name||'').replace(/</g,'&lt;')}</option>`).join('');
-            fp.value = keep;
+            // همکار غیرفعال با برچسب «غیرفعال» زیر نامش (از مسیر «واحد» خود picker)
+            if (partnerPicker) partnerPicker.updateData(
+                partners.map(p => ({ id: p.id, full_name: p.name || '', activity_section: p.is_active ? '' : 'inactive' })),
+                undefined, { inactive: 'غیرفعال' });
 
             const sp = document.getElementById('pmSelPartner');
             const keep2 = sp.value;
@@ -1001,8 +1004,19 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
             AgGridFa.rowContextMenu(document.getElementById('repGrid'), gridApi);
 
-            ['fYear', 'fMonth', 'fPartner', 'fStatus'].forEach(id =>
+            ['fYear', 'fMonth', 'fStatus'].forEach(id =>
                 document.getElementById(id).addEventListener('change', loadReport));
+            partnerPicker = AssigneePicker.create({
+                container: '#fPartnerPicker',
+                users: [],
+                showSections: false,
+                placeholder: 'همهٔ همکاران', // = حالت فیلتر (بدون «خودم»)
+                usersGroupLabel: 'همکاران',
+                onSelect: (type, value) => {
+                    filterPartnerId = value || '';
+                    loadReport();
+                }
+            });
 
             document.getElementById('btnManagePartners').addEventListener('click', () => {
                 pmAlert('');

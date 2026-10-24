@@ -32,7 +32,7 @@ type productIn struct {
 }
 
 func (p *productIn) normalize() {
-	p.Name = strings.TrimSpace(p.Name)
+	p.Name = faLetters(strings.TrimSpace(p.Name))
 	p.Code = strings.TrimSpace(p.Code)
 	p.Unit = strings.TrimSpace(p.Unit)
 	if p.Unit == "" {
