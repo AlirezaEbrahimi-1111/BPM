@@ -656,8 +656,33 @@ func (s *server) importLegacy(w http.ResponseWriter, r *http.Request) {
 // و (حذف نرمِ) مشتری‌هایی که خود ابزار ساخته و حالا هیچ فاکتوری ندارند. به بقیه دست نمی‌زند.
 func (s *server) rollbackLegacyImport(w http.ResponseWriter, r *http.Request) {
 	u := userOf(r.Context())
-	var in struct{}
+	// preview=true: فقط شمارش (برای پیام تأیید)، بدون حذف — تا معلوم باشد چه چیزهایی که بعد
+	// از ورود روی این فاکتورها ثبت شده (واریز، کد مؤدیان، سند سود، درصد اختصاصی) از بین می‌رود
+	var in struct {
+		Preview bool `json:"preview"`
+	}
 	if !decodeJSON(w, r, &in, 1<<10) {
+		return
+	}
+	if in.Preview {
+		var invs, withPay, payCnt, withMoadian, withProfit, withPct, withSettle int
+		if err := s.db.QueryRow(`
+			SELECT COUNT(*),
+			       COALESCE(SUM(EXISTS(SELECT 1 FROM inv_invoice_payments p WHERE p.invoice_id = i.id AND p.is_deleted = 0)),0),
+			       COALESCE((SELECT COUNT(*) FROM inv_invoice_payments p JOIN inv_invoices i2 ON i2.id = p.invoice_id
+			                 WHERE i2.organization_id = ? AND i2.source = 'import' AND p.is_deleted = 0),0),
+			       COALESCE(SUM(COALESCE(i.moadian_code,'') <> ''),0),
+			       COALESCE(SUM(i.partner_profit_recorded = 1),0),
+			       COALESCE(SUM(i.partner_percent_override IS NOT NULL),0),
+			       COALESCE(SUM(COALESCE(i.settlement_status,'unsettled') <> 'unsettled'),0)
+			FROM inv_invoices i WHERE i.organization_id = ? AND i.source = 'import'`, u.OrgID, u.OrgID).
+			Scan(&invs, &withPay, &payCnt, &withMoadian, &withProfit, &withPct, &withSettle); err != nil {
+			writeDBErr(w, "rollbackLegacyImport preview", err)
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "invoices": invs,
+			"with_payments": withPay, "payments": payCnt, "with_moadian_code": withMoadian,
+			"with_profit_recorded": withProfit, "with_partner_percent": withPct, "with_settlement": withSettle})
 		return
 	}
 	tx, err := s.db.Begin()
@@ -667,7 +692,17 @@ func (s *server) rollbackLegacyImport(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	res, err := tx.Exec(`DELETE it FROM inv_invoice_items it
+	// واریزهای ثبت‌شده روی این فاکتورها (invoice_payments.go — بعد از این ابزار اضافه شد)
+	res, err := tx.Exec(`DELETE p FROM inv_invoice_payments p
+		JOIN inv_invoices i ON i.id = p.invoice_id
+		WHERE i.organization_id = ? AND i.source = 'import'`, u.OrgID)
+	if err != nil {
+		writeDBErr(w, "rollbackLegacyImport payments", err)
+		return
+	}
+	pays, _ := res.RowsAffected()
+
+	res, err = tx.Exec(`DELETE it FROM inv_invoice_items it
 		JOIN inv_invoices i ON i.id = it.invoice_id
 		WHERE i.organization_id = ? AND i.source = 'import'`, u.OrgID)
 	if err != nil {
@@ -698,6 +733,6 @@ func (s *server) rollbackLegacyImport(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
-		"message": fmt.Sprintf("%d فاکتور واردشده (با %d قلم) و %d مشتریِ ساخته‌شده حذف شد.", invs, items, custs),
+		"message": fmt.Sprintf("%d فاکتور واردشده (با %d قلم و %d واریز) و %d مشتریِ ساخته‌شده حذف شد.", invs, items, pays, custs),
 	})
 }

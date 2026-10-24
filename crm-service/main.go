@@ -326,9 +326,10 @@ func main() {
 	mux.HandleFunc("POST /crm/api/inv/invoices/{id}/to-official", write(s.convertToOfficial))
 	mux.HandleFunc("DELETE /crm/api/inv/invoices/{id}", write(s.deleteInvoice))
 	// ورود یکباره‌ی فاکتورهای قدیمی (پیش از BPM) از اکسل — فقط مدیر کل
-	super := func(h http.HandlerFunc) http.HandlerFunc { return auth(s.requireSuperAdmin(h)) }
-	mux.HandleFunc("POST /crm/api/inv/import-legacy", super(s.importLegacy))
-	mux.HandleFunc("POST /crm/api/inv/import-legacy/rollback", super(s.rollbackLegacyImport))
+	// (مدیر کل + کاربرانی که در legacyImportUserIDs آمده‌اند — helpers.go)
+	legacy := func(h http.HandlerFunc) http.HandlerFunc { return auth(s.requireLegacyImport(h)) }
+	mux.HandleFunc("POST /crm/api/inv/import-legacy", legacy(s.importLegacy))
+	mux.HandleFunc("POST /crm/api/inv/import-legacy/rollback", legacy(s.rollbackLegacyImport))
 
 	// ── همکار + سهم سود ماهانه (شمسی) + گزارش همکاران ──
 	// گزارش و ویرایش وضعیت‌ها: مدیران/سوپروایزر/حسابداری (requireReportAccess).

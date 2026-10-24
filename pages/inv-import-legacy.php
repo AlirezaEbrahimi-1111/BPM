@@ -2,9 +2,11 @@
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
-// 🔒 فقط مدیر کل: ورود یکباره‌ی فاکتورهای قدیمی (پیش از BPM) از اکسل.
-// سرور هم مستقل همین را چک می‌کند (crm-service requireSuperAdmin).
-if (!in_array((int) $user_id, getSuperAdminIds(), true)) {
+// 🔒 فقط مدیر کل + کاربران مجاز: ورود یکباره‌ی فاکتورهای قدیمی (پیش از BPM) از اکسل.
+// سرور هم مستقل همین را چک می‌کند (crm-service requireLegacyImport / legacyImportUserIDs).
+// ۱۵۴ = رضا بادپر (سازمان ۱) — درخواست ۱۴۰۵/۰۸/۰۲
+$legacyImportUserIds = [154];
+if (!in_array((int) $user_id, getSuperAdminIds(), true) && !in_array((int) $user_id, $legacyImportUserIds, true)) {
     header('Location: dashboard-manager.php');
     exit;
 }
@@ -524,8 +526,21 @@ document.getElementById('btnImport').addEventListener('click', function () {
 
 document.getElementById('btnExcl').addEventListener('click', ilExportExclusions);
 
-document.getElementById('btnRollback').addEventListener('click', function () {
-    uiConfirm('همه‌ی فاکتورهایی که از اکسل وارد شده‌اند حذف شوند؟ این کار قابل برگشت نیست (ولی می‌توانید فایل را دوباره وارد کنید).', async function () {
+document.getElementById('btnRollback').addEventListener('click', async function () {
+    // اول شمارش: چه چیزهایی که بعد از ورود روی این فاکتورها ثبت شده با حذف از بین می‌رود
+    var st;
+    try { st = await ilPost('/inv/import-legacy/rollback', { preview: true }); }
+    catch (e) { showToast(e.message || 'خطا', 'error'); return; }
+    if (!st.invoices) { showToast('فاکتور واردشده‌ای برای حذف نیست.', 'info'); return; }
+    var lost = [];
+    if (st.with_payments) lost.push(ilFa(st.with_payments) + ' فاکتور واریز ثبت‌شده دارد (' + ilFa(st.payments) + ' واریز)');
+    if (st.with_moadian_code) lost.push(ilFa(st.with_moadian_code) + ' فاکتور کد مؤدیان دارد');
+    if (st.with_profit_recorded) lost.push(ilFa(st.with_profit_recorded) + ' فاکتور تیک «سند سود همکار» دارد');
+    if (st.with_partner_percent) lost.push(ilFa(st.with_partner_percent) + ' فاکتور درصد اختصاصی همکار دارد');
+    if (st.with_settlement) lost.push(ilFa(st.with_settlement) + ' فاکتور وضعیت تسویه دارد');
+    var msg = ilFa(st.invoices) + ' فاکتوری که از اکسل وارد شده‌اند حذف شوند؟ این کار قابل برگشت نیست (ولی می‌توانید فایل را دوباره وارد کنید).' +
+        (lost.length ? '<br><br><b>این‌ها هم با حذف از بین می‌روند</b> (و فقط اگر در فایل جدید باشند برمی‌گردند):<br>• ' + lost.join('<br>• ') : '');
+    uiConfirm(msg, async function () {
         try {
             var d = await ilPost('/inv/import-legacy/rollback', {});
             showToast(d.message || 'انجام شد', d.success ? 'success' : 'error');

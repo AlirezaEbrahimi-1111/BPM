@@ -163,15 +163,18 @@ func (s *server) hasReportAccess(uid int64) bool {
 	return err == nil && ok == 1
 }
 
-// requireSuperAdmin: فقط مدیر کل (همان شناسه‌های getSuperAdminIds در PHP و میان‌بر
-// hasCRMAccess) — برای کارهای پرخطر یکباره مثل ورود فاکتورهای قدیمی از اکسل.
-func (s *server) requireSuperAdmin(next http.HandlerFunc) http.HandlerFunc {
+// legacyImportUserIDs: کاربرانی جز مدیر کل که به «ورود فاکتورهای قدیمی» دسترسی دارند
+// (درخواست ۱۴۰۵/۰۸/۰۲: ۱۵۴ = رضا بادپر، سازمان ۱). هم‌قدم با pages/inv-import-legacy.php.
+var legacyImportUserIDs = map[int64]bool{154: true}
+
+// requireLegacyImport: مدیر کل + legacyImportUserIDs
+func (s *server) requireLegacyImport(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if uid := userOf(r.Context()).ID; uid == 1 || uid == 19 {
+		if uid := userOf(r.Context()).ID; uid == 1 || uid == 19 || legacyImportUserIDs[uid] {
 			next(w, r)
 			return
 		}
-		writeErr(w, http.StatusForbidden, "فقط مدیر کل به این بخش دسترسی دارد")
+		writeErr(w, http.StatusForbidden, "به بخش «ورود فاکتورهای قدیمی» دسترسی ندارید")
 	}
 }
 
