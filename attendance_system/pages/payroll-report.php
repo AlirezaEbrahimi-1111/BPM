@@ -499,6 +499,12 @@ if (!$me || !hasPermission($me, 'view_payroll')) {
                 '• فقط روزهای کاری (غیرتعطیل) و «تا دیروز» در جمع لحاظ می‌شوند.<br>' +
                 '• «کسری مانده» = کسری اولیه منهای پوشش درخواست‌ها &nbsp;|&nbsp; «کسری نهایی» = کسری مانده × ضریب جریمه.<br>' +
                 '• نرخ هر ساعت: ' + fmtToman(s.hourly_rate) + ' (حقوق پایه ÷ ' + faNum(s.divisor_days) + ' روز کاری ÷ ساعت کاری روزانه).' +
+                // تغییر ساعت کاری/حقوق وسط ماه: روزهای قبل از تاریخ تغییر با مقدار قبلی حساب شده‌اند
+                (data.schedule_changes || []).map(function (c) {
+                    return '<br>• از ' + faNum(c.jalali_from || c.effective_from) + ' ساعت کاری ' + faNum(c.shift_label) +
+                        '، ساعت کار روزانه ' + faNum(c.daily_work_hours) + ' و حقوق ' + fmtToman(c.monthly_salary) +
+                        ' شد؛ روزهای قبل از آن با مقدار قبلی حساب شده‌اند.';
+                }).join('') +
                 '</div>';
 
             document.getElementById('udBody').innerHTML = cards + table + note;

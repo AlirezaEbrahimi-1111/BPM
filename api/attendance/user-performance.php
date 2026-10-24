@@ -107,6 +107,11 @@ $shift2_start = $user['shift_2_start'] ? substr($user['shift_2_start'], 0, 5) : 
 $shift2_end = $user['shift_2_end'] ? substr($user['shift_2_end'], 0, 5) : null;
 $shift_count = (int)($user['shift_count'] ?? 1);
 
+// ساعت کاری هر روز از سابقه (includes/work-schedule.php، ۱۴۰۵/۰۸/۰۲) — تغییر ساعت
+// روزهای قبل از تغییر را عوض نکند
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/work-schedule.php';
+$ws_h = ws_loadHistory($db, [$target_user_id], date('Y-m-d'))[(int) $target_user_id] ?? [];
+
 // محاسبه ۶ ماه اخیر
 $today = date('Y-m-d');
 list($cur_gy, $cur_gm, $cur_gd) = explode('-', $today);
@@ -164,6 +169,13 @@ for ($i = $months_count - 1; $i >= 0; $i--) {
         $is_friday = ($dow == 5);
         if ($is_friday || isset($holidays[$date_str])) continue;
         
+        $sch = ws_forDate($ws_h, $date_str, $user);
+        $shift1_start = $sch['shift_1_start'] ? substr($sch['shift_1_start'], 0, 5) : '08:00';
+        $shift1_end = $sch['shift_1_end'] ? substr($sch['shift_1_end'], 0, 5) : '18:00';
+        $shift2_start = $sch['shift_2_start'] ? substr($sch['shift_2_start'], 0, 5) : null;
+        $shift2_end = $sch['shift_2_end'] ? substr($sch['shift_2_end'], 0, 5) : null;
+        $shift_count = (int) ($sch['shift_count'] ?? 1);
+
         $day_att = $attendance[$date_str] ?? [];
         $has_attendance = false;
         

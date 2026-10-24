@@ -258,13 +258,16 @@ if (!function_exists('sc_calculateDailyShortage')) {
  * @param array  $holiday_dates   [Y-m-d => title] تعطیلات بازه (یک‌بار توسط فراخواننده گرفته می‌شود)
  * @return array
  */
+require_once __DIR__ . '/../../includes/work-schedule.php';
+
 if (!function_exists('sc_computeUserSalaryReport')) {
     function sc_computeUserSalaryReport($db, $userRow, $start_of_month, $end_of_month, $today, $app_settings, $holiday_dates, $with_days = false)
     {
         $userId = (int) $userRow['id'];
-        $monthly_salary = (float) ($userRow['monthly_salary'] ?? 0);
-        $daily_work_hours = (float) ($userRow['daily_work_hours'] ?? 0);
-        $shift_count = (int) ($userRow['shift_count'] ?? 0);
+        // ساعت کاری و حقوقِ «هر روز» از سابقه (includes/work-schedule.php): تغییر ساعت/حقوق
+        // از روز تغییر اعتبار دارد و روزهای قبل با مقدار قبلی حساب می‌شوند (۱۴۰۵/۰۸/۰۲).
+        // کاربر بی‌سابقه = همان مقدار users برای همهٔ روزها (رفتار قبلی).
+        $ws_hist = ws_loadHistory($db, [$userId], $end_of_month)[$userId] ?? [];
 
         // مخرج غیرجمعهٔ کل ماه
         $divisor = 0;
@@ -278,8 +281,15 @@ if (!function_exists('sc_computeUserSalaryReport')) {
         if ($divisor < 1)
             $divisor = 1;
 
-        $hourly_rate = ($monthly_salary > 0 && $daily_work_hours > 0)
-            ? $monthly_salary / $divisor / $daily_work_hours : 0;
+        // نرخ ساعتی یک روز = حقوقِ آن روز ÷ روزهای غیرجمعهٔ ماه ÷ ساعت کار روزانهٔ آن روز
+        $rate_of = function (array $s) use ($divisor) {
+            $sal = (float) ($s['monthly_salary'] ?? 0);
+            $dh = (float) ($s['daily_work_hours'] ?? 0);
+            return ($sal > 0 && $dh > 0) ? $sal / $divisor / $dh : 0;
+        };
+        // حقوق ماه = جمع سهم روزانهٔ هر روز غیرجمعه با حقوق همان روز (بدون تغییر وسط ماه
+        // دقیقا همان حقوق ماهانه است)
+        $monthly_salary = 0;
 
         // رکوردهای حضور
         $stmt = $db->prepare("SELECT date, shift_number, check_in, check_out FROM attendance_records WHERE user_id = ? AND date >= ? AND date <= ? ORDER BY date, shift_number");
@@ -313,6 +323,7 @@ if (!function_exists('sc_computeUserSalaryReport')) {
         $total_before = 0;
         $total_money = 0;
         $days = [];
+        $max_shift_count = 1; // اگر وسط ماه دوشیفت → تک‌شیفت شده، ستون شیفت ۲ روزهای قبل هم دیده شود
 
         $day_names_fa = [
             'Saturday' => 'شنبه', 'Sunday' => 'یکشنبه', 'Monday' => 'دوشنبه',
@@ -329,6 +340,13 @@ if (!function_exists('sc_computeUserSalaryReport')) {
             $is_past_day = ($date_str < $today);
             $is_counted = (!$is_holiday && $is_past_day);
 
+            // ساعت کاری/حقوق معتبرِ همین روز
+            $sch = ws_forDate($ws_hist, $date_str, $userRow);
+            $shift_count = (int) $sch['shift_count'];
+            $max_shift_count = max($max_shift_count, $shift_count);
+            $hourly_rate = $rate_of($sch);
+            if (!$is_friday) $monthly_salary += (float) $sch['monthly_salary'] / $divisor;
+
             // ورود/خروج روز (برای نمایش، حتی در روزهای محاسبه‌نشده)
             $day_records = $records_by_date[$date_str] ?? [];
             // ورود/خروج شیفت‌ها — تطبیق هوشمند بر اساس ساعت ورود (قانون گزینه ۳)
@@ -336,8 +354,8 @@ if (!function_exists('sc_computeUserSalaryReport')) {
             $s1in = $s1out = $s2in = $s2out = null;
             $day_records = $records_by_date[$date_str] ?? [];
 
-            $has_two_shifts = ($shift_count >= 2 && $userRow['shift_2_start'] && $userRow['shift_2_end']);
-            $shift1_end_hm = $userRow['shift_1_end'] ? substr($userRow['shift_1_end'], 0, 5) : null;
+            $has_two_shifts = ($shift_count >= 2 && $sch['shift_2_start'] && $sch['shift_2_end']);
+            $shift1_end_hm = $sch['shift_1_end'] ? substr($sch['shift_1_end'], 0, 5) : null;
 
             foreach ($day_records as $rec) {
                 $rec_in = $rec['check_in'] ? substr($rec['check_in'], 11, 5) : null;
@@ -371,11 +389,11 @@ if (!function_exists('sc_computeUserSalaryReport')) {
 
             if ($is_counted) {
                 $slots = [];
-                if ($shift_count >= 1 && $userRow['shift_1_start'] && $userRow['shift_1_end']) {
-                    $slots = array_merge($slots, sc_getShiftShortageSlots($s1in, $s1out, $userRow['shift_1_start'], $userRow['shift_1_end'], $is_past_day));
+                if ($shift_count >= 1 && $sch['shift_1_start'] && $sch['shift_1_end']) {
+                    $slots = array_merge($slots, sc_getShiftShortageSlots($s1in, $s1out, $sch['shift_1_start'], $sch['shift_1_end'], $is_past_day));
                 }
-                if ($shift_count >= 2 && $userRow['shift_2_start'] && $userRow['shift_2_end']) {
-                    $slots = array_merge($slots, sc_getShiftShortageSlots($s2in, $s2out, $userRow['shift_2_start'], $userRow['shift_2_end'], $is_past_day));
+                if ($shift_count >= 2 && $sch['shift_2_start'] && $sch['shift_2_end']) {
+                    $slots = array_merge($slots, sc_getShiftShortageSlots($s2in, $s2out, $sch['shift_2_start'], $sch['shift_2_end'], $is_past_day));
                 }
 
                 $day_requests = $requests_by_date[$date_str] ?? [];
@@ -430,11 +448,19 @@ if (!function_exists('sc_computeUserSalaryReport')) {
                     'final_hms' => sc_minutesToHM((int) round($d_final)),
                     'money' => $d_money,
                     'requests' => $valid_reqs,
+                    // ساعت شیفتِ معتبر همین روز (از سابقه)
+                    'shift_label' => sc_shiftLabel($sch),
                 ];
             }
 
             $cur->modify('+1 day');
         }
+
+        $monthly_salary = round($monthly_salary, 0);
+        // نرخ ساعتی/شیفتِ «فعلی» برای نمایش: نسخهٔ معتبر آخرین روز گذشتهٔ این ماه (یا آخر ماه)
+        $ref_day = ($today <= $end_of_month) ? max($start_of_month, $today) : $end_of_month;
+        $ref_sch = ws_forDate($ws_hist, $ref_day, $userRow);
+        $hourly_rate = $rate_of($ref_sch);
 
         // گردکردن مبالغ ریالی (طبق تنظیمات salary_round_to) — هم‌راستا با
         // تب «درخواست‌های من» در همین صفحه، تا عدد گزارش رسمی حقوق با
@@ -461,6 +487,9 @@ if (!function_exists('sc_computeUserSalaryReport')) {
             'shortage_money' => $total_money,            // ریال (جریمه تا دیروز)
             'salary_received' => $salary_received,       // ریال (حقوق − جریمه)
             'days' => $days,                             // جزئیات روزانه (فقط وقتی $collect_days=true پر می‌شود)
+            'schedule' => $ref_sch,                      // ساعت کاری/حقوقِ معتبرِ روز مرجع این ماه
+            'max_shift_count' => $max_shift_count,
+            'schedule_changes' => ws_changesInRange($ws_hist, $start_of_month, $end_of_month),
         ];
     }
 }

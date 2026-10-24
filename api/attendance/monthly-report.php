@@ -153,9 +153,10 @@ try {
     // اطلاعات کاربر
     $stmt = $db->prepare("SELECT shift_count, shift_1_start, shift_1_end, shift_2_start, shift_2_end, monthly_salary, daily_work_hours FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$user)
+    $user_base = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$user_base)
         throw new Exception('کاربر یافت نشد');
+    $user = $user_base;
 
     // بازه ماه شمسی
     $today = date('Y-m-d'); // همیشه امروز واقعی (برای تشخیص گذشته/آینده در ادامه)
@@ -263,9 +264,13 @@ try {
     }
     if ($salary_divisor_days < 1) $salary_divisor_days = 1; // محافظت از تقسیم بر صفر
 
-    // نرخ ساعتی
-    $hourly_rate = ($user['monthly_salary'] > 0 && $user['daily_work_hours'] > 0)
-        ? $user['monthly_salary'] / $salary_divisor_days / $user['daily_work_hours'] : 0;
+    // ساعت کاری/حقوقِ «هر روز» از سابقه — تغییر از روز تغییر اعتبار دارد و روزهای قبل با
+    // مقدار قبلی حساب می‌شوند (includes/work-schedule.php، ۱۴۰۵/۰۸/۰۲). نرخ ساعتی روزانه:
+    $ws_hist = ws_loadHistory($db, [$user_id], $end_of_month)[(int) $user_id] ?? [];
+    $rate_of = function (array $s) use ($salary_divisor_days) {
+        return ((float) $s['monthly_salary'] > 0 && (float) $s['daily_work_hours'] > 0)
+            ? (float) $s['monthly_salary'] / $salary_divisor_days / (float) $s['daily_work_hours'] : 0;
+    };
 
     // پردازش روزها
     $days = [];
@@ -278,6 +283,7 @@ try {
     $total_initial_shortage = 0;
     $total_final_shortage = 0;
     $total_shortage_money = 0;
+    $prorated_salary = 0; // حقوق ماه = جمع سهم روزانه با حقوق همان روز (مثل گزارش حقوق سرپرست)
 
     while ($current_date <= $end_date) {
         $date_str = $current_date->format('Y-m-d');
@@ -293,6 +299,11 @@ try {
         $holiday_title = $holiday_dates[$date_str] ?? ($is_friday ? 'جمعه' : null);
         $is_past_day = ($current_date < $today_date);
         $is_future_day = ($current_date > $today_date);   // ✅ روز آینده
+
+        // ساعت کاری/حقوق معتبرِ همین روز
+        $user = ws_forDate($ws_hist, $date_str, $user_base);
+        $hourly_rate = $rate_of($user);
+        if (!$is_friday) $prorated_salary += (float) $user['monthly_salary'] / $salary_divisor_days;
 
         $day_records = $records_by_date[$date_str] ?? [];
         $shift1_in = $shift1_out = $shift2_in = $shift2_out = null;
@@ -398,7 +409,8 @@ try {
             'shortage_money' => $shortage_money,
             'requests' => $day_requests,           // همه درخواست‌ها
             'valid_requests' => $valid_requests,   // ✅ فقط معتبرها برای نمایش
-            'shortage_slots' => $shortage_slots
+            'shortage_slots' => $shortage_slots,
+            'shift_label' => sc_shiftLabel($user)   // ساعت شیفتِ معتبر همین روز
         ];
 
         $total_initial_shortage += $initial_shortage_minutes / 60;
@@ -408,15 +420,21 @@ try {
         $current_date->modify('+1 day');
     }
 
+    // برای سربرگ گزارش: ساعت کاری/حقوقِ معتبرِ امروز (یا آخر ماه، برای ماه گذشته)
+    $ref_day = ($today <= $end_of_month) ? max($start_of_month, $today) : $end_of_month;
+    $user = ws_forDate($ws_hist, $ref_day, $user_base);
+    $hourly_rate = $rate_of($user);
+
     echo json_encode([
         'success' => true,
         'user_id' => $user_id,
+        'schedule_changes' => ws_changesInRange($ws_hist, $start_of_month, $end_of_month),
         'shift_count' => (int) $user['shift_count'],
         'shift_1_start' => $user['shift_1_start'],
         'shift_1_end' => $user['shift_1_end'],
         'shift_2_start' => $user['shift_2_start'],
         'shift_2_end' => $user['shift_2_end'],
-        'monthly_salary' => (float) $user['monthly_salary'],
+        'monthly_salary' => round($prorated_salary, 0),
         'daily_work_hours' => (float) $user['daily_work_hours'],
         'working_days_count' => $working_days_count,
         'hourly_rate' => round($hourly_rate, 0),

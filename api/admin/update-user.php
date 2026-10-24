@@ -7,6 +7,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/work-schedule.php';
 
 $user_id = requireAuth();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
@@ -154,6 +155,10 @@ try {
 
     $stmt = $db->prepare($sql);
     $stmt->execute($fields);
+
+    // سابقهٔ ساعت کاری/حقوق: تغییر از «امروز» اعتبار دارد و روزهای قبل با مقدار قبلی
+    // حساب می‌شوند (includes/work-schedule.php، درخواست ۱۴۰۵/۰۸/۰۲)
+    ws_recordChange($db, $uid, $oldData, $fields, (int) $user_id);
 
     // ─── ۲. واحدهای فعالیت ──────────────────────────────
     if (isset($input['units']) && is_array($input['units'])) {

@@ -15,6 +15,7 @@ date_default_timezone_set('Asia/Tehran');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/work-schedule.php';
 $auth = new Auth($db);
 
 // 🔒 ضریب کسری و مبنای گردکردن حقوق باید از تنظیمات سازمان خونده بشن،
@@ -309,7 +310,10 @@ $team_data = [];
 $total_shortage_minutes = 0;
 $total_shortage_money = 0;
 
+// ساعت کاری/حقوقِ هر روز از سابقه (includes/work-schedule.php، ۱۴۰۵/۰۸/۰۲)
+$ws_hist_all = ws_loadHistory($db, array_column($users, 'id'), $end_date);
 foreach ($users as $user_item) {
+    $ws_h = $ws_hist_all[(int) $user_item['id']] ?? [];
     $uid = $user_item['id'];
     
     // دریافت رکوردهای حضور
@@ -395,8 +399,8 @@ foreach ($users as $user_item) {
     $technical_count = 0;
     
     // نرخ ساعتی (طبق فرمول requests.php)
-    $hourly_rate = ($user_item['monthly_salary'] > 0 && $user_item['daily_work_hours'] > 0) 
-        ? $user_item['monthly_salary'] / 30 / $user_item['daily_work_hours'] : 0;
+    // (نرخ ساعتی هر روز داخل حلقه از ساعت/حقوق همان روز حساب می‌شود)
+    $hourly_rate = 0;
     
     $current_date = new DateTime($start_date);
     $end_date_obj = new DateTime($end_date);
@@ -416,6 +420,11 @@ foreach ($users as $user_item) {
             continue;
         }
         
+        // ساعت کاری/حقوق معتبرِ همین روز
+        $sch = ws_forDate($ws_h, $date_str, $user_item);
+        $hourly_rate = ((float) $sch['monthly_salary'] > 0 && (float) $sch['daily_work_hours'] > 0)
+            ? (float) $sch['monthly_salary'] / 30 / (float) $sch['daily_work_hours'] : 0;
+
         $day_records = $records_by_date[$date_str] ?? [];
         $day_requests = $approved_requests[$date_str] ?? [];
         
@@ -461,13 +470,13 @@ foreach ($users as $user_item) {
             $present_days++;
             
             // شمارش تأخیر
-            $shift_start = substr($user_item['shift_1_start'] ?? '08:00:00', 0, 5);
+            $shift_start = substr($sch['shift_1_start'] ?? '08:00:00', 0, 5);
             if ($shift1_in > $shift_start) {
                 $late_count++;
             }
             
             // شمارش زودتر رفتن
-            $shift_end = substr($user_item['shift_1_end'] ?? '18:00:00', 0, 5);
+            $shift_end = substr($sch['shift_1_end'] ?? '18:00:00', 0, 5);
             if ($shift1_out && $shift1_out < $shift_end) {
                 $early_leave_count++;
             }
@@ -476,8 +485,8 @@ foreach ($users as $user_item) {
         // ============================================
         // محاسبه کسری روز (طبق فرمول requests.php)
         // ============================================
-        $shift_start = substr($user_item['shift_1_start'] ?? '08:00:00', 0, 5);
-        $shift_end = substr($user_item['shift_1_end'] ?? '18:00:00', 0, 5);
+        $shift_start = substr($sch['shift_1_start'] ?? '08:00:00', 0, 5);
+        $shift_end = substr($sch['shift_1_end'] ?? '18:00:00', 0, 5);
         
         $shortage_slots = [];
         
@@ -553,6 +562,8 @@ foreach ($users as $user_item) {
     $shortage_hours = $shortage_minutes / 60;
     
     // حقوق دریافتی (طبق requests.php)
+    // حقوق معتبرِ آخر بازه (اگر وسط ماه عوض شده، مقدار تازه)
+    $user_item['monthly_salary'] = ws_forDate($ws_h, $end_date, $user_item)['monthly_salary'];
     $net_salary = max(0, $user_item['monthly_salary'] - $shortage_money);
     
     // گرد کردن حقوق نهایی طبق همان تنظیم

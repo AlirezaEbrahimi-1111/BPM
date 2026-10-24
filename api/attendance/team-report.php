@@ -349,6 +349,9 @@ try {
 
     // ✅ محاسبه کسری با لحاظ سهمیه
     $user_summaries = [];
+    // ساعت کاری/حقوقِ هر روز از سابقه (includes/work-schedule.php، ۱۴۰۵/۰۸/۰۲)
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/work-schedule.php';
+    $ws_hist_all = ws_loadHistory($db, array_column($team_members, 'id'), $end_of_month);
     
     foreach ($team_members as $member) {
         $member_id = $member['id'];
@@ -373,8 +376,20 @@ try {
             ? $monthly_salary / 30 / $daily_work_hours 
             : 0;
 
+        $money_f = 0.0; // جمع ریالی با نرخ هر روز
+
         foreach ($month_days as $d) {
             if ($d['is_holiday'] || $d['is_future']) continue;
+
+            // ساعت کاری/حقوق معتبرِ همین روز
+            $sch = ws_forDate($ws_hist_all[(int) $member_id] ?? [], $d['date'], $member);
+            $shift1_start = $sch['shift_1_start'] ? substr($sch['shift_1_start'], 0, 5) : '08:00';
+            $shift1_end = $sch['shift_1_end'] ? substr($sch['shift_1_end'], 0, 5) : '18:00';
+            $shift2_start = $sch['shift_2_start'] ? substr($sch['shift_2_start'], 0, 5) : null;
+            $shift2_end = $sch['shift_2_end'] ? substr($sch['shift_2_end'], 0, 5) : null;
+            $shift_count = (int) ($sch['shift_count'] ?? 1);
+            $rate_d = ((float) $sch['monthly_salary'] > 0 && (float) $sch['daily_work_hours'] > 0)
+                ? (float) $sch['monthly_salary'] / 30 / (float) $sch['daily_work_hours'] : 0;
 
             $att = $attendance_data[$member_id][$d['date']] ?? [];
             $day_requests = $requests_data[$member_id][$d['date']] ?? [];
@@ -482,12 +497,13 @@ try {
             $final_shortage_without_quota = $day_without_quota; // مرخصی/پاس بدون سهمیه × 1
             
             $total_shortage_minutes += $final_shortage_with_multiplier + $final_shortage_without_quota;
+            $money_f += (($final_shortage_with_multiplier + $final_shortage_without_quota) / 60) * $rate_d;
         }
         
-        // محاسبه کسر کار ریالی
+        // محاسبه کسر کار ریالی (هر روز با نرخ همان روز)
         $shortage_money = 0;
-        if ($hourly_rate > 0 && $total_shortage_minutes > 0) {
-            $shortage_money = round(($total_shortage_minutes / 60) * $hourly_rate, 0);
+        if ($total_shortage_minutes > 0) {
+            $shortage_money = round($money_f, 0);
         }
 
         $user_summaries[$member_id] = [

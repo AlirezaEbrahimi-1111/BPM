@@ -897,6 +897,10 @@ if (!hasPermission($__me, 'manage_users')) {
                                 <label class="form-label">حقوق ماهانه (تومان)</label>
                                 <input type="text" class="form-control" id="e_monthly_salary" inputmode="numeric" onblur="reformatSalaryInput()">
                             </div>
+                            <!-- سابقهٔ ساعت کاری/حقوق (includes/work-schedule.php، ۱۴۰۵/۰۸/۰۲) -->
+                            <div class="col-12">
+                                <div class="form-text"><i class="bi bi-info-circle ms-1"></i>تغییر ساعت کاری یا حقوق از <b>امروز</b> اعمال می‌شود؛ روزهای قبل (ماه گذشته و روزهای گذشتهٔ همین ماه) با مقدار قبلی حساب می‌شوند.</div>
+                            </div>
                         </div>
                     </div>
 
@@ -1228,11 +1232,14 @@ if (!hasPermission($__me, 'manage_users')) {
             const s2 = document.getElementById('e_shift2_start').value;
             const e2 = document.getElementById('e_shift2_end').value;
 
+            // شیفت دوم فقط برای «دو شیفت» (قبلا ساعت پنهانِ شیفت ۲ کاربر تک‌شیفته هم جمع می‌شد)؛
+            // و بدون گرد کردن به عدد صحیح (۹.۵ ساعت ۱۰ می‌شد) — ۱۴۰۵/۰۸/۰۲
+            const isDouble = document.getElementById('e_shift_type').value === 'double';
             let total = 0;
             if (s1 && e1) total += Math.max(0, toMin(e1) - toMin(s1));
-            if (s2 && e2) total += Math.max(0, toMin(e2) - toMin(s2));
+            if (isDouble && s2 && e2) total += Math.max(0, toMin(e2) - toMin(s2));
 
-            document.getElementById('e_daily_work_hours').value = total > 0 ? Math.round(total / 60) : '';
+            document.getElementById('e_daily_work_hours').value = total > 0 ? Math.round(total / 60 * 100) / 100 : '';
         }
         /* ── ag-Grid setup ── */
         function initGrid() {
@@ -1538,6 +1545,7 @@ if (!hasPermission($__me, 'manage_users')) {
         function toggleShift2() {
             const d = document.getElementById('e_shift_type').value === 'double';
             document.getElementById('shift2Block').style.display = d ? '' : 'none';
+            calcDailyHours();
         }
 
         /* ── create user ── */
