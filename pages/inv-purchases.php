@@ -384,6 +384,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             });
             statusFilter = MultiFilter.create({
                 container: '#stFilter', allLabel: 'همه‌ی وضعیت‌ها', unit: 'وضعیت', onChange: applyFilter,
+                persistKey: 'inv-purchases', // بعد از رفتن/برگشتن و رفرش می‌ماند (۱۴۰۵/۰۸/۰۳)
                 options: [
                     { value: 'draft', label: 'پیش‌نویس' },
                     { value: 'confirmed', label: 'تأییدشده' },

@@ -878,6 +878,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             });
             statusFilter = MultiFilter.create({
                 container: '#stFilter', allLabel: 'همه‌ی وضعیت‌ها', unit: 'وضعیت', onChange: applyFilter,
+                persistKey: 'inv-invoices', // بعد از رفتن/برگشتن و رفرش می‌ماند (۱۴۰۵/۰۸/۰۳)
                 groups: { settle: 'تسویه', record: 'ثبت' },
                 options: [
                     { value: 'draft', label: 'پیش‌نویس', group: 'status' },
@@ -889,7 +890,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     { value: 'moadian_unregistered', label: 'ثبت نشده مودیان', group: 'record' },
                 ],
             });
-            monthFilter = MonthFilter.create({ container: '#monthFilter', onChange: applyFilter });
+            monthFilter = MonthFilter.create({ container: '#monthFilter', onChange: applyFilter, persistKey: 'inv-invoices' });
             document.getElementById('stMoadian').addEventListener('change', stToggleCode);
             document.getElementById('stSaveBtn').addEventListener('click', stSaveStatus);
             document.getElementById('stModal').addEventListener('shown.bs.modal', () => {

@@ -996,6 +996,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
 
             statusFilter = MultiFilter.create({
                 container: '#fStatus', allLabel: 'به‌جز باطل‌شده', unit: 'وضعیت', onChange: loadReport,
+                persistKey: 'inv-partner-report', // بعد از رفتن/برگشتن و رفرش می‌ماند (۱۴۰۵/۰۸/۰۳)
                 groups: { settle: 'تسویه', record: 'ثبت' },
                 options: [
                     { value: 'draft', label: 'پیش‌نویس', group: 'status' },

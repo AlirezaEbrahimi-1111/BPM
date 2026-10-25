@@ -10,6 +10,10 @@
  *   MonthFilter.keyOf('2026-10-19')                       // '1405-07'  (تاریخ میلادی → کلید شمسی)
  *   MonthFilter.currentKey()                              // ماهِ جاریِ سرور (TimeSync)، نه ساعت دستگاه
  *
+ * ماندگاری (اختیاری، ۱۴۰۵/۰۸/۰۳): persistKey: 'inv-invoices' → انتخاب در localStorage همین مرورگر
+ * (کلید «filter:<persistKey>-month») می‌ماند؛ اولین setMonths به‌جای initial همان را برمی‌گرداند.
+ * «همه‌ی ماه‌ها» = پاک شدن ذخیره.
+ *
  * فقط var/function (بدون let/const سطح‌بالا) و گارد ضدِ دوبار لود — مثل بقیهٔ فایل‌های مشترک.
  */
 (function (w) {
@@ -73,6 +77,20 @@
         document.head.appendChild(s);
     }
 
+    /* ذخیرهٔ انتخاب (هم‌شکل multi-filter.js) — مرورگرِ بدون اجازهٔ ذخیره = بدون ماندگاری */
+    function storeGet(key) {
+        try {
+            var v = JSON.parse(localStorage.getItem(key) || 'null');
+            return Array.isArray(v) ? v : null;
+        } catch (e) { return null; }
+    }
+    function storeSet(key, vals) {
+        try {
+            if (vals && vals.length) localStorage.setItem(key, JSON.stringify(vals));
+            else localStorage.removeItem(key);
+        } catch (e) { /* مرورگر اجازه نداد */ }
+    }
+
     function create(opts) {
         injectStyle();
         var host = typeof opts.container === 'string' ? document.querySelector(opts.container) : opts.container;
@@ -80,6 +98,8 @@
         var months = [];          // کلیدها، جدید → قدیم
         var selected = {};        // key → true
         var onChange = opts.onChange || function () {};
+        var storeKey = opts.persistKey ? 'filter:' + opts.persistKey + '-month' : '';
+        var restored = !storeKey;   // ذخیره فقط بار اول setMonths جای initial را می‌گیرد
 
         host.classList.add('mf-wrap');
         host.innerHTML = '<button type="button" class="mf-trigger" aria-haspopup="listbox"><span class="mf-label"></span><i class="bi bi-calendar3"></i></button><div class="mf-menu" role="listbox" aria-multiselectable="true"></div>';
@@ -111,6 +131,7 @@
 
         function emit() {
             renderLabel();
+            if (storeKey) storeSet(storeKey, selectedKeys());
             onChange(selectedKeys());
         }
 
@@ -145,6 +166,11 @@
                     seen[k] = true;
                     return true;
                 }).sort().reverse();
+                if (!restored) {
+                    restored = true;
+                    var saved = storeGet(storeKey);
+                    if (saved) initial = saved;
+                }
                 var next = {};
                 (initial || selectedKeys()).forEach(function (k) { if (seen[k]) next[k] = true; });
                 selected = next;

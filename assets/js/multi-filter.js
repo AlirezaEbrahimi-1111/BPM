@@ -17,6 +17,10 @@
  *   f.byGroup();                     // { status: ['draft'], settle: ['settled'] }
  *   f.matches(function (value) { return …آیا این ردیف با این گزینه می‌خواند… });
  *
+ * ماندگاری (اختیاری، ۱۴۰۵/۰۸/۰۳): persistKey: 'inv-invoices' → انتخاب‌ها در localStorage همین
+ * مرورگر (کلید «filter:<persistKey>») می‌مانند و بعد از رفرش/برگشت به صفحه سر جایشان‌اند؛
+ * «همه» = پاک شدن ذخیره. create قبل از اولین فیلتر صفحه صدا زده شود (انتخاب ذخیره‌شده را برمی‌گرداند).
+ *
  * فقط var/function (بدون let/const سطح‌بالا) و گارد ضدِ دوبار لود — مثل بقیهٔ فایل‌های مشترک.
  */
 (function (w) {
@@ -60,6 +64,20 @@
         document.head.appendChild(s);
     }
 
+    /* ذخیرهٔ انتخاب‌ها (هم‌شکل month-filter.js، همان پیشوند «filter:») — مرورگرِ بدون اجازهٔ ذخیره = بدون ماندگاری */
+    function storeGet(key) {
+        try {
+            var v = JSON.parse(localStorage.getItem('filter:' + key) || 'null');
+            return Array.isArray(v) ? v : null;
+        } catch (e) { return null; }
+    }
+    function storeSet(key, vals) {
+        try {
+            if (vals && vals.length) localStorage.setItem('filter:' + key, JSON.stringify(vals));
+            else localStorage.removeItem('filter:' + key);
+        } catch (e) { /* مرورگر اجازه نداد */ }
+    }
+
     function create(opts) {
         injectStyle();
         var host = typeof opts.container === 'string' ? document.querySelector(opts.container) : opts.container;
@@ -70,6 +88,13 @@
         var unit = opts.unit || 'مورد';
         var selected = {};
         var onChange = opts.onChange || function () {};
+        var persistKey = opts.persistKey || '';
+        if (persistKey) {
+            // فقط گزینه‌هایی که هنوز در فهرست هستند
+            (storeGet(persistKey) || []).forEach(function (v) {
+                if (options.some(function (o) { return o.value === v; })) selected[v] = true;
+            });
+        }
 
         host.classList.add('msf-wrap');
         host.innerHTML = '<button type="button" class="msf-trigger" aria-haspopup="listbox"><span class="msf-label"></span><i class="bi bi-funnel"></i></button>' +
@@ -112,6 +137,7 @@
             else delete selected[cb.value];
             renderMenu();
             renderLabel();
+            if (persistKey) storeSet(persistKey, selectedValues());
             onChange(selectedValues());
         });
         trigger.addEventListener('click', function () { host.classList.toggle('msf-open'); });
@@ -146,6 +172,7 @@
                 (vals || []).forEach(function (v) { selected[v] = true; });
                 renderMenu();
                 renderLabel();
+                if (persistKey) storeSet(persistKey, selectedValues());
             }
         };
         renderMenu();
