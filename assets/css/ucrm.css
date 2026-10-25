@@ -386,3 +386,46 @@ button.uc-head-ico:hover { background: rgba(142, 87, 254, .2); }
 .uc-tg-modal .input-group > .form-control { width: 1% !important; flex: 1 1 auto; }
 .uc-tg-modal .tg-btn.btn-outline-secondary { border: 1px solid var(--border-soft, #d9d9e3) !important; color: var(--text-strong, #2d3748); background: transparent; }
 .uc-tg-modal .tg-btn.btn-outline-secondary:hover { background: rgba(142, 87, 254, .12); }
+
+/* «گزارشات | پیش‌فاکتورهای باز و پیگیری‌ها» (طرح ۱۴۰۵/۰۸/۰۳) — pages/ucrm-proformas.php */
+.uc-pf-head { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; padding: 16px 22px !important; }
+.uc-pf-head h1 { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 800; margin: 0; color: var(--text-strong, #2d3748); }
+.uc-pf-head .spacer { flex: 1; }
+.uc-pf-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.uc-pf-range-btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border-soft, #e2e2ea); border-radius: 10px; padding: .45rem .9rem; background: var(--surface, #fff); color: var(--text-strong, #2d3748); font-size: .85rem; }
+.uc-pf-range-btn:hover { background: rgba(142, 87, 254, .12); }
+.uc-pf-range-btn .bi-calendar3 { color: #6d3fd6; }
+.uc-pf-range-menu { width: 280px; }
+.uc-pf-quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.uc-pf-quick .btn { background: rgba(142, 87, 254, .08); border: 0; border-radius: 8px; font-size: .78rem; }
+.uc-pf-quick .btn:hover { background: rgba(142, 87, 254, .18); }
+.uc-pf-xl { border-radius: 10px; padding: .45rem 1.1rem; font-weight: 700; }
+.uc-pf-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 16px 0; }
+.uc-pf-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 22px 24px; border-radius: 14px; border: 1px solid transparent; }
+.uc-pf-card .k { font-size: .85rem; color: var(--text-muted, #6b7490); margin-bottom: 6px; }
+.uc-pf-card .v { font-size: 1.6rem; font-weight: 800; }
+.uc-pf-card .ic { width: 52px; height: 52px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; flex: 0 0 auto; }
+.uc-pf-card.c-open { background: rgba(142, 87, 254, .07); } .uc-pf-card.c-open .v { color: #6d3fd6; } .uc-pf-card.c-open .ic { background: rgba(142, 87, 254, .14); color: #6d3fd6; }
+.uc-pf-card.c-sum { background: rgba(59, 130, 246, .07); } .uc-pf-card.c-sum .v { color: #1e40af; } .uc-pf-card.c-sum .ic { background: rgba(59, 130, 246, .14); color: #1d4ed8; }
+.uc-pf-card.c-late { background: rgba(239, 68, 68, .06); } .uc-pf-card.c-late .v { color: #dc2626; } .uc-pf-card.c-late .ic { background: rgba(239, 68, 68, .13); color: #dc2626; }
+.uc-pf-card.c-rate { background: rgba(16, 185, 129, .07); } .uc-pf-card.c-rate .v { color: #047857; } .uc-pf-card.c-rate .ic { background: rgba(16, 185, 129, .14); color: #059669; }
+.uc-pf-list { padding: 20px 22px !important; }
+.uc-pf-list h2 { font-size: 1rem; font-weight: 800; margin-bottom: 14px; }
+.uc-st i { font-size: .75rem; }
+.uc-st.ok { background: rgba(16, 185, 129, .14); color: #047857; }
+.uc-st.stop { background: rgba(220, 38, 38, .1); color: #dc2626; }
+@media (max-width: 992px) { .uc-pf-cards { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 576px) { .uc-pf-cards { grid-template-columns: 1fr; } }
+:root[data-theme="dark"] .uc-pf-range-btn { background: var(--surface); border-color: var(--border-soft); }
+:root[data-theme="dark"] .uc-pf-range-btn:hover { background: rgba(142, 87, 254, .18); }
+:root[data-theme="dark"] .uc-pf-card.c-open { background: rgba(142, 87, 254, .12); } :root[data-theme="dark"] .uc-pf-card.c-open .v { color: #b79bff; }
+:root[data-theme="dark"] .uc-pf-card.c-sum { background: rgba(59, 130, 246, .12); } :root[data-theme="dark"] .uc-pf-card.c-sum .v { color: #93c5fd; }
+:root[data-theme="dark"] .uc-pf-card.c-late { background: rgba(239, 68, 68, .12); } :root[data-theme="dark"] .uc-pf-card.c-late .v { color: #fca5a5; }
+:root[data-theme="dark"] .uc-pf-card.c-rate { background: rgba(16, 185, 129, .12); } :root[data-theme="dark"] .uc-pf-card.c-rate .v { color: #6ee7b7; }
+:root[data-theme="dark"] .uc-st.ok { background: rgba(16, 185, 129, .18); color: #34d399; }
+:root[data-theme="dark"] .uc-st.stop { background: rgba(220, 38, 38, .18); color: #fca5a5; }
+.uc-pf-head .uc-tg-ico { width: 42px; height: 42px; font-size: 1.2rem; border-radius: 10px; }
+.uc-pf-list .grid-fill { height: calc(100vh - 470px); min-height: 300px; } /* جدول تا پایین صفحه (قاعدهٔ grid-fill پروژه) */
+.uc-pf-quick .btn { color: var(--text-strong, #2d3748); }
+:root[data-theme="dark"] .uc-pf-quick .btn { background: rgba(142, 87, 254, .16); color: var(--text-strong); }
+:root[data-theme="dark"] .uc-pf-quick .btn:hover { background: rgba(142, 87, 254, .26); }

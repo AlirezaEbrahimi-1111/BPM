@@ -51,3 +51,16 @@ function ucrmAllowed(PDO $db, int $userId): bool
     $r = ucrmRoles($db, $userId);
     return $r['manager'] || $r['accounting'] || $r['sales'];
 }
+
+/**
+ * داشبورد اصلی (pages/dashboard-*.php، ۱۴۰۵/۰۸/۰۳):
+ *   'tabs' → مدیر/حسابداری: دکمه‌های «عملیات | فروش» + تب فروش (pages/partials/ucrm-dash-sales.php)
+ *   'rep'  → کارشناس فروش: کارت «کارهای کارشناس فروش» کنار «کارها» (pages/partials/ucrm-dash-rep.php)
+ *   ''     → بقیه: داشبورد بدون تغییر
+ */
+function ucrmDashMode(PDO $db, int $userId): string
+{
+    $r = ucrmRoles($db, $userId);
+    if ($r['manager'] || $r['accounting']) return 'tabs';
+    return $r['sales'] ? 'rep' : '';
+}

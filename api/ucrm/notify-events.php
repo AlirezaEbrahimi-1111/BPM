@@ -19,6 +19,7 @@
  * اعلان: مرحله‌هایی که تسک دارند فقط اعلان «کار جدید» می‌گیرند (بدون اعلان تکراری).
  * اعلان CRM فقط برای خبرهای بدون تسک: «تأیید مدیر شد»، «مشتری فعال شد» و
  * «مشتری به شما سپرده شد» برای کارشناس.
+ * زنگ «اطلاع‌رسانی» داشبورد فروش (followup_nudge) → اعلان «مشتری بیش از N روز پیگیری نشده» برای کارشناس.
  * اعلان = Notification::create (داخل برنامه + پیامک + Push). چند مورد هم‌نوع برای
  * یک نفر (مثلا بارگذاری اکسل) → یک اعلان خلاصه.
  * حساب پشتیبان (id=1) و خودِ انجام‌دهنده هیچ‌وقت گیرنده نیستند.
@@ -87,7 +88,8 @@ try {
     // رویدادها را «برای خودمان» قفل و علامت بزن تا دوبار پردازش نشوند
     $in = implode(',', $ids);
     $events = $db->query("
-        SELECT e.id, e.customer_id, e.action, c.name, c.type, c.status, c.rep_id, COALESCE(c.reject_reason, '') AS reject_reason,
+        SELECT e.id, e.customer_id, e.action, c.name,
+               DATEDIFF(CURDATE(), DATE(COALESCE(c.last_followup_at, c.created_at))) AS nf_days, c.type, c.status, c.rep_id, COALESCE(c.reject_reason, '') AS reject_reason,
                COALESCE(c.national_id, '') AS national_id, COALESCE(c.monthly_target, c.proposed_target, 0) AS target,
                TRIM(CONCAT(COALESCE(r.first_name,''), ' ', COALESCE(r.last_name,''))) AS rep_name
         FROM ucrm_customer_events e
@@ -247,6 +249,14 @@ try {
                 }
                 break;
 
+            // زنگ «اطلاع‌رسانی» داشبورد فروش (crm-service/ucrm_dashboard.go)
+            case 'followup_nudge':
+                if ($ok($e['rep_id'])) {
+                    $queue[(int) $e['rep_id']]['nudge'][] = ['customer_id' => $cid, 'title' => 'مشتری نیازمند پیگیری',
+                        'message' => "$actor یادآوری کرد که مشتری $name " . ucrmFa((int) $e['nf_days']) . ' روز است پیگیری نشده است؛ لطفاً پیگیری کنید.'];
+                }
+                break;
+
             case 'deleted':
                 ucrmCloseStage($db, $cid, ['manager', 'accounting', 'rep_fix', 'change'], $uid, 'completed',
                     "$actor مشتری $name را حذف کرد.",
@@ -268,6 +278,7 @@ $summary = [
     'rep_assigned' => ['مشتری‌ها به شما سپرده شدند', '%2$s %1$s مشتری را به شما سپرد.'],
     'chg_ok'       => ['تغییر اطلاعات مشتری‌ها تأیید شد', 'تغییر اطلاعات %1$s مشتری توسط حسابداری (%2$s) تأیید و اعمال شد.'],
     'chg_rej'      => ['تغییر اطلاعات مشتری‌ها رد شد', 'درخواست تغییر اطلاعات %1$s مشتری توسط حسابداری (%2$s) رد شد.'],
+    'nudge'        => ['مشتری‌های نیازمند پیگیری', '%2$s اطلاع داد که %1$s مشتری شما مدتی است پیگیری نشده‌اند.'],
 ];
 
 $n = new Notification($db);

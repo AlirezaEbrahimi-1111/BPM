@@ -2457,6 +2457,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
     </style>
 
 
+    <?php /* دکمه‌های «عملیات | فروش» + تب فروش برای مدیر/حسابداری CRM (۱۴۰۵/۰۸/۰۳) */ include __DIR__ . '/partials/ucrm-dash-sales.php'; ?>
     <div class="dash-wrap">
 
         <!-- ═══ برنامه کاری ═══ -->
@@ -2493,7 +2494,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
 
         <!-- ═══ کارها ═══ -->
-        <div class="tasks-row">
+        <div class="tasks-row<?= ($__ucdMode ?? '') === 'rep' ? ' ucd-rep' : '' ?>">
             <div class="dash-card">
                 <div class="dash-card-head">
                     <div class="dash-card-title">
@@ -2558,6 +2559,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     </table>
                 </div>
             </div>
+            <?php /* داشبورد کارشناس فروش: «کارهای کارشناس فروش» کنار «کارها» (۱۴۰۵/۰۸/۰۳) */ include __DIR__ . '/partials/ucrm-dash-rep.php'; ?>
         </div>
 
 
@@ -5025,6 +5027,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         </button>
     </div>
 
+    <?php include __DIR__ . '/partials/ucrm-dash-scripts.php'; ?>
     <?php include 'footer.php'; ?>
 
 </body>

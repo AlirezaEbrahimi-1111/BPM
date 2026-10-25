@@ -648,7 +648,14 @@ $__cid = (int) ($_GET['id'] ?? 0);
             });
             try {
                 render(await UCRM.get('/customers/' + CID));
-                loadFollowups();
+                await loadFollowups();
+                // «ویرایش پیگیری» از کارت «کارهای کارشناس فروش» داشبورد: ?fu=شناسهٔ پیگیری
+                const fuId = parseInt(new URLSearchParams(location.search).get('fu'), 10) || 0;
+                if (fuId && FU.items.some(x => x.id === fuId)) {
+                    showTab('plan');
+                    if (FU.can_manage) openFollowup(fuId);
+                    history.replaceState(null, '', 'ucrm-customer.php?id=' + CID);
+                }
             } catch (e) {
                 document.getElementById('ucBody').innerHTML =
                     `<div class="uc-card text-center text-muted py-5">${esc(e.message || 'خطا در بارگذاری')}<br><a class="btn btn-outline-secondary mt-3" href="ucrm-customers.php">بازگشت به فهرست</a></div>`;

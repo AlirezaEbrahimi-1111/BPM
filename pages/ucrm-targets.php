@@ -134,6 +134,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                     <div class="uc-seg mb-3" id="rulesSeg">
                         <button type="button" class="uc-seg-btn active" data-tab="rules">قواعد پیش‌فرض</button>
                         <button type="button" class="uc-seg-btn" data-tab="colors">رنگ وضعیت تارگت</button>
+                        <button type="button" class="uc-seg-btn" data-tab="followup">هشدار پیگیری</button>
                     </div>
 
                     <div data-tab-pane="rules">
@@ -185,6 +186,17 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                         <div id="setAlert" class="mt-2"></div>
                         <div class="d-flex justify-content-end mt-3">
                             <button type="button" class="btn btn-primary" id="setSave">ذخیرهٔ رنگ‌ها</button>
+                        </div>
+                    </div>
+
+                    <!-- داشبورد فروش: «مشتریان نیازمند پیگیری» بعد از چند روز (۱۴۰۵/۰۸/۰۳) -->
+                    <div data-tab-pane="followup" hidden>
+                        <p class="small text-muted mb-3">مشتری فعالی که این تعداد روز پیگیری «انجام‌شده» نداشته باشد، در بخش «مشتریان نیازمند پیگیری» داشبورد فروش نشان داده می‌شود.</p>
+                        <label class="form-label">هشدار عدم پیگیری بعد از (روز)</label>
+                        <input type="number" class="form-control" id="s_fudays" min="1" max="365" style="max-width:160px">
+                        <div id="fuSetAlert" class="mt-2"></div>
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="button" class="btn btn-primary" id="fuSetSave">ذخیرهٔ هشدار پیگیری</button>
                         </div>
                     </div>
                 </div>
@@ -541,12 +553,31 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             }
         }
 
+        async function saveFollowupDays() {
+            const n = parseInt(UCRM.toEn(document.getElementById('s_fudays').value), 10) || 0;
+            const box = document.getElementById('fuSetAlert');
+            box.innerHTML = '';
+            if (n < 1 || n > 365) {
+                box.innerHTML = '<div class="alert alert-danger py-2 mb-0">عددی بین ۱ تا ۳۶۵ وارد کنید.</div>';
+                return;
+            }
+            try {
+                const d = await UCRM.send('PUT', '/settings', { followup_alert_days: n });
+                settings = d.settings;
+                showToast('هشدار پیگیری ذخیره شد: بعد از ' + faDigits(n) + ' روز', 'success');
+            } catch (e) {
+                box.innerHTML = '<div class="alert alert-danger py-2 mb-0">' + esc(e.message || 'خطا') + '</div>';
+            }
+        }
+
         function openRules() {
             rulesTab('rules');
             resetRule();
             document.getElementById('s_red').value = settings.target_red_below;
             document.getElementById('s_green').value = settings.target_green_from;
+            document.getElementById('s_fudays').value = settings.followup_alert_days || 14;
             document.getElementById('setAlert').innerHTML = '';
+            document.getElementById('fuSetAlert').innerHTML = '';
             bandPreview();
             loadRules();
             rulesModal.show();
@@ -602,6 +633,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 document.getElementById('ruleSave').addEventListener('click', saveRule);
                 document.getElementById('ruleReset').addEventListener('click', resetRule);
                 document.getElementById('setSave').addEventListener('click', saveColors);
+                document.getElementById('fuSetSave').addEventListener('click', saveFollowupDays);
                 ['s_red', 's_green'].forEach(id => document.getElementById(id).addEventListener('input', bandPreview));
             }
             load();

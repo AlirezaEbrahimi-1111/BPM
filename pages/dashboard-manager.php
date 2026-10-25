@@ -2480,6 +2480,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
     </style>
 
 
+    <?php /* دکمه‌های «عملیات | فروش» + تب فروش برای مدیر/حسابداری CRM (۱۴۰۵/۰۸/۰۳) */ include __DIR__ . '/partials/ucrm-dash-sales.php'; ?>
     <div class="dash-wrap">
 
         <!-- ═══ برنامه کاری ═══ -->
@@ -5341,6 +5342,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         </button>
     </div>
 
+    <?php include __DIR__ . '/partials/ucrm-dash-scripts.php'; ?>
     <?php include 'footer.php'; ?>
 
 </body>

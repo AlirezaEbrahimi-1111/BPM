@@ -1226,6 +1226,11 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
                                     <i class="bi bi-bullseye ms-2"></i>تارگت‌های فروش
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" href="/pages/ucrm-proformas.php">
+                                    <i class="bi bi-graph-up-arrow ms-2"></i>گزارش پیش‌فاکتورهای باز
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 <?php endif; ?>

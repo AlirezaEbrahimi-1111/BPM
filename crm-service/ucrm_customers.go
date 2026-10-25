@@ -1021,12 +1021,16 @@ func (s *server) ucrmImport(w http.ResponseWriter, r *http.Request) {
 type ucrmSettings struct {
 	TargetRedBelow  int `json:"target_red_below"`
 	TargetGreenFrom int `json:"target_green_from"`
+	FollowupDays    int `json:"followup_alert_days"` // داشبورد فروش: «نیازمند پیگیری» بعد از چند روز (پیش‌فرض ۱۴)
 }
 
 func (s *server) ucrmLoadSettings() ucrmSettings {
-	st := ucrmSettings{TargetRedBelow: 80, TargetGreenFrom: 100}
-	_ = s.db.QueryRow("SELECT target_red_below, target_green_from FROM ucrm_settings WHERE organization_id = ?", ucrmOrg).
-		Scan(&st.TargetRedBelow, &st.TargetGreenFrom)
+	st := ucrmSettings{TargetRedBelow: 80, TargetGreenFrom: 100, FollowupDays: 14}
+	_ = s.db.QueryRow("SELECT target_red_below, target_green_from, followup_alert_days FROM ucrm_settings WHERE organization_id = ?", ucrmOrg).
+		Scan(&st.TargetRedBelow, &st.TargetGreenFrom, &st.FollowupDays)
+	if st.FollowupDays < 1 {
+		st.FollowupDays = 14
+	}
 	return st
 }
 
@@ -1037,8 +1041,12 @@ func (s *server) ucrmPutSettings(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusForbidden, "فقط مدیر می‌تواند تنظیمات CRM را تغییر دهد.")
 		return
 	}
-	var in ucrmSettings
+	in := s.ucrmLoadSettings() // فیلدی که نیامده همان مقدار قبلی می‌ماند
 	if !decodeJSON(w, r, &in, 1<<12) {
+		return
+	}
+	if in.FollowupDays < 1 || in.FollowupDays > 365 {
+		writeErr(w, http.StatusBadRequest, "روزهای هشدار عدم پیگیری باید بین ۱ تا ۳۶۵ باشد.")
 		return
 	}
 	if in.TargetRedBelow < 1 || in.TargetGreenFrom > 1000 || in.TargetRedBelow >= in.TargetGreenFrom {
@@ -1046,11 +1054,11 @@ func (s *server) ucrmPutSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if _, err := s.db.Exec(`
-		INSERT INTO ucrm_settings (organization_id, target_red_below, target_green_from, updated_by)
-		VALUES (?, ?, ?, ?)
-		ON DUPLICATE KEY UPDATE target_red_below = VALUES(target_red_below),
-		                        target_green_from = VALUES(target_green_from), updated_by = VALUES(updated_by)`,
-		ucrmOrg, in.TargetRedBelow, in.TargetGreenFrom, uid); err != nil {
+		INSERT INTO ucrm_settings (organization_id, target_red_below, target_green_from, followup_alert_days, updated_by)
+		VALUES (?, ?, ?, ?, ?)
+		ON DUPLICATE KEY UPDATE target_red_below = VALUES(target_red_below), target_green_from = VALUES(target_green_from),
+		                        followup_alert_days = VALUES(followup_alert_days), updated_by = VALUES(updated_by)`,
+		ucrmOrg, in.TargetRedBelow, in.TargetGreenFrom, in.FollowupDays, uid); err != nil {
 		writeDBErr(w, "ucrmPutSettings", err)
 		return
 	}

@@ -1,0 +1,196 @@
+/*
+ * ucrm-dash.css — داشبورد فروش CRM (حسابداری غیررسمی) روی داشبورد اصلی (۱۴۰۵/۰۸/۰۳).
+ *   ‣ دکمه‌های «عملیات | فروش» + تب فروش (مدیر و حسابداری) — pages/partials/ucrm-dash-sales.php
+ *   ‣ کارت «کارهای کارشناس فروش» در داشبورد کارشناس فروش — pages/partials/ucrm-dash-rep.php
+ * رفتار: assets/js/ucrm-sales-dash.js
+ */
+
+/* ═══ دکمه‌های «عملیات | فروش» (بالا، سمت چپ) ═══ */
+.ucd-bar {
+    max-width: 70%;
+    width: 100%;
+    margin: 0 auto;
+    padding: 22px 14px 0;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: flex-end; /* در راست‌به‌چپ = سمت چپ */
+    flex-shrink: 0;
+}
+.ucd-bar + .dash-wrap, .ucd-bar ~ .ucd-sales { padding-top: 10px !important; }
+.ucd-switch {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 12px;
+    background: var(--surface, #fff);
+    border: 1px solid var(--border-soft, #e5e7eb);
+}
+.ucd-switch button {
+    border: 0;
+    background: none;
+    padding: 6px 18px;
+    border-radius: 9px;
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--text-muted, #6b7280);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.ucd-switch button:hover { background: rgba(142, 87, 254, .12); color: #8e57fe; }
+.ucd-switch button.active { background: #8e57fe; color: #fff; }
+:root[data-theme="dark"] .ucd-switch button:hover { background: rgba(142, 87, 254, .18); }
+:root[data-theme="dark"] .ucd-switch button.active { background: #8e57fe; color: #fff; }
+
+/* ═══ تب فروش ═══ */
+.ucd-sales {
+    max-width: 70%;
+    width: 100%;
+    margin: 0 auto;
+    padding: 10px 14px 14px;
+    box-sizing: border-box;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.ucd-sales > * { flex-shrink: 0; } /* داخل ناحیهٔ اسکرول کارت‌ها جمع نشوند */
+
+.ucd-card {
+    background: var(--surface, #fff);
+    border: 1px solid var(--border-soft, #e9e9e9);
+    border-radius: var(--radius, 14px);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+}
+.ucd-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-soft, #eee);
+}
+.ucd-head h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: .9rem;
+    font-weight: 800;
+    color: var(--text-strong, #2d3748);
+}
+.ucd-head h3 i { color: #8e57fe; }
+.ucd-head .spacer { flex: 1; }
+.ucd-head .form-control, .ucd-head .form-select { height: 34px; font-size: .8rem; }
+.ucd-head .ucd-search { width: 190px; }
+.ucd-head .uc-pf-range-btn { padding: .3rem .8rem; font-size: .8rem; }
+.ucd-xl { border-radius: 9px; padding: .3rem .9rem; font-size: .8rem; font-weight: 700; }
+
+.ucd-row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(640px, 1fr)); gap: 14px; } /* جا نشد → زیر هم */
+.ucd-row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 1200px) { .ucd-row3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 992px) {
+    .ucd-bar, .ucd-sales { max-width: 100%; }
+    .ucd-row2, .ucd-row3 { grid-template-columns: 1fr; }
+}
+
+/* جدول‌ها */
+.ucd-scroll { max-height: 330px; overflow-y: auto; }
+.ucd-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.ucd-table th {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--surface, #fff);
+    font-size: .74rem; font-weight: 700; color: var(--text-muted, #6b7280);
+    text-align: right; padding: 9px 12px; border-bottom: 1px solid var(--border-soft, #eee); white-space: nowrap;
+}
+.ucd-table td { white-space: nowrap; padding: 8px 12px; border-bottom: 1px solid var(--border-soft, #f1f1f4); color: var(--text-strong, #2d3748); vertical-align: middle; }
+.ucd-table tbody tr:hover { background: rgba(142, 87, 254, .12); }
+:root[data-theme="dark"] .ucd-table tbody tr:hover { background: rgba(142, 87, 254, .18); }
+.ucd-table td.empty { text-align: center; color: var(--text-muted, #9ca3af); padding: 28px 12px; }
+.ucd-table td.c, .ucd-table th.c { text-align: center; }
+.ucd-table a { color: inherit; text-decoration: none; font-weight: 600; }
+.ucd-table a:hover { color: #6d3fd6; text-decoration: underline; }
+.ucd-muted { color: var(--text-muted, #9ca3af); }
+
+.ucd-days { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .72rem; font-weight: 700; background: #fee2e2; color: #b91c1c; white-space: nowrap; }
+:root[data-theme="dark"] .ucd-days { background: rgba(239, 68, 68, .18); color: #fca5a5; }
+
+.ucd-bell {
+    border: 1px solid var(--border-soft, #e5e7eb); background: none; border-radius: 8px;
+    padding: 3px 10px; font-size: .74rem; color: #8e57fe; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;
+}
+.ucd-bell:hover { background: rgba(142, 87, 254, .12); }
+.ucd-bell:disabled { opacity: .45; cursor: not-allowed; }
+:root[data-theme="dark"] .ucd-bell:hover { background: rgba(142, 87, 254, .18); }
+
+/* ماتریس */
+.ucd-pct { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.ucd-pct .bar { flex: 1; height: 7px; border-radius: 4px; background: var(--gray-100, #eef0f4); overflow: hidden; }
+.ucd-pct .bar > i { display: block; height: 100%; border-radius: 4px; }
+.ucd-pct .bar > i.red { background: #dc2626; }
+.ucd-pct .bar > i.orange { background: #ea580c; }
+.ucd-pct .bar > i.green { background: #16a34a; }
+.ucd-pct span { font-size: .74rem; font-weight: 700; min-width: 36px; }
+:root[data-theme="dark"] .ucd-pct .bar { background: var(--border-soft); }
+.ucd-diff.neg { color: #b91c1c; font-weight: 700; }
+.ucd-diff.pos { color: #15803d; font-weight: 700; }
+:root[data-theme="dark"] .ucd-diff.neg { color: #fca5a5; }
+:root[data-theme="dark"] .ucd-diff.pos { color: #86efac; }
+.ucd-note { font-size: .72rem; color: var(--text-muted, #9ca3af); padding: 8px 16px 12px; display: flex; gap: 6px; align-items: center; }
+
+/* نمودارها */
+.ucd-chart { position: relative; height: 260px; padding: 10px 14px 14px; }
+.ucd-chart-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: .8rem; color: var(--text-muted, #6b7280); pointer-events: none; }
+.ucd-chart-empty[hidden] { display: none; }
+.ucd-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 0 16px 14px; font-size: .74rem; }
+.ucd-kpis div { display: flex; justify-content: space-between; gap: 6px; color: var(--text-muted, #6b7280); }
+.ucd-kpis b { color: var(--text-strong, #2d3748); }
+.ucd-donut { position: relative; height: 190px; padding: 10px 14px 6px; }
+.ucd-donut .center {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;
+}
+.ucd-donut .center b { font-size: 1.35rem; color: var(--text-strong, #2d3748); }
+.ucd-donut .center small { font-size: .7rem; color: var(--text-muted, #6b7280); }
+
+/* ═══ داشبورد کارشناس فروش: «کارها» و «کارهای کارشناس فروش» کنار هم ═══ */
+.tasks-row.ucd-rep { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.tasks-row.ucd-rep > .dash-card { min-width: 0; }
+@media (max-width: 992px) { .tasks-row.ucd-rep { grid-template-columns: 1fr; } }
+.ucd-fu-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.ucd-fu-table th:nth-child(1), .ucd-fu-table td:nth-child(1) { width: 22%; }
+.ucd-fu-table th:nth-child(2), .ucd-fu-table td:nth-child(2) { width: 27%; }
+.ucd-fu-table th:nth-child(3), .ucd-fu-table td:nth-child(3) { width: 21%; }
+.ucd-fu-table th:nth-child(4), .ucd-fu-table td:nth-child(4) { width: 18%; text-align: center; }
+.ucd-fu-table th:nth-child(5), .ucd-fu-table td:nth-child(5) { width: 12%; text-align: center; }
+.ucd-fu-table td { height: 38px; }
+.ucd-fu-table td .cut { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ucd-fu-table td.late { color: #dc2626; font-weight: 700; }
+:root[data-theme="dark"] .ucd-fu-table td.late { color: #fca5a5; }
+.ucd-type { display: inline-block; padding: 5px 10px; border-radius: var(--badge-radius, 8px); font-size: .666rem; font-weight: 700; white-space: nowrap; }
+.ucd-type.call { background: #dcfce7; color: #15803d; }
+.ucd-type.sms { background: #dbeafe; color: #1d4ed8; }
+.ucd-type.meeting { background: #fef3c7; color: #b45309; }
+.ucd-type.email { background: #e0f2fe; color: #0369a1; }
+.ucd-type.proforma { background: rgba(142, 87, 254, .12); color: #7c3aed; }
+.ucd-type.other { background: var(--gray-100, #f3f4f6); color: var(--gray-500, #6b7280); }
+:root[data-theme="dark"] .ucd-type.call { background: rgba(34, 197, 94, .16); color: #86efac; }
+:root[data-theme="dark"] .ucd-type.sms { background: rgba(59, 130, 246, .18); color: #93c5fd; }
+:root[data-theme="dark"] .ucd-type.meeting { background: rgba(245, 158, 11, .16); color: #fcd34d; }
+:root[data-theme="dark"] .ucd-type.email { background: rgba(14, 165, 233, .16); color: #7dd3fc; }
+:root[data-theme="dark"] .ucd-type.proforma { background: rgba(142, 87, 254, .2); color: #c4b5fd; }
+:root[data-theme="dark"] .ucd-type.other { background: var(--border-soft); color: var(--text-muted); }
+.row-menu .act-done i { color: #1b7b39; }
+.row-menu .act-edit i { color: #2563eb; }
+.row-menu .act-open i { color: #8e57fe; }
+.row-menu .act-cancel i { color: #dc2626; }
+/* کارت «کارها» در نیمهٔ عرض: تب‌ها یک‌خطی، فیلترهای «همه/امروز/عقب‌افتاده» در صورت کمبود جا خط بعد */
+.tasks-row.ucd-rep .dash-tabs { flex-wrap: wrap; }
+.tasks-row.ucd-rep .dash-tab { white-space: nowrap; padding-left: 10px; padding-right: 10px; }
+.tasks-row.ucd-rep .dash-tabs .dash-filters { padding: 4px 0 6px; }
+.ucd-when { white-space: nowrap; direction: ltr; unicode-bidi: isolate; display: inline-block; }
