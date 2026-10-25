@@ -11,7 +11,7 @@ import (
 // تست authz_test.go موارد را قفل می‌کند.
 
 // SuperAdminIDs — getSuperAdminIds(). تنها جایی که شناسهٔ عددی سخت مجاز است.
-var SuperAdminIDs = []int64{1, 19}
+var SuperAdminIDs = []int64{1, 19, 129} // ۱۹ رضا فضایلی، ۱۲۹ زهرا بادپر — عمدا یکسان
 
 // permissionMatrix — getPermissionMatrix(): نقش → اجازه‌ها.
 var permissionMatrix = map[string][]string{

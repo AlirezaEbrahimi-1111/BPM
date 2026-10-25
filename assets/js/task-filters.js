@@ -129,6 +129,21 @@ window.TF = (function () {
      * همهٔ عددها از سرور می‌آیند (enrichTaskDates) و «امروز» از ساعت سرور
      * (TimeSync)، نه ساعت دستگاه.
      */
+    /**
+     * تعداد دوره‌های انجام‌نشدهٔ موعدگذشتهٔ کار دوره‌ای = معوقه‌های سرور (دوره‌های قبل از
+     * دورهٔ جاری) + خود دورهٔ جاری اگر موعدش گذشته و انجام نشده. سرور دورهٔ جاری را تا رسیدن
+     * دورهٔ بعد معوقه نمی‌شمارد (هفتگی/ماهانه چند روز تا چند هفته). next_due_date وقتی
+     * دورهٔ جاری انجام نشده = همان دوره است. منبع مشترک بج تأخیر و فیلتر «عقب افتاده»
+     * — قبلا فقط بج این را داشت و کار ۲۸۲۶ (ماهانه) بج تأخیر داشت ولی عقب‌افتاده نبود.
+     */
+    function continuousLateCount(t) {
+        const op = Number(t.overdue_periods) || 0;
+        const curLate = !!t.next_due_date && (window.TimeSync
+            ? TimeSync.daysFromToday(t.next_due_date)
+            : Math.ceil((new Date(t.next_due_date).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5)) < 0;
+        return op + (curLate ? 1 : 0);
+    }
+
     function remainingBadge(t) {
         const badge = (cls, txt) => `<span class="badge days-badge${cls ? ' ' + cls : ''}">${txt}</span>`;
         if (!t) return badge('', '-');
@@ -139,11 +154,7 @@ window.TF = (function () {
             // سرور دورهٔ جاری را تا رسیدنِ دورهٔ بعد «معوقه» نمی‌شمارد؛ قبلا در آن فاصله
             // (هفتگی/ماهانه چند روز) این بج به شاخهٔ مقطعی می‌افتاد و «n روز کاری تاخیر»
             // نشان می‌داد (کار ۳۳۱۷). next_due_date وقتی دورهٔ جاری انجام نشده = همان دوره است.
-            const op = Number(t.overdue_periods) || 0;
-            const curLate = !!t.next_due_date && (window.TimeSync
-                ? TimeSync.daysFromToday(t.next_due_date)
-                : Math.ceil((new Date(t.next_due_date).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5)) < 0;
-            const late = op + (curLate ? 1 : 0);
+            const late = continuousLateCount(t);
             if (late > 0) return badge('days-overdue', `${toFa(late)} دوره معوقه`);
             if (!t.next_due_date) {
                 return needsRenewalDecision(t) ? badge('days-soon', 'نیازمند تمدید') : badge('', '-');
@@ -367,7 +378,8 @@ window.TF = (function () {
         // ── کار دوره‌ای ──────────────────────────────
         if (t.task_type === 'continuous') {
             if (isExpired(t, td)) return false;
-            return (t.overdue_periods || 0) > 0;
+            // همان قانون بج تأخیر: معوقه‌ها + دورهٔ جاریِ موعدگذشته
+            return continuousLateCount(t) > 0;
         }
 
         // ── کار مقطعی ────────────────────────────────

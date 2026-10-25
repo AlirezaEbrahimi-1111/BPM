@@ -41,7 +41,7 @@ func (r ucrmRoles) seesAll() bool { return r.Manager || r.Accounting }
 
 // ucrmRolesOf — ⚠️ هم‌راستا با ucrmRoles در includes/ucrm_access.php. فقط سازمان ۱.
 func (s *server) ucrmRolesOf(uid int64) ucrmRoles {
-	if uid == 1 || uid == 19 {
+	if superAdminIDs[uid] {
 		return ucrmRoles{Manager: true}
 	}
 	var mgr, acc, sales int
@@ -299,7 +299,7 @@ func ucrmPerms(c *ucrmCustomerOut, uid int64, ro ucrmRoles) {
 		c.CanEdit, c.CanDelete = true, true
 	}
 	c.CanApprove = (c.Status == ucStPendingManager && ro.Manager) ||
-		(c.Status == ucStPendingAccounting && (ro.Accounting || uid == 1 || uid == 19))
+		(c.Status == ucStPendingAccounting && (ro.Accounting || superAdminIDs[uid]))
 	c.CanResubmit = c.Status == ucStRejected && (own || ro.Manager)
 }
 

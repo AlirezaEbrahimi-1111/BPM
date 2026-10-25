@@ -100,7 +100,7 @@ const crmSections = `'accounting','l_accounting'`
 
 // hasCRMAccess: شرط requireCRMAccess به‌صورت بله/خیر (تا قابل ترکیب باشد).
 func (s *server) hasCRMAccess(uid int64) bool {
-	if uid == 1 || uid == 19 {
+	if superAdminIDs[uid] {
 		return true
 	}
 	var ok int
@@ -137,7 +137,7 @@ func (s *server) requireReportAccess(next http.HandlerFunc) http.HandlerFunc {
 
 // hasReportAccess: شرط requireReportAccess به‌صورت بله/خیر.
 func (s *server) hasReportAccess(uid int64) bool {
-	if uid == 1 || uid == 19 {
+	if superAdminIDs[uid] {
 		return true
 	}
 	// 🔒 فقط سازمان ۱ (شرکت اصلی). گزارش همکاران برای هیچ سازمان دیگری
@@ -167,10 +167,14 @@ func (s *server) hasReportAccess(uid int64) bool {
 // (درخواست ۱۴۰۵/۰۸/۰۲: ۱۵۴ = رضا بادپر، سازمان ۱). هم‌قدم با pages/inv-import-legacy.php.
 var legacyImportUserIDs = map[int64]bool{154: true}
 
+// superAdminIDs — هم‌راستا با getSuperAdminIds() در includes/permissions.php:
+// ۱ مدیر کل، ۱۹ رضا فضایلی، ۱۲۹ زهرا بادپر (۱۹ و ۱۲۹ عمدا یکسان).
+var superAdminIDs = map[int64]bool{1: true, 19: true, 129: true}
+
 // requireLegacyImport: مدیر کل + legacyImportUserIDs
 func (s *server) requireLegacyImport(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if uid := userOf(r.Context()).ID; uid == 1 || uid == 19 || legacyImportUserIDs[uid] {
+		if uid := userOf(r.Context()).ID; superAdminIDs[uid] || legacyImportUserIDs[uid] {
 			next(w, r)
 			return
 		}

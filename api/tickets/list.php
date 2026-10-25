@@ -101,7 +101,7 @@ try {
 
     // «پشتیبان» = دو کاربر سیستمی (getSuperAdminIds). مبنای منطق «توپ در
     // زمین کیست».
-    $supportIds  = getSuperAdminIds();                              // [1, 19]
+    $supportIds  = getSuperAdminIds();                              // [1, 19, 129]
     $supportList = implode(',', array_map('intval', $supportIds));  // "1,19"
     $iAmSupport  = in_array((int) $user_id, $supportIds, true);
 

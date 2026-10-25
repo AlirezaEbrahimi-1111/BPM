@@ -12,6 +12,7 @@ header('Content-Type: application/json; charset=utf-8');
 date_default_timezone_set('Asia/Tehran');
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php'; // getSuperAdminIds
 // $db حالا آماده‌ست
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
@@ -107,7 +108,7 @@ try {
     // ============================================
     // 3. درخواست‌های مرخصی منتظر تأیید مسئول
     // ============================================
-    if ($current_user['id'] == 19 || $current_user['is_supervisor'] == 1) {
+    if (in_array((int) $current_user['id'], getSuperAdminIds(), true) || $current_user['is_supervisor'] == 1) {
         $stmt = $db->prepare("
             SELECT
                 lr.id,
@@ -170,7 +171,7 @@ try {
     // ============================================
     // 5. درخواست‌های مأموریت منتظر تأیید مسئول
     // ============================================
-    if ($current_user['id'] == 19 || $current_user['is_supervisor'] == 1) {
+    if (in_array((int) $current_user['id'], getSuperAdminIds(), true) || $current_user['is_supervisor'] == 1) {
         $stmt = $db->prepare("
             SELECT
                 mr.id,
@@ -229,7 +230,7 @@ try {
     // ============================================
     // 7. درخواست‌های فراموشی منتظر تأیید مسئول
     // ============================================
-    if ($current_user['id'] == 19 || $current_user['is_supervisor'] == 1) {
+    if (in_array((int) $current_user['id'], getSuperAdminIds(), true) || $current_user['is_supervisor'] == 1) {
         $stmt = $db->prepare("
             SELECT
                 fr.id,

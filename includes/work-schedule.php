@@ -28,6 +28,24 @@ if (!function_exists('ws_normalize')) {
             'daily_work_hours', 'monthly_salary'];
     }
 
+    /**
+     * ساعت کاری روزانه از خود ساعت‌های شیفت — دقیقه‌ای دقیق، دو رقم اعشار (۹:۳۰ = ۹.۵).
+     * تنها منبع این عدد؛ هیچ‌جا نباید به عدد صحیح گرد شود (نسخه‌های قدیمی اپ ۹.۵ را ۱۰ می‌کردند).
+     * شیفت دوم فقط وقتی دوشیفته است. بدون ساعت شیفت → null (فراخواننده مقدار قبلی را نگه دارد).
+     */
+    function ws_dailyHoursFromShifts($s1, $e1, $s2, $e2, bool $double): ?float
+    {
+        $mins = function ($s, $e) {
+            if (!$s || !$e) return 0;
+            $p = fn($t) => array_map('intval', explode(':', (string) $t) + [0, 0]);
+            [$sh, $sm] = $p($s);
+            [$eh, $em] = $p($e);
+            return max(0, ($eh * 60 + $em) - ($sh * 60 + $sm));
+        };
+        $total = $mins($s1, $e1) + ($double ? $mins($s2, $e2) : 0);
+        return $total > 0 ? round($total / 60, 2) : null;
+    }
+
     /** یکسان‌سازی برای مقایسه/ذخیره: ساعت‌ها HH:MM:SS یا null، اعداد float/int */
     function ws_normalize(array $r): array
     {
@@ -39,7 +57,7 @@ if (!function_exists('ws_normalize')) {
             }
             return null;
         };
-        return [
+        $out = [
             'shift_count'      => max(1, (int) ($r['shift_count'] ?? 1)),
             'shift_1_start'    => $t($r['shift_1_start'] ?? null),
             'shift_1_end'      => $t($r['shift_1_end'] ?? null),
@@ -48,6 +66,11 @@ if (!function_exists('ws_normalize')) {
             'daily_work_hours' => round((float) ($r['daily_work_hours'] ?? 0), 2),
             'monthly_salary'   => round((float) ($r['monthly_salary'] ?? 0), 2),
         ];
+        // سابقه هم همیشه از ساعت شیفت‌ها حساب شود (نه عدد ذخیره‌شدهٔ احتمالا گردشده)
+        $calc = ws_dailyHoursFromShifts($out['shift_1_start'], $out['shift_1_end'],
+            $out['shift_2_start'], $out['shift_2_end'], $out['shift_count'] >= 2);
+        if ($calc !== null) $out['daily_work_hours'] = $calc;
+        return $out;
     }
 
     function ws_same(array $a, array $b): bool
@@ -117,8 +140,9 @@ if (!function_exists('ws_normalize')) {
                     [$jy, $jm, $jd] = sc_gregorianToJalali($gy, $gm, $gd);
                     $jf = sprintf('%04d/%02d/%02d', $jy, $jm, $jd);
                 }
-                $out[] = ['effective_from' => $r['effective_from'], 'jalali_from' => $jf, 'shift_label' => sc_shiftLabel(ws_normalize($r)),
-                    'daily_work_hours' => (float) $r['daily_work_hours'], 'monthly_salary' => (float) $r['monthly_salary']];
+                $n = ws_normalize($r);
+                $out[] = ['effective_from' => $r['effective_from'], 'jalali_from' => $jf, 'shift_label' => sc_shiftLabel($n),
+                    'daily_work_hours' => $n['daily_work_hours'], 'monthly_salary' => (float) $r['monthly_salary']];
             }
         }
         return $out;

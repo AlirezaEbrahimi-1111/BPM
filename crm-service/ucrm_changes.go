@@ -135,7 +135,7 @@ func (s *server) latestChangeReq(customerID, uid int64, ro ucrmRoles) *ucrmChang
 	if err != nil {
 		return nil
 	}
-	q.CanDecide = q.Status == chgPending && (ro.Accounting || uid == 1 || uid == 19)
+	q.CanDecide = q.Status == chgPending && (ro.Accounting || superAdminIDs[uid])
 	q.CanCancel = q.Status == chgPending && (q.RequestedBy == uid || ro.Manager)
 	return q
 }
@@ -303,7 +303,7 @@ func (s *server) ucrmDecideChange(action string) http.HandlerFunc {
 			writeErr(w, http.StatusConflict, "این درخواست قبلا بررسی شده است.")
 			return
 		}
-		canDecide := ro.Accounting || uid == 1 || uid == 19
+		canDecide := ro.Accounting || superAdminIDs[uid]
 		switch action {
 		case "approve", "reject":
 			if !canDecide {

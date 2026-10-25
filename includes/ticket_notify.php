@@ -10,7 +10,9 @@
  */
 function ticketObserverIds(): array
 {
-    return [19]; // رضا فضایلی — فقط مشاهده
+    // سوپرادمین‌ها به‌جز مدیر کل (۱): رضا فضایلی و زهرا بادپر — فقط مشاهده
+    require_once __DIR__ . '/permissions.php';
+    return array_values(array_diff(getSuperAdminIds(), [1]));
 }
 
 function isTicketObserver($userId): bool

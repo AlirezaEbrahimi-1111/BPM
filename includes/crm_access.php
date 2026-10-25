@@ -37,11 +37,11 @@ function crmModuleUserIds(PDO $db): array
     static $cache = null;
     if ($cache !== null) return $cache;
 
-    $ids = [1, 19]; // id=1 + رضا فضایلی (id=19)
+    require_once __DIR__ . '/permissions.php';
+    $ids = getSuperAdminIds(); // id=1 + رضا فضایلی (۱۹) + زهرا بادپر (۱۲۹)
 
-    $EXTRA_PHONES = [
-        '09927949376', // خانم بادپر — موقت (موبایل)
-    ];
+    // خانم بادپر (۰۹۹۲۷۹۴۹۳۷۶) دیگر لازم نیست؛ حالا در getSuperAdminIds است
+    $EXTRA_PHONES = [];
 
     if ($EXTRA_PHONES) {
         try {

@@ -19,7 +19,8 @@ function ucrmRoles(PDO $db, int $userId): array
 
     $r = ['manager' => false, 'accounting' => false, 'sales' => false];
     if ($userId <= 0) return $cache[$userId] = $r;
-    if ($userId === 1 || $userId === 19) {
+    require_once __DIR__ . '/permissions.php';
+    if (in_array($userId, getSuperAdminIds(), true)) {
         $r['manager'] = true;
         return $cache[$userId] = $r;
     }

@@ -123,7 +123,7 @@ func List(db *sql.DB) http.HandlerFunc {
 			params = append(params, like, like)
 		}
 
-		supportIDs := core.SuperAdminIDs // [1, 19]
+		supportIDs := core.SuperAdminIDs // [1, 19, 129]
 		supportStrs := make([]string, len(supportIDs))
 		for i, id := range supportIDs {
 			supportStrs[i] = strconv.FormatInt(id, 10)
