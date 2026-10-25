@@ -2898,7 +2898,17 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             }).catch(() => {}); // ذخیره‌ی پس‌زمینه‌ست؛ خطاش UI رو قفل نمی‌کنه
         }
 
-        /* ───────── منتخب ───────── */
+        /* ───────── منتخب ─────────
+           دائمی و مشترک با اپ (۱۴۰۵/۰۸/۰۳): فقط «افزودن/برداشتن همین یکی» فرستاده می‌شود،
+           نه کل فهرست — تا ستاره‌ای که هم‌زمان در اپ زده شده پاک نشود (api/dashboard/prefs-set.php) */
+        function saveStarOp(key, on) {
+            fetch('../api/dashboard/prefs-set.php', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pref_key: 'starred_tasks', op: on ? 'add' : 'remove', item: key })
+            }).catch(() => {});
+        }
+
         function getStarred() {
             return starredList;
         }
@@ -2918,7 +2928,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 btn.classList.add('on');
                 btn.innerHTML = '<i class="bi bi-star-fill"></i>';
             }
-            saveDashboardPref('starred_tasks', JSON.stringify(starredList));
+            saveStarOp(key, starredList.includes(key));
             if (currentTab === 'starred') renderTasks();
         }
 
@@ -3038,7 +3048,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 ? ((orgBottlenecks && orgBottlenecks.bottlenecks) || [])
                 : null;
 
-            // 🆕 تنظیمات روزانه‌ی داشبورد (ستاره‌ها + تب/فیلتر پیش‌فرض) — از
+            // 🆕 تنظیمات داشبورد (ستاره‌ها دائمی؛ تب/فیلتر پیش‌فرض روزانه) — از
             // سرور می‌آد، نه localStorage؛ باید قبل اولین renderTasks اعمال بشه
             starredList = (dashboardPrefs && Array.isArray(dashboardPrefs.starred_tasks)) ? dashboardPrefs.starred_tasks : [];
             defaultTab = (dashboardPrefs && dashboardPrefs.default_tab) || '';

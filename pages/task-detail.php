@@ -4593,7 +4593,7 @@ ${task.overdue_periods > 0 ? `
                     .catch(() => {});
             }
 
-            // ─── ستاره‌دار کردن (منتخب) — همان تنظیم روزانه‌ی داشبورد،
+            // ─── ستاره‌دار کردن (منتخب) — همان تنظیم داشبورد (دائمی، مشترک با اپ)،
             // فقط این‌جا هم قابل تغییر است. کلید: هم‌فرمت با dashboard-manager.php ───
             async function initTaskStar() {
                 try {
@@ -4625,13 +4625,14 @@ ${task.overdue_periods > 0 ? `
                 if (idx >= 0) starredTasksList.splice(idx, 1);
                 else starredTasksList.push(key);
                 renderTaskStarBtn();
+                // فقط همین یکی (نه کل فهرست) — دائمی و مشترک با اپ (۱۴۰۵/۰۸/۰۳)
                 fetch('../api/dashboard/prefs-set.php', {
                     method: 'POST',
                     headers: {
                         'Authorization': 'Bearer ' + authToken,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ pref_key: 'starred_tasks', pref_value: JSON.stringify(starredTasksList) })
+                    body: JSON.stringify({ pref_key: 'starred_tasks', op: idx >= 0 ? 'remove' : 'add', item: key })
                 }).catch(() => {});
             }
 

@@ -106,8 +106,9 @@ $database2 = new Database();
 $dbPrefs = $database2->getConnection();
 $prefsStmt = $dbPrefs->prepare("
     SELECT pref_key, pref_value FROM user_dashboard_prefs
-    WHERE user_id = ? AND (pref_date = CURDATE() OR pref_key = 'delegated_scope')
+    WHERE user_id = ? AND (pref_date = CURDATE() OR pref_key IN ('delegated_scope', 'starred_tasks'))
 ");
+// «منتخب» (starred_tasks) هم مثل delegated_scope دائمی است و با اپ مشترک (۱۴۰۵/۰۸/۰۳)
 $prefsStmt->execute([$user_id]);
 $dashboardPrefs = ['starred_tasks' => [], 'default_tab' => '', 'default_filter' => ''];
 foreach ($prefsStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {

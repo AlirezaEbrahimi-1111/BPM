@@ -3,8 +3,9 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
  *  API: dashboard/prefs-set.php
- *  ذخیره‌ی یکی از سه‌تا تنظیم روزانه‌ی داشبورد (کارهای ستاره‌دار، تب
- *  پیش‌فرض، فیلتر پیش‌فرض) — سمت سرور، با تاریخ سرور (نه کلاینت).
+ *  ذخیره‌ی تنظیمات داشبورد — سمت سرور، با تاریخ سرور (نه کلاینت).
+ *  تب پیش‌فرض و فیلتر پیش‌فرض روزانه‌اند؛ «منتخب» (starred_tasks) از
+ *  ۱۴۰۵/۰۸/۰۳ دائمی و مشترک بین وب و اپ است.
  * ═══════════════════════════════════════════════════════════════════
  */
 
@@ -62,6 +63,51 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
+    // ─── «منتخب» با عملیات تکی (۱۴۰۵/۰۸/۰۳) — وب و اپ هر دو این را می‌فرستند ───
+    //   { pref_key:'starred_tasks', op:'add'|'remove', item:'task:123' }
+    //   { pref_key:'starred_tasks', op:'merge', items:['task:1', ...] }  (یک‌باره: ستاره‌های قدیمی گوشی)
+    // سرور فهرست را خودش زیر قفل به‌روز می‌کند تا دو دستگاه هم‌زمان کار هم را پاک نکنند
+    // (ارسال کل فهرست = آخرین ارسال برنده). منتخب دائمی است؛ pref_date برایش خوانده نمی‌شود.
+    $op = $input['op'] ?? '';
+    if ($prefKey === 'starred_tasks' && $op !== '') {
+        if (!in_array($op, ['add', 'remove', 'merge'], true)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'عملیات نامعتبر'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $items = $op === 'merge' ? (array) ($input['items'] ?? []) : [$input['item'] ?? ''];
+        $items = array_slice(array_values(array_unique(array_map('strval', $items))), 0, 500);
+        foreach ($items as $it) {
+            if (!preg_match('/^(task|wf):\d+$/', $it)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'شناسهٔ کار نامعتبر است'], JSON_UNESCAPED_UNICODE);
+                exit;
+            }
+        }
+
+        $db->beginTransaction();
+        $cur = $db->prepare("SELECT pref_value FROM user_dashboard_prefs WHERE user_id = ? AND pref_key = 'starred_tasks' FOR UPDATE");
+        $cur->execute([$user_id]);
+        $list = json_decode((string) $cur->fetchColumn(), true);
+        $list = is_array($list) ? array_values(array_filter($list, 'is_string')) : [];
+        if ($op === 'remove') {
+            $list = array_values(array_diff($list, $items));
+        } else {
+            $list = array_values(array_unique(array_merge($list, $items)));
+        }
+        $list = array_slice($list, -1000);
+        $save = $db->prepare("
+            INSERT INTO user_dashboard_prefs (user_id, pref_key, pref_value, pref_date)
+            VALUES (?, 'starred_tasks', ?, CURDATE())
+            ON DUPLICATE KEY UPDATE pref_value = VALUES(pref_value), pref_date = VALUES(pref_date)
+        ");
+        $save->execute([$user_id, json_encode($list, JSON_UNESCAPED_UNICODE)]);
+        $db->commit();
+
+        echo json_encode(['success' => true, 'starred_tasks' => $list], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     $stmt = $db->prepare("
         INSERT INTO user_dashboard_prefs (user_id, pref_key, pref_value, pref_date)
         VALUES (?, ?, ?, CURDATE())
@@ -71,6 +117,7 @@ try {
 
     echo json_encode(['success' => true], JSON_UNESCAPED_UNICODE);
 } catch (Exception $e) {
+    if (isset($db) && $db->inTransaction()) $db->rollBack();
     http_response_code(500);
     error_log("dashboard/prefs-set.php failed | " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'خطای سرور'], JSON_UNESCAPED_UNICODE);
