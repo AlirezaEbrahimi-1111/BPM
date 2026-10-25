@@ -138,7 +138,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         /* دکمه‌ی شناور «گفتگوی جدید» — مثل FAB تلگرام، گوشه‌ی سایدبار */
         .chat-new-btn {
             position: absolute;
-            inset-inline-start: 18px;
+            inset-inline-end: 18px;
             bottom: 18px;
             width: 52px;
             height: 52px;
@@ -221,6 +221,51 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         .chat-search-box .chat-search-clear:hover {
             background: var(--ink-200, rgba(0, 0, 0, .16));
+        }
+
+        /* فیلتر نوع گفتگو (همه / شخصی / گروه‌ها) — مثل تلگرام */
+        .chat-conv-filters {
+            display: flex;
+            gap: 6px;
+            padding: 0 20px 12px;
+        }
+
+        .chat-conv-filter {
+            border: none;
+            border-radius: 999px;
+            padding: 5px 12px;
+            font-size: .78rem;
+            background: var(--ink-050);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chat-conv-filter:hover {
+            background: rgba(142, 87, 254, .12);
+        }
+
+        .chat-conv-filter.active {
+            background: var(--ink-900);
+            color: var(--surface);
+        }
+
+        .chat-conv-filter-count {
+            min-width: 18px;
+            padding: 0 5px;
+            border-radius: 999px;
+            font-size: .68rem;
+            line-height: 18px;
+            text-align: center;
+            background: var(--ink-900);
+            color: var(--surface);
+        }
+
+        .chat-conv-filter.active .chat-conv-filter-count {
+            background: var(--surface);
+            color: var(--ink-900);
         }
 
         .chat-conv-list {
@@ -998,6 +1043,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             background: #fbeae7;
         }
 
+        :root[data-theme="dark"] .chat-ctx-menu-item.danger,
+        :root[data-theme="dark"] .chat-ctx-menu-item.danger i {
+            color: #f08a7e;
+        }
+
+        :root[data-theme="dark"] .chat-ctx-menu-item.danger:hover {
+            background: rgba(240, 138, 126, .14);
+        }
+
         /* ── نوار ویرایش ── */
         .chat-edit-banner {
             display: none;
@@ -1695,9 +1749,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             color: var(--ink-900);
         }
 
+        /* دکمهٔ ارسال: بدون پس‌زمینه، خود آیکن بنفش */
         .chat-send-btn {
-            background: var(--ink-900);
-            color: #fff;
+            background: transparent;
+            color: var(--ink-900);
+            font-size: 1.25rem;
+        }
+
+        .chat-send-btn:not(:disabled):hover {
+            background: rgba(142, 87, 254, .12);
         }
 
         .chat-send-btn:disabled {
@@ -1709,7 +1769,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         .chat-emoji-picker {
             position: absolute;
             bottom: 54px;
-            right: 8px;
+            left: 8px;
             width: 280px;
             max-height: 260px;
             overflow-y: auto;
@@ -2097,6 +2157,285 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             padding: 4px;
         }
 
+        /* ─── صفحهٔ اطلاعات گروه (طرح کارتی با نوار بنفش) ─── */
+        .chat-gi-drawer {
+            background: var(--ink-050);
+        }
+
+        .chat-gi-hero {
+            background: linear-gradient(135deg, #8e57fe, #6e52a7);
+            color: #fff;
+            padding: 12px 16px 22px;
+            flex-shrink: 0;
+        }
+
+        :root[data-theme="dark"] .chat-gi-hero {
+            background: linear-gradient(135deg, #4f3a86, #2f2549);
+        }
+
+        .chat-gi-hero-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .chat-gi-hero-btn {
+            border: none;
+            background: transparent;
+            color: #fff;
+            font-size: 1.25rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .chat-gi-hero-btn:hover {
+            background: rgba(255, 255, 255, .16);
+        }
+
+        .chat-gi-hero-main {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .chat-gi-hero-main .chat-group-avatar-wrap {
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        .chat-gi-hero-main .chat-group-avatar-big {
+            width: 72px;
+            height: 72px;
+            border: 3px solid rgba(255, 255, 255, .55);
+        }
+
+        .chat-gi-hero-text {
+            min-width: 0;
+        }
+
+        .chat-gi-hero-name {
+            font-size: 1.08rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            overflow-wrap: anywhere;
+        }
+
+        .chat-gi-hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            font-size: .78rem;
+            opacity: .92;
+        }
+
+        .chat-gi-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9aa0a6;
+            vertical-align: middle;
+        }
+
+        .chat-gi-dot.online {
+            background: #22c55e;
+        }
+
+        .chat-gi-body {
+            padding: 14px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-gi-card {
+            background: var(--surface);
+            border-radius: 14px;
+            box-shadow: 0 1px 4px rgba(36, 27, 51, .06);
+        }
+
+        .chat-gi-notif {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+        }
+
+        .chat-gi-notif-text {
+            flex: 1;
+            text-align: end;
+        }
+
+        .chat-gi-notif-title {
+            font-weight: 700;
+            font-size: .9rem;
+            color: var(--text-strong);
+        }
+
+        .chat-gi-notif-sub {
+            font-size: .72rem;
+            color: var(--text-muted);
+        }
+
+        .chat-gi-icon-box {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--ink-050);
+            color: var(--ink-900);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+
+        .chat-gi-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 6px;
+        }
+
+        .chat-gi-tab {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            padding: 8px 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            font-size: .72rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .chat-gi-tab i {
+            font-size: 1.05rem;
+        }
+
+        .chat-gi-tab:hover {
+            background: rgba(142, 87, 254, .12);
+        }
+
+        .chat-gi-tab.active {
+            background: #8e57fe;
+            color: #fff;
+        }
+
+        .chat-gi-panel {
+            padding: 14px;
+        }
+
+        .chat-gi-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--ink-900);
+        }
+
+        .chat-gi-add-btn {
+            border: none;
+            background: var(--ink-050);
+            color: var(--ink-900);
+            border-radius: 999px;
+            padding: 5px 12px;
+            font-size: .74rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .chat-gi-add-btn:hover {
+            background: rgba(142, 87, 254, .18);
+        }
+
+        .chat-gi-panel .chat-group-member-row {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-soft, #eee);
+        }
+
+        .chat-gi-panel .chat-group-member-row:last-child {
+            border-bottom: none;
+        }
+
+        .chat-gi-member-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-gi-member-info .chat-group-member-name {
+            display: block;
+            font-weight: 700;
+        }
+
+        .chat-gi-member-status {
+            font-size: .72rem;
+            color: var(--text-muted);
+        }
+
+        .chat-gi-panel .chat-group-owner-tag {
+            border-radius: 999px;
+            padding: 3px 9px;
+            font-size: .68rem;
+            white-space: nowrap;
+        }
+
+        .chat-gi-link-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border-soft, #eee);
+            text-decoration: none;
+            color: var(--text-strong);
+        }
+
+        .chat-gi-link-row:last-child {
+            border-bottom: none;
+        }
+
+        .chat-gi-link-row:hover .chat-gi-link-url {
+            text-decoration: underline;
+        }
+
+        .chat-gi-link-url {
+            font-size: .8rem;
+            color: var(--ink-900);
+            direction: ltr;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chat-gi-video-tile {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--ink-050);
+            color: var(--ink-900);
+            font-size: 1.6rem;
+        }
+
+        @media (max-width: 768px) {
+            /* موبایل: اطلاعات گروه تمام‌صفحه */
+            .chat-gi-drawer {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+
         @media (max-width: 768px) {
             .chat-wrap {
                 padding: 0;
@@ -2168,6 +2507,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     <input type="text" id="convSearchInput" placeholder="جستجو در گفتگوها و پیام‌ها..." oninput="onConvSearchInput()" onkeydown="onConvSearchKeydown(event)">
                     <button type="button" class="chat-search-clear" id="convSearchClearBtn" onclick="clearConvSearch()" title="پاک کردن"><i class="bi bi-x"></i></button>
                 </div>
+                <div class="chat-conv-filters" id="convFilters">
+                    <button type="button" class="chat-conv-filter" data-filter="all" onclick="setConvFilter('all')">همه<span class="chat-conv-filter-count" style="display:none;"></span></button>
+                    <button type="button" class="chat-conv-filter" data-filter="direct" onclick="setConvFilter('direct')">شخصی<span class="chat-conv-filter-count" style="display:none;"></span></button>
+                    <button type="button" class="chat-conv-filter" data-filter="group" onclick="setConvFilter('group')">گروه‌ها<span class="chat-conv-filter-count" style="display:none;"></span></button>
+                </div>
                 <div class="chat-conv-list" id="convListWrap">
                     <div id="convList">
                         <div class="chat-empty-list">در حال بارگذاری...</div>
@@ -2217,6 +2561,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         <button class="chat-search-toggle-btn" id="chatSearchToggleBtn" onclick="toggleMsgSearch()" title="جستجو در گفتگو">
                             <i class="bi bi-search"></i>
                         </button>
+
+                        <!-- فقط در گروه/کانال: به‌جای ذره‌بین، منوی سه‌نقطه (جستجو / ترک گروه) -->
+                        <button class="chat-search-toggle-btn" id="chatHeadMenuBtn" onclick="toggleChatHeadMenu(event)" title="گزینه‌های بیشتر" style="display:none;">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
                     </div>
 
                     <div class="chat-pinned-banner" id="chatPinnedBanner" style="display:none;">
@@ -2257,16 +2606,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         <div class="chat-mention-autocomplete" id="mentionAutocomplete" style="display:none;"></div>
                         <div class="chat-mention-autocomplete" id="linkRefAutocomplete" style="display:none;"></div>
                         <div class="chat-emoji-picker" id="chatEmojiPicker"></div>
+                        <button class="chat-send-btn" id="chatSendBtn" onclick="sendChatMessage()">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                        <textarea class="chat-composer-input" id="chatComposerInput" rows="1" placeholder="پیامی بنویسید..."></textarea>
                         <button class="chat-attach-btn" id="chatAttachBtn" onclick="document.getElementById('chatFileInput').click()" title="پیوست فایل">
                             <i class="bi bi-paperclip"></i>
                         </button>
                         <input type="file" id="chatFileInput" multiple style="display:none;">
                         <button class="chat-emoji-btn" id="chatEmojiBtn" onclick="toggleEmojiPicker(event)" title="ایموجی">
                             <i class="bi bi-emoji-smile"></i>
-                        </button>
-                        <textarea class="chat-composer-input" id="chatComposerInput" rows="1" placeholder="پیامی بنویسید..."></textarea>
-                        <button class="chat-send-btn" id="chatSendBtn" onclick="sendChatMessage()">
-                            <i class="bi bi-send-fill"></i>
                         </button>
                     </div>
                 </div>
@@ -2319,40 +2668,60 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             <!-- دراور اطلاعات گروه — دراور جدا از دراور پروفایل مستقیم،
                  چون محتوای خیلی متفاوتی داره (اعضا/آپلود عکس/افزودن عضو) -->
             <div class="chat-profile-drawer-overlay" id="groupInfoDrawerOverlay" onclick="closeGroupInfoDrawer()"></div>
-            <div class="chat-profile-drawer" id="groupInfoDrawer">
-                <div class="chat-profile-drawer-head">
-                    <span id="groupInfoTitle">اطلاعات گروه</span>
-                    <button type="button" class="btn-close" onclick="closeGroupInfoDrawer()"></button>
-                </div>
-                <div class="chat-profile-drawer-body">
-                    <div class="chat-profile-drawer-avatar-wrap">
-                        <div class="chat-group-avatar-wrap" id="groupInfoAvatarWrap" onclick="triggerGroupAvatarUpload()"></div>
+            <div class="chat-profile-drawer chat-gi-drawer" id="groupInfoDrawer">
+                <div class="chat-gi-hero">
+                    <div class="chat-gi-hero-bar">
+                        <button type="button" class="chat-gi-hero-btn" onclick="toggleGroupInfoMenu(event)" id="groupInfoMenuBtn" title="گزینه‌های بیشتر">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <button type="button" class="chat-gi-hero-btn" onclick="closeGroupInfoDrawer()" title="بستن">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
                     </div>
-                    <input type="file" id="groupAvatarFileInput" accept="image/*" style="display:none;" onchange="uploadGroupAvatar(this.files[0])">
+                    <div class="chat-gi-hero-main">
+                        <div class="chat-group-avatar-wrap" id="groupInfoAvatarWrap" onclick="triggerGroupAvatarUpload()"></div>
+                        <div class="chat-gi-hero-text">
+                            <div class="chat-gi-hero-name" id="groupInfoTitle">اطلاعات گروه</div>
+                            <div class="chat-gi-hero-meta">
+                                <span><i class="bi bi-people-fill"></i> <span id="groupInfoMemberCount"></span></span>
+                                <span id="groupInfoOnlineWrap" style="display:none;"><span class="chat-gi-dot online"></span> <span id="groupInfoOnlineCount"></span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="file" id="groupAvatarFileInput" accept="image/*" style="display:none;" onchange="uploadGroupAvatar(this.files[0])">
 
-                    <div class="chat-profile-drawer-field">
-                        <i class="bi bi-bell"></i>
-                        <div class="chat-profile-drawer-label" style="flex:1;">اعلان‌ها</div>
+                <div class="chat-profile-drawer-body chat-gi-body">
+                    <div class="chat-gi-card chat-gi-notif">
                         <label class="chat-toggle-switch">
                             <input type="checkbox" id="groupInfoMuteToggle" onchange="toggleMuteActiveConversation()">
                             <span class="chat-toggle-slider"></span>
                         </label>
+                        <div class="chat-gi-notif-text">
+                            <div class="chat-gi-notif-title">اعلان‌ها</div>
+                            <div class="chat-gi-notif-sub">دریافت اعلان برای پیام‌های جدید</div>
+                        </div>
+                        <div class="chat-gi-icon-box"><i class="bi bi-bell"></i></div>
                     </div>
 
-                    <div class="chat-profile-drawer-media-heading">اعضا</div>
-                    <div id="groupInfoMemberList"></div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary w-100 mt-2" id="groupInfoAddBtn" style="display:none;" onclick="openAddMembersMode()">
-                        <i class="bi bi-person-plus"></i> افزودن عضو
-                    </button>
-
-                    <div class="chat-profile-drawer-media-heading">تصاویر ردوبدل‌شده</div>
-                    <div class="chat-media-grid" id="groupInfoMediaGrid">
-                        <div class="chat-empty-list">در حال بارگذاری...</div>
+                    <div class="chat-gi-card chat-gi-tabs" id="groupInfoTabs">
+                        <button type="button" class="chat-gi-tab active" data-tab="members" onclick="switchGroupInfoTab('members')"><i class="bi bi-people-fill"></i><span>اعضا</span></button>
+                        <button type="button" class="chat-gi-tab" data-tab="media" onclick="switchGroupInfoTab('media')"><i class="bi bi-image"></i><span>رسانه</span></button>
+                        <button type="button" class="chat-gi-tab" data-tab="file" onclick="switchGroupInfoTab('file')"><i class="bi bi-folder"></i><span>فایل</span></button>
+                        <button type="button" class="chat-gi-tab" data-tab="audio" onclick="switchGroupInfoTab('audio')"><i class="bi bi-music-note-beamed"></i><span>موسیقی</span></button>
+                        <button type="button" class="chat-gi-tab" data-tab="link" onclick="switchGroupInfoTab('link')"><i class="bi bi-link-45deg"></i><span>لینک</span></button>
                     </div>
 
-                    <button type="button" class="btn btn-outline-danger btn-sm w-100 mt-3" onclick="confirmLeaveGroup()">
-                        <i class="bi bi-box-arrow-right"></i> خروج از گروه
-                    </button>
+                    <div class="chat-gi-card chat-gi-panel">
+                        <div class="chat-gi-panel-head">
+                            <span id="groupInfoPanelTitle">اعضا</span>
+                            <button type="button" class="chat-gi-add-btn" id="groupInfoAddBtn" style="display:none;" onclick="openAddMembersMode()">
+                                <i class="bi bi-person-plus-fill"></i> افزودن عضو
+                            </button>
+                        </div>
+                        <div id="groupInfoMemberList"></div>
+                        <div id="groupInfoTabContent" style="display:none;"></div>
+                    </div>
                 </div>
             </div>
 
@@ -2580,6 +2949,26 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         <div class="chat-ctx-menu-item danger" id="chatCtxDeleteItem" onclick="deleteFromCtxMenu()">
             <i class="bi bi-trash"></i>
             <span>حذف پیام</span>
+        </div>
+    </div>
+
+    <!-- منوی سه‌نقطهٔ صفحهٔ اطلاعات گروه -->
+    <div class="chat-ctx-menu" id="groupInfoMenu">
+        <div class="chat-ctx-menu-item danger" onclick="leaveGroupFromGroupInfoMenu()">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>ترک گروه</span>
+        </div>
+    </div>
+
+    <!-- منوی سه‌نقطهٔ هدر گروه -->
+    <div class="chat-ctx-menu" id="chatHeadMenu">
+        <div class="chat-ctx-menu-item" onclick="searchFromChatHeadMenu()">
+            <i class="bi bi-search"></i>
+            <span id="chatHeadMenuSearchLabel">جستجو</span>
+        </div>
+        <div class="chat-ctx-menu-item danger" onclick="leaveGroupFromChatHeadMenu()">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>ترک گروه</span>
         </div>
     </div>
 
@@ -2928,6 +3317,63 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }
         }
 
+        // ─────────────── منوی سه‌نقطهٔ هدر گروه ───────────────
+        function toggleChatHeadMenu(e) {
+            e.stopPropagation();
+            var menu = document.getElementById('chatHeadMenu');
+            if (menu.classList.contains('show')) {
+                closeChatHeadMenu();
+                return;
+            }
+            // وقتی نوار جستجو باز است، همین گزینه آن را می‌بندد (در موبایل کلید Esc نداریم)
+            document.getElementById('chatHeadMenuSearchLabel').textContent =
+                document.getElementById('chatMsgSearchBar').classList.contains('show') ? 'بستن جستجو' : 'جستجو';
+            menu.classList.add('show');
+            var r = document.getElementById('chatHeadMenuBtn').getBoundingClientRect();
+            menu.style.top = (r.bottom + 4) + 'px';
+            menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - menu.offsetWidth - 8)) + 'px';
+        }
+
+        function closeChatHeadMenu() {
+            document.getElementById('chatHeadMenu').classList.remove('show');
+        }
+
+        document.addEventListener('click', closeChatHeadMenu);
+
+        function searchFromChatHeadMenu() {
+            closeChatHeadMenu();
+            toggleMsgSearch();
+        }
+
+        function toggleGroupInfoMenu(e) {
+            e.stopPropagation();
+            var menu = document.getElementById('groupInfoMenu');
+            if (menu.classList.contains('show')) {
+                closeGroupInfoMenu();
+                return;
+            }
+            menu.classList.add('show');
+            var r = document.getElementById('groupInfoMenuBtn').getBoundingClientRect();
+            menu.style.top = (r.bottom + 4) + 'px';
+            menu.style.left = Math.max(8, Math.min(r.right - menu.offsetWidth, window.innerWidth - menu.offsetWidth - 8)) + 'px';
+        }
+
+        function closeGroupInfoMenu() {
+            document.getElementById('groupInfoMenu').classList.remove('show');
+        }
+
+        document.addEventListener('click', closeGroupInfoMenu);
+
+        function leaveGroupFromGroupInfoMenu() {
+            closeGroupInfoMenu();
+            confirmLeaveGroup();
+        }
+
+        function leaveGroupFromChatHeadMenu() {
+            closeChatHeadMenu();
+            confirmLeaveGroup();
+        }
+
         function closeMsgSearch() {
             document.getElementById('chatMsgSearchBar').classList.remove('show');
             document.getElementById('chatMsgSearchInput').value = '';
@@ -3169,10 +3615,51 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 });
         }
 
+        // ─────────────── فیلتر نوع گفتگو (همه / شخصی / گروه‌ها) ───────────────
+        // کانال‌ها جزو «گروه‌ها» حساب می‌شوند. انتخاب کاربر در مرورگر خودش می‌ماند.
+        var convFilter = 'all';
+        try {
+            convFilter = localStorage.getItem('chat_conv_filter') || 'all';
+        } catch (e) {}
+        if (['all', 'direct', 'group'].indexOf(convFilter) === -1) convFilter = 'all';
+
+        function convMatchesFilter(c, filter) {
+            if (filter === 'direct') return c.type === 'direct';
+            if (filter === 'group') return c.type !== 'direct';
+            return true;
+        }
+
+        // لیست قابل‌نمایش = فیلتر نوع + جستجوی عنوان (مشترک بین رندر و میانبرهای صفحه‌کلید)
+        function getVisibleConversations() {
+            var term = (document.getElementById('convSearchInput').value || '').trim().toLowerCase();
+            return conversations.filter(c => convMatchesFilter(c, convFilter) && (!term || c.title.toLowerCase().includes(term)));
+        }
+
+        function setConvFilter(filter) {
+            convFilter = filter;
+            try {
+                localStorage.setItem('chat_conv_filter', filter);
+            } catch (e) {}
+            renderConversationList();
+        }
+
+        // دکمهٔ فعال + تعداد گفتگوهای خوانده‌نشده روی هر دکمه
+        function renderConvFilters() {
+            document.querySelectorAll('#convFilters .chat-conv-filter').forEach(function(btn) {
+                var f = btn.getAttribute('data-filter');
+                btn.classList.toggle('active', f === convFilter);
+                var n = conversations.filter(c => c.unread_count > 0 && convMatchesFilter(c, f)).length;
+                var countEl = btn.querySelector('.chat-conv-filter-count');
+                countEl.textContent = n > 99 ? toFa(99) + '+' : toFa(n);
+                countEl.style.display = n > 0 ? '' : 'none';
+            });
+        }
+
         function renderConversationList() {
             var term = (document.getElementById('convSearchInput').value || '').trim().toLowerCase();
             var el = document.getElementById('convList');
-            var list = conversations.filter(c => !term || c.title.toLowerCase().includes(term));
+            var list = getVisibleConversations();
+            renderConvFilters();
 
             if (!list.length) {
                 // ⚠️ اگر کاربر در حال جستجوست، این پیام گمراه‌کننده است — چون این بخش
@@ -3180,7 +3667,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 // جستجوی پیام (اگر باشد) پایین‌تر، در بخش «پیام‌های یافت‌شده» نمایش داده می‌شود
                 el.innerHTML = term
                     ? ''
-                    : '<div class="chat-empty-list">هنوز گفتگویی نیست</div>';
+                    : '<div class="chat-empty-list">' + (convFilter === 'direct'
+                        ? 'هنوز گفتگوی شخصی ندارید'
+                        : convFilter === 'group' ? 'هنوز عضو هیچ گروهی نیستید' : 'هنوز گفتگویی نیست') + '</div>';
                 return;
             }
 
@@ -3328,6 +3817,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             // پروفایل/اطلاعات گروه انجام می‌شه — آیکن‌های جداگانهٔ هدر دیگه لازم نیستن
             document.getElementById('chatMediaGalleryBtn').style.display = 'none';
             document.getElementById('chatMuteToggleBtn').style.display = 'none';
+            // گروه/کانال: سه‌نقطه به‌جای ذره‌بین (جستجو داخل همان منوست)
+            var isGroupConv = activeConversationType !== 'direct';
+            document.getElementById('chatSearchToggleBtn').style.display = isGroupConv ? 'none' : '';
+            document.getElementById('chatHeadMenuBtn').style.display = isGroupConv ? '' : 'none';
+            closeChatHeadMenu();
             var headAvatar = document.getElementById('chatHeadAvatar');
             headAvatar.classList.toggle('online', !!(conv && conv.other_user_is_online));
             setAvatarContent(headAvatar, activeConversationTitle, conv ? conv.avatar_url : (fallbackInfo ? fallbackInfo.avatar_url : null));
@@ -4715,8 +5209,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         // ─────────────── میانبرهای صفحه‌کلید (فقط دسکتاپ) ───────────────
         function navigateConversationList(direction) {
-            var term = (document.getElementById('convSearchInput').value || '').trim().toLowerCase();
-            var list = conversations.filter(c => !term || c.title.toLowerCase().includes(term));
+            var list = getVisibleConversations();
             if (!list.length) return;
             var idx = list.findIndex(c => c.conversation_id === activeConversationId);
             var nextIdx = idx === -1 ? 0 : (idx + direction + list.length) % list.length;
@@ -5316,7 +5809,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('groupInfoMemberList').innerHTML = '<div class="chat-empty-list">در حال بارگذاری...</div>';
             document.getElementById('groupInfoAddBtn').style.display = 'none';
             document.getElementById('groupInfoMuteToggle').checked = !(conv && conv.is_muted);
-            document.getElementById('groupInfoMediaGrid').innerHTML = '<div class="chat-empty-list">در حال بارگذاری...</div>';
+            document.getElementById('groupInfoTitle').textContent = activeConversationTitle;
+            document.getElementById('groupInfoMemberCount').textContent = '';
+            document.getElementById('groupInfoOnlineWrap').style.display = 'none';
+            groupInfoFiles = null;
+            groupInfoLinks = null;
+            switchGroupInfoTab('members');
 
             document.getElementById('groupInfoDrawerOverlay').classList.add('show');
             document.getElementById('groupInfoDrawer').classList.add('show');
@@ -5325,27 +5823,111 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             // نه برعکس. این کلاس رو کلاسِ CSS پایینِ همین فایل می‌خونه.
             document.body.classList.add('chat-drawer-open');
 
-            fetch('../api/chat/media.php?conversation_id=' + convId, {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (convId !== activeConversationId) return;
-                    var grid = document.getElementById('groupInfoMediaGrid');
-                    var images = (data.success ? data.files : []).filter(f => f.is_image);
-                    if (!images.length) {
-                        grid.innerHTML = '<div class="chat-empty-list">هنوز عکسی ردوبدل نشده</div>';
-                        return;
-                    }
-                    grid.innerHTML = images.map(function(f) {
-                        var url = '../api/chat/download.php?id=' + f.id + '&view=1';
-                        return '<div class="chat-media-grid-item" onclick="window.open(\'' + url + '\',\'_blank\')" title="' + esc(f.original_name) + '">' +
-                            '<img src="' + url + '" alt="' + esc(f.original_name) + '"></div>';
-                    }).join('');
-                })
-                .catch(function(err) { console.error('group media fetch error:', err); });
-
             refreshGroupInfoMembers(true);
+        }
+
+        // ─────────────── تب‌های اطلاعات گروه (اعضا / رسانه / فایل / موسیقی / لینک) ───────────────
+        var groupInfoTab = 'members';
+        var groupInfoFiles = null; // فایل‌های گفتگو — یک بار در هر بازکردن دراور گرفته می‌شود
+        var groupInfoLinks = null;
+        var GROUP_INFO_TAB_TITLES = { members: 'اعضا', media: 'رسانه', file: 'فایل', audio: 'موسیقی', link: 'لینک' };
+
+        function switchGroupInfoTab(tab) {
+            groupInfoTab = tab;
+            document.querySelectorAll('#groupInfoTabs .chat-gi-tab').forEach(function(b) {
+                b.classList.toggle('active', b.getAttribute('data-tab') === tab);
+            });
+            document.getElementById('groupInfoPanelTitle').textContent = GROUP_INFO_TAB_TITLES[tab];
+            var isMembers = tab === 'members';
+            document.getElementById('groupInfoMemberList').style.display = isMembers ? '' : 'none';
+            document.getElementById('groupInfoTabContent').style.display = isMembers ? 'none' : '';
+            document.getElementById('groupInfoAddBtn').style.display =
+                isMembers && groupInfoMyPermissions.indexOf('add_member') !== -1 ? '' : 'none';
+            if (isMembers) return;
+
+            var box = document.getElementById('groupInfoTabContent');
+            var convId = activeConversationId;
+            if (tab === 'link') {
+                if (groupInfoLinks) return renderGroupInfoLinks();
+                box.innerHTML = '<div class="chat-empty-list">در حال بارگذاری...</div>';
+                fetch('../api/chat/links.php?conversation_id=' + convId, { headers: { 'Authorization': 'Bearer ' + authToken } })
+                    .then(r => r.json())
+                    .then(function(data) {
+                        if (convId !== activeConversationId) return;
+                        groupInfoLinks = data.success ? data.links : [];
+                        if (groupInfoTab === 'link') renderGroupInfoLinks();
+                    })
+                    .catch(function() { box.innerHTML = '<div class="chat-empty-list">خطا در ارتباط با سرور</div>'; });
+                return;
+            }
+            if (groupInfoFiles) return renderGroupInfoFiles(tab);
+            box.innerHTML = '<div class="chat-empty-list">در حال بارگذاری...</div>';
+            fetch('../api/chat/media.php?conversation_id=' + convId, { headers: { 'Authorization': 'Bearer ' + authToken } })
+                .then(r => r.json())
+                .then(function(data) {
+                    if (convId !== activeConversationId) return;
+                    groupInfoFiles = data.success ? data.files : [];
+                    if (groupInfoTab !== 'members' && groupInfoTab !== 'link') renderGroupInfoFiles(groupInfoTab);
+                })
+                .catch(function() { box.innerHTML = '<div class="chat-empty-list">خطا در ارتباط با سرور</div>'; });
+        }
+
+        // رسانه = عکس و ویدیو، موسیقی = فایل صوتی، فایل = بقیه
+        function groupInfoFileKind(f) {
+            var mime = f.mime_type || '';
+            if (f.is_image || mime.indexOf('video/') === 0) return 'media';
+            if (mime.indexOf('audio/') === 0) return 'audio';
+            return 'file';
+        }
+
+        function renderGroupInfoFiles(tab) {
+            var box = document.getElementById('groupInfoTabContent');
+            var list = groupInfoFiles.filter(f => groupInfoFileKind(f) === tab);
+            if (!list.length) {
+                box.innerHTML = '<div class="chat-empty-list">' + ({
+                    media: 'هنوز عکس یا ویدیویی در این گروه ردوبدل نشده',
+                    file: 'هنوز فایلی در این گروه ردوبدل نشده',
+                    audio: 'هنوز فایل صوتی در این گروه ردوبدل نشده'
+                })[tab] + '</div>';
+                return;
+            }
+            if (tab === 'media') {
+                // ویدیو پیش‌نمایش inline ندارد (download.php فقط عکس را inline می‌دهد) → کاشی با آیکن پخش
+                box.innerHTML = '<div class="chat-media-grid">' + list.map(function(f) {
+                    var url = '../api/chat/download.php?id=' + f.id + (f.is_image ? '&view=1' : '');
+                    var inner = f.is_image
+                        ? '<img src="' + url + '" alt="' + esc(f.original_name) + '">'
+                        : '<div class="chat-gi-video-tile"><i class="bi bi-play-circle-fill"></i></div>';
+                    return '<div class="chat-media-grid-item" onclick="window.open(\'' + url + '\',\'_blank\')" title="' + esc(f.original_name) + '">' + inner + '</div>';
+                }).join('') + '</div>';
+                return;
+            }
+            var icon = tab === 'audio' ? 'bi-music-note-beamed' : 'bi-file-earmark';
+            box.innerHTML = '<div class="chat-media-file-list">' + list.map(function(f) {
+                var dlUrl = '../api/chat/download.php?id=' + f.id;
+                return '<div class="chat-media-file-row" onclick="window.open(\'' + dlUrl + '\',\'_blank\')">' +
+                    '<i class="bi ' + icon + '"></i>' +
+                    '<div class="chat-media-file-info">' +
+                    '<div class="chat-media-file-name">' + esc(f.original_name) + '</div>' +
+                    '<div class="chat-media-file-meta">' + esc(f.uploader_name) + ' — ' + fmtFileSize(f.file_size) + '</div>' +
+                    '</div></div>';
+            }).join('') + '</div>';
+        }
+
+        function renderGroupInfoLinks() {
+            var box = document.getElementById('groupInfoTabContent');
+            if (!groupInfoLinks.length) {
+                box.innerHTML = '<div class="chat-empty-list">هنوز لینکی در این گروه ردوبدل نشده</div>';
+                return;
+            }
+            box.innerHTML = groupInfoLinks.map(function(l) {
+                return '<a class="chat-gi-link-row" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' +
+                    '<div class="chat-gi-icon-box"><i class="bi bi-link-45deg"></i></div>' +
+                    '<div style="min-width:0; flex:1;">' +
+                    '<div class="chat-gi-link-url">' + esc(l.url) + '</div>' +
+                    '<div class="chat-media-file-meta">' + esc(l.sender_name) + ' — ' + esc(formatLastSeen(l.created_at)) + '</div>' +
+                    '</div></a>';
+            }).join('');
         }
 
         // بارگذاری لیست اعضای دراور گروه. brandNew=true فقط زمان بازکردن
@@ -5368,13 +5950,18 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         }
                         return;
                     }
-                    document.getElementById('groupInfoTitle').textContent = activeConversationTitle + ' — ' + toFa(data.members.length) + ' عضو';
+                    document.getElementById('groupInfoTitle').textContent = data.group_title || activeConversationTitle;
+                    document.getElementById('groupInfoMemberCount').textContent = toFa(data.members.length) + ' عضو';
+                    var onlineCount = data.members.filter(m => m.is_online).length;
+                    document.getElementById('groupInfoOnlineCount').textContent = toFa(onlineCount) + ' نفر آنلاین';
+                    document.getElementById('groupInfoOnlineWrap').style.display = onlineCount > 0 ? '' : 'none';
                     groupInfoIsOwner = !!data.is_owner;
                     groupInfoCanManage = !!data.can_manage;
                     groupInfoMyPermissions = data.my_permissions || [];
                     groupInfoAllPermissions = data.all_permissions || [];
                     groupInfoMembersCache = data.members || [];
-                    document.getElementById('groupInfoAddBtn').style.display = groupInfoMyPermissions.indexOf('add_member') !== -1 ? 'block' : 'none';
+                    document.getElementById('groupInfoAddBtn').style.display =
+                        groupInfoTab === 'members' && groupInfoMyPermissions.indexOf('add_member') !== -1 ? '' : 'none';
                     document.getElementById('groupInfoAvatarWrap').innerHTML =
                         avatarHtml(data.group_title || activeConversationTitle, false, 'chat-group-avatar-big', data.group_avatar_url) +
                         (groupInfoMyPermissions.indexOf('avatar') !== -1 ? '<div class="chat-group-avatar-edit-badge"><i class="bi bi-camera-fill"></i></div>' : '');
@@ -5384,8 +5971,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         // 🆕 بج «مدیر» حالا مستقیم از نقش واقعی عضو میاد (نه یک تاگل
                         // نمایشیِ جدا) — آیکن جدای «نمایش بج» حذف شد
                         var roleTag = m.is_owner
-                            ? '<span class="chat-group-owner-tag">سازنده‌ی گروه</span>'
-                            : (m.is_admin ? '<span class="chat-group-owner-tag">مدیر</span>' : '');
+                            ? '<span class="chat-group-owner-tag"><i class="bi bi-gem"></i> سازنده‌ی گروه</span>'
+                            : (m.is_admin ? '<span class="chat-group-owner-tag"><i class="bi bi-shield-fill"></i> مدیر</span>' : '');
+                        var statusHtml = '<div class="chat-gi-member-status">' +
+                            (m.is_online
+                                ? '<span class="chat-gi-dot online"></span> آنلاین'
+                                : '<span class="chat-gi-dot"></span> ' + esc(m.last_seen_at ? formatLastSeen(m.last_seen_at) : 'به‌تازگی دیده نشده')) +
+                            '</div>';
                         // 🆕 ستاره‌ی بنفش: یعنی به این عضو اختیار اختصاصی داده شده —
                         // مستقل از مدیر بودنش (طبق همون تصمیمِ اختیاراتِ مستقل از نقش).
                         // سازنده رو نشون نمی‌ده چون همیشه همه‌ی اختیارات رو داره، نشونش دادن بی‌معنیه
@@ -5405,9 +5997,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                         var canRemove = !m.is_owner && (groupInfoMyPermissions.indexOf('remove_member') !== -1) && (!m.is_admin || data.is_owner);
                         return '<div class="chat-group-member-row">' +
                         '<div' + nameAttrs + '>' + avatarHtml(m.full_name, false, null, m.avatar_url) + '</div>' +
-                        '<span class="chat-group-member-name"' + nameAttrs + '>' + (permStar ? permStar + ' ' : '') + esc(m.full_name) + ' ' +
+                        '<div class="chat-gi-member-info">' +
+                        '<span class="chat-group-member-name"' + nameAttrs + '>' + (permStar ? permStar + ' ' : '') + esc(m.full_name) + '</span>' +
+                        statusHtml +
+                        '</div>' +
                         roleTag +
-                        '</span>' +
                         permBtn +
                         (canRemove
                             ? '<button class="chat-group-member-remove" title="حذف عضو" onclick="removeGroupMember(' + m.id + ')"><i class="bi bi-x-lg"></i></button>'

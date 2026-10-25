@@ -96,10 +96,20 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
     </div>
     <?php include 'footer.php'; ?>
 
+    <div class="quick-actions">
+        <button class="fab" onclick="showNewTaskModal()" title="کار جدید">
+            <i class="bi bi-plus"></i>
+        </button>
+    </div>
+
     <script src="<?= asset('../../assets/js/table-utils.js') ?>"></script>
     <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
     <script src="<?= asset('/assets/js/task-filters.js') ?>"></script>
     <script>
+        function showNewTaskModal() {
+            window.location.href = 'create-task.php';
+        }
+
         let currentPage = 1,
             totalPages = 1,
             allTasks = [],

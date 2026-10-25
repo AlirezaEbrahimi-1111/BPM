@@ -56,9 +56,11 @@ try {
     }
 
     $stmt = $db->prepare("
-        SELECT u.id, u.first_name, u.last_name, u.avatar_path, cp.joined_at, cp.role, cp.permissions, cp.show_admin_badge
+        SELECT u.id, u.first_name, u.last_name, u.avatar_path, cp.joined_at, cp.role, cp.permissions, cp.show_admin_badge,
+               pr.last_seen_at
         FROM chat_participants cp
         JOIN users u ON u.id = cp.user_id AND u.is_active = 1 AND u.is_deleted = 0
+        LEFT JOIN chat_presence pr ON pr.user_id = u.id
         WHERE cp.conversation_id = ?
         ORDER BY (u.id = ?) DESC, cp.joined_at ASC
     ");
@@ -79,7 +81,10 @@ try {
         return is_array($decoded) ? array_values(array_intersect($decoded, CHAT_GROUP_ADMIN_PERMISSIONS)) : [];
     };
 
-    $members = array_map(function ($r) use ($ownerId, $resolvePermissions) {
+    // آستانهٔ آنلاین — هم‌خوان با conversations.php (۶۰ ثانیه از آخرین ping)
+    $onlineThresholdSeconds = 60;
+
+    $members = array_map(function ($r) use ($ownerId, $resolvePermissions, $onlineThresholdSeconds) {
         return [
             'id'          => (int) $r['id'],
             'full_name'   => trim($r['first_name'] . ' ' . $r['last_name']),
@@ -90,6 +95,8 @@ try {
             // چه عضو عادی) می‌تونه این بج رو داشته باشه، بدون هیچ اختیار خاصی
             'show_badge'  => (bool) $r['show_admin_badge'],
             'avatar_url'  => $r['avatar_path'] ?: null,
+            'is_online'    => $r['last_seen_at'] && (time() - strtotime($r['last_seen_at'])) <= $onlineThresholdSeconds,
+            'last_seen_at' => $r['last_seen_at'],
         ];
     }, $rows);
 

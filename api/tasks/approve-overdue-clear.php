@@ -70,8 +70,24 @@ try {
         exit;
     }
 
-    $task_id   = (int) $req['task_id'];
-    $remaining = oc_calc_remaining($db, $req);   // مقدار معتبر در لحظهٔ تأیید
+    $task_id = (int) $req['task_id'];
+
+    // ⚠️ ردیف کامل کار جداگانه خوانده می‌شود: در $req ستون id شمارهٔ *درخواست*
+    //    است (r.*)، نه شمارهٔ کار. قبلا $req مستقیم به موتور داده می‌شد و موتور
+    //    تکمیل‌های یک کار بی‌ربط (کاری با id = شمارهٔ درخواست) را می‌شمرد →
+    //    تقریباً همهٔ دوره‌ها معوقه حساب می‌شدند (مثلا ۴۲ به‌جای ۱).
+    $tStmt = $db->prepare("SELECT * FROM tasks WHERE id = ?");
+    $tStmt->execute([$task_id]);
+    $task = $tStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$task) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'message' => 'کار یافت نشد'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    // بخشش = معوقهٔ واقعی در لحظهٔ تأیید، ولی هرگز بیشتر از تعداد درخواست‌شده
+    // (اگر بین درخواست و تأیید دوره‌های تازه‌ای عقب افتاده باشد، آن‌ها بخشیده نمی‌شوند)
+    $remaining = max(0, min((int) $req['periods_count'], oc_calc_remaining($db, $task)));
 
     $db->beginTransaction();
 
