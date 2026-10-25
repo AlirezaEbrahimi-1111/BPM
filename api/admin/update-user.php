@@ -136,6 +136,21 @@ try {
     // منبع حقیقت هم‌ترازشان می‌کنیم.
     $fields['shift_count'] = ($fields['shift_type'] === 'double') ? 2 : 1;
 
+    // ساعت کاری روزانه هم از خود ساعت‌های شیفت حساب می‌شود، نه عدد فرستاده‌شده:
+    // نسخه‌های قدیمی اپ موبایل آن را به عدد صحیح گرد می‌کردند (۹:۳۰ → ۱۰) و همان
+    // ذخیره می‌شد. دقیقه‌ای دقیق، دو رقم اعشار (DECIMAL(4,2)) — ۱۴۰۵/۰۸/۰۳
+    $__mins = function ($s, $e) {
+        if (!$s || !$e) return 0;
+        [$sh, $sm] = array_map('intval', explode(':', $s) + [0, 0]);
+        [$eh, $em] = array_map('intval', explode(':', $e) + [0, 0]);
+        return max(0, ($eh * 60 + $em) - ($sh * 60 + $sm));
+    };
+    $__total = $__mins($fields['shift_1_start'], $fields['shift_1_end'])
+        + ($fields['shift_type'] === 'double' ? $__mins($fields['shift_2_start'], $fields['shift_2_end']) : 0);
+    if ($__total > 0) {
+        $fields['daily_work_hours'] = round($__total / 60, 2);
+    }
+
     // رمز عبور (اختیاری)
     if (!empty($input['password'])) {
         $auth = new Auth($db);

@@ -125,6 +125,15 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             transition: box-shadow 0.2s ease;
         }
 
+        .stat-tile.clickable {
+            cursor: pointer;
+        }
+
+        .stat-tile.clickable.selected {
+            border-color: #8e57fe;
+            box-shadow: 0 0 0 2px rgba(142, 87, 254, .18);
+        }
+
         .stat-tile:hover {
             box-shadow: var(--shadow-md);
         }
@@ -1100,21 +1109,21 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
         <!-- Stats -->
         <div class="stats-grid">
-            <div class="stat-tile">
-                <div class="stat-icon-wrap blue"><i class="bi bi-play-circle"></i></div>
+            <div class="stat-tile clickable" data-filter-card="active" onclick="setStatusFilterByKey('active')" title="نمایش روتین‌های جاری">
+                <div class="stat-icon-wrap blue"><i class="bi bi-activity"></i></div>
                 <div>
                     <div class="stat-value" id="activeWorkflows">—</div>
-                    <div class="stat-label">در حال اجرا</div>
+                    <div class="stat-label">جاری</div>
                 </div>
             </div>
-            <div class="stat-tile">
+            <div class="stat-tile clickable" data-filter-card="delayed" onclick="setStatusFilterByKey('delayed')" title="نمایش روتین‌های دارای تأخیر">
                 <div class="stat-icon-wrap red"><i class="bi bi-exclamation-triangle"></i></div>
                 <div>
                     <div class="stat-value" id="delayedWorkflows">—</div>
                     <div class="stat-label">دارای تأخیر</div>
                 </div>
             </div>
-            <div class="stat-tile">
+            <div class="stat-tile clickable" data-filter-card="completed" onclick="setStatusFilterByKey('completed')" title="نمایش روتین‌های تکمیل شده">
                 <div class="stat-icon-wrap green"><i class="bi bi-check-circle"></i></div>
                 <div>
                     <div class="stat-value" id="completedWorkflows">—</div>
@@ -1149,9 +1158,6 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             <!-- 🆕 پیش‌فرض صفحه: روتین‌های جاری = در حال اجرا + دارای تأخیر (نه تکمیل/لغو) -->
             <button class="filter-pill active" data-filter="active" onclick="setStatusFilter('active', this)">
                 <i class="bi bi-activity"></i>جاری
-            </button>
-            <button class="filter-pill" data-filter="in_progress" onclick="setStatusFilter('in_progress', this)">
-                <i class="bi bi-play"></i>در حال اجرا
             </button>
             <button class="filter-pill" data-filter="delayed" onclick="setStatusFilter('delayed', this)">
                 <i class="bi bi-exclamation-triangle"></i>دارای تأخیر
@@ -1194,6 +1200,23 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                             oninput="filterDropdownList('section', this.value)">
                     </div>
                     <div class="filter-dropdown-list" id="sectionDropdownList">
+                        <div class="filter-dropdown-empty">در حال بارگذاری...</div>
+                    </div>
+                </div>
+            </div>
+            <!-- فیلتر ایجادکنندهٔ روتین (فهرست از خود روتین‌های لیست ساخته می‌شود) -->
+            <div class="filter-dropdown-wrap" id="creatorDropdownWrap">
+                <button class="filter-dropdown-btn" id="creatorDropdownBtn" onclick="toggleDropdown('creator')">
+                    <i class="bi bi-person"></i>
+                    <span id="creatorDropdownLabel">ایجادکننده</span>
+                    <span class="caret">▾</span>
+                </button>
+                <div class="filter-dropdown-menu" id="creatorDropdownMenu">
+                    <div class="filter-dropdown-search">
+                        <input type="text" placeholder="جستجوی نام..." id="creatorSearchInput"
+                            oninput="filterDropdownList('creator', this.value)">
+                    </div>
+                    <div class="filter-dropdown-list" id="creatorDropdownList">
                         <div class="filter-dropdown-empty">در حال بارگذاری...</div>
                     </div>
                 </div>
@@ -1293,6 +1316,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         if (currentFilter !== DEFAULT_FILTER) {
             document.querySelectorAll('.filter-pill').forEach(b => b.classList.toggle('active', b.dataset.filter === currentFilter));
         }
+        document.addEventListener('DOMContentLoaded', () => syncStatCards());
         // نقش کاربر — فقط مدیریت/سرپرست دکمهٔ حذف ببینند
         let isManagerUser = false;
         try {
@@ -1305,6 +1329,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         let currentRoutine = null; // id روتین انتخاب‌شده
         let _hideCompletedFromUrl = false; // وقتی از داشبورد با template آمده‌ایم
         let currentSection = null; // key واحد انتخاب‌شده
+        let currentCreator = null; // id ایجادکنندهٔ انتخاب‌شده
         let onlyMyRoutines = false; // فیلتر: فقط روتین‌های ساخته‌ی من
         // شناسه و واحدهای کاربر جاری (برای تشخیص نقش‌ها) — چندواحدی: فهرست
         // کامل، نه فقط واحد اصلی، وگرنه آیکن «این روتین مال واحد شماست» برای
@@ -1342,7 +1367,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         function loadStats() {
             const list = allWorkflows || [];
             const count = s => list.filter(w => w.status === s).length;
-            document.getElementById('activeWorkflows').textContent = toFa(count('in_progress'));
+            // «جاری» = در حال اجرا + دارای تأخیر — همان فرمول فیلتر «جاری»
+            document.getElementById('activeWorkflows').textContent = toFa(count('in_progress') + count('delayed'));
             document.getElementById('delayedWorkflows').textContent = toFa(count('delayed'));
             document.getElementById('completedWorkflows').textContent = toFa(count('completed'));
         }
@@ -1375,6 +1401,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 if (data.success) {
                     allWorkflows = data.workflows || [];
                     loadStats();
+                    buildCreatorList();
                     updateAvgProgress();
 
                     // 🆕 اگر با ?template=ID آمده‌ایم، همان روتین را فیلتر کن (یک‌بار)
@@ -1414,6 +1441,54 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             _hideCompletedFromUrl = false; // 🆕 کاربر دستی وضعیت انتخاب کرد، محدودیت برداشته شود
             document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
             if (btn) btn.classList.add('active');
+            syncStatCards();
+            updateResetBtn();
+            applyFilter();
+        }
+
+        // کلیک روی کارت‌های بالا = همان دکمهٔ فیلتر هم‌نام
+        function setStatusFilterByKey(key) {
+            setStatusFilter(key, document.querySelector('.filter-pill[data-filter="' + key + '"]'));
+        }
+
+        function syncStatCards() {
+            document.querySelectorAll('.stat-tile[data-filter-card]').forEach(t =>
+                t.classList.toggle('selected', t.dataset.filterCard === currentFilter));
+        }
+
+        /* ─── فیلتر ایجادکننده ─── */
+        function buildCreatorList() {
+            const byId = {};
+            (allWorkflows || []).forEach(w => {
+                if (!w.created_by) return;
+                const name = ((w.creator_first_name || '') + ' ' + (w.creator_last_name || '')).trim() || ('کاربر ' + w.created_by);
+                byId[w.created_by] = name;
+            });
+            const items = Object.entries(byId).sort((a, b) => a[1].localeCompare(b[1], 'fa'));
+            const list = document.getElementById('creatorDropdownList');
+            if (!items.length) {
+                list.innerHTML = '<div class="filter-dropdown-empty">ایجادکننده‌ای نیست</div>';
+                return;
+            }
+            list.innerHTML = items.map(([id, name]) => `
+                <div class="filter-dropdown-item${String(currentCreator) === String(id) ? ' selected' : ''}" data-id="${esc(id)}"
+                     onclick="selectCreator('${escJsAttr(id)}', '${escJsAttr(name)}')">
+                    <i class="bi bi-person" style="font-size:0.85rem;color:var(--gray-500);"></i>
+                    ${esc(name)}
+                    <i class="bi bi-check check-icon"></i>
+                </div>
+            `).join('');
+        }
+
+        function selectCreator(id, name) {
+            currentCreator = id;
+            document.getElementById('creatorDropdownLabel').textContent = name;
+            document.getElementById('creatorDropdownBtn').classList.add('active');
+            document.querySelectorAll('#creatorDropdownList .filter-dropdown-item').forEach(item => {
+                item.classList.toggle('selected', item.dataset.id === String(id));
+            });
+            document.getElementById('creatorDropdownMenu').classList.remove('show');
+            document.getElementById('creatorDropdownBtn').classList.remove('open');
             updateResetBtn();
             applyFilter();
         }
@@ -1484,6 +1559,11 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             // فیلتر واحد — فقط روتین‌هایی که مرحله فعلی‌شان از این بخش است
             if (currentSection !== null) {
                 list = list.filter(w => w.current_section === currentSection);
+            }
+
+            // فیلتر ایجادکننده
+            if (currentCreator !== null) {
+                list = list.filter(w => String(w.created_by) === String(currentCreator));
             }
 
             // فیلتر «روتین‌های من» — فقط روتین‌هایی که خودم ساخته‌ام
@@ -1562,6 +1642,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             _hideCompletedFromUrl = false; // 🆕 محدودیت داشبورد هم برداشته شود
             currentRoutine = null;
             currentSection = null;
+            currentCreator = null;
             onlyMyRoutines = false; // 🆕 پاک‌کردن فیلتر «روتین‌های من»
             searchQuery = ''; // 🆕 پاک کردن سرچ
 
@@ -1572,7 +1653,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             document.getElementById('routineDropdownBtn').classList.remove('active');
             document.getElementById('sectionDropdownLabel').textContent = 'واحد';
             document.getElementById('sectionDropdownBtn').classList.remove('active');
+            document.getElementById('creatorDropdownLabel').textContent = 'ایجادکننده';
+            document.getElementById('creatorDropdownBtn').classList.remove('active');
             document.querySelectorAll('.filter-dropdown-item').forEach(i => i.classList.remove('selected'));
+            syncStatCards();
 
             // 🆕 پاک کردن فیلد سرچ
             document.getElementById('searchInput').value = '';
@@ -1583,7 +1667,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
 
         function updateResetBtn() {
-            const hasExtra = currentRoutine !== null || currentSection !== null || currentFilter !== DEFAULT_FILTER || onlyMyRoutines || searchQuery.length > 0; // 🆕
+            const hasExtra = currentRoutine !== null || currentSection !== null || currentCreator !== null || currentFilter !== DEFAULT_FILTER || onlyMyRoutines || searchQuery.length > 0; // 🆕
             document.getElementById('resetFiltersBtn').style.display = hasExtra ? 'inline-flex' : 'none';
         }
 

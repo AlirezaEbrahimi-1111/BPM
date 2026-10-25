@@ -859,7 +859,7 @@ if (!hasPermission($__me, 'manage_users')) {
                             <div class="col-md-6">
                                 <label class="form-label">ساعت کاری روزانه</label>
                                 <input type="number" class="form-control bg-light" id="e_daily_work_hours" readonly>
-                                <div class="form-text">محاسبه خودکار از ساعات شیفت</div>
+                                <div class="form-text" id="e_daily_work_hours_label">محاسبه خودکار از ساعات شیفت</div>
                             </div>
 
                             <div class="col-12">
@@ -1240,6 +1240,11 @@ if (!hasPermission($__me, 'manage_users')) {
             if (isDouble && s2 && e2) total += Math.max(0, toMin(e2) - toMin(s2));
 
             document.getElementById('e_daily_work_hours').value = total > 0 ? Math.round(total / 60 * 100) / 100 : '';
+            // نمایش دقیق «۹ ساعت و ۳۰ دقیقه» کنار عدد اعشاری
+            const h = Math.floor(total / 60), m = total % 60;
+            document.getElementById('e_daily_work_hours_label').textContent = total > 0
+                ? toFa(m ? (h ? `${h} ساعت و ${m} دقیقه` : `${m} دقیقه`) : `${h} ساعت`)
+                : 'محاسبه خودکار از ساعات شیفت';
         }
         /* ── ag-Grid setup ── */
         function initGrid() {
