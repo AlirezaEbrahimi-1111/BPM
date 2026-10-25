@@ -169,5 +169,98 @@ return [
             $a->equals('2026-07-06', pe_periodOf($periods, '2026-07-20'));
         },
 
+        // ═══════════════════════════════════════════════
+        //  روزهای خاص هفته (weekdays) — ۰=یکشنبه ۱=دوشنبه ۴=پنجشنبه
+        //  ۲۰۲۶-۰۷-۱۵ چهارشنبه | ۱۶ پنجشنبه | ۱۹ یکشنبه | ۲۰ دوشنبه
+        // ═══════════════════════════════════════════════
+
+        'روزهای خاص هفته — شروع چهارشنبه، اولین دوره پنجشنبه' => function (Assert $a) {
+            $dates = pe_periodDates('weekdays', new DateTime('2026-07-15'), new DateTime('2026-07-27'), [], null, ['weekdays' => [0, 1, 4]]);
+            $a->equals(['2026-07-16', '2026-07-19', '2026-07-20', '2026-07-23', '2026-07-26', '2026-07-27'], $dates);
+        },
+
+        'روزهای خاص هفته — روز انتخابیِ تعطیل دوره ندارد' => function (Assert $a) {
+            $dates = pe_periodDates('weekdays', new DateTime('2026-07-15'), new DateTime('2026-07-23'), ['2026-07-19' => true], null, ['weekdays' => [0, 1, 4]]);
+            $a->equals(['2026-07-16', '2026-07-20', '2026-07-23'], $dates);
+        },
+
+        'روزهای خاص هفته — endDate و بدون روز انتخابی' => function (Assert $a) {
+            $a->equals(['2026-07-16', '2026-07-19'], pe_periodDates('weekdays', new DateTime('2026-07-15'), new DateTime('2026-07-31'), [], '2026-07-19', ['weekdays' => [0, 1, 4]]));
+            $a->equals([], pe_periodDates('weekdays', new DateTime('2026-07-15'), new DateTime('2026-07-31'), [], null, ['weekdays' => []]));
+        },
+
+        'روزهای خاص هفته — دورهٔ بعد از تعطیلی رد می‌شود' => function (Assert $a) {
+            $o = ['weekdays' => [0, 1, 4]];
+            $a->equals('2026-07-19', pe_nextPeriodAfter('weekdays', '2026-07-16', [], null, $o));
+            $a->equals('2026-07-20', pe_nextPeriodAfter('weekdays', '2026-07-16', ['2026-07-19' => true], null, $o));
+        },
+
+        'روزهای خاص هفته — جمعه و مقدار نامعتبر کنار گذاشته می‌شوند' => function (Assert $a) {
+            $a->equals([0, 1, 4], pe_parseWeekdays('4,0,5,1,1,9,x'));
+        },
+
+        // ═══════════════════════════════════════════════
+        //  هر N روز (interval)
+        // ═══════════════════════════════════════════════
+
+        'هر ۹ روز — از تاریخ شروع، روز تقویمی' => function (Assert $a) {
+            $dates = pe_periodDates('interval', new DateTime('2026-07-11'), new DateTime('2026-08-10'), [], null, ['interval_days' => 9]);
+            $a->equals(['2026-07-11', '2026-07-20', '2026-07-29', '2026-08-07'], $dates);
+        },
+
+        'هر N روز — بیرون از ۲..۳۶۵ هیچ دوره‌ای نمی‌سازد' => function (Assert $a) {
+            $a->equals([], pe_periodDates('interval', new DateTime('2026-07-11'), new DateTime('2026-08-10'), [], null, ['interval_days' => 1]));
+            $a->equals([], pe_periodDates('interval', new DateTime('2026-07-11'), new DateTime('2026-08-10'), [], null, ['interval_days' => 400]));
+            $a->equals('2026-07-29', pe_nextPeriodAfter('interval', '2026-07-20', [], null, ['interval_days' => 9]));
+        },
+
+        // ═══════════════════════════════════════════════
+        //  pe_state با دو الگوی تازه (تکمیل‌ها از نقشهٔ ازپیش‌واکشی‌شده — بدون دیتابیس)
+        // ═══════════════════════════════════════════════
+
+        'وضعیت weekdays — پیش از اولین روز انتخابی: موعد = پنجشنبه، تکمیل ممنوع' => function (Assert $a) {
+            $task = ['id' => 1, 'task_type' => 'continuous', 'start_date' => '2026-07-15', 'period_type' => 'weekdays', 'period_weekdays' => '0,1,4'];
+            $st = pe_state(new PDO('sqlite::memory:'), $task, [], '2026-07-15', [1 => []]);
+            $a->equals('2026-07-16', $st['next_due_date']);
+            $a->equals(false, $st['can_complete']);
+        },
+
+        'وضعیت weekdays — یکشنبهٔ جامانده معوقه، دورهٔ دوشنبه انجام‌شده' => function (Assert $a) {
+            $task = ['id' => 1, 'task_type' => 'continuous', 'start_date' => '2026-07-15', 'period_type' => 'weekdays', 'period_weekdays' => '0,1,4'];
+            $st = pe_state(new PDO('sqlite::memory:'), $task, [], '2026-07-21', [1 => ['2026-07-16', '2026-07-20']]);
+            $a->equals('2026-07-20', $st['current_period_date']);
+            $a->equals(1, $st['overdue_periods']);
+            $a->equals(true, $st['is_today_done']);
+            $a->equals('2026-07-23', $st['next_due_date']);
+            $a->equals(false, $st['can_complete']);
+        },
+
+        'وضعیت interval — تکمیل داخل بازهٔ ۹ روزه دوره را می‌بندد' => function (Assert $a) {
+            $task = ['id' => 2, 'task_type' => 'continuous', 'start_date' => '2026-07-11', 'period_type' => 'interval', 'period_interval_days' => 9];
+            $st = pe_state(new PDO('sqlite::memory:'), $task, [], '2026-07-25', [2 => ['2026-07-14']]);
+            $a->equals('2026-07-20', $st['current_period_date']);
+            $a->equals(0, $st['overdue_periods']);
+            $a->equals(true, $st['can_complete']);
+        },
+
+        // ═══════════════════════════════════════════════
+        //  اعتبارسنجی ورودی و برچسب
+        // ═══════════════════════════════════════════════
+
+        'اعتبارسنجی الگو — خطاها و یکدست‌سازی' => function (Assert $a) {
+            $a->equals(null, pe_normalizePeriodInput(['period_type' => 'weekdays', 'period_weekdays' => [4, 0, 1]])['error']);
+            $a->equals('0,1,4', pe_normalizePeriodInput(['period_type' => 'weekdays', 'period_weekdays' => '4,0,1,5'])['period_weekdays']);
+            $a->equals(true, pe_normalizePeriodInput(['period_type' => 'weekdays', 'period_weekdays' => '5'])['error'] !== null);
+            $a->equals(true, pe_normalizePeriodInput(['period_type' => 'interval', 'period_interval_days' => 1])['error'] !== null);
+            $r = pe_normalizePeriodInput(['period_type' => 'daily', 'period_weekdays' => '0,1', 'period_interval_days' => 9]);
+            $a->equals([null, null], [$r['period_weekdays'], $r['period_interval_days']]);
+            $a->equals(true, pe_normalizePeriodInput(['period_type' => 'hourly'])['error'] !== null);
+        },
+
+        'برچسب الگو — ترتیب هفتهٔ ایرانی' => function (Assert $a) {
+            $a->equals('یکشنبه، دوشنبه و پنجشنبه', pe_periodLabel(['period_type' => 'weekdays', 'period_weekdays' => '4,1,0']));
+            $a->equals('شنبه و یکشنبه', pe_periodLabel(['period_type' => 'weekdays', 'period_weekdays' => '0,6']));
+            $a->equals('هر 9 روز', pe_periodLabel(['period_type' => 'interval', 'period_interval_days' => 9]));
+        },
     ],
 ];
