@@ -71,7 +71,7 @@ try {
 
     $today    = date('Y-m-d');
     $now      = date('Y-m-d H:i:s');
-    $holidays = getHolidaySet($db);
+    $holidays = getHolidaySet($db, $org_id);
 
     // انباشتگر: کلید = "user:ID" یا "section:NAME"
     // مقدار = ['type'=>..., 'name'=>..., 'periodic'=>0, 'continuous'=>0, 'workflow'=>0]

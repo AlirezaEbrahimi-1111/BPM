@@ -114,6 +114,16 @@ class TaskManager
                 }
             }
 
+            // الگوی تکرار (روزانه/هفتگی/ماهانه/روزهای خاص هفته/هر N روز) — همین‌جا برای
+            // create.php و create-bulk.php هر دو؛ برای کار مقطعی همهٔ ستون‌های دوره NULL
+            $period = ['period_type' => null, 'period_weekdays' => null, 'period_interval_days' => null];
+            if ($data['task_type'] === 'continuous') {
+                $period = pe_normalizePeriodInput($data);
+                if ($period['error']) {
+                    return ['success' => false, 'message' => $period['error']];
+                }
+            }
+
             // 🔒 خط قرمز: مسئول کار باید از همان سازمان تعریف‌کننده باشد، وگرنه
             // می‌شود کاری را مستقیما به کاربر سازمان کاملا دیگری واگذار کرد
             if (!empty($data['assignee_id']) && (int)$data['assignee_id'] !== (int)$creator_id) {
@@ -138,6 +148,8 @@ class TaskManager
                     start_date, 
                     end_date,
                     period_type,
+                    period_weekdays,
+                    period_interval_days,
                     deadline,
                     original_deadline,
                     has_pending_deadline_request,
@@ -146,7 +158,7 @@ class TaskManager
                     group_id,
                     checklist_auto_complete
                 ) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, 0, 'not_started',?,?,?)";
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'not_started',?,?,?)";
 
             $stmt = $this->db->prepare($sql);
             $result = $stmt->execute([
@@ -160,7 +172,9 @@ class TaskManager
                 $data['due_date'] ?? null,
                 $data['start_date'] ?? null,
                 $data['end_date'] ?? null,
-                $data['period_type'] ?? null,
+                $period['period_type'],
+                $period['period_weekdays'],
+                $period['period_interval_days'],
                 $deadline,
                 $original_deadline,
                 $organization_id,
@@ -272,7 +286,7 @@ class TaskManager
         if ($task['task_type'] === 'continuous') {
 
             // ✅ موتور مشترک — تنها مرجع محاسبهٔ دوره
-            $holidays = getHolidaySet($this->db);
+            $holidays = getHolidaySet($this->db, (isset($task['organization_id']) ? (int) $task['organization_id'] : null));
             $state    = pe_state($this->db, $task, $holidays);
 
             // 🔒 محافظ: دورهٔ امروز نباید دو بار بسته شود
@@ -404,7 +418,7 @@ class TaskManager
                 // می‌بیند و اشتباها دورهٔ همان روز تأیید را «انجام‌شده» حساب می‌کند؛
                 // نتیجه: دورهٔ واقعی آن روز قفل می‌ماند و کاربر نمی‌تواند تکمیلش بزند.
                 if ($task['task_type'] === 'continuous') {
-                    $holidays = getHolidaySet($this->db);
+                    $holidays = getHolidaySet($this->db, (isset($task['organization_id']) ? (int) $task['organization_id'] : null));
                     $state    = pe_state($this->db, $task, $holidays);
 
                     if (!$state['can_complete']) {
@@ -1806,7 +1820,7 @@ class TaskManager
             ");
             $stmt->execute([$user_id, $user_id]);
 
-            $holidays = getHolidaySet($this->db);
+            $holidays = getHolidaySetForUser($this->db, (int) $user_id);
             foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $t) {
                 if (pe_state($this->db, $t, $holidays)['overdue_periods'] > 0) {
                     $stats['overdue']++;

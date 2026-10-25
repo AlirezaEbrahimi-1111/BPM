@@ -56,10 +56,10 @@ func MyTasks(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// my-tasks.php عمدا getHolidaySet($db) رو بدون org_id صدا می‌زنه —
-		// یعنی فقط تعطیلات سراسری (organization_id IS NULL) رو می‌بینه، نه
-		// تعطیلات مخصوص سازمان کاربر. اینجا هم دقیقا همون رفتار (nil) تکرار می‌شه.
-		holidays, err := core.HolidaySet(db, nil)
+		// تعطیلات سازمان کاربر (سراسری + مخصوص سازمان − روزهای کاری‌شده) —
+		// هم‌خوان با my-tasks.php که حالا getHolidaySet($db, $org) صدا می‌زند
+		holidayOrg := orgID.Int64
+		holidays, err := core.HolidaySet(db, &holidayOrg)
 		if err != nil {
 			core.WriteErr(w, http.StatusInternalServerError, "خطای سرور")
 			return
@@ -80,6 +80,8 @@ SELECT DISTINCT
     t.end_date,
     t.last_approved_date,
     t.period_type,
+    t.period_weekdays,
+    t.period_interval_days,
     t.overdue_forgiven_credit,
     t.is_pending_approval,
     t.has_pending_renewal_request,

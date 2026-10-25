@@ -89,7 +89,7 @@ function userBlockingTasks(PDO $db, int $userId, ?string $today = null): array
     }
 
     // ── ۳) کارهای دوره‌ای (continuous) — با موتورِ دوره‌ای ──
-    $holidays = getHolidaySet($db);
+    $holidays = getHolidaySetForUser($db, $userId);
     $st = $db->prepare("
         SELECT t.* FROM tasks t
         WHERE t.assignee_id = ? AND t.is_deleted = 0

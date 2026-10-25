@@ -242,12 +242,9 @@ try {
     }
 
     // تعطیلات
-    $stmt = $db->prepare("SELECT holiday_date, title FROM holidays WHERE holiday_date >= ? AND holiday_date <= ?");
-    $stmt->execute([$start_of_month, $end_of_month]);
-    $holidays = [];
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $h) {
-        $holidays[$h['holiday_date']] = $h['title'];
-    }
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+    // سراسری + مخصوص همین سازمان − روزهای کاری‌شده (قبلا بدون فیلتر سازمان)
+    $holidays = getHolidayTitleMap($db, (int) $user['organization_id'], $start_of_month, $end_of_month);
 
     $member_ids = array_column($team_members, 'id');
     $attendance_data = [];

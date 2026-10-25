@@ -274,12 +274,8 @@ if ($user_id) {
         ? $user['monthly_salary'] / $salary_divisor_days / $user['daily_work_hours'] : 0;
 
     // تعطیلات
-    $stmt = $db->prepare("SELECT holiday_date FROM holidays WHERE holiday_date >= ? AND holiday_date <= ?");
-    $stmt->execute([$start_of_month, $end_of_month]);
-    $holiday_dates = [];
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $h) {
-        $holiday_dates[$h['holiday_date']] = true;
-    }
+    // سراسری + مخصوص سازمان کاربر − روزهای کاری‌شده (قبلا بدون فیلتر سازمان)
+    $holiday_dates = array_fill_keys(array_keys(getHolidayTitleMap($db, userOrganizationId($db, (int) $user_id), $start_of_month, $end_of_month)), true);
 
     // همه درخواست‌ها برای محاسبه پوشش کسری
     $all_requests_for_calc = [];

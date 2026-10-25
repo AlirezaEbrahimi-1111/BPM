@@ -101,12 +101,9 @@ try {
     }
 
     // تعطیلات بازه
-    $stmt = $db->prepare("SELECT holiday_date, title FROM holidays WHERE holiday_date >= ? AND holiday_date <= ?");
-    $stmt->execute([$start_of_month, $end_of_month]);
-    $holiday_dates = [];
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $h) {
-        $holiday_dates[$h['holiday_date']] = $h['title'];
-    }
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+    // سراسری + مخصوص همین سازمان − روزهای کاری‌شده (قبلا بدون فیلتر سازمان)
+    $holiday_dates = getHolidayTitleMap($db, $organization_id, $start_of_month, $end_of_month);
 
     // محاسبهٔ کامل + جزئیات روزانه (with_days = true)
     $rep = sc_computeUserSalaryReport($db, $u, $start_of_month, $end_of_month, $today, $app_settings, $holiday_dates, true);

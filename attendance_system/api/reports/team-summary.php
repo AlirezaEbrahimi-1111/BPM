@@ -282,12 +282,9 @@ if (!empty($all_user_ids)) {
 error_log("👥 Found " . count($users) . " active users");
 
 // تعطیلات
-$stmt = $db->prepare("SELECT holiday_date, title FROM holidays WHERE holiday_date >= ? AND holiday_date <= ?");
-$stmt->execute([$start_date, $end_date]);
-$holiday_dates = [];
-foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $h) {
-    $holiday_dates[$h['holiday_date']] = $h['title'];
-}
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+// سراسری + مخصوص همین سازمان − روزهای کاری‌شده (قبلا بدون فیلتر سازمان)
+$holiday_dates = getHolidayTitleMap($db, (int) $user['organization_id'], $start_date, $end_date);
 
 // تابع محاسبه overlap بین دو بازه زمانی
 function calculateOverlapMinutes($slot_start, $slot_end, $req_start, $req_end) {

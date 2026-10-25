@@ -309,14 +309,16 @@ if (!hasPermission($__me, 'view_org_settings')) {
                 const isHoliday = holidays[dateStr];
                 const isToday = (currentYear === todayJY && currentMonth === todayJM && day === todayJD);
 
+                const isOrgWorking = !!(isHoliday && isHoliday.org_working_day);
                 if (isFriday) dayEl.classList.add('friday');
-                if (isHoliday) dayEl.classList.add('holiday');
+                if (isHoliday && !isOrgWorking) dayEl.classList.add('holiday');
+                if (isOrgWorking) dayEl.classList.add('org-working');
                 if (isToday) dayEl.classList.add('today');
 
                 dayEl.innerHTML = `
                     <span class="day-number">${toFa(day)}</span>
-                    ${isHoliday ? `<span class="day-label">${esc(isHoliday.title)}${isHoliday.type === 'weekly' ? ' 🔁' : ''}</span>` : ''}
-                    ${isHoliday ? '<div class="holiday-indicator"></div>' : ''}
+                    ${isHoliday ? `<span class="day-label">${isOrgWorking ? 'کاری برای ما' : esc(isHoliday.title) + (isHoliday.type === 'weekly' ? ' 🔁' : '')}</span>` : ''}
+                    ${isHoliday && !isOrgWorking ? '<div class="holiday-indicator"></div>' : ''}
                 `;
 
                 dayEl.dataset.date = dateStr;
@@ -372,8 +374,15 @@ if (!hasPermission($__me, 'view_org_settings')) {
                             <span class="badge ${h.is_global ? 'bg-primary' : 'bg-secondary'}" style="font-size:.65rem;">
                                 ${h.is_global ? 'سراسری' : 'سازمان من'}
                             </span>
+                            ${h.org_working_day ? '<span class="badge bg-success" style="font-size:.65rem;">روز کاری برای سازمان شما</span>' : ''}
                         </span>
                     </div>
+                    ${h.can_override ? `
+                    <button class="holiday-override-btn" onclick="toggleOrgWorkingDay('${h.date}', ${h.org_working_day ? 'false' : 'true'})"
+                            title="${h.org_working_day ? 'برگرداندن به تعطیل برای سازمان ما' : 'برای سازمان ما روز کاری باشد'}">
+                        <i class="bi ${h.org_working_day ? 'bi-arrow-counterclockwise' : 'bi-briefcase'}"></i>
+                        <span>${h.org_working_day ? 'برگرداندن به تعطیل' : 'روز کاری برای ما'}</span>
+                    </button>` : ''}
                     ${h.can_delete ? `
                     <button class="holiday-delete-btn" onclick="deleteHoliday(${h.id}, ${h.type === 'weekly'})" title="حذف">
                         <i class="bi bi-trash"></i>
@@ -402,6 +411,10 @@ if (!hasPermission($__me, 'view_org_settings')) {
         // ============================================
         function handleDayClick(dateStr, jalaliStr, isFriday, existingHoliday) {
             if (existingHoliday) {
+                if (!existingHoliday.can_delete && existingHoliday.can_override) {
+                    toggleOrgWorkingDay(dateStr, !existingHoliday.org_working_day);
+                    return;
+                }
                 if (!existingHoliday.can_delete) {
                     showToast('شما اجازهٔ حذف این تعطیلی را ندارید', 'info');
                     return;
@@ -515,6 +528,36 @@ if (!hasPermission($__me, 'view_org_settings')) {
             } finally {
                 showLoading(false);
             }
+        }
+
+        // ============================================
+        // تعطیلی رسمی ↔ روز کاری (فقط برای سازمان خودمان)
+        // ============================================
+        function toggleOrgWorkingDay(dateStr, makeWorking) {
+            const msg = makeWorking
+                ? 'این تعطیلی رسمی فقط برای سازمان شما روز کاری می‌شود (برای سازمان‌های دیگر تعطیل می‌ماند). غیبت، تأخیر کارها و حقوق این روز مثل یک روز کاری عادی حساب می‌شود و برای همهٔ کارکنان اعلان فرستاده می‌شود. ادامه می‌دهید؟'
+                : 'این روز برای سازمان شما دوباره تعطیل رسمی می‌شود و برای همهٔ کارکنان اعلان فرستاده می‌شود. ادامه می‌دهید؟';
+            uiConfirm(msg, async function () {
+                showLoading(true);
+                try {
+                    const response = await fetch('/api/holidays/override.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                        body: JSON.stringify({ holiday_date: dateStr, action: makeWorking ? 'working' : 'holiday' })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        loadHolidays();
+                    } else {
+                        showToast(data.message || 'خطا', 'error');
+                    }
+                } catch (error) {
+                    showToast('خطا در ارتباط با سرور', 'error');
+                } finally {
+                    showLoading(false);
+                }
+            }, { yesText: makeWorking ? 'بله، روز کاری شود' : 'بله، تعطیل شود', noText: 'انصراف' });
         }
 
         // ============================================

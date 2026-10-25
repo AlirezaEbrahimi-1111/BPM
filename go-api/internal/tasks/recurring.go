@@ -32,6 +32,8 @@ func MaybeStartNextPeriod(db *sql.DB, task map[string]any, today string, holiday
 		EndDate:               strOf(task, "end_date"),
 		PeriodType:            strOf(task, "period_type"),
 		OverdueForgivenCredit: int(int64Of(task, "overdue_forgiven_credit")),
+		PeriodWeekdays:        strOf(task, "period_weekdays"),
+		PeriodIntervalDays:    int(int64Of(task, "period_interval_days")),
 	}
 	state := core.PeStateCalc(db, st, holidays, today, preloadedCompletionMap)
 

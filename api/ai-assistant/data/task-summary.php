@@ -169,7 +169,7 @@ try {
 
     // برای enrichTaskDates()/pe_state() — همون الگوی بقیه‌ی ماژول کارها
     // (بدون organization_id، طبق رفتار فعلی سراسری این ماژول)
-    $holidays = getHolidaySet($db);
+    $holidays = getHolidaySet($db, (int) $requester['organization_id']);
 
     // ─── فهرست کارهایی که هدف در آن‌ها هنوز «ارجاع‌دهنده‌ی فعال» است (برای برچسب نقش) ───
     $stmt = $db->prepare("

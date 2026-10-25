@@ -63,7 +63,7 @@ try {
         $tasks = $taskManager->getCreatedTasks($user_id);
     }
 
-    $holidays = getHolidaySet($db);
+    $holidays = getHolidaySetForUser($db, (int) $user_id);
     $today = date('Y-m-d');
 
     // اضافه کردن تعداد تکمیل‌ها + اعتبار بخشش معوقه به هر کار

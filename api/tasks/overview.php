@@ -19,7 +19,7 @@ try {
     // enrichTaskDates() → pe_state() در includes/period-engine.php.
     function attachContinuousFields($db, &$tasks, $user_id)
     {
-        $holidays = getHolidaySet($db);
+        $holidays = getHolidaySetForUser($db, (int) $user_id);
         $today = date('Y-m-d');
 
         // 🆕 به‌جای یک کوئری به task_history به‌ازای هر تسک دوره‌ای (مشکل N+1 که
@@ -226,7 +226,7 @@ try {
                 t.id, t.title, t.description, t.task_type, t.priority, t.status,
                 t.due_date, t.created_at, t.creator_id, t.assignee_id, t.deadline,
                 t.is_workflow_task, t.workflow_instance_id, t.activity_section,
-                t.group_id, t.period_type, t.start_date, t.end_date, t.overdue_forgiven_credit,
+                t.group_id, t.period_type, t.period_weekdays, t.period_interval_days, t.start_date, t.end_date, t.overdue_forgiven_credit,
                 tg.name as group_name, tg.color as group_color,
                 CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
                 CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,
@@ -350,7 +350,7 @@ try {
             t.id, t.title, t.description, t.task_type, t.priority, t.status,
             t.due_date, t.created_at, t.creator_id, t.assignee_id, t.deadline,
             t.is_workflow_task, t.workflow_instance_id, t.activity_section,
-            t.group_id, t.period_type, t.start_date, t.end_date, t.overdue_forgiven_credit,
+            t.group_id, t.period_type, t.period_weekdays, t.period_interval_days, t.start_date, t.end_date, t.overdue_forgiven_credit,
             tg.name as group_name, tg.color as group_color,
             CONCAT(COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as creator_name,
             CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name,

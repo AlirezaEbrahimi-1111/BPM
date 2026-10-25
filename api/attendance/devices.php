@@ -55,6 +55,15 @@ try {
     $ownerStmt->execute([$id]);
     $deviceUserId = (int) ($ownerStmt->fetchColumn() ?: 0);
 
+    // دستگاهی که از بیرون شبکه درخواست داده: «تأیید» = تأیید دستگاه + اجازهٔ بیرون شبکه
+    // با هم، یک‌جا و با یک اعلان/پیامک (۱۴۰۵/۰۸/۰۳). قبلا ✓ ستون «عملیات» فقط خود دستگاه
+    // را تأیید می‌کرد؛ کاربر پیام «تأیید شد» می‌گرفت ولی از بیرون باز رد می‌شد.
+    if ($action === 'approve') {
+        $osStmt = $db->prepare("SELECT outside_status FROM attendance_devices WHERE id = ?");
+        $osStmt->execute([$id]);
+        if ($osStmt->fetchColumn() === 'pending') $action = 'outside_approve';
+    }
+
     if ($action === 'approve') {
         $db->prepare("UPDATE attendance_devices SET status='approved', approved_by=?, approved_at=NOW() WHERE id=?")
            ->execute([$user_id, $id]);

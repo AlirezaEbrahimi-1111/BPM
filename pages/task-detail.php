@@ -3098,8 +3098,8 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                 if (task.task_type === 'continuous') {
                     col1HTML += `
                 <div class="info-item">
-                    <div class="info-label">آخرین دوره تأیید:</div>
-                    <div class="info-value">${task.last_approved_date ? formatPersianDate(task.last_approved_date) : 'هنوز تأییدی ثبت نشده'}</div>
+                    <div class="info-label">آخرین تأیید:</div>
+                    <div class="info-value">${task.last_approved_date ? formatDayMonth(task.last_approved_date) : 'هنوز تأییدی ثبت نشده'}</div>
                 </div>
                 `;
                 }
@@ -3158,7 +3158,7 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
 </div>
 <div class="info-item">
     <div class="info-label">دوره تکرار:</div>
-    <div class="info-value">${getPeriodLabel(task.period_type)}</div>
+    <div class="info-value">${periodLabelOf(task)}</div>
 </div>
 <div class="info-item">
     <div class="info-label">دوره بعدی:</div>
@@ -3222,7 +3222,7 @@ ${task.overdue_periods > 0 ? `
         ${task.last_approved_date ? `
             <p class="mb-0">
                 <i class="bi bi-check-circle me-1"></i>
-                آخرین دوره تأیید شده: ${formatPersianDate(task.last_approved_date)}
+                آخرین تأیید: ${formatDayMonth(task.last_approved_date)}
             </p>
         ` : ''}
     `;
@@ -4129,7 +4129,6 @@ ${task.overdue_periods > 0 ? `
                 const isPendingApproval = task.status === 'pending_approval' && task.is_pending_approval == 1;
                 const isWorkflow = task.is_workflow_task == 1;
 
-                const lastApprovedDateToday = isLastApprovedDateToday(task);
 
                 let currentDeadlineRequestId = null; // شناسه درخواست منتظر
                 let currentDeadlineTaskId = null; // شناسه کار
@@ -4267,23 +4266,19 @@ ${task.overdue_periods > 0 ? `
                         addDiscBtn.style.display = 'inline-block';
                     }
                 } else if (task.task_type === 'continuous') {
-                    if (lastApprovedDateToday) {
+                    // ✅ فقط can_complete محاسبه‌شده‌ی سرور (period-engine.php::pe_state) — همان
+                    // چیزی که api/tasks/complete-recurring.php هم چک می‌کند. گارد قدیمی
+                    // «last_approved_date = امروز» حذف شد: آن ستون روزِ زدنِ تأیید است نه دوره‌ی
+                    // تأییدشده؛ تأیید دیرهنگامِ دوره‌ی دیروز، تکمیلِ دوره‌ی امروز را می‌بست (کار ۳۱۴۸).
+                    // canCompleteNow قدیمی هم کنار رفته بود (با تمدید دوره دکمه را برای همیشه مخفی می‌کرد).
+                    const canComplete = !!task.can_complete;
+                    if (!canComplete) {
                         completeBtn.style.display = 'none';
                         addDiscBtn.style.display = 'none';
-                    } else {
-                        // ✅ از can_complete محاسبه‌شده‌ی سرور (period-engine.php::pe_state)
-                        // استفاده می‌کنیم — نه canCompleteNow قدیمی که با completed_count
-                        // خام کل عمر کار (که با تمدید دوره صفر نمی‌شه) مقایسه می‌کرد و
-                        // بعد از هر تمدید، دکمه رو برای همیشه مخفی نگه می‌داشت
-                        const canComplete = !!task.can_complete;
-                        if (!canComplete) {
-                            completeBtn.style.display = 'none';
-                            addDiscBtn.style.display = 'none';
-                        } else if (isAssignee && task.status != 'rejected') {
-                            completeBtn.style.display = 'inline-block';
-                            completeBtnEligible = true;
-                            addDiscBtn.style.display = 'inline-block';
-                        }
+                    } else if (isAssignee && task.status != 'rejected') {
+                        completeBtn.style.display = 'inline-block';
+                        completeBtnEligible = true;
+                        addDiscBtn.style.display = 'inline-block';
                     }
                 }
 
@@ -4391,24 +4386,6 @@ ${task.overdue_periods > 0 ? `
                     actionBtnText.textContent = 'درخواست تمدید دوره';
                     actionBtn.onclick = () => openRenewalModal('request');
                 }
-            }
-
-            function isLastApprovedDateToday(task) {
-                if (!task.last_approved_date) {
-                    return false;
-                }
-
-                // ⚠️ «امروز» باید از ساعت سرور (تهران) بیاید، نه new Date() که ساعت/
-                //    تایم‌زون دستگاه کاربر است. اگر ساعت کاربر عقب باشد و روی همان
-                //    روز last_approved_date بیفتد، این گارد اشتباها دکمهٔ «تکمیل» را
-                //    مخفی می‌کرد (کار #۱۰۵۵). اگر TimeSync در دسترس نبود، مخفی نکن —
-                //    سرور خودش با can_complete گارد دارد (api/tasks/complete-recurring.php).
-                if (!(window.TimeSync && TimeSync.serverToday)) {
-                    return false;
-                }
-
-                const approved = String(task.last_approved_date).slice(0, 10); // 'YYYY-MM-DD'
-                return approved === TimeSync.serverToday();
             }
 
             function calculateOverduePeriods(task) {
@@ -5108,9 +5085,17 @@ ${task.overdue_periods > 0 ? `
                 const labels = {
                     'daily': 'روزانه',
                     'weekly': 'هفتگی',
-                    'monthly': 'ماهانه'
+                    'monthly': 'ماهانه',
+                    'weekdays': 'روزهای خاص هفته',
+                    'interval': 'هر چند روز یک‌بار'
                 };
                 return labels[period] || period;
+            }
+
+            // برچسب کامل الگو از سرور («یکشنبه، دوشنبه و پنجشنبه» / «هر ۹ روز») — pe_periodLabel در PHP
+            function periodLabelOf(task) {
+                if (task && task.period_label) return toFa(task.period_label);
+                return getPeriodLabel(task ? task.period_type : '');
             }
 
             // 🔒 getActionLabel/actionBadgeClass محلی حذف شدن — الان
@@ -5118,6 +5103,16 @@ ${task.overdue_periods > 0 ? `
             // تنها مرجعن؛ قبلا این‌جا، دو داشبورد، هرکدوم یه نسخه‌ی جدا و
             // ناهماهنگ داشتن که با هر رویداد جدید (مثل تمدید دوره) از
             // هم عقب می‌موندن
+
+            // «۲۶ مهر» — روز و نام ماه؛ سال فقط اگر سال جاری نباشد («۲۶ اسفند ۱۴۰۴»).
+            // last_approved_date روزِ زدنِ تأیید است (نه دوره‌ی تأییدشده)، برای همین برچسبش «آخرین تأیید».
+            function formatDayMonth(dateString) {
+                const full = formatPersianDate(dateString); // «۲۶ مهر ۱۴۰۵»
+                if (!window.TimeSync || !TimeSync.serverJalali) return full;
+                const parts = full.split(' ');
+                const curYear = String(TimeSync.serverJalali()[0]).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+                return parts.length === 3 && parts[2] === curYear ? parts[0] + ' ' + parts[1] : full;
+            }
 
             function formatPersianDate(dateString) {
                 if (!dateString) return 'نامشخص';
@@ -5348,6 +5343,24 @@ ${task.overdue_periods > 0 ? `
                         next = new Date(year, month - 1 + monthsPassed + 1, day, 12, 0, 0);
                         break;
                     }
+                    case 'interval': {
+                        const n = parseInt(taskData.period_interval_days, 10) || 0;
+                        if (n < 2) return '';
+                        const passed = Math.floor(diffDays / n);
+                        next = new Date(year, month - 1, day + (passed + 1) * n, 12, 0, 0);
+                        break;
+                    }
+                    case 'weekdays': {
+                        // اولین روز انتخاب‌شده از فردا (تعطیل رسمی را سرور خودش رد می‌کند)
+                        const days = String(taskData.period_weekdays || '').split(',').filter(Boolean).map(Number);
+                        if (!days.length) return '';
+                        next = new Date(today.getTime());
+                        for (let i = 0; i < 7; i++) {
+                            next.setDate(next.getDate() + 1);
+                            if (days.includes(next.getDay())) break;
+                        }
+                        break;
+                    }
                     default:
                         return '';
                 }
@@ -5413,7 +5426,7 @@ ${task.overdue_periods > 0 ? `
                     dueDateContainer.style.display = 'block';
                     if (dueDateLabel) dueDateLabel.textContent = 'تاریخ شروع دورهٔ جدید';
                     if (periodInfo && periodLabelEl) {
-                        periodLabelEl.textContent = getPeriodLabel(taskData.period_type);
+                        periodLabelEl.textContent = periodLabelOf(taskData);
                         periodInfo.style.display = 'block';
                     }
                     // پیش‌فرض = اولین دورهٔ بعدی (با حفظ روز ماه) — اگر کاربر تغییرش دهد، همان ملاک است
@@ -5542,6 +5555,9 @@ ${task.overdue_periods > 0 ? `
                         priority: taskData.priority,
                         task_type: taskData.task_type,
                         period_type: taskData.period_type,
+                        // الگوی روزهای خاص هفته / هر N روز هم عینا کپی شود
+                        period_weekdays: taskData.period_weekdays || null,
+                        period_interval_days: taskData.period_interval_days || null,
                         copy_attachment_ids: copyAttachmentIds
                     };
 
@@ -6687,7 +6703,7 @@ ${task.overdue_periods > 0 ? `
                     mode === 'apply' ? 'اعمال تمدید' : 'ارسال درخواست';
                 document.getElementById('renewalReasonRequiredHint').textContent =
                     mode === 'apply' ? 'اختیاری' : 'اجباری';
-                document.getElementById('renewalPeriodLabel').textContent = getPeriodLabel(taskData.period_type);
+                document.getElementById('renewalPeriodLabel').textContent = periodLabelOf(taskData);
                 document.getElementById('renewalNewStartDate').value = '';
                 document.getElementById('renewalNewStartDate').removeAttribute('data-date');
                 document.getElementById('renewalNewEndDate').value = '';

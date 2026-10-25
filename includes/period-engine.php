@@ -26,6 +26,9 @@
  *  │       روزانه  → هر روز کاری (جمعه و تعطیلات رسمی حذف)          │
  *  │       هفتگی   → هر ۷ روز از تاریخ شروع                         │
  *  │       ماهانه  → هر ۱ ماه از تاریخ شروع                         │
+ *  │       روزهای خاص هفته (weekdays) → هر روز انتخاب‌شده از هفته    │
+ *  │           (مثلا یکشنبه/دوشنبه/پنجشنبه)؛ روز تعطیل رد می‌شود     │
+ *  │       هر N روز (interval) → هر N روز تقویمی از تاریخ شروع      │
  *  │                                                                │
  *  │  ۲) وقتی کاربر «تکمیل» می‌زند، دورهٔ **همان روز** بسته می‌شود   │
  *  │     — نه قدیمی‌ترین دورهٔ عقب‌افتاده.                           │
@@ -102,6 +105,7 @@ function pe_monthsBetween(DateTime $anchor, DateTime $date): int
  * @param DateTime  $upto        تا این تاریخ (شامل خودش)
  * @param array     $holidays    مجموعهٔ تعطیلات رسمی
  * @param string|null $endDate   تاریخ پایان کار (اختیاری)
+ * @param array     $opts       برای weekdays/interval — خروجی pe_taskOpts()
  *
  * @return string[]  آرایهٔ تاریخ‌ها به‌صورت 'Y-m-d'، صعودی
  */
@@ -110,7 +114,8 @@ function pe_periodDates(
     DateTime $start,
     DateTime $upto,
     array $holidays,
-    ?string $endDate = null
+    ?string $endDate = null,
+    array $opts = []
 ): array {
 
     $dates  = [];
@@ -180,9 +185,144 @@ function pe_periodDates(
         return $dates;
     }
 
+    // ── روزهای خاص هفته: هر روز انتخاب‌شده که روز کاری هم باشد ──
+    // (روز انتخابی که تعطیل رسمی است دوره ندارد — مثل «روزانه»؛ وگرنه فرصت آن دوره
+    //  مثلا فقط همان یکشنبهٔ تعطیل تا دوشنبه بود و معوقهٔ ناعادلانه می‌ساخت)
+    if ($periodType === 'weekdays') {
+        $weekdays = $opts['weekdays'] ?? [];
+        if (!$weekdays) return [];
+        $guard = 0;
+        while ($cursor <= $limit && count($dates) < PE_MAX_PERIODS && $guard++ < PE_MAX_PERIODS * 7) {
+            $d = $cursor->format('Y-m-d');
+            if ($endDate !== null && $d > $endDate) break;
+            if (in_array((int) $cursor->format('w'), $weekdays, true) && isWorkingDay($cursor, $holidays)) {
+                $dates[] = $d;
+            }
+            $cursor->modify('+1 day');
+        }
+        return $dates;
+    }
+
+    // ── هر N روز تقویمی از تاریخ شروع (مثل هفتگی که N=۷ است) ──
+    if ($periodType === 'interval') {
+        $n = (int) ($opts['interval_days'] ?? 0);
+        if ($n < PE_INTERVAL_MIN || $n > PE_INTERVAL_MAX) return [];
+        $guard = 0;
+        while ($cursor <= $limit && $guard++ < PE_MAX_PERIODS) {
+            $d = $cursor->format('Y-m-d');
+            if ($endDate !== null && $d > $endDate) break;
+            $dates[] = $d;
+            $cursor->modify('+' . $n . ' days');
+        }
+        return $dates;
+    }
+
     return $dates;
 }
 
+/**
+ * اولین سررسید در تاریخ شروع یا بعد از آن — برای کاری که هنوز شروع نشده.
+ * برای weekdays اولین روز انتخاب‌شدهٔ کاری است (نه خود تاریخ شروع)؛ بقیهٔ انواع
+ * مثل قبل همان تاریخ شروع.
+ */
+function pe_firstPeriodOnOrAfter(string $periodType, DateTime $start, array $holidays, array $opts = []): ?string
+{
+    if ($periodType !== 'weekdays') return $start->format('Y-m-d');
+    $upto = (clone $start)->modify('+60 days'); // حتی با تعطیلات پیاپی، دوره‌ای پیدا می‌شود
+    $dates = pe_periodDates($periodType, $start, $upto, $holidays, null, $opts);
+    return $dates[0] ?? null;
+}
+
+
+/**
+ * تنظیمات الگوی تکرار یک کار (برای weekdays و interval) از ستون‌های خود کار.
+ *   period_weekdays      → '0,1,4' (شمارهٔ PHP date('w'): ۰=یکشنبه … ۶=شنبه؛ جمعه=۵ مجاز نیست)
+ *   period_interval_days → ۲ تا ۳۶۵
+ * ⚠️ هر کوئری که ردیف کار را به pe_state می‌دهد باید این دو ستون را هم بخواند.
+ */
+function pe_taskOpts(array $task): array
+{
+    return [
+        'weekdays'      => pe_parseWeekdays($task['period_weekdays'] ?? null),
+        'interval_days' => (int) ($task['period_interval_days'] ?? 0),
+    ];
+}
+
+/** '0,1,4' → [0,1,4] — یکتا، مرتب، فقط ۰..۶ و بدون جمعه */
+function pe_parseWeekdays($csv): array
+{
+    $out = [];
+    foreach (explode(',', (string) $csv) as $v) {
+        $v = trim($v);
+        if ($v === '' || !ctype_digit($v)) continue;
+        $n = (int) $v;
+        if ($n >= 0 && $n <= 6 && $n !== 5) $out[$n] = $n;
+    }
+    ksort($out);
+    return array_values($out);
+}
+
+/** حداقل/حداکثر «هر N روز» — هم‌خوان با اعتبارسنجی ساخت کار */
+const PE_INTERVAL_MIN = 2;
+const PE_INTERVAL_MAX = 365;
+
+/**
+ * اعتبارسنجی و یکدست‌کردن الگوی تکرار هنگام ساخت کار دوره‌ای.
+ * خروجی: ['error' => string|null, 'period_type', 'period_weekdays', 'period_interval_days']
+ *   — ستون‌های الگوهای دیگر NULL می‌شوند تا دادهٔ ناهمخوان ذخیره نشود.
+ */
+function pe_normalizePeriodInput(array $data): array
+{
+    $type = $data['period_type'] ?? 'daily';
+    $out  = ['error' => null, 'period_type' => $type, 'period_weekdays' => null, 'period_interval_days' => null];
+
+    if (!in_array($type, ['daily', 'weekly', 'monthly', 'weekdays', 'interval'], true)) {
+        $out['error'] = 'نوع دورهٔ تکرار نامعتبر است';
+        return $out;
+    }
+    if ($type === 'weekdays') {
+        $raw  = $data['period_weekdays'] ?? '';
+        $list = pe_parseWeekdays(is_array($raw) ? implode(',', $raw) : $raw);
+        if (!$list) {
+            $out['error'] = 'برای تکرار در روزهای خاص هفته، دست‌کم یک روز (به‌جز جمعه) را انتخاب کنید';
+            return $out;
+        }
+        $out['period_weekdays'] = implode(',', $list);
+    }
+    if ($type === 'interval') {
+        $n = (int) ($data['period_interval_days'] ?? 0);
+        if ($n < PE_INTERVAL_MIN || $n > PE_INTERVAL_MAX) {
+            $out['error'] = 'فاصلهٔ تکرار باید بین ' . PE_INTERVAL_MIN . ' تا ' . PE_INTERVAL_MAX . ' روز باشد';
+            return $out;
+        }
+        $out['period_interval_days'] = $n;
+    }
+    return $out;
+}
+
+/** برچسب فارسی الگوی تکرار — «یکشنبه، دوشنبه و پنجشنبه» / «هر ۹ روز» */
+function pe_periodLabel(array $task): string
+{
+    static $names = [0 => 'یکشنبه', 1 => 'دوشنبه', 2 => 'سه‌شنبه', 3 => 'چهارشنبه', 4 => 'پنجشنبه', 6 => 'شنبه'];
+    switch ($task['period_type'] ?? '') {
+        case 'daily':   return 'روزانه';
+        case 'weekly':  return 'هفتگی';
+        case 'monthly': return 'ماهانه';
+        case 'weekdays':
+            // ترتیب هفتهٔ ایرانی: شنبه اول
+            $days = pe_parseWeekdays($task['period_weekdays'] ?? '');
+            usort($days, fn($a, $b) => (($a + 1) % 7) <=> (($b + 1) % 7));
+            $labels = array_map(fn($d) => $names[$d], $days);
+            if (count($labels) > 1) {
+                $last = array_pop($labels);
+                return implode('، ', $labels) . ' و ' . $last;
+            }
+            return $labels[0] ?? 'روزهای خاص هفته';
+        case 'interval':
+            return 'هر ' . (int) ($task['period_interval_days'] ?? 0) . ' روز';
+    }
+    return '';
+}
 
 /**
  * تاریخ سررسید دوره‌ای که یک تاریخ مشخص «به آن تعلق دارد».
@@ -328,11 +468,13 @@ function pe_state(PDO $db, array $task, array $holidays, ?string $today = null, 
         $now->setTime(0, 0, 0);
 
         $endDate = !empty($task['end_date']) ? $task['end_date'] : null;
+        $opts    = pe_taskOpts($task);
 
         // ── کار هنوز شروع نشده ──────────────────────────
         if ($now < $start) {
-            $out['next_due_date']  = $start->format('Y-m-d');
-            $out['days_remaining'] = (int) $now->diff($start)->format('%r%a');
+            $first = pe_firstPeriodOnOrAfter($task['period_type'], $start, $holidays, $opts);
+            $out['next_due_date']  = $first;
+            $out['days_remaining'] = $first !== null ? (int) $now->diff(new DateTime($first))->format('%r%a') : null;
             return $out;
         }
 
@@ -346,10 +488,18 @@ function pe_state(PDO $db, array $task, array $holidays, ?string $today = null, 
         }
 
         // ── تولید تاریخ دوره‌ها تا امروز ────────────────
-        $periods = pe_periodDates($task['period_type'], $start, $now, $holidays, $endDate);
+        $periods = pe_periodDates($task['period_type'], $start, $now, $holidays, $endDate, $opts);
 
         if (empty($periods)) {
-            // امروز هنوز به هیچ دوره‌ای نرسیده (مثلا شروع در تعطیلات)
+            // امروز هنوز به هیچ دوره‌ای نرسیده (مثلا شروع در تعطیلات، یا weekdays
+            // که اولین روز انتخاب‌شده‌اش هنوز نرسیده) → موعد = اولین دوره
+            if ($task['period_type'] === 'weekdays') {
+                $first = pe_firstPeriodOnOrAfter('weekdays', $start, $holidays, $opts);
+                if ($first !== null && ($endDate === null || $first <= $endDate)) {
+                    $out['next_due_date']  = $first;
+                    $out['days_remaining'] = (int) $now->diff(new DateTime($first))->format('%r%a');
+                }
+            }
             return $out;
         }
 
@@ -401,7 +551,7 @@ function pe_state(PDO $db, array $task, array $holidays, ?string $today = null, 
         // ── موعد بعدی ──────────────────────────────────
         if ($out['is_today_done']) {
             // دورهٔ امروز انجام شده → موعد بعدی، دورهٔ بعدی است
-            $next = pe_nextPeriodAfter($task['period_type'], $currentPeriod, $holidays, $start);
+            $next = pe_nextPeriodAfter($task['period_type'], $currentPeriod, $holidays, $start, $opts);
 
             if ($endDate !== null && $next > $endDate) {
                 $out['next_due_date'] = null;   // دورهٔ دیگری نمانده
@@ -447,7 +597,7 @@ function pe_state(PDO $db, array $task, array $holidays, ?string $today = null, 
  *                               اما در این حالت اگر $afterDate قبلا clamp شده
  *                               باشد (مثلا ۲۸ اسفند به‌جای ۳۱)، لنگر گم می‌شود.
  */
-function pe_nextPeriodAfter(string $periodType, string $afterDate, array $holidays, ?DateTime $anchor = null): string
+function pe_nextPeriodAfter(string $periodType, string $afterDate, array $holidays, ?DateTime $anchor = null, array $opts = []): string
 {
     $d = new DateTime($afterDate);
     $d->setTime(0, 0, 0);
@@ -471,6 +621,20 @@ function pe_nextPeriodAfter(string $periodType, string $afterDate, array $holida
             $anchorDate  = $anchor ?? $d;
             $monthsSoFar = pe_monthsBetween($anchorDate, $d);
             $d = pe_addMonthsClamped($anchorDate, $monthsSoFar + 1);
+            break;
+
+        case 'weekdays':
+            // روز انتخاب‌شدهٔ کاریِ بعدی (سقف ۶۰ روز برای تعطیلات پیاپی)
+            $weekdays = $opts['weekdays'] ?? [];
+            for ($i = 0; $i < 60 && $weekdays; $i++) {
+                $d->modify('+1 day');
+                if (in_array((int) $d->format('w'), $weekdays, true) && isWorkingDay($d, $holidays)) break;
+            }
+            break;
+
+        case 'interval':
+            $n = (int) ($opts['interval_days'] ?? 0);
+            $d->modify('+' . max(PE_INTERVAL_MIN, min(PE_INTERVAL_MAX, $n)) . ' days');
             break;
     }
 

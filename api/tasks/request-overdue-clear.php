@@ -30,7 +30,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
  *    منبع واحد: includes/period-engine.php
  */
 function oc_calc_remaining(PDO $db, array $task): array {
-    $holidays = getHolidaySet($db);
+    $holidays = getHolidaySet($db, (isset($task['organization_id']) ? (int) $task['organization_id'] : null));
     $state    = pe_state($db, $task, $holidays);
 
     return [

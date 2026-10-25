@@ -115,7 +115,7 @@ try {
     $stmt->execute([$_GET['id']]);
     $task['completed_count'] = $stmt->fetch()['count'];
     // ✅ موتور مشترک دوره — تا با داشبورد و لیست‌ها یکسان باشد
-    $holidays = getHolidaySet($db);
+    $holidays = getHolidaySet($db, (isset($task['organization_id']) ? (int) $task['organization_id'] : null));
     $task = enrichTaskDates($task, $db, $holidays, date('Y-m-d'));
     // ✅ اصلاح: دریافت اطلاعات مرحله فعال workflow (روش صحیح)
     $task['current_workflow_step'] = null;
@@ -222,6 +222,11 @@ try {
     // بخش در فرانت، خود داده هم از پاسخ حذف بشه (وگرنه از تب Network قابل دیدن بود)
     if ($is_viewer_only && !$viewer_can_view_history) {
         $history = [];
+    }
+
+    // برچسب فارسی الگوی تکرار («یکشنبه، دوشنبه و پنجشنبه» / «هر ۹ روز») — منبع: pe_periodLabel
+    if (($task['task_type'] ?? '') === 'continuous') {
+        $task['period_label'] = pe_periodLabel($task);
     }
 
     // 🆕 درخواست توقف روتین: آیا من می‌توانم درخواست بدهم / درخواستی در انتظار من است؟

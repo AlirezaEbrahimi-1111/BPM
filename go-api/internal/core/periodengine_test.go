@@ -141,3 +141,52 @@ func TestPePeriodOf(t *testing.T) {
 		}
 	}
 }
+
+// ── weekdays / interval — قفل تطبیق با PeriodEngineTest.php ──
+
+func TestPePeriodDatesWeekdays(t *testing.T) {
+	o := PeOpts{Weekdays: []int{0, 1, 4}}
+	got := PePeriodDates("weekdays", mustDate("2026-07-15"), mustDate("2026-07-27"), map[string]bool{}, nil, o)
+	want := []string{"2026-07-16", "2026-07-19", "2026-07-20", "2026-07-23", "2026-07-26", "2026-07-27"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("weekdays: got %v; want %v", got, want)
+	}
+	got = PePeriodDates("weekdays", mustDate("2026-07-15"), mustDate("2026-07-23"), map[string]bool{"2026-07-19": true}, nil, o)
+	want = []string{"2026-07-16", "2026-07-20", "2026-07-23"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("weekdays holiday skip: got %v; want %v", got, want)
+	}
+	if n := PeNextPeriodAfter("weekdays", "2026-07-16", map[string]bool{"2026-07-19": true}, nil, o); n != "2026-07-20" {
+		t.Errorf("weekdays next after holiday: got %s", n)
+	}
+	if !reflect.DeepEqual(PeParseWeekdays("4,0,5,1,1,9,x"), []int{0, 1, 4}) {
+		t.Errorf("PeParseWeekdays: got %v", PeParseWeekdays("4,0,5,1,1,9,x"))
+	}
+}
+
+func TestPePeriodDatesInterval(t *testing.T) {
+	o := PeOpts{IntervalDays: 9}
+	got := PePeriodDates("interval", mustDate("2026-07-11"), mustDate("2026-08-10"), map[string]bool{}, nil, o)
+	want := []string{"2026-07-11", "2026-07-20", "2026-07-29", "2026-08-07"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("interval: got %v; want %v", got, want)
+	}
+	if got := PePeriodDates("interval", mustDate("2026-07-11"), mustDate("2026-08-10"), map[string]bool{}, nil, PeOpts{IntervalDays: 1}); len(got) != 0 {
+		t.Errorf("interval 1 must yield nothing: %v", got)
+	}
+	if n := PeNextPeriodAfter("interval", "2026-07-20", map[string]bool{}, nil, o); n != "2026-07-29" {
+		t.Errorf("interval next: got %s", n)
+	}
+}
+
+func TestPeStateWeekdays(t *testing.T) {
+	task := PeStateTask{ID: 1, TaskType: "continuous", StartDate: "2026-07-15", PeriodType: "weekdays", PeriodWeekdays: "0,1,4"}
+	st := PeStateCalc(nil, task, map[string]bool{}, "2026-07-15", map[int64][]string{1: {}})
+	if st.NextDueDate == nil || *st.NextDueDate != "2026-07-16" || st.CanComplete {
+		t.Errorf("before first weekday: %+v", st)
+	}
+	st = PeStateCalc(nil, task, map[string]bool{}, "2026-07-21", map[int64][]string{1: {"2026-07-16", "2026-07-20"}})
+	if st.OverduePeriods != 1 || !st.IsTodayDone || st.NextDueDate == nil || *st.NextDueDate != "2026-07-23" || st.CanComplete {
+		t.Errorf("weekdays state: %+v next=%v", st, st.NextDueDate)
+	}
+}

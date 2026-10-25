@@ -41,10 +41,81 @@ function getHolidaySet(PDO $db, ?int $organizationId = null): array {
             // اگر جدول holidays وجود نداشت، فقط جمعه‌ها حذف می‌شن
             error_log("holidays table error: " . $e->getMessage());
         }
+        // تعطیلی رسمی که همین سازمان برای خودش «روز کاری» کرده
+        foreach (getHolidayOrgOverrides($db, $organizationId) as $d => $_) {
+            unset($holidaySet[$d]);
+        }
         $cache[$cacheKey] = $holidaySet;
     }
 
     return $cache[$cacheKey];
+}
+
+/**
+ * تعطیلات سازمانِ یک کاربر — برای جاهایی که فقط user_id در دست است.
+ */
+function getHolidaySetForUser(PDO $db, int $userId): array {
+    return getHolidaySet($db, userOrganizationId($db, $userId));
+}
+
+/** سازمان یک کاربر (کش‌شده در طول همین درخواست) */
+function userOrganizationId(PDO $db, int $userId): ?int {
+    static $orgOf = [];
+    if (!array_key_exists($userId, $orgOf)) {
+        $s = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
+        $s->execute([$userId]);
+        $o = $s->fetchColumn();
+        $orgOf[$userId] = $o ? (int) $o : null;
+    }
+    return $orgOf[$userId];
+}
+
+/**
+ * تاریخ‌هایی از تعطیلات سراسری که این سازمان برای خودش روز کاری کرده
+ * (جدول holiday_org_overrides). بدون سازمان → خالی. کلید = 'Y-m-d'.
+ * جدای از کوئری اصلی و با try خودش: اگر مایگریشن هنوز اجرا نشده باشد،
+ * تعطیلات عادی سالم برگردند (نه آرایهٔ خالی).
+ */
+function getHolidayOrgOverrides(PDO $db, ?int $organizationId): array {
+    static $cache = [];
+    if (!$organizationId) return [];
+    if (!isset($cache[$organizationId])) {
+        $set = [];
+        try {
+            $stmt = $db->prepare("SELECT holiday_date FROM holiday_org_overrides WHERE organization_id = ?");
+            $stmt->execute([$organizationId]);
+            foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $d) $set[$d] = true;
+        } catch (Exception $e) {
+            error_log("holiday_org_overrides error: " . $e->getMessage());
+        }
+        $cache[$organizationId] = $set;
+    }
+    return $cache[$organizationId];
+}
+
+/**
+ * تعطیلات یک‌روزهٔ یک بازه همراه عنوان — برای گزارش‌های حضور و حقوق.
+ * همان قواعد getHolidaySet: سراسری + مخصوص همین سازمان، منهای استثنای سازمان.
+ * (قبلا این گزارش‌ها جدول را بدون فیلتر سازمان می‌خواندند و تعطیلی مخصوص
+ * سازمان‌های دیگر را هم حساب می‌کردند.)
+ *
+ * @return array ['Y-m-d' => title]
+ */
+function getHolidayTitleMap(PDO $db, ?int $organizationId, string $from, string $to): array {
+    $out = [];
+    try {
+        $stmt = $db->prepare("
+            SELECT holiday_date, title FROM holidays
+            WHERE type = 'date' AND holiday_date BETWEEN ? AND ?
+              AND (organization_id IS NULL OR organization_id = ?)
+        ");
+        $stmt->execute([$from, $to, $organizationId]);
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $h) $out[$h['holiday_date']] = $h['title'];
+    } catch (Exception $e) {
+        error_log("holidays title map error: " . $e->getMessage());
+    }
+    foreach (getHolidayOrgOverrides($db, $organizationId) as $d => $_) unset($out[$d]);
+    return $out;
 }
 
 /**

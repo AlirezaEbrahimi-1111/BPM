@@ -25,7 +25,7 @@ try {
     $taskManager = new TaskManager($db);
 
     // ─── بارگذاری تعطیلات (یک‌بار برای کل request) ─────────────────────────
-    $holidays = getHolidaySet($db);
+    $holidays = getHolidaySetForUser($db, (int) $user_id);
 
     $today_str = date('Y-m-d');
 

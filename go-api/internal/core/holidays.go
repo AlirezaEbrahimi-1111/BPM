@@ -33,7 +33,25 @@ func HolidaySet(db *sql.DB, orgID *int64) (map[string]bool, error) {
 		}
 		set[d] = true
 	}
-	return set, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// تعطیلی رسمی که همین سازمان برای خودش «روز کاری» کرده (holiday_org_overrides) —
+	// هم‌خوان با getHolidayOrgOverrides در PHP. خطا (مثلا جدول هنوز مایگریت نشده)
+	// تعطیلات عادی را خراب نمی‌کند.
+	if orgID != nil && *orgID > 0 {
+		if orows, oerr := db.Query(`SELECT holiday_date FROM holiday_org_overrides WHERE organization_id = ?`, *orgID); oerr == nil {
+			for orows.Next() {
+				var d string
+				if orows.Scan(&d) == nil {
+					delete(set, d)
+				}
+			}
+			orows.Close()
+		}
+	}
+	return set, nil
 }
 
 // RecurringHolidayWeekdays — پورت getRecurringHolidayWeekdays(). مقادیر بر

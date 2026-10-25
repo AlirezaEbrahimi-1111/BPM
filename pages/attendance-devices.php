@@ -569,7 +569,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
                 btns = btn('no', 'برداشتن اجازهٔ ثبت از بیرون شبکه', 'outside_revoke', 'bi-x-lg');
             } else if (s === 'pending') {
                 badge = '<span class="ad-badge ad-pending"><i class="bi bi-hourglass-split"></i>درخواست داده</span>';
-                btns = btn('ok', 'تأیید ثبت از بیرون شبکه', 'outside_approve', 'bi-check-lg') +
+                btns = btn('ok', d.status === 'approved' ? 'تأیید ثبت از بیرون شبکه' : 'تأیید دستگاه و ثبت از بیرون شبکه (هر دو با هم)', 'outside_approve', 'bi-check-lg') +
                        btn('no', 'رد ثبت از بیرون شبکه', 'outside_reject', 'bi-slash-circle');
             } else if (s === 'rejected') {
                 badge = '<span class="ad-badge ad-rejected"><i class="bi bi-slash-circle"></i>رد شده</span>';
@@ -584,7 +584,9 @@ if (!hasPermission($__me, 'view_org_settings')) {
         function devActions(p) {
             const d = p.data;
             let h = '<div style="display:flex;gap:4px;align-items:center;height:100%">';
-            if (d.status !== 'approved')
+            // درخواست از بیرون شبکه: تأیید فقط یک دکمه دارد (ستون «ثبت از بیرون شبکه») که دستگاه
+            // و اجازهٔ بیرون شبکه را با هم می‌دهد — ✓ دوم این‌جا نشان داده نمی‌شود
+            if (d.status !== 'approved' && d.outside_status !== 'pending')
                 h += `<span class="ad-icon-btn ok" title="تأیید" onclick="devAction(${d.id},'approve')"><i class="bi bi-check-lg"></i></span>`;
             if (d.status !== 'rejected')
                 h += `<span class="ad-icon-btn no" title="رد" onclick="devAction(${d.id},'reject')"><i class="bi bi-slash-circle"></i></span>`;

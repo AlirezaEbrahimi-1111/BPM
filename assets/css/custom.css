@@ -7045,6 +7045,49 @@ body.login-page::after {
     font-size: 0.9rem;
 }
 
+/* تعطیلی رسمی که برای سازمان ما روز کاری شده (api/holidays/override.php) */
+.calendar-day.org-working {
+    background: rgba(34, 197, 94, 0.10);
+    border-color: rgba(34, 197, 94, 0.35);
+    border-style: dashed;
+}
+
+.calendar-day.org-working .day-label {
+    color: #15803d;
+}
+
+:root[data-theme="dark"] .calendar-day.org-working {
+    background: rgba(34, 197, 94, 0.14);
+    border-color: rgba(74, 222, 128, 0.4);
+}
+
+:root[data-theme="dark"] .calendar-day.org-working .day-label {
+    color: #86efac;
+}
+
+.holiday-override-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid rgba(142, 87, 254, .35);
+    background: transparent;
+    color: #6e52a7;
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: .72rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.holiday-override-btn:hover {
+    background: rgba(142, 87, 254, .12);
+}
+
+:root[data-theme="dark"] .holiday-override-btn {
+    color: #d8cdf0;
+    border-color: rgba(216, 205, 240, .35);
+}
+
 .holiday-delete-btn {
     width: 32px;
     height: 32px;

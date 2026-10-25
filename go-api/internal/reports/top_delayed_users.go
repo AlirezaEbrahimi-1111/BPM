@@ -101,7 +101,9 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 		today := now.Format("2006-01-02")
 		nowStr := now.Format("2006-01-02 15:04:05")
 
-		holidays, err := core.HolidaySet(db, nil)
+		// تعطیلات سازمان (سراسری + مخصوص سازمان − روزهای کاری‌شده)، هم‌خوان با PHP
+		holidayOrg := int64(orgID)
+		holidays, err := core.HolidaySet(db, &holidayOrg)
 		if err != nil {
 			core.WriteErr(w, http.StatusInternalServerError, "خطای سرور")
 			return
@@ -219,6 +221,8 @@ func TopDelayedUsers(db *sql.DB) http.HandlerFunc {
 					EndDate:               mStr(t, "end_date"),
 					PeriodType:            mStr(t, "period_type"),
 					OverdueForgivenCredit: int(mInt(t, "overdue_forgiven_credit")),
+					PeriodWeekdays:        mStr(t, "period_weekdays"),
+					PeriodIntervalDays:    int(mInt(t, "period_interval_days")),
 				}, holidays, today, nil)
 
 				if state.OverduePeriods > 0 {

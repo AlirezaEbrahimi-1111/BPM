@@ -23,7 +23,7 @@ function maybeStartNextPeriod($db, &$task, $user_id, $holidays = null, ?array $p
     if (empty($task['start_date']))                   return false;
 
     if ($holidays === null) {
-        $holidays = getHolidaySet($db);
+        $holidays = getHolidaySet($db, (isset($task['organization_id']) ? (int) $task['organization_id'] : null));
     }
 
     try {

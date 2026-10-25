@@ -46,6 +46,11 @@ try {
         ORDER BY holiday_date ASC
     ");
     $stmt->execute(['start_date' => $start_date, 'end_date' => $end_date, 'org_id' => $org_id]);
+    // تعطیلی‌های رسمی که این سازمان برای خودش روز کاری کرده (holiday_org_overrides)
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+    $orgWorkingDays = getHolidayOrgOverrides($db, $org_id ?: null);
+    $todayTehran = (new DateTime('now', new DateTimeZone('Asia/Tehran')))->format('Y-m-d');
+
     $holidays = [];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
         $isGlobal = ($row['organization_id'] === null);
@@ -56,6 +61,9 @@ try {
             'type'          => 'date',
             'is_global'     => $isGlobal,
             'can_delete'    => $isGlobal ? $canDeleteGlobalHolidays : $canDeleteOrgHolidays,
+            // 🆕 تعطیلی رسمی → روز کاری برای همین سازمان (api/holidays/override.php)
+            'org_working_day' => $isGlobal && isset($orgWorkingDays[$row['holiday_date']]),
+            'can_override'    => $isGlobal && $canDeleteOrgHolidays && $org_id > 0 && $row['holiday_date'] >= $todayTehran,
         ];
     }
 

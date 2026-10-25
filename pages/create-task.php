@@ -59,6 +59,54 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             color: #101828;
         }
 
+        /* الگوی تکرار: روزهای خاص هفته / هر N روز */
+        .period-days {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .period-day {
+            border: 1px solid var(--border-color, #dcd3ee);
+            background: transparent;
+            color: inherit;
+            border-radius: 999px;
+            padding: 4px 11px;
+            font-size: .78rem;
+            cursor: pointer;
+        }
+
+        .period-day:hover {
+            background: rgba(142, 87, 254, .12);
+        }
+
+        .period-day.active {
+            background: #8e57fe;
+            border-color: #8e57fe;
+            color: #fff;
+        }
+
+        .period-interval {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .period-interval input {
+            width: 90px;
+        }
+
+        :root[data-theme="dark"] .period-day {
+            border-color: rgba(216, 205, 240, .3);
+        }
+
+        :root[data-theme="dark"] .period-day:hover {
+            background: rgba(142, 87, 254, .18);
+        }
+
         :root[data-theme="dark"] .exec-summary {
             background: var(--surface);
             border-color: var(--border-soft);
@@ -341,11 +389,29 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                             <div class="col-md-4">
                                 <div class="mb-4">
                                     <label class="form-label">دوره تکرار</label>
-                                    <select class="form-select" id="manualPeriod">
+                                    <select class="form-select" id="manualPeriod" onchange="onPeriodTypeChange()">
                                         <option value="daily">روزانه</option>
                                         <option value="weekly">هفتگی</option>
                                         <option value="monthly">ماهانه</option>
+                                        <option value="weekdays">روزهای خاص هفته</option>
+                                        <option value="interval">هر چند روز یک‌بار</option>
                                     </select>
+                                    <!-- روزهای خاص هفته — مقدار = PHP date('w')؛ جمعه همیشه تعطیل است و نیست -->
+                                    <div id="periodWeekdaysWrap" class="period-days" style="display:none;">
+                                        <button type="button" class="period-day" data-dow="6">شنبه</button>
+                                        <button type="button" class="period-day" data-dow="0">یکشنبه</button>
+                                        <button type="button" class="period-day" data-dow="1">دوشنبه</button>
+                                        <button type="button" class="period-day" data-dow="2">سه‌شنبه</button>
+                                        <button type="button" class="period-day" data-dow="3">چهارشنبه</button>
+                                        <button type="button" class="period-day" data-dow="4">پنجشنبه</button>
+                                        <small class="text-muted d-block mt-1">اگر یکی از این روزها تعطیل رسمی باشد، آن روز دوره ندارد.</small>
+                                    </div>
+                                    <div id="periodIntervalWrap" class="period-interval" style="display:none;">
+                                        <span>هر</span>
+                                        <input type="number" class="form-control" id="periodIntervalDays" min="2" max="365" step="1" placeholder="۹">
+                                        <span>روز یک‌بار</span>
+                                        <small class="text-muted d-block mt-1">از تاریخ شروع شمرده می‌شود (روز تقویمی).</small>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -924,6 +990,61 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('manualTaskForm').classList.add('active');
         }
 
+        // ── الگوی تکرار کار دوره‌ای (includes/period-engine.php → pe_normalizePeriodInput) ──
+        function onPeriodTypeChange() {
+            const t = document.getElementById('manualPeriod').value;
+            document.getElementById('periodWeekdaysWrap').style.display = t === 'weekdays' ? '' : 'none';
+            document.getElementById('periodIntervalWrap').style.display = t === 'interval' ? '' : 'none';
+        }
+
+        document.addEventListener('click', function(e) {
+            const chip = e.target.closest && e.target.closest('.period-day');
+            if (chip) chip.classList.toggle('active');
+        });
+
+        /** period_type / period_weekdays / period_interval_days را روی شیء کار می‌گذارد؛ خطا → false */
+        function applyPeriodFields(obj) {
+            const t = document.getElementById('manualPeriod').value || 'daily';
+            obj.period_type = t;
+            obj.period_weekdays = null;
+            obj.period_interval_days = null;
+            if (t === 'weekdays') {
+                const days = [...document.querySelectorAll('#periodWeekdaysWrap .period-day.active')].map(b => b.dataset.dow);
+                if (!days.length) {
+                    showToast('دست‌کم یک روز از هفته را برای تکرار انتخاب کنید', 'error');
+                    return false;
+                }
+                obj.period_weekdays = days.join(',');
+                // تاریخ پایان کوتاه: دست‌کم یکی از روزهای انتخابی باید داخل بازه باشد
+                const sd = obj.start_date, ed = document.getElementById('manualEndDate')?.getAttribute('data-date') || null;
+                if (sd && ed) {
+                    let ok = false;
+                    const c = new Date(sd + 'T00:00:00');
+                    const e = new Date(ed + 'T00:00:00');
+                    for (let i = 0; i < 7 && c <= e; i++, c.setDate(c.getDate() + 1)) {
+                        if (days.includes(String(c.getDay()))) { ok = true; break; }
+                    }
+                    if (!ok) {
+                        showToast('بین تاریخ شروع و پایان هیچ‌کدام از روزهای انتخاب‌شده نیست', 'error');
+                        return false;
+                    }
+                }
+            }
+            if (t === 'interval') {
+                const n = parseInt(toEnDigitsSafe(document.getElementById('periodIntervalDays').value), 10);
+                if (!n || n < 2 || n > 365) {
+                    showToast('فاصلهٔ تکرار باید عددی بین ۲ تا ۳۶۵ روز باشد', 'error');
+                    return false;
+                }
+                obj.period_interval_days = n;
+            }
+            return true;
+        }
+
+        function toEnDigitsSafe(v) {
+            return String(v || '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+        }
+
         // راه‌اندازی رویدادهای فرم
         function setupFormHandlers() {
             // تغییر نوع کار دستی
@@ -1267,7 +1388,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 taskData.period_type = null;
             } else if (taskType === 'continuous') {
                 taskData.start_date = startDateInput.getAttribute('data-date') || null; // فرمت میلادی
-                taskData.period_type = document.getElementById('manualPeriod').value || null;
+                if (!applyPeriodFields(taskData)) return;
                 taskData.due_date = null;
                 taskData.end_date = document.getElementById('manualEndDate').getAttribute('data-date') || null;
             }
@@ -1294,7 +1415,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 const periodDays = {
                     daily: 1,
                     weekly: 7,
-                    monthly: 30
+                    monthly: 30,
+                    weekdays: 1,
+                    interval: taskData.period_interval_days || 1
                 };
                 const minDays = periodDays[taskData.period_type] || 1;
                 const startMs = new Date(taskData.start_date).getTime();
@@ -1418,7 +1541,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 }
             } else {
                 baseTask.start_date = startDateInput.getAttribute('data-date') || null;
-                baseTask.period_type = document.getElementById('manualPeriod').value || null;
+                if (!applyPeriodFields(baseTask)) return null;
                 baseTask.due_date = null;
                 baseTask.end_date = document.getElementById('manualEndDate').getAttribute('data-date') || null;
                 if (!baseTask.start_date) {
@@ -1489,7 +1612,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 }
             } else {
                 baseTask.start_date = startDateInput.getAttribute('data-date') || null;
-                baseTask.period_type = document.getElementById('manualPeriod').value || null;
+                if (!applyPeriodFields(baseTask)) return null;
                 baseTask.due_date = null;
                 baseTask.end_date = document.getElementById('manualEndDate').getAttribute('data-date') || null;
                 if (!baseTask.start_date) {

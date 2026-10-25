@@ -133,12 +133,9 @@ for ($i = $months_count - 1; $i >= 0; $i--) {
     $end_date = sprintf('%04d-%02d-%02d', $end_gy, $end_gm, $end_gd);
     
     // تعطیلات این ماه
-    $stmt = $db->prepare("SELECT holiday_date FROM holidays WHERE holiday_date >= ? AND holiday_date <= ?");
-    $stmt->execute([$start_date, $end_date]);
-    $holidays = [];
-    foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $h) {
-        $holidays[$h] = true;
-    }
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/working-days-helper.php';
+    // سراسری + مخصوص سازمان کاربر − روزهای کاری‌شده (قبلا بدون فیلتر سازمان)
+    $holidays = array_fill_keys(array_keys(getHolidayTitleMap($db, userOrganizationId($db, (int) $target_user_id), $start_date, $end_date)), true);
     
     // حضور و غیاب این ماه
     $stmt = $db->prepare("SELECT date, shift_number, check_in, check_out FROM attendance_records WHERE user_id = ? AND date >= ? AND date <= ?");

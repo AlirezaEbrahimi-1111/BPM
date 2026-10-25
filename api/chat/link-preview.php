@@ -63,7 +63,7 @@ try {
     if ($type === 'task') {
         $stmt = $db->prepare("
             SELECT t.id, t.title, t.status, t.organization_id, t.is_deleted,
-                   t.task_type, t.start_date, t.end_date, t.period_type,
+                   t.task_type, t.start_date, t.end_date, t.period_type, t.period_weekdays, t.period_interval_days,
                    t.due_date, t.deadline, t.original_deadline, t.overdue_forgiven_credit,
                    t.assignee_id,
                    CONCAT(u.first_name, ' ', u.last_name) AS assignee_name

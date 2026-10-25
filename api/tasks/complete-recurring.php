@@ -45,7 +45,7 @@ try {
     }
 
     // ✅ موتور مشترک دوره
-    $holidays = getHolidaySet($db);
+    $holidays = getHolidaySet($db, (isset($task['organization_id']) ? (int) $task['organization_id'] : null));
     $state    = pe_state($db, $task, $holidays);
 
     if (!$state['can_complete']) {

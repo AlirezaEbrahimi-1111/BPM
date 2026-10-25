@@ -110,7 +110,7 @@ try {
     }
 
     // ─── بارگذاری تعطیلات (یک‌بار برای کل request) ───────────────────────────
-    $holidays = getHolidaySet($db);
+    $holidays = getHolidaySet($db, $org_id ? (int) $org_id : null);
 
     // Query ساده
     $sql = "
@@ -126,6 +126,8 @@ SELECT DISTINCT
     t.end_date,
     t.last_approved_date,
     t.period_type,
+    t.period_weekdays,
+    t.period_interval_days,
     t.overdue_forgiven_credit,
     t.is_pending_approval,
     t.has_pending_renewal_request,

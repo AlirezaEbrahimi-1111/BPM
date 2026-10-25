@@ -23,7 +23,7 @@ class LeaveManager
             }
 
             // محاسبه مدت
-            $duration = $this->calculateLeaveDuration($data);
+            $duration = $this->calculateLeaveDuration($data, $user_id);
 
             // بررسی موجودی
             $balance_check = $this->checkLeaveBalance($user_id, $duration['hours']);
@@ -232,7 +232,7 @@ class LeaveManager
     // ===================================
     // محاسبه مدت مرخصی
     // ===================================
-    private function calculateLeaveDuration($data)
+    private function calculateLeaveDuration($data, $user_id = null)
     {
         if ($data['leave_type'] == 'hourly') {
             $start = new DateTime($data['start_date'] . ' ' . $data['start_time']);
@@ -255,7 +255,7 @@ class LeaveManager
 
             while ($current <= $end) {
                 $date_str = $current->format('Y-m-d');
-                if (!$this->isHoliday($date_str) && !$this->isFriday($date_str)) {
+                if (!$this->isHoliday($date_str, $user_id) && !$this->isFriday($date_str)) {
                     $working_days++;
                 }
                 $current->modify('+1 day');
@@ -288,7 +288,7 @@ class LeaveManager
         }
 
         // بررسی مدت (حداقل 1 روز، حداکثر 24 روز)
-        $duration = $this->calculateLeaveDuration($data);
+        $duration = $this->calculateLeaveDuration($data, $user_id);
         if ($duration['days'] < 1 || $duration['days'] > 24) {
             return ['valid' => false, 'message' => 'مدت مرخصی باید بین 1 تا 24 روز باشد'];
         }
@@ -701,7 +701,7 @@ class LeaveManager
         while ($current <= $end) {
             $date_str = $current->format('Y-m-d');
 
-            if (!$this->isHoliday($date_str) && !$this->isFriday($date_str)) {
+            if (!$this->isHoliday($date_str, $mission['user_id'] ?? null) && !$this->isFriday($date_str)) {
                 // ثبت به عنوان حضور کامل
                 $stmt = $this->db->prepare("
                     INSERT INTO attendance_records 
@@ -811,15 +811,13 @@ class LeaveManager
         return $stmt->fetch() !== false;
     }
 
-    private function isHoliday($date)
+    // تعطیلات سازمانِ همین کاربر (سراسری + مخصوص سازمان − روزهای کاری‌شده) —
+    // قبلا جدول بدون فیلتر سازمان خوانده می‌شد. بدون کاربر → فقط سراسری.
+    private function isHoliday($date, $userId = null)
     {
-        try {
-            $stmt = $this->db->prepare("SELECT id FROM holidays WHERE holiday_date = ?");
-            $stmt->execute([$date]);
-            return $stmt->fetch() !== false;
-        } catch (Exception $e) {
-            return false;
-        }
+        require_once __DIR__ . '/working-days-helper.php';
+        $set = $userId ? getHolidaySetForUser($this->db, (int) $userId) : getHolidaySet($this->db);
+        return isset($set[$date]);
     }
 
     private function isFriday($date)

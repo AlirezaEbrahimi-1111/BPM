@@ -16,7 +16,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/recurring-helper.php';
 function getTaskForChecklist($db, $task_id, $user_id)
 {
     $stmt = $db->prepare("SELECT id, title, creator_id, assignee_id, status, checklist_auto_complete, activity_section, organization_id,
-                                 task_type, period_type, start_date, end_date, is_workflow_task
+                                 task_type, period_type, period_weekdays, period_interval_days, start_date, end_date, is_workflow_task
                           FROM tasks WHERE id = ?");
     $stmt->execute([$task_id]);
     $task = $stmt->fetch(PDO::FETCH_ASSOC);

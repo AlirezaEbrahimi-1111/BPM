@@ -30,7 +30,7 @@ class AttendanceManager
             $today = date('Y-m-d');
 
             // بررسی تعطیلی
-            if ($this->isHoliday($today)) {
+            if ($this->isHoliday($today, $user_id)) {
                 return ['success' => false, 'message' => 'امروز تعطیل رسمی است'];
             }
 
@@ -345,7 +345,7 @@ class AttendanceManager
                 $date_str = $current->format('Y-m-d');
 
                 // بررسی تعطیلی و جمعه
-                if (!$this->isHoliday($date_str) && !$this->isFriday($date_str)) {
+                if (!$this->isHoliday($date_str, $user_id) && !$this->isFriday($date_str)) {
                     $total_expected += $expected_daily;
                 }
 
@@ -473,7 +473,7 @@ class AttendanceManager
 
                 $day_data = [
                     'date' => $date_str,
-                    'is_holiday' => $this->isHoliday($date_str),
+                    'is_holiday' => $this->isHoliday($date_str, $user_id),
                     'is_friday' => $this->isFriday($date_str),
                     'status' => 'absent',
                     'work_hours' => 0,
@@ -610,16 +610,13 @@ class AttendanceManager
         return ($ip_long & $mask_long) == ($network_long & $mask_long);
     }
 
-    private function isHoliday($date)
+    // تعطیلات سازمانِ همین کاربر (سراسری + مخصوص سازمان − روزهای کاری‌شده) —
+    // قبلا جدول بدون فیلتر سازمان خوانده می‌شد. بدون کاربر → فقط سراسری.
+    private function isHoliday($date, $userId = null)
     {
-        try {
-            $stmt = $this->db->prepare("SELECT id FROM holidays WHERE holiday_date = ?");
-            $stmt->execute([$date]);
-            return $stmt->fetch() !== false;
-        } catch (Exception $e) {
-            error_log("AttendanceManager::isHoliday DB error | date={$date} | error=" . $e->getMessage());
-            return false;
-        }
+        require_once __DIR__ . '/working-days-helper.php';
+        $set = $userId ? getHolidaySetForUser($this->db, (int) $userId) : getHolidaySet($this->db);
+        return isset($set[$date]);
     }
 
     private function isFriday($date)

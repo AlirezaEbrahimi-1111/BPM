@@ -84,7 +84,7 @@ try {
 
     $today    = date('Y-m-d');
     $now      = date('Y-m-d H:i:s');
-    $holidays = getHolidaySet($db);
+    $holidays = getHolidaySet($db, (int) $org_id);
 
     // آیا این ردیفِ خام مربوط به کاربر/واحدِ درخواست‌شده هست؟ — دقیقا همون
     // منطقِ تشخیصِ user-vs-section که $bucket() توی top-delayed-users.php داره
