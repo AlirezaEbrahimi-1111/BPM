@@ -3310,6 +3310,71 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         /* قالب فرم هر عملیات — مینیمال */
+        /* ═══════════════════════════════════════════════
+           تمدید موعد کار روتین = چند ساعت (مثل صفحهٔ جزئیات کار)
+           ───────────────────────────────────────────────
+           کار روتین موعد ساعتی دارد؛ انتخاب «تاریخ» قبلا موعد را ۰۰:۰۰ همان روز
+           می‌کرد (گزارش گلوگاه ۱۴۰۵/۰۸/۰۳). موعد جدید = موعد فعلی + N ساعت.
+           حساب روی ساعت دیواری خود رشتهٔ سرور، بدون منطقهٔ زمانی دستگاه.
+           ═══════════════════════════════════════════════ */
+        function dashFindTask(taskId) {
+            const id = Number(taskId);
+            return (store.mine || []).find(x => Number(x.id) === id) ||
+                (store.delegated || []).find(x => Number(x.id) === id) ||
+                (store.orgDelegated || []).find(x => Number(x.id) === id) || null;
+        }
+
+        function isWfTask(t) {
+            return !!t && t.is_workflow_task == 1;
+        }
+
+        function wfAddHours(mysqlDt, hours) {
+            const m = String(mysqlDt || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+            if (!m) return null;
+            const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)) + hours * 3600000);
+            const p = n => String(n).padStart(2, '0');
+            return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
+        }
+
+        function wfDeadlineLabel(mysqlDt) {
+            if (!mysqlDt) return 'نامشخص';
+            return window.TimeSync ? TimeSync.formatJalaliTime(mysqlDt) : mysqlDt;
+        }
+
+        function wfExtendFieldsHtml(suffix, task) {
+            return `
+                    <div class="ra-input" style="margin-bottom:8px; font-size:.82rem;">
+                        موعد فعلی: <strong>${wfDeadlineLabel(task.deadline)}</strong>
+                    </div>
+                    <input type="number" min="1" step="1" class="ra-input form-control" id="wfHours${suffix}"
+                           placeholder="چند ساعت به موعد اضافه شود؟ (مثلا ۲۴)"
+                           oninput="wfPreview('${suffix}', ${task.id})" style="margin-bottom:6px;">
+                    <div id="wfPreview${suffix}" class="text-muted" style="font-size:.78rem; margin-bottom:8px;"></div>`;
+        }
+
+        function wfPreview(suffix, taskId) {
+            const t = dashFindTask(taskId);
+            const h = parseInt(document.getElementById('wfHours' + suffix).value, 10);
+            const nd = t && h > 0 ? wfAddHours(t.deadline, h) : null;
+            document.getElementById('wfPreview' + suffix).textContent = nd ? 'موعد جدید: ' + wfDeadlineLabel(nd) : '';
+        }
+
+        /** موعد جدید کار روتین از فیلد ساعت؛ خطا → null (پیام داده شده) */
+        function wfReadNewDeadline(suffix, taskId) {
+            const t = dashFindTask(taskId);
+            const h = parseInt(document.getElementById('wfHours' + suffix).value, 10);
+            if (!h || h < 1) {
+                pmToast('تعداد ساعت معتبر وارد کنید', 'err');
+                return null;
+            }
+            const nd = t ? wfAddHours(t.deadline, h) : null;
+            if (!nd) {
+                pmToast('موعد فعلی این کار نامشخص است', 'err');
+                return null;
+            }
+            return { deadline: nd, hours: h };
+        }
+
         function rowFormHtml(task, action) {
 
             if (action === 'reject') {
@@ -3327,6 +3392,16 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     <div id="rowAssigneePicker"></div>
                     <div class="ra-actions" style="margin-top:10px;">
                         <button class="pm-btn pm-btn-primary" onclick="rowSubmit(${task.id},'delegate',this)">ارجاع</button>
+                        <button class="pm-btn pm-btn-ghost" onclick="rowModal.hide()">انصراف</button>
+                    </div>`;
+            }
+
+            if (action === 'extend' && isWfTask(task)) {
+                return wfExtendFieldsHtml('Row', task) + `
+                    <textarea id="rowNote" class="ra-input"
+                              placeholder="دلیل تمدید (الزامی)" rows="3"></textarea>
+                    <div class="ra-actions">
+                        <button class="pm-btn pm-btn-primary" onclick="rowSubmit(${task.id},'extend',this)">ثبت درخواست</button>
                         <button class="pm-btn pm-btn-ghost" onclick="rowModal.hide()">انصراف</button>
                     </div>`;
             }
@@ -3445,6 +3520,21 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     to_user_id: Number(sel.value),
                     notes: '',
                     share_history: true
+                };
+            } else if (action === 'extend' && document.getElementById('wfHoursRow')) {
+                const wf = wfReadNewDeadline('Row', taskId);
+                if (!wf) return;
+                const note = document.getElementById('rowNote').value.trim();
+                if (!note) {
+                    pmToast('لطفا دلیل تمدید را بنویسید', 'err');
+                    return;
+                }
+                url = '../api/tasks/request-deadline.php';
+                payload = {
+                    task_id: taskId,
+                    new_deadline: wf.deadline,
+                    reason: note,
+                    extend_hours: wf.hours
                 };
             } else if (action === 'extend') {
                 const d = document.getElementById('rowDate').getAttribute('data-date');
@@ -4338,6 +4428,21 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             }
 
             // ── تمدید موعد ─────────────────────────────────
+            const extTask = action === 'extend' ? dashFindTask(taskId) : null;
+            if (action === 'extend' && isWfTask(extTask)) {
+                return `
+            <div class="pm-form-title">
+                <i class="bi bi-calendar-plus" style="color:#ea580c"></i> تمدید موعد کار روتین
+            </div>` + wfExtendFieldsHtml('Pm' + taskId, extTask) + `
+            <textarea id="pmNote-${taskId}" placeholder="دلیل تمدید (الزامی)"></textarea>
+            <div class="pm-form-actions">
+                <button class="pm-btn pm-btn-primary" onclick="pmSubmit(${taskId}, 'extend', this)">
+                    ثبت درخواست
+                </button>
+                <button class="pm-btn pm-btn-ghost" onclick="pmCloseForm(${taskId})">انصراف</button>
+            </div>`;
+            }
+
             if (action === 'extend') {
                 return `
             <div class="pm-form-title">
@@ -4436,6 +4541,22 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 }
 
                 case 'extend': {
+                    if (document.getElementById('wfHoursPm' + taskId)) {
+                        const wf = wfReadNewDeadline('Pm' + taskId, taskId);
+                        if (!wf) return;
+                        if (!note) {
+                            pmToast('لطفا دلیل تمدید را بنویسید', 'err');
+                            return;
+                        }
+                        url = '../api/tasks/request-deadline.php';
+                        payload = {
+                            task_id: taskId,
+                            new_deadline: wf.deadline,
+                            reason: note,
+                            extend_hours: wf.hours
+                        };
+                        break;
+                    }
                     const dateEl = document.getElementById('pmDate-' + taskId);
                     // انتخابگر تاریخ، مقدار میلادی را در data-date می‌گذارد
                     const newDate = dateEl.getAttribute('data-date');

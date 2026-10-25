@@ -834,7 +834,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 pmStRow.partner_profit_recorded = profit;
                 pmStRow.moadian_status = moadian;
                 pmStRow.moadian_code = moadian === 'registered' ? code : '';
-                gridApi.setGridOption('rowData', allRows);
+                AgGridFa.refreshRow(gridApi, pmStRow);
                 bootstrap.Modal.getInstance(document.getElementById('pmStatusModal')).hide();
                 showToast('ذخیره شد', 'success');
             } catch (e) {

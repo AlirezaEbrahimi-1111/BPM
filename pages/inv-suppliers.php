@@ -316,21 +316,23 @@ $canWrite = true;
                     page++;
                 }
                 allRows = out;
-                applyFilter();
+                applyFilter(true);
             } catch (e) {
                 showToast(e.message || 'خطا در بارگذاری', 'error');
                 gridApi.setGridOption('rowData', []);
             }
         }
 
-        function applyFilter() {
+            // keepPage: بارگذاری دوباره بعد از یک عملیات → همان صفحهٔ جدول بماند (AgGridFa.setRowsKeepPage)
+        function applyFilter(keepPage) {
             const q = document.getElementById('crmSearch').value.trim().toLowerCase();
             const rows = !q ? allRows : allRows.filter(r =>
                 (r.name || '').toLowerCase().includes(q) ||
                 (r.phone || '').includes(q) ||
                 (r.mobile || '').includes(q) ||
                 (r.national_id || '').includes(q));
-            gridApi.setGridOption('rowData', rows);
+            if (keepPage) AgGridFa.setRowsKeepPage(gridApi, rows);
+            else gridApi.setGridOption('rowData', rows);
         }
 
         function openAdd() {

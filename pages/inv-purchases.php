@@ -314,14 +314,15 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     page++;
                 }
                 allRows = out;
-                applyFilter();
+                applyFilter(true);
             } catch (e) {
                 showToast(e.message || 'خطا در بارگذاری', 'error');
                 gridApi.setGridOption('rowData', []);
             }
         }
 
-        function applyFilter() {
+            // keepPage: بارگذاری دوباره بعد از یک عملیات → همان صفحهٔ جدول بماند (AgGridFa.setRowsKeepPage)
+        function applyFilter(keepPage) {
             const q = document.getElementById('crmSearch').value.trim().toLowerCase();
             const st = statusFilter ? statusFilter.getSelected() : [];
             let rows = allRows;
@@ -329,7 +330,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             if (q) rows = rows.filter(r =>
                 (r.supplier_ref_number || '').toLowerCase().includes(q) ||
                 (r.supplier_name || '').toLowerCase().includes(q));
-            gridApi.setGridOption('rowData', rows);
+            if (keepPage) AgGridFa.setRowsKeepPage(gridApi, rows);
+            else gridApi.setGridOption('rowData', rows);
         }
 
         function confirmP(id) {
@@ -383,7 +385,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 searchTimer = setTimeout(applyFilter, 200);
             });
             statusFilter = MultiFilter.create({
-                container: '#stFilter', allLabel: 'همه‌ی وضعیت‌ها', unit: 'وضعیت', onChange: applyFilter,
+                container: '#stFilter', allLabel: 'همه‌ی وضعیت‌ها', unit: 'وضعیت', onChange: () => applyFilter(),
                 persistKey: 'inv-purchases', // بعد از رفتن/برگشتن و رفرش می‌ماند (۱۴۰۵/۰۸/۰۳)
                 options: [
                     { value: 'draft', label: 'پیش‌نویس' },

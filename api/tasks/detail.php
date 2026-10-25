@@ -224,6 +224,32 @@ try {
         $history = [];
     }
 
+    // 🆕 درخواست توقف روتین: آیا من می‌توانم درخواست بدهم / درخواستی در انتظار من است؟
+    $task['workflow_stop'] = null;
+    if ($task['is_workflow_task'] == 1 && $task['workflow_instance_id'] && !$is_viewer_only) {
+        try {
+            require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/workflow-stop-helper.php';
+            $wsrInstance = wsr_loadInstance($db, (int) $task['workflow_instance_id']);
+            if ($wsrInstance && in_array($wsrInstance['status'], WSR_OPEN_INSTANCE_STATUSES, true)) {
+                $wsrPending = wsr_pendingRequest($db, (int) $wsrInstance['id']);
+                $task['workflow_stop'] = [
+                    'instance_title' => $wsrInstance['title'],
+                    'can_request'    => !$wsrPending && wsr_isStepHolder($db, (int) $user_id, $task),
+                    'pending'        => $wsrPending ? [
+                        'id'             => (int) $wsrPending['id'],
+                        'requester_name' => $wsrPending['requester_name'],
+                        'reason'         => $wsrPending['reason'],
+                        'created_at'     => $wsrPending['created_at'],
+                        'can_review'     => (int) $wsrPending['approver_id'] === (int) $user_id,
+                    ] : null,
+                ];
+            }
+        } catch (Exception $e) {
+            // جدول هنوز مایگریت نشده یا خطای دیگر → صفحه بدون این بخش کار کند
+            error_log('detail workflow_stop error: ' . $e->getMessage());
+        }
+    }
+
     // 🔒 پلن رایگان: اطلاعات سازنده از پاسخ حذف می‌شود (مشخصات بخش ۱۱)
     require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
     if (planState($db, (int) ($task['organization_id'] ?? 0))['plan'] === 'free') {

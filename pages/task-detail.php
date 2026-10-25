@@ -467,6 +467,9 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
             <!-- پیغام وضعیت -->
             <div id="statusMessage"></div>
 
+            <!-- درخواست توقف روتین در انتظار تأیید -->
+            <div id="workflowStopBanner" style="display:none;"></div>
+
             <!-- شمارنده تکمیل برای کارهای دوره‌ای -->
             <div id="completionCounter" style="display: none;"></div>
 
@@ -597,6 +600,10 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                 <button type="button" class="btn btn-warning" id="terminationRequestBtn"
                     onclick="showTerminationRequestModal()" style="display:none;">
                     <i class="bi bi-flag-fill ms-2"></i>درخواست اتمام کار
+                </button>
+                <button type="button" class="btn btn-outline-danger" id="workflowStopRequestBtn"
+                    onclick="showWorkflowStopRequestModal()" style="display:none;">
+                    <i class="bi bi-sign-stop ms-2"></i>درخواست توقف روتین
                 </button>
                 <button type="button" class="btn btn-danger" id="terminatePeriodBtn" onclick="showTerminatePeriodConfirm()"
                     style="display: none;">
@@ -1223,6 +1230,57 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                 </div>
             </div>
         </div>
+        <!-- Modal درخواست توقف روتین (مسئول مرحله) -->
+        <div class="modal fade" id="workflowStopRequestModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-sign-stop me-2"></i>درخواست توقف روتین</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            درخواست برای تعریف‌کنندهٔ روتین فرستاده می‌شود. اگر تأیید کند، کل روتین متوقف می‌شود و
+                            کارهای باز آن بسته می‌شوند. تا آن موقع می‌توانید به کارتان ادامه دهید.
+                        </div>
+                        <label class="form-label">دلیل توقف روتین *</label>
+                        <textarea class="form-control" id="workflowStopReason" rows="4"
+                            placeholder="توضیح دهید چرا این روتین باید متوقف شود..."></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                        <button type="button" class="btn btn-danger" id="workflowStopSubmitBtn" onclick="submitWorkflowStopRequest()">
+                            <i class="bi bi-send me-2"></i>ارسال درخواست
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal رد درخواست توقف روتین (تعریف‌کننده) -->
+        <div class="modal fade" id="workflowStopRejectModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>رد درخواست توقف روتین</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label">دلیل رد *</label>
+                        <textarea class="form-control" id="workflowStopRejectReason" rows="3"
+                            placeholder="این دلیل برای درخواست‌دهنده فرستاده می‌شود..."></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                        <button type="button" class="btn btn-danger" onclick="submitWorkflowStopReview('reject')">
+                            <i class="bi bi-x-lg me-2"></i>رد درخواست
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal درخواست اتمام کار (assignee) -->
         <div class="modal fade" id="terminationRequestModal" tabindex="-1">
             <div class="modal-dialog">
@@ -4064,6 +4122,8 @@ ${task.overdue_periods > 0 ? `
                     return;
                 }
 
+                renderWorkflowStop(task);
+
                 isCreator = currentUser && currentUser.id == task.creator_id;
                 isAssignee = currentUser && currentUser.id == task.assignee_id;
                 const isPendingApproval = task.status === 'pending_approval' && task.is_pending_approval == 1;
@@ -6181,6 +6241,119 @@ ${task.overdue_periods > 0 ? `
                         ]
                     }
                 );
+            }
+
+            // ─── درخواست توقف روتین ─────────────────────────────────────
+            // داده از api/tasks/detail.php → task.workflow_stop
+            //   { instance_title, can_request, pending: { id, requester_name, reason, created_at, can_review } | null }
+            let currentWorkflowStopRequestId = null;
+
+            function renderWorkflowStop(task) {
+                const ws = task.workflow_stop;
+                const btn = document.getElementById('workflowStopRequestBtn');
+                const banner = document.getElementById('workflowStopBanner');
+                btn.style.display = ws && ws.can_request ? '' : 'none';
+                if (!ws || !ws.pending) {
+                    banner.style.display = 'none';
+                    banner.innerHTML = '';
+                    currentWorkflowStopRequestId = null;
+                    return;
+                }
+                const p = ws.pending;
+                currentWorkflowStopRequestId = p.id;
+                const when = window.TimeSync ? TimeSync.timeAgo(p.created_at) : '';
+                banner.innerHTML = `
+                    <div class="alert alert-warning">
+                        <div class="fw-bold mb-1"><i class="bi bi-sign-stop me-2"></i>درخواست توقف روتین «${escapeHtml(ws.instance_title)}»</div>
+                        <div class="small mb-2">«${escapeHtml(p.requester_name)}» ${when ? escapeHtml(when) + ' ' : ''}درخواست داده این روتین متوقف شود.</div>
+                        <div class="small mb-2"><strong>دلیل:</strong> ${escapeHtml(p.reason)}</div>
+                        ${p.can_review ? `
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-sm btn-danger" onclick="confirmWorkflowStopApprove()">
+                                    <i class="bi bi-check-lg me-1"></i>تأیید و توقف روتین
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="showWorkflowStopRejectModal()">
+                                    <i class="bi bi-x-lg me-1"></i>رد درخواست
+                                </button>
+                            </div>` : `<div class="small text-muted">در انتظار تأیید تعریف‌کنندهٔ روتین. تا آن موقع روتین ادامه دارد.</div>`}
+                    </div>`;
+                banner.style.display = '';
+            }
+
+            function showWorkflowStopRequestModal() {
+                document.getElementById('workflowStopReason').value = '';
+                const el = document.getElementById('workflowStopRequestModal');
+                el.addEventListener('shown.bs.modal', () => document.getElementById('workflowStopReason').focus(), { once: true });
+                new bootstrap.Modal(el).show();
+            }
+
+            async function submitWorkflowStopRequest() {
+                const reason = document.getElementById('workflowStopReason').value.trim();
+                if (!reason) {
+                    showToast('لطفا دلیل توقف روتین را بنویسید', 'info');
+                    return;
+                }
+                const submitBtn = document.getElementById('workflowStopSubmitBtn');
+                submitBtn.disabled = true;
+                try {
+                    const response = await fetch('../api/workflows/request-stop.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                        body: JSON.stringify({ task_id: taskId, reason })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('workflowStopRequestModal')).hide();
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1200);
+                    } else {
+                        showToast(data.message || 'خطا در ارسال درخواست', 'warning');
+                    }
+                } catch (err) {
+                    showToast('خطا در ارتباط با سرور', 'warning');
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            }
+
+            function confirmWorkflowStopApprove() {
+                uiConfirm('با تأیید، کل روتین متوقف می‌شود و کارهای باز آن بسته می‌شوند. این کار برگشت‌پذیر نیست. ادامه می‌دهید؟',
+                    () => submitWorkflowStopReview('approve'),
+                    { danger: true, yesText: 'بله، متوقف شود', noText: 'انصراف' });
+            }
+
+            function showWorkflowStopRejectModal() {
+                document.getElementById('workflowStopRejectReason').value = '';
+                const el = document.getElementById('workflowStopRejectModal');
+                el.addEventListener('shown.bs.modal', () => document.getElementById('workflowStopRejectReason').focus(), { once: true });
+                new bootstrap.Modal(el).show();
+            }
+
+            async function submitWorkflowStopReview(decision) {
+                if (!currentWorkflowStopRequestId) return;
+                const rejectionReason = document.getElementById('workflowStopRejectReason').value.trim();
+                if (decision === 'reject' && !rejectionReason) {
+                    showToast('لطفا دلیل رد درخواست را بنویسید', 'info');
+                    return;
+                }
+                try {
+                    const response = await fetch('../api/workflows/review-stop.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                        body: JSON.stringify({ request_id: currentWorkflowStopRequestId, decision, rejection_reason: rejectionReason })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        const m = bootstrap.Modal.getInstance(document.getElementById('workflowStopRejectModal'));
+                        if (m) m.hide();
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1200);
+                    } else {
+                        showToast(data.message || 'خطا در ثبت پاسخ', 'warning');
+                    }
+                } catch (err) {
+                    showToast('خطا در ارتباط با سرور', 'warning');
+                }
             }
 
             // ─── نمایش modal درخواست (assignee) ──────────────────────────

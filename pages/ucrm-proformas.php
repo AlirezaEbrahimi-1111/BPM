@@ -30,6 +30,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/search-persist.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/xlsx.full.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
@@ -171,6 +172,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
 
         function setRange(r) {
             range = r;
+            SearchPersist.setValue('ucrm-proformas', 'range', JSON.stringify(r)); // بازهٔ تاریخ ماندگار
             document.getElementById('rangeLbl').textContent = faDigits(convertToJalali(r.from) + ' - ' + convertToJalali(r.to));
             [['dFrom', r.from], ['dTo', r.to]].forEach(([id, g]) => {
                 const el = document.getElementById(id);
@@ -223,7 +225,11 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             // کلیک راست روی ردیف = همان منوی عملیات (قاعدهٔ جدول‌های حسابداری)
             AgGridFa.rowContextMenu(document.getElementById('pfGrid'), gridApi);
 
-            setRange(quickRange('month'));
+            let savedRange = null;
+            try {
+                savedRange = JSON.parse(SearchPersist.getValue('ucrm-proformas', 'range') || 'null');
+            } catch (e) {}
+            setRange(savedRange && savedRange.from && savedRange.to ? savedRange : quickRange('month'));
             document.querySelectorAll('.uc-pf-quick button').forEach(b => b.addEventListener('click', () => {
                 setRange(quickRange(b.dataset.q));
                 bootstrap.Dropdown.getOrCreateInstance(document.querySelector('.uc-pf-range-btn')).hide();
@@ -247,6 +253,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                         o.textContent = r.name;
                         sel.appendChild(o);
                     });
+                    SearchPersist.bindSelect(sel, 'ucrm-proformas');
                     sel.addEventListener('change', load);
                 } catch (e) {
                     showToast(e.message || 'خطا در دریافت کارشناسان', 'error');

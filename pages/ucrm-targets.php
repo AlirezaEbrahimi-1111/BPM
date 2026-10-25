@@ -26,6 +26,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/search-persist.js') ?>"></script>
     <script src="<?= asset('../../assets/js/entity-picker.js') ?>"></script>
     <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/ucrm.css') ?>">
@@ -317,7 +318,8 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             overlayNoRowsTemplate: '<span class="text-muted">مشتری تأییدشده‌ای برای این کارشناس نیست</span>',
         };
 
-        async function load() {
+        // keepPage: بارگذاری دوباره بعد از ذخیره/حذف → همان صفحهٔ جدول بماند (AgGridFa.setRowsKeepPage)
+        async function load(keepPage) {
             gridApi.showLoadingOverlay();
             const q = new URLSearchParams({
                 period_type: document.getElementById('fType').value,
@@ -332,7 +334,8 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 periodStart = d.period_start || '';
                 periodEnd = d.period_end || '';
                 if (d.settings) settings = d.settings;
-                gridApi.setGridOption('rowData', rows);
+                if (keepPage) AgGridFa.setRowsKeepPage(gridApi, rows);
+                else gridApi.setGridOption('rowData', rows);
             } catch (e) {
                 showToast(e.message || 'خطا در بارگذاری', 'error');
                 gridApi.setGridOption('rowData', []);
@@ -435,7 +438,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 const d = await UCRM.send('PUT', '/targets', body);
                 tgModal.hide();
                 showToast(d.message || 'ذخیره شد', 'success');
-                load();
+                load(true);
             } catch (e) {
                 al.innerHTML = '<div class="alert alert-danger py-2 mb-0">' + esc(e.message || 'خطا') + '</div>';
             } finally {
@@ -508,7 +511,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 showToast(d.message || 'ذخیره شد', 'success');
                 resetRule();
                 await loadRules();
-                load();
+                load(true);
             } catch (e) {
                 al.innerHTML = '<div class="alert alert-danger py-2">' + esc(e.message || 'خطا') + '</div>';
             }
@@ -520,7 +523,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                     await UCRM.send('DELETE', '/target-rules/' + id, {});
                     showToast('قاعده حذف شد', 'success');
                     await loadRules();
-                    load();
+                    load(true);
                 } catch (e) { showToast(e.message || 'خطا', 'error'); }
             }, { danger: true, yesText: 'حذف', noText: 'انصراف' });
         }
@@ -612,10 +615,19 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 showToast(e.message || 'خطا در بارگذاری', 'error');
                 return;
             }
-            fillPeriods();
-            document.getElementById('fType').addEventListener('change', () => { fillPeriods(); load(); });
-            document.getElementById('fPeriod').addEventListener('change', load);
-            if (document.getElementById('fRep')) document.getElementById('fRep').addEventListener('change', load);
+            // فیلترهای کارشناس/نوع دوره/دوره بعد از رفرش/برگشت می‌مانند (search-persist.js)
+            SearchPersist.bindSelect(document.getElementById('fType'), 'ucrm-targets');
+            fillPeriods(SearchPersist.getValue('ucrm-targets', 'fPeriod'));
+            SearchPersist.bindSelect(document.getElementById('fPeriod'), 'ucrm-targets');
+            if (document.getElementById('fRep')) SearchPersist.bindSelect(document.getElementById('fRep'), 'ucrm-targets');
+            document.getElementById('fType').addEventListener('change', () => {
+                fillPeriods();
+                // دورهٔ تازه با عوض‌شدن نوع، برنامه‌ای عوض شده (رویداد change ندارد) → دستی ذخیره شود
+                SearchPersist.setValue('ucrm-targets', 'fPeriod', document.getElementById('fPeriod').value);
+                load();
+            });
+            document.getElementById('fPeriod').addEventListener('change', () => load());
+            if (document.getElementById('fRep')) document.getElementById('fRep').addEventListener('change', () => load());
 
             if (CAN_EDIT) {
                 document.getElementById('btnRules').addEventListener('click', openRules);

@@ -24,6 +24,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/search-persist.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/xlsx.full.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/iran-id-validate.js') ?>"></script>
     <script src="<?= asset('../../assets/js/iran-provinces.js') ?>"></script>
@@ -350,14 +351,15 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 const d = await UCRM.get('/customers');
                 allRows = d.items || [];
                 if (d.settings) settings = d.settings;
-                applyFilter();
+                applyFilter(true);
             } catch (e) {
                 showToast(e.message || 'خطا در بارگذاری', 'error');
                 gridApi.setGridOption('rowData', []);
             }
         }
 
-        function applyFilter() {
+            // keepPage: بارگذاری دوباره بعد از یک عملیات → همان صفحهٔ جدول بماند (AgGridFa.setRowsKeepPage)
+        function applyFilter(keepPage) {
             const q = UCRM.toEn(document.getElementById('crmSearch').value.trim()).toLowerCase();
             const st = document.getElementById('stFilter').value;
             const qd = q.replace(/\D/g, '');
@@ -370,7 +372,8 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                     (qd && ((r.national_id || '').includes(qd) || (r.phones || []).some(p => p.includes(qd)))) ||
                     UCRM.fullAddress(r).toLowerCase().includes(q);
             });
-            gridApi.setGridOption('rowData', rows);
+            if (keepPage) AgGridFa.setRowsKeepPage(gridApi, rows);
+            else gridApi.setGridOption('rowData', rows);
         }
 
         // ── فرم ──
@@ -848,11 +851,14 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 if (e.target.files[0]) handleExcel(e.target.files[0]);
                 e.target.value = '';
             });
+            // جستجو و فیلتر وضعیت بعد از رفرش/برگشت می‌مانند (search-persist.js)
+            SearchPersist.bind(document.getElementById('crmSearch'), 'ucrm-customers');
+            SearchPersist.bindSelect(document.getElementById('stFilter'), 'ucrm-customers');
             document.getElementById('crmSearch').addEventListener('input', () => {
                 clearTimeout(searchTimer);
-                searchTimer = setTimeout(applyFilter, 200);
+                searchTimer = setTimeout(() => applyFilter(), 200);
             });
-            document.getElementById('stFilter').addEventListener('change', applyFilter);
+            document.getElementById('stFilter').addEventListener('change', () => applyFilter());
             // تأییدکننده‌ها پیش‌فرض «در انتظار تأیید من» نمی‌بینند؛ همه نشان داده می‌شود (طبق توافق)
 
             try {

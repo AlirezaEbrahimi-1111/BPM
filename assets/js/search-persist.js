@@ -77,5 +77,28 @@
         });
     }
 
-    w.SearchPersist = { bind: bind };
+    /**
+     * فیلتر کشویی (<select>) ماندگار — بعد از پر شدن گزینه‌ها و قبل از اولین بارگذاری صدا زده شود.
+     *   SearchPersist.bindSelect(document.getElementById('fRep'), 'ucrm-targets');
+     * مقدار ذخیره‌شده فقط اگر هنوز بین گزینه‌ها باشد اعمال می‌شود. true = مقداری بازیابی شد.
+     */
+    function bindSelect(sel, pageKey) {
+        if (!sel || sel.dataset.spBound) return false;
+        sel.dataset.spBound = '1';
+        var key = 'filter:' + pageKey + ':' + sel.id;
+        var saved = storeGet(key);
+        var restored = false;
+        if (saved && Array.prototype.some.call(sel.options, function (o) { return o.value === saved; })) {
+            sel.value = saved;
+            restored = true;
+        }
+        sel.addEventListener('change', function () { storeSet(key, sel.value); });
+        return restored;
+    }
+
+    /** مقدار ذخیره‌شدهٔ خام (برای فیلترهایی که <select> ساده نیستند، مثل بازهٔ تاریخ) */
+    function getValue(pageKey, name) { return storeGet('filter:' + pageKey + ':' + name); }
+    function setValue(pageKey, name, v) { storeSet('filter:' + pageKey + ':' + name, v); }
+
+    w.SearchPersist = { bind: bind, bindSelect: bindSelect, getValue: getValue, setValue: setValue };
 })(window);

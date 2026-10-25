@@ -568,8 +568,40 @@
         });
     }
 
+    /* ═══════════════════════════════════════════════════════════════════
+     * حفظ جستجو/فیلتر/صفحه بعد از ویرایش (درخواست ۱۴۰۵/۰۸/۰۳)
+     * -------------------------------------------------------------------
+     * refreshRow(api, data): بعد از ویرایش یک ردیف (شیء data درجا عوض شده)، فقط
+     *   همان ردیف دوباره کشیده شود. setGridOption('rowData', allRows) نزنید: کل داده
+     *   (بدون فیلتر صفحه) جایگزین و جدول به صفحهٔ ۱ برمی‌گشت. ردیفی که دیگر با فیلتر
+     *   جور نیست عمدا همان‌جا می‌ماند تا فیلتر بعدی (تصمیم کاربر).
+     * setRowsKeepPage(api, rows): جایگزینی داده بعد از بارگذاری دوباره از سرور
+     *   (مثلا بعد از تأیید/باطل) بدون پریدن به صفحهٔ ۱. برای تغییر فیلتر به‌کار نرود.
+     * ═══════════════════════════════════════════════════════════════════ */
+    function refreshRow(api, data) {
+        if (!api || !data) return;
+        var hit = null;
+        api.forEachNode(function (n) {
+            if (!hit && (n.data === data || (data.id != null && n.data && n.data.id === data.id))) hit = n;
+        });
+        if (!hit) return;
+        if (hit.data !== data) hit.setData(data);
+        api.redrawRows({ rowNodes: [hit] });
+    }
+
+    function setRowsKeepPage(api, rows) {
+        if (!api) return;
+        var page = api.paginationGetCurrentPage ? api.paginationGetCurrentPage() : 0;
+        api.setGridOption('rowData', rows);
+        if (page > 0) {
+            var last = Math.max(0, api.paginationGetTotalPages() - 1);
+            api.paginationGoToPage(Math.min(page, last));
+        }
+    }
+
     w.AgGridFa = {
         persianizePaging: persianizePaging, toFaDigits: toFaDigits, theme: theme, numericTextComparator: numericTextComparator, copyText: copyText,
-        actionMenuCell: actionMenuCell, closeActionMenu: closeActionMenu, copyCell: copyCell, rowContextMenu: rowContextMenu
+        actionMenuCell: actionMenuCell, closeActionMenu: closeActionMenu, copyCell: copyCell, rowContextMenu: rowContextMenu,
+        refreshRow: refreshRow, setRowsKeepPage: setRowsKeepPage
     };
 })(window);

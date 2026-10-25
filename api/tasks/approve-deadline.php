@@ -73,6 +73,10 @@ try {
     $is_workflow  = ($request['is_workflow_task'] == 1);
     $task_id      = $request['task_id'];
     $new_deadline = $request['requested_new_deadline'];
+    // درخواست‌های روتینِ قدیمی‌تر که فقط تاریخ دارند → آخر همان روز (هم‌خوان با request-deadline.php)
+    if ($is_workflow && preg_match('/^\d{4}-\d{2}-\d{2}( 00:00:00)?$/', (string) $new_deadline)) {
+        $new_deadline = substr($new_deadline, 0, 10) . ' 23:59:59';
+    }
 
     // ✅ بررسی مجوز: approver فعلی یا مدیر
     if ($request['current_approver_id'] != $user_id && !$isManager) {

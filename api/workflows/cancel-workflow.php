@@ -25,11 +25,23 @@ try {
 
     // 🔒 خط قرمز: روتین باید متعلق به همین سازمان باشد، وگرنه کاربر یک
     // سازمان می‌تواند روتین در حال اجرای سازمان دیگر را لغو کند
-    $stmt = $db->prepare("SELECT id FROM workflow_instances WHERE id = ? AND organization_id = ?");
+    $stmt = $db->prepare("SELECT id, created_by FROM workflow_instances WHERE id = ? AND organization_id = ?");
     $stmt->execute([$instance_id, $org_id]);
-    if (!$stmt->fetch()) {
+    $instance = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$instance) {
         http_response_code(404);
         echo json_encode(['success' => false, 'message' => 'روتین یافت نشد']);
+        exit;
+    }
+
+    // 🔒 لغو مستقیم فقط برای تعریف‌کنندهٔ روتین یا کسی که نظارت بر همهٔ روتین‌ها را دارد؛
+    // بقیه باید از مسیر «درخواست توقف روتین» (api/workflows/request-stop.php) بروند
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+    $me = loadUserForPermissions($db, $user_id);
+    if ((int) $instance['created_by'] !== (int) $user_id && !hasPermission($me, 'monitor_all_workflows')) {
+        error_log("cancel-workflow denied (not creator/monitor) | user_id={$user_id} | instance_id={$instance_id}");
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'فقط تعریف‌کنندهٔ روتین می‌تواند آن را مستقیم لغو کند']);
         exit;
     }
 

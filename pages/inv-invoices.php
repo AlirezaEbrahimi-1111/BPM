@@ -656,7 +656,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 const keys = allRows.map(r => MonthFilter.keyOf(invDate(r))).concat(cur ? [cur] : []);
                 monthFilter.setMonths(keys, monthFilterInit ? null : []);
                 monthFilterInit = true;
-                applyFilter();
+                applyFilter(true);
             } catch (e) {
                 showToast(e.message || 'خطا در بارگذاری', 'error');
                 gridApi.setGridOption('rowData', []);
@@ -688,7 +688,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             return true;
         }
 
-        function applyFilter() {
+            // keepPage: بارگذاری دوباره بعد از یک عملیات → همان صفحهٔ جدول بماند (AgGridFa.setRowsKeepPage)
+        function applyFilter(keepPage) {
             // رقم فارسی/عربی → لاتین تا «۷۰۴» و «704» هر دو پیدا شوند
             const q = String(document.getElementById('crmSearch').value || '')
                 .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
@@ -707,7 +708,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 (r.customer_name || '').toLowerCase().includes(q) ||
                 (r.partner_name || '').toLowerCase().includes(q) ||
                 (isAmount && String(Math.round(Number(r.total_amount) || 0)).includes(qAmount)));
-            gridApi.setGridOption('rowData', rows);
+            if (keepPage) AgGridFa.setRowsKeepPage(gridApi, rows);
+            else gridApi.setGridOption('rowData', rows);
         }
 
         function approveInv(id) {
@@ -803,7 +805,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                         partner_profit_recorded: true
                     });
                     row.partner_profit_recorded = true;
-                    gridApi.setGridOption('rowData', allRows);
+                    AgGridFa.refreshRow(gridApi, row);
                     showToast('سود همکار ثبت شد', 'success');
                 } catch (e) {
                     showToast(e.message || 'خطا', 'error');
@@ -854,7 +856,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 stRow.moadian_status = moadian;
                 stRow.moadian_code = moadian === 'registered' ? code : '';
                 if (hasPartnerProfit(stRow)) stRow.partner_profit_recorded = profit;
-                gridApi.setGridOption('rowData', allRows);
+                AgGridFa.refreshRow(gridApi, stRow);
                 bootstrap.Modal.getInstance(document.getElementById('stModal')).hide();
                 showToast('ذخیره شد', 'success');
             } catch (e) {
@@ -877,7 +879,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 searchTimer = setTimeout(applyFilter, 200);
             });
             statusFilter = MultiFilter.create({
-                container: '#stFilter', allLabel: 'همه‌ی وضعیت‌ها', unit: 'وضعیت', onChange: applyFilter,
+                container: '#stFilter', allLabel: 'همه‌ی وضعیت‌ها', unit: 'وضعیت', onChange: () => applyFilter(),
                 persistKey: 'inv-invoices', // بعد از رفتن/برگشتن و رفرش می‌ماند (۱۴۰۵/۰۸/۰۳)
                 groups: { settle: 'تسویه', record: 'ثبت' },
                 options: [
@@ -890,7 +892,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     { value: 'moadian_unregistered', label: 'ثبت نشده مودیان', group: 'record' },
                 ],
             });
-            monthFilter = MonthFilter.create({ container: '#monthFilter', onChange: applyFilter, persistKey: 'inv-invoices' });
+            monthFilter = MonthFilter.create({ container: '#monthFilter', onChange: () => applyFilter(), persistKey: 'inv-invoices' });
             document.getElementById('stMoadian').addEventListener('change', stToggleCode);
             document.getElementById('stSaveBtn').addEventListener('click', stSaveStatus);
             document.getElementById('stModal').addEventListener('shown.bs.modal', () => {
