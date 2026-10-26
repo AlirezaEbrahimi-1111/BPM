@@ -993,6 +993,9 @@ foreach ($all_requests as $req) {
         'delete_burns_quota' => (bool) $delete_burns_quota,
         'delete_by_supervisor' => (bool) $delete_by_supervisor,
         'can_cancel'     => (bool) $can_cancel,
+        // بازتعریف = درخواست تازه از روی همین درخواست (هر وضعیتی)، فقط درخواست خود کاربر —
+        // api/requests/get.php هم فقط درخواست خود کاربر را برمی‌گرداند
+        'can_redefine'   => (bool) $is_own,
         'cancel_reason'  => '',
         '_debug'         => "type={$type} status={$status} sub=" . ($req['substitute_approval'] ?? 'NULL') . " mgr=" . ($req['manager_approval'] ?? 'NULL') . " sup=" . ($req['supervisor_approval'] ?? 'NULL') . " can_del=" . ($can_delete ? '1' : '0'),
     ];
@@ -2690,6 +2693,11 @@ function formatDateJalali($gregorianDate)
         :root[data-theme="dark"] .reason-box .reason-input { background: var(--surface); color: var(--text-strong); border-color: var(--border-soft); }
         .action-icon-btn.cancel-btn { color: #6B7280; }
         .action-icon-btn.cancel-btn:hover { color: #DC2626; }
+        /* بازتعریف — آبی‌سبز تا با ویرایش (بنفش) اشتباه نشود */
+        .action-icon-btn.redefine-btn { background: rgba(13, 148, 136, .12); color: #0d9488; }
+        .action-icon-btn.redefine-btn:hover { background: #0d9488; color: #fff; }
+        :root[data-theme="dark"] .action-icon-btn.redefine-btn { background: rgba(45, 212, 191, .14); color: #5eead4; }
+        :root[data-theme="dark"] .action-icon-btn.redefine-btn:hover { background: #0d9488; color: #fff; }
 
         .timeline-dot.cancelled {
             background: #6B7280;
@@ -3648,7 +3656,8 @@ function formatDateJalali($gregorianDate)
                 if (d.can_edit) h += `<button class="action-icon-btn edit-btn" onclick="editRequest(${d.id}, '${d.type}')" title="ویرایش"><i class="bi bi-pencil"></i></button>`;
                 if (d.can_delete) h += `<button class="action-icon-btn delete-btn" onclick="deleteRequest(${d.id}, '${d.type}', ${d.delete_burns_quota ? 'true' : 'false'}, ${d.delete_by_supervisor ? 'true' : 'false'})" title="حذف"><i class="bi bi-trash"></i></button>`;
                 if (d.can_cancel) h += `<button class="action-icon-btn cancel-btn" onclick="cancelRequest(${d.id}, '${d.type}')" title="لغو با دلیل (مسئول)"><i class="bi bi-x-circle"></i></button>`;
-                if (!d.can_edit && !d.can_delete && !d.can_cancel) return '<span class="no-action">—</span>';
+                if (d.can_redefine) h += `<button class="action-icon-btn redefine-btn" onclick="editRequest(${d.id}, '${d.type}', true)" title="بازتعریف — درخواست تازه از روی همین درخواست"><i class="bi bi-arrow-repeat"></i></button>`;
+                if (!d.can_edit && !d.can_delete && !d.can_cancel && !d.can_redefine) return '<span class="no-action">—</span>';
                 return `<div style="display:flex;gap:6px;justify-content:center;align-items:center;height:100%;">${h}</div>`;
             }
 
@@ -3736,7 +3745,7 @@ function formatDateJalali($gregorianDate)
                     cellRenderer: p => farsi(p.value || '—')
                 }, {
                     headerName: 'عملیات',
-                    width: 150, // ویرایش + حذف + لغو (مسئول)
+                    width: 175, // ویرایش + حذف + لغو (مسئول) + بازتعریف
                     sortable: false,
                     cellClass: 'req-actions-cell',
                     cellRenderer: p => actionsCell(p.data)
@@ -5855,7 +5864,9 @@ function formatDateJalali($gregorianDate)
         }
 
         // ویرایش درخواست - باز کردن مودال با داده‌های موجود
-        async function editRequest(id, type) {
+        // asRedefine = «بازتعریف»: همان فرم از روی درخواست قبلی پر می‌شود ولی درخواست تازه
+        // ثبت می‌شود (data-edit-id گذاشته نمی‌شود) و تاریخ‌ها خالی می‌مانند تا کاربر انتخاب کند
+        async function editRequest(id, type, asRedefine = false) {
             try {
                 const response = await fetch(`/attendance_system/api/requests/get.php?id=${id}&type=${type}`);
                 const result = await response.json();
@@ -5880,9 +5891,14 @@ function formatDateJalali($gregorianDate)
                 // باز کردن مودال
                 document.getElementById('modalOverlay').classList.add('show');
 
-                // ذخیره id برای submit
-                document.getElementById('requestForm').setAttribute('data-edit-id', id);
-                document.getElementById('requestForm').setAttribute('data-edit-type', type);
+                // ذخیره id برای submit (فقط ویرایش؛ بازتعریف = ثبت تازه)
+                if (!asRedefine) {
+                    document.getElementById('requestForm').setAttribute('data-edit-id', id);
+                    document.getElementById('requestForm').setAttribute('data-edit-type', type);
+                } else {
+                    document.getElementById('requestForm').removeAttribute('data-edit-id');
+                    document.getElementById('requestForm').removeAttribute('data-edit-type');
+                }
 
                 // پر کردن فیلدها بر اساس نوع
                 setTimeout(() => {
@@ -5945,6 +5961,21 @@ function formatDateJalali($gregorianDate)
                         document.getElementById('technicalStartTime').value = data.start_time || '';
                         document.getElementById('technicalEndTime').value = data.end_time || '';
                         document.getElementById('technicalIssueDesc').value = data.description || '';
+                    }
+
+                    if (asRedefine) {
+                        // تاریخ‌ها خالی: معمولا همان درخواست برای روزی دیگر است
+                        ['missionStartDate', 'missionEndDate', 'leaveStartDate', 'leaveEndDate', 'passDate',
+                            'forgetPasswordDate', 'technicalIssueDate'].forEach(fid => {
+                            const el = document.getElementById(fid);
+                            if (el) {
+                                el.value = '';
+                                el.removeAttribute('data-date');
+                            }
+                        });
+                        document.getElementById('submitBtn').textContent = 'ارسال درخواست';
+                        showToast('اطلاعات درخواست قبلی پر شد — تاریخ را انتخاب و ارسال کنید', 'info');
+                        return;
                     }
 
                     // تغییر متن دکمه
