@@ -122,22 +122,10 @@ try {
         }
     }
 
-    // ===== بررسی 2: محدودیت روزانه (3 درخواست در روز) =====
-    $today = date('Y-m-d');
-    $stmt = $db->prepare("
-        SELECT COUNT(*) as count 
-        FROM deadline_requests 
-        WHERE requested_by = ? 
-        AND task_id = ?
-        AND DATE(created_at) = ?
-    ");
-    $stmt->execute([$user_id, $task_id, $today]);
-    $daily_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
-
-    if ($daily_count >= 3) {
-        http_response_code(429);
-        throw new Exception('امکان درخواست تمدید موعد برای این کار، بیش از 3 بار در روز وجود ندارد.');
-    }
+    // ===== بررسی 2: سقف تعداد تمدید — برداشته شد (۱۴۰۵/۰۸/۰۴) =====
+    // قبلا حداکثر ۳ درخواست تمدید در روز برای هر کار مجاز بود. حالا سقفی نیست؛
+    // جلوی ثبت پشت‌سرهم را همان «یک درخواست باز در انتظار تأیید برای هر کار»
+    // (پایین‌تر، deadline_requests.status = 'pending') می‌گیرد.
 
     // ===== بررسی 3: صحت تاریخ/زمان =====
     // کار روتین موعد ساعتی دارد. داشبوردها و اپ موبایل فقط تاریخ می‌فرستند ('Y-m-d')؛
