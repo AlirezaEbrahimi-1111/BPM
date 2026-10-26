@@ -26,6 +26,12 @@ function metrix_send_push($userId, string $title, string $message, array $custom
     if ($customContent) {
         $msg['customContent'] = $customContent;
     }
+    // 🔧 لمسِ نوتیفیکیشن مستقیم همان کار را در اپ باز کند (APP_PUSH → message.url
+    // طبقِ مستنداتِ Messaging API متریکس؛ اپ اسکیمِ malekbpm://task/<id> را
+    // در AndroidManifest ثبت کرده و در MainActivity به فلاتر می‌دهد)
+    if (!empty($customContent['task_id']) && ctype_digit((string) $customContent['task_id'])) {
+        $msg['url'] = 'malekbpm://task/' . $customContent['task_id'];
+    }
     $payload = [
         'recipients' => [(string) $userId],
         'channel' => 'APP_PUSH',
