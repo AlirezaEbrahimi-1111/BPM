@@ -66,7 +66,22 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            set -e
+            REPO=/var/www/itmalek
+            G="git -c safe.directory=$REPO -C $REPO"
+            # فوتر هیچ‌وقت نباید روی سرور تغییر کند (فقط با کامیت). اگر تغییر کرده باشد
+            # (سه بار رخ داده: bump-version.php روی سرور)، git pull بی‌صدا شکست می‌خورد و
+            # سرور روی کامیت قدیمی می‌ماند → قبل از pull به نسخهٔ گیت برگردد.
+            $G checkout -- pages/footer.php 2>/dev/null || sudo -n $G checkout -- pages/footer.php 2>/dev/null || true
             deploy-update
+            # اگر pull انجام نشده باشد، دیپلوی قرمز شود (نه اینکه بی‌صدا رد شود)
+            HEAD_NOW=$($G rev-parse HEAD)
+            if [ "$HEAD_NOW" != "${{ github.sha }}" ]; then
+              echo "❌ سرور روی $HEAD_NOW مانده، نه ${{ github.sha }} — git pull انجام نشد."
+              $G status --short || true
+              exit 1
+            fi
+            echo "✅ کد سرور: $HEAD_NOW"
             sudo -u www-data php /var/www/itmalek/migrate.php up
             sudo /opt/bmp-crm/apply-crm-binary.sh
             sudo /opt/bpm-go-api/apply-go-api.sh
