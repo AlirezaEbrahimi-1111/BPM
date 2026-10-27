@@ -25,7 +25,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         /* چیدمان دو ستونی */
         .two-col-layout {
             display: flex;
-            gap: 1.8rem;
+            gap: 1rem;
             align-items: flex-start;
         }
         .right-col {
@@ -41,6 +41,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         @media (max-width: 768px) {
             .two-col-layout {
                 flex-direction: column;
+                /* در حالت ستونی flex-start عرض هر ستون را به اندازهٔ محتوایش می‌کرد →
+                   کارت پروفایل باریک‌تر از کارت‌های زیرش بود */
+                align-items: stretch;
             }
             .right-col, .left-col {
                 flex: 0 0 100%;
@@ -92,6 +95,85 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             width: 100%; height: 100%; object-fit: cover;
         }
         .user-meta { font-size: .82rem; color: var(--text-muted); }
+
+        /* ── کارت پروفایل ── */
+        .pc-card .avatar-ring {
+            width: 72px; height: 72px;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 2px rgba(142, 87, 254, .35);
+        }
+        :root[data-theme="dark"] .pc-card .avatar-ring { border-color: var(--surface); }
+
+        .pc-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .pc-main { flex: 1; min-width: 0; }
+
+        .pc-name {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-strong);
+            margin-bottom: 6px;
+            overflow-wrap: anywhere;
+        }
+
+        .pc-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .9rem;
+            color: var(--text-muted);
+        }
+
+        .pc-line i { color: var(--text-strong); font-size: .95rem; }
+
+        /* گوشی تلفن رو به سمت درست (آیکن bootstrap برای چپ‌به‌راست کشیده شده) */
+        .pc-line .bi-telephone { display: inline-block; transform: scaleX(-1); }
+
+        .pc-sep {
+            align-self: stretch;
+            width: 1px;
+            background: var(--border-soft);
+            margin: 4px 0;
+        }
+
+        .pc-side {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .pc-card .user-role {
+            font-size: .78rem;
+            padding: .35em .9em;
+        }
+
+        .pc-foot {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-soft);
+            font-size: .88rem;
+            color: var(--text-muted);
+        }
+
+        .pc-foot i { color: var(--text-strong); }
+
+        /* دسکتاپ: کارت در ستون باریک کناری است → همان اجزا زیر هم و وسط‌چین */
+        @media (min-width: 769px) {
+            .pc-top { flex-direction: column; text-align: center; }
+            .pc-main .pc-line { justify-content: center; }
+            .pc-sep { display: none; }
+            .pc-side { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+            .pc-foot { justify-content: center; flex-wrap: wrap; }
+        }
         .user-role {
             display: inline-block;
             background: rgba(142, 87, 254, 0.12); color: #8e57fe;
@@ -172,19 +254,24 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
     <div class="two-col-layout">
         <!-- ستون راست (20%) : فقط کارت پروفایل -->
         <div class="right-col">
-            <div class="s-card">
-                <div class="d-flex flex-column align-items-center text-center gap-2">
+            <!-- کارت پروفایل: موبایل = افقی (عکس | نام و تلفن | نقش و واحد، و زیرش آخرین ورود)؛
+                 دسکتاپ (ستون باریک ۲۰٪) = همان اجزا زیر هم -->
+            <div class="s-card pc-card">
+                <div class="pc-top">
                     <div class="avatar-ring" id="avatarInitials" onclick="document.getElementById('avatarFileInput').click()" style="cursor:pointer; position:relative;" title="تغییر عکس پروفایل">؟</div>
                     <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(this.files[0])">
-                    <div class="fw-semibold" id="headerFullName" style="font-size:.95rem">در حال بارگذاری...</div>
-                    <div class="user-meta" id="headerPhone">—</div>
-                    <div>
+                    <div class="pc-main">
+                        <div class="pc-name" id="headerFullName">در حال بارگذاری...</div>
+                        <div class="pc-line"><i class="bi bi-telephone"></i><span id="headerPhone" dir="ltr">—</span></div>
+                    </div>
+                    <div class="pc-sep"></div>
+                    <div class="pc-side">
                         <span class="user-role" id="headerRole">—</span>
-                        <span class="user-meta me-2" id="headerSection"></span>
+                        <div class="pc-line"><i class="bi bi-person"></i><span id="headerSection"></span></div>
                     </div>
-                    <div class="user-meta mt-1" id="headerLastLogin" style="display:none">
-                        <i class="bi bi-clock-history ms-1"></i>آخرین ورود: <span id="lastLoginVal">—</span>
-                    </div>
+                </div>
+                <div class="pc-foot" id="headerLastLogin" style="display:none">
+                    <i class="bi bi-clock"></i>آخرین ورود: <span id="lastLoginVal">—</span>
                 </div>
             </div>
         </div>
@@ -358,7 +445,7 @@ function fillForm() {
     var avatarEl = document.getElementById('avatarInitials');
     avatarEl.innerHTML = u.avatar_path ? '<img src="../' + esc(u.avatar_path) + '" alt="">' : (initials || '؟');
     document.getElementById('headerFullName').textContent = fullName;
-    document.getElementById('headerPhone').textContent    = u.phone || '—';
+    document.getElementById('headerPhone').textContent    = u.phone ? (typeof toFa === 'function' ? toFa(u.phone) : u.phone) : '—';
     document.getElementById('headerRole').textContent     = ROLE_NAMES[u.role] || u.role || '—';
     document.getElementById('headerSection').textContent  = getSectionLabel(u.activity_section);
 

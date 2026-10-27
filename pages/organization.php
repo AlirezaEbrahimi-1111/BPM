@@ -39,7 +39,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
     .co-org .mt { font-size: 13px; color: #718096; margin-top: 5px; display: flex; gap: 16px; flex-wrap: wrap; }
 
     /* کارت‌های آماری (سبک pcard) */
-    .co-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .co-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; } /* همیشه یک ردیف */
     .co-pcard { background: #fff; border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 10px rgba(0,0,0,.04); display: flex; align-items: center; gap: 14px; }
     .co-pcard .ic { width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
     .co-pcard .val { font-size: 24px; font-weight: 800; line-height: 1.1; }
@@ -108,6 +108,16 @@ if (!hasPermission($__me, 'view_org_settings')) {
       .co-form-grid { grid-template-columns: 1fr; }
       .co-search input { width: 100%; }
     }
+    /* موبایل: سه کارت آماری کنار هم با فاصلهٔ کم؛ هر کارت عمودی و وسط‌چین */
+    @media (max-width: 576px) {
+      .co-stats { gap: 8px; }
+      .co-pcard { flex-direction: column; gap: 6px; padding: 12px 6px; text-align: center; }
+      .co-pcard .ic { width: 36px; height: 36px; font-size: 16px; border-radius: 10px; }
+      .co-pcard .val { font-size: 18px; }
+      .co-pcard .lbl { font-size: 11px; }
+      /* وضعیت اشتراک: دو ستون (قبلا با حداقل ۱۵۰px یک ستون می‌شد) */
+      .co-sub-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+    }
   </style>
 </head>
 <body>
@@ -169,10 +179,10 @@ if (!hasPermission($__me, 'view_org_settings')) {
       <div class="co-card-b">
         <div class="co-sub-grid">
           <div class="co-sub-item"><div class="l">نوع پلن</div><div class="v" id="coSubPlan">—</div></div>
+          <div class="co-sub-item"><div class="l">سقف کاربران</div><div class="v" id="coSubMaxUsers">—</div></div>
           <div class="co-sub-item"><div class="l">تاریخ شروع</div><div class="v" id="coSubStart">—</div></div>
           <div class="co-sub-item"><div class="l">تاریخ پایان</div><div class="v" id="coSubEnd">—</div></div>
           <div class="co-sub-item"><div class="l">روزهای باقی‌مانده</div><div class="v" id="coSubRemain">—</div></div>
-          <div class="co-sub-item"><div class="l">سقف کاربران</div><div class="v" id="coSubMaxUsers">—</div></div>
           <div class="co-sub-item"><div class="l">وضعیت</div><div class="v"><span id="coSubBadge" class="co-badge gray">—</span></div></div>
         </div>
         <div id="coExpireAlert"></div>

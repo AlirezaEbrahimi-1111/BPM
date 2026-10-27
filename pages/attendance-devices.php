@@ -32,7 +32,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
             background: #8e57fe;
             border-radius: var(--radius-lg);
             padding: 1.75rem 2rem;
-            margin-bottom: 1.75rem;
+            margin-bottom: .875rem; /* فاصلهٔ تا نوار تب‌ها: نصف ۱.۷۵rem */
             box-shadow: 0 8px 32px rgba(99, 102, 241, 0.22);
             display: flex;
             align-items: center;
@@ -89,11 +89,25 @@ if (!hasPermission($__me, 'view_org_settings')) {
             margin-bottom: 1.25rem;
         }
 
+        /* تب‌ها در عرض کم افقی اسکرول می‌خورند (بدون نوار اسکرول) */
         .ad-tabs {
             display: flex;
             border-bottom: 2px solid var(--gray-100);
             padding: 0 1rem;
             gap: 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .ad-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .ad-tabs .ad-tab-btn {
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .ad-tab-btn {
@@ -101,7 +115,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
             border: none;
             border-bottom: 2.5px solid transparent;
             margin-bottom: -2px;
-            padding: .95rem 1.25rem;
+            padding: .95rem 1.25rem .5rem; /* فاصلهٔ پایین نوار تب‌ها کمتر */
             font-size: .875rem;
             font-weight: 600;
             color: var(--gray-500);
@@ -349,8 +363,35 @@ if (!hasPermission($__me, 'view_org_settings')) {
         @media (max-width: 640px) {
             .ad-hero { padding: 1.25rem; }
             .ad-hero-text h1 { font-size: 1.1rem; }
-            .ad-stat-pill { font-size: .78rem; padding: .35rem .8rem; }
-            .ad-tab-btn { padding: .75rem .85rem; font-size: .82rem; }
+            .ad-tab-btn { padding: .75rem .85rem .4rem; font-size: .82rem; }
+
+            /* سه بج آماری در یک ردیف؛ هر بج عمودی: عدد، عنوان (بدون آیکن) */
+            .ad-hero-stats {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 8px;
+                width: 100%; /* سرتاسر عرض کادر */
+            }
+
+            .ad-stat-pill {
+                flex-direction: column;
+                justify-content: center;
+                gap: 2px;
+                padding: .55rem .3rem;
+                border-radius: 14px;
+                text-align: center;
+                font-size: 1rem;
+            }
+
+            .ad-stat-pill > i {
+                display: none;
+            }
+
+            .ad-stat-pill .ad-stat-lbl {
+                font-size: .7rem;
+                font-weight: 500;
+                opacity: .9;
+            }
         }
     </style>
 </head>
@@ -364,20 +405,20 @@ if (!hasPermission($__me, 'view_org_settings')) {
         <div class="ad-hero">
             <div class="ad-hero-text">
                 <h1><i class="bi bi-shield-lock-fill"></i> مدیریت دستگاه‌های حضور و غیاب</h1>
-                <p>تأیید دستگاه‌های مجاز، مدیریت آی‌پی‌های سازمان و پایش تلاش‌های ناموفق</p>
+                <p>مدیریت دستگاه‌ها و محدودیت دسترسی به سازمان</p>
             </div>
             <div class="ad-hero-stats">
                 <div class="ad-stat-pill" id="statDevices">
                     <i class="bi bi-display"></i>
-                    <span id="statDeviceCount">—</span> دستگاه ثبت‌شده
+                    <span id="statDeviceCount">—</span> <span class="ad-stat-lbl">دستگاه ثبت‌شده</span>
                 </div>
                 <div class="ad-stat-pill" id="statPending">
                     <i class="bi bi-hourglass-split"></i>
-                    <span id="statPendingCount">—</span> در انتظار تأیید
+                    <span id="statPendingCount">—</span> <span class="ad-stat-lbl">در انتظار تأیید</span>
                 </div>
                 <div class="ad-stat-pill" id="statIps">
                     <i class="bi bi-ethernet"></i>
-                    <span id="statIpCount">—</span> آی‌پی مجاز
+                    <span id="statIpCount">—</span> <span class="ad-stat-lbl">آی‌پی مجاز</span>
                 </div>
             </div>
         </div>
@@ -405,14 +446,15 @@ if (!hasPermission($__me, 'view_org_settings')) {
 
         <!-- Panel: Devices -->
         <div class="ad-panel active" id="tab-devices">
-            <div class="ad-panel-toolbar">
+            <!-- دکمهٔ بروزرسانی همیشه در همان ردیف عنوان (حتی در موبایل به خط بعد نمی‌رود) -->
+            <div class="ad-panel-toolbar" style="flex-wrap: nowrap;">
                 <div class="ad-panel-title">
                     <i class="bi bi-display"></i>
-                    لیست دستگاه‌های ثبت‌شده
+                    لیست دستگاه‌ها
                 </div>
-                <button class="btn btn-sm btn-outline-primary" onclick="loadDevices()">
+                <button class="btn btn-sm btn-outline-primary" onclick="loadDevices()" style="flex-shrink: 0; border-color: transparent;">
                     <i class="bi bi-arrow-clockwise"></i>
-                    بارگذاری مجدد
+                    بروزرسانی
                 </button>
             </div>
             <div id="devGrid" class="ag-theme-alpine"></div>
@@ -537,6 +579,9 @@ if (!hasPermission($__me, 'view_org_settings')) {
         function switchTab(tab) {
             document.querySelectorAll('.ad-tab-btn').forEach(b =>
                 b.classList.toggle('active', b.dataset.tab === tab));
+            // تب انتخاب‌شده در نوار اسکرولی کامل دیده شود
+            const activeBtn = document.querySelector(`.ad-tab-btn[data-tab="${tab}"]`);
+            if (activeBtn && activeBtn.scrollIntoView) activeBtn.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
             document.querySelectorAll('.ad-panel').forEach(p => p.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
 

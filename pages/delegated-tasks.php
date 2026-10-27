@@ -77,7 +77,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             <div style="flex: 1;">
                 <div class="search-box">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="searchInput" placeholder="جستجو در عنوان، توضیحات، شناسه، یا «روتین ۲۰۶» برای کارهای یک روتین">
+                    <input type="text" id="searchInput" placeholder="جستجو در عنوان، توضیحات، شناسه، یا «روتین ۲۰۶» برای کارهای یک روتین" data-placeholder-mobile="جستجو...">
                 </div>
 
                 <div class="filters-row">

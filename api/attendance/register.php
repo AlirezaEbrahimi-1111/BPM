@@ -491,7 +491,7 @@ try {
                             return ['id' => $t['id'], 'title' => $t['title']];
                         }, array_slice($blocking, 0, 10)),
                         'redirect'         => '/pages/my-tasks.php?filter=due_block',
-                        'message'          => 'به دلیل داشتن ' . count($blocking) . ' کارِ معوقه/امروز‌موعدِ تکمیل‌نشده، امکان ثبت خروج نیست. ابتدا آن‌ها را تعیین تکلیف (تکمیل) کنید.',
+                        'message'          => 'به دلیل داشتن ' . count($blocking) . ' کارِ معوقه/امروز‌موعدِ تکمیل‌نشده یا منتظرِ تأییدِ شما، امکان ثبت خروج نیست. ابتدا آن‌ها را تعیین تکلیف (تکمیل یا تأیید/رد) کنید.',
                     ], JSON_UNESCAPED_UNICODE);
                     exit;
                 }

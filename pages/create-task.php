@@ -248,7 +248,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                             accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg,.mp4,.mov" multiple>
                         <i class="bi bi-cloud-upload fs-3"></i>
                         <strong> فایل خود را اینجا رها کنید یا کلیک کنید</strong>
-                        <p><small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg, mp4, mov (ویدیو حداکثر ۵۰ مگابایت، بقیهٔ فایل‌ها حداکثر ۲۰ مگابایت)</small></p>
+                        <div class="upload-meta">
+                            <span class="upload-formats" tabindex="0" onclick="event.stopPropagation()">
+                                فرمت‌های مجاز <i class="bi bi-info-circle"></i>
+                                <span class="upload-formats-pop">jpg, png, pdf, docx, xlsx, mp3, m4a, ogg, mp4, mov</span>
+                            </span>
+                            <span class="upload-formats upload-limits" tabindex="0" onclick="event.stopPropagation()">
+                                حجم مجاز <i class="bi bi-info-circle"></i>
+                                <span class="upload-formats-pop">ویدیو: حداکثر ۵۰ مگابایت<br>بقیهٔ فایل‌ها: حداکثر ۲۰ مگابایت</span>
+                            </span>
+                        </div>
                     </div>
                     <div id="workflowFilesList" style="margin-top:1rem;"></div>
                 </div>
@@ -455,12 +464,17 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     <div class="card h-100">
                         <div class="card-body">
                             <!-- اشتراک‌گذاری تاریخچه با ارجاع‌شوندگان -->
-                            <div class="form-check form-switch" id="shareHistorySection">
-                                <input class="form-check-input" type="checkbox" id="shareHistoryToggle" checked>
-                                <label class="form-check-label" for="shareHistoryToggle">
-                                    تاریخچهٔ کار برای کاربران ارجاع‌شونده قابل نمایش باشد
-                                </label>
-                                <small class="form-text text-muted d-block">
+                            <!-- عنوان سمت راست، سوئیچ روبرویش (چپ)؛ توضیح تمام‌عرض زیر هر دو -->
+                            <div id="shareHistorySection">
+                                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                                    <label class="form-check-label" for="shareHistoryToggle" style="cursor:pointer;">
+                                        نمایش تاریخچه برای کاربران ارجاع‌شونده
+                                    </label>
+                                    <div class="form-check form-switch m-0 p-0" style="min-height:0;">
+                                        <input class="form-check-input m-0" type="checkbox" role="switch" id="shareHistoryToggle" checked style="float:none; cursor:pointer;">
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted d-block mt-1">
                                     اگر غیرفعال شود، هر کاربری که کار به او ارجاع می‌شود فقط از زمان ورود خودش به بعد را می‌بیند.
                                 </small>
                             </div>
@@ -505,7 +519,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                                         accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg,.mp4,.mov" multiple>
                                     <i class="bi bi-cloud-upload fs-3"></i>
                                     &nbsp;<strong>فایل خود را اینجا رها کنید یا کلیک کنید</strong>
-                                    <p><small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg, mp4, mov (ویدیو حداکثر ۵۰ مگابایت، بقیهٔ فایل‌ها حداکثر ۲۰ مگابایت)</small></p>
+                                    <div class="upload-meta">
+                            <span class="upload-formats" tabindex="0" onclick="event.stopPropagation()">
+                                فرمت‌های مجاز <i class="bi bi-info-circle"></i>
+                                <span class="upload-formats-pop">jpg, png, pdf, docx, xlsx, mp3, m4a, ogg, mp4, mov</span>
+                            </span>
+                            <span class="upload-formats upload-limits" tabindex="0" onclick="event.stopPropagation()">
+                                حجم مجاز <i class="bi bi-info-circle"></i>
+                                <span class="upload-formats-pop">ویدیو: حداکثر ۵۰ مگابایت<br>بقیهٔ فایل‌ها: حداکثر ۲۰ مگابایت</span>
+                            </span>
+                        </div>
                                 </div>
                                 <div id="selectedFilesList" style="margin-top:1rem;"></div>
                             </div>

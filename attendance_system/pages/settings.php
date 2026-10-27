@@ -107,7 +107,7 @@ function toPersianNumber($num)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مدیریت تنظیمات</title>
+    <title>تنظیمات</title>
     <link href="../../assets/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/js/cdn/bootstrap-icons.css">
     <script src="../../assets/js/config.js"></script>
@@ -251,8 +251,13 @@ function toPersianNumber($num)
             width: 100%;
         }
 
-        .page-header {
-            margin-bottom: 32px;
+        /* body جلویش: custom.css (که header.php دیرتر لود می‌کند) هم .page-header دارد
+           با margin-bottom:24px که برنده بود؛ حالا نصف همان = ۱۲px */
+        body .page-header {
+            margin-bottom: 12px;
+            /* بالا/پایین نصف ۲۴px مشترک custom.css */
+            padding-top: 12px;
+            padding-bottom: 12px;
         }
 
         .page-title {
@@ -268,6 +273,7 @@ function toPersianNumber($num)
         .page-subtitle {
             font-size: 14px;
             color: #64748B;
+            margin-bottom: 0; /* حذف ۱rem پیش‌فرض <p> بوت‌استرپ */
         }
 
         /* ===== Messages ===== */
@@ -331,7 +337,7 @@ function toPersianNumber($num)
         }
 
         .group-header {
-            padding: 16px 20px;
+            padding: 6px 20px; /* بالا/پایین کم (۱۶px اولیه → ۶px) */
             display: flex;
             align-items: center;
             gap: 12px;
@@ -352,8 +358,8 @@ function toPersianNumber($num)
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            color: white;
+            font-size: 22px; /* بدون پس‌زمینه؛ رنگ گروه روی خود آیکن (inline) */
+            background: none;
             flex-shrink: 0;
         }
 
@@ -395,7 +401,7 @@ function toPersianNumber($num)
         }
 
         .setting-item {
-            padding: 16px 20px;
+            padding: 8px 20px; /* بالا/پایین نصف (۱۶ → ۸px) */
             display: flex;
             align-items: center;
             gap: 16px;
@@ -423,10 +429,62 @@ function toPersianNumber($num)
             margin-bottom: 3px;
         }
 
+        .setting-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* تولتیپ نسبت به کل ردیف تنظیم و وسط آن (نه کنار آیکن) تا از کارت بیرون نزند */
+        .setting-item {
+            position: relative;
+        }
+
+        .setting-help-tip {
+            position: static;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .setting-help-tip > i {
+            color: #8e57fe;
+            font-size: 13px;
+            line-height: 1;
+        }
+
+        /* پنجرهٔ توضیح: پنهان تا فوکوس (کلیک/لمس) یا هاور */
         .setting-help {
+            display: none;
+            position: absolute;
+            top: calc(100% - 8px);
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%);
+            z-index: 20;
+            width: max-content;
+            max-width: min(320px, calc(100% - 24px));
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: #1f2937;
+            color: #fff;
             font-size: 12px;
-            color: #94A3B8;
-            line-height: 1.4;
+            font-weight: 400;
+            line-height: 1.7;
+            white-space: normal;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+        }
+
+        .setting-help-tip:hover .setting-help,
+        .setting-help-tip:focus .setting-help {
+            display: block;
+        }
+
+        /* کارت گروه overflow:hidden دارد → در آخرین تنظیم هر گروه پنجره رو به بالا باز شود تا بریده نشود */
+        .setting-item:last-child .setting-help {
+            top: auto;
+            bottom: calc(100% - 8px);
         }
 
         .setting-control {
@@ -436,8 +494,9 @@ function toPersianNumber($num)
             flex-shrink: 0;
         }
 
-        .setting-control input[type="number"] {
-            width: 100px;
+        .setting-control input.num-input,
+        .setting-control input.money-input {
+            width: 70px; /* ۳۰٪ کمتر از ۱۰۰px */
             padding: 8px 12px;
             border: 1px solid #E2E8F0;
             border-radius: 8px;
@@ -450,10 +509,23 @@ function toPersianNumber($num)
             direction: ltr;
         }
 
-        .setting-control input[type="number"]:focus {
+        .setting-control input.num-input:focus,
+        .setting-control input.money-input:focus {
             outline: none;
             border-color: #8e57fe;
             box-shadow: 0 0 0 3px rgba(142, 87, 254, 0.1);
+        }
+
+        /* مبلغ ریالی با جداکنندهٔ هزارگان: عرض بیشتر از کادرهای عددی */
+        .setting-control input.money-input {
+            width: 110px;
+            direction: ltr;
+        }
+
+        @media (max-width: 768px) {
+            .setting-control input.money-input {
+                width: 96px;
+            }
         }
 
         .setting-unit {
@@ -511,13 +583,17 @@ function toPersianNumber($num)
         }
 
         /* ===== Buttons ===== */
+        /* یک ردیف: بازگشت + بازنشانی نصف عرض، ذخیره نصف دیگر */
         .form-actions {
-            display: flex;
+            display: grid;
+            /* minmax(0,…): بدون آن حداقل عرض محتوای دکمه‌ها ستون‌ها را پهن و صفحه را
+               افقی اسکرولی می‌کرد */
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
             gap: 12px;
             margin-top: 24px;
             position: sticky;
             bottom: 0;
-            background: #e9e9e9;
+            background: transparent; /* بدون نوار طوسی پشت دکمه‌ها */
             padding: 20px;
             z-index: 10;
         }
@@ -532,6 +608,7 @@ function toPersianNumber($num)
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
         }
 
@@ -581,27 +658,45 @@ function toPersianNumber($num)
                 padding: 16px;
             }
 
+            /* عنوان راست، کادر عدد + واحد روبرویش در همان ردیف (توضیح حالا در تولتیپ است) */
             .setting-item {
-                flex-direction: column;
-                align-items: flex-start;
+                padding: 6px 14px; /* بالا/پایین نصف (۱۲ → ۶px) */
                 gap: 10px;
             }
 
-            .setting-control {
-                width: 100%;
+            /* شمارندهٔ «N تنظیم» کنار عنوان گروه در موبایل پنهان */
+            .group-count {
+                display: none;
             }
 
-            .setting-control input[type="number"] {
-                flex: 1;
+            .setting-control input.num-input {
+                width: 49px; /* ۳۰٪ کمتر از ۷۰px */
+                padding: 6px 4px;
+            }
+
+            .setting-unit {
+                white-space: nowrap;
             }
 
             .form-actions {
-                flex-direction: column;
+                gap: 8px;
+                padding: 12px;
             }
 
             .btn {
                 width: 100%;
+                min-width: 0;
                 justify-content: center;
+                padding-left: 6px;
+                padding-right: 6px;
+                white-space: nowrap;
+                font-size: 13px;
+            }
+
+            /* جای کم: آیکن بازگشت/بازنشانی پنهان، فقط متن */
+            .btn-back i,
+            .btn-reset i {
+                display: none;
             }
 
             .btn-back {
@@ -635,12 +730,22 @@ function toPersianNumber($num)
 
         :root[data-theme="dark"] .group-title,
         :root[data-theme="dark"] .setting-label,
-        :root[data-theme="dark"] .setting-control input[type="number"] {
+        :root[data-theme="dark"] .setting-control input.num-input,
+        :root[data-theme="dark"] .setting-control input.money-input {
             color: var(--text-strong);
         }
 
+        :root[data-theme="dark"] .setting-help {
+            background: var(--surface-2, #2a3142);
+            color: var(--text-strong);
+            border: 1px solid var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .setting-help-tip > i {
+            color: var(--icon-accent, #b794ff);
+        }
+
         :root[data-theme="dark"] .group-count,
-        :root[data-theme="dark"] .setting-help,
         :root[data-theme="dark"] .setting-unit,
         :root[data-theme="dark"] .group-toggle {
             color: var(--text-muted);
@@ -650,13 +755,14 @@ function toPersianNumber($num)
             border-bottom-color: var(--border-soft);
         }
 
-        :root[data-theme="dark"] .setting-control input[type="number"] {
+        :root[data-theme="dark"] .setting-control input.num-input,
+        :root[data-theme="dark"] .setting-control input.money-input {
             background: var(--bg-page);
             border-color: var(--border-soft);
         }
 
         :root[data-theme="dark"] .form-actions {
-            background: var(--bg-page);
+            background: transparent;
         }
 
         :root[data-theme="dark"] .btn-reset,
@@ -696,9 +802,9 @@ function toPersianNumber($num)
         <div class="page-header">
             <h1 class="page-title">
                 <i class="bi bi-sliders" style="color: #8e57fe;"></i>
-                مدیریت تنظیمات
+                تنظیمات
             </h1>
-            <p class="page-subtitle">محدودیت‌ها، سیاست‌ها و قوانین محاسباتی سیستم حضور و غیاب را تنظیم کنید</p>
+            <p class="page-subtitle">محدودیت‌ها، سیاست‌ها و قوانین محاسباتی</p>
         </div>
 
         <!-- Messages -->
@@ -722,7 +828,7 @@ function toPersianNumber($num)
                 <?php foreach ($settings_groups as $group_key => $group): ?>
                     <div class="settings-group">
                         <div class="group-header" onclick="toggleGroup('<?php echo $group_key; ?>')">
-                            <div class="group-icon" style="background: <?php echo $group['color']; ?>;">
+                            <div class="group-icon" style="color: <?php echo $group['color']; ?>;">
                                 <i class="bi <?php echo $group['icon']; ?>"></i>
                             </div>
                             <div class="group-title"><?php echo $group['title']; ?></div>
@@ -735,8 +841,16 @@ function toPersianNumber($num)
                             <?php foreach ($group['settings'] as $key => $setting): ?>
                                 <div class="setting-item">
                                     <div class="setting-info">
-                                        <div class="setting-label"><?php echo $setting['label']; ?></div>
-                                        <div class="setting-help"><?php echo $setting['help']; ?></div>
+                                        <!-- توضیح در تولتیپ آیکن ⓘ بعد از عنوان (کلیک/لمس یا هاور) -->
+                                        <div class="setting-label">
+                                            <?php echo $setting['label']; ?>
+                                            <?php if (!empty($setting['help'])): ?>
+                                                <span class="setting-help-tip" tabindex="0" aria-label="توضیح">
+                                                    <i class="bi bi-info-circle"></i>
+                                                    <span class="setting-help"><?php echo $setting['help']; ?></span>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
                                     <div class="setting-control">
                                         <?php if ($setting['type'] === 'boolean'): ?>
@@ -745,14 +859,24 @@ function toPersianNumber($num)
                                                     <?php echo $setting['value'] == '1' ? 'checked' : ''; ?>>
                                                 <span class="toggle-slider"></span>
                                             </label>
+                                        <?php elseif (($setting['unit'] ?? '') === 'ریال'): ?>
+                                            <!-- مبلغ: نمایش با جداکنندهٔ هزارگان؛ مقدار خام در hidden ارسال می‌شود
+                                                 (حداقل/حداکثر را سرور بررسی می‌کند) -->
+                                            <input type="text" inputmode="numeric" class="money-input" data-money-for="<?php echo $key; ?>"
+                                                value="<?php echo toPersianNumber(number_format((int) $setting['value'])); ?>"
+                                                autocomplete="off" required>
+                                            <input type="hidden" name="<?php echo $key; ?>" id="<?php echo $key; ?>"
+                                                value="<?php echo htmlspecialchars($setting['value']); ?>">
+                                            <span class="setting-unit"><?php echo $setting['unit']; ?></span>
                                         <?php else: ?>
+                                            <!-- متنی با ارقام فارسی (type=number ارقام فارسی نشان نمی‌دهد)؛
+                                                 قبل از ارسال به لاتین برمی‌گردد؛ حداقل/حداکثر را سرور بررسی می‌کند -->
                                             <input
-                                                type="number"
+                                                type="text" inputmode="numeric" autocomplete="off"
+                                                class="num-input"
                                                 name="<?php echo $key; ?>"
                                                 id="<?php echo $key; ?>"
-                                                value="<?php echo htmlspecialchars($setting['value']); ?>"
-                                                <?php if (isset($setting['min'])): ?>min="<?php echo $setting['min']; ?>" <?php endif; ?>
-                                                <?php if (isset($setting['max'])): ?>max="<?php echo $setting['max']; ?>" <?php endif; ?>
+                                                value="<?php echo toPersianNumber(htmlspecialchars($setting['value'])); ?>"
                                                 required>
                                             <?php if (isset($setting['unit'])): ?>
                                                 <span class="setting-unit"><?php echo $setting['unit']; ?></span>
@@ -783,6 +907,49 @@ function toPersianNumber($num)
     <script src="../../assets/js/cdn/bootstrap.bundle.min.js"></script>
 
     <script>
+        // مبلغ ریالی: هنگام تایپ جداکنندهٔ هزارگان (فارسی) + نگه‌داشتن مقدار خام در فیلد پنهان
+        document.querySelectorAll('input.money-input').forEach(function (inp) {
+            var hidden = document.getElementById(inp.dataset.moneyFor);
+            function toLatin(v) {
+                return String(v).replace(/[۰-۹]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); })
+                    .replace(/[٠-٩]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); });
+            }
+            function fmt(raw) {
+                if (!raw) return '';
+                return Number(raw).toLocaleString('en-US').replace(/\d/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; });
+            }
+            inp.addEventListener('input', function () {
+                var raw = toLatin(inp.value).replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+                if (hidden) hidden.value = raw;
+                inp.value = fmt(raw);
+            });
+        });
+        // کادرهای عددی: فقط رقم، نمایش فارسی؛ هنگام ارسال فرم به لاتین (سرور intval می‌کند)
+        function faToLatinDigits(v) {
+            return String(v).replace(/[۰-۹]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); })
+                .replace(/[٠-٩]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); });
+        }
+        document.querySelectorAll('input.num-input').forEach(function (inp) {
+            inp.addEventListener('input', function () {
+                var raw = faToLatinDigits(inp.value).replace(/\D/g, '');
+                inp.value = raw.replace(/\d/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; });
+            });
+        });
+        document.querySelectorAll('form').forEach(function (f) {
+            f.addEventListener('submit', function () {
+                f.querySelectorAll('input.num-input').forEach(function (inp) { inp.value = faToLatinDigits(inp.value); });
+            });
+        });
+
+        // «بازنشانی» فرم مقدار نمایشی را برمی‌گرداند؛ فیلد پنهان هم همگام شود
+        document.querySelectorAll('form').forEach(function (f) {
+            f.addEventListener('reset', function () {
+                setTimeout(function () {
+                    f.querySelectorAll('input.money-input').forEach(function (inp) { inp.dispatchEvent(new Event('input')); });
+                }, 0);
+            });
+        });
+
         function toggleGroup(groupKey) {
             const body = document.getElementById('body-' + groupKey);
             const toggle = document.getElementById('toggle-' + groupKey);

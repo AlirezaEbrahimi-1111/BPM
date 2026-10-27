@@ -170,7 +170,7 @@ if (!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_o
             <div style="flex: 1;">
                 <div class="search-box">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="searchInput" placeholder="جستجو در نام کاربر یا واحد...">
+                    <input type="text" id="searchInput" placeholder="جستجو در نام کاربر یا واحد..." data-placeholder-mobile="جستجو...">
                 </div>
             </div>
         </div>

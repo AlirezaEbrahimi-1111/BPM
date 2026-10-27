@@ -8,6 +8,7 @@
  *   • مسئولش همین کاربر است (assignee_id)،
  *   • موعدش امروز یا گذشته است،
  *   • و کارمند هنوز تکمیلش نکرده → status ∈ (not_started, in_progress).
+ *   • یا (۱۴۰۵/۰۸/۰۵) کاری/درخواستی منتظرِ تأییدِ همین کاربر است (بخش ۴، بدون شرطِ موعد).
  *
  * ⚠️ rejected مانع نیست (اصلاح ۱۴۰۵/۰۷/۲۵): در این سیستم status='rejected' یعنی
  *    «اتمام اجباریِ کار دوره‌ای» (api/tasks/terminate-period.php) — کارِ تمام‌شده.
@@ -107,6 +108,50 @@ function userBlockingTasks(PDO $db, int $userId, ?string $today = null): array
             $out[] = ['id' => (int) $t['id'], 'title' => $t['title'], 'type' => 'continuous'];
         }
     }
+
+    // ── ۴) منتظرِ تأییدِ همین کاربر (۱۴۰۵/۰۸/۰۵) — بدون توجه به موعد ──
+    // تأییدِ کارِ دیگران نباید به فردا بیفتد. هم‌تعریف با «کارهای من» (go-api mytasks)
+    // و TF.isWaitingMyAction در assets/js/task-filters.js:
+    //   الف) تأییدِ انجامِ کار: is_pending_approval=1 و assignee_id = تأییدکنندهٔ فعلی
+    //        (TaskManager::approveOrRejectTask فقط به همان assignee اجازه می‌دهد)
+    //   ب) درخواستِ تمدیدِ موعد با current_approver_id = کاربر
+    //   ج) درخواستِ رفعِ دوره‌های معوقه با current_approver_id = کاربر
+    // (مرخصی/مأموریت/اصلاح تردد عمدا شامل نیست.)
+    $seen = [];
+    foreach ($out as $t) $seen[$t['id']] = true;
+    $addRows = function (array $rows, string $type) use (&$out, &$seen) {
+        foreach ($rows as $t) {
+            $id = (int) $t['id'];
+            if (isset($seen[$id])) continue;
+            $seen[$id] = true;
+            $out[] = ['id' => $id, 'title' => $t['title'], 'type' => $type];
+        }
+    };
+
+    $st = $db->prepare("
+        SELECT t.id, t.title FROM tasks t
+        WHERE t.assignee_id = ? AND t.is_deleted = 0
+          AND t.is_pending_approval = 1 AND t.status = 'pending_approval'
+          AND $NO_PENDING_DR
+    ");
+    $st->execute([$userId, $userId]);
+    $addRows($st->fetchAll(PDO::FETCH_ASSOC), 'approval');
+
+    $st = $db->prepare("
+        SELECT DISTINCT t.id, t.title FROM deadline_requests dr
+        JOIN tasks t ON t.id = dr.task_id AND t.is_deleted = 0 AND t.status != 'rejected'
+        WHERE dr.status = 'pending' AND dr.current_approver_id = ?
+    ");
+    $st->execute([$userId]);
+    $addRows($st->fetchAll(PDO::FETCH_ASSOC), 'deadline_request');
+
+    $st = $db->prepare("
+        SELECT DISTINCT t.id, t.title FROM overdue_clear_requests ocr
+        JOIN tasks t ON t.id = ocr.task_id AND t.is_deleted = 0 AND t.status != 'rejected'
+        WHERE ocr.status = 'pending' AND ocr.current_approver_id = ?
+    ");
+    $st->execute([$userId]);
+    $addRows($st->fetchAll(PDO::FETCH_ASSOC), 'overdue_clear');
 
     return $out;
 }

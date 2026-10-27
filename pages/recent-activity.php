@@ -278,19 +278,6 @@ $raScope = ($raCanSeeOrg && ($_GET['scope'] ?? 'org') !== 'personal') ? 'org' : 
             });
         });
     </script>
-<script>
-    // موبایل: متن کوتاه placeholder کادر جستجو (متن کامل در عرض کم بریده می‌شد)
-    (function () {
-        var inp = document.getElementById('searchInput');
-        if (!inp || !window.matchMedia) return;
-        var full = inp.getAttribute('placeholder');
-        var short = inp.getAttribute('data-placeholder-mobile');
-        var mq = window.matchMedia('(max-width: 576px)');
-        function sync() { inp.setAttribute('placeholder', mq.matches ? short : full); }
-        sync();
-        if (mq.addEventListener) mq.addEventListener('change', sync); else if (mq.addListener) mq.addListener(sync);
-    })();
-</script>
 </body>
 
 </html>

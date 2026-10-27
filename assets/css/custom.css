@@ -1230,7 +1230,9 @@ s-normal {
 
 .search-box input {
     width: 100%;
-    padding: 0.6rem 2rem 0.6rem 2.5rem;
+    /* متن و placeholder راست‌چین با فاصلهٔ کم از راست (ذره‌بین سمت چپ است) */
+    padding: 0.6rem 12px 0.6rem 2.5rem;
+    text-align: right;
     border: 1px solid #e9e9e9;
     border-radius: var(--radius-sm);
     font-size: 0.85rem;
@@ -7524,9 +7526,33 @@ body.login-page::after {
 }
 
 .ag-paging-panel {
-    flex-direction: row-reverse !important;
+    /* همهٔ اجزا از راست چیده می‌شوند (↺، تعداد در صفحه، خلاصه، دکمه‌های صفحه) و
+       سمت چپ خالی می‌ماند تا دکمهٔ شناور (FAB) روی هیچ‌چیز نیفتد (۱۴۰۵/۰۸/۰۵) */
+    flex-direction: row !important;
+    justify-content: flex-start !important;
     gap: 0 !important;
     align-items: center !important;
+    padding-right: 6px !important;
+    padding-left: 85px !important;
+}
+
+/* ترتیب از راست به چپ: دکمه‌های صفحه ← خلاصه (فقط دسکتاپ) ← تعداد در صفحه ← بازچینی */
+.ag-paging-panel .ag-paging-page-summary-panel {
+    order: 1;
+}
+
+.ag-paging-panel .ag-paging-row-summary-panel {
+    order: 2;
+}
+
+.ag-paging-panel .ag-paging-page-size {
+    order: 3;
+}
+
+.ag-paging-panel .agfa-reset {
+    order: 4;
+    margin: 0 10px 0 0 !important;
+    flex-shrink: 0;
 }
 
 .ag-paging-button-wrapper {
@@ -7537,6 +7563,7 @@ body.login-page::after {
 .ag-paging-row-summary-panel {
     padding: 0 16px;
     border-right: 1px solid #dee2e6;
+    border-left: 1px solid #dee2e6;
     direction: rtl;
 }
 
@@ -7730,5 +7757,225 @@ body.login-page::after {
 @media (max-width: 576px) {
     .modal-dialog > .modal-content {
         padding: 0;
+    }
+}
+
+/* ========================================
+   فاصلهٔ یکسان محتوا از لبهٔ صفحه در موبایل (۱۴۰۵/۰۸/۰۵)
+   همهٔ کادرهای بیرونی صفحات ۱۳px از چپ و راست فاصله دارند (قبلا ۱۶ تا ۲۷px و
+   هر صفحه یک‌جور). body جلویش تا روی قوانین !important خود صفحات هم برنده شود.
+   فاصلهٔ بالا و پایین هر صفحه دست نخورده است.
+======================================== */
+@media (max-width: 768px) {
+    :root {
+        --mobile-gutter: 13px;
+    }
+
+    body .overview-container,
+    body .main-content,
+    body .dash-wrap,
+    body .bn-container,
+    body .page-wrap,
+    body .td-wrap,
+    body .fb-wrap,
+    body .il-wrap,
+    body .co-wrap,
+    body .admin-wrap {
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: var(--mobile-gutter) !important;
+        padding-right: var(--mobile-gutter) !important;
+        box-sizing: border-box;
+    }
+
+    /* جزئیات کار: خود کانتینر کارت است، پس فاصله با margin */
+    body .task-detail-container {
+        max-width: none !important;
+        margin-left: var(--mobile-gutter) !important;
+        margin-right: var(--mobile-gutter) !important;
+    }
+}
+
+/* ========================================
+   نوار صفحه‌بندی جدول‌ها در موبایل — خلاصه (۱۴۰۵/۰۸/۰۵)
+   چهار بخش کنار هم از عرض گوشی بیشتر می‌شد و از لبهٔ چپ بریده می‌شد؛
+   دکمهٔ بازچینی (↺) هم دقیقا در همان قسمت بریده‌شده بود. در موبایل:
+   «۱ تا ۱۵ از ۱۲۰» پنهان، برچسب «تعداد در صفحه:» حذف، «صفحه ۱ از ۸» → «۱ از ۸»،
+   فاصله‌ها کم و بدون خط جداکننده. دسکتاپ دست نخورده است.
+======================================== */
+@media (max-width: 576px) {
+    /* فاصلهٔ بین گروه‌ها ۱۲px؛ جای خالی چپ ۷۲px (FAB تا ۸۰px از لبهٔ صفحه + فاصلهٔ ۱۳px کادر) */
+    .ag-paging-panel {
+        gap: 12px !important;
+        padding-right: 6px !important;
+        padding-left: 72px !important;
+        justify-content: flex-start !important;
+    }
+
+    .ag-paging-row-summary-panel {
+        display: none !important;
+    }
+
+    .ag-paging-page-size::before {
+        content: none !important;
+    }
+
+    .ag-paging-page-size,
+    .ag-paging-button-wrapper,
+    .ag-paging-page-summary-panel {
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+    }
+
+    /* «صفحه» حذف → «۱ از ۸» */
+    .ag-paging-description > span:first-child {
+        display: none;
+    }
+
+    .ag-paging-button,
+    .ag-paging-description {
+        margin: 0 2px !important;
+    }
+
+    .ag-paging-panel .agfa-reset {
+        flex-shrink: 0;
+        margin: 0 !important;
+    }
+}
+
+/* ========================================
+   دکمهٔ شناور (FAB) کمی بالاتر در همهٔ صفحات (۱۴۰۵/۰۸/۰۵)
+   قبلا ۲۴px (و در بعضی صفحات ۱۶/۲۸px) از پایین بود و به زبانهٔ فوتر نزدیک بود؛
+   حالا همه یکسان ۴۰px. body جلویش تا روی قوانین محلی صفحات هم برنده شود.
+======================================== */
+body .quick-actions {
+    bottom: 40px !important;
+}
+
+/* ========================================
+   پایین کادر آپلود پیوست (۱۴۰۵/۰۸/۰۵)
+   راست: «فرمت‌های مجاز ⓘ» — فهرست با کلیک/لمس (فوکوس) یا هاور در یک پنجرهٔ کوچک؛
+   چپ: «حجم مجاز ⓘ» به همان شکل. کلیک روی آن‌ها پنجرهٔ انتخاب فایل را باز نمی‌کند.
+======================================== */
+.upload-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 12px;
+    font-size: .75rem;
+    color: var(--text-muted, #6b7280);
+    text-align: right;
+}
+
+.upload-formats {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    outline: none;
+}
+
+.upload-formats .bi-info-circle {
+    color: #8e57fe;
+    font-size: .85rem;
+    /* هم‌تراز با متن کنارش: آیکن‌های bootstrap-icons پیش‌فرض کمی بالاتر می‌نشینند */
+    display: inline-flex;
+    line-height: 1;
+    position: relative;
+    top: 2px;
+}
+
+.upload-formats .bi-info-circle::before {
+    vertical-align: 0;
+}
+
+.upload-formats-pop {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    right: 0;
+    z-index: 20;
+    width: max-content;
+    max-width: 240px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: #1f2937;
+    color: #fff;
+    font-size: .75rem;
+    line-height: 1.7;
+    direction: ltr;
+    text-align: left;
+    white-space: normal;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+}
+
+.upload-formats:focus .upload-formats-pop,
+.upload-formats:hover .upload-formats-pop {
+    display: block;
+}
+
+.upload-limits {
+    white-space: nowrap;
+}
+
+/* «حجم مجاز» سمت چپ است → پنجره از چپ باز شود؛ متن فارسی راست‌چین */
+.upload-limits .upload-formats-pop {
+    right: auto;
+    left: 0;
+    direction: rtl;
+    text-align: right;
+}
+
+:root[data-theme="dark"] .upload-formats-pop {
+    background: var(--surface-2, #2a3142);
+    color: var(--text-strong);
+    border: 1px solid var(--border-soft);
+}
+
+
+/* ========================================
+   فهرست پیوست‌ها — اصلاح چیدمان (۱۴۰۵/۰۸/۰۵)
+   نام فایل (لاتین) چپ‌به‌راست تا «…» سر جای درست بیاید؛ در موبایل: متادیتا بدون
+   شکستن وسط نام/تاریخ، دکمه‌های دانلود/حذف زیر هم تا نام جای بیشتری داشته باشد.
+======================================== */
+.attachment-name {
+    direction: ltr;
+    text-align: right;
+    unicode-bidi: plaintext;
+}
+
+@media (max-width: 576px) {
+    .attachment-item {
+        align-items: flex-start;
+        gap: .65rem;
+        padding: .75rem;
+    }
+
+    .attachment-preview {
+        width: 44px;
+        height: 44px;
+    }
+
+    .attachment-meta {
+        gap: .15rem .75rem;
+        font-size: .75rem;
+    }
+
+    .attachment-meta span {
+        white-space: nowrap;
+    }
+
+    .attachment-actions {
+        flex-direction: column;
+        gap: .4rem;
+    }
+
+    .attachment-actions .btn-icon {
+        width: 34px;
+        height: 34px;
     }
 }

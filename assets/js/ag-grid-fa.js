@@ -341,6 +341,36 @@
         return api;
     }
 
+    /* ═══ موبایل: عرض هر ستون به اندازهٔ محتوایش (۱۴۰۵/۰۸/۰۵) ═══
+     * ستون‌های flex در عرض کم تا چند پیکسل جمع می‌شدند و متن بریده می‌شد؛ در موبایل
+     * flex برداشته و ستون‌ها به اندازهٔ محتوا می‌شوند (جدول اسکرول افقی می‌خورد).
+     * ستونی که کاربر خودش عرضش را عوض کرده دست نمی‌خورد. استثنا: data-grid-autosize="off" */
+    function watchMobileAutoSize(api, el, options, key) {
+        try {
+            if (!api || !isMobileGrid() || options.autoSizeStrategy) return;
+            if (el && el.getAttribute && el.getAttribute('data-grid-autosize') === 'off') return;
+            var timer = null;
+            var run = function () {
+                clearTimeout(timer);
+                timer = setTimeout(function () {
+                    try {
+                        if (!isMobileGrid()) return;
+                        var saved = key ? (loadState(key).widths || {}) : {};
+                        var cols = (api.getColumnState() || []).filter(function (c) { return !c.hide && !saved[c.colId]; });
+                        if (!cols.length) return;
+                        var flexed = cols.filter(function (c) { return c.flex; });
+                        if (flexed.length) {
+                            api.applyColumnState({ state: flexed.map(function (c) { return { colId: c.colId, flex: null }; }) });
+                        }
+                        api.autoSizeColumns(cols.map(function (c) { return c.colId; }));
+                    } catch (e) { /* جدول از بین رفته */ }
+                }, 60);
+            };
+            api.addEventListener('firstDataRendered', run);
+            api.addEventListener('rowDataUpdated', run);
+        } catch (e) { /* هرگز نباید جدول را خراب کند */ }
+    }
+
     function hookCreateGrid() {
         var ag = w.agGrid;
         if (!ag || typeof ag.createGrid !== 'function' || ag.__bpmPersist) return !!(ag && ag.__bpmPersist);
@@ -350,7 +380,9 @@
             // تغییر عرض، اشتباهی ستون را جابه‌جا می‌کرد. تغییر عرض همچنان فعال است.
             if (options) applyMobileNoMove(options);
             if (!el || !options || (el.getAttribute && el.getAttribute('data-grid-persist') === 'off')) {
-                return watchMobileNoMove(orig.call(this, el, options, params), options);
+                var plainApi = watchMobileNoMove(orig.call(this, el, options, params), options);
+                if (options) watchMobileAutoSize(plainApi, el, options, null);
+                return plainApi;
             }
             var ctx = { key: persistKey(el), restoring: false, restoredCols: '', initialPageSize: options.paginationPageSize };
             var pageReady = options.onGridReady;
@@ -365,6 +397,7 @@
                 attachPersistence(api, el, ctx);
                 injectResetButton(api, el, ctx);
             } catch (e) { /* ماندگاری هرگز نباید جدول را خراب کند */ }
+            watchMobileAutoSize(api, el, options, ctx.key);
             return watchMobileNoMove(api, options);
         };
         try {

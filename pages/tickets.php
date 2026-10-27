@@ -316,7 +316,7 @@ $__defTicketStatus = ($__orgId === 1) ? 'open' : '';
                 <div class="filters-row">
                     <div class="search-box">
                         <i class="bi bi-search"></i>
-                        <input type="text" id="fSearch" placeholder="جستجو در عنوان یا شماره تیکت..." oninput="debounceSearch()">
+                        <input type="text" id="fSearch" placeholder="جستجو در عنوان یا شماره تیکت..." data-placeholder-mobile="جستجو..." oninput="debounceSearch()">
                     </div>
                     <div class="filter-item">
                         <select id="fStatus" onchange="loadTickets()">

@@ -60,9 +60,17 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             display: flex;
             align-items: center;
             justify-content: space-between;
+
             margin-bottom: 2rem;
             padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--border);
+        }
+
+        /* نصف فاصلهٔ چپ و راست مشترک (custom.css: ۳۲px) — فقط این صفحه؛ اسکوپ با
+           کانتینر تا روی custom.css (که دیرتر لود می‌شود) برنده شود */
+        .overview-container .page-header {
+            padding-left: 16px;
+            padding-right: 16px;
         }
 
         .page-header-left h1 {
@@ -78,13 +86,16 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
         .page-header-left h1 i {
             width: 38px;
             height: 38px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            border-radius: 10px;
+            /* بدون پس‌زمینه، خود آیکن بنفش (جای ۳۸px حفظ شد تا توضیح زیر عنوان بماند) */
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 1rem;
+            color: #8e57fe;
+            font-size: 1.5rem;
+        }
+
+        :root[data-theme="dark"] .page-header-left h1 i {
+            color: var(--icon-accent, #b794ff);
         }
 
         .page-header-left p {
@@ -376,14 +387,57 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
 
         .wf-canvas-toolbar .wf-legend {
             margin-inline-start: auto;
-            display: flex;
-            gap: 12px;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            outline: none;
             color: var(--text-2);
         }
 
-        .wf-canvas-toolbar .wf-legend i {
+        .wf-canvas-toolbar .wf-legend-ic {
+            color: #8e57fe;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .wf-canvas-toolbar .wf-legend-pop {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            z-index: 30;
+            width: max-content;
+            max-width: 240px;
+            flex-direction: column;
+            gap: 4px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: var(--surface, #fff);
+            border: 1px solid var(--border, #e5e7eb);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .14);
+            font-size: .75rem;
+            color: var(--text-2);
+            white-space: normal;
+        }
+
+        .wf-canvas-toolbar .wf-legend:hover .wf-legend-pop,
+        .wf-canvas-toolbar .wf-legend:focus .wf-legend-pop {
+            display: flex;
+        }
+
+        .wf-canvas-toolbar .wf-legend-pop i {
             font-style: normal;
             font-weight: 700;
+        }
+
+        :root[data-theme="dark"] .wf-canvas-toolbar .wf-legend-ic {
+            color: var(--icon-accent, #b794ff);
+        }
+
+        :root[data-theme="dark"] .wf-canvas-toolbar .wf-legend-pop {
+            background: var(--surface);
+            border-color: var(--border-soft);
         }
 
         #wfCanvas {
@@ -745,9 +799,15 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             border-radius: var(--radius-sm);
             padding: 10px 12px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 8px;
             margin-top: 10px;
+            line-height: 1.8;
+        }
+
+        .steps-hint > i {
+            line-height: 1.8;
+            flex-shrink: 0;
         }
 
         /* ─── چیدمان یک‌خطی هر مرحله ─── */
@@ -779,13 +839,43 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             min-width: 0;
         }
 
+        /* مهلت (ساعت): ۸۰ → ۴۰px؛ بدون فلش‌های بالا/پایین تا ۳ رقم جا شود */
         .step-row .sr-time {
-            flex: 0 0 80px;
+            flex: 0 0 40px;
             text-align: center;
+            padding-left: 2px;
+            padding-right: 2px;
+            -moz-appearance: textfield;
+        }
+
+        .step-row .sr-time::-webkit-outer-spin-button,
+        .step-row .sr-time::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* جای آزادشده به کادر جستجوی مسئول می‌رسد */
+        .step-row .sr-assignee-wrap {
+            flex: 2 1 0;
         }
 
         .step-row .sr-remove {
             flex: 0 0 auto;
+        }
+
+        /* هم‌ارتفاعی ردیف مرحله: نام، جستجوی مسئول، مهلت، چک‌لیست و حذف همه ۳۴px */
+        .step-row .sr-name,
+        .step-row .sr-time,
+        .step-row .sr-assignee .ap-input,
+        .step-row .sr-checklist-toggle,
+        .step-row .sr-remove {
+            height: 34px;
+            box-sizing: border-box;
+        }
+
+        .step-row .sr-checklist-toggle {
+            padding-top: 0;
+            padding-bottom: 0;
         }
 
         /* جمع‌وجور کردن پیکر مسئول در ردیف */
@@ -893,7 +983,46 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             }
 
             .step-row .sr-time {
-                flex: 0 0 80px;
+                flex: 0 0 40px;
+            }
+        }
+
+        /* موبایل: آیکن و عنوان «کارهای روتین» در یک خط؛ دکمهٔ «روتین جدید» خط بعد، سمت چپ */
+        @media (max-width: 576px) {
+            /* دکمهٔ «+» روبروی عنوان (سمت چپ همان ردیف)، عمودی وسطِ عنوان + توضیح */
+            .page-header {
+                flex-direction: row;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .page-header-left {
+                min-width: 0;
+            }
+
+            .page-header-left h1 {
+                white-space: nowrap;
+                font-size: 1.25rem;
+                margin-bottom: 0;
+            }
+
+            /* زیر عنوان، نه زیر آیکن: ۳۸px آیکن + ۱۰px فاصله؛ بالا منفی چون ارتفاع
+               خط عنوان را آیکن ۳۸px تعیین می‌کند و متن عنوان کوتاه‌تر است */
+            .page-header-left p {
+                margin: -6px 48px 0 0;
+            }
+
+            .page-header .btn-create {
+                flex-shrink: 0;
+                width: 38px;
+                height: 38px;
+                padding: 0;
+                justify-content: center;
+                font-size: 1.1rem;
+            }
+
+            .page-header .btn-create-text {
+                display: none;
             }
         }
 
@@ -990,11 +1119,11 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
         <div class="page-header">
             <div class="page-header-left">
                 <h1><i class="bi bi-diagram-3"></i> کارهای روتین</h1>
-                <p>مشاهده و مدیریت فرآیندهای تکرارشونده</p>
+                <p><span class="d-none d-sm-inline">مشاهده و مدیریت فرآیندهای تکرارشونده</span><span class="d-sm-none">مشاهده و مدیریت</span></p>
             </div>
-            <button class="btn-create" onclick="showAddTemplateModal()">
+            <button class="btn-create" onclick="showAddTemplateModal()" title="روتین جدید" aria-label="روتین جدید">
                 <i class="bi bi-plus-lg"></i>
-                روتین جدید
+                <span class="btn-create-text">روتین جدید</span>
             </button>
         </div>
 
@@ -1078,10 +1207,15 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                                 <button type="button" onclick="wfZoom(-0.1)" title="کوچک‌نمایی"><i class="bi bi-zoom-out"></i></button>
                                 <button type="button" onclick="wfZoomReset()" title="بازنشانی بزرگ‌نمایی">۱:۱</button>
                                 <button type="button" id="wfFsBtn" onclick="wfToggleFullscreen()" title="تمام‌صفحه"><i class="bi bi-arrows-fullscreen"></i></button>
-                                <span class="wf-legend">
-                                    <span><i style="color:#1b7b39">──</i> تأیید / بعدی</span>
-                                    <span><i style="color:#d33">╌╌</i> رد</span>
-                                    <span>کلیک راست روی خط = حذف · دوبار کلیک = نقطهٔ خم</span>
+                                <!-- راهنمای نمودار: آیکن ⓘ؛ با کلیک/لمس (فوکوس) یا هاور در تولتیپ -->
+                                <span class="wf-legend" tabindex="0" title="" aria-label="راهنمای نمودار">
+                                    <i class="bi bi-info-circle wf-legend-ic"></i>
+                                    <span class="wf-legend-pop">
+                                        <span><i style="color:#1b7b39">──</i> تأیید / بعدی</span>
+                                        <span><i style="color:#d33">╌╌</i> رد</span>
+                                        <span>کلیک راست روی خط = حذف</span>
+                                        <span>دوبار کلیک روی خط = نقطهٔ خم</span>
+                                    </span>
                                 </span>
                             </div>
                             <div id="wfCanvas"></div>
@@ -1089,11 +1223,12 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
 
                         <div class="wf-narrative" id="wfNarrative"></div>
 
+                        <!-- متن داخل یک span: .steps-hint فلکس است و بدون آن هر تکهٔ متن/<b> یک ستون جدا می‌شد -->
                         <div class="steps-hint">
                             <i class="bi bi-info-circle"></i>
-                            جزئیات هر مرحله (نام، مسئول، مهلت، چک‌لیست) در فهرست بالا؛ <b>زمانِ اجرا و انشعاب</b> را فقط با یال‌هایِ روی بوم پایین مشخص کنید:
+                            <span>جزئیات هر مرحله (نام، مسئول، مهلت، چک‌لیست) در فهرست بالا؛ <b>زمانِ اجرا و انشعاب</b> را فقط با یال‌هایِ روی بوم پایین مشخص کنید:
                             گرهٔ «شروع» را به هر مرحله‌ای که باید از همان ابتدا فعال شود وصل کنید؛ یک گره را می‌توان هم‌زمان به چند مرحله وصل کرد (موازی/فورک)، و یک مرحله می‌تواند از چند مبدأ هم‌زمان خط بگیرد (هم‌گرایی/join — تا همه تمام نشوند، آن مرحله فعال نمی‌شود).
-                            برای «نقطهٔ تصمیم»، تیکِ گره را بزنید تا دو خروجیِ «تأیید» (سبز) و «رد» (قرمز) بگیرد و هرکدام را به مقصدِ دلخواه وصل کنید. جابه‌جاکردنِ گره‌ها فقط ظاهر است و چیزی را تغییر نمی‌دهد. <b>کلیک راست</b> روی یک خط، آن را حذف می‌کند.
+                            برای «نقطهٔ تصمیم»، تیکِ گره را بزنید تا دو خروجیِ «تأیید» (سبز) و «رد» (قرمز) بگیرد و هرکدام را به مقصدِ دلخواه وصل کنید. جابه‌جاکردنِ گره‌ها فقط ظاهر است و چیزی را تغییر نمی‌دهد. <b>کلیک راست</b> روی یک خط، آن را حذف می‌کند.</span>
                         </div>
                     </form>
                 </div>
@@ -1567,7 +1702,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
                            min="1" placeholder="ساعت" title="مهلت (ساعت)" required>
 
                     <button type="button" class="sr-checklist-toggle" id="scl-toggle-${stepId}" onclick="toggleStepChecklist('${stepId}')" title="چک‌لیست این مرحله">
-                        <i class="bi bi-check2-square"></i> <span id="scl-count-${stepId}">چک‌لیست</span>
+                        <i class="bi bi-check2-square"></i><span id="scl-count-${stepId}"></span>
                     </button>
 
                     <button type="button" class="btn-remove-step sr-remove" onclick="removeStep(this)" title="حذف مرحله">
@@ -2171,7 +2306,7 @@ if ((!hasPermission($__me, 'create_routine_template') && !hasPermission($__me, '
             }).join('');
 
             if (toggle && countLabel) {
-                countLabel.textContent = items.length ? `چک‌لیست (${toFa(items.length)})` : 'چک‌لیست';
+                countLabel.textContent = items.length ? ` (${toFa(items.length)})` : ''; // فقط آیکن + تعداد
                 toggle.classList.toggle('has-items', items.length > 0);
             }
         }

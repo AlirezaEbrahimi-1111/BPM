@@ -312,6 +312,48 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             color: var(--text-strong);
         }
 
+        /* ═══ کارت‌های برنامه (فردا/هفته/ماه) در عرض کم (۱۴۰۵/۰۸/۰۵) ═══
+           عرض ثابت ۲۵۰px و فاصلهٔ ۱۰۰px در تبلت/موبایل جا نمی‌شد (بیرون‌زدگی یا یک‌ستونهٔ
+           نیمه‌عرض). این‌جا: سه کارت هم‌عرض کنار هم؛ در موبایل هر کارت عمودی و وسط‌چین.
+           !important چون قوانین ارتفاع‌محور پایین‌تر (gap/ستون) دیرتر می‌آیند. */
+        @media (max-width: 992px) {
+            .plan-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: 10px !important;
+                margin: 0 !important;
+                padding: 0 10px 12px;
+            }
+
+            .plan-item {
+                width: auto;
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .plan-grid {
+                gap: 8px !important;
+            }
+
+            .plan-item {
+                flex-direction: column;
+                gap: 6px;
+                padding: 10px 6px;
+            }
+
+            .plan-icon {
+                order: 0;
+                width: 34px;
+                height: 34px;
+                font-size: .9rem;
+            }
+
+            .plan-value {
+                font-size: .82rem;
+                white-space: nowrap;
+            }
+        }
+
         /* ═══ بخش کارها ═══ */
         .tasks-row {
             flex: 1.15;

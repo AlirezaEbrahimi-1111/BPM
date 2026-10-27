@@ -533,9 +533,49 @@ if (!hasPermission($__me, 'manage_users')) {
 
         @media (max-width: 768px) {
 
+            /* فیلترها سرتاسری: ردیف ۱ جستجو + نقش، ردیف ۲ بخش + وضعیت،
+               ردیف ۳ تعداد (راست) … حذف فیلتر، فیلتر (چپ‌ترین) */
+            .filters-bar {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                grid-template-areas:
+                    "search role"
+                    "section status"
+                    "count btns";
+                gap: .45rem;
+            }
+
             .filters-bar .form-control,
             .filters-bar .form-select {
-                max-width: 130px;
+                max-width: none;
+                width: 100%;
+                min-width: 0;
+            }
+
+            #searchInput { grid-area: search; }
+            #filterRole { grid-area: role; }
+            #filterSection { grid-area: section; }
+            #filterStatus { grid-area: status; }
+            /* دو دکمه در یک خانه، چسبیده به چپ: فیلتر چپ‌ترین، حذف فیلتر قبلش */
+            .filters-bar .fb-reset,
+            .filters-bar .fb-apply {
+                grid-area: btns;
+                justify-self: end;
+                width: 40px;
+                padding: 0;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .filters-bar .fb-reset {
+                margin-left: calc(40px + .45rem);
+            }
+
+            .filters-bar .users-count {
+                grid-area: count;
+                margin: 0;
+                align-self: center;
             }
 
             .users-wrap {
@@ -675,18 +715,22 @@ if (!hasPermission($__me, 'manage_users')) {
         <div class="page-header-bar">
             <h1><i class="bi bi-people"></i> مدیریت کاربران</h1>
             <div class="d-flex gap-2">
-                <button class="btn btn-success btn-sm" onclick="openCreateModal()">
-                    <i class="bi bi-person-plus ms-1"></i>کاربر جدید
-                </button>
                 <button class="btn btn-outline-secondary btn-sm" onclick="loadUsers()">
                     <i class="bi bi-arrow-clockwise ms-1"></i>بروزرسانی
+                </button>
+                <button class="btn btn-success btn-sm" onclick="openCreateModal()">
+                    <i class="bi bi-person-plus ms-1"></i>کاربر جدید
                 </button>
             </div>
         </div>
 
         <!-- فیلترها -->
         <div class="filters-bar">
-            <input type="text" class="form-control" id="searchInput" placeholder="جستجو: نام، موبایل...">
+            <!-- هرگز autofill نشود: کروم شماره/نام کاربری ذخیره‌شده را در اولین فیلد متنی صفحه می‌ریخت
+                 و autocomplete="off" را همیشه رعایت نمی‌کند؛ readonly تا اولین فوکوس، جلوی پرکردن خودکار را می‌گیرد -->
+            <input type="text" class="form-control" id="searchInput" name="bpm-users-search" placeholder="جستجو: نام، موبایل..."
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other"
+                readonly onfocus="this.removeAttribute('readonly')">
             <select class="form-select" id="filterRole">
                 <option value="">همه نقش‌ها</option>
                 <option value="employee">کارمند</option>
@@ -700,10 +744,10 @@ if (!hasPermission($__me, 'manage_users')) {
                 <option value="1">فعال</option>
                 <option value="0">غیرفعال</option>
             </select>
-            <button class="btn btn-primary" onclick="applyFilters()">
+            <button class="btn btn-primary fb-apply" onclick="applyFilters()">
                 <i class="bi bi-funnel"></i>
             </button>
-            <button class="btn btn-outline-secondary" onclick="resetFilters()">
+            <button class="btn btn-outline-secondary fb-reset" onclick="resetFilters()">
                 <i class="bi bi-x-lg"></i>
             </button>
             <span class="users-count" id="usersCount"></span>

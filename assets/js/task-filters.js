@@ -266,6 +266,20 @@ window.TF = (function () {
         return user.id == t.current_approver_id;
     }
 
+    /** آیا درخواست رفع دوره‌های معوقه منتظر تأیید همین کاربر است؟ */
+    function isWaitingMyOverdueClear(t, user) {
+        if (!user || t.has_pending_overdue_request != 1) return false;
+        return user.id == t.overdue_approver_id;
+    }
+
+    /**
+     * منتظر تأیید همین کاربر (کار / تمدید موعد / رفع معوقه) — مانع ثبت خروج.
+     * هم‌تعریف با بخش ۴ includes/checkout-block-helper.php
+     */
+    function isWaitingMyAction(t, user) {
+        return isWaitingMyApproval(t, user) || isWaitingMyDeadline(t, user) || isWaitingMyOverdueClear(t, user);
+    }
+
 
     /* ═══════════════════════════════════════════════════
        ۴) فیلتر «امروز»
@@ -708,6 +722,8 @@ window.TF = (function () {
         needsRenewalDecision,
         isWaitingMyApproval,
         isWaitingMyDeadline,
+        isWaitingMyOverdueClear,
+        isWaitingMyAction,
 
         // فیلترها
         isDueToday,

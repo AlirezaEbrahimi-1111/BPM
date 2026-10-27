@@ -48,7 +48,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             <div style="flex: 1;">
                 <div class="search-box">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="crmSearch" placeholder="جستجو در نام، شماره تماس، کد ملی، کارشناس یا آدرس">
+                    <input type="text" id="crmSearch" placeholder="جستجو در نام، شماره تماس، کد ملی، کارشناس یا آدرس" data-placeholder-mobile="جستجو...">
                 </div>
                 <div class="filters-row">
                     <div class="filter-item uc-st">

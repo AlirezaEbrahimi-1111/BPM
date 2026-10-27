@@ -312,6 +312,198 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
             border: 1px solid transparent;
         }
 
+        /* کادر «افراد دارای دسترسی» */
+        .viewers-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 10px;
+            background: var(--surface, #fff);
+        }
+
+        .viewers-box-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            font-size: .85rem;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .viewers-box-count {
+            font-size: .72rem;
+            font-weight: 600;
+            background: rgba(142, 87, 254, .12);
+            color: #8e57fe;
+            padding: 1px 8px;
+            border-radius: 999px;
+        }
+
+        :root[data-theme="dark"] .viewers-box {
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .viewers-box-title {
+            color: var(--text-strong);
+        }
+
+        /* کادر «مجوزها» در فرم افزودن دسترسی */
+        .vperm-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 12px 8px 14px;
+            background: var(--surface, #fff);
+            max-width: 420px;
+        }
+
+        .vperm-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: .9rem;
+            margin-bottom: 12px;
+            color: #1f2937;
+        }
+
+        .vperm-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .vperm-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 2px 4px;
+            margin: 0;
+            cursor: pointer;
+            border-inline-start: 1px solid #e5e7eb;
+        }
+
+        .vperm-col:first-child {
+            border-inline-start: 0;
+        }
+
+        .vperm-col .form-check-input {
+            float: none;
+            width: 2.6em;
+            height: 1.4em;
+            cursor: pointer;
+        }
+
+        .vperm-col .form-check-input:checked {
+            background-color: #8e57fe;
+            border-color: #8e57fe;
+        }
+
+        .vperm-label {
+            font-size: .85rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .vperm-icon {
+            font-size: 1.05rem;
+            color: #6b7280;
+        }
+
+        :root[data-theme="dark"] .vperm-box,
+        :root[data-theme="dark"] .vperm-col {
+            border-color: var(--border-soft);
+        }
+
+        :root[data-theme="dark"] .vperm-title,
+        :root[data-theme="dark"] .vperm-label {
+            color: var(--text-strong);
+        }
+
+        :root[data-theme="dark"] .vperm-icon {
+            color: var(--text-muted);
+        }
+
+        /* وب (بزرگ‌تر از موبایل): همان چیدمان قبلی — سه سوئیچ کوچک با متن در یک ردیف،
+           بدون کادر/عنوان/آیکن؛ ردیف بیننده: نام، سوئیچ‌ها، «اعمال» و حذف کنار هم */
+        @media (min-width: 577px) {
+            .vperm-box {
+                border: 0;
+                padding: 0;
+                background: none;
+                max-width: none;
+            }
+
+            .vperm-title,
+            .vperm-icon {
+                display: none;
+            }
+
+            .vperm-grid {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 16px;
+            }
+
+            .vperm-col {
+                flex-direction: row;
+                gap: 5px;
+                padding: 0;
+                border: 0;
+                white-space: nowrap;
+            }
+
+            /* اندازهٔ استاندارد سوئیچ‌های پروژه (custom.css: ۳rem × ۱.۵rem) */
+            .vperm-col .form-check-input {
+                height: 1.5rem;
+            }
+
+            .vperm-label {
+                font-size: .875em;
+                font-weight: 400;
+            }
+
+            #taskViewersCell .viewer-detail {
+                flex-direction: row !important;
+                align-items: center !important;
+                flex-wrap: wrap;
+                gap: 12px !important;
+                width: auto !important;
+            }
+
+            #taskViewersCell .viewer-actions {
+                max-width: none !important;
+            }
+
+            #addViewerWrap {
+                flex-direction: row !important;
+                flex-wrap: wrap;
+                align-items: flex-start !important; /* چیپ‌های زیر جستجو ارتفاع را زیاد می‌کنند */
+                gap: 16px !important;
+            }
+
+            #addViewerWrap .vperm-box {
+                padding-top: 6px;
+            }
+
+            #addViewerWrap > div:first-child {
+                flex: 1;
+                min-width: 220px;
+            }
+        }
+
+        /* موبایل: فاصلهٔ نوع کار / اولویت / وضعیت کمتر (۱۶px → ۶px) */
+        @media (max-width: 576px) {
+            #taskMeta .task-meta-item {
+                margin: 0 0 0 6px;
+            }
+
+            /* فاصلهٔ داخلی بدنه و کادرهای اطلاعات ۲۴ → ۱۶px (جای سه سوئیچ دسترسی در یک خط) */
+            .task-detail-container .task-body,
+            .task-detail-container .info-section {
+                padding: 1rem;
+            }
+
+        }
+
         /* نوع کار باید روی هدر رنگی، خنثی و خوانا باقی بماند. */
         #taskMeta .badge.type-periodic,
         #taskMeta .badge.type-continuous {
@@ -349,9 +541,10 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
             }
         }
 
+        /* baseline: در عنوان چندخطی، ستاره کنار خط اول می‌ماند (نه وسط) */
         .td-title-row {
             display: flex;
-            align-items: center;
+            align-items: baseline;
             gap: 8px;
         }
 
@@ -440,6 +633,155 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
             border-color: #8e57fe;
             color: #b28bff;
         }
+
+        /* ═══ موبایل: نوار عملیات مثل اپ (۱۴۰۵/۰۸/۰۵) ═══
+           حداکثر ۴ دکمهٔ گرد رنگی با برچسب کوچک زیرش؛ بقیه (و «بازگشت») در دکمهٔ پنجم «بیشتر»
+           که منوی خودش را بالای همان دکمه باز می‌کند. چیدمان را tdLayoutActionBar (پایین صفحه)
+           انجام می‌دهد؛ این قوانین فقط با کلاس td-compact (موبایل) فعال‌اند. */
+        @media (max-width: 576px) {
+            .TDaction-buttons.td-compact {
+                left: 12px !important;
+                right: 12px !important;
+                bottom: 12px !important;
+                border-radius: 22px;
+                border: 1px solid var(--border-soft, #e9e9e9);
+                padding: 8px 6px !important;
+                flex-wrap: nowrap !important;
+                justify-content: space-evenly !important;
+                gap: 0 !important;
+            }
+
+            .TDaction-buttons.td-compact > .btn {
+                flex: 0 0 56px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: none !important;
+                border: 0 !important;
+                box-shadow: none !important;
+                color: var(--text-muted, #6b7280) !important;
+                font-size: 9.5px;
+                line-height: 1.2;
+                white-space: normal;
+                text-align: center;
+                /* بدون transition: موقع رفتن به حالت موبایل، رنگ دکمهٔ وب چند لحظه پشت دایره می‌ماند */
+                transition: none !important;
+                transform: none !important;
+            }
+
+            .TDaction-buttons.td-compact > .btn > i {
+                width: 42px;
+                height: 42px;
+                margin: 0 !important;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                color: #fff;
+                background: var(--td-act, #8e57fe);
+            }
+
+            /* block (نه -webkit-box): در بعضی مرورگرهای موبایل متن داخل -webkit-box وسط‌چین
+               نمی‌شد و برچسب از زیر آیکن به یک طرف می‌رفت؛ حداکثر دو خط با max-height */
+            .TDaction-buttons.td-compact > .btn .td-act-lbl {
+                display: block;
+                width: 56px;
+                max-height: 2.4em;
+                overflow: hidden;
+                text-align: center;
+                margin: 0 auto;
+            }
+
+            /* صفحه دکمهٔ نمایان را با style.display='inline-block' نشان می‌دهد (inline، بالاتر از
+               این قوانین) و چیدمان «آیکن بالا، متن پایین» را خراب می‌کرد → برای دکمه‌های نمایان
+               (نه display:none) flex اجباری */
+            .TDaction-buttons.td-compact > .btn:not(.td-in-more):not([style*="display: none"]):not([style*="display:none"]) {
+                display: flex !important;
+                gap: 6px;
+            }
+
+            .TDaction-buttons.td-compact > .btn.td-in-more {
+                display: none !important;
+            }
+
+            .TDaction-buttons.td-compact > .btn:disabled {
+                opacity: .6;
+            }
+
+            .td-compact .btn-primary, .td-more-item.btn-primary { --td-act: #8e57fe; }
+            .td-compact .btn-success, .td-more-item.btn-success { --td-act: #1b7b39; }
+            .td-compact .btn-danger, .td-compact .btn-outline-danger,
+            .td-more-item.btn-danger, .td-more-item.btn-outline-danger { --td-act: #ef4444; }
+            .td-compact .btn-warning, .td-more-item.btn-warning { --td-act: #f59e0b; }
+            .td-compact .btn-info, .td-more-item.btn-info { --td-act: #0ea5e9; }
+            .td-compact .btn-outline-secondary, .td-compact .td-more-btn,
+            .td-more-item.btn-outline-secondary { --td-act: #64748b; }
+
+            body:has(.TDaction-buttons.td-compact) {
+                padding-bottom: 104px !important;
+            }
+
+            /* منوی «بیشتر»: پس‌زمینهٔ کم‌رنگ + دکمه‌های گرد با برچسب، بالای دکمهٔ «بیشتر» */
+            .td-more-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 1060;
+                background: color-mix(in srgb, var(--bg-page, #f5f6fa) 88%, transparent);
+                display: none;
+            }
+
+            .td-more-overlay.open {
+                display: block;
+            }
+
+            .td-more-list {
+                position: fixed;
+                display: flex;
+                flex-direction: column-reverse;
+                gap: 14px;
+            }
+
+            .td-more-item {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                background: none !important;
+                border: 0 !important;
+                box-shadow: none !important;
+                padding: 0;
+                font-size: 14px;
+                color: var(--text-strong, #1f2937) !important;
+                cursor: pointer;
+                animation: tdMoreIn .22s ease both;
+            }
+
+            .td-more-item > i {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+                color: #fff;
+                background: var(--td-act, #8e57fe);
+                box-shadow: 0 3px 8px rgba(0, 0, 0, .18);
+                flex-shrink: 0;
+            }
+
+            .td-more-item:disabled {
+                opacity: .6;
+            }
+
+            @keyframes tdMoreIn {
+                from { opacity: 0; transform: scale(.6) translateY(10px); }
+                to { opacity: 1; transform: none; }
+            }
+        }
     </style>
 
 </head>
@@ -507,8 +849,16 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                             accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg,.mp4,.mov" multiple>
                         <i class="bi bi-cloud-upload"></i>
                         <p><strong>فایل خود را اینجا رها کنید یا کلیک کنید</strong></p>
-                        <small>فرمت‌های مجاز: jpg, png, pdf, docx, xlsx, mp3, m4a, ogg, mp4, mov</small>
-                        <P>(ویدیو حداکثر ۵۰ مگابایت، بقیهٔ فایل‌ها حداکثر ۲۰ مگابایت)</P>
+                        <div class="upload-meta">
+                            <span class="upload-formats" tabindex="0" onclick="event.stopPropagation()">
+                                فرمت‌های مجاز <i class="bi bi-info-circle"></i>
+                                <span class="upload-formats-pop">jpg, png, pdf, docx, xlsx, mp3, m4a, ogg, mp4, mov</span>
+                            </span>
+                            <span class="upload-formats upload-limits" tabindex="0" onclick="event.stopPropagation()">
+                                حجم مجاز <i class="bi bi-info-circle"></i>
+                                <span class="upload-formats-pop">ویدیو: حداکثر ۵۰ مگابایت<br>بقیهٔ فایل‌ها: حداکثر ۲۰ مگابایت</span>
+                            </span>
+                        </div>
                         <div class="upload-progress" id="uploadProgress">
                             <div class="upload-progress-bar" id="uploadProgressBar"></div>
                         </div>
@@ -2821,12 +3171,13 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                 renderViewersCell(task.id, data.viewers, !!data.can_manage);
             }
 
-            // یک سوییچ کوچک دسترسی برای ردیف یک بیننده — سه‌بار (پیوست/تاریخچه/چک‌لیست) صدا زده می‌شه
-            function viewerSwitchHtml(inputId, checked, labelText, disabled) {
-                return `<div class="form-check form-switch mb-0" style="display:flex; align-items:center; gap:5px; padding:0; margin:0;">
-                    <input class="form-check-input" type="checkbox" role="switch" id="${inputId}" ${checked ? 'checked' : ''} ${disabled ? 'disabled' : ''} style="margin:0; flex-shrink:0;">
-                    <label class="form-check-label small" for="${inputId}" style="margin:0; white-space:nowrap;">${labelText}</label>
-                </div>`;
+            // یک ستون کادر «مجوزها» در فرم افزودن دسترسی: سوئیچ، عنوان، آیکن (کل ستون قابل کلیک)
+            function viewerPermColHtml(inputId, labelText, icon, checked = true) {
+                return `<label class="vperm-col" for="${inputId}">
+                    <span class="form-check form-switch m-0 p-0"><input class="form-check-input m-0" type="checkbox" role="switch" id="${inputId}" ${checked ? 'checked' : ''}></span>
+                    <span class="vperm-label">${labelText}</span>
+                    <i class="bi ${icon} vperm-icon"></i>
+                </label>`;
             }
 
             // بازکردن/بستن ردیف یک بیننده — پیش‌فرض فقط نام دیده می‌شه؛ با
@@ -2853,10 +3204,15 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
 
                 let html = '';
 
-                if (canManage) {
-                    html += `<button class="btn btn-link btn-sm p-0 mb-1" id="addViewerBtn" title="افزودن دسترسی" style="display:flex; align-items:center; gap:4px;">
-                        <i class="bi bi-person-plus"></i> افزودن دسترسی
-                    </button>`;
+                // لینک «افزودن دسترسی» روبروی عنوان «دسترسی به:» (نه داخل خانهٔ مقدار)
+                const label = document.getElementById('taskViewersLabel');
+                if (label) {
+                    label.innerHTML = canManage
+                        ? `<span style="display:inline-flex; align-items:center; flex-wrap:wrap; gap:4px 12px;">دسترسی به:
+                            <button class="btn btn-link btn-sm p-0" id="addViewerBtn" title="افزودن دسترسی" style="font-weight:500; text-decoration:none;">
+                                افزودن دسترسی
+                            </button></span>`
+                        : 'دسترسی به:';
                 }
 
                 // فرم افزودن دسترسی جدید: بالای فهرست کاربران دسترسی‌داده‌شده
@@ -2866,21 +3222,29 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                     // ارتفاع اون بلوک بیشتر از دکمه/سوییچ‌ها می‌شه؛ با center
                     // دکمه‌ی افزودن و سوییچ‌ها به‌جای هم‌ردیف‌بودن با فیلد جستجو،
                     // به وسط ارتفاع کلی می‌رفتن و توازن ردیف به‌هم می‌خورد
-                    html += `<div id="addViewerWrap" style="display:none; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:8px;">
-                        <div style="display:flex; align-items:flex-start; gap:6px; flex:1; min-width:220px;">
+                    // بالا: انتخاب کاربر + «افزودن»؛ پایین: کادر «مجوزها» با سه ستون
+                    // (سوئیچ، عنوان، آیکن) که با خط عمودی از هم جدا شده‌اند
+                    html += `<div id="addViewerWrap" style="display:none; flex-direction:column; align-items:stretch; gap:12px; margin-bottom:8px;">
+                        <div style="display:flex; align-items:flex-start; gap:6px; min-width:0;">
                             <div id="addViewerPicker" style="flex:1; min-width:0;"></div>
                             <button class="btn btn-primary btn-sm" id="submitAddViewerBtn" style="flex-shrink:0;">افزودن</button>
                         </div>
-                        <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                            ${viewerSwitchHtml('viewerCanAttachments', true, 'پیوست‌ها')}
-                            ${viewerSwitchHtml('viewerCanHistory', true, 'تاریخچه')}
-                            ${viewerSwitchHtml('viewerCanChecklist', true, 'چک‌لیست')}
+                        <div class="vperm-box" id="addViewerPerms" style="display:none;">
+                            <div class="vperm-title">مجوزها</div>
+                            <div class="vperm-grid">
+                                ${viewerPermColHtml('viewerCanAttachments', 'پیوست‌ها', 'bi-paperclip')}
+                                ${viewerPermColHtml('viewerCanHistory', 'تاریخچه', 'bi-clock')}
+                                ${viewerPermColHtml('viewerCanChecklist', 'چک‌لیست', 'bi-check2-square')}
+                            </div>
                         </div>
                     </div>`;
                 }
 
+                // فهرست افراد دارای دسترسی: داخل یک کادر با عنوان و تعداد
+                html += `<div class="viewers-box">
+                    <div class="viewers-box-title">افراد دارای دسترسی${viewers.length ? ` <span class="viewers-box-count">${enTofaNumber(viewers.length)}</span>` : ''}</div>`;
                 if (!viewers.length) {
-                    html += '<div><span class="text-muted">کسی اضافه نشده</span></div>';
+                    html += '<div><span class="text-muted small">هنوز به کسی دسترسی داده نشده است</span></div>';
                 } else {
                     html += '<div style="display:flex; flex-direction:column; gap:4px;">';
                     html += viewers.map(v => `
@@ -2889,17 +3253,25 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                                 ${escapeHtml(v.full_name)}
                                 <i class="bi bi-chevron-left" id="viewerChevron-${v.id}" style="font-size:.75em;"></i>
                             </span>
-                            <div id="viewerDetail-${v.id}" style="display:none; align-items:center; flex-wrap:wrap; gap:12px;">
-                                ${viewerSwitchHtml(`viewerRowAtt-${v.id}`, v.can_view_attachments, 'پیوست‌ها')}
-                                ${viewerSwitchHtml(`viewerRowHist-${v.id}`, v.can_view_history, 'تاریخچه')}
-                                ${viewerSwitchHtml(`viewerRowChk-${v.id}`, v.can_view_checklist, 'چک‌لیست')}
-                                <button class="btn btn-outline-primary btn-sm py-0" onclick="applyViewerPermission(${taskId}, ${v.id})">اعمال</button>
-                                <i class="bi bi-x-circle" style="cursor:pointer" onclick="removeTaskViewer(${taskId}, ${v.id})" title="حذف"></i>
+                            <div class="viewer-detail" id="viewerDetail-${v.id}" style="display:none; flex-direction:column; align-items:stretch; gap:8px; width:100%;">
+                                <div class="vperm-box">
+                                    <div class="vperm-title">مجوزها</div>
+                                    <div class="vperm-grid">
+                                        ${viewerPermColHtml(`viewerRowAtt-${v.id}`, 'پیوست‌ها', 'bi-paperclip', v.can_view_attachments)}
+                                        ${viewerPermColHtml(`viewerRowHist-${v.id}`, 'تاریخچه', 'bi-clock', v.can_view_history)}
+                                        ${viewerPermColHtml(`viewerRowChk-${v.id}`, 'چک‌لیست', 'bi-check2-square', v.can_view_checklist)}
+                                    </div>
+                                </div>
+                                <div class="viewer-actions" style="display:flex; align-items:center; justify-content:flex-end; gap:12px; max-width:420px;">
+                                    <button class="btn btn-outline-primary btn-sm py-0" onclick="applyViewerPermission(${taskId}, ${v.id})">اعمال</button>
+                                    <i class="bi bi-x-circle" style="cursor:pointer" onclick="removeTaskViewer(${taskId}, ${v.id})" title="حذف"></i>
+                                </div>
                             </div>
                         </div>
                     `).join('');
                     html += '</div>';
                 }
+                html += '</div>';
 
                 cell.innerHTML = html;
 
@@ -2928,7 +3300,11 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                         container: '#addViewerPicker',
                         users: viewerPickerUsers,
                         multiSelect: true,
-                        onSelect: () => {}
+                        // کادر «مجوزها» فقط وقتی حداقل یک نفر انتخاب شده (با حذف آخرین نفر دوباره پنهان)
+                        onSelect: (type, ids) => {
+                            const perms = document.getElementById('addViewerPerms');
+                            if (perms) perms.style.display = (Array.isArray(ids) && ids.length) ? '' : 'none';
+                        }
                     });
                 }
                 addViewerPickerInst.focus();
@@ -3066,7 +3442,7 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                     <div class="info-value" id="taskGroupCell"></div>
                 </div>
                 <div class="info-item" id="taskViewersItem" style="display:none;">
-                    <div class="info-label">دسترسی به:</div>
+                    <div class="info-label" id="taskViewersLabel">دسترسی به:</div>
                     <div class="info-value" id="taskViewersCell">در حال بارگذاری...</div>
                 </div>
 
@@ -4457,6 +4833,28 @@ ${task.overdue_periods > 0 ? `
                 history = history.filter(h => !((h.action === 'completed' || h.action === 'completed_rejected') && _pendings.some(p =>
                     String(p.from_user_id) === String(h.from_user_id) && Math.abs(_hTime(p) - _hTime(h)) <= 2000)));
 
+                // تأییدِ وسطِ زنجیره (۱۴۰۵/۰۸/۰۵): سرور هم‌زمان «approved» و «pending_approval» (به نفر
+                // بالاتر) ثبت می‌کند — یک رویدادند. ردیف «در انتظار تأیید» پنهان و نام نفر بالاتر روی
+                // ردیف «تأیید» می‌نشیند: «تأیید کرد و برای تأیید X ارسال شد». فقط نمایش.
+                const _hName = h => `${h.to_user_first_name || ''} ${h.to_user_last_name || ''}`.trim();
+                const _mergedPending = new Set();
+                history = history.map(h => {
+                    if (h.action !== 'approved') return h;
+                    const p = history.find(x => x.action === 'pending_approval' && !_mergedPending.has(x) &&
+                        String(x.from_user_id) === String(h.from_user_id) && Math.abs(_hTime(x) - _hTime(h)) <= 2000);
+                    if (!p || !_hName(p)) return h;
+                    _mergedPending.add(p);
+                    // «تأیید شد، تأیید خودکار برای نفرات قبلی و ارسال برای تأیید»: نفرات میانی خودکار تأیید شده‌اند
+                    return Object.assign({}, h, { _forwardedTo: _hName(p), _forwardAuto: String(p.notes || '').includes('تأیید خودکار') });
+                }).filter(h => !_mergedPending.has(h));
+
+                // متن‌های پیش‌فرض سرور (بدون توضیح کاربر) — پیشوندشان حذف می‌شود تا فقط توضیح خود کاربر بماند
+                const _stripPrefix = (txt, prefixes) => {
+                    let t = String(txt || '').trim();
+                    prefixes.forEach(px => { if (t.startsWith(px)) t = t.slice(px.length); });
+                    return t.replace(/^[:：\s]+/, '').trim();
+                };
+
                 let html = '';
                 history.forEach(item => {
                     const actionLabel = TF.actionLabel(item.action);
@@ -4508,8 +4906,10 @@ ${task.overdue_periods > 0 ? `
                         } catch (e) {
                             notesHTML = `<div class="ml-notes">${esc(item.notes)}</div>`;
                         }
-                    } else if (item.notes) {
-                        const txt = esc(item.notes).replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
+                    } else if (item.notes && String(item.notes).replace(/[:：\s]+$/, '').trim()) {
+                        // «تأیید شد:» بدون توضیح → «تأیید شد» (دو نقطهٔ آویزان حذف)
+                        const clean = String(item.notes).replace(/[:：\s]+$/, '');
+                        const txt = esc(clean).replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
                         notesHTML = `<div class="ml-notes">${txt}</div>`;
                     }
                     // ✅ ساخت متن توضیحات خاص برای هر action
@@ -4538,11 +4938,26 @@ ${task.overdue_periods > 0 ? `
                         }
                     }
                     // ✅ جدید: برای در انتظار تأیید: نمایش نام تأییدکننده
+                    // «کار تکمیل شد» (متن پیش‌فرض سرور) → «کار را تکمیل کرد و برای تأیید X ارسال شد»
                     if (item.action === 'pending_approval' && item.to_user_id && item.to_user_first_name) {
                         const toName = `${esc(item.to_user_first_name || '')} ${esc(item.to_user_last_name || '')}`.trim();
                         if (toName) {
-                            customNotesHTML = (notesHTML || '') + `<div class="ml-notes">در انتظار تأیید: ${toName}</div>`;
+                            const raw = String(item.notes || '').trim();
+                            if (raw.startsWith('کار تکمیل شد')) {
+                                const extra = _stripPrefix(raw, ['کار تکمیل شد']);
+                                customNotesHTML = `<div class="ml-notes">کار را تکمیل کرد و برای تأیید ${toName} ارسال شد</div>` +
+                                    (extra ? `<div class="ml-reason-mini">توضیح: ${esc(extra)}</div>` : '');
+                            } else {
+                                customNotesHTML = (notesHTML || '') + `<div class="ml-notes">در انتظار تأیید: ${toName}</div>`;
+                            }
                         }
+                    }
+                    // تأیید وسط زنجیره (ادغام‌شده بالا)
+                    if (item.action === 'approved' && item._forwardedTo) {
+                        const extra = _stripPrefix(item.notes, ['تأیید شد و ارسال برای تأیید نفر بالاتر', 'تأیید شد']);
+                        customNotesHTML = `<div class="ml-notes">تأیید کرد و برای تأیید ${esc(item._forwardedTo)} ارسال شد</div>` +
+                            (item._forwardAuto ? `<div class="ml-reason-mini">تأیید نفرات میانی زنجیره خودکار انجام شد</div>` : '') +
+                            (extra ? `<div class="ml-reason-mini">توضیح: ${esc(extra)}</div>` : '');
                     }
                     // تمدید موعد تأییدشده: from_user = تأییدکننده، to_user = درخواست‌دهنده.
                     // استثنا (from_is_requester در یادداشت): ردیف به نام خود درخواست‌دهنده
@@ -5679,7 +6094,8 @@ ${task.overdue_periods > 0 ? `
                 attachments.forEach(attachment => {
                     const icon = getFileIcon(attachment.file_type);
                     const preview = attachment.is_image ?
-                        `<img src="${esc(attachment.file_path)}" alt="${esc(attachment.file_original_name)}">` :
+                        // تصویر خراب/پیدانشده: به‌جای نمایش متن alt (که از کادر بیرون می‌زد) آیکن تصویر
+                        `<img src="${esc(attachment.file_path)}" alt="" onerror="this.outerHTML='<i class=&quot;bi bi-file-earmark-image file-icon-image&quot;></i>'">` :
                         `<i class="bi ${icon}"></i>`;
 
                     const canDelete = attachment.can_delete === true;
@@ -5698,7 +6114,7 @@ ${task.overdue_periods > 0 ? `
                 </div>
                 <div class="attachment-info">
                     <div class="attachment-name" title="${esc(attachment.file_original_name)}">
-                        ${esc(attachment.file_original_name)}
+                        ${esc(attShortName(attachment.file_original_name))}
                     </div>
                     <div class="attachment-meta">
                         <span><i class="bi bi-hdd ms-1"></i>${attachment.file_size_formatted}</span>
@@ -5718,6 +6134,20 @@ ${task.overdue_periods > 0 ? `
                 });
 
                 container.innerHTML = html;
+            }
+
+            // نام نمایشی کوتاه پیوست (وب و موبایل): اول و آخر نام می‌ماند، وسط «…»؛ پسوند همیشه
+            // دیده می‌شود. نام کامل در title (هاور) و موقع دانلود حفظ است.
+            function attShortName(name) {
+                name = String(name || '');
+                const MAX = 20;
+                if (name.length <= MAX) return name;
+                const dot = name.lastIndexOf('.');
+                const ext = dot > 0 && name.length - dot <= 6 ? name.slice(dot) : '';
+                const base = ext ? name.slice(0, dot) : name;
+                const keep = MAX - ext.length - 1;
+                const head = Math.ceil(keep / 2), tail = Math.floor(keep / 2);
+                return base.slice(0, head) + '…' + base.slice(base.length - tail) + ext;
             }
 
             // تابع کمکی برای escape کردن HTML
@@ -6919,6 +7349,144 @@ ${task.overdue_periods > 0 ? `
             </div>
         </div>
         <?php include 'footer.php'; ?>
+
+    <script>
+        // ═══ tdLayoutActionBar — موبایل: نوار عملیات مثل اپ، حداکثر ۴ دکمه + «بیشتر» ═══
+        // دکمه‌ها را خود صفحه با style.display نشان/پنهان می‌کند؛ این‌جا فقط چیدمان موبایل
+        // (بعد از هر تغییر نمایش، با MutationObserver) دوباره حساب می‌شود. دسکتاپ دست نمی‌خورد.
+        (function () {
+            var bar = document.querySelector('.TDaction-buttons');
+            if (!bar || !window.matchMedia) return;
+            var mq = window.matchMedia('(max-width: 576px)');
+            var MAX = 4;
+            var overlay = null, moreBtn = null, busy = false;
+
+            function directBtns() {
+                return Array.prototype.filter.call(bar.children, function (el) {
+                    return el.classList && el.classList.contains('btn');
+                });
+            }
+
+            // متن هر دکمه داخل span (برای برچسب دوخطی زیر دایره)
+            function wrapLabels() {
+                directBtns().forEach(function (b) {
+                    if (b.querySelector('.td-act-lbl')) return;
+                    var span = document.createElement('span');
+                    span.className = 'td-act-lbl';
+                    Array.prototype.slice.call(b.childNodes).forEach(function (n) {
+                        if (n.nodeType === 3 && n.textContent.trim()) {
+                            n.textContent = n.textContent.trim(); // فاصله‌های اول/آخر برچسب را جابه‌جا نکنند
+                            span.appendChild(n);
+                        } else if (n.nodeType === 1 && n.tagName === 'SPAN') {
+                            span.appendChild(n);
+                        }
+                    });
+                    b.appendChild(span);
+                });
+            }
+
+            function isShown(b) {
+                return b !== moreBtn && b.style.display !== 'none' && !b.hidden;
+            }
+
+            function ensureMoreBtn() {
+                if (moreBtn) return;
+                moreBtn = document.createElement('button');
+                moreBtn.type = 'button';
+                moreBtn.className = 'btn td-more-btn';
+                moreBtn.innerHTML = '<i class="bi bi-three-dots"></i><span class="td-act-lbl">بیشتر</span>';
+                moreBtn.addEventListener('click', openMore);
+                bar.appendChild(moreBtn);
+            }
+
+            function layout() {
+                if (busy) return;
+                busy = true;
+                try {
+                    var all = directBtns();
+                    all.forEach(function (b) { b.classList.remove('td-in-more'); });
+                    if (!mq.matches) {
+                        bar.classList.remove('td-compact');
+                        if (moreBtn) moreBtn.style.display = 'none';
+                        return;
+                    }
+                    bar.classList.add('td-compact');
+                    ensureMoreBtn();
+                    // «بازگشت» همیشه در «بیشتر» (آخرین گزینه)؛ بقیه به ترتیب صفحه
+                    var back = bar.querySelector('.td-back-btn');
+                    var shown = all.filter(function (b) { return isShown(b) && b !== back; });
+                    var keep = Math.min(MAX, shown.length);
+                    shown.forEach(function (b, i) { if (i >= keep) b.classList.add('td-in-more'); });
+                    if (back) back.classList.add('td-in-more');
+                    moreBtn.style.display = (shown.length > MAX || back) ? '' : 'none';
+                } finally {
+                    busy = false;
+                }
+            }
+
+            function closeMore() {
+                if (overlay) overlay.classList.remove('open');
+            }
+
+            function openMore() {
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'td-more-overlay';
+                    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeMore(); });
+                    document.body.appendChild(overlay);
+                }
+                var back = bar.querySelector('.td-back-btn');
+                var items = directBtns().filter(function (b) {
+                    return b.classList.contains('td-in-more') && (b === back || isShown(b));
+                });
+                // «بازگشت» آخر فهرست
+                items.sort(function (a, b) { return (a === back) - (b === back); });
+                var list = document.createElement('div');
+                list.className = 'td-more-list';
+                items.forEach(function (b, i) {
+                    var it = document.createElement('button');
+                    it.type = 'button';
+                    it.className = 'td-more-item ' + b.className.replace(/\btd-in-more\b/g, '').replace(/\bbtn\b/g, '');
+                    it.disabled = b.disabled;
+                    it.style.animationDelay = (i * 40) + 'ms';
+                    var ic = b.querySelector('i');
+                    var lbl = b.querySelector('.td-act-lbl');
+                    var icon = document.createElement('i');
+                    if (ic) icon.className = ic.className.replace(/\bms-2\b/g, '');
+                    var text = document.createElement('span');
+                    text.textContent = (lbl ? lbl.textContent : b.textContent).trim();
+                    it.appendChild(icon);
+                    it.appendChild(text);
+                    it.addEventListener('click', function () { closeMore(); b.click(); });
+                    list.appendChild(it);
+                });
+                overlay.innerHTML = '';
+                overlay.appendChild(list);
+                // درست بالای دکمهٔ «بیشتر»؛ برچسب‌ها سمتی که جای بیشتری دارد
+                var r = moreBtn.getBoundingClientRect();
+                var cx = r.left + r.width / 2;
+                list.style.bottom = (window.innerHeight - r.top + 10) + 'px';
+                if (cx < window.innerWidth / 2) {
+                    list.style.left = (cx - 24) + 'px';
+                    list.style.alignItems = 'flex-start';
+                    list.querySelectorAll('.td-more-item').forEach(function (x) { x.style.flexDirection = 'row-reverse'; });
+                } else {
+                    list.style.right = (window.innerWidth - cx - 24) + 'px';
+                    list.style.alignItems = 'flex-end';
+                }
+                overlay.classList.add('open');
+            }
+
+            wrapLabels();
+            layout();
+            // childList: بعضی دکمه‌ها متنشان را با innerHTML عوض می‌کنند (مثل رفع معوقه) → برچسب دوباره پیچیده شود
+            new MutationObserver(function () { wrapLabels(); layout(); })
+                .observe(bar, { attributes: true, childList: true, subtree: true, attributeFilter: ['style', 'hidden', 'disabled'] });
+            var onMq = function () { closeMore(); layout(); };
+            if (mq.addEventListener) mq.addEventListener('change', onMq); else if (mq.addListener) mq.addListener(onMq);
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMore(); });
+        })();
+    </script>
 </body>
 
 </html>

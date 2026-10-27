@@ -142,6 +142,7 @@ SELECT DISTINCT
     t.updated_at,
     dr.current_approver_id,
     dr.created_at AS deadline_request_date,
+    ocr.current_approver_id AS overdue_approver_id,
     t.has_pending_deadline_request,
     t.has_pending_overdue_request,
     ph.last_pending_date,

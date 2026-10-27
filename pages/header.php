@@ -143,6 +143,43 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
         margin: 0 !important;
     }
 
+    /* ═══ هدر همیشه یک خط (۱۴۰۵/۰۸/۰۵) ═══
+       ۱) بوت‌استرپ به .navbar و .container-fluid اجازهٔ flex-wrap می‌دهد → در عرض کم
+          گروه آیکن‌ها به خط دوم/سوم می‌رفت. حالا هیچ‌وقت wrap نمی‌شود؛ به‌جایش نام
+          سازمان کوتاه (…) می‌شود.
+       ۲) زیر ۹۹۲px (navbar-expand-lg) بوت‌استرپ منوهای داخل .navbar-nav را position:static
+          می‌کند → منوی پروفایل داخل هدر باز می‌شد و هدر را بلند می‌کرد. حالا همیشه شناور
+          روی صفحه، زیر آیکن. */
+    .navbar,
+    .navbar > .container-fluid {
+        flex-wrap: nowrap !important;
+    }
+
+    .navbar .navbar-brand {
+        min-width: 0;
+        flex-shrink: 1;
+        overflow: hidden;
+    }
+
+    .navbar #userName {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .navbar #attendanceContainer,
+    .navbar .navbar-nav.me-0 {
+        flex-shrink: 0;
+        flex-wrap: nowrap !important;
+    }
+
+    .navbar .navbar-nav .dropdown-menu#profileDropdownMenu {
+        position: absolute !important;
+        top: calc(100% + 6px) !important;
+        z-index: 1100;
+    }
+
     /* نام و نام‌خانوادگی کاربر جاری، کنار نام شرکت — کمی ریزتر.
        عمدا خارج تگ <a> (نه داخلش) قرار گرفته تا هاور/کلیک‌پذیری
        navbar-brand را به ارث نبرد — فقط متن ساده است. */
@@ -767,7 +804,8 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
         top: calc(100% + 10px);
         inset-inline-end: 0;
         z-index: 1100;
-        width: min(300px, 92vw);
+        /* ۲۰٪ باریک‌تر (۳۰۰→۲۴۰، ۹۲vw→۷۴vw): در موبایل لبهٔ راست کادر از صفحه بیرون می‌زد */
+        width: min(240px, 74vw);
         background: var(--surface, #fff);
         color: var(--text-strong, #1f2937);
         border: 1px solid var(--border-soft, #ece7f6);
@@ -1431,9 +1469,45 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
     <div class="gs-panel-inner">
         <div class="gs-search-box">
             <i class="bi bi-search"></i>
-            <input type="text" id="gsInput" placeholder="جستجو در تسک‌ها، تیکت‌ها، اطلاعیه‌ها، نوتیفیکیشن‌ها و..." oninput="gsOnInput()">
+            <input type="text" id="gsInput" placeholder="جستجو در تسک‌ها، تیکت‌ها، اطلاعیه‌ها، نوتیفیکیشن‌ها و..." data-placeholder-mobile="جستجو..." oninput="gsOnInput()">
             <button type="button" class="gs-search-clear" id="gsClearBtn" onclick="gsClearSearch()" title="پاک کردن"><i class="bi bi-x"></i></button>
         </div>
+        <script>
+            // موبایل: placeholder هر کادر جستجو فقط «جستجو...» (متن کامل در عرض کم بریده می‌شد).
+            // همهٔ inputهایی که placeholderشان «جستجو» دارد؛ data-placeholder-mobile متن دیگری می‌دهد.
+            // کادرهای بعدا ساخته‌شده (مودال/JS) هم با MutationObserver پوشش داده می‌شوند.
+            (function () {
+                if (!window.matchMedia) return;
+                var SHORT = 'جستجو...';
+                var mq = window.matchMedia('(max-width: 576px)');
+                function apply(inp) {
+                    var cur = inp.getAttribute('placeholder') || '';
+                    var short = inp.getAttribute('data-placeholder-mobile') || SHORT;
+                    var full = inp.getAttribute('data-placeholder-full');
+                    // صفحه خودش placeholder را عوض کرده → متن کامل تازه همان است
+                    if (full === null || (cur !== full && cur !== short)) {
+                        if (cur.indexOf('جستجو') < 0 && !inp.hasAttribute('data-placeholder-mobile')) return;
+                        full = cur;
+                        inp.setAttribute('data-placeholder-full', full);
+                    }
+                    var want = mq.matches ? short : full;
+                    if (cur !== want) inp.setAttribute('placeholder', want);
+                }
+                function sync() {
+                    document.querySelectorAll('input[placeholder*="جستجو"], input[data-placeholder-full], input[data-placeholder-mobile]').forEach(apply);
+                }
+                var t = null;
+                function later() { clearTimeout(t); t = setTimeout(sync, 80); }
+                sync();
+                document.addEventListener('DOMContentLoaded', function () {
+                    sync();
+                    if (window.MutationObserver) {
+                        new MutationObserver(later).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['placeholder'] });
+                    }
+                });
+                if (mq.addEventListener) mq.addEventListener('change', sync); else if (mq.addListener) mq.addListener(sync);
+            })();
+        </script>
         <div class="gs-type-filters" id="gsTypeFilters">
             <span class="gs-type-chip active" data-type="task" onclick="gsToggleType(this)">کارها</span>
             <span class="gs-type-chip" data-type="ticket" onclick="gsToggleType(this)">تیکت‌ها</span>
@@ -2707,7 +2781,7 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
             '<div style="font-size:13.5px;color:var(--text-muted,#6b7490);margin-bottom:18px;line-height:1.7">' + h(message) + '</div>' +
             list +
             '<div style="display:flex;gap:10px;justify-content:center">' +
-            '<button id="cbGo" style="background:#8e57fe;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit">رفتن به کارهای معوقه</button>' +
+            '<button id="cbGo" style="background:#8e57fe;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit">رفتن به کارهای مانع خروج</button>' +
             '<button id="cbClose" style="background:transparent;color:var(--text-muted,#6b7490);border:1px solid var(--border-soft,#e2e2e2);border-radius:10px;padding:10px 16px;cursor:pointer;font-family:inherit">بستن</button>' +
             '</div></div>';
         document.body.appendChild(ov);
@@ -3055,8 +3129,11 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
 
         toggle.classList.add('open');
         panel.classList.add('open');
+        // فوکوس خودکار فقط در دستگاه‌های با ماوس؛ در لمسی کیبورد و لیست جستجوهای اخیر کروم
+        // ناخواسته باز می‌شد — کاربر خودش داخل کادر می‌زنه
         var input = document.getElementById('gsInput');
-        if (input) {
+        var isTouch = window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        if (input && !isTouch) {
             setTimeout(function() { input.focus(); }, 50);
         }
     }

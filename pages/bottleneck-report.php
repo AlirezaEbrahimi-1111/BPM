@@ -188,6 +188,11 @@ if (!hasPermission($__me, 'view_reports')) {
             margin-top: 3px;
         }
 
+        /* نسخهٔ موبایل واحد (زیر عنوان، کنار زمان‌ها) — در دسکتاپ پنهان */
+        .bn-unit-m {
+            display: none;
+        }
+
         .bn-unit-badge {
             font-size: .7rem;
             background: #f3f4f6;
@@ -324,12 +329,150 @@ if (!hasPermission($__me, 'view_reports')) {
         }
 
         @media (max-width: 768px) {
+            /* سه کارت آماری در یک ردیف، کنار هم با فاصلهٔ کم؛ هر کارت عمودی و وسط‌چین */
             .bn-summary {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 8px;
+                margin-bottom: 18px;
+            }
+
+            .bn-stat {
+                flex-direction: column;
+                justify-content: flex-start;
+                gap: 6px;
+                padding: 12px 6px;
+                text-align: center;
+            }
+
+            .bn-stat > div:last-child {
+                min-width: 0;
+                width: 100%;
+            }
+
+            .bn-stat-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .bn-stat-num {
+                font-size: 1.25rem;
+                line-height: 1.4;
+            }
+
+            /* نام بحرانی‌ترین مرحله بلند است → کوچک‌تر و حداکثر دو خط */
+            #sumWorst {
+                font-size: .78rem !important;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .bn-stat-label {
+                font-size: .7rem;
             }
 
             .bn-metrics {
                 gap: 12px;
+            }
+
+            /* کارت موبایل: ستون ۱ فقط شماره؛ ستون ۲ عنوان + توضیح (قالب)
+               و زیرشان واحد و زمان‌ها در یک ردیف */
+            .bn-item-head {
+                display: grid;
+                grid-template-columns: auto minmax(0, 1fr) auto;
+                column-gap: 12px;
+                row-gap: 8px;
+                align-items: start;
+                padding: 14px;
+            }
+
+            .bn-rank {
+                grid-column: 1;
+                grid-row: 1 / span 2;
+            }
+
+            .bn-info {
+                grid-column: 2;
+                grid-row: 1;
+            }
+
+            .bn-stage-name {
+                display: block;
+                font-size: .95rem;
+                line-height: 1.6;
+            }
+
+            .bn-stage-name .bn-unit-badge {
+                display: none;
+            }
+
+            .bn-metrics {
+                grid-column: 2;
+                grid-row: 2;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                gap: 6px 14px;
+            }
+
+            .bn-unit-m {
+                display: inline-block;
+            }
+
+            .bn-metric {
+                display: flex;
+                align-items: baseline;
+                gap: 4px;
+                text-align: right;
+            }
+
+            .bn-metric-num {
+                font-size: .95rem;
+            }
+
+            .bn-metric-label {
+                margin-top: 0;
+                font-size: .72rem;
+            }
+
+            .bn-chevron {
+                grid-column: 3;
+                grid-row: 1 / span 2;
+                align-self: center;
+            }
+
+            /* روتین‌های هر مرحله: خط ۱ عنوان (کامل، چندخطی)، خط ۲ شروع + تأخیر */
+            .bn-instance {
+                display: grid;
+                grid-template-columns: auto minmax(0, 1fr) auto;
+                column-gap: 10px;
+                row-gap: 6px;
+                align-items: center;
+                padding: 10px 12px;
+            }
+
+            .bn-instance > i {
+                grid-column: 1;
+                grid-row: 1;
+            }
+
+            .bn-instance-title {
+                grid-column: 2 / span 2;
+                grid-row: 1;
+                white-space: normal;
+                line-height: 1.6;
+            }
+
+            .bn-instance-started {
+                grid-column: 1 / span 2;
+                grid-row: 2;
+            }
+
+            .bn-instance-delay {
+                grid-column: 3;
+                grid-row: 2;
+                padding: 4px 8px;
             }
         }
 
@@ -569,6 +712,7 @@ if (!hasPermission($__me, 'view_reports')) {
                             <div class="bn-template">${esc(b.template_name) || 'نامشخص'}</div>
                         </div>
                         <div class="bn-metrics">
+                            ${b.activity_section ? `<span class="bn-unit-badge bn-unit-m">${unitFa(b.activity_section)}</span>` : ''}
                             <div class="bn-metric">
                                 <div class="bn-metric-num count">${toFa(b.count)}</div>
                                 <div class="bn-metric-label">روتین درگیر</div>

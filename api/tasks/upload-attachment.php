@@ -218,9 +218,12 @@ try {
         mkdir($uploadDir, 0755, true);
     }
 
-    // تولید نام یونیک برای فایل
-    $fileName = uniqid() . '_' . time() . '.' . $fileExtension;
-    $filePath = $uploadDir . $fileName;
+    // تولید نام یونیک برای فایل — کوتاه (۱۴ حرف یا کمتر): ۸ حرف تصادفی + پسوند (حداکثر ۴ حرف)
+    // نام اصلی کاربر جدا در file_original_name ذخیره می‌شود؛ این نام فقط روی سرور است
+    do {
+        $fileName = bin2hex(random_bytes(4)) . '.' . $fileExtension;
+        $filePath = $uploadDir . $fileName;
+    } while (file_exists($filePath));
 
     // انتقال فایل
     if (!move_uploaded_file($file['tmp_name'], $filePath)) {

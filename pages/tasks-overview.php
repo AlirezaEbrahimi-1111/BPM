@@ -42,7 +42,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
             <div style="flex: 1;">
                 <div class="search-box">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="searchInput" placeholder="جستجو در عنوان، توضیحات، شناسه، یا «روتین ۲۰۶» برای کارهای یک روتین">
+                    <input type="text" id="searchInput" placeholder="جستجو در عنوان، توضیحات، شناسه، یا «روتین ۲۰۶» برای کارهای یک روتین" data-placeholder-mobile="جستجو...">
                 </div>
 
                 <div class="filters-row">
@@ -81,10 +81,16 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
 
                 </div>
                 <!-- 🆕 نوار فیلتر فعال (وقتی از داشبورد می‌آییم) -->
-                <div id="activeFilterBar" style="display:none; margin-top:10px; padding:10px 14px; background:#fff8f0; border:1px solid #fed7aa; border-radius:10px; align-items:center; gap:10px;">
-                    <i class="bi bi-funnel-fill" style="color:#ea580c;"></i>
-                    <span id="activeFilterText" style="font-size:.86rem; color:#9a3412; flex:1;"></span>
-                    <button onclick="clearDashboardFilters()" style="background:#fff; border:1px solid #fed7aa; color:#ea580c; border-radius:9px; padding:5px 14px; font-size:.8rem; cursor:pointer;">
+                <!-- دو خط: «فیلتر فعال:» و خود فیلترها؛ دکمهٔ پاک کردن در خط بعد -->
+                <div id="activeFilterBar" style="display:none; margin-top:10px; padding:10px 14px; background:#fff8f0; border:1px solid #fed7aa; border-radius:10px; flex-direction:column; align-items:flex-start; gap:8px;">
+                    <div style="display:flex; align-items:flex-start; gap:10px; width:100%;">
+                        <i class="bi bi-funnel-fill" style="color:#ea580c; line-height:1.6;"></i>
+                        <div style="font-size:.86rem; color:#9a3412; flex:1; min-width:0; line-height:1.6;">
+                            <div style="font-weight:600;">فیلتر فعال:</div>
+                            <div id="activeFilterText"></div>
+                        </div>
+                    </div>
+                    <button onclick="clearDashboardFilters()" style="align-self:flex-end; background:#fff; border:1px solid #fed7aa; color:#ea580c; border-radius:9px; padding:5px 14px; font-size:.8rem; cursor:pointer;">
                         پاک کردن فیلتر
                     </button>
                 </div>
@@ -404,7 +410,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                 const bar = document.getElementById('activeFilterBar');
                 bar.style.display = 'flex';
                 document.getElementById('activeFilterText').textContent =
-                    'فیلتر فعال: ' + (parts.join(' • ') || '...');
+                    parts.join(' • ') || '...';
                 window._activeFilterParts = parts;
             }
         }
@@ -574,7 +580,7 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                         if (u) {
                             const parts = window._activeFilterParts || [];
                             parts.unshift(`مسئول: ${u.first_name} ${u.last_name}`);
-                            document.getElementById('activeFilterText').textContent = 'فیلتر فعال: ' + parts.join(' • ');
+                            document.getElementById('activeFilterText').textContent = parts.join(' • ');
                         }
                     }
                 }

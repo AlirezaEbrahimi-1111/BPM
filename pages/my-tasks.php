@@ -90,7 +90,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
                 <div class="search-box">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="searchInput" placeholder="جستجو در عنوان، توضیحات، شناسه، یا «روتین ۲۰۶» برای کارهای یک روتین">
+                    <input type="text" id="searchInput" placeholder="جستجو در عنوان، توضیحات، شناسه، یا «روتین ۲۰۶» برای کارهای یک روتین" data-placeholder-mobile="جستجو...">
                 </div>
                 <div class="filters-row">
                     <div class="filter-item">
@@ -469,7 +469,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 statFilter = 'due_block';
                 document.getElementById('filterStatus').value = 'all';
                 document.getElementById('dashFilterBannerText').textContent =
-                    'کارهای معوقه و امروز‌موعد که برای ثبت خروج باید تکمیل‌شان کنید';
+                    'کارهای معوقه، امروز‌موعد یا منتظر تأیید شما که برای ثبت خروج باید تعیین تکلیف شوند';
                 document.getElementById('dashFilterBanner').style.display = 'flex';
                 applyFilters();
                 return;
@@ -646,9 +646,11 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 // فیلترِ «کارهای مانعِ خروج» (از ریدایرکتِ ثبت خروج): معوقه یا امروزموعد
                 // که کارمند هنوز تکمیل نکرده — هم‌تعریف با includes/checkout-block-helper.php
                 // (rejected = اتمام اجباری کار دوره‌ای، نه «برگشت‌خورده» — مانع نیست)
+                // + (۱۴۰۵/۰۸/۰۵) هر کار/درخواستی که منتظر تأیید همین کاربر است (بدون شرط موعد)
                 if (statFilter === 'due_block' &&
-                    !((t.status === 'not_started' || t.status === 'in_progress') &&
-                      (TF.isOverdue(t, currentUser, today) || TF.isDueToday(t, currentUser, today)))) return false;
+                    !(((t.status === 'not_started' || t.status === 'in_progress') &&
+                       (TF.isOverdue(t, currentUser, today) || TF.isDueToday(t, currentUser, today))) ||
+                      TF.isWaitingMyAction(t, currentUser))) return false;
                 if (statFilter === 'in_progress' && t.status !== 'in_progress') return false;
                 if (statFilter === 'completed' && t.status !== 'completed' && t.status !== 'approved') return false;
                 if (statFilter === 'not_started' && t.status !== 'not_started') return false;
