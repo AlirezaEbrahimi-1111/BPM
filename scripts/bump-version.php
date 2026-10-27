@@ -10,6 +10,14 @@
  * اجرا:  php scripts/bump-version.php
  */
 
+// 🔒 فقط روی سیستم توسعه. روی سرور (/var/www/...) نسخهٔ فوتر نباید عوض شود: فوتر فقط با
+// کامیت تغییر می‌کند و تغییر دستی روی سرور، git pull دیپلوی را متوقف می‌کند (چهار بار رخ داد).
+$__root = str_replace('\\', '/', (string) realpath(__DIR__ . '/..'));
+if (strpos($__root, '/var/www/') === 0 && getenv('BPM_ALLOW_SERVER_BUMP') !== '1') {
+    fwrite(STDERR, "⛔ این اسکریپت روی سرور اجرا نمی‌شود. نسخهٔ فوتر را روی سیستم توسعه بالا ببرید و کامیت/دیپلوی کنید.\n");
+    exit(1);
+}
+
 require __DIR__ . '/../includes/JalaliHelper.php';
 
 date_default_timezone_set('Asia/Tehran');

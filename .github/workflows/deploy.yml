@@ -72,7 +72,19 @@ jobs:
             # فوتر هیچ‌وقت نباید روی سرور تغییر کند (فقط با کامیت). اگر تغییر کرده باشد
             # (سه بار رخ داده: bump-version.php روی سرور)، git pull بی‌صدا شکست می‌خورد و
             # سرور روی کامیت قدیمی می‌ماند → قبل از pull به نسخهٔ گیت برگردد.
-            $G checkout -- pages/footer.php 2>/dev/null || sudo -n $G checkout -- pages/footer.php 2>/dev/null || true
+            # (۱۴۰۵/۰۸/۰۵: بار چهارم — قبلا خطای برگرداندن با 2>/dev/null و || true پنهان می‌ماند؛
+            #  فایل مال root بود و کاربر دیپلوی نمی‌توانست برش گرداند.) حالا: فقط اگر تغییر کرده،
+            #  برگردان؛ اگر نشد، دیپلوی با دستور دقیق رفع قرمز شود.
+            if ! $G diff --quiet -- pages/footer.php; then
+              echo "⚠️ pages/footer.php روی سرور دستی تغییر کرده — به نسخهٔ گیت برگردانده می‌شود:"
+              $G diff --stat -- pages/footer.php || true
+              if ! { $G checkout -- pages/footer.php 2>/dev/null || sudo -n $G checkout -- pages/footer.php; }; then
+                echo "❌ برگرداندن footer.php ممکن نشد (دسترسی). روی سرور با root اجرا کنید:"
+                echo "   cd $REPO && git checkout -- pages/footer.php"
+                echo "   و دوباره Run workflow بزنید."
+                exit 1
+              fi
+            fi
             deploy-update
             # اگر pull انجام نشده باشد، دیپلوی قرمز شود (نه اینکه بی‌صدا رد شود)
             HEAD_NOW=$($G rev-parse HEAD)
