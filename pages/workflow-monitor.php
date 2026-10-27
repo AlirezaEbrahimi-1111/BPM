@@ -94,6 +94,33 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             color: var(--gray-400);
         }
 
+        /* موبایل: خط اول عنوان؛ خط دوم «بروزرسانی» در ابتدا و بج «زنده» در انتهای همان خط */
+        @media (max-width: 576px) {
+            .page-header {
+                gap: 0.5rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .page-header-left {
+                display: contents;
+            }
+
+            .page-title {
+                flex-basis: 100%;
+                order: 1;
+                font-size: 1.34rem;
+            }
+
+            #lastUpdate {
+                order: 2;
+            }
+
+            .live-badge {
+                order: 3;
+                margin-right: auto;
+            }
+        }
+
         /* ── Stats Grid ── */
         .stats-grid {
             display: grid;
@@ -310,11 +337,39 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             color: white;
         }
 
+        /* ردیف اول: شناسه + عنوان؛ ردیف دوم: وضعیت‌ها (تأخیر، آبشاری، گلوگاه …)؛
+           بعد نوار پیشرفت و بقیه */
+        /* عنوان مودال جزئیات: سه خط */
+        #modalTitle {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        #modalTitle .dm-title-id {
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--gray-500, #6b7280);
+        }
+
+        #modalTitle .dm-title-text {
+            font-size: 1rem;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        #modalTitle .dm-title-mode {
+            font-size: .75rem;
+            font-weight: 600;
+            color: #8e57fe;
+        }
+
         .wf-header {
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 0.75rem;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
             margin-bottom: 1rem;
             padding-left: 2.2rem;
             /* جا برای دکمه حذف */
@@ -346,8 +401,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         .wf-badges {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
             gap: 0.35rem;
-            flex-shrink: 0;
         }
 
         /* Progress */
@@ -552,6 +607,96 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         .filter-dropdown-wrap {
             position: relative;
             display: inline-flex;
+        }
+
+        /* یک ردیف دونیمه: وضعیت | روتین‌های من */
+        .wf-status-line {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 360px;
+        }
+
+        /* داخل نیمهٔ وضعیت: برچسب + دکمهٔ فیلتر */
+        .wf-status-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .wf-status-key {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            white-space: nowrap;
+        }
+
+        :root[data-theme="dark"] .wf-status-key {
+            color: var(--text-strong);
+        }
+
+        .wf-status-row .filter-dropdown-wrap,
+        .wf-status-row .filter-dropdown-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* روتین / واحد / ایجادکننده — در همهٔ اندازه‌ها کنار هم و هم‌عرض */
+        .wf-dd-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .wf-dd-row .filter-dropdown-wrap,
+        .wf-dd-row .filter-dropdown-btn {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .wf-dd-row .filter-dropdown-btn {
+            justify-content: center;
+        }
+
+        .wf-dd-row .filter-dropdown-btn span:not(.caret) {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        /* سوئیچ «روتین‌های من» */
+        .wf-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0.35rem 0;
+            border: none;
+            background: transparent;
+            font-size: 0.8rem;
+            color: var(--gray-600);
+            cursor: pointer;
+            white-space: nowrap;
+            justify-content: flex-start;   /* راست‌چین (RTL) */
+            padding-right: 0.75rem;        /* کمی فاصله از دکمهٔ وضعیت */
+        }
+
+        .wf-switch .form-check-input {
+            float: none;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .wf-switch .form-check-input:checked {
+            background-color: #8e57fe;
+            border-color: #8e57fe;
+        }
+
+        :root[data-theme="dark"] .wf-switch {
+            color: var(--text-strong);
         }
 
         .filter-dropdown-btn {
@@ -863,6 +1008,19 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 flex: 1;
                 justify-content: center;
             }
+
+            .wf-dd-row .filter-dropdown-btn {
+                padding: 0.45rem 0.5rem;
+            }
+
+            .wf-status-line {
+                min-width: 0;
+            }
+
+            /* سوئیچ در نیمهٔ خودش راست‌چین بماند */
+            .wf-status-line > .wf-switch {
+                justify-content: flex-start;
+            }
         }
 
         .role-icon {
@@ -1152,23 +1310,36 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 </button>
             </div>
 
-            <button class="filter-pill" data-filter="all" onclick="setStatusFilter('all', this)">
-                <i class="bi bi-list-ul"></i>همه
-            </button>
-            <!-- 🆕 پیش‌فرض صفحه: روتین‌های جاری = در حال اجرا + دارای تأخیر (نه تکمیل/لغو) -->
-            <button class="filter-pill active" data-filter="active" onclick="setStatusFilter('active', this)">
-                <i class="bi bi-activity"></i>جاری
-            </button>
-            <button class="filter-pill" data-filter="delayed" onclick="setStatusFilter('delayed', this)">
-                <i class="bi bi-exclamation-triangle"></i>دارای تأخیر
-            </button>
-            <button class="filter-pill" data-filter="completed" onclick="setStatusFilter('completed', this)">
-                <i class="bi bi-check-lg"></i>تکمیل شده
-            </button>
-            <button class="filter-pill" data-filter="cancelled" onclick="setStatusFilter('cancelled', this)">
-                <i class="bi bi-x-lg"></i>لغوشده
-            </button>
+            <!-- فیلتر وضعیت — یک دکمه با منو (قبلا پنج دکمهٔ جدا). پیش‌فرض: «جاری» = در حال اجرا + دارای تأخیر -->
+            <!-- یک ردیف: نیمی وضعیت (برچسب + فیلتر)، نیم دیگر سوئیچ «روتین‌های من» -->
+            <div class="wf-status-line">
+            <div class="wf-status-row">
+            <div class="filter-dropdown-wrap" id="statusDropdownWrap">
+                <button class="filter-dropdown-btn" id="statusDropdownBtn" onclick="toggleDropdown('status')">
+                    <i class="bi bi-funnel"></i>
+                    <span id="statusDropdownLabel">جاری</span>
+                    <span class="caret">▾</span>
+                </button>
+                <div class="filter-dropdown-menu" id="statusDropdownMenu">
+                    <div class="filter-dropdown-list" id="statusDropdownList">
+                        <div class="filter-dropdown-item" data-filter="all" onclick="setStatusFilter('all')"><i class="bi bi-list-ul"></i> همه <i class="bi bi-check check-icon"></i></div>
+                        <div class="filter-dropdown-item" data-filter="active" onclick="setStatusFilter('active')"><i class="bi bi-activity"></i> جاری <i class="bi bi-check check-icon"></i></div>
+                        <div class="filter-dropdown-item" data-filter="delayed" onclick="setStatusFilter('delayed')"><i class="bi bi-exclamation-triangle"></i> دارای تأخیر <i class="bi bi-check check-icon"></i></div>
+                        <div class="filter-dropdown-item" data-filter="completed" onclick="setStatusFilter('completed')"><i class="bi bi-check-lg"></i> تکمیل شده <i class="bi bi-check check-icon"></i></div>
+                        <div class="filter-dropdown-item" data-filter="cancelled" onclick="setStatusFilter('cancelled')"><i class="bi bi-x-lg"></i> لغوشده <i class="bi bi-check check-icon"></i></div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <!-- فیلتر: فقط روتین‌های ساخته‌ی من — سوئیچ (قاعدهٔ گزینه‌های روشن/خاموش) -->
+            <label class="wf-switch form-check form-switch" id="myRoutinesBtn">
+                <input class="form-check-input" type="checkbox" role="switch" id="myRoutinesSwitch" onchange="toggleMyRoutines()">
+                <span>روتین‌های من</span>
+            </label>
+            </div>
 
+            <!-- روتین / واحد / ایجادکننده: یک ردیف، سه دکمهٔ هم‌اندازه -->
+            <div class="wf-dd-row">
             <!-- فیلتر روتین -->
             <div class="filter-dropdown-wrap" id="routineDropdownWrap">
                 <button class="filter-dropdown-btn" id="routineDropdownBtn" onclick="toggleDropdown('routine')">
@@ -1221,10 +1392,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     </div>
                 </div>
             </div>
-            <!-- فیلتر: فقط روتین‌های ساخته‌ی من -->
-            <button class="filter-pill" id="myRoutinesBtn" onclick="toggleMyRoutines(this)">
-                <i class="bi bi-person-check"></i>روتین‌های من
-            </button>
+            </div>
             <!-- دکمه ریست فیلترها (فقط وقتی فیلتر فعال داریم) -->
             <button class="filter-pill" id="resetFiltersBtn" onclick="resetAllFilters()"
                 style="display:none; background:#fef2f2; border-color:#fecaca; color:#b91c1c;">
@@ -1313,10 +1481,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         const _urlQ = new URLSearchParams(location.search);
         const _hasUrlTarget = ['template', 'instance', 'search'].some(k => _urlQ.get(k));
         let currentFilter = _hasUrlTarget ? 'all' : DEFAULT_FILTER; // فیلتر وضعیت
-        if (currentFilter !== DEFAULT_FILTER) {
-            document.querySelectorAll('.filter-pill').forEach(b => b.classList.toggle('active', b.dataset.filter === currentFilter));
-        }
-        document.addEventListener('DOMContentLoaded', () => syncStatCards());
+        document.addEventListener('DOMContentLoaded', () => syncStatusUI());
         // نقش کاربر — فقط مدیریت/سرپرست دکمهٔ حذف ببینند
         let isManagerUser = false;
         try {
@@ -1436,19 +1601,30 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
 
         /* ─── Filter ─── */
-        function setStatusFilter(filter, btn) {
+        const STATUS_FILTER_LABELS = { all: 'همه', active: 'جاری', delayed: 'دارای تأخیر', completed: 'تکمیل شده', cancelled: 'لغوشده' };
+
+        function setStatusFilter(filter) {
             currentFilter = filter;
             _hideCompletedFromUrl = false; // 🆕 کاربر دستی وضعیت انتخاب کرد، محدودیت برداشته شود
-            document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-            syncStatCards();
+            document.getElementById('statusDropdownMenu').classList.remove('show');
+            document.getElementById('statusDropdownBtn').classList.remove('open');
+            syncStatusUI();
             updateResetBtn();
             applyFilter();
         }
 
-        // کلیک روی کارت‌های بالا = همان دکمهٔ فیلتر هم‌نام
+        // برچسب دکمه، آیتم انتخاب‌شدهٔ منو و کارت انتخاب‌شدهٔ بالا — از currentFilter
+        function syncStatusUI() {
+            document.getElementById('statusDropdownLabel').textContent = STATUS_FILTER_LABELS[currentFilter] || 'همه';
+            document.getElementById('statusDropdownBtn').classList.toggle('active', currentFilter !== DEFAULT_FILTER);
+            document.querySelectorAll('#statusDropdownList .filter-dropdown-item').forEach(i =>
+                i.classList.toggle('selected', i.dataset.filter === currentFilter));
+            syncStatCards();
+        }
+
+        // کلیک روی کارت‌های بالا = همان گزینهٔ هم‌نام منوی وضعیت
         function setStatusFilterByKey(key) {
-            setStatusFilter(key, document.querySelector('.filter-pill[data-filter="' + key + '"]'));
+            setStatusFilter(key);
         }
 
         function syncStatCards() {
@@ -1493,9 +1669,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             applyFilter();
         }
         // فعال/غیرفعال کردن فیلتر «روتین‌های من»
-        function toggleMyRoutines(btn) {
-            onlyMyRoutines = !onlyMyRoutines; // برعکس کردن وضعیت
-            if (btn) btn.classList.toggle('active', onlyMyRoutines);
+        function toggleMyRoutines() {
+            onlyMyRoutines = document.getElementById('myRoutinesSwitch').checked;
             updateResetBtn();
             applyFilter();
         }
@@ -1647,7 +1822,6 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             searchQuery = ''; // 🆕 پاک کردن سرچ
 
             document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-            document.querySelector('.filter-pill[data-filter="' + DEFAULT_FILTER + '"]').classList.add('active');
 
             document.getElementById('routineDropdownLabel').textContent = 'روتین';
             document.getElementById('routineDropdownBtn').classList.remove('active');
@@ -1656,7 +1830,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             document.getElementById('creatorDropdownLabel').textContent = 'ایجادکننده';
             document.getElementById('creatorDropdownBtn').classList.remove('active');
             document.querySelectorAll('.filter-dropdown-item').forEach(i => i.classList.remove('selected'));
-            syncStatCards();
+            syncStatusUI();
+            document.getElementById('myRoutinesSwitch').checked = false;
 
             // 🆕 پاک کردن فیلد سرچ
             document.getElementById('searchInput').value = '';
@@ -1991,9 +2166,11 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
         function renderDetailModal(wf, steps) {
             const modeLabel = wf.execution_mode === 'parallel' ? 'موازی' : 'آبشاری';
-            // شناسهٔ روتین پیش از عنوان + گارد عنوان خالی (روتین‌های قدیمی گاهی title ندارند)
-            document.getElementById('modalTitle').textContent =
-                '#' + wf.id + ' — ' + (wf.title || 'بدون عنوان') + ' — ' + modeLabel;
+            // سه خط: شناسهٔ روتین / عنوان / نوع (آبشاری یا موازی) — گارد عنوان خالی (روتین‌های قدیمی گاهی title ندارند)
+            document.getElementById('modalTitle').innerHTML =
+                '<span class="dm-title-id">#' + toFa(wf.id) + '</span>' +
+                '<span class="dm-title-text">' + esc(wf.title || 'بدون عنوان') + '</span>' +
+                '<span class="dm-title-mode">' + modeLabel + '</span>';
 
             // روتین‌های ساخته‌شده پیش از قالب‌های مرحله‌ای (چارت/فلوچارت) مرحله‌ای با
             // step_name/step_order ندارند؛ برای آن‌ها نمودار رسم نمی‌شود (قبلا «undefined» می‌زد).

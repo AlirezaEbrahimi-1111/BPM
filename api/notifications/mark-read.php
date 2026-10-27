@@ -31,12 +31,21 @@ $database = new Database();
     }
     // حالت ۲: mark read همه نوتیفیکیشن‌های یک تسک
     elseif (!empty($input['task_id'])) {
+        // همهٔ اعلان‌های این کاربر که به همین کار مربوط‌اند (۱۴۰۵/۰۸/۰۴): نوع «کار»، نوع
+        // «چک‌لیست» (related_id = شمارهٔ کار)، و هر اعلانی که لینکش صفحهٔ همین کار است —
+        // اعلان مرحلهٔ روتین related_id = شمارهٔ روتین دارد ولی لینکش task-detail است.
+        // ⚠️ هم‌خوان با MarkRead در go-api/internal/notifications/notifications.go
+        $tid = (int) $input['task_id'];
         $stmt = $db->prepare("
             UPDATE notifications
             SET is_read = 1, read_at = NOW()
-            WHERE user_id = ? AND related_id = ? AND related_type = 'task' AND is_read = 0
+            WHERE user_id = ? AND is_read = 0 AND (
+                (related_type IN ('task', 'checklist') AND related_id = ?)
+                OR link LIKE ? OR link LIKE ? OR link LIKE ?
+            )
         ");
-        $result = $stmt->execute([$user_id, (int)$input['task_id']]);
+        $result = $stmt->execute([$user_id, $tid,
+            '%task-detail.php?id=' . $tid, '%task-detail.php?id=' . $tid . '&%', '%task-detail.php?id=' . $tid . '#%']);
     }
     // حالت ۳: mark read همه نوتیفیکیشن‌های یک تیکت
     elseif (!empty($input['ticket_id'])) {

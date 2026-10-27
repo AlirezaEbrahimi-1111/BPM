@@ -314,13 +314,43 @@
         }
     }
 
+    /* ═══ جابه‌جایی ستون فقط در دسکتاپ ═══ */
+    var MOBILE_GRID_MQ = '(max-width: 576px)';
+
+    function isMobileGrid() {
+        return !!(w.matchMedia && w.matchMedia(MOBILE_GRID_MQ).matches);
+    }
+
+    function applyMobileNoMove(options) {
+        if (options.__agfaMoveOrig === undefined) options.__agfaMoveOrig = !!options.suppressMovableColumns;
+        options.suppressMovableColumns = options.__agfaMoveOrig || isMobileGrid();
+    }
+
+    // با چرخاندن گوشی یا تغییر اندازهٔ پنجره هم به‌روز شود
+    function watchMobileNoMove(api, options) {
+        try {
+            if (api && w.matchMedia) {
+                var mq = w.matchMedia(MOBILE_GRID_MQ);
+                var sync = function () {
+                    try { api.setGridOption('suppressMovableColumns', options.__agfaMoveOrig || mq.matches); } catch (e) { /* جدول از بین رفته */ }
+                };
+                if (mq.addEventListener) mq.addEventListener('change', sync);
+                else if (mq.addListener) mq.addListener(sync);
+            }
+        } catch (e) { /* هرگز نباید جدول را خراب کند */ }
+        return api;
+    }
+
     function hookCreateGrid() {
         var ag = w.agGrid;
         if (!ag || typeof ag.createGrid !== 'function' || ag.__bpmPersist) return !!(ag && ag.__bpmPersist);
         var orig = ag.createGrid;
         var wrapped = function (el, options, params) {
+            // موبایل: ستون‌ها جابه‌جا نشوند (۱۴۰۵/۰۸/۰۴) — روی صفحهٔ لمسی کشیدن سرستون برای
+            // تغییر عرض، اشتباهی ستون را جابه‌جا می‌کرد. تغییر عرض همچنان فعال است.
+            if (options) applyMobileNoMove(options);
             if (!el || !options || (el.getAttribute && el.getAttribute('data-grid-persist') === 'off')) {
-                return orig.call(this, el, options, params);
+                return watchMobileNoMove(orig.call(this, el, options, params), options);
             }
             var ctx = { key: persistKey(el), restoring: false, restoredCols: '', initialPageSize: options.paginationPageSize };
             var pageReady = options.onGridReady;
@@ -335,7 +365,7 @@
                 attachPersistence(api, el, ctx);
                 injectResetButton(api, el, ctx);
             } catch (e) { /* ماندگاری هرگز نباید جدول را خراب کند */ }
-            return api;
+            return watchMobileNoMove(api, options);
         };
         try {
             // در این build، createGrid یک getter بدون setter است (configurable) → تخصیص

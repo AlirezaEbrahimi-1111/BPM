@@ -1817,10 +1817,8 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                 });
                 loadUsers();
                 initTaskStar();
+                // ✅ همهٔ اعلان‌های مربوط به این کار (کار، چک‌لیست، مرحلهٔ روتین) خوانده‌شده شوند
                 markTaskNotificationsRead();
-
-                // ✅ نوتیفیکیشن‌های این تسک را خوانده‌شده کن
-                markTaskNotificationsRead(taskId);
 
                 // ✅ Event Listener برای دکمه درخواست مهلت
                 const requestBtn = document.getElementById('requestDeadlineBtn');
@@ -2663,23 +2661,6 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
             // برای سازگاری با کدهای قدیمی که sectionToFarsi صدا می‌زنند
             function sectionToFarsi(section) {
                 return getSectionLabel(section);
-            }
-            async function markTaskNotificationsRead(taskId) {
-                try {
-                    await fetch('/go/api/notifications/mark-read', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + authToken
-                        },
-                        body: JSON.stringify({
-                            task_id: parseInt(taskId)
-                        })
-                    });
-                } catch (e) {
-                    // خطا مهم نیست، فقط لاگ کن
-                    console.error('خطا در mark-read نوتیفیکیشن:', e);
-                }
             }
             async function loadTaskDetails() {
                 try {

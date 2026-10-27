@@ -590,6 +590,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             width: 81px;
         }
 
+
         .task-table tbody tr {
             border-bottom: 1px solid var(--gray-50);
             cursor: pointer;
@@ -679,6 +680,26 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         .td-ops {
             text-align: center;
+        }
+
+        /* «کارهای واگذار شده»: خانهٔ عملیات دو جای ثابت دارد — یادآوری (اگر هست) و ⋮.
+           جای یادآوری حتی وقتی دکمه ندارد خالی می‌ماند تا ⋮ در همهٔ ردیف‌ها هم‌تراز باشد. */
+        .ops-slots {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .ops-slot {
+            width: 32px;
+            display: inline-flex;
+            justify-content: center;
+        }
+
+        .task-table.is-delegated th:nth-child(4),
+        .task-table.is-delegated td:nth-child(4),
+        .task-table.is-delegated thead th.col-ops {
+            width: 81px;
         }
 
         /* منوی سه‌نقطهٔ جدول اصلی */
@@ -2454,6 +2475,359 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         .fab {
             background: #8e57fe !important;
         }
+    
+        /* ═══ موبایل (مثلا ۳۷۵×۶۶۷): ستون‌های جدول کارها ═══
+           همه یک‌خطی؛ عملیات فقط دکمهٔ ⋮ (عنوانش پنهان، چون در ۳۰px جا نمی‌شد و بریده
+           دیده می‌شد)؛ مهلت به اندازهٔ تاریخ کامل؛ وضعیت به اندازهٔ «در انتظار تأیید».
+           تب «فعالیت‌های اخیر» فقط دو ستون دارد → ستون تاریخ/ساعت پهن‌تر (.is-recent). */
+        @media (max-width: 576px) {
+            .task-table thead th {
+                padding: 8px 4px;
+                font-size: .66rem;
+            }
+
+            .task-table td {
+                padding: 0 4px;
+            }
+
+            /* فاصله از نوار اسکرول سمت راست کارت تا اول عنوان زیرش نرود */
+            .task-table th:nth-child(1),
+            .task-table td:nth-child(1) {
+                width: auto;
+                padding-right: 10px;
+            }
+
+            .task-table th:nth-child(2),
+            .task-table td:nth-child(2) {
+                width: 74px;
+            }
+
+            .task-table th:nth-child(3),
+            .task-table td:nth-child(3),
+            .task-table thead th.col-status {
+                width: 82px;
+            }
+
+            .task-table th:nth-child(4),
+            .task-table td:nth-child(4),
+            .task-table thead th.col-ops {
+                width: 30px;
+            }
+
+            .task-table thead th.col-ops {
+                font-size: 0;
+            }
+
+            .td-deadline {
+                font-size: .68rem;
+            }
+
+            .td-ops .row-kebab {
+                padding: 2px;
+            }
+
+            .td-status .status-badge {
+                font-size: .6rem;
+                padding: 2px 5px;
+                white-space: nowrap;
+            }
+
+            /* واگذار شده: دو جای ۲۴px (یادآوری + ⋮) */
+            .task-table.is-delegated th:nth-child(4),
+            .task-table.is-delegated td:nth-child(4),
+            .task-table.is-delegated thead th.col-ops {
+                width: 54px;
+            }
+
+            .ops-slot {
+                width: 24px;
+            }
+
+            .ops-slot .btn-remind-overview {
+                width: 24px;
+                height: 24px;
+            }
+
+            .task-table.is-recent th:nth-child(2),
+            .task-table.is-recent td:nth-child(2) {
+                width: 112px;
+            }
+        }
+    
+        /* ═══ مودال هفتگی/ماهانه در ریسپانسیو (≤۵۷۶px): شبیه نسخهٔ اپ ═══
+           پنل پایین صفحه (bottom sheet) با دستگیره؛ ماه = عدد روز + برچسب تراکم؛
+           هفته = برچسب کوتاه کارها (کلیک = صفحهٔ کار)؛ کلیک روی خود روز = فهرست کارهای
+           همان روز در مودال «برنامه». دسکتاپ دست‌نخورده. */
+        @media (max-width: 576px) {
+            #weekModal .modal-dialog,
+            #monthModal .modal-dialog {
+                max-width: 100% !important;
+                width: 100%;
+                margin: 0 !important;
+                min-height: 100% !important;
+                height: 100%;
+                display: flex;
+                align-items: flex-end !important;
+            }
+
+            #weekModal,
+            #monthModal {
+                padding: 0 !important;
+            }
+
+            #weekModal.fade .modal-dialog,
+            #monthModal.fade .modal-dialog {
+                transform: translateY(100%);
+                transition: transform .25s ease-out;
+            }
+
+            #weekModal.show .modal-dialog,
+            #monthModal.show .modal-dialog {
+                transform: none;
+            }
+
+            #weekModal .modal-content,
+            #monthModal .modal-content {
+                border-radius: 22px 22px 0 0 !important;
+                max-width: 100% !important;
+                width: 100%;
+                padding-top: 10px;
+                max-height: 92vh;
+                margin-bottom: 0 !important;
+                /* custom.css همهٔ .modal-content ها را fixed و وسط صفحه می‌کند (translate(-50%,-50%))؛
+                   مودال ماه از قبل خنثی‌اش کرده بود، هفته نه → هفته وسط می‌ماند */
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                transform: none !important;
+            }
+
+            /* دستگیره */
+            #weekModal .modal-content::before,
+            #monthModal .modal-content::before {
+                content: '';
+                display: block;
+                width: 44px;
+                height: 4px;
+                border-radius: 99px;
+                background: var(--gray-300, #d1d5db);
+                margin: 0 auto 4px;
+            }
+
+            #weekModal .modal-header,
+            #monthModal .modal-header {
+                padding: 8px 14px;
+                flex-wrap: nowrap;
+            }
+
+            #weekModal .modal-title,
+            #monthModal .modal-title {
+                font-size: .9rem;
+                white-space: nowrap;
+            }
+
+            /* ناوبری: کپسول سفید با کادر، مثل اپ */
+            #weekModal .wk-nav,
+            #monthModal .wk-nav {
+                background: var(--surface);
+                border: 1px solid var(--border-soft, #e5e7eb);
+                margin-left: 8px;
+                padding: 3px 4px;
+            }
+
+            #weekModal .wk-nav button,
+            #monthModal .wk-nav button,
+            #weekModal .wk-nav .wk-label,
+            #monthModal .wk-nav .wk-label {
+                color: var(--text-strong);
+            }
+
+            #weekModal .modal-body,
+            #monthModal .modal-body {
+                padding: 8px 10px !important;
+                max-height: none !important;
+            }
+
+            #weekModal .modal-footer,
+            #monthModal .modal-footer {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 10px !important;
+                padding: 8px 14px 14px !important;
+            }
+
+            #weekModal .mo-legend,
+            #monthModal .mo-legend {
+                justify-content: center;
+            }
+
+            #weekModal .modal-footer .btn,
+            #monthModal .modal-footer .btn {
+                width: 100%;
+                display: flex !important;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                margin: 0;
+                padding: 10px;
+                border-radius: 14px;
+                font-weight: 700;
+            }
+
+            /* ── هفته: ۶ ستون باریک، برچسب کوتاه کارها ── */
+            .wk-grid {
+                gap: 4px;
+            }
+
+            .wk-grid:hover .wk-col,
+            .wk-grid:hover .wk-col:hover {
+                opacity: 1;
+                flex-grow: 1;
+            }
+
+            .wk-col {
+                cursor: pointer;
+                gap: 0;
+                background: var(--surface);
+                border: 1px solid var(--border-soft, #e5e7eb);
+                border-radius: 14px;
+                min-height: 190px;
+                overflow: hidden;
+            }
+
+            .wk-col.wk-today {
+                border: 2px solid #8e57fe;
+            }
+
+            .wk-col-head,
+            .wk-col.wk-today .wk-col-head {
+                background: transparent;
+                border: none;
+                padding: 8px 2px 4px;
+            }
+
+            .wk-day {
+                font-size: .66rem;
+                color: var(--text-strong);
+            }
+
+            .wk-date {
+                font-size: .58rem;
+                color: var(--text-muted);
+            }
+
+            .wk-cards,
+            .wk-col.wk-d1 .wk-cards,
+            .wk-col.wk-d2 .wk-cards,
+            .wk-col.wk-d3 .wk-cards {
+                background: transparent;
+                border: none;
+                padding: 4px 3px;
+                max-height: none;
+                gap: 4px;
+            }
+
+            .wk-col.wk-d1 { background: #ECE3FF; border-color: #ddd0f7; }
+            .wk-col.wk-d2 { background: #CCB4FF; border-color: #bda2f2; }
+            .wk-col.wk-d3 { background: #8E57FE; border-color: #7d47ec; }
+            .wk-col.wk-d3 .wk-day,
+            .wk-col.wk-d3 .wk-date { color: #fff; }
+
+            :root[data-theme="dark"] .wk-col.wk-d1 { background: rgba(142,87,254,.20); }
+            :root[data-theme="dark"] .wk-col.wk-d2 { background: rgba(142,87,254,.42); }
+
+            .wk-card {
+                padding: 5px 4px !important;
+                border-radius: 9px !important;
+                background: rgba(142, 87, 254, .14) !important;
+                box-shadow: none !important;
+            }
+
+            .wk-card .pm-menu-wrap,
+            .wk-card .pm-kebab,
+            .wk-card .row-menu-wrap,
+            .wk-card .wk-card-time,
+            .wk-card .pm-form {
+                display: none !important;
+            }
+
+            .wk-card-title {
+                font-size: .58rem !important;
+                font-weight: 700;
+                line-height: 1.4;
+                text-align: center;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .wk-col-empty {
+                padding: 6px 0;
+            }
+
+            /* ── ماه: عدد روز + برچسب تراکم ── */
+            .mo-grid {
+                grid-template-columns: repeat(7, 1fr) !important;
+                grid-template-rows: auto !important;
+                gap: 4px;
+            }
+
+            .mo-weekday {
+                background: transparent;
+                font-size: .58rem;
+                padding: 2px 0;
+                color: var(--text-muted);
+            }
+
+            .mo-cell {
+                cursor: pointer;
+                min-height: 54px;
+                padding: 6px 2px;
+                align-items: center;
+                justify-content: center;
+                border-radius: 12px;
+                gap: 2px;
+            }
+
+            .mo-cell.mo-today {
+                border: 2px solid #8e57fe;
+            }
+
+            .mo-cell-tasks,
+            .mo-cell.mo-hover .mo-cell-tasks {
+                display: none !important;
+            }
+
+            .mo-cell-date {
+                font-size: .78rem;
+                align-self: center;
+                text-align: center;
+                width: 100%;
+            }
+
+            .mo-today .mo-cell-date {
+                background: transparent !important;
+                color: inherit !important;
+            }
+
+            .mo-cell-label {
+                display: block !important;
+                font-size: .5rem;
+                color: var(--text-muted);
+                white-space: nowrap;
+            }
+
+            .mo-cell.mo-d3 .mo-cell-label { color: rgba(255, 255, 255, .9); }
+
+            .mo-cell.mo-hover {
+                box-shadow: none;
+            }
+        }
+
+        .mo-cell-label {
+            display: none;
+        }
     </style>
 
 
@@ -3083,6 +3457,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             const list = applyFilter(getTabList());
             // ── هدر پویا: تب فعالیت‌های اخیر، ستون «تاریخ/ساعت» دارد ──
             const isRecentTab = (currentTab === 'recent');
+            tbody.closest('table').classList.toggle('is-recent', isRecentTab); // عرض ستون تاریخ/ساعت در موبایل
+            tbody.closest('table').classList.toggle('is-delegated', currentTab === 'delegated'); // دو جای ثابت در عملیات
             const thDeadline = document.getElementById('thDeadline');
             const thStatus = document.getElementById('thStatus');
             const thOps = document.getElementById('thOps');
@@ -3158,7 +3534,9 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 </td>
                 <td class="td-deadline">${faDate(TF.effectiveDue(t))}</td>
                 <td class="td-status">${TF.statusBadge(t, currentUser)}</td>
-                <td class="td-ops">${remindBtn}${rowMenuHtml(t.id, acts)}</td>
+                <td class="td-ops">${currentTab === 'delegated'
+                    ? `<div class="ops-slots"><span class="ops-slot">${remindBtn}</span><span class="ops-slot">${rowMenuHtml(t.id, acts)}</span></div>`
+                    : rowMenuHtml(t.id, acts)}</td>
             </tr>`;
             }).join('');
         }
@@ -3894,6 +4272,13 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
             const today = todayLocal();
 
+            if (scope.indexOf('day:') === 0) {
+                const target = TF.parseDay(scope.slice(4));
+                if (!target) return false;
+                target.setHours(0, 0, 0, 0);
+                return d.getTime() === target.getTime();
+            }
+
             if (scope === 'tomorrow') {
                 const tom = new Date(today);
                 tom.setDate(today.getDate() + 1);
@@ -3959,6 +4344,14 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
            ۳) باز کردن مودال
            ═══════════════════════════════════════════════════ */
 
+        // «۴ آبان» برای عنوان مودال یک روز
+        function pmDayTitle(ymd) {
+            const d = TF.parseDay(ymd);
+            if (!d) return '';
+            const [, jm, jd] = jalaliOf(d);
+            return toFa(jd) + ' ' + FA_MONTHS[jm - 1];
+        }
+
         const PM_META = {
             tomorrow: {
                 title: 'برنامه فردا',
@@ -3980,7 +4373,11 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
             pmScope = scope;
 
-            const meta = PM_META[scope];
+            // «day:YYYY-MM-DD» — فهرست کارهای یک روز (از مودال هفته/ماه در موبایل)
+            const meta = PM_META[scope] || (scope.indexOf('day:') === 0 ? {
+                title: 'برنامه ' + pmDayTitle(scope.slice(4)),
+                icon: 'bi-calendar-day'
+            } : PM_META.tomorrow);
             document.getElementById('pmTitle').textContent = meta.title;
             document.getElementById('pmIcon').className = 'bi ' + meta.icon;
 
@@ -4807,7 +5204,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 const isToday = day.getTime() === wkTodayTime;
 
                 html += `
-                <div class="wk-col ${densCls} ${isToday ? 'wk-today' : ''}">
+                <div class="wk-col ${densCls} ${isToday ? 'wk-today' : ''}" onclick="planOpenDay(event, '${dateStr}', 'weekModal')">
                     <div class="wk-col-head">
                         <div class="wk-day">${dayNames[i]}</div>
                         <div class="wk-date">${toFa(jd)} ${months[jm - 1]}</div>
@@ -5040,7 +5437,22 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             grid.style.gridTemplateRows = t.rows;
         }
 
+        // مودال‌های هفته/ماه در عرض موبایل (≤۵۷۶px) شکل اپ را دارند
+        function planCompact() {
+            return window.matchMedia('(max-width: 576px)').matches;
+        }
+
+        // کلیک روی خود روز (نه روی یک کار) در حالت فشرده → فهرست کارهای همان روز
+        function planOpenDay(ev, ymd, modalEl) {
+            if (!planCompact()) return;
+            if (ev.target.closest('.wk-card-title, .mo-tt-text, .row-menu-wrap, .pm-kebab, .mo-more')) return;
+            const inst = bootstrap.Modal.getInstance(document.getElementById(modalEl));
+            if (inst) inst.hide();
+            openPlanModal('day:' + ymd);
+        }
+
         function moGridOver(ev) {
+            if (planCompact()) return; // بزرگ‌شدن ردیف/ستون با هاور فقط در دسکتاپ
             const cell = ev.target.closest('.mo-cell:not(.mo-cell-empty)');
             if (!cell) return;
             moApplyHover(cell);
@@ -5129,9 +5541,12 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 // عدد قرمز برای جمعه (ستون آخر) یا هر روز تعطیل جدول holidays
                 const isHoliday = c === 6 || (moHolidaySet && moHolidaySet.has(moYMD(d)));
                 const friCls = isHoliday ? 'mo-fri' : '';
+                const densLabel = n === 0 ? 'بدون وظیفه' : (n <= 5 ? 'کم‌کار' : (n <= 10 ? 'متوسط' : 'پرکار'));
                 html += `
-                <div class="mo-cell ${isToday ? 'mo-today' : ''} ${densCls} ${friCls}" data-row="${r}" data-col="${c}">
+                <div class="mo-cell ${isToday ? 'mo-today' : ''} ${densCls} ${friCls}" data-row="${r}" data-col="${c}"
+                     onclick="planOpenDay(event, '${moYMD(d)}', 'monthModal')">
                     <div class="mo-cell-date">${toFa(dayNum)}</div>
+                    <div class="mo-cell-label">${densLabel}</div>
                     <div class="mo-cell-tasks">${tasksHtml}</div>
                 </div>`;
                 cellIdx++;

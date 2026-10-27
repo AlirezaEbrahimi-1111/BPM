@@ -31,7 +31,29 @@ $raScope = ($raCanSeeOrg && ($_GET['scope'] ?? 'org') !== 'personal') ? 'org' : 
             gap: 12px;
         }
 
-        .ra-controls .search-box { flex: 1; }
+        .ra-controls .search-box { flex: 1; margin-bottom: 0; }
+
+        /* کادر جستجو و چیپ‌های «شخصی / کل سازمان» یک ارتفاع (۳۲px) */
+        .ra-controls .search-box input {
+            height: 32px;
+            padding-top: 0;
+            padding-bottom: 0;
+            font-size: .78rem;
+            /* متن و placeholder راست‌چین (ذره‌بین سمت چپ است) */
+            direction: rtl;
+            text-align: right;
+            padding-right: 12px;
+        }
+
+        .ra-controls .search-box input::placeholder {
+            text-align: right;
+        }
+
+        .ra-scope-chip {
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+        }
 
         /* سوییچر «شخصی / کل سازمان» — همان ظاهر چیپ‌های تب فعالیت‌های اخیر داشبورد */
         .ra-scope { display: flex; gap: 6px; flex-shrink: 0; }
@@ -102,7 +124,7 @@ $raScope = ($raCanSeeOrg && ($_GET['scope'] ?? 'org') !== 'personal') ? 'org' : 
             <div class="ra-controls">
                 <div class="search-box">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="searchInput" placeholder="جستجو در عنوان کار یا نام کاربر...">
+                    <input type="text" id="searchInput" placeholder="جستجو در عنوان کار یا نام کاربر..." data-placeholder-mobile="جستجو...">
                 </div>
                 <?php if ($raCanSeeOrg): ?>
                     <div class="ra-scope" id="raScope">
@@ -256,6 +278,19 @@ $raScope = ($raCanSeeOrg && ($_GET['scope'] ?? 'org') !== 'personal') ? 'org' : 
             });
         });
     </script>
+<script>
+    // موبایل: متن کوتاه placeholder کادر جستجو (متن کامل در عرض کم بریده می‌شد)
+    (function () {
+        var inp = document.getElementById('searchInput');
+        if (!inp || !window.matchMedia) return;
+        var full = inp.getAttribute('placeholder');
+        var short = inp.getAttribute('data-placeholder-mobile');
+        var mq = window.matchMedia('(max-width: 576px)');
+        function sync() { inp.setAttribute('placeholder', mq.matches ? short : full); }
+        sync();
+        if (mq.addEventListener) mq.addEventListener('change', sync); else if (mq.addListener) mq.addListener(sync);
+    })();
+</script>
 </body>
 
 </html>

@@ -7,6 +7,7 @@ package notifications
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -306,7 +307,15 @@ func MarkRead(db *sql.DB) http.HandlerFunc {
 			ok = err == nil
 		case toInt64(body.TaskID) != 0:
 			matched = true
-			_, err := db.Exec("UPDATE notifications SET is_read = 1, read_at = NOW() WHERE user_id = ? AND related_id = ? AND related_type = 'task' AND is_read = 0", u.ID, toInt64(body.TaskID))
+			// همهٔ اعلان‌های مربوط به همین کار: «کار»، «چک‌لیست» و هر اعلانی که لینکش صفحهٔ
+			// همین کار است (اعلان مرحلهٔ روتین) — هم‌خوان با api/notifications/mark-read.php
+			tid := toInt64(body.TaskID)
+			base := fmt.Sprintf("%%task-detail.php?id=%d", tid)
+			_, err := db.Exec(`UPDATE notifications SET is_read = 1, read_at = NOW()
+				WHERE user_id = ? AND is_read = 0 AND (
+					(related_type IN ('task', 'checklist') AND related_id = ?)
+					OR link LIKE ? OR link LIKE ? OR link LIKE ?
+				)`, u.ID, tid, base, base+"&%", base+"#%")
 			ok = err == nil
 		case toInt64(body.TicketID) != 0:
 			matched = true

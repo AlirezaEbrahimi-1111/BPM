@@ -682,11 +682,18 @@ body.drawer-body-open {
     flex-wrap: wrap;
   }
 
-  .dash-tabs .dash-filters {
+  .dash-tabs .dash-filters,
+  .dash-tabs .activity-scope-filters {
+    /* «شخصی / کل سازمان» تب فعالیت‌ها هم همان جای فیلترهای کارها: زیر تب‌ها.
+       قبلا این قانون را نداشت و بالای تب‌ها می‌پرید و تب‌ها را پایین می‌برد. */
     flex-basis: 100%;
     margin-right: 0;
     order: 2;
     padding: 6px 0 8px;
+  }
+
+  .dash-tabs {
+    padding: 0 8px;
   }
 
   /* ۴ تب کارها (من/واگذارشده/اخیر/منتخب) با متن کامل روی
@@ -716,6 +723,15 @@ body.drawer-body-open {
   .dash-tabs-scroll .dash-tab {
     display: inline-flex !important;
     white-space: nowrap !important;
+    /* فشرده‌تر تا هر چهار تب در ۳۷۵px جا شوند */
+    padding: 9px 7px 8px !important;
+    font-size: .74rem !important;
+    gap: 3px !important;
+  }
+
+  /* سنجاق تب فقط وقتی سنجاق شده دیده شود (روی موبایل hover نداریم و جای خالی‌اش تب‌ها را از هم دور می‌کرد) */
+  .dash-tabs-scroll .tab-pin:not(.pinned) {
+    display: none !important;
   }
 }
 

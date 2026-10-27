@@ -2295,6 +2295,44 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             flex-shrink: 0;
         }
 
+        .chat-gi-info-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 0;
+        }
+
+        .chat-gi-info-row + .chat-gi-info-row {
+            border-top: 1px solid var(--border-soft, #eee);
+            padding-top: 10px;
+            margin-top: 4px;
+        }
+
+        #chatProfileDrawerPhoneRow {
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+        #chatProfileDrawerPhoneRow:hover {
+            background: rgba(142, 87, 254, .12);
+        }
+
+        .chat-gi-info-text {
+            min-width: 0;
+        }
+
+        .chat-gi-info-value {
+            font-weight: 700;
+            font-size: .9rem;
+            color: var(--text-strong);
+            text-align: right;
+        }
+
+        .chat-gi-info-label {
+            font-size: .72rem;
+            color: var(--text-muted);
+        }
+
         .chat-gi-tabs {
             display: flex;
             gap: 4px;
@@ -2624,43 +2662,72 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             <!-- دراور پروفایل طرف مقابل — عمدا داخل chat-shell، تا فقط روی
                  خود صفحه‌ی چت باز بشه، نه روی کل مانیتور/صفحه -->
             <div class="chat-profile-drawer-overlay" id="chatProfileDrawerOverlay" onclick="closeChatProfileDrawer()"></div>
-            <div class="chat-profile-drawer" id="chatProfileDrawer">
-                <div class="chat-profile-drawer-head">
-                    <span>اطلاعات پروفایل</span>
-                    <button type="button" class="btn-close" onclick="closeChatProfileDrawer()"></button>
+            <div class="chat-profile-drawer chat-gi-drawer" id="chatProfileDrawer">
+                <div class="chat-gi-hero">
+                    <div class="chat-gi-hero-bar">
+                        <button type="button" class="chat-gi-hero-btn" onclick="toggleProfileInfoMenu(event)" id="profileInfoMenuBtn" title="گزینه‌های بیشتر">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <button type="button" class="chat-gi-hero-btn" onclick="closeChatProfileDrawer()" title="بستن">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                    </div>
+                    <div class="chat-gi-hero-main">
+                        <div class="chat-group-avatar-wrap">
+                            <div class="chat-avatar chat-group-avatar-big" id="chatProfileDrawerAvatar"></div>
+                        </div>
+                        <div class="chat-gi-hero-text">
+                            <div class="chat-gi-hero-name" id="chatProfileDrawerName">—</div>
+                            <div class="chat-gi-hero-meta">
+                                <span id="chatProfileDrawerStatus"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="chat-profile-drawer-body">
-                    <div class="chat-profile-drawer-avatar-wrap">
-                        <div class="chat-profile-drawer-avatar" id="chatProfileDrawerAvatar"></div>
-                    </div>
-                    <div class="chat-profile-drawer-name" id="chatProfileDrawerName">—</div>
 
-                    <div class="chat-profile-drawer-field">
-                        <i class="bi bi-telephone"></i>
-                        <div>
-                            <div class="chat-profile-drawer-value" id="chatProfileDrawerPhone">—</div>
-                            <div class="chat-profile-drawer-label">شماره تلفن</div>
-                        </div>
-                    </div>
-                    <div class="chat-profile-drawer-field">
-                        <i class="bi bi-diagram-3"></i>
-                        <div>
-                            <div class="chat-profile-drawer-value" id="chatProfileDrawerSection">—</div>
-                            <div class="chat-profile-drawer-label">واحد فعالیت</div>
-                        </div>
-                    </div>
-                    <div class="chat-profile-drawer-field">
-                        <i class="bi bi-bell"></i>
-                        <div class="chat-profile-drawer-label" style="flex:1;">اعلان‌ها</div>
+                <div class="chat-profile-drawer-body chat-gi-body">
+                    <div class="chat-gi-card chat-gi-notif">
                         <label class="chat-toggle-switch">
                             <input type="checkbox" id="chatProfileDrawerMuteToggle" onchange="toggleMuteActiveConversation()">
                             <span class="chat-toggle-slider"></span>
                         </label>
+                        <div class="chat-gi-notif-text">
+                            <div class="chat-gi-notif-title">اعلان‌ها</div>
+                            <div class="chat-gi-notif-sub">دریافت اعلان برای پیام‌های جدید</div>
+                        </div>
+                        <div class="chat-gi-icon-box"><i class="bi bi-bell"></i></div>
                     </div>
 
-                    <div class="chat-profile-drawer-media-heading">تصاویر ردوبدل‌شده</div>
-                    <div class="chat-media-grid" id="chatProfileDrawerMediaGrid">
-                        <div class="chat-empty-list">در حال بارگذاری...</div>
+                    <!-- مشخصات: تلفن (کلیک = کپی) و واحد -->
+                    <div class="chat-gi-card chat-gi-panel">
+                        <div class="chat-gi-info-row" id="chatProfileDrawerPhoneRow" onclick="copyProfilePhone()" title="برای کپی کلیک کنید">
+                            <div class="chat-gi-icon-box"><i class="bi bi-telephone"></i></div>
+                            <div class="chat-gi-info-text">
+                                <div class="chat-gi-info-value" id="chatProfileDrawerPhone" dir="ltr">—</div>
+                                <div class="chat-gi-info-label">شماره تلفن <i class="bi bi-copy"></i></div>
+                            </div>
+                        </div>
+                        <div class="chat-gi-info-row">
+                            <div class="chat-gi-icon-box"><i class="bi bi-diagram-3"></i></div>
+                            <div class="chat-gi-info-text">
+                                <div class="chat-gi-info-value" id="chatProfileDrawerSection">—</div>
+                                <div class="chat-gi-info-label">واحد فعالیت</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-gi-card chat-gi-tabs" id="profileInfoTabs">
+                        <button type="button" class="chat-gi-tab active" data-tab="media" onclick="switchInfoTab('profile', 'media')"><i class="bi bi-image"></i><span>رسانه</span></button>
+                        <button type="button" class="chat-gi-tab" data-tab="file" onclick="switchInfoTab('profile', 'file')"><i class="bi bi-folder"></i><span>فایل</span></button>
+                        <button type="button" class="chat-gi-tab" data-tab="audio" onclick="switchInfoTab('profile', 'audio')"><i class="bi bi-music-note-beamed"></i><span>موسیقی</span></button>
+                        <button type="button" class="chat-gi-tab" data-tab="link" onclick="switchInfoTab('profile', 'link')"><i class="bi bi-link-45deg"></i><span>لینک</span></button>
+                    </div>
+
+                    <div class="chat-gi-card chat-gi-panel">
+                        <div class="chat-gi-panel-head">
+                            <span id="profileInfoPanelTitle">رسانه</span>
+                        </div>
+                        <div id="profileInfoTabContent"></div>
                     </div>
                 </div>
             </div>
@@ -2949,6 +3016,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         <div class="chat-ctx-menu-item danger" id="chatCtxDeleteItem" onclick="deleteFromCtxMenu()">
             <i class="bi bi-trash"></i>
             <span>حذف پیام</span>
+        </div>
+    </div>
+
+    <!-- منوی سه‌نقطهٔ صفحهٔ اطلاعات مخاطب (گفتگوی دونفره) -->
+    <div class="chat-ctx-menu" id="profileInfoMenu">
+        <div class="chat-ctx-menu-item danger" onclick="deleteConversationFromProfileMenu()">
+            <i class="bi bi-trash"></i>
+            <span>حذف گفتگو</span>
         </div>
     </div>
 
@@ -5812,8 +5887,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('groupInfoTitle').textContent = activeConversationTitle;
             document.getElementById('groupInfoMemberCount').textContent = '';
             document.getElementById('groupInfoOnlineWrap').style.display = 'none';
-            groupInfoFiles = null;
-            groupInfoLinks = null;
+            resetInfoTabs('group');
             switchGroupInfoTab('members');
 
             document.getElementById('groupInfoDrawerOverlay').classList.add('show');
@@ -5826,48 +5900,63 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             refreshGroupInfoMembers(true);
         }
 
-        // ─────────────── تب‌های اطلاعات گروه (اعضا / رسانه / فایل / موسیقی / لینک) ───────────────
-        var groupInfoTab = 'members';
-        var groupInfoFiles = null; // فایل‌های گفتگو — یک بار در هر بازکردن دراور گرفته می‌شود
-        var groupInfoLinks = null;
+        // ─────────────── تب‌های اطلاعات گروه و اطلاعات مخاطب (اعضا / رسانه / فایل / موسیقی / لینک) ───────────────
+        // یک پیاده‌سازی برای هر دو دراور؛ group = اطلاعات گروه (تب «اعضا» هم دارد)،
+        // profile = اطلاعات مخاطب گفتگوی دونفره. فایل‌ها/لینک‌ها یک بار در هر بازکردن گرفته می‌شوند.
+        var infoTabs = {
+            group: { prefix: 'groupInfo', tab: 'members', files: null, links: null, noun: 'این گروه' },
+            profile: { prefix: 'profileInfo', tab: 'media', files: null, links: null, noun: 'این گفتگو' }
+        };
         var GROUP_INFO_TAB_TITLES = { members: 'اعضا', media: 'رسانه', file: 'فایل', audio: 'موسیقی', link: 'لینک' };
 
+        function resetInfoTabs(scope) {
+            infoTabs[scope].files = null;
+            infoTabs[scope].links = null;
+        }
+
         function switchGroupInfoTab(tab) {
-            groupInfoTab = tab;
-            document.querySelectorAll('#groupInfoTabs .chat-gi-tab').forEach(function(b) {
+            switchInfoTab('group', tab);
+        }
+
+        function switchInfoTab(scope, tab) {
+            var st = infoTabs[scope];
+            st.tab = tab;
+            document.querySelectorAll('#' + st.prefix + 'Tabs .chat-gi-tab').forEach(function(b) {
                 b.classList.toggle('active', b.getAttribute('data-tab') === tab);
             });
-            document.getElementById('groupInfoPanelTitle').textContent = GROUP_INFO_TAB_TITLES[tab];
-            var isMembers = tab === 'members';
-            document.getElementById('groupInfoMemberList').style.display = isMembers ? '' : 'none';
-            document.getElementById('groupInfoTabContent').style.display = isMembers ? 'none' : '';
-            document.getElementById('groupInfoAddBtn').style.display =
-                isMembers && groupInfoMyPermissions.indexOf('add_member') !== -1 ? '' : 'none';
-            if (isMembers) return;
+            document.getElementById(st.prefix + 'PanelTitle').textContent = GROUP_INFO_TAB_TITLES[tab];
+            var box = document.getElementById(st.prefix + 'TabContent');
+            if (scope === 'group') {
+                var isMembers = tab === 'members';
+                document.getElementById('groupInfoMemberList').style.display = isMembers ? '' : 'none';
+                box.style.display = isMembers ? 'none' : '';
+                document.getElementById('groupInfoAddBtn').style.display =
+                    isMembers && groupInfoMyPermissions.indexOf('add_member') !== -1 ? '' : 'none';
+                if (isMembers) return;
+            }
 
-            var box = document.getElementById('groupInfoTabContent');
             var convId = activeConversationId;
             if (tab === 'link') {
-                if (groupInfoLinks) return renderGroupInfoLinks();
+                if (st.links) return renderInfoLinks(scope);
                 box.innerHTML = '<div class="chat-empty-list">در حال بارگذاری...</div>';
                 fetch('../api/chat/links.php?conversation_id=' + convId, { headers: { 'Authorization': 'Bearer ' + authToken } })
                     .then(r => r.json())
                     .then(function(data) {
                         if (convId !== activeConversationId) return;
-                        groupInfoLinks = data.success ? data.links : [];
-                        if (groupInfoTab === 'link') renderGroupInfoLinks();
+                        st.links = data.success ? data.links : [];
+                        if (st.tab === 'link') renderInfoLinks(scope);
                     })
                     .catch(function() { box.innerHTML = '<div class="chat-empty-list">خطا در ارتباط با سرور</div>'; });
                 return;
             }
-            if (groupInfoFiles) return renderGroupInfoFiles(tab);
+            if (st.files) return renderInfoFiles(scope, tab);
             box.innerHTML = '<div class="chat-empty-list">در حال بارگذاری...</div>';
             fetch('../api/chat/media.php?conversation_id=' + convId, { headers: { 'Authorization': 'Bearer ' + authToken } })
                 .then(r => r.json())
                 .then(function(data) {
                     if (convId !== activeConversationId) return;
-                    groupInfoFiles = data.success ? data.files : [];
-                    if (groupInfoTab !== 'members' && groupInfoTab !== 'link') renderGroupInfoFiles(groupInfoTab);
+                    st.files = data.success ? data.files : [];
+                    if (st.tab !== 'members' && st.tab !== 'link') renderInfoFiles(scope, st.tab);
                 })
                 .catch(function() { box.innerHTML = '<div class="chat-empty-list">خطا در ارتباط با سرور</div>'; });
         }
@@ -5880,14 +5969,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             return 'file';
         }
 
-        function renderGroupInfoFiles(tab) {
-            var box = document.getElementById('groupInfoTabContent');
-            var list = groupInfoFiles.filter(f => groupInfoFileKind(f) === tab);
+        function renderInfoFiles(scope, tab) {
+            var st = infoTabs[scope];
+            var box = document.getElementById(st.prefix + 'TabContent');
+            var list = st.files.filter(f => groupInfoFileKind(f) === tab);
             if (!list.length) {
                 box.innerHTML = '<div class="chat-empty-list">' + ({
-                    media: 'هنوز عکس یا ویدیویی در این گروه ردوبدل نشده',
-                    file: 'هنوز فایلی در این گروه ردوبدل نشده',
-                    audio: 'هنوز فایل صوتی در این گروه ردوبدل نشده'
+                    media: 'هنوز عکس یا ویدیویی در ' + st.noun + ' ردوبدل نشده',
+                    file: 'هنوز فایلی در ' + st.noun + ' ردوبدل نشده',
+                    audio: 'هنوز فایل صوتی در ' + st.noun + ' ردوبدل نشده'
                 })[tab] + '</div>';
                 return;
             }
@@ -5914,13 +6004,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             }).join('') + '</div>';
         }
 
-        function renderGroupInfoLinks() {
-            var box = document.getElementById('groupInfoTabContent');
-            if (!groupInfoLinks.length) {
-                box.innerHTML = '<div class="chat-empty-list">هنوز لینکی در این گروه ردوبدل نشده</div>';
+        function renderInfoLinks(scope) {
+            var st = infoTabs[scope];
+            var box = document.getElementById(st.prefix + 'TabContent');
+            if (!st.links.length) {
+                box.innerHTML = '<div class="chat-empty-list">هنوز لینکی در ' + st.noun + ' ردوبدل نشده</div>';
                 return;
             }
-            box.innerHTML = groupInfoLinks.map(function(l) {
+            box.innerHTML = st.links.map(function(l) {
                 return '<a class="chat-gi-link-row" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' +
                     '<div class="chat-gi-icon-box"><i class="bi bi-link-45deg"></i></div>' +
                     '<div style="min-width:0; flex:1;">' +
@@ -5961,7 +6052,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     groupInfoAllPermissions = data.all_permissions || [];
                     groupInfoMembersCache = data.members || [];
                     document.getElementById('groupInfoAddBtn').style.display =
-                        groupInfoTab === 'members' && groupInfoMyPermissions.indexOf('add_member') !== -1 ? '' : 'none';
+                        infoTabs.group.tab === 'members' && groupInfoMyPermissions.indexOf('add_member') !== -1 ? '' : 'none';
                     document.getElementById('groupInfoAvatarWrap').innerHTML =
                         avatarHtml(data.group_title || activeConversationTitle, false, 'chat-group-avatar-big', data.group_avatar_url) +
                         (groupInfoMyPermissions.indexOf('avatar') !== -1 ? '<div class="chat-group-avatar-edit-badge"><i class="bi bi-camera-fill"></i></div>' : '');
@@ -6284,12 +6375,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             document.getElementById('chatProfileDrawerOverlay').classList.add('show');
             document.getElementById('chatProfileDrawer').classList.add('show');
             document.body.classList.add('chat-drawer-open');
-            document.getElementById('chatProfileDrawerName').textContent = conv ? conv.title : '—';
-            setAvatarContent(document.getElementById('chatProfileDrawerAvatar'), conv ? conv.title : '', conv && conv.avatar_url);
+            document.getElementById('chatProfileDrawerName').textContent = conv ? conv.title : (activeConversationTitle || '—');
+            setAvatarContent(document.getElementById('chatProfileDrawerAvatar'), conv ? conv.title : (activeConversationTitle || ''), conv && conv.avatar_url);
+            renderProfileDrawerStatus(conv);
             document.getElementById('chatProfileDrawerPhone').textContent = '—';
             document.getElementById('chatProfileDrawerSection').textContent = '—';
             document.getElementById('chatProfileDrawerMuteToggle').checked = !(conv && conv.is_muted);
-            document.getElementById('chatProfileDrawerMediaGrid').innerHTML = '<div class="chat-empty-list">در حال بارگذاری...</div>';
+            closeProfileInfoMenu();
+            resetInfoTabs('profile');
+            switchInfoTab('profile', 'media');
 
             fetch('../api/chat/user-profile.php?conversation_id=' + convId, {
                     headers: { 'Authorization': 'Bearer ' + authToken }
@@ -6297,34 +6391,58 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .then(r => r.json())
                 .then(data => {
                     if (convId !== activeConversationId || !data.success) return;
-                    document.getElementById('chatProfileDrawerPhone').textContent = data.user.phone || '—';
+                    document.getElementById('chatProfileDrawerPhone').textContent = data.user.phone ? toFa(data.user.phone) : '—';
+                    document.getElementById('chatProfileDrawerPhone').dataset.raw = data.user.phone || '';
                     document.getElementById('chatProfileDrawerSection').textContent = data.user.section_label || '—';
                 })
                 .catch(function(err) { console.error('chat user-profile fetch error:', err); });
+        }
 
-            fetch('../api/chat/media.php?conversation_id=' + convId, {
-                    headers: { 'Authorization': 'Bearer ' + authToken }
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (convId !== activeConversationId) return;
-                    var grid = document.getElementById('chatProfileDrawerMediaGrid');
-                    if (!data.success || !data.files.length) {
-                        grid.innerHTML = '<div class="chat-empty-list">هنوز عکسی ردوبدل نشده</div>';
-                        return;
-                    }
-                    var images = data.files.filter(f => f.is_image);
-                    if (!images.length) {
-                        grid.innerHTML = '<div class="chat-empty-list">هنوز عکسی ردوبدل نشده</div>';
-                        return;
-                    }
-                    grid.innerHTML = images.map(function(f) {
-                        var url = '../api/chat/download.php?id=' + f.id + '&view=1';
-                        return '<div class="chat-media-grid-item" onclick="window.open(\'' + url + '\',\'_blank\')" title="' + esc(f.original_name) + '">' +
-                            '<img src="' + url + '" alt="' + esc(f.original_name) + '"></div>';
-                    }).join('');
-                })
-                .catch(function(err) { console.error('chat media fetch error:', err); });
+        // «● آنلاین» یا «آخرین بازدید: …» — همان منبع سرخط گفتگو (activeConvOtherStatus)
+        function renderProfileDrawerStatus(conv) {
+            var st = conv ? { is_online: conv.other_user_is_online, last_seen_at: conv.other_user_last_seen_at } : activeConvOtherStatus;
+            var el = document.getElementById('chatProfileDrawerStatus');
+            if (!st) { el.innerHTML = ''; return; }
+            el.innerHTML = st.is_online
+                ? '<span class="chat-gi-dot online"></span> آنلاین'
+                : '<span class="chat-gi-dot"></span> آخرین بازدید: ' + esc(formatLastSeen(st.last_seen_at));
+        }
+
+        function copyProfilePhone() {
+            var raw = document.getElementById('chatProfileDrawerPhone').dataset.raw || '';
+            if (!raw) return;
+            if (window.AgGridFa && AgGridFa.copyText) {
+                AgGridFa.copyText(raw, 'شماره تلفن کپی شد');
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(raw).then(() => showToast('شماره تلفن کپی شد', 'success'));
+            }
+        }
+
+        function toggleProfileInfoMenu(e) {
+            e.stopPropagation();
+            var menu = document.getElementById('profileInfoMenu');
+            if (menu.classList.contains('show')) {
+                closeProfileInfoMenu();
+                return;
+            }
+            menu.classList.add('show');
+            var r = document.getElementById('profileInfoMenuBtn').getBoundingClientRect();
+            menu.style.top = (r.bottom + 4) + 'px';
+            menu.style.left = Math.max(8, Math.min(r.right - menu.offsetWidth, window.innerWidth - menu.offsetWidth - 8)) + 'px';
+        }
+
+        function closeProfileInfoMenu() {
+            document.getElementById('profileInfoMenu').classList.remove('show');
+        }
+
+        document.addEventListener('click', closeProfileInfoMenu);
+
+        // همان «حذف گفتگو»ی راست‌کلیک فهرست (deleteConversationFromCtxMenu) برای گفتگوی باز
+        function deleteConversationFromProfileMenu() {
+            closeProfileInfoMenu();
+            closeChatProfileDrawer();
+            convCtxTargetId = activeConversationId;
+            deleteConversationFromCtxMenu();
         }
 
         function closeChatProfileDrawer() {

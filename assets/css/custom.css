@@ -7720,3 +7720,15 @@ body.login-page::after {
 .overview-container.container-full {
     max-width: 100% !important;
 }
+
+/* ═══ موبایل: بدون پدینگ دور .modal-content (۱۴۰۵/۰۸/۰۴) ═══
+   قانون قدیمی بالا (.modal-content { padding: 20px }) برای مودال‌های دست‌ساز بود؛ در
+   مودال‌های بوت‌استرپ (که خودشان header/body/footer با پدینگ دارند) در عرض کم فقط جا
+   را تنگ می‌کرد. فقط مودال‌های بوت‌استرپ (داخل .modal-dialog) — مودال‌های دست‌ساز بدون
+   modal-dialog (مثل تمدید ساعتی در task-detail) محتوایشان مستقیم داخل modal-content
+   است و به همان پدینگ نیاز دارند. */
+@media (max-width: 576px) {
+    .modal-dialog > .modal-content {
+        padding: 0;
+    }
+}
