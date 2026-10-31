@@ -980,7 +980,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     myRole = data.user.role || '';
 
                     // 🆕 راه‌اندازی گروه‌ها (گروه سازمانی فقط برای management+supervisor)
-                    const isOrgAdmin = (data.user.activity_section === 'management' &&
+                    const isOrgAdmin = <?= isSuperAdmin($__me) ? 'true' : 'false' ?> || (data.user.activity_section === 'management' &&
                         data.user.role === 'supervisor');
                     await TaskGroups.init({
                         isOrgAdmin,

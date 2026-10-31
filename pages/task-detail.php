@@ -3120,7 +3120,7 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                 </span>`;
 
                 // راه‌اندازی گروه‌ها
-                const isOrgAdmin = (currentUser.activity_section === 'management' && currentUser.role === 'supervisor');
+                const isOrgAdmin = <?= isSuperAdmin($__me) ? 'true' : 'false' ?> || (currentUser.activity_section === 'management' && currentUser.role === 'supervisor');
                 await TaskGroups.init({
                     isOrgAdmin
                 });

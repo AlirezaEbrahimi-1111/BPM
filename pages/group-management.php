@@ -232,7 +232,8 @@ if (!hasPermission($__me, 'manage_task_groups')) {
             const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
             currentUserId = userInfo.id;
 
-            const isManager = (userInfo.activity_section === 'management' && userInfo.role === 'supervisor');
+            // سوپرادمین‌ها (مثلِ ۱۹ و ۱۲۹) مستقل از واحدشان دسترسی دارند
+            const isManager = <?= isSuperAdmin($__me) ? 'true' : 'false' ?> || (userInfo.activity_section === 'management' && userInfo.role === 'supervisor');
             if (!isManager) {
                 document.getElementById('accessDenied').style.display = 'block';
                 return;

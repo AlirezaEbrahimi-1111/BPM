@@ -37,7 +37,9 @@ try {
     if (!$me)
         throw new Exception('کاربر یافت نشد');
 
-    $is_superadmin = ((int) $me['id'] === 1);
+    // سوپرادمین‌ها (getSuperAdminIds) مستقل از واحدشان؛ این متغیر فقط همین دروازه است
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+    $is_superadmin = isSuperAdmin($me);
     $is_manager = ($me['activity_section'] === 'management' && in_array($me['role'], ['supervisor', 'admin'], true));
 
     if (!$is_superadmin && !$is_manager) {
