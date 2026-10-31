@@ -953,8 +953,8 @@ if (!headers_sent()) {
 
     </div>
     <script src="assets/js/common.js"></script>
-    <script src="assets/js/alert.js?v=1.0"></script>
-    <script src="assets/js/network-canvas.js?v=2.1"></script>
+    <script src="assets/js/alert.js?v=1.2"></script>
+    <script src="assets/js/network-canvas.js?v=2.2"></script>
     <script>
         // ========== سوییچ روش ورود + ورود با کد یکبارمصرف (OTP) ==========
         document.addEventListener('DOMContentLoaded', function() {
@@ -1176,9 +1176,10 @@ if (!headers_sent()) {
                         localStorage.setItem('auth_token', result.token);
                         localStorage.setItem('user_info', JSON.stringify(result.user));
 
-                        showAlert('ورود موفقیت‌آمیز', 'success');
+                        showToast('ورود موفقیت‌آمیز', 'success', { mobileSheet: true });
                         stopResendTimer();
-                        window.location.href = '/pages/dashboard-manager.php';
+                        // مثل ورود با رمز: کمی صبر تا پیام دیده شود
+                        setTimeout(() => { window.location.href = '/pages/dashboard-manager.php'; }, 1000);
                     } else {
                         showAlert(result.message, 'danger');
                         otpBoxes.forEach(b => b.classList.add('error'));

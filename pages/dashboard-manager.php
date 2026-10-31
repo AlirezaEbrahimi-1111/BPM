@@ -2657,7 +2657,12 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                 max-width: 100% !important;
                 width: 100%;
                 padding-top: 10px;
-                max-height: 92vh;
+                /* هر تعداد کاری که باشد، حداکثر ۸۰٪ صفحه؛ فقط بدنه اسکرول می‌خورد */
+                max-height: 80vh !important;
+                max-height: 80dvh !important;
+                display: flex !important;
+                flex-direction: column;
+                overflow: hidden !important;
                 margin-bottom: 0 !important;
                 /* custom.css همهٔ .modal-content ها را fixed و وسط صفحه می‌کند (translate(-50%,-50%))؛
                    مودال ماه از قبل خنثی‌اش کرده بود، هفته نه → هفته وسط می‌ماند */
@@ -2711,6 +2716,49 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             #monthModal .modal-body {
                 padding: 8px 10px !important;
                 max-height: none !important;
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow-y: auto !important;
+            }
+
+            #weekModal .modal-header,
+            #monthModal .modal-header,
+            #weekModal .modal-footer,
+            #monthModal .modal-footer {
+                flex-shrink: 0;
+            }
+
+            /* «+N مورد دیگر» در هفته (ارتفاع و رنگ خوانا روی هر سه تراکم) */
+            #weekModal .wk-more {
+                font-size: .62rem;
+                padding: 4px 2px;
+                border-radius: 8px;
+                background: var(--surface, #fff);
+                color: #8e57fe;
+                white-space: nowrap;
+            }
+
+            :root[data-theme="dark"] #weekModal .wk-more {
+                color: #b794ff;
+            }
+
+            /* «+N مورد دیگر» پایین فهرست کارهای یک روز */
+            #planModal .pm-more {
+                display: block;
+                padding: 10px;
+                margin-top: 6px;
+                border-radius: 10px;
+                text-align: center;
+                font-size: .8rem;
+                font-weight: 600;
+                color: #8e57fe;
+                background: rgba(142, 87, 254, .12);
+                text-decoration: none;
+            }
+
+            :root[data-theme="dark"] #planModal .pm-more {
+                color: #b794ff;
+                background: rgba(142, 87, 254, .18);
             }
 
             #weekModal .modal-footer,
@@ -2804,7 +2852,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             .wk-card {
                 padding: 5px 4px !important;
                 border-radius: 9px !important;
-                background: rgba(142, 87, 254, .14) !important;
+                /* زمینهٔ روشن ثابت: روی ستون بنفش پرکار هم متن خوانا بماند */
+                background: var(--surface, #fff) !important;
                 box-shadow: none !important;
             }
 
@@ -2817,12 +2866,14 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             }
 
             .wk-card-title {
+                padding-left: 0 !important; /* جای منوی سه‌نقطهٔ دسکتاپ؛ در ستون باریک فقط یک حرف جا می‌ماند */
+                overflow-wrap: anywhere;
                 font-size: .58rem !important;
                 font-weight: 700;
                 line-height: 1.4;
                 text-align: center;
                 display: -webkit-box;
-                -webkit-line-clamp: 2;
+                -webkit-line-clamp: 3;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
             }
@@ -3580,6 +3631,9 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             }));
             // در «کارهای من» موارد تکمیل‌شده/تأییدشده دیگر نمایش داده نشوند
             if (currentTab === 'mine') return list.filter(t => !TF.isDone(t));
+            // «کارهای واگذار شده»: فقط کارهای باز — تکمیل/تأییدشده و اتمام اجباری (rejected) /
+            // متوقف‌شده (stopped) نمایش داده نشوند (۱۴۰۵/۰۸/۰۶). تب «منتخب» دست نمی‌خورد.
+            if (currentTab === 'delegated') return list.filter(t => !TF.isDone(t) && t.status !== 'rejected' && t.status !== 'stopped');
             return list;
         }
 
@@ -4746,6 +4800,8 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
            ۴) رسم لیست
            ═══════════════════════════════════════════════════ */
 
+        const PLAN_DAY_MAX = 5; // سقف کار هر روز در مودال‌های برنامه در موبایل
+
         function pmRender() {
             const box = document.getElementById('pmBody');
             const list = store.mine.filter(t => pmInScope(t, pmScope));
@@ -4762,7 +4818,14 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             // کارهای منتظر اقدام، بالاتر
             list.sort((a, b) => pmActions(b).length - pmActions(a).length);
 
-            box.innerHTML = list.map(t => {
+            // فهرست یک روز در موبایل: حداکثر ۵ کار؛ بقیه در «کارهای من» با فیلتر همان روز
+            const isDayCompact = pmScope.indexOf('day:') === 0 && planCompact();
+            const pmShown = isDayCompact ? list.slice(0, PLAN_DAY_MAX) : list;
+            const pmMoreHtml = pmShown.length < list.length
+                ? `<a class="pm-more" href="my-tasks.php?filter=day&amp;date=${pmScope.slice(4)}"><bdi dir="ltr">+${toFa(list.length - pmShown.length)}</bdi> مورد دیگر — مشاهده در کارهای من</a>`
+                : '';
+
+            box.innerHTML = pmShown.map(t => {
                 const acts = pmActions(t);
                 const safe = esc(t.title || '');
 
@@ -4775,7 +4838,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                     </div>
                     ${acts.length ? pmKebabHtml(t.id, acts) : ''}
                 </div>`;
-            }).join('');
+            }).join('') + pmMoreHtml;
         }
 
         /* منوی سه‌نقطه — مشترک بین مودال روزانه و هفتگی */
@@ -5529,7 +5592,9 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
                 let cards = '';
                 if (dayTasks.length) {
-                    cards = dayTasks.map(t => {
+                    // موبایل: حداکثر ۵ کار؛ بقیه در «کارهای من» با فیلتر همان روز (دسکتاپ بدون تغییر)
+                    const wkMax = planCompact() ? PLAN_DAY_MAX : dayTasks.length;
+                    cards = dayTasks.slice(0, wkMax).map(t => {
                         const acts = pmActions(t);
                         const safe = esc(t.title || '');
                         const time = wkTimeOf(t);
@@ -5542,6 +5607,9 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
                             <div class="pm-form" id="pmForm-${t.id}"></div>
                         </div>`;
                     }).join('');
+                    if (dayTasks.length > wkMax) {
+                        cards += `<div class="mo-more wk-more" onclick="location.href='my-tasks.php?filter=day&amp;date=${dateStr}'">دیگر <bdi dir="ltr">+${toFa(dayTasks.length - wkMax)}</bdi></div>`;
+                    }
                 } else {
                     cards = `<div class="wk-col-empty">—</div>`;
                 }

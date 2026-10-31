@@ -30,9 +30,62 @@
 // (و در نتیجه کل صفحه) رو می‌شکنه؛ var در برابر لود دوباره امنه
 var _toastEnterHandler = null;
 
+// ─── ادامهٔ اعلان بعد از رفرش/ریدایرکت ───────────────────────
+// اعلان بدون دکمه‌ای که هنوز باز است، موقع ترک صفحه با زمان باقی‌مانده‌اش در sessionStorage
+// ذخیره و صفحهٔ بعد همان را تا پایان زمانش نشان می‌دهد. فاصلهٔ بارگذاری از زمان کم نمی‌شود.
+var _activeToast = null;
+(function () {
+    // این فایل گاهی دوبار لود می‌شود (header + خود صفحه)
+    if (window.__bpmToastCarry) return;
+    window.__bpmToastCarry = true;
+    var KEY = 'bpm_pending_toast';
+
+    window.addEventListener('pagehide', function () {
+        try {
+            if (!_activeToast) return;
+            var remaining = _activeToast.endsAt - Date.now();
+            if (remaining < 300) return;
+            sessionStorage.setItem(KEY, JSON.stringify({
+                message: _activeToast.message,
+                type: _activeToast.type,
+                mobileSheet: _activeToast.mobileSheet,
+                remaining: remaining,
+                total: _activeToast.total,
+                savedAt: Date.now(),
+            }));
+        } catch (e) { /* حافظه در دسترس نیست — اعلان فقط منتقل نمی‌شود */ }
+    });
+
+    function restore() {
+        try {
+            var raw = sessionStorage.getItem(KEY);
+            if (!raw) return;
+            sessionStorage.removeItem(KEY);
+            var p = JSON.parse(raw);
+            if (!p || !p.message || Date.now() - p.savedAt > 20000) return; // اعلان کهنه نیاید
+            showToast(p.message, p.type, {
+                duration: p.remaining,
+                mobileSheet: p.mobileSheet,
+                _restoredTotal: p.total,
+            });
+        } catch (e) { /* نادیده */ }
+    }
+
+    // برگشت با دکمهٔ Back از کش مرورگر: همان صفحهٔ قبلی با اعلانش برمی‌گردد
+    window.addEventListener('pageshow', function (e) {
+        if (e.persisted) { try { sessionStorage.removeItem(KEY); } catch (err) {} }
+    });
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', restore);
+    else setTimeout(restore, 0);
+})();
+
 function showToast(message, type = 'success', options = {}) {
 
-    const { duration = 5000, buttons = [] } = options;
+    const { duration = 3000, buttons = [], mobileSheet = false, _restoredTotal = 0 } = options;
+    // mobileSheet: در موبایل از پایین صفحه بالا می‌آید، زمینهٔ کاملا مات، روی همهٔ اجزا
+    const asSheet = mobileSheet && window.matchMedia && window.matchMedia('(max-width: 576px)').matches;
+    const hiddenTransform = asSheet ? 'translateY(calc(100% + 32px))' : null;
 
     // ─── تنظیمات هر نوع ───────────────────────────────────────
     const config = {
@@ -98,6 +151,20 @@ function showToast(message, type = 'success', options = {}) {
         direction: 'rtl',
         fontFamily: 'Vazir, sans-serif',
     });
+    if (asSheet) {
+        Object.assign(toast.style, {
+            top: 'auto',
+            left: '12px',
+            right: '12px',
+            bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
+            minWidth: '0',
+            maxWidth: 'none',
+            background: 'var(--surface, #fff)',
+            backdropFilter: 'none',
+            zIndex: '2147483000',
+            transform: hiddenTransform,
+        });
+    }
 
     // ─── ساخت محتوا ───────────────────────────────────────────
     const header = document.createElement('div');
@@ -195,10 +262,30 @@ function showToast(message, type = 'success', options = {}) {
 
     document.body.appendChild(toast);
 
+    // برای انتقال به صفحهٔ بعد (اعلان دکمه‌دار به همین صفحه وابسته است و منتقل نمی‌شود)
+    const carry = buttons.length ? null : {
+        message, type, mobileSheet,
+        endsAt: Date.now() + duration,
+        total: _restoredTotal || duration,
+    };
+    _activeToast = carry;
+
+    // اعلان ادامه‌یافته دوباره وارد نمی‌شود؛ همان‌جا و با نوار پیشرفتِ باقی‌مانده نمایش داده می‌شود
+    if (_restoredTotal) {
+        toast.style.transition = 'none';
+        toast.style.transform = asSheet ? 'translateY(0)' : 'translateX(0)';
+        toast.style.opacity = '1';
+        progressBar.style.transition = 'none';
+        progressBar.style.transform = `scaleX(${Math.min(1, duration / _restoredTotal)})`;
+        void toast.offsetWidth;
+        toast.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+        progressBar.style.transition = `transform ${duration}ms linear`;
+    }
+
     // ─── انیمیشن ورود ─────────────────────────────────────────
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-            toast.style.transform = 'translateX(0)';
+            toast.style.transform = asSheet ? 'translateY(0)' : 'translateX(0)';
             toast.style.opacity = '1';
             // شروع نوار
             progressBar.style.transform = 'scaleX(0)';
@@ -210,7 +297,8 @@ function showToast(message, type = 'success', options = {}) {
 
     function closeToast() {
         clearTimeout(timer);
-        toast.style.transform = 'translateX(-420px)';
+        if (_activeToast === carry) _activeToast = null; // بسته‌شده به صفحهٔ بعد نرود
+        toast.style.transform = asSheet ? hiddenTransform : 'translateX(-420px)';
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 400);
         if (_toastEnterHandler) {
@@ -234,6 +322,7 @@ function showToast(message, type = 'success', options = {}) {
         progressBar.style.transition = `transform ${duration * 0.3}ms linear`;
         progressBar.style.transform = 'scaleX(0)';
         timer = setTimeout(closeToast, duration * 0.3);
+        if (carry) carry.endsAt = Date.now() + duration * 0.3;
     };
 
     return { close: closeToast };  // ◄ قابلیت بستن دستی از بیرون

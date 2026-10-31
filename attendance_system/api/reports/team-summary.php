@@ -16,6 +16,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/settings_helper.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/work-schedule.php';
+// برای sc_applyLateGrace (ارفاق تأخیر روزانه) — هماهنگ با گزارش حقوق
+require_once $_SERVER['DOCUMENT_ROOT'] . '/attendance_system/includes/salary_calc.php';
 $auth = new Auth($db);
 
 // 🔒 ضریب کسری و مبنای گردکردن حقوق باید از تنظیمات سازمان خونده بشن،
@@ -495,7 +497,8 @@ foreach ($users as $user_item) {
             // تأخیر ورود
             if ($shift1_in > $shift_start) {
                 $delay = timeToMinutes($shift1_in) - timeToMinutes($shift_start);
-                $shortage_slots[] = ['start' => $shift_start, 'end' => $shift1_in, 'minutes' => $delay];
+                // type='late_arrival' تا sc_applyLateGrace فقط تأخیر ورود را بشناسد
+                $shortage_slots[] = ['start' => $shift_start, 'end' => $shift1_in, 'minutes' => $delay, 'type' => 'late_arrival'];
             }
             // خروج زودهنگام — اگر قبل از شروع شیفت باشد، بازه از شروع شیفت
             // حساب شود نه از خود خروج
@@ -512,6 +515,9 @@ foreach ($users as $user_item) {
             }
         }
         
+        // ارفاق تأخیر ورودِ روزانه (فقط سازمان ۱، از ۱۴۰۵/۰۸/۰۱) — هماهنگ با گزارش حقوق
+        sc_applyLateGrace($shortage_slots, $user['organization_id'] ?? 0, $date_str, $app_settings);
+
         // محاسبه پوشش با درخواست‌ها
         $initial_shortage = 0;
         $total_covered = 0;

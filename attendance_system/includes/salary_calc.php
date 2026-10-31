@@ -247,6 +247,50 @@ if (!function_exists('sc_calculateDailyShortage')) {
 }
 
 /**
+ * ارفاق تأخیر ورودِ روزانه (۱۴۰۵/۰۸/۰۹)
+ * تا N دقیقه از «مجموع تأخیر ورودِ روز» (هر دو شیفت) نادیده گرفته می‌شود —
+ * قبل از پوشش درخواست‌ها و قبل از ضریب کسری. فقط روی اسلات‌های type='late_arrival'؛
+ * خروج زودهنگام / عدم ورود / عدم خروج دست‌نخورده می‌مانند.
+ *   • N از تنظیمات خوانده می‌شود: late_grace_minutes_daily (۰ = غیرفعال).
+ *   • فقط برای سازمانِ SC_LATE_GRACE_ORG و فقط روزهای از SC_LATE_GRACE_FROM به بعد.
+ *   • تاریخ شروع عمداً ثابتِ کد است (طبق درخواست کاربر)؛ ماه‌های قبل تغییر نمی‌کنند.
+ * $slots به‌صورت ارجاعی (in-place) تغییر می‌کند. هم salary_calc و هم team-summary از این استفاده می‌کنند.
+ */
+if (!function_exists('sc_applyLateGrace')) {
+    // فعلاً فقط سازمان ۱، از ۱۴۰۵/۰۸/۰۱ (معادل میلادی ۲۰۲۶-۱۰-۲۳)
+    if (!defined('SC_LATE_GRACE_ORG'))
+        define('SC_LATE_GRACE_ORG', 1);
+    if (!defined('SC_LATE_GRACE_FROM'))
+        define('SC_LATE_GRACE_FROM', '2026-10-23');
+
+    function sc_applyLateGrace(array &$slots, $organization_id, $date_str, array $app_settings)
+    {
+        if ((int) $organization_id !== (int) SC_LATE_GRACE_ORG)
+            return;
+        if ((string) $date_str < SC_LATE_GRACE_FROM)
+            return;
+
+        // پیش‌فرض ۱۰ وقتی هنوز کلید در جدول تنظیمات ساخته نشده (تا بدون بازکردن صفحهٔ
+        // تنظیمات هم فعال باشد)؛ اگر مدیر مقداری ذخیره کرده باشد، همان ملاک است (۰ = خاموش).
+        $grace = (int) ($app_settings['late_grace_minutes_daily'] ?? 10);
+        if ($grace <= 0)
+            return;
+
+        $remaining = $grace;
+        foreach ($slots as &$slot) {
+            if ($remaining <= 0)
+                break;
+            if (($slot['type'] ?? '') !== 'late_arrival')
+                continue;
+            $take = min((int) $slot['minutes'], $remaining);
+            $slot['minutes'] -= $take;
+            $remaining -= $take;
+        }
+        unset($slot);
+    }
+}
+
+/**
  * گزارش حقوق یک کاربر برای یک ماه شمسی (تا دیروز).
  *
  * @param PDO    $db
@@ -395,6 +439,9 @@ if (!function_exists('sc_computeUserSalaryReport')) {
                 if ($shift_count >= 2 && $sch['shift_2_start'] && $sch['shift_2_end']) {
                     $slots = array_merge($slots, sc_getShiftShortageSlots($s2in, $s2out, $sch['shift_2_start'], $sch['shift_2_end'], $is_past_day));
                 }
+
+                // ارفاق تأخیر ورودِ روزانه (فقط سازمان ۱، از ۱۴۰۵/۰۸/۰۱) — قبل از پوشش و ضریب
+                sc_applyLateGrace($slots, $userRow['organization_id'] ?? 0, $date_str, $app_settings);
 
                 $day_requests = $requests_by_date[$date_str] ?? [];
                 $sd = sc_calculateDailyShortage($slots, $day_requests, $app_settings);

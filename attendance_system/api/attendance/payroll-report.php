@@ -75,7 +75,7 @@ try {
 
     // کاربران فعال سازمان
     $stmt = $db->prepare("
-        SELECT id, first_name, last_name, activity_section,
+        SELECT id, first_name, last_name, activity_section, organization_id,
                shift_count, shift_1_start, shift_1_end, shift_2_start, shift_2_end,
                monthly_salary, daily_work_hours
         FROM users

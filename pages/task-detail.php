@@ -197,16 +197,17 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
         }
 
         /* ردیف واحد: پیوست فایل (۵۰٪) + انصراف/بدون‌یادداشت/ثبت (۵۰٪) */
+        /* در همهٔ عرض‌ها: انتخاب فایل سرتاسری، دکمه‌ها و لینک‌ها زیرش (کنار هم جا نمی‌شدند) */
         .chk-note-row {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: stretch;
             gap: 10px;
             margin-top: 9px;
         }
 
         .chk-note-file {
-            flex: 0 0 50%;
-            max-width: 50%;
+            width: 100%;
             display: flex;
             align-items: stretch;
             direction: ltr !important;
@@ -277,9 +278,13 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
             display: flex;
             align-items: center;
             gap: 8px;
-            flex: 1 1 50%;
-            max-width: 50%;
-            direction: ltr;
+            width: 100%;
+        }
+
+        /* یک ردیف: دو لینک سمت راست، «ثبت و انجام شد» سمت چپ */
+        .chk-note-actions .btn-primary {
+            order: 1;
+            margin-inline-start: auto;
         }
 
         .chk-note-actions .btn {
@@ -527,6 +532,24 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
         }
 
         @media (max-width: 576px) {
+            /* کادر یادداشت چک‌لیست: عرض بیشتر؛ دکمه‌ها جمع‌وجور تا در یک ردیف جا شوند */
+            .chk-note-drawer {
+                margin-inline: 0;
+            }
+
+            .chk-note-actions {
+                gap: 2px;
+            }
+
+            .chk-note-actions .btn {
+                padding-inline: 5px;
+                font-size: .72rem;
+            }
+
+            .chk-note-actions .btn-primary {
+                padding-inline: 9px;
+            }
+
             #taskInfo .col-6 {
                 flex: 0 0 100%;
                 max-width: 100%;
@@ -635,7 +658,7 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
         }
 
         /* ═══ موبایل: نوار عملیات مثل اپ (۱۴۰۵/۰۸/۰۵) ═══
-           حداکثر ۴ دکمهٔ گرد رنگی با برچسب کوچک زیرش؛ بقیه (و «بازگشت») در دکمهٔ پنجم «بیشتر»
+           حداکثر ۴ دکمهٔ گرد رنگی با برچسب کوچک زیرش («بازگشت» همیشه یکی از آن‌هاست)؛ بقیه در دکمهٔ پنجم «بیشتر»
            که منوی خودش را بالای همان دکمه باز می‌کند. چیدمان را tdLayoutActionBar (پایین صفحه)
            انجام می‌دهد؛ این قوانین فقط با کلاس td-compact (موبایل) فعال‌اند. */
         @media (max-width: 576px) {
@@ -7412,13 +7435,15 @@ ${task.overdue_periods > 0 ? `
                     }
                     bar.classList.add('td-compact');
                     ensureMoreBtn();
-                    // «بازگشت» همیشه در «بیشتر» (آخرین گزینه)؛ بقیه به ترتیب صفحه
+                    // «بازگشت» همیشه در نوار است و یکی از MAX جا را می‌گیرد؛ بقیه به ترتیب صفحه
+                    var shown = all.filter(isShown);
+                    var hasMore = shown.length > MAX + 1; // ۵ دکمه بدون «بیشتر» هم در یک ردیف جا می‌شود
+                    var keep = hasMore ? MAX : shown.length;
                     var back = bar.querySelector('.td-back-btn');
-                    var shown = all.filter(function (b) { return isShown(b) && b !== back; });
-                    var keep = Math.min(MAX, shown.length);
-                    shown.forEach(function (b, i) { if (i >= keep) b.classList.add('td-in-more'); });
-                    if (back) back.classList.add('td-in-more');
-                    moreBtn.style.display = (shown.length > MAX || back) ? '' : 'none';
+                    var extra = shown.filter(function (b) { return b !== back; });
+                    var keepExtra = back && isShown(back) ? keep - 1 : keep;
+                    extra.forEach(function (b, i) { if (i >= keepExtra) b.classList.add('td-in-more'); });
+                    moreBtn.style.display = hasMore ? '' : 'none';
                 } finally {
                     busy = false;
                 }
@@ -7435,12 +7460,9 @@ ${task.overdue_periods > 0 ? `
                     overlay.addEventListener('click', function (e) { if (e.target === overlay) closeMore(); });
                     document.body.appendChild(overlay);
                 }
-                var back = bar.querySelector('.td-back-btn');
                 var items = directBtns().filter(function (b) {
-                    return b.classList.contains('td-in-more') && (b === back || isShown(b));
+                    return b.classList.contains('td-in-more') && isShown(b);
                 });
-                // «بازگشت» آخر فهرست
-                items.sort(function (a, b) { return (a === back) - (b === back); });
                 var list = document.createElement('div');
                 list.className = 'td-more-list';
                 items.forEach(function (b, i) {

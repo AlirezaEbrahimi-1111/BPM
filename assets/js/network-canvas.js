@@ -59,7 +59,7 @@
             if (data.success) {
                 localStorage.setItem('auth_token', data.token);
                 localStorage.setItem('user_info', JSON.stringify(data.user));
-                showAlert('ورود موفقیت‌آمیز! در حال انتقال...', 'success');
+                showToast('ورود موفقیت‌آمیز! در حال انتقال...', 'success', { mobileSheet: true });
                 setTimeout(() => { window.location.href = 'pages/dashboard-manager.php'; }, 1000);
             } else {
                 showAlert(data.message || 'نام کاربری یا رمز عبور اشتباه است', 'danger');

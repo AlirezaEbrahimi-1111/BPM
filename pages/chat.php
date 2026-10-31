@@ -2475,10 +2475,23 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         @media (max-width: 768px) {
+            /* زمینهٔ بخش پایینی چت تا لبهٔ صفحه ادامه پیدا می‌کند (پشت فوتر)؛ جای اجزا عوض نمی‌شود.
+               ۴۶px همان فضای کم‌شده از ارتفاع .chat-wrap است (فوتر + فاصله) */
+            #chatActiveView .chat-composer::after {
+                content: '';
+                position: fixed;
+                inset-inline: 0;
+                bottom: 0;
+                height: 46px;
+                background: var(--surface);
+                pointer-events: none;
+            }
+
             .chat-wrap {
                 padding: 0;
-                height: calc(100vh - 70px - 34px);
-                height: calc(100dvh - 70px - 34px);
+                /* فوتر ۳۸px است (نه ۳۴) و ۴px روی کادر تایپ می‌افتاد → ۳۸ + ۸px فاصله */
+                height: calc(100vh - 70px - 46px);
+                height: calc(100dvh - 70px - 46px);
                 margin: 0;
             }
 
@@ -2490,6 +2503,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
             .chat-shell {
                 border-radius: 0;
+                border-bottom-color: transparent; /* خط جداکننده بین کادر متن و زمینهٔ زیرش نماند */
             }
 
             .chat-sidebar {
@@ -3362,6 +3376,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
             el.style.height = 'auto';
             var neededHeight = el.scrollHeight;
+            // کادر هنوز دیده نمی‌شود (والدش پنهان است) → scrollHeight صفر است؛ بدون این شرط
+            // height:0px روی کادر می‌ماند و تا تایپ بعدی باریک دیده می‌شد
+            if (neededHeight === 0) {
+                el.style.height = '';
+                return;
+            }
 
             if (neededHeight > maxHeight) {
                 el.style.height = maxHeight + 'px';
@@ -3919,7 +3939,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             chatNewMsgCount = 0;
             updateChatNewMsgBadge();
             restoreComposerDraft(id);
-            document.getElementById('chatComposerInput').focus();
             lastMessageId = 0;
             oldestMessageId = 0;
             lastAppendedDateKey = null;
@@ -5276,6 +5295,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             if (!input) return;
             input.value = localStorage.getItem(draftKey(convId)) || '';
             autoGrowComposer(input);
+            // اگر الان پنهان بود، بعد از نمایش ارتفاع پیش‌نویس چندخطی دوباره حساب شود
+            requestAnimationFrame(function() { autoGrowComposer(input); });
         }
 
         function clearComposerDraft(convId) {
