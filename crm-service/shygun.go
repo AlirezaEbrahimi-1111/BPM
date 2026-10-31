@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -60,13 +61,14 @@ type shygunRemainRow struct {
 
 // ردیفِ Job/Get (پروجکشن سبک — همین چند فیلد برمی‌گردد).
 type shygunJobRow struct {
-	JobName    string `json:"JobName"`
-	JobNo      string `json:"JobNo"`
-	Mobile     string `json:"Mobile"`
-	Telephone1 string `json:"Telephone1"`
-	Tel1       string `json:"Tel1"`
-	Tel2       string `json:"Tel2"`
-	GuId       string `json:"GuId"`
+	JobName       string  `json:"JobName"`
+	JobNo         string  `json:"JobNo"`
+	Mobile        string  `json:"Mobile"`
+	Telephone1    string  `json:"Telephone1"`
+	Tel1          string  `json:"Tel1"`
+	Tel2          string  `json:"Tel2"`
+	GuId          string  `json:"GuId"`
+	RemainAccount float64 `json:"RemainAccount"` // ماندهٔ کلّ تفصیلی (برای تفصیلی‌های بدون گردشِ فروش)
 }
 
 // ──────────────── مشتریِ ساده‌شده برای فرانت ────────────────
@@ -190,6 +192,134 @@ func (s *server) shygunCustomers(force bool) ([]shygunCustomer, time.Time, error
 	return rows, shygunCustCache.fetchedAt, nil
 }
 
+// ──────────────── کش «همهٔ تفصیلی‌ها» (گزینهٔ ج) ────────────────
+// مشتریِ بدونِ گردش زیر معینِ دریافتنی در GetJobRemainByAccount نمی‌آید؛ برای
+// جستجوی چنین مواردی (مثل یک مشتری تازه بدون فاکتور) کلِ تفصیلی‌ها را از
+// Job/Get می‌خوانیم (نام/شماره/ماندهٔ کل). این شامل تأمین‌کننده/غیرمشتری هم
+// هست، برای همین در فرانت با برچسب «بدون گردش فروش» از مشتریِ قطعی جدا می‌شود.
+
+var shygunJobsCache struct {
+	mu        sync.Mutex
+	rows      []shygunCustomer
+	fetchedAt time.Time
+}
+
+func (s *server) shygunFetchAllJobs() ([]shygunCustomer, error) {
+	const per = 100
+	out := []shygunCustomer{}
+	seen := map[string]bool{}
+	for page := 0; page < 100; page++ { // سقف امنیتی ۱۰هزار ردیف
+		req := shygunGetReq{
+			Config: shygunConnConfig{ConnectionName: s.cfg.ShygunConn},
+			Domain: map[string]any{},
+		}
+		data, err := s.shygunPost(fmt.Sprintf("/api/Job/Get?RowStart=%d&RowCount=%d", page*per, per), req, 25*time.Second)
+		if err != nil {
+			return nil, err
+		}
+		rows, err := shygunResult[shygunJobRow](data)
+		if err != nil {
+			return nil, err
+		}
+		for _, j := range rows {
+			jn := strings.TrimSpace(j.JobNo)
+			name := faLetters(strings.TrimSpace(j.JobName))
+			if jn == "" || name == "" || seen[jn] {
+				continue
+			}
+			seen[jn] = true
+			out = append(out, shygunCustomer{JobNo: jn, Name: name, Remain: j.RemainAccount})
+		}
+		if len(rows) < per {
+			break
+		}
+	}
+	return out, nil
+}
+
+func (s *server) shygunAllJobs(force bool) ([]shygunCustomer, time.Time, error) {
+	shygunJobsCache.mu.Lock()
+	defer shygunJobsCache.mu.Unlock()
+	if !force && shygunJobsCache.rows != nil && time.Since(shygunJobsCache.fetchedAt) < shygunCacheTTL {
+		return shygunJobsCache.rows, shygunJobsCache.fetchedAt, nil
+	}
+	rows, err := s.shygunFetchAllJobs()
+	if err != nil {
+		if shygunJobsCache.rows != nil {
+			return shygunJobsCache.rows, shygunJobsCache.fetchedAt, nil
+		}
+		return nil, time.Time{}, err
+	}
+	shygunJobsCache.rows = rows
+	shygunJobsCache.fetchedAt = time.Now()
+	return rows, shygunJobsCache.fetchedAt, nil
+}
+
+// ──────────────── جستجوی کلمه‌به‌کلمه + رتبه‌بندی ────────────────
+// هر کلمهٔ جستجو که در نام (یا شماره) پیدا شود امتیاز می‌گیرد؛ هرچه کلماتِ
+// بیشتری بخورد بالاتر می‌آید، و تطبیقِ عبارتِ کامل بالاترین اولویت را دارد.
+
+func shygunMatch(rows []shygunCustomer, q string) []shygunCustomer {
+	q = strings.TrimSpace(q)
+	if q == "" {
+		return rows
+	}
+	words := strings.Fields(q)
+	qDigits := digitsOnly(q)
+	type scored struct {
+		c     shygunCustomer
+		score int
+	}
+	out := make([]scored, 0, 64)
+	for _, c := range rows {
+		matched := 0
+		for _, wd := range words {
+			d := digitsOnly(wd)
+			if strings.Contains(c.Name, wd) || (d != "" && strings.Contains(c.JobNo, d)) {
+				matched++
+			}
+		}
+		if matched == 0 {
+			continue
+		}
+		score := matched * 100
+		if strings.Contains(c.Name, q) {
+			score += 1000 // عبارتِ کامل
+		}
+		if qDigits != "" && strings.Contains(c.JobNo, qDigits) {
+			score += 50
+		}
+		if strings.HasPrefix(c.Name, words[0]) {
+			score += 20 // نامی که با اولین کلمه شروع شود
+		}
+		out = append(out, scored{c, score})
+	}
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].score != out[j].score {
+			return out[i].score > out[j].score
+		}
+		li, lj := len([]rune(out[i].c.Name)), len([]rune(out[j].c.Name))
+		if li != lj {
+			return li < lj // نامِ کوتاه‌تر (مچ‌تر) اول
+		}
+		return out[i].c.Name < out[j].c.Name
+	})
+	res := make([]shygunCustomer, len(out))
+	for i := range out {
+		res[i] = out[i].c
+	}
+	return res
+}
+
+// jalaliDateTime: زمانِ سرور → «۱۴۰۵/۰۸/۰۹ ۱۹:۱۰» (لاتین؛ فرانت فارسی‌اش می‌کند).
+func jalaliDateTime(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	jy, jm, jd := gregorianToJalali(t.Year(), int(t.Month()), t.Day())
+	return fmt.Sprintf("%04d/%02d/%02d %02d:%02d", jy, jm, jd, t.Hour(), t.Minute())
+}
+
 // shygunLinkedJobNos: شمارهٔ تفصیلی‌هایی که قبلا به مشتری BPM وصل شده‌اند
 // (تا در فهرست «قبلا اضافه شده» علامت بخورند و دوبار وارد نشوند).
 func (s *server) shygunLinkedJobNos() map[string]bool {
@@ -213,26 +343,32 @@ func (s *server) shygunLinkedJobNos() map[string]bool {
 
 func (s *server) ucrmShygunCustomers(w http.ResponseWriter, r *http.Request) {
 	pp := parsePage(r)
-	all, fetchedAt, err := s.shygunCustomers(r.URL.Query().Get("refresh") == "1")
+	force := r.URL.Query().Get("refresh") == "1"
+	all := r.URL.Query().Get("scope") == "all" // گزینهٔ ج: جستجو در همهٔ تفصیلی‌ها
+
+	var dataset []shygunCustomer
+	var fetchedAt time.Time
+	var err error
+	custSet := map[string]bool{} // در حالتِ «همه»: کدام‌ها مشتریِ قطعی‌اند (گردش زیر ۱۱۲۰۳)
+	if all {
+		dataset, fetchedAt, err = s.shygunAllJobs(force)
+		if err == nil {
+			if cs, _, e := s.shygunCustomers(false); e == nil {
+				for _, c := range cs {
+					custSet[c.JobNo] = true
+				}
+			}
+		}
+	} else {
+		dataset, fetchedAt, err = s.shygunCustomers(force)
+	}
 	if err != nil {
 		writeErr(w, http.StatusBadGateway, "اتصال به نرم‌افزار حسابداری برقرار نشد: "+err.Error())
 		return
 	}
 
-	// جستجو روی نام + شمارهٔ تفصیلی
-	q := pp.Q
-	qDigits := digitsOnly(q)
-	filtered := all
-	if q != "" {
-		filtered = make([]shygunCustomer, 0, 32)
-		for _, c := range all {
-			if strings.Contains(c.Name, q) || (qDigits != "" && strings.Contains(c.JobNo, qDigits)) {
-				filtered = append(filtered, c)
-			}
-		}
-	}
-
-	total := len(filtered)
+	matched := shygunMatch(dataset, pp.Q) // جستجوی کلمه‌به‌کلمه + رتبه‌بندی
+	total := len(matched)
 	start := pp.Offset
 	if start > total {
 		start = total
@@ -244,14 +380,16 @@ func (s *server) ucrmShygunCustomers(w http.ResponseWriter, r *http.Request) {
 
 	linked := s.shygunLinkedJobNos()
 	items := make([]map[string]any, 0, end-start)
-	for _, c := range filtered[start:end] {
-		items = append(items, map[string]any{
-			"job_no": c.JobNo, "name": c.Name, "remain": c.Remain, "linked": linked[c.JobNo],
-		})
+	for _, c := range matched[start:end] {
+		m := map[string]any{"job_no": c.JobNo, "name": c.Name, "remain": c.Remain, "linked": linked[c.JobNo]}
+		if all {
+			m["is_customer"] = custSet[c.JobNo]
+		}
+		items = append(items, m)
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"items": items, "total": total, "page": pp.Page, "per": pp.Per,
-		"fetched_at": fetchedAt.Format("2006-01-02 15:04:05"),
+		"items": items, "total": total, "page": pp.Page, "per": pp.Per, "scope_all": all,
+		"fetched_at": jalaliDateTime(fetchedAt),
 	})
 }
 

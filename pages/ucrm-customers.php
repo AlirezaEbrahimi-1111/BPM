@@ -168,8 +168,12 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                             <input type="text" class="form-control" id="shySearch" placeholder="جستجوی نام یا شمارهٔ تفصیلی" autocomplete="off">
                             <button class="btn btn-outline-secondary" type="button" id="shyRefresh" title="بروزرسانی فهرست از حسابداری"><i class="bi bi-arrow-clockwise"></i></button>
                         </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="shyAll">
+                            <label class="form-check-label small" for="shyAll">جستجو در همهٔ تفصیلی‌های حسابداری (شاملِ مشتریانِ بدون گردش فروش)</label>
+                        </div>
                         <div id="shyStatus" class="form-text mb-2"></div>
-                        <div id="shyList" class="list-group"></div>
+                        <div id="shyList" class="list-group" style="height:52vh;overflow-y:auto"></div>
                         <div id="shyPager" class="d-flex justify-content-between align-items-center mt-2"></div>
                     </div>
                 </div>
@@ -243,7 +247,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
         let actId = null;
         // تب «انتخاب از حسابداری» (شایگان)
         let shyLink = null;                 // {job_no, guid, accounting_name} مشتریِ انتخاب‌شده (در ثبت ارسال می‌شود)
-        let shyState = { page: 1, q: '', loaded: false, timer: null };
+        let shyState = { page: 1, q: '', loaded: false, timer: null, all: false };
 
         // ── ستون‌ها ──
         function actionCell(p) {
@@ -441,9 +445,10 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
         // ───────────── تب «انتخاب از حسابداری» (شایگان) ─────────────
         function shyRemainText(remain) {
             const n = Math.round(Number(remain) || 0);
-            if (n === 0) return '<span class="text-muted">تسویه</span>';
-            const abs = faDigits(Math.abs(n).toLocaleString('en-US'));
-            return n > 0 ? `<span class="text-danger">بدهکار: ${abs}</span>` : `<span class="text-success">بستانکار: ${abs}</span>`;
+            const neg = n < 0;                               // بدهکار → با منفی
+            const txt = (neg ? '-' : '') + faDigits(Math.abs(n).toLocaleString('en-US'));
+            const cls = neg ? 'text-danger' : (n > 0 ? 'text-success' : 'text-muted');
+            return `مانده: <span class="num-ltr ${cls}">${txt}</span>`;
         }
 
         function shyEnsureLoaded() {
@@ -460,7 +465,8 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             list.innerHTML = '';
             document.getElementById('shyPager').innerHTML = '';
             try {
-                const d = await UCRM.get('/shygun/customers?q=' + encodeURIComponent(shyState.q) + '&page=' + shyState.page + '&per=50');
+                const d = await UCRM.get('/shygun/customers?q=' + encodeURIComponent(shyState.q) +
+                    '&page=' + shyState.page + '&per=50&scope=' + (shyState.all ? 'all' : 'customers'));
                 shyRender(d);
             } catch (e) {
                 status.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-triangle ms-1"></i>' + esc(e.message || 'اتصال به حسابداری برقرار نشد') + '</span>';
@@ -482,10 +488,14 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             list.innerHTML = items.map(c => {
                 const act = c.linked ? '<span class="badge bg-secondary">قبلاً اضافه شده</span>' :
                     `<button type="button" class="btn btn-sm btn-primary shy-pick" data-job="${esc(c.job_no)}" data-name="${esc(c.name || '')}"><i class="bi bi-plus-lg ms-1"></i>انتخاب</button>`;
+                const badge = !shyState.all ? '' : (c.is_customer ?
+                    '<span class="badge bg-success">مشتری</span>' : '<span class="badge bg-secondary">بدون گردش فروش</span>');
                 return `<div class="list-group-item d-flex justify-content-between align-items-center gap-2">
                         <div style="min-width:0">
-                            <div class="fw-bold text-truncate">${esc(c.name || '—')}</div>
-                            <div class="small text-muted">شمارهٔ تفصیلی: <span class="num-ltr">${faDigits(c.job_no)}</span> · ${shyRemainText(c.remain)}</div>
+                            <div class="d-flex align-items-center gap-1" style="min-width:0">
+                                <span class="fw-bold text-truncate">${esc(c.name || '—')}</span>${badge}
+                            </div>
+                            <div class="small text-muted"><span class="num-ltr">${faDigits(c.job_no)}</span> · ${shyRemainText(c.remain)}</div>
                         </div>${act}</div>`;
             }).join('');
             const per = d.per || 50, page = d.page || 1, pages = Math.max(1, Math.ceil(total / per));
@@ -942,8 +952,11 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             });
             document.getElementById('shyRefresh').addEventListener('click', async () => {
                 document.getElementById('shyStatus').textContent = 'در حال بروزرسانی…';
-                try { await UCRM.get('/shygun/customers?refresh=1&per=1'); } catch (e) { }
+                try { await UCRM.get('/shygun/customers?refresh=1&per=1&scope=' + (shyState.all ? 'all' : 'customers')); } catch (e) { }
                 shyState.page = 1; shyLoad();
+            });
+            document.getElementById('shyAll').addEventListener('change', e => {
+                shyState.all = e.target.checked; shyState.page = 1; shyLoad();
             });
             document.getElementById('shyList').addEventListener('click', e => {
                 const b = e.target.closest('.shy-pick');
