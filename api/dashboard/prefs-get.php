@@ -35,9 +35,9 @@ try {
 
     $stmt = $db->prepare("
         SELECT pref_key, pref_value FROM user_dashboard_prefs
-        WHERE user_id = ? AND (pref_date = CURDATE() OR pref_key = 'starred_tasks')
+        WHERE user_id = ?
     ");
-    // «منتخب» دائمی است (روزانه ریست نمی‌شود، ۱۴۰۵/۰۸/۰۳)؛ تب/فیلتر پیش‌فرض هنوز روزانه‌اند
+    // منتخب و پین‌ها دائمی‌اند (۱۴۰۵/۰۸/۰۹). قبلا تب/فیلتر پیش‌فرض هنوز روزانه‌اند
     $stmt->execute([$user_id]);
 
     $prefs = ['starred_tasks' => [], 'default_tab' => '', 'default_filter' => ''];

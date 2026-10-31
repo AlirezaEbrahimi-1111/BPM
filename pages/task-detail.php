@@ -5465,6 +5465,15 @@ ${task.overdue_periods > 0 ? `
             function buildPeriodicDelayBadge(task) {
                 const isWf = task.is_workflow_task == 1;
 
+                // تا تصمیم تأییدکننده، تأخیر نشان داده نمی‌شود
+                if (task.has_pending_deadline_request == 1) {
+                    return `
+                <div class="info-item">
+                    <div class="info-label">مهلت:</div>
+                    <div class="info-value"><span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>در انتظار تأیید تمدید موعد</span></div>
+                </div>`;
+                }
+
                 if (isWf) {
                     if (task.hours_delayed > 0) {
                         return `

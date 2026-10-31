@@ -2235,6 +2235,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                         <div class="d-flex gap-3 flex-wrap" style="font-size:.85rem;color:var(--text-muted)">
                             <span><strong>وضعیت:</strong> ${getStatusLabel(wf.status)}</span>
+                            ${(wf.creator_first_name || wf.creator_last_name) ? `<span><strong>ایجادکننده:</strong> ${esc(((wf.creator_first_name || '') + ' ' + (wf.creator_last_name || '')).trim())}</span>` : ''}
                             <span><strong>مرحله فعلی:</strong> ${esc(wf.current_stage_name) || 'نامشخص'}</span>
                             <span><strong>شروع:</strong> ${formatDate(wf.started_at)}</span>
                             ${wf.completed_at ? `<span><strong>اتمام:</strong> ${formatDate(wf.completed_at)}</span>` : ''}

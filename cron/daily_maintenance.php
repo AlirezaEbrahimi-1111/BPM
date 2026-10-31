@@ -261,7 +261,7 @@ class DailyMaintenance {
         $this->log("Cleaning stale dashboard prefs...");
 
         $stmt = $this->db->query("
-            DELETE FROM user_dashboard_prefs WHERE pref_date < CURDATE()
+            DELETE FROM user_dashboard_prefs WHERE pref_value = ''
         ");
 
         $deleted = $stmt->rowCount();

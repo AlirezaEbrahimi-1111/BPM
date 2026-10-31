@@ -148,6 +148,7 @@ window.TF = (function () {
         const badge = (cls, txt) => `<span class="badge days-badge${cls ? ' ' + cls : ''}">${txt}</span>`;
         if (!t) return badge('', '-');
         if (t.status === 'completed' || t.status === 'approved') return badge('days-normal', 'تکمیل');
+        if (t.has_pending_deadline_request == 1) return badge('days-soon', 'در انتظار تأیید تمدید موعد');
 
         if (t.task_type === 'continuous') {
             // دوره‌های انجام‌نشدهٔ موعدگذشته = معوقه‌ها (سرور) + دورهٔ جاری اگر موعدش گذشته.
@@ -363,6 +364,9 @@ window.TF = (function () {
             return true;
         }
 
+        // تا تصمیم تأییدکننده، کار عقب‌افتاده حساب نمی‌شود
+        if (t.has_pending_deadline_request == 1) return false;
+
         // کار فرآیندی — ساعتی حساب می‌شه (هم‌راستا با calcHourDelay سمت
         // سرور)، نه روز تقویمی؛ وگرنه کاری که موعدش مثلا ۲۳:۵۰ دیشب بوده،
         // همین که نیمه‌شب رد بشه «تأخیردار» می‌شد با اینکه هنوز یک ساعت
@@ -473,6 +477,9 @@ window.TF = (function () {
         // نه وضعیت خام کار (که ممکنه «عقب افتاده» یا هرچیز دیگه باشه)
         if (isWaitingMyDeadline(t, user)) {
             return '<span class="status-badge status-pending_approval">درخواست تمدید موعد</span>';
+        }
+        if (t.has_pending_deadline_request == 1) {
+            return '<span class="status-badge status-pending_approval">در انتظار تأیید تمدید موعد</span>';
         }
         if (isOverdue(t, user)) {
             return '<span class="status-badge status-overdue">عقب افتاده</span>';
@@ -597,7 +604,7 @@ window.TF = (function () {
     function effectiveStatus(t, user) {
         if (needsRenewalDecision(t)) return 'renewal_needed';
         if (t.status === 'pending_approval') return 'pending_approval';
-        if (isWaitingMyDeadline(t, user)) return 'deadline_request';
+        if (t.has_pending_deadline_request == 1) return 'deadline_request';
         if (isOverdue(t, user)) return 'overdue';
         if (t.status === 'delegated' && _isMe(t.assignee_id, user)) return 'not_started';
         if (_periodOpenToday(t)) return 'not_started';

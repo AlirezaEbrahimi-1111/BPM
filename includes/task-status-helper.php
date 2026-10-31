@@ -88,6 +88,9 @@ function taskIsOverdue(array $t, int $userId, string $today): bool
         return true;
     }
 
+    // تا تصمیم تأییدکننده، کار عقب‌افتاده حساب نمی‌شود
+    if (!empty($t['has_pending_deadline_request'])) return false;
+
     if (!empty($t['is_workflow_task'])) {
         $due = $t['next_due_date'] ?? null;
         if ($due && $due < $today) return true;
@@ -172,6 +175,8 @@ function taskStatusInfo(array $t, int $userId, string $today): array
         // درخواست تمدید موعد است، این چیزیه که واقعا باید ببینه —
         // نه وضعیت خام کار یا صرفا «عقب افتاده»
         $label = 'درخواست تمدید موعد';
+    } elseif (!empty($t['has_pending_deadline_request'])) {
+        $label = 'در انتظار تأیید تمدید موعد';
     } elseif ($isOverdue) {
         $label = 'عقب افتاده';
     } else {

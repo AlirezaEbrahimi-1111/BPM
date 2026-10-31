@@ -232,7 +232,12 @@ class Notification
         try {
             require_once __DIR__ . '/metrix-push.php';
             $customContent = [];
-            if (($notification_data['related_type'] ?? null) === 'task' && !empty($notification_data['related_id'])) {
+            // 🔧 هر اعلانی که به یک کار مربوط است (چک‌لیست و مرحله‌ی روتین هم)
+            // با لمس همان کار را باز کند. لینک مقدم است چون در اعلان روتین
+            // related_id شماره‌ی روتین است، نه کار.
+            if (preg_match('/task-detail\.php\?id=(\d+)/', (string) ($notification_data['link'] ?? ''), $m)) {
+                $customContent = ['task_id' => $m[1]];
+            } elseif (in_array($notification_data['related_type'] ?? null, ['task', 'checklist'], true) && !empty($notification_data['related_id'])) {
                 $customContent = ['task_id' => (string) $notification_data['related_id']];
             }
             $result = metrix_send_push(

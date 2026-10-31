@@ -141,15 +141,30 @@ try {
         // آیتم/رویداد داره)، به‌جای LIKE مستقیم از EXISTS استفاده می‌شه —
         // هر کلمه باید *جایی* (حتی اگه هرکلمه توی یه آیتم/رکورد متفاوت باشه)
         // در دسترس همون لایه پیدا بشه.
+        // 🔧 rank=1 (اپ): مرتب‌سازی بر اساس نزدیکی به عبارت جستجو؛ نیم‌فاصله مثل
+        // فاصله است و کاری که فقط بخشی از کلمه‌ها را دارد هم می‌آید (پایین‌تر).
+        // کلمه‌های کوتاه مثل «ها» به‌تنهایی کاری را وارد نتیجه نمی‌کنند.
+        $rankMode = !empty($_GET['rank']);
+        $zwnj = "\xE2\x80\x8C";
+        $rankQuery = trim(preg_replace('/\s+/u', ' ', str_replace($zwnj, ' ', $q)));
+        $taskWords = $rankMode ? (preg_split('/\s+/u', $rankQuery) ?: $words) : $words;
+        $whereWords = $taskWords;
+        if ($rankMode) {
+            $longWords = array_values(array_filter($taskWords, function ($w) {
+                return mb_strlen($w) >= 3 || ctype_digit($w);
+            }));
+            if ($longWords) $whereWords = $longWords;
+        }
+
         $p1 = [];
-        $tier1Sql = gs_word_conditions(['t.title'], $words, $p1);
+        $tier1Sql = gs_word_conditions(['t.title'], $taskWords, $p1);
 
         $p2 = [];
-        $tier2Sql = gs_word_conditions(['t.title', 't.description'], $words, $p2);
+        $tier2Sql = gs_word_conditions(['t.title', 't.description'], $taskWords, $p2);
 
         $p3 = [];
         $tier3Clauses = [];
-        foreach ($words as $w) {
+        foreach ($taskWords as $w) {
             $tier3Clauses[] = "(t.title LIKE ? OR t.description LIKE ? OR EXISTS (
                 SELECT 1 FROM task_checklist_items tci
                 WHERE tci.task_id = t.id AND (tci.title LIKE ? OR tci.description LIKE ?)
@@ -160,7 +175,7 @@ try {
 
         $p4 = [];
         $tier4Clauses = [];
-        foreach ($words as $w) {
+        foreach ($whereWords as $w) {
             $tier4Clauses[] = "(t.title LIKE ? OR t.description LIKE ? OR EXISTS (
                 SELECT 1 FROM task_checklist_items tci
                 WHERE tci.task_id = t.id AND (tci.title LIKE ? OR tci.description LIKE ?)
@@ -170,12 +185,28 @@ try {
             ))";
             array_push($p4, '%' . $w . '%', '%' . $w . '%', '%' . $w . '%', '%' . $w . '%', '%' . $w . '%');
         }
-        $tier4Sql = implode(' AND ', $tier4Clauses);
+        $tier4Sql = implode($rankMode ? ' OR ' : ' AND ', $tier4Clauses);
 
         // ترتیب زیر باید دقیقا با ترتیب ظاهرشدن «?» در متن کوئری یکی
         // باشه: اول CASE (p1,p2,p3) توی SELECT، بعد accessSql، بعد شرط
         // نهایی WHERE (p4)، بعد دوتا idMatch
         $params = array_merge($p1, $p2, $p3, $accessParams, $p4, [$idMatch, $idMatch]);
+
+        $taskOrderSql = 'match_tier ASC, t.created_at DESC';
+        if ($rankMode) {
+            $titleSql = 'REPLACE(t.title, ?, \' \')';
+            $taskOrderSql = "CASE
+                    WHEN t.id = ? THEN 0
+                    WHEN $titleSql = ? THEN 1
+                    WHEN $titleSql LIKE ? THEN 2
+                    WHEN $titleSql LIKE ? THEN 3
+                    ELSE 4
+                END ASC, match_tier ASC, CHAR_LENGTH(t.title) ASC, t.created_at DESC";
+            array_push($params, $idMatch,
+                $zwnj, $rankQuery,
+                $zwnj, $rankQuery . '%',
+                $zwnj, '%' . $rankQuery . '%');
+        }
 
         $stmt = $db->prepare("
             SELECT t.id, t.title, t.description,
@@ -190,7 +221,7 @@ try {
               AND t.status NOT IN ('completed', 'approved', 'stopped', 'rejected')
               AND $accessSql
               AND ($tier4Sql OR t.id = ? OR t.workflow_instance_id = ?)
-            ORDER BY match_tier ASC, t.created_at DESC
+            ORDER BY $taskOrderSql
             LIMIT $perType OFFSET $offset
         ");
         $stmt->execute($params);

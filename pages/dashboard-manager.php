@@ -3350,10 +3350,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             return d;
         }
 
-        /* ───────── ذخیره‌ی تنظیمات روزانه‌ی داشبورد در سرور (نه localStorage) ─────────
-           user_dashboard_prefs با pref_date=CURDATE() ذخیره می‌شه؛ فردا (طبق
-           تاریخ سرور) bootstrap.php دیگه این ردیف رو برنمی‌گردونه — یعنی ریست
-           خودکاره و به ساعت سیستم کلاینت وابسته نیست */
+        /* ───────── ذخیره‌ی تنظیمات داشبورد در سرور (نه localStorage) ─────────
+           user_dashboard_prefs ذخیره می‌شه و دائمیه (۱۴۰۵/۰۸/۰۹)؛
+           با لغو پین مقدارش خالی می‌شه و به ساعت سیستم کلاینت
+           وابسته نیست */
         function saveDashboardPref(prefKey, prefValue) {
             fetch('../api/dashboard/prefs-set.php', {
                 method: 'POST',
@@ -3399,7 +3399,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             if (currentTab === 'starred') renderTasks();
         }
 
-        /* ───────── تب پیش‌فرض (پین) — فقط تا پایان همون روز معتبره (روز سرور) ───────── */
+        /* ───────── تب پیش‌فرض (پین) — دائمی و مشترک با اپ ───────── */
         function getDefaultTab() {
             return defaultTab || 'mine';
         }
@@ -3421,7 +3421,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             });
         }
 
-        /* ───────── فیلتر پیش‌فرض (پین) — فقط تا پایان همون روز معتبره (روز سرور) ───────── */
+        /* ───────── فیلتر پیش‌فرض (پین) — دائمی و مشترک با اپ ───────── */
         function getDefaultFilter() {
             return defaultFilter || 'all';
         }
