@@ -20,6 +20,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/support-accounts.php'; // حساب فقط‌پشتیبان (id=1) در مسیر تأیید نیست
 require_once __DIR__ . '/../includes/settings_helper.php';
 require_once __DIR__ . '/../includes/leave-balance-helper.php';
+require_once __DIR__ . '/../includes/working-days-helper.php'; // محاسبهٔ روز کاری (جمعه/تعطیلات)
 
 class AutoApprovalChecker {
     private $db;
@@ -75,6 +76,38 @@ class AutoApprovalChecker {
         }
     }
     
+    // تعطیلاتِ هر سازمان (کش‌شده): جمعه + تعطیلات هفتگی + تعطیلات رسمی
+    private $holidayCache = [];
+    private function orgHolidays($orgId) {
+        $key = ($orgId === null || $orgId === '') ? 'global' : (int) $orgId;
+        if (!isset($this->holidayCache[$key])) {
+            $oid = ($key === 'global') ? null : (int) $orgId;
+            $this->holidayCache[$key] = [
+                'set'       => getHolidaySet($this->db, $oid),
+                'recurring' => getRecurringHolidayWeekdays($this->db, $oid),
+            ];
+        }
+        return $this->holidayCache[$key];
+    }
+
+    // مهلت = لنگر + N روز کاری (با حفظ ساعتِ لنگر)؛ جمعه/تعطیلاتِ همان سازمان رد می‌شوند
+    private function workingDaysDeadline($anchor, $n, $orgId) {
+        $h = $this->orgHolidays($orgId);
+        $d = new DateTime($anchor);
+        $counted = 0; $guard = 0;
+        while ($counted < (int) $n && $guard < 3650) {
+            $d->modify('+1 day'); $guard++;
+            if (isWorkingDay($d, $h['set'], $h['recurring'])) $counted++;
+        }
+        return $d;
+    }
+
+    // آیا از مهلتِ N روز کاری بعد از $anchor گذشته‌ایم؟
+    private function workingDeadlinePassed($anchor, $n, $orgId) {
+        if (empty($anchor)) return false;
+        return new DateTime() >= $this->workingDaysDeadline($anchor, $n, $orgId);
+    }
+
     /**
      * بررسی درخواست‌های مرخصی
      */
@@ -83,17 +116,18 @@ class AutoApprovalChecker {
         
         // درخواست‌هایی که جانشین 4 روز پاسخ نداده
         $stmt = $this->db->query("
-            SELECT lr.*, u.first_name, u.last_name, u.manager_id
+            SELECT lr.*, u.first_name, u.last_name, u.manager_id, u.organization_id
             FROM leave_requests lr
             JOIN users u ON lr.user_id = u.id
             WHERE lr.status = 'pending'
             AND lr.current_approver_role = 'substitute'
             AND lr.substitute_approval = 'pending'
-            AND DATEDIFF(NOW(), lr.created_at) >= {$this->escalationDays}
         ");
         
         $escalated = 0;
         while ($request = $stmt->fetch()) {
+            // مهلت = N روز کاری بعد از ثبت (جمعه/تعطیلات حذف، با حفظ ساعت)
+            if (!$this->workingDeadlinePassed($request['created_at'], $this->escalationDays, $request['organization_id'] ?? null)) continue;
             // ارجاع به مدیر
             $this->escalateToManager($request, 'leave_requests');
             $escalated++;
@@ -101,17 +135,18 @@ class AutoApprovalChecker {
         
         // درخواست‌هایی که مدیر 4 روز پاسخ نداده
         $stmt = $this->db->query("
-            SELECT lr.*, u.first_name, u.last_name
+            SELECT lr.*, u.first_name, u.last_name, u.organization_id
             FROM leave_requests lr
             JOIN users u ON lr.user_id = u.id
             WHERE lr.status = 'pending'
             AND lr.current_approver_role = 'manager'
             AND lr.manager_approval = 'pending'
             AND lr.substitute_approval = 'approved'
-            AND DATEDIFF(NOW(), lr.substitute_date) >= {$this->escalationDays}
         ");
         
         while ($request = $stmt->fetch()) {
+            // مهلت = N روز کاری بعد از تأیید جانشین (جمعه/تعطیلات حذف، با حفظ ساعت)
+            if (!$this->workingDeadlinePassed($request['substitute_date'], $this->escalationDays, $request['organization_id'] ?? null)) continue;
             // ارجاع به مسئول
             $this->escalateToSupervisor($request, 'leave_requests');
             $escalated++;
@@ -128,17 +163,17 @@ class AutoApprovalChecker {
         
         // درخواست‌هایی که مدیر 4 روز پاسخ نداده
         $stmt = $this->db->query("
-            SELECT mr.*, u.first_name, u.last_name
+            SELECT mr.*, u.first_name, u.last_name, u.organization_id
             FROM mission_requests mr
             JOIN users u ON mr.user_id = u.id
             WHERE mr.status = 'pending'
             AND mr.current_approver_role = 'manager'
             AND mr.manager_approval = 'pending'
-            AND DATEDIFF(NOW(), mr.created_at) >= {$this->escalationDays}
         ");
         
         $escalated = 0;
         while ($request = $stmt->fetch()) {
+            if (!$this->workingDeadlinePassed($request['created_at'], $this->escalationDays, $request['organization_id'] ?? null)) continue;
             // ارجاع به مسئول
             $this->escalateToSupervisor($request, 'mission_requests');
             $escalated++;
@@ -155,17 +190,17 @@ class AutoApprovalChecker {
         
         // درخواست‌هایی که مدیر 4 روز پاسخ نداده
         $stmt = $this->db->query("
-            SELECT fr.*, u.first_name, u.last_name
+            SELECT fr.*, u.first_name, u.last_name, u.organization_id
             FROM forget_requests fr
             JOIN users u ON fr.user_id = u.id
             WHERE fr.status = 'pending'
             AND fr.current_approver_role = 'manager'
             AND fr.manager_approval = 'pending'
-            AND DATEDIFF(NOW(), fr.created_at) >= {$this->escalationDays}
         ");
         
         $escalated = 0;
         while ($request = $stmt->fetch()) {
+            if (!$this->workingDeadlinePassed($request['created_at'], $this->escalationDays, $request['organization_id'] ?? null)) continue;
             // ارجاع به مسئول
             $this->escalateToSupervisor($request, 'forget_requests');
             $escalated++;
@@ -185,14 +220,16 @@ class AutoApprovalChecker {
         // درخواست‌های مرخصی منقضی شده (بیشتر از مهلت تنظیم‌شده از ارسال)
         // و تاریخ شروع مرخصی هم گذشته باشد
         $stmt = $this->db->query("
-            SELECT lr.*
+            SELECT lr.*, u.organization_id
             FROM leave_requests lr
+            JOIN users u ON lr.user_id = u.id
             WHERE lr.status = 'pending'
-            AND DATEDIFF(NOW(), lr.created_at) >= {$this->deadlineDays}
             AND lr.start_date < CURDATE()
         ");
         
         while ($request = $stmt->fetch()) {
+            // مهلت = N روز کاری بعد از ثبت (جمعه/تعطیلات حذف، با حفظ ساعت)
+            if (!$this->workingDeadlinePassed($request['created_at'], $this->deadlineDays, $request['organization_id'] ?? null)) continue;
             // رد خودکار
             $this->autoReject($request['id'], 'leave_requests', 
                 'درخواست به دلیل عدم تأیید در مهلت مقرر، به صورت خودکار رد شد');
@@ -201,14 +238,15 @@ class AutoApprovalChecker {
         
         // درخواست‌های مأموریت منقضی شده
         $stmt = $this->db->query("
-            SELECT mr.*
+            SELECT mr.*, u.organization_id
             FROM mission_requests mr
+            JOIN users u ON mr.user_id = u.id
             WHERE mr.status = 'pending'
-            AND DATEDIFF(NOW(), mr.created_at) >= {$this->deadlineDays}
             AND mr.start_date < NOW()
         ");
         
         while ($request = $stmt->fetch()) {
+            if (!$this->workingDeadlinePassed($request['created_at'], $this->deadlineDays, $request['organization_id'] ?? null)) continue;
             $this->autoReject($request['id'], 'mission_requests', 
                 'درخواست به دلیل عدم تأیید در مهلت مقرر، به صورت خودکار رد شد');
             $expired++;
@@ -216,13 +254,14 @@ class AutoApprovalChecker {
         
         // درخواست‌های فراموشی منقضی شده
         $stmt = $this->db->query("
-            SELECT fr.*
+            SELECT fr.*, u.organization_id
             FROM forget_requests fr
+            JOIN users u ON fr.user_id = u.id
             WHERE fr.status = 'pending'
-            AND DATEDIFF(NOW(), fr.created_at) >= {$this->deadlineDays}
         ");
         
         while ($request = $stmt->fetch()) {
+            if (!$this->workingDeadlinePassed($request['created_at'], $this->deadlineDays, $request['organization_id'] ?? null)) continue;
             $this->autoReject($request['id'], 'forget_requests', 
                 'درخواست به دلیل عدم تأیید در مهلت مقرر، به صورت خودکار رد شد');
             $expired++;

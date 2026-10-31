@@ -41,13 +41,20 @@ type Config struct {
 	DBPass    string `json:"db_pass"`
 	JWTSecret string `json:"jwt_secret"` // باید دقیقا برابر jwt_secret در config/config.php باشد
 	BaseURL   string `json:"base_url"`   // آدرس اپ PHP برای ارسال اعلان (ucrm_notify.go)؛ پیش‌فرض https://bpm.itmalek.com
+
+	// اتصال به نرم‌افزار حسابداری شایگان (shygun.go) از داخل تونل WireGuard.
+	// پیش‌فرض‌ها روی سرور کار می‌کنند؛ لازم نیست در config.json چیزی بگذارید.
+	ShygunURL             string `json:"shygun_url"`              // آدرس وب‌سرویس شایگان؛ پیش‌فرض http://10.8.0.2:2030 (سرِ تونل)
+	ShygunConn            string `json:"shygun_conn"`             // ConnectionName؛ پیش‌فرض SampleConnection → پایگاه CY140206
+	ShygunCustomerAccount string `json:"shygun_customer_account"` // کد معینِ «حساب‌های دریافتنی تجاری» (مشتریان)؛ پیش‌فرض 11203
 }
 
 // loadConfig ابتدا config.json (یا مسیر CRM_CONFIG) را می‌خواند،
 // سپس متغیرهای محیطی (CRM_*) هر مقدار موجود را بازنویسی می‌کنند —
 // برای اجرا زیر systemd روی سرور مناسب است.
 func loadConfig() Config {
-	c := Config{Port: "8090", DBHost: "127.0.0.1", DBPort: "3306", BaseURL: "https://bpm.itmalek.com"}
+	c := Config{Port: "8090", DBHost: "127.0.0.1", DBPort: "3306", BaseURL: "https://bpm.itmalek.com",
+		ShygunURL: "http://10.8.0.2:2030", ShygunConn: "SampleConnection", ShygunCustomerAccount: "11203"}
 
 	path := os.Getenv("CRM_CONFIG")
 	if path == "" {
@@ -72,6 +79,9 @@ func loadConfig() Config {
 	set("CRM_DB_PASS", &c.DBPass)
 	set("CRM_JWT_SECRET", &c.JWTSecret)
 	set("CRM_BASE_URL", &c.BaseURL)
+	set("CRM_SHYGUN_URL", &c.ShygunURL)
+	set("CRM_SHYGUN_CONN", &c.ShygunConn)
+	set("CRM_SHYGUN_CUSTOMER_ACCOUNT", &c.ShygunCustomerAccount)
 
 	if c.JWTSecret == "" || c.DBName == "" || c.DBUser == "" {
 		log.Fatal("config: jwt_secret و db_name و db_user الزامی‌اند (در config.json یا متغیرهای محیطی)")
@@ -375,6 +385,9 @@ func main() {
 	mux.HandleFunc("PUT /crm/api/ucrm/settings", ucrm(s.ucrmPutSettings))
 	mux.HandleFunc("GET /crm/api/ucrm/customers", ucrm(s.ucrmListCustomers))
 	mux.HandleFunc("GET /crm/api/ucrm/customers/phone-check", ucrm(s.ucrmPhoneCheck))
+	// فهرست مشتریان از نرم‌افزار حسابداری شایگان (تب «انتخاب از حسابداری») — shygun.go
+	mux.HandleFunc("GET /crm/api/ucrm/shygun/customers", ucrm(s.ucrmShygunCustomers))
+	mux.HandleFunc("GET /crm/api/ucrm/shygun/customers/{jobno}", ucrm(s.ucrmShygunCustomerDetail))
 	mux.HandleFunc("POST /crm/api/ucrm/customers/import", ucrm(s.ucrmImport))
 	mux.HandleFunc("GET /crm/api/ucrm/customers/{id}", ucrm(s.ucrmGetCustomer))
 	mux.HandleFunc("POST /crm/api/ucrm/customers", ucrm(s.ucrmCreateCustomer))

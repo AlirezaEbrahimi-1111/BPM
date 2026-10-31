@@ -127,6 +127,10 @@ type ucrmCustomerIn struct {
 	Resubmit     bool     `json:"resubmit"` // ویرایش مشتری ردشده + ارسال دوباره برای تأیید
 	// تارگت ماهانه (تومان، ۰ = بدون تارگت). کارشناس → پیشنهاد؛ مدیر روی مشتری تأییدشده → تارگت ماهانه
 	Target int64 `json:"target"`
+	// پیوند به نرم‌افزار حسابداری شایگان (فقط هنگام ثبت از تب «انتخاب از حسابداری» پر می‌شوند)
+	AccountingName string `json:"accounting_name"` // نام تفصیلی در حسابداری (JobName)
+	ShygunJobNo    string `json:"shygun_job_no"`   // شمارهٔ تفصیلی (JobNo)
+	ShygunGuid     string `json:"shygun_guid"`     // GuId تفصیلی
 }
 
 func (c *ucrmCustomerIn) normalize() {
@@ -139,6 +143,9 @@ func (c *ucrmCustomerIn) normalize() {
 	c.Address = faLetters(strings.TrimSpace(c.Address))
 	c.Note = strings.TrimSpace(c.Note)
 	c.RepName = faLetters(strings.TrimSpace(c.RepName))
+	c.AccountingName = faLetters(strings.TrimSpace(c.AccountingName))
+	c.ShygunJobNo = digitsOnly(c.ShygunJobNo)
+	c.ShygunGuid = strings.TrimSpace(c.ShygunGuid)
 	seen := map[string]bool{}
 	out := []string{}
 	for _, p := range c.Phones {
@@ -542,15 +549,21 @@ func (s *server) ucrmCreateCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 	var evs []int64 // رویدادهای این درخواست → اعلان بعد از commit
+	// وارد شده از حسابداری؟ (شمارهٔ تفصیلی شایگان دارد) → منبع = accounting
+	source := "manual"
+	if in.ShygunJobNo != "" {
+		source = "accounting"
+	}
 	res, err := tx.Exec(`
 		INSERT INTO ucrm_customers
-		  (organization_id, type, name, national_id, economic_code, province, city, address, note, proposed_target, monthly_target,
-		   rep_id, status, source, created_by)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'manual', ?)`,
-		ucrmOrg, in.Type, in.Name, nullIfEmpty(in.NationalID), nullIfEmpty(in.EconomicCode), nullIfEmpty(in.Province), nullIfEmpty(in.City),
+		  (organization_id, type, name, accounting_name, shygun_job_no, shygun_guid, national_id, economic_code, province, city, address, note,
+		   proposed_target, monthly_target, rep_id, status, source, created_by)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		ucrmOrg, in.Type, in.Name, nullIfEmpty(in.AccountingName), nullIfEmpty(in.ShygunJobNo), nullIfEmpty(in.ShygunGuid),
+		nullIfEmpty(in.NationalID), nullIfEmpty(in.EconomicCode), nullIfEmpty(in.Province), nullIfEmpty(in.City),
 		nullIfEmpty(in.Address), nullIfEmpty(in.Note), nullIfZero(in.Target),
 		// مدیر خودش ثبت کرده → مرحلهٔ مدیر ندارد، پس پیشنهادش همان تارگت ماهانه است
-		nullIfZeroIf(in.Target, ro.Manager), in.RepID, status, uid)
+		nullIfZeroIf(in.Target, ro.Manager), in.RepID, status, source, uid)
 	if err != nil {
 		writeDBErr(w, "ucrmCreate insert", err)
 		return

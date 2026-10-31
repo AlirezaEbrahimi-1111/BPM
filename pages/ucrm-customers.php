@@ -94,6 +94,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                     </div>
 
                     <div id="custModalAlert"></div>
+                    <div id="shyBanner"></div>
 
                     <!-- حالت ۱: تعریف دستی -->
                     <form id="custForm" novalidate data-mode-pane="manual">
@@ -161,13 +162,15 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                         <div class="uc-info mt-3" id="flowHint"><i class="bi bi-info-circle-fill ms-1"></i><span></span></div>
                     </form>
 
-                    <!-- حالت ۲: از حسابداری (اتصال به وب‌سرویس شایگان — مرحلهٔ بعد) -->
+                    <!-- حالت ۲: انتخاب مشتری از نرم‌افزار حسابداری شایگان (وب‌سرویس، از داخل تونل) -->
                     <div data-mode-pane="accounting" hidden>
-                        <div class="uc-empty">
-                            <i class="bi bi-plug"></i>
-                            <div class="fw-bold mb-1">اتصال به حسابداری هنوز برقرار نشده است.</div>
-                            <div class="small">وقتی وب‌سرویس نرم‌افزار حسابداری وصل شود، مشتریان حسابداری این‌جا فهرست می‌شوند و با یک کلیک اضافه می‌شوند. فعلا از «تعریف مشتری جدید» استفاده کنید.</div>
+                        <div class="uc-phone-row mb-2">
+                            <input type="text" class="form-control" id="shySearch" placeholder="جستجوی نام یا شمارهٔ تفصیلی" autocomplete="off">
+                            <button class="btn btn-outline-secondary" type="button" id="shyRefresh" title="بروزرسانی فهرست از حسابداری"><i class="bi bi-arrow-clockwise"></i></button>
                         </div>
+                        <div id="shyStatus" class="form-text mb-2"></div>
+                        <div id="shyList" class="list-group"></div>
+                        <div id="shyPager" class="d-flex justify-content-between align-items-center mt-2"></div>
                     </div>
                 </div>
                 <div class="modal-footer border-0" id="custFooter">
@@ -238,6 +241,9 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
         let phones = [];
         let searchTimer, phoneTimer;
         let actId = null;
+        // تب «انتخاب از حسابداری» (شایگان)
+        let shyLink = null;                 // {job_no, guid, accounting_name} مشتریِ انتخاب‌شده (در ثبت ارسال می‌شود)
+        let shyState = { page: 1, q: '', loaded: false, timer: null };
 
         // ── ستون‌ها ──
         function actionCell(p) {
@@ -389,6 +395,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             document.querySelectorAll('[data-mode-pane]').forEach(el => el.hidden = el.dataset.modePane !== m);
             document.getElementById('btnSave').hidden = m !== 'manual';
             if (m === 'manual') setTimeout(() => document.getElementById('f_name').focus(), 30);
+            if (m === 'accounting') { shyEnsureLoaded(); setTimeout(() => document.getElementById('shySearch').focus(), 30); }
         }
 
         function renderPhones() {
@@ -431,6 +438,99 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             }
         }
 
+        // ───────────── تب «انتخاب از حسابداری» (شایگان) ─────────────
+        function shyRemainText(remain) {
+            const n = Math.round(Number(remain) || 0);
+            if (n === 0) return '<span class="text-muted">تسویه</span>';
+            const abs = faDigits(Math.abs(n).toLocaleString('en-US'));
+            return n > 0 ? `<span class="text-danger">بدهکار: ${abs}</span>` : `<span class="text-success">بستانکار: ${abs}</span>`;
+        }
+
+        function shyEnsureLoaded() {
+            if (shyState.loaded) return;
+            shyState.loaded = true;
+            shyState.page = 1;
+            shyLoad();
+        }
+
+        async function shyLoad() {
+            const status = document.getElementById('shyStatus');
+            const list = document.getElementById('shyList');
+            status.textContent = 'در حال دریافت از حسابداری…';
+            list.innerHTML = '';
+            document.getElementById('shyPager').innerHTML = '';
+            try {
+                const d = await UCRM.get('/shygun/customers?q=' + encodeURIComponent(shyState.q) + '&page=' + shyState.page + '&per=50');
+                shyRender(d);
+            } catch (e) {
+                status.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-triangle ms-1"></i>' + esc(e.message || 'اتصال به حسابداری برقرار نشد') + '</span>';
+            }
+        }
+
+        function shyRender(d) {
+            const status = document.getElementById('shyStatus');
+            const list = document.getElementById('shyList');
+            const pg = document.getElementById('shyPager');
+            const items = d.items || [], total = d.total || 0;
+            if (!items.length) {
+                status.textContent = shyState.q ? 'موردی با این جستجو پیدا نشد.' : 'مشتری‌ای در حسابداری نیست.';
+                list.innerHTML = ''; pg.innerHTML = '';
+                return;
+            }
+            status.innerHTML = `${faDigits(total)} مشتری در حسابداری` +
+                (d.fetched_at ? ` · آخرین بروزرسانی: <span class="num-ltr">${faDigits(d.fetched_at)}</span>` : '');
+            list.innerHTML = items.map(c => {
+                const act = c.linked ? '<span class="badge bg-secondary">قبلاً اضافه شده</span>' :
+                    `<button type="button" class="btn btn-sm btn-primary shy-pick" data-job="${esc(c.job_no)}" data-name="${esc(c.name || '')}"><i class="bi bi-plus-lg ms-1"></i>انتخاب</button>`;
+                return `<div class="list-group-item d-flex justify-content-between align-items-center gap-2">
+                        <div style="min-width:0">
+                            <div class="fw-bold text-truncate">${esc(c.name || '—')}</div>
+                            <div class="small text-muted">شمارهٔ تفصیلی: <span class="num-ltr">${faDigits(c.job_no)}</span> · ${shyRemainText(c.remain)}</div>
+                        </div>${act}</div>`;
+            }).join('');
+            const per = d.per || 50, page = d.page || 1, pages = Math.max(1, Math.ceil(total / per));
+            pg.innerHTML = pages > 1 ?
+                `<button type="button" class="btn btn-sm btn-outline-secondary" ${page <= 1 ? 'disabled' : ''} onclick="shyGo(${page - 1})">قبلی</button>
+                 <span class="small text-muted">صفحهٔ ${faDigits(page)} از ${faDigits(pages)}</span>
+                 <button type="button" class="btn btn-sm btn-outline-secondary" ${page >= pages ? 'disabled' : ''} onclick="shyGo(${page + 1})">بعدی</button>` : '';
+        }
+
+        function shyGo(p) { shyState.page = p; shyLoad(); }
+
+        async function shyPick(jobNo, name) {
+            const status = document.getElementById('shyStatus');
+            status.textContent = 'در حال دریافت اطلاعات مشتری…';
+            try {
+                const d = await UCRM.get('/shygun/customers/' + encodeURIComponent(jobNo));
+                shyLink = { job_no: d.job_no || jobNo, guid: d.guid || '', accounting_name: d.name || name || '' };
+                setType('legal');
+                document.getElementById('f_name').value = d.name || name || '';
+                phones = [];
+                if (d.phone) phones.push(d.phone);
+                renderPhones();
+                document.getElementById('custModalAlert').innerHTML = '';
+                showShyBanner();
+                setMode('manual');
+            } catch (e) {
+                status.innerHTML = '<span class="text-danger">' + esc(e.message || 'خطا در دریافت اطلاعات مشتری') + '</span>';
+            }
+        }
+
+        function showShyBanner() {
+            const el = document.getElementById('shyBanner');
+            if (!shyLink) { el.innerHTML = ''; return; }
+            el.innerHTML = `<div class="alert alert-info py-2 d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-link-45deg ms-1"></i>متصل به حساب «${esc(shyLink.accounting_name || '')}» در حسابداری (شمارهٔ تفصیلی <span class="num-ltr">${faDigits(shyLink.job_no)}</span>)</span>
+                    <button type="button" class="btn-close" title="لغو پیوند با حسابداری" onclick="clearShyLink()"></button>
+                </div>`;
+        }
+
+        function clearShyLink() {
+            shyLink = null;
+            const el = document.getElementById('shyBanner');
+            if (el) el.innerHTML = '';
+        }
+
         function fillRepSelect(sel, current) {
             const list = reps.slice();
             if (current && !list.some(r => r.id === current.id)) list.unshift(current);
@@ -465,6 +565,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             document.getElementById('phoneWarn').innerHTML = '';
             phones = [];
             renderPhones();
+            clearShyLink();
             if (window.IranId) IranId.resetLive(document.getElementById('custForm'));
         }
 
@@ -549,6 +650,10 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 rep_id: +document.getElementById('f_rep').value || 0,
                 target: UCRM.moneyVal(document.getElementById('f_target')),
                 phones: phones.slice(),
+                // پیوند به حسابداری (فقط وقتی از تب «انتخاب از حسابداری» انتخاب شده)
+                accounting_name: shyLink ? shyLink.accounting_name : '',
+                shygun_job_no: shyLink ? shyLink.job_no : '',
+                shygun_guid: shyLink ? shyLink.guid : '',
             };
             const missing = [];
             if (!body.name) missing.push('نام');
@@ -830,6 +935,20 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
 
             document.querySelectorAll('#typeSeg .uc-seg-btn').forEach(b => b.addEventListener('click', () => setType(b.dataset.type)));
             document.querySelectorAll('#modeSeg .uc-seg-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+            // تب «انتخاب از حسابداری» (شایگان)
+            document.getElementById('shySearch').addEventListener('input', e => {
+                clearTimeout(shyState.timer);
+                shyState.timer = setTimeout(() => { shyState.q = e.target.value.trim(); shyState.page = 1; shyLoad(); }, 300);
+            });
+            document.getElementById('shyRefresh').addEventListener('click', async () => {
+                document.getElementById('shyStatus').textContent = 'در حال بروزرسانی…';
+                try { await UCRM.get('/shygun/customers?refresh=1&per=1'); } catch (e) { }
+                shyState.page = 1; shyLoad();
+            });
+            document.getElementById('shyList').addEventListener('click', e => {
+                const b = e.target.closest('.shy-pick');
+                if (b) shyPick(b.dataset.job, b.dataset.name);
+            });
             document.getElementById('btnAddPhone').addEventListener('click', addPhone);
             document.getElementById('f_phone_in').addEventListener('keydown', e => {
                 if (e.key === 'Enter') { e.preventDefault(); addPhone(); }
