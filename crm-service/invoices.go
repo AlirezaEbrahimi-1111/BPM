@@ -108,9 +108,11 @@ type invoiceOut struct {
 	PartnerMonthPercent      float64  `json:"partner_month_percent"`       // درصد ماه صدور (برای نمایش کنار استثنا)
 	PartnerProfitAmount      int64    `json:"partner_profit_amount"`       // percent × (subtotal - discount)
 	PartnerProfitRecorded    bool     `json:"partner_profit_recorded"`
+	PartnerProfitNeedsFix    bool     `json:"partner_profit_needs_fix"` // سودِ ثبت‌شده بعد از اصلاحیه کهنه شده → «نیاز به اصلاح»
 	SettlementStatus         string   `json:"settlement_status"`
-	PaidAmount               int64    `json:"paid_amount"`   // جمع واریزهای ثبت‌شده (invoice_payments.go)
-	PaymentCount             int      `json:"payment_count"` // تعداد واریزها؛ ۰ + «تسویه شده» = تسویهٔ قدیمی بدون مبلغ
+	PaidAmount               int64    `json:"paid_amount"`    // جمع واریزهای ثبت‌شده (invoice_payments.go)
+	PaymentCount             int      `json:"payment_count"`  // تعداد واریزها؛ ۰ + «تسویه شده» = تسویهٔ قدیمی بدون مبلغ
+	PaymentsBrief            string   `json:"payments_brief"` // «تاریخ|مبلغ|روش;;…» برای تولتیپ تسویهٔ چندمرحله‌ای
 	MoadianStatus            string   `json:"moadian_status"`
 	MoadianCode              string   `json:"moadian_code"`
 
@@ -258,12 +260,12 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 		       DATE_FORMAT(i.created_at,'%Y-%m-%d %H:%i'),
 		       COALESCE(DATE_FORMAT(i.approved_at,'%Y-%m-%d %H:%i'),''),
 		       i.converted_to_id, i.partner_id, COALESCE(p.name,''),
-		       i.partner_profit_recorded, i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,''),
+		       i.partner_profit_recorded, i.partner_profit_needs_fix, i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,''),
 		       i.partner_percent_override,
 		       COALESCE(DATE_FORMAT(i.converted_at,'%Y-%m-%d %H:%i'),''),
 		       TRIM(CONCAT(COALESCE(cu.first_name,''),' ',COALESCE(cu.last_name,''))),
 		       COALESCE(DATE_FORMAT(i.proforma_issue_date,'%Y-%m-%d'),''),
-		       COALESCE(pay.paid, 0), COALESCE(pay.cnt, 0)
+		       COALESCE(pay.paid, 0), COALESCE(pay.cnt, 0), COALESCE(pay.brief,'')
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
 		LEFT JOIN inv_partners  p ON p.id = i.partner_id
@@ -288,16 +290,17 @@ func (s *server) listInvoices(w http.ResponseWriter, r *http.Request) {
 		var sy, sn, conv, pid sql.NullInt64
 		var pctOverride sql.NullFloat64
 		var partnerName string
-		var recordedInt int
+		var recordedInt, needsFixInt int
 		if err := rows.Scan(&o.ID, &o.DocType, &o.Number, &sy, &sn, &o.CustomerID, &o.CustomerName,
 			&o.IssueDate, &o.Status, &o.Source, &o.PaymentType, &o.Subtotal, &o.DiscountAmount, &o.TaxAmount,
 			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv, &pid, &partnerName,
-			&recordedInt, &o.SettlementStatus, &o.MoadianStatus, &o.MoadianCode, &pctOverride,
-			&o.ConvertedAt, &o.ConvertedBy, &o.ProformaDate, &o.PaidAmount, &o.PaymentCount); err != nil {
+			&recordedInt, &needsFixInt, &o.SettlementStatus, &o.MoadianStatus, &o.MoadianCode, &pctOverride,
+			&o.ConvertedAt, &o.ConvertedBy, &o.ProformaDate, &o.PaidAmount, &o.PaymentCount, &o.PaymentsBrief); err != nil {
 			writeErr(w, http.StatusInternalServerError, "خطای دیتابیس")
 			return
 		}
 		o.PartnerProfitRecorded = recordedInt == 1
+		o.PartnerProfitNeedsFix = needsFixInt == 1
 		if sy.Valid {
 			v := int(sy.Int64)
 			o.SeqYear = &v
@@ -348,7 +351,7 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 	var sy, sn, conv, pid sql.NullInt64
 	var pctOverride sql.NullFloat64
 	var partnerName, settlement, moadian, mcode string
-	var recordedInt int
+	var recordedInt, needsFixInt int
 	err := s.db.QueryRow(`
 		SELECT i.id, i.doc_type, COALESCE(i.number,''), i.seq_year, i.seq_no,
 		       i.customer_id, COALESCE(c.name,'—'), COALESCE(i.issue_date,''),
@@ -357,7 +360,7 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 		       DATE_FORMAT(i.created_at,'%Y-%m-%d %H:%i'),
 		       COALESCE(DATE_FORMAT(i.approved_at,'%Y-%m-%d %H:%i'),''),
 		       i.converted_to_id,
-		       i.partner_id, COALESCE(p.name,''), i.partner_profit_recorded,
+		       i.partner_id, COALESCE(p.name,''), i.partner_profit_recorded, i.partner_profit_needs_fix,
 		       i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,''),
 		       i.partner_percent_override
 		FROM inv_invoices i
@@ -367,7 +370,7 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 		Scan(&o.ID, &o.DocType, &o.Number, &sy, &sn, &o.CustomerID, &o.CustomerName,
 			&o.IssueDate, &o.Status, &o.Source, &o.PaymentType, &o.Subtotal, &o.DiscountAmount, &o.TaxAmount,
 			&o.TotalAmount, &o.Note, &o.CreatedAt, &o.ApprovedAt, &conv,
-			&pid, &partnerName, &recordedInt, &settlement, &moadian, &mcode, &pctOverride)
+			&pid, &partnerName, &recordedInt, &needsFixInt, &settlement, &moadian, &mcode, &pctOverride)
 	if err == sql.ErrNoRows {
 		writeErr(w, http.StatusNotFound, "فاکتور یافت نشد")
 		return
@@ -395,6 +398,7 @@ func (s *server) getInvoice(w http.ResponseWriter, r *http.Request) {
 		o.PartnerID = &v
 		o.PartnerName = partnerName
 		o.PartnerProfitRecorded = recordedInt == 1
+		o.PartnerProfitNeedsFix = needsFixInt == 1
 
 		var jy, jm int
 		if _, t := parseIssueDate(o.IssueDate); !t.IsZero() {
@@ -985,10 +989,13 @@ func (s *server) revertInvoiceToDraft(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "برگرداندن موجودی ناموفق بود")
 		return
 	}
+	// اگر سود همکار قبلاً «ثبت شده» بود، اصلاحیه آن را کهنه می‌کند →
+	// «نیاز به اصلاح» (recorded همان ۱ می‌ماند تا بدانیم قبلاً ثبت شده بود).
 	if _, err := tx.Exec(`
 		UPDATE inv_invoices
 		SET status = 'draft', approved_by = NULL, approved_at = NULL,
-		    reverted_at = NOW(), reverted_by = ?, revert_count = revert_count + 1
+		    reverted_at = NOW(), reverted_by = ?, revert_count = revert_count + 1,
+		    partner_profit_needs_fix = partner_profit_recorded
 		WHERE id = ?`, u.ID, id); err != nil {
 		writeErr(w, http.StatusInternalServerError, "برگرداندن به پیش‌نویس ناموفق بود")
 		return

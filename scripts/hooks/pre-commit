@@ -1,0 +1,42 @@
+#!/bin/sh
+# ───────────────────────────────────────────────────────────────────
+#  هوکِ pre-commit — بامپِ خودکارِ نسخهٔ فوتر در هر کامیت.
+#  خواستهٔ صریح کاربر (۱۴۰۵/۰۸/۱۰): «هربار که کامیت شد، فوتر بامپ بشه».
+#  این هوک pages/footer.php را با scripts/bump-version.php بامپ و stage
+#  می‌کند تا در همان کامیت بیاید — چه کامیت دستی، چه از ابزار.
+#
+#  فعال‌سازی (یک‌بار روی هر کلون):  git config core.hooksPath scripts/hooks
+#  (منبعِ هوک در خودِ ریپوست تا پایدار/قابل‌ردیابی بماند.)
+# ───────────────────────────────────────────────────────────────────
+
+# روی سرور پروداکشن هرگز اجرا نشود (bump-version.php هم خودش رد می‌کند؛
+# کامیت روی سرور رخ نمی‌دهد ولی محض احتیاط).
+case "$(pwd)" in
+  /var/www/*) exit 0 ;;
+esac
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+# یافتن php: اول PATH، بعد مسیرهای رایج XAMPP روی ویندوز.
+PHP=""
+if command -v php >/dev/null 2>&1; then
+  PHP="php"
+else
+  for c in /d/Software/xampp/php/php.exe /c/xampp/php/php.exe "/c/Program Files/php/php.exe"; do
+    if [ -x "$c" ]; then PHP="$c"; break; fi
+  done
+fi
+
+if [ -z "$PHP" ]; then
+  echo "⚠️  pre-commit: php پیدا نشد؛ بامپ فوتر رد شد (کامیت ادامه می‌یابد)." >&2
+  exit 0
+fi
+
+# بامپ (نسخه + تاریخِ تولتیپ) و stage کردنِ همان فایل در این کامیت.
+if "$PHP" "$ROOT/scripts/bump-version.php"; then
+  git add "$ROOT/pages/footer.php"
+else
+  echo "⚠️  pre-commit: بامپ فوتر ناموفق بود؛ کامیت ادامه می‌یابد." >&2
+fi
+
+exit 0

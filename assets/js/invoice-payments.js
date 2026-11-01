@@ -60,8 +60,69 @@ var InvoicePayments = window.InvoicePayments || (function () {
         }
     }
 
+    // brief سرور («تاریخ|مبلغ|روش;;…») → خطوطِ خوانا برای تولتیپ، هر واریز یک خط
+    function briefToLines(brief) {
+        if (!brief) return [];
+        return brief.split(';;').map(function (p, i) {
+            var a = p.split('|'); // [date, amount, method]
+            var line = fa(i + 1) + ') ' + jDate(a[0]) + ' — ' + money(a[1]) + ' ریال';
+            if (a[2] && METHOD[a[2]]) line += ' — ' + METHOD[a[2]];
+            return line;
+        });
+    }
+
+    // تولتیپ مشکیِ مشترک (به body می‌چسبد تا AG Grid برشش ندهد). یک‌بار راه‌اندازی می‌شود.
+    function initTip() {
+        if (window.__ipmTipReady) return;
+        window.__ipmTipReady = true;
+        var s = document.createElement('style');
+        s.id = 'ipm-tip-style';
+        s.textContent =
+            '.ipm-tip{position:fixed;z-index:4000;max-width:340px;background:#111827;color:#fff;' +
+            'font-size:.72rem;line-height:1.75;padding:7px 11px;border-radius:8px;' +
+            'box-shadow:0 8px 28px rgba(0,0,0,.4);white-space:pre-line;pointer-events:none;' +
+            'opacity:0;transition:opacity .12s;direction:rtl;text-align:right}' +
+            '.ipm-tip.show{opacity:1}[data-ipm-tip]{cursor:pointer}';
+        document.head.appendChild(s);
+
+        var tip = document.createElement('div');
+        tip.className = 'ipm-tip';
+        document.body.appendChild(tip);
+        var cur = null;
+
+        function place(e) {
+            var pad = 12, w = tip.offsetWidth, h = tip.offsetHeight;
+            var x = e.clientX - w - pad;           // RTL: سمت چپِ نشانگر
+            if (x < 6) x = e.clientX + pad;
+            var y = e.clientY + pad;
+            if (y + h > window.innerHeight - 6) y = e.clientY - h - pad;
+            if (y < 6) y = 6;
+            tip.style.left = x + 'px';
+            tip.style.top = y + 'px';
+        }
+        function hide() { if (cur) { cur = null; tip.classList.remove('show'); } }
+
+        document.addEventListener('mouseover', function (e) {
+            var t = e.target.closest ? e.target.closest('[data-ipm-tip]') : null;
+            if (!t || t === cur) return;
+            cur = t;
+            tip.textContent = t.getAttribute('data-ipm-tip') || '';
+            tip.classList.add('show');
+            place(e);
+        });
+        document.addEventListener('mousemove', function (e) { if (cur) place(e); });
+        document.addEventListener('mouseout', function (e) {
+            if (!cur) return;
+            var to = e.relatedTarget;
+            if (to && to.closest && to.closest('[data-ipm-tip]') === cur) return;
+            hide();
+        });
+        document.addEventListener('scroll', hide, true); // اسکرول → تولتیپ بسته شود
+    }
+
     // ── ستون «تسویه» جدول ──
     function cellHtml(row, onclickJs) {
+        initTip();
         var st = row.settlement_status || 'unsettled';
         var total = Number(row.total_amount != null ? row.total_amount : row.invoice_amount) || 0;
         var paid = Number(row.paid_amount) || 0;
@@ -74,8 +135,15 @@ var InvoicePayments = window.InvoicePayments || (function () {
         }
         var tip = row.status === 'cancelled' ? 'فاکتور باطل‌شده' :
             (count ? 'برای دیدن واریزها کلیک کنید' : 'برای ثبت واریز کلیک کنید');
+        // تولتیپ مشکیِ «هر واریز در یک خط» روی خودِ بج (تسویهٔ چندمرحله‌ای)
+        var lines = briefToLines(row.payments_brief);
+        var badgeTip = '';
+        if (lines.length) {
+            tip = ''; // تولتیپِ سفیدِ سیستم خاموش؛ تولتیپ مشکی جایش را می‌گیرد
+            badgeTip = ' data-ipm-tip="' + esc('واریزها:\n' + lines.join('\n')) + '"';
+        }
         return '<span class="ipm-cell"' + (onclickJs ? ' role="button" onclick="' + esc(onclickJs) + '"' : '') +
-            ' title="' + tip + '"><span class="pm-badge ' + st + '">' + (LABEL[st] || st) + '</span>' +
+            (tip ? ' title="' + esc(tip) + '"' : '') + '><span class="pm-badge ' + st + '"' + badgeTip + '>' + (LABEL[st] || st) + '</span>' +
             (sub ? '<span class="ipm-sub' + (count ? '' : ' warn') + '">' + sub + '</span>' : '') + '</span>';
     }
 

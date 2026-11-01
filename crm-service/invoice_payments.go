@@ -23,7 +23,11 @@ import (
 )
 
 // جمع و تعداد واریزهای فعال هر فاکتور — برای LEFT JOIN در فهرست فاکتورها و گزارش همکاران
-const paymentSumsSQL = `SELECT invoice_id, SUM(amount) AS paid, COUNT(*) AS cnt
+// brief = فهرست فشردهٔ واریزها «تاریخ|مبلغ|روش» جداشده با ;; (مرتب بر اساس تاریخ) —
+// برای تولتیپِ «هر واریز در یک خط» روی بج تسویه در فهرست فاکتورها و گزارش همکاران.
+const paymentSumsSQL = `SELECT invoice_id, SUM(amount) AS paid, COUNT(*) AS cnt,
+		GROUP_CONCAT(CONCAT_WS('|', DATE_FORMAT(pay_date,'%Y-%m-%d'), amount, COALESCE(method,''))
+			ORDER BY pay_date, id SEPARATOR ';;') AS brief
 	FROM inv_invoice_payments WHERE is_deleted = 0 GROUP BY invoice_id`
 
 var paymentMethods = map[string]bool{"cash": true, "card": true, "cheque": true, "transfer": true}

@@ -122,6 +122,29 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             color: #34d399;
         }
 
+        /* «نیاز به اصلاح»: بجِ نارنجیِ کلیک‌پذیر (دکمه) برای سودِ کهنه‌شده بعد از اصلاحیه */
+        button.profit-st.needfix {
+            font: inherit;
+            font-size: 11px;
+            font-weight: 700;
+            color: #b45309;
+            background: rgba(245, 158, 11, .14);
+            border: 1px solid rgba(245, 158, 11, .38);
+            border-radius: 6px;
+            padding: 1px 7px;
+            cursor: pointer;
+        }
+
+        button.profit-st.needfix:hover {
+            background: rgba(245, 158, 11, .26);
+        }
+
+        :root[data-theme="dark"] button.profit-st.needfix {
+            color: #fbbf24;
+            background: rgba(245, 158, 11, .18);
+            border-color: rgba(245, 158, 11, .42);
+        }
+
         :root[data-theme="dark"] .ag-action-btn {
             background: var(--surface);
             border-color: var(--border-soft);
@@ -569,11 +592,13 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 headerName: 'ثبت سود',
                 field: 'partner_profit_recorded',
                 width: 110,
-                valueGetter: p => !hasPartnerProfit(p.data) ? null : (p.data.partner_profit_recorded ? 1 : 0),
+                valueGetter: p => !hasPartnerProfit(p.data) ? null : (p.data.partner_profit_needs_fix ? 2 : (p.data.partner_profit_recorded ? 1 : 0)),
                 cellRenderer: p => {
                     const d = p.data;
                     if (d.doc_type === 'proforma') return '';
                     if (!d.partner_id) return '—';
+                    // سودِ ثبت‌شده‌ای که بعد از اصلاحیه کهنه شده → دکمهٔ «نیاز به اصلاح» (ثبت دوباره)
+                    if (d.partner_profit_needs_fix) return `<button class="profit-st needfix" title="سود این فاکتور بعد از اصلاحیه کهنه شده؛ کلیک کنید تا اصلاحِ آن در حسابداری ثبت شود" onclick="markProfitRecorded(${d.id})">نیاز به اصلاح</button>`;
                     if (d.partner_profit_recorded) return '<span class="profit-st done">ثبت شده</span>';
                     if (d.status === 'cancelled') return '<span class="profit-st">ثبت نشده</span>';
                     return `<button class="ag-action-btn profit" title="ثبت سود همکار" onclick="markProfitRecorded(${d.id})"><i class="bi bi-journal-plus"></i></button>`;
@@ -683,6 +708,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 case 'settled': return r.settlement_status === 'settled';
                 case 'unsettled': return (r.settlement_status || 'unsettled') !== 'settled';
                 case 'profit_unrecorded': return hasPartnerProfit(r) && !r.partner_profit_recorded;
+                case 'profit_needsfix': return hasPartnerProfit(r) && !!r.partner_profit_needs_fix;
                 case 'moadian_unregistered': return r.doc_type !== 'proforma' && (r.moadian_status || 'unregistered') !== 'registered';
             }
             return true;
@@ -731,7 +757,11 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 showToast('این فاکتور در سامانه‌ی مودیان ثبت شده و قابل ویرایش نیست. برای اصلاح، آن را باطل کنید و فاکتور جدید صادر کنید.', 'error');
                 return;
             }
-            uiConfirm('این فاکتور برای ویرایش به پیش‌نویس برگردد؟ موجودی کالاهایش به انبار برمی‌گردد، شماره‌ی فاکتور حفظ می‌شود و بعد از ویرایش باید دوباره «تأیید» شود.', async () => {
+            // هشدار: اگر سود همکار قبلاً ثبت شده باشد، اصلاحیه آن را کهنه می‌کند و باید دوباره در حسابداری اصلاح شود
+            const profitWarn = (row && row.partner_profit_recorded)
+                ? ' ⚠️ توجه: سود این فاکتور قبلاً در حسابداری ثبت شده؛ پس از اصلاح، وضعیتش «نیاز به اصلاح» می‌شود و باید دوباره در حسابداری اصلاح/ثبت شود.'
+                : '';
+            uiConfirm('این فاکتور برای ویرایش به پیش‌نویس برگردد؟ موجودی کالاهایش به انبار برمی‌گردد، شماره‌ی فاکتور حفظ می‌شود و بعد از ویرایش باید دوباره «تأیید» شود.' + profitWarn, async () => {
                 try {
                     await apiSend('POST', '/inv/invoices/' + id + '/revert-to-draft');
                     showToast('به پیش‌نویس برگشت', 'success');
@@ -796,21 +826,26 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
         // (همان PATCH و فیلدِ partner_profit_recorded که سوئیچ مودال تسویه می‌فرستد).
         function markProfitRecorded(id) {
             const row = allRows.find(r => r.id === id);
-            if (!row || !hasPartnerProfit(row) || row.partner_profit_recorded) return;
+            // ثبت‌نشده → ثبت؛ یا «نیاز به اصلاح» → ثبتِ دوبارهٔ اصلاح. ثبت‌شدهٔ سالم کاری ندارد.
+            if (!row || !hasPartnerProfit(row) || (row.partner_profit_recorded && !row.partner_profit_needs_fix)) return;
             const who = row.partner_name ? ' (' + esc(row.partner_name) + ')' : '';
             const no = row.number ? ' ' + faDigits(row.number) : '';
-            uiConfirm(`آیا سود همکار${who} برای فاکتور${no} ثبت شود؟`, async () => {
+            const q = row.partner_profit_needs_fix
+                ? `این فاکتور بعد از ثبتِ سود اصلاحیه خورده است. آیا سودِ اصلاح‌شدهٔ همکار${who} برای فاکتور${no} در حسابداری ثبت شد؟`
+                : `آیا سود همکار${who} برای فاکتور${no} ثبت شود؟`;
+            uiConfirm(q, async () => {
                 try {
                     await apiSend('PATCH', '/inv/invoices/' + id + '/partner-status', {
                         partner_profit_recorded: true
                     });
                     row.partner_profit_recorded = true;
+                    row.partner_profit_needs_fix = false;
                     AgGridFa.refreshRow(gridApi, row);
                     showToast('سود همکار ثبت شد', 'success');
                 } catch (e) {
                     showToast(e.message || 'خطا', 'error');
                 }
-            }, { yesText: 'بله، ثبت شود', noText: 'انصراف' });
+            }, { yesText: 'بله، ثبت شد', noText: 'انصراف' });
         }
 
         function stEditStatus(id) {
@@ -855,7 +890,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 await apiSend('PATCH', '/inv/invoices/' + stRow.id + '/partner-status', body);
                 stRow.moadian_status = moadian;
                 stRow.moadian_code = moadian === 'registered' ? code : '';
-                if (hasPartnerProfit(stRow)) stRow.partner_profit_recorded = profit;
+                if (hasPartnerProfit(stRow)) { stRow.partner_profit_recorded = profit; stRow.partner_profit_needs_fix = false; }
                 AgGridFa.refreshRow(gridApi, stRow);
                 bootstrap.Modal.getInstance(document.getElementById('stModal')).hide();
                 showToast('ذخیره شد', 'success');
@@ -889,6 +924,7 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                     { value: 'settled', label: 'تسویه شده', group: 'settle' },
                     { value: 'unsettled', label: 'تسویه نشده', group: 'settle' },
                     { value: 'profit_unrecorded', label: 'ثبت نشده سود شایگان', group: 'record' },
+                    { value: 'profit_needsfix', label: 'نیاز به اصلاح سود', group: 'record' },
                     { value: 'moadian_unregistered', label: 'ثبت نشده مودیان', group: 'record' },
                 ],
             });

@@ -400,6 +400,9 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                             <input class="form-check-input m-0" type="checkbox" id="pmStProfit" role="switch" style="margin:0;float:none;cursor:pointer">
                             <label class="form-check-label m-0" for="pmStProfit" style="cursor:pointer;user-select:none">سند سود همکار در حسابداری شایگان ثبت شد</label>
                         </div>
+                        <div id="pmStProfitFix" class="alert alert-warning py-2 mt-2 mb-0" hidden style="font-size:12px">
+                            این فاکتور بعد از ثبتِ سود اصلاحیه خورده است («نیاز به اصلاح»). پس از اصلاحِ سود در حسابداری، همین سوئیچ را دوباره ذخیره کنید تا وضعیت پاک شود.
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">وضعیت تسویه</label>
@@ -803,6 +806,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             document.getElementById('pmStMoadian').value = row.moadian_status || 'unregistered';
             document.getElementById('pmStCode').value = row.moadian_code || '';
             document.getElementById('pmStProfit').checked = !!row.partner_profit_recorded;
+            document.getElementById('pmStProfitFix').hidden = !row.partner_profit_needs_fix;
             pmStToggleCode();
             document.getElementById('pmStAlert').innerHTML = '';
             new bootstrap.Modal(document.getElementById('pmStatusModal')).show();
@@ -832,6 +836,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                     moadian_code: moadian === 'registered' ? code : '',
                 });
                 pmStRow.partner_profit_recorded = profit;
+                pmStRow.partner_profit_needs_fix = false;
                 pmStRow.moadian_status = moadian;
                 pmStRow.moadian_code = moadian === 'registered' ? code : '';
                 AgGridFa.refreshRow(gridApi, pmStRow);
@@ -1005,6 +1010,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                     { value: 'settled', label: 'تسویه شده', group: 'settle' },
                     { value: 'unsettled', label: 'تسویه نشده', group: 'settle' },
                     { value: 'profit_unrecorded', label: 'ثبت نشده سود شایگان', group: 'record' },
+                    { value: 'profit_needsfix', label: 'نیاز به اصلاح سود', group: 'record' },
                     { value: 'moadian_unregistered', label: 'ثبت نشده مودیان', group: 'record' },
                 ],
             });

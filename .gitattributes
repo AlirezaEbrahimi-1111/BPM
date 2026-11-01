@@ -1,0 +1,3 @@
+# هوک‌های گیت باید همیشه LF بمانند (autocrlf=true وگرنه CRLF می‌کند و
+# روی اجرا «bad interpreter» می‌دهد).
+scripts/hooks/* text eol=lf

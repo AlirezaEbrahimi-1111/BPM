@@ -342,8 +342,8 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 		       COALESCE(DATE_FORMAT(i.issue_date,'%Y-%m-%d'), DATE_FORMAT(i.created_at,'%Y-%m-%d')),
 		       i.partner_id, COALESCE(p.name,'—'),
 		       i.subtotal_amount, i.discount_amount, i.tax_amount, i.total_amount,
-		       i.partner_profit_recorded, i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,''),
-		       i.partner_percent_override, COALESCE(pay.paid, 0), COALESCE(pay.cnt, 0)
+		       i.partner_profit_recorded, i.partner_profit_needs_fix, i.settlement_status, i.moadian_status, COALESCE(i.moadian_code,''),
+		       i.partner_percent_override, COALESCE(pay.paid, 0), COALESCE(pay.cnt, 0), COALESCE(pay.brief,'')
 		FROM inv_invoices i
 		LEFT JOIN crm_customers c ON c.id = i.customer_id
 		LEFT JOIN inv_partners  p ON p.id = i.partner_id
@@ -367,15 +367,16 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 			partnerID                      int64
 			partnerName                    string
 			subtotal, discount, tax, total int64
-			recorded                       int
+			recorded, needsFix             int
 			settlement, moadian, mcode     string
 			pctOverride                    sql.NullFloat64
 			paid                           int64
 			payCount                       int
+			brief                          string
 		)
 		if err := rows.Scan(&id, &docType, &number, &status, &customerName, &issueDate,
 			&partnerID, &partnerName, &subtotal, &discount, &tax, &total,
-			&recorded, &settlement, &moadian, &mcode, &pctOverride, &paid, &payCount); err != nil {
+			&recorded, &needsFix, &settlement, &moadian, &mcode, &pctOverride, &paid, &payCount, &brief); err != nil {
 			writeDBErr(w, "partnerReport", err)
 			return
 		}
@@ -401,29 +402,31 @@ func (s *server) partnerReport(w http.ResponseWriter, r *http.Request) {
 		profit := int64(math.Round(float64(preTax) * pct / 100))
 
 		items = append(items, map[string]any{
-			"id":                      id,
-			"doc_type":                docType,
-			"number":                  number,
-			"status":                  status,
-			"customer_name":           customerName,
-			"issue_date":              issueDate,
-			"partner_id":              partnerID,
-			"partner_name":            partnerName,
-			"jy":                      jy,
-			"jm":                      jm,
-			"percent":                 pct,
-			"percent_is_override":     isOverride,
-			"month_percent":           monthPct,
-			"invoice_amount":          total,
-			"pre_tax_amount":          preTax,
-			"tax_amount":              tax,
-			"profit_amount":           profit,
-			"partner_profit_recorded": recorded == 1,
-			"settlement_status":       settlement,
-			"paid_amount":             paid,
-			"payment_count":           payCount,
-			"moadian_status":          moadian,
-			"moadian_code":            mcode,
+			"id":                       id,
+			"doc_type":                 docType,
+			"number":                   number,
+			"status":                   status,
+			"customer_name":            customerName,
+			"issue_date":               issueDate,
+			"partner_id":               partnerID,
+			"partner_name":             partnerName,
+			"jy":                       jy,
+			"jm":                       jm,
+			"percent":                  pct,
+			"percent_is_override":      isOverride,
+			"month_percent":            monthPct,
+			"invoice_amount":           total,
+			"pre_tax_amount":           preTax,
+			"tax_amount":               tax,
+			"profit_amount":            profit,
+			"partner_profit_recorded":  recorded == 1,
+			"partner_profit_needs_fix": needsFix == 1,
+			"settlement_status":        settlement,
+			"paid_amount":              paid,
+			"payment_count":            payCount,
+			"payments_brief":           brief,
+			"moadian_status":           moadian,
+			"moadian_code":             mcode,
 		})
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"items": items})
@@ -470,6 +473,8 @@ func (s *server) setInvoicePartnerStatus(w http.ResponseWriter, r *http.Request)
 		}
 		sets = append(sets, "partner_profit_recorded = ?")
 		args = append(args, v)
+		// ثبت/اصلاحِ دوبارهٔ سود، حالتِ «نیاز به اصلاح» را پاک می‌کند
+		sets = append(sets, "partner_profit_needs_fix = 0")
 	}
 
 	newMoadian := curMoadian
@@ -539,9 +544,11 @@ func (s *server) setInvoicePartnerPercent(w http.ResponseWriter, r *http.Request
 
 	var status string
 	var partnerID sql.NullInt64
+	var recorded int
+	var curOv sql.NullFloat64
 	err := s.db.QueryRow(
-		"SELECT status, partner_id FROM inv_invoices WHERE id = ? AND organization_id = ?",
-		id, u.OrgID).Scan(&status, &partnerID)
+		"SELECT status, partner_id, partner_profit_recorded, partner_percent_override FROM inv_invoices WHERE id = ? AND organization_id = ?",
+		id, u.OrgID).Scan(&status, &partnerID, &recorded, &curOv)
 	if err == sql.ErrNoRows {
 		writeErr(w, http.StatusNotFound, "فاکتور یافت نشد")
 		return
@@ -563,13 +570,20 @@ func (s *server) setInvoicePartnerPercent(w http.ResponseWriter, r *http.Request
 	if in.Percent != nil {
 		val = *in.Percent
 	}
+	// آیا درصد واقعاً عوض شد؟ (NULL=درصد ماه در برابر مقدار مشخص)
+	changed := curOv.Valid != (in.Percent != nil) || (curOv.Valid && in.Percent != nil && curOv.Float64 != *in.Percent)
+	// اگر سود همکار قبلاً «ثبت شده» بود و درصد عوض شد → سودِ ثبت‌شده کهنه شد → «نیاز به اصلاح»
+	needsFixSet := ""
+	if recorded == 1 && changed {
+		needsFixSet = ", partner_profit_needs_fix = 1"
+	}
 	if _, err := s.db.Exec(
-		"UPDATE inv_invoices SET partner_percent_override = ? WHERE id = ? AND organization_id = ?",
+		"UPDATE inv_invoices SET partner_percent_override = ?"+needsFixSet+" WHERE id = ? AND organization_id = ?",
 		val, id, u.OrgID); err != nil {
 		writeDBErr(w, "setInvoicePartnerPercent", err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true})
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "profit_needs_fix": recorded == 1 && changed})
 }
 
 // partnerStatusWhere: فیلتر «وضعیت فاکتور» گزارش همکاران — چندانتخابی (status=draft,settled,…، ۱۴۰۵/۰۸/۰۲).
@@ -583,12 +597,13 @@ func partnerStatusWhere(raw string) string {
 		// تسویه‌نشده = هنوز کامل تسویه نشده (شامل «بخشی تسویه شده»)
 		"settled":   "(i.status <> 'cancelled' AND i.settlement_status = 'settled')",
 		"unsettled": "(i.status <> 'cancelled' AND COALESCE(i.settlement_status,'unsettled') <> 'settled')",
-		// سند سود همکار هنوز در شایگان ثبت نشده / هنوز در سامانهٔ مؤدیان ثبت نشده
+		// سند سود همکار هنوز در شایگان ثبت نشده / نیاز به اصلاح (ثبت‌شده ولی فاکتور اصلاحیه خورده) / هنوز در سامانهٔ مؤدیان ثبت نشده
 		"profit_unrecorded":    "(i.status <> 'cancelled' AND COALESCE(i.partner_profit_recorded,0) = 0)",
+		"profit_needsfix":      "(i.status <> 'cancelled' AND COALESCE(i.partner_profit_needs_fix,0) = 1)",
 		"moadian_unregistered": "(i.status <> 'cancelled' AND COALESCE(i.moadian_status,'unregistered') <> 'registered')",
 	}
 	group := map[string]string{"draft": "status", "approved": "status", "cancelled": "status",
-		"settled": "settle", "unsettled": "settle", "profit_unrecorded": "record", "moadian_unregistered": "record"}
+		"settled": "settle", "unsettled": "settle", "profit_unrecorded": "record", "profit_needsfix": "record", "moadian_unregistered": "record"}
 	byGroup := map[string][]string{}
 	order := []string{}
 	seen := map[string]bool{}
