@@ -26,6 +26,8 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
     <script src="<?= asset('../../assets/js/month-filter.js') ?>"></script>
     <script src="<?= asset('../../assets/js/multi-filter.js') ?>"></script>
     <script src="<?= asset('../../assets/js/search-persist.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/cdn/xlsx.full.min.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/grid-excel.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
@@ -49,6 +51,28 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
         .crm-toolbar .spacer {
             flex: 1;
+        }
+
+        /* نوار جمع — همهٔ اعداد با فیلترهای فعلی به‌روز می‌شوند (۱۴۰۵/۰۸/۱۰) */
+        .report-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            font-size: .9rem;
+            margin: .25rem 0 .5rem;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: rgba(142, 87, 254, .07);
+        }
+
+        .report-summary b {
+            letter-spacing: 0;
+            direction: ltr;
+            unicode-bidi: isolate;
+        }
+
+        :root[data-theme="dark"] .report-summary {
+            background: rgba(142, 87, 254, .14);
         }
 
         .ag-action-btn {
@@ -299,7 +323,16 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             <!-- فیلتر ماه (چندانتخابی): پیش‌فرض ماه جاری — assets/js/month-filter.js -->
             <div id="monthFilter" style="width:190px"></div>
             <div class="spacer"></div>
+            <button type="button" class="btn btn-outline-success" id="btnExportXlsx"><i class="bi bi-file-earmark-excel ms-1"></i> خروجی اکسل</button>
             <a class="btn btn-primary" href="/pages/inv-invoice-edit.php"><i class="bi bi-plus-lg ms-1"></i> فاکتور جدید</a>
+        </div>
+
+        <div class="report-summary" id="invSummary">
+            <span>مجموع مبلغ کل: <b id="sInvTotal">۰</b></span>
+            <span>مجموع مبلغ سود: <b id="sInvProfit">۰</b></span>
+            <span>واریز شده: <b id="sInvPaid">۰</b></span>
+            <span>مانده: <b id="sInvRemain">۰</b></span>
+            <span>تعداد فاکتور: <b id="sInvCount">۰</b></span>
         </div>
 
         <div id="invGrid" class="ag-theme-alpine grid-fill inv-grid" style="width:100%;"></div>
@@ -734,8 +767,27 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
                 (r.customer_name || '').toLowerCase().includes(q) ||
                 (r.partner_name || '').toLowerCase().includes(q) ||
                 (isAmount && String(Math.round(Number(r.total_amount) || 0)).includes(qAmount)));
+            renderInvSummary(rows);
             if (keepPage) AgGridFa.setRowsKeepPage(gridApi, rows);
             else gridApi.setGridOption('rowData', rows);
+        }
+
+        // نوار جمع — همهٔ مبالغ با ردیف‌های فیلترشدهٔ فعلی (مبلغ کل، سود همکار، واریز، مانده، تعداد)
+        function renderInvSummary(rows) {
+            let total = 0, profit = 0, paid = 0, remain = 0;
+            rows.forEach(r => {
+                const t = Number(r.total_amount) || 0;
+                const p = Number(r.paid_amount) || 0;
+                total += t;
+                paid += p;
+                if (r.partner_id && r.doc_type !== 'proforma') profit += Number(r.partner_profit_amount) || 0;
+                if (r.status !== 'cancelled') remain += Math.max(0, t - p);
+            });
+            document.getElementById('sInvTotal').textContent = money(total);
+            document.getElementById('sInvProfit').textContent = money(profit);
+            document.getElementById('sInvPaid').textContent = money(paid);
+            document.getElementById('sInvRemain').textContent = money(remain);
+            document.getElementById('sInvCount').textContent = faDigits(rows.length);
         }
 
         function approveInv(id) {
@@ -899,11 +951,50 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
             }
         }
 
+        // ── خروجی اکسل: همان ستون‌های جدول + ردیف‌های فیلترشدهٔ فعلی ──
+        function invSettleText(d) {
+            var L = (window.InvoicePayments && InvoicePayments.LABEL) ||
+                { unsettled: 'تسویه نشده', partial: 'بخشی تسویه شده', settled: 'تسویه شده' };
+            var st = d.settlement_status || 'unsettled';
+            var t = L[st] || st;
+            var paid = Number(d.paid_amount) || 0, total = Number(d.total_amount) || 0;
+            if (st !== 'settled' && paid > 0) t += ' — واریز ' + money(paid) + ' مانده ' + money(Math.max(0, total - paid));
+            return t;
+        }
+        function invProfitRecordedText(d) {
+            if (d.doc_type === 'proforma' || !d.partner_id) return '';
+            if (d.partner_profit_needs_fix) return 'نیاز به اصلاح';
+            if (d.partner_profit_recorded) return 'ثبت شده';
+            return 'ثبت نشده';
+        }
+        function exportInvoicesExcel() {
+            GridExcel.export({
+                api: gridApi,
+                sheet: 'فاکتورها',
+                filename: 'فاکتورها.xlsx',
+                cols: [
+                    { h: 'شماره', v: d => d.number || 'پیش‌نویس', w: 14 },
+                    { h: 'مشتری', v: d => d.customer_name || '', w: 28 },
+                    { h: 'نوع', v: d => TYPE_LABEL[d.doc_type] || d.doc_type || '', w: 12 },
+                    { h: 'تاریخ صدور', v: d => jDate(d.issue_date || (d.created_at || '').split(' ')[0]), w: 14 },
+                    { h: 'مبلغ کل (ریال)', v: d => d.total_amount, money: true, w: 18 },
+                    { h: 'همکار', v: d => d.partner_id ? (d.partner_name || '') : '', w: 20 },
+                    { h: 'درصد سود', v: d => (d.doc_type === 'proforma' || !d.partner_id) ? '' : (Number(d.partner_percent) || 0) + '٪' + (d.partner_percent_is_override ? ' (اختصاصی)' : ''), w: 12 },
+                    { h: 'مبلغ سود (ریال)', v: d => (d.doc_type === 'proforma' || !d.partner_id) ? '' : d.partner_profit_amount, money: true, w: 16 },
+                    { h: 'ثبت سود', v: invProfitRecordedText, w: 12 },
+                    { h: 'تسویه', v: invSettleText, w: 28 },
+                    { h: 'مودیان', v: d => d.moadian_status === 'registered' ? ('ثبت‌شده' + (d.moadian_code ? ' - ' + d.moadian_code : '')) : 'ثبت‌نشده', w: 22 },
+                    { h: 'وضعیت', v: d => d.converted_to_id ? 'تبدیل‌شده' : (ST_LABEL[d.status] || d.status || ''), w: 14 },
+                ],
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             if (!tok()) {
                 location.href = '../index.php';
                 return;
             }
+            document.getElementById('btnExportXlsx').addEventListener('click', exportInvoicesExcel);
             gridApi = agGrid.createGrid(document.getElementById('invGrid'), gridOptions);
             // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
             AgGridFa.rowContextMenu(document.getElementById('invGrid'), gridApi);

@@ -28,6 +28,8 @@ if (!crmReportAllowed($db, (int) $user_id)) {
     <script src="<?= asset('../../assets/js/partner-percent-modal.js') ?>"></script>
     <script src="<?= asset('../../assets/js/assignee-picker.js') ?>"></script>
     <script src="<?= asset('../../assets/js/multi-filter.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/cdn/xlsx.full.min.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/grid-excel.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
     <script src="<?= asset('../../assets/js/invoice-payments.js') ?>"></script>
@@ -302,13 +304,12 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             </div>
             <div class="fld">
                 <label>ماه</label>
-                <select id="fMonth" class="form-select">
-                    <option value="">همهٔ ماه‌ها</option>
-                </select>
+                <!-- چندانتخابی (assets/js/multi-filter.js) — سمت کاربر روی دادهٔ کلِ سال -->
+                <div id="fMonth" style="min-width:190px"></div>
             </div>
             <div class="fld">
                 <label>همکار</label>
-                <!-- انتخاب همکار با جستجو — همان AssigneePicker فیلترهای کارها (درخواست ۱۴۰۵/۰۸/۰۲) -->
+                <!-- چندانتخابی — سمت کاربر؛ گزینه‌ها بعد از loadPartners ساخته می‌شوند -->
                 <div id="fPartnerPicker" style="min-width:210px"></div>
             </div>
             <!-- فیلتر «نوع سند» حذف شد: پیش‌فاکتور سود همکار ندارد و در این گزارش نمی‌آید (۱۴۰۵/۰۸/۰۱) -->
@@ -323,6 +324,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 <input type="text" id="pmSearch" class="form-control" placeholder="شماره، مشتری، همکار یا مبلغ" autocomplete="off" style="min-width:210px">
             </div>
             <div class="spacer"></div>
+            <button class="btn btn-outline-success" id="btnExportXlsx"><i class="bi bi-file-earmark-excel ms-1"></i> خروجی اکسل</button>
             <button class="btn btn-outline-secondary" id="btnManagePartners"><i class="bi bi-gear ms-1"></i> مدیریت همکاران و درصدها</button>
         </div>
 
@@ -741,19 +743,15 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             overlayNoRowsTemplate: '<span class="text-muted">ردیفی برای این فیلترها نیست</span>',
         };
 
-        // همکار انتخاب‌شده در فیلتر ('' = همه) — assets/js/assignee-picker.js
-        let filterPartnerId = '', statusFilter = null;
-        let partnerPicker = null;
+        // ماه و همکار سمتِ کاربر فیلتر می‌شوند (چندانتخابی)؛ فقط سال و وضعیت به سرور می‌روند
+        // و دادهٔ کلِ همان سال یک‌بار گرفته می‌شود (مثل معماری صفحهٔ فاکتورها).
+        let statusFilter = null, monthFilter = null, partnerFilter = null;
 
         function qs() {
             const p = new URLSearchParams();
             const y = document.getElementById('fYear').value;
-            const m = document.getElementById('fMonth').value;
-            const pr = filterPartnerId;
             const st = statusFilter ? statusFilter.getSelected().join(',') : '';
             if (y) p.set('jy', y);
-            if (m) p.set('jm', m);
-            if (pr) p.set('partner_id', pr);
             if (st) p.set('status', st);
             return p.toString();
         }
@@ -778,22 +776,65 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             document.getElementById('sCount').textContent = faDigits(rows.length);
         }
 
-        // جستجوی سمت کاربر: شماره/مشتری/همکار + مبلغ (فاکتور و سود) بدون جداکنندهٔ هزارگان
-        function pmApplySearch() {
+        // فیلترِ سمت کاربر: ماه (چندانتخابی) + همکار (چندانتخابی) + جستجو (شماره/مشتری/همکار
+        // + مبلغِ فاکتور و سود بدون جداکنندهٔ هزارگان). خلاصه و خروجی اکسل هم با همین زنده‌اند.
+        function pmApplyClientFilter() {
             const q = String(document.getElementById('pmSearch').value || '')
                 .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
                 .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
                 .trim().toLowerCase();
             const qAmount = q.replace(/[,٬،\s]/g, '');
             const isAmount = /^\d+$/.test(qAmount);
-            const rows = !q ? allRows : allRows.filter(r =>
-                String(r.number || '').toLowerCase().includes(q) ||
-                (r.customer_name || '').toLowerCase().includes(q) ||
-                (r.partner_name || '').toLowerCase().includes(q) ||
-                (isAmount && (String(Math.round(Number(r.invoice_amount) || 0)).includes(qAmount) ||
-                    String(Math.round(Number(r.profit_amount) || 0)).includes(qAmount))));
+            const months = monthFilter ? monthFilter.getSelected() : [];
+            const partnerIds = partnerFilter ? partnerFilter.getSelected() : [];
+            const rows = allRows.filter(r => {
+                if (months.length && months.indexOf(String(r.jm)) === -1) return false;
+                if (partnerIds.length && partnerIds.indexOf(String(r.partner_id)) === -1) return false;
+                if (q) {
+                    const hit = String(r.number || '').toLowerCase().includes(q) ||
+                        (r.customer_name || '').toLowerCase().includes(q) ||
+                        (r.partner_name || '').toLowerCase().includes(q) ||
+                        (isAmount && (String(Math.round(Number(r.invoice_amount) || 0)).includes(qAmount) ||
+                            String(Math.round(Number(r.profit_amount) || 0)).includes(qAmount)));
+                    if (!hit) return false;
+                }
+                return true;
+            });
             gridApi.setGridOption('rowData', rows);
             renderSummary(rows);
+        }
+
+        // ── خروجی اکسل: همان ستون‌های جدول + ردیف‌های فیلترشدهٔ فعلی ──
+        function pmSettleText(d) {
+            var L = (window.InvoicePayments && InvoicePayments.LABEL) ||
+                { unsettled: 'تسویه نشده', partial: 'بخشی تسویه شده', settled: 'تسویه شده' };
+            var st = d.settlement_status || 'unsettled';
+            var t = L[st] || st;
+            var paid = Number(d.paid_amount) || 0, total = Number(d.invoice_amount) || 0;
+            if (st !== 'settled' && paid > 0) t += ' — واریز ' + money(paid) + ' مانده ' + money(Math.max(0, total - paid));
+            return t;
+        }
+
+        function pmExportExcel() {
+            const y = document.getElementById('fYear').value || '';
+            const m = document.getElementById('fMonth').value || '';
+            GridExcel.export({
+                api: gridApi,
+                sheet: 'گزارش همکاران',
+                filename: 'گزارش-همکاران' + (y ? '-' + y : '') + (m ? '-' + m : '') + '.xlsx',
+                cols: [
+                    { h: 'نوع سند', v: d => DOC_LABEL[d.doc_type] || d.doc_type || '', w: 12 },
+                    { h: 'شمارهٔ فاکتور', v: d => d.number || (ST_LABEL[d.status] || ''), w: 14 },
+                    { h: 'مشتری', v: d => d.customer_name || '', w: 28 },
+                    { h: 'تاریخ صدور', v: d => jDate(d.issue_date), w: 14 },
+                    { h: 'همکار', v: d => d.partner_name || '', w: 22 },
+                    { h: 'درصد سود', v: d => (Number(d.percent) || 0) + '٪' + (d.percent_is_override ? ' (اختصاصی)' : ''), w: 12 },
+                    { h: 'مبلغ فاکتور (ریال)', v: d => d.invoice_amount, money: true, w: 18 },
+                    { h: 'مبلغ سود (ریال)', v: d => d.profit_amount, money: true, w: 18 },
+                    { h: 'تسویه', v: d => pmSettleText(d), w: 28 },
+                    { h: 'مودیان', v: d => d.moadian_status === 'registered' ? ('ثبت‌شده' + (d.moadian_code ? ' - ' + d.moadian_code : '')) : 'ثبت‌نشده', w: 22 },
+                ],
+            });
         }
 
         async function loadReport() {
@@ -801,7 +842,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             try {
                 const d = await apiGet('/inv/partner-report?' + qs());
                 allRows = d.items || [];
-                pmApplySearch(); // ردیف‌ها + خلاصه را با درنظرگرفتن جستجوی فعلی می‌چیند
+                pmApplyClientFilter(); // ردیف‌ها + خلاصه را با فیلترهای سمت کاربر (ماه/همکار/جستجو) می‌چیند
             } catch (e) {
                 showToast(e.message || 'خطا در بارگذاری', 'error');
                 gridApi.setGridOption('rowData', []);
@@ -887,10 +928,14 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             } catch (e) {}
             partners = out;
 
-            // همکار غیرفعال با برچسب «غیرفعال» زیر نامش (از مسیر «واحد» خود picker)
-            if (partnerPicker) partnerPicker.updateData(
-                partners.map(p => ({ id: p.id, full_name: p.name || '', activity_section: p.is_active ? '' : 'inactive' })),
-                undefined, { inactive: 'غیرفعال' });
+            // فیلترِ همکار (چندانتخابی، سمت کاربر) — گزینه‌ها از فهرست همکاران؛ انتخابِ قبلی حفظ می‌شود
+            const partnerOpts = partners.map(p => ({ value: String(p.id), label: (p.name || '') + (p.is_active ? '' : ' (غیرفعال)') }));
+            const prevSel = partnerFilter ? partnerFilter.getSelected() : [];
+            partnerFilter = MultiFilter.create({
+                container: '#fPartnerPicker', allLabel: 'همهٔ همکاران', unit: 'همکار',
+                onChange: pmApplyClientFilter, options: partnerOpts,
+            });
+            if (prevSel.length) partnerFilter.setSelected(prevSel);
 
             const sp = document.getElementById('pmSelPartner');
             const keep2 = sp.value;
@@ -1011,13 +1056,6 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             yearOptions(document.getElementById('fYear'), CUR_JY - 3, CUR_JY + 1, CUR_JY);
             // مودال: سال جاری پیش‌فرض، فقط سال قبل تا سال بعد
             yearOptions(document.getElementById('pmSelYear'), CUR_JY - 1, CUR_JY + 1, CUR_JY);
-            const fm = document.getElementById('fMonth');
-            for (let m = 1; m <= 12; m++) {
-                const o = document.createElement('option');
-                o.value = m;
-                o.textContent = MONTHS[m - 1];
-                fm.appendChild(o);
-            }
 
             gridApi = agGrid.createGrid(document.getElementById('repGrid'), gridOptions);
             // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
@@ -1038,30 +1076,27 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                     { value: 'moadian_unregistered', label: 'ثبت نشده مودیان', group: 'record' },
                 ],
             });
-            ['fYear', 'fMonth'].forEach(id =>
-                document.getElementById(id).addEventListener('change', loadReport));
+            // ماه: چندانتخابی، سمت کاربر (روی دادهٔ کلِ سال) — سال و وضعیت از سرور می‌آیند
+            monthFilter = MultiFilter.create({
+                container: '#fMonth', allLabel: 'همهٔ ماه‌ها', unit: 'ماه',
+                persistKey: 'inv-partner-report-month',
+                onChange: pmApplyClientFilter,
+                options: MONTHS.map((nm, i) => ({ value: String(i + 1), label: nm })),
+            });
+            // فقط سال داده را از سرور تازه می‌کند؛ ماه سمت کاربر است
+            document.getElementById('fYear').addEventListener('change', loadReport);
             // جستجوی سمت کاربر (روی ردیف‌های بارگذاری‌شده) — بدون رفت‌وبرگشت به سرور
             var pmSearchTimer = null;
             document.getElementById('pmSearch').addEventListener('input', function () {
                 clearTimeout(pmSearchTimer);
-                pmSearchTimer = setTimeout(pmApplySearch, 200);
-            });
-            partnerPicker = AssigneePicker.create({
-                container: '#fPartnerPicker',
-                users: [],
-                showSections: false,
-                placeholder: 'همهٔ همکاران', // = حالت فیلتر (بدون «خودم»)
-                usersGroupLabel: 'همکاران',
-                onSelect: (type, value) => {
-                    filterPartnerId = value || '';
-                    loadReport();
-                }
+                pmSearchTimer = setTimeout(pmApplyClientFilter, 200);
             });
 
             document.getElementById('btnManagePartners').addEventListener('click', () => {
                 pmAlert('');
                 new bootstrap.Modal(document.getElementById('pmModal')).show();
             });
+            document.getElementById('btnExportXlsx').addEventListener('click', pmExportExcel);
             document.getElementById('pmModal').addEventListener('shown.bs.modal', () => {
                 document.getElementById('pmSelPartner').focus();
             });

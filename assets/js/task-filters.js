@@ -722,6 +722,7 @@ window.TF = (function () {
         effectiveDueMs,
         displayDue,
         remainingBadge,
+        continuousLateCount,
 
         // وضعیت پایه
         isDone,

@@ -4172,7 +4172,9 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             // تأخیر برای این نوع، تعداد دوره‌های معوقه‌ست (هم‌راستا با
             // بج «X دوره معوقه» در task-detail.php)
             if (t.task_type === 'continuous') {
-                const op = t.overdue_periods || 0;
+                // شامل دورهٔ جاریِ موعدگذشته هم هست (منبع واحد با TF.isOverdue/remainingBadge) —
+                // وگرنه کاری که فقط دورهٔ جاری‌اش دیر شده، بجِ معوقه‌اش خالی می‌ماند
+                const op = TF.continuousLateCount(t);
                 return op > 0 ? `${toFa(op)} دوره معوقه` : '';
             }
             if (t.working_days_delayed) {
