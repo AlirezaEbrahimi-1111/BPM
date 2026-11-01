@@ -2223,7 +2223,11 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         ${step.completed_at ? `<div><span class="lbl">اتمام: </span>${formatDateTime(step.completed_at)}</div>` : ''}
                         ${step.completed_by_first_name ? `<div><span class="lbl">انجام‌دهنده: </span>${esc(step.completed_by_first_name)} ${esc(step.completed_by_last_name)}</div>` : ''}
                         ${step.time_limit_hours ? `<div><span class="lbl">زمان مجاز: </span>${formatDuration(step.time_limit_hours * 60)}${step.extended_minutes > 0 ? ' (+' + formatDuration(step.extended_minutes) + ')' : ''}</div>` : ''}
-                        ${step.duration_minutes ? `<div><span class="lbl">زمان واقعی: </span><strong class="${activeOverdue ? 'text-danger' : (completedLate ? 'text-warning' : 'text-success')}">${formatDuration(step.duration_minutes)}</strong></div>` : ''}
+                        ${step.duration_minutes ? ((activeOverdue || completedLate)
+                            // مرحلهٔ دارای تأخیر: فقط «تأخیر» = زمان واقعی − زمان مجاز (فراتر از موعد) —
+                            // هم‌راستا با عددِ «تأخیر»ِ تحلیل گلوگاه (NOW − موعد). (درخواست ۱۴۰۵/۰۸/۱۰)
+                            ? `<div><span class="lbl">تأخیر: </span><strong class="${activeOverdue ? 'text-danger' : 'text-warning'}">${formatDuration(Math.floor(Math.max(0, (parseInt(step.duration_minutes) || 0) - (parseInt(step.expected_duration_minutes) || 0)) / 60) * 60)}</strong></div>`
+                            : `<div><span class="lbl">زمان واقعی: </span><strong class="text-success">${formatDuration(step.duration_minutes)}</strong></div>`) : ''}
                     </div>
                     ${step.completion_notes ? `<div class="mt-2" style="font-size:.85rem;background:var(--info-box-bg);border-radius:8px;padding:8px 10px;color:var(--text-strong);"><span class="lbl">توضیحات انجام‌دهنده: </span>${escHtml(step.completion_notes).replace(/\n/g, '<br>')}</div>` : ''}
                     ${activeOverdue ? `<div class="delay-strip mt-2"><i class="bi bi-exclamation-triangle-fill"></i>گلوگاه شناسایی شده! این مرحله بیش از زمان مجاز طول کشیده است.</div>` : ''}
@@ -2405,9 +2409,10 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
 
         function getStatusBadge(s) {
+            // برچسب‌ها هم‌راستا با کارت‌ها/فیلترِ بالا: جاری، دارای تأخیر (۱۴۰۵/۰۸/۱۰)
             return {
-                in_progress: '<span class="badge bg-primary">در حال اجرا</span>',
-                delayed: '<span class="badge bg-danger">تأخیر دارد</span>',
+                in_progress: '<span class="badge bg-primary">جاری</span>',
+                delayed: '<span class="badge bg-danger">دارای تأخیر</span>',
                 completed: '<span class="badge bg-success">تکمیل شده</span>',
                 cancelled: '<span class="badge bg-secondary">لغو شده</span>'
             } [s] || `<span class="badge bg-secondary">${s}</span>`;
@@ -2415,7 +2420,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 
         function getStatusLabel(s) {
             return {
-                in_progress: 'در حال اجرا',
+                in_progress: 'جاری',
                 delayed: 'دارای تأخیر',
                 completed: 'تکمیل شده',
                 cancelled: 'لغو شده'

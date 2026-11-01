@@ -99,6 +99,37 @@ require_once '../includes/version.php';
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.2); }
     }
+
+    /* حالت همبرگری/دراور (زیر ۱۴۰۰px — در min-width:1400px دراور به ناوبار عادی تبدیل
+       می‌شود، custom.css): فوترِ شناور اصلاً نمایش داده نشود؛ نسخه‌اش فقط ته‌ی منوی
+       دراور می‌آید (کپی با JS پایین همین فایل). */
+    @media (max-width: 1399.98px) {
+        .site-footer-shadow { display: none !important; }
+        /* فوتر مخفی است → فضای رزروشده‌اش هم آزاد شود (وگرنه ته صفحه خالی می‌ماند) */
+        body { padding-bottom: 0; }
+    }
+
+    /* فوترِ داخلِ دراور — ته‌ی منوی همبرگری؛ اگر جا نداشت، دو خطی می‌شود (flex-wrap) */
+    .drawer-footer { display: none; }
+
+    @media (max-width: 1399.98px) {
+        .drawer-footer {
+            display: flex;
+            flex-wrap: wrap;            /* اگر در یک خط جا نشد، دو خطی شود */
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-top: auto;          /* ته‌ی دراور بنشیند (اگر دراور ستونیِ کِشسان باشد) */
+            padding: 14px 12px calc(14px + env(safe-area-inset-bottom, 0px));
+            border-top: 1px solid var(--border-soft, #e9e9e9);
+            font-size: 12px;
+            line-height: 1.9;
+            text-align: center;
+            color: var(--ink-700, #555);
+        }
+        .drawer-footer .company { color: var(--primary-dark, #8e57fe); font-weight: 700; }
+        .drawer-footer .heart { color: red; font-size: 14px; animation: footerHeartbeat 2s ease-in-out infinite; }
+    }
 </style>
 <div class="site-footer-shadow">
     <div class="site-footer">
@@ -106,9 +137,23 @@ require_once '../includes/version.php';
         <span class="heart" style="color:red;">♥</span>
         <span>در شرکت</span>
         <span class="company">آوای شرق ملک</span>
-        <span> | </span>
-        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۸/۱۰ - ۱۳:۴۶">
-            نسخه: ۹.۶۴
+        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۸/۱۰ - ۱۵:۱۱">
+            نسخه: ۹.۶۵
         </span>
     </div>
 </div>
+<script>
+    // موبایل/تبلت: همین فوتر را (با همان نسخه) ته‌ی منوی دراورِ همبرگری کپی کن.
+    // درایِر #navbarNav بالاتر در DOM است، پس این‌جا موجود است. نسخه همیشه هم‌گام
+    // می‌ماند چون محتوا از همین .site-footer کپی می‌شود.
+    (function () {
+        var drawer = document.getElementById('navbarNav');
+        var sf = document.querySelector('.site-footer');
+        if (drawer && sf && !drawer.querySelector('.drawer-footer')) {
+            var df = document.createElement('div');
+            df.className = 'drawer-footer';
+            df.innerHTML = sf.innerHTML;
+            drawer.appendChild(df);
+        }
+    })();
+</script>

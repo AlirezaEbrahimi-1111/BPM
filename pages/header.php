@@ -107,7 +107,7 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
     }
     bpmApplyTheme(bpmGetTheme());
 </script>
-<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+<link rel="icon" type="image/x-icon" href="<?= asset('/assets/favicon.ico') ?>">
 <link rel="stylesheet" href="<?= asset('/assets/css/custom.css') ?>">
 <link rel="stylesheet" href="<?= asset('/assets/css/responsive/dashboard-responsive.css') ?>">
 <!-- وزیرمتن - بهینه برای موبایل -->

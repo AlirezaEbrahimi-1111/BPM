@@ -69,16 +69,24 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             /* این صفحه ثابت (overflow:hidden) و بدون اسکرول خود body است،
                پس ارتفاع فوتر چسبان (site-footer) هم باید صریحا از بودجهٔ
                ارتفاع کم بشه، وگرنه فوتر روی کادر تایپ چت می‌افته */
-            height: calc(100vh - var(--chat-top, 70px) - 32px - 34px);
+            height: calc(100vh - var(--chat-top, 70px) - 32px - var(--chat-foot, 34px));
             /* 100vh در مرورگرهای موبایل نوار آدرس/دکمه‌های گوشی رو حساب
                نمی‌کنه (بزرگ‌تر از فضای واقعا دیده‌شده‌ست) — چون این صفحه
                اسکرول نداره، هرچی بیرون از فضای واقعی بیفته (فوتر، دکمه‌ی
                شناور) اصلا دیده نمی‌شه. 100dvh فضای واقعی دیده‌شده رو
                می‌ده؛ خط بالا صرفا fallback مرورگرهای خیلی قدیمیه */
-            height: calc(100dvh - var(--chat-top, 70px) - 32px - 34px);
+            height: calc(100dvh - var(--chat-top, 70px) - 32px - var(--chat-foot, 34px));
+            /* --chat-foot: رزروِ ارتفاعِ فوترِ شناور. در حالت همبرگری/موبایل (زیر ۱۴۰۰px)
+               فوتر مخفی است، پس ۰ می‌شود و چت می‌چسبد به پایینِ صفحه. */
             margin: 16px auto;
             padding: 0 16px;
             display: flex;
+        }
+
+        /* حالت همبرگری/دراور (زیر ۱۴۰۰px): فوتر مخفی است → رزروش صفر شود تا فضای خالیِ
+           ته صفحه نماند و چت به پایین بچسبد (footer.php فوتر را همین‌جا مخفی می‌کند). */
+        @media (max-width: 1399.98px) {
+            :root { --chat-foot: 0px; }
         }
 
         .site-footer {
@@ -388,6 +396,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         .chat-avatar-img {
+            position: absolute;
+            inset: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -2477,23 +2487,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         @media (max-width: 768px) {
-            /* زمینهٔ بخش پایینی چت تا لبهٔ صفحه ادامه پیدا می‌کند (پشت فوتر)؛ جای اجزا عوض نمی‌شود.
-               ۴۶px همان فضای کم‌شده از ارتفاع .chat-wrap است (فوتر + فاصله) */
+            /* باندِ پشتِ فوتر دیگر لازم نیست (فوتر در موبایل مخفی است و چت تا پایین پر می‌شود) */
             #chatActiveView .chat-composer::after {
-                content: '';
-                position: fixed;
-                inset-inline: 0;
-                bottom: 0;
-                height: 46px;
-                background: var(--surface);
-                pointer-events: none;
+                content: none;
             }
 
             .chat-wrap {
                 padding: 0;
-                /* فوتر ۳۸px است (نه ۳۴) و ۴px روی کادر تایپ می‌افتاد → ۳۸ + ۸px فاصله */
-                height: calc(100vh - var(--chat-top, 70px) - 46px);
-                height: calc(100dvh - var(--chat-top, 70px) - 46px);
+                /* فوتر در موبایل مخفی است (--chat-foot=0) → چت تمام‌قد و چسبیده به پایین */
+                height: calc(100vh - var(--chat-top, 70px) - var(--chat-foot, 0px));
+                height: calc(100dvh - var(--chat-top, 70px) - var(--chat-foot, 0px));
                 margin: 0;
             }
 
@@ -3672,26 +3675,24 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         // برای آواتار هدر گفتگو که به‌جای ساخت کامل عنصر، فقط محتوای داخلی‌اش تغییر می‌کند
+        // همیشه رنگ‌وحروفِ اول را می‌گذاریم و عکس را رویش overlay می‌کنیم؛ اگر عکس نبود
+        // یا بارگذاری‌اش شکست (onerror) حذف می‌شود و حروفِ اول می‌ماند — نه آواتارِ خالی.
         function setAvatarContent(el, name, avatarUrl) {
-            if (avatarUrl) {
-                el.style.background = '';
-                // avatarUrl مسیر فایلی است که سرور ساخته؛ باز هم برای اطمینان
-                // کاراکترهای شکنندهٔ attribute را انکد می‌کنیم.
-                var safeUrl = String(avatarUrl).replace(/[<>"'\s]/g, encodeURIComponent);
-                el.innerHTML = '<img class="chat-avatar-img" src="../' + safeUrl + '" alt=""><span class="chat-avatar-online-dot"></span>';
-            } else {
-                el.style.background = avatarColor(name);
-                el.innerHTML = esc(initials(name)) + '<span class="chat-avatar-online-dot"></span>';
-            }
+            el.style.background = avatarColor(name);
+            // avatarUrl مسیر فایلی است که سرور ساخته؛ کاراکترهای شکنندهٔ attribute را انکد می‌کنیم.
+            var img = avatarUrl
+                ? '<img class="chat-avatar-img" src="../' + String(avatarUrl).replace(/[<>"'\s]/g, encodeURIComponent) + '" alt="" onerror="this.remove()">'
+                : '';
+            el.innerHTML = esc(initials(name)) + img + '<span class="chat-avatar-online-dot"></span>';
         }
 
         function avatarHtml(name, isOnline, extraClass, avatarUrl) {
-            var inner = avatarUrl
-                ? '<img class="chat-avatar-img" src="../' + avatarUrl + '" alt="">'
-                : esc(initials(name));
-            return '<div class="chat-avatar' + (isOnline ? ' online' : '') + (extraClass ? ' ' + extraClass : '') + '"' +
-                (avatarUrl ? '' : ' style="background:' + avatarColor(name) + '"') + '>' +
-                inner +
+            var img = avatarUrl
+                ? '<img class="chat-avatar-img" src="../' + avatarUrl + '" alt="" onerror="this.remove()">'
+                : '';
+            return '<div class="chat-avatar' + (isOnline ? ' online' : '') + (extraClass ? ' ' + extraClass : '') +
+                '" style="background:' + avatarColor(name) + '">' +
+                esc(initials(name)) + img +
                 '<span class="chat-avatar-online-dot"></span>' +
                 '</div>';
         }

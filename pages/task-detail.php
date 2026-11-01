@@ -571,6 +571,15 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
             gap: 8px;
         }
 
+        /* موبایل: عنوانِ تسک کوچک‌تر (نزدیک به اندازهٔ فونتِ اپلیکیشن) — فقط عنوان، نه توضیحات.
+           با هر دو کلاس (specificity بالاتر از .taskDetail-title در custom.css = ۲۰px). */
+        @media (max-width: 768px) {
+            .taskDetail-title.td-title-row,
+            .td-title-row #taskTitle {
+                font-size: 16px;
+            }
+        }
+
         .td-star-btn {
             background: none;
             border: none;
@@ -979,7 +988,7 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                     onclick="showTerminationRequestModal()" style="display:none;">
                     <i class="bi bi-flag-fill ms-2"></i>درخواست اتمام کار
                 </button>
-                <button type="button" class="btn btn-outline-danger" id="workflowStopRequestBtn"
+                <button type="button" class="btn btn-danger" id="workflowStopRequestBtn"
                     onclick="showWorkflowStopRequestModal()" style="display:none;">
                     <i class="bi bi-sign-stop ms-2"></i>درخواست توقف روتین
                 </button>
@@ -3120,7 +3129,7 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                 <button class="btn btn-link btn-sm p-0 ms-2" id="changeGroupBtn" title="تغییر گروه">
                     <i class="bi bi-pencil"></i>
                 </button>
-                <span id="groupSelectWrap" style="display:none;">
+                <span id="groupSelectWrap" style="display:none; width:170px !important">
                     <select id="taskGroupSelect" class="form-select form-select-sm d-inline-block" style="width:auto;"></select>
                 </span>`;
 
@@ -5207,14 +5216,13 @@ ${task.overdue_periods > 0 ? `
                         })
                     });
                     const data = await response.json();
-                    const t = showToast(data.message, 'info');
-
-
+                    // آیکنِ موفقیت در تکمیلِ موفق، نه علامت info (درخواست ۱۴۰۵/۰۸/۱۰)
+                    showToast(data.message, data.success ? 'success' : 'warning');
                     bootstrap.Modal.getInstance(document.getElementById('completeDiscModal')).hide();
                     location.reload();
 
                 } catch (error) {
-                    const t = showToast('خطا در تکمیل کار', 'info');
+                    showToast('خطا در تکمیل کار', 'error');
 
 
                 }
@@ -7396,8 +7404,10 @@ ${task.overdue_periods > 0 ? `
             function sync() {
                 var f = document.querySelector('.site-footer');
                 if (f) {
-                    var h = Math.round(f.getBoundingClientRect().height);
-                    if (h > 0) root.style.setProperty('--td-footer-h', h + 'px');
+                    // در موبایل فوتر مخفی است (footer.php) → ارتفاعش ۰ می‌شود و نوار عملیات
+                    // می‌چسبد به کفِ صفحه؛ در دسکتاپ ارتفاع واقعیِ فوتر.
+                    var h = (f.offsetParent === null) ? 0 : Math.round(f.getBoundingClientRect().height);
+                    root.style.setProperty('--td-footer-h', h + 'px');
                 }
                 var bar = document.querySelector('.TDaction-buttons');
                 if (bar) {
