@@ -58,7 +58,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         body {
-            padding-top: 70px;
+            /* --chat-top = ارتفاع واقعیِ هدر ثابت (با JS تنظیم می‌شود)؛ ۷۰px فقط fallback.
+               در موبایل هدر کوتاه‌تر از ۷۰px است و همین اختلاف، فاصلهٔ زیرِ هدر را می‌ساخت. */
+            padding-top: var(--chat-top, 70px);
             margin-top: 0 !important;
         }
 
@@ -67,13 +69,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             /* این صفحه ثابت (overflow:hidden) و بدون اسکرول خود body است،
                پس ارتفاع فوتر چسبان (site-footer) هم باید صریحا از بودجهٔ
                ارتفاع کم بشه، وگرنه فوتر روی کادر تایپ چت می‌افته */
-            height: calc(100vh - 70px - 32px - 34px);
+            height: calc(100vh - var(--chat-top, 70px) - 32px - 34px);
             /* 100vh در مرورگرهای موبایل نوار آدرس/دکمه‌های گوشی رو حساب
                نمی‌کنه (بزرگ‌تر از فضای واقعا دیده‌شده‌ست) — چون این صفحه
                اسکرول نداره، هرچی بیرون از فضای واقعی بیفته (فوتر، دکمه‌ی
                شناور) اصلا دیده نمی‌شه. 100dvh فضای واقعی دیده‌شده رو
                می‌ده؛ خط بالا صرفا fallback مرورگرهای خیلی قدیمیه */
-            height: calc(100dvh - 70px - 32px - 34px);
+            height: calc(100dvh - var(--chat-top, 70px) - 32px - 34px);
             margin: 16px auto;
             padding: 0 16px;
             display: flex;
@@ -2490,8 +2492,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             .chat-wrap {
                 padding: 0;
                 /* فوتر ۳۸px است (نه ۳۴) و ۴px روی کادر تایپ می‌افتاد → ۳۸ + ۸px فاصله */
-                height: calc(100vh - 70px - 46px);
-                height: calc(100dvh - 70px - 46px);
+                height: calc(100vh - var(--chat-top, 70px) - 46px);
+                height: calc(100dvh - var(--chat-top, 70px) - 46px);
                 margin: 0;
             }
 
@@ -2536,6 +2538,22 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             cursor: pointer;
         }
     </style>
+    <script>
+        // ارتفاع واقعیِ هدر ثابت را در --chat-top بگذار تا چت دقیقاً زیر هدر بنشیند
+        // (در موبایل هدر کوتاه‌تر از ۷۰px است و همین فاصلهٔ اضافه را می‌ساخت).
+        (function () {
+            function syncChatTop() {
+                var nav = document.querySelector('nav.navbar.fixed-top');
+                if (nav) {
+                    var h = Math.round(nav.getBoundingClientRect().height);
+                    if (h > 0) document.documentElement.style.setProperty('--chat-top', h + 'px');
+                }
+            }
+            syncChatTop();
+            window.addEventListener('load', syncChatTop);
+            window.addEventListener('resize', syncChatTop);
+        })();
+    </script>
 </head>
 
 <body>

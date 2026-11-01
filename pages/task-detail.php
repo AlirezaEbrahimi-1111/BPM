@@ -623,22 +623,26 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
             box-shadow: none !important;
         }
 
-        /* در این صفحه فوتر ثابت نباشد — بعد از «تاریخچه» در جریان عادی
-           صفحه بنشیند. فقط به‌اندازهٔ نوار عملیات ثابت پایین (.TDaction-buttons)
-           فاصله می‌گذاریم تا فوتر زیر آن نیفتد.
-           .site-footer-shadow لایهٔ بیرونی سایه است (footer.php) که پیش‌فرض
-           position:fixed دارد — این‌جا آن را هم غیرثابت و بی‌سایه می‌کنیم. */
-        .site-footer-shadow,
-        .site-footer {
-            position: static !important;
-            z-index: auto !important;
+        /* فوتر زیرِ نوار عملیات (درخواست ۱۴۰۵/۰۸/۱۰): نوار عملیاتِ ثابت کمی بالاتر
+           می‌نشیند و فوترِ زبانه در کفِ صفحه، زیرِ آن، قرار می‌گیرد (پیش‌تر برعکس بود).
+           فوتر همان position:fixedِ footer.php را نگه می‌دارد؛ فقط سایه/فیلترِ سنگینش
+           را برمی‌داریم. --td-footer-h ارتفاع واقعیِ فوتر است (با JS پایین همین صفحه). */
+        .site-footer-shadow {
             box-shadow: none !important;
             filter: none !important;
         }
 
+        body:has(.TDaction-buttons) .site-footer-shadow {
+            bottom: 0 !important;
+        }
+
+        .TDaction-buttons {
+            bottom: var(--td-footer-h, 36px) !important;
+        }
+
         body,
         body:has(.TDaction-buttons) {
-            padding-bottom: 84px !important;
+            padding-bottom: calc(var(--td-footer-h, 36px) + var(--td-bar-h, 64px) + 30px) !important;
         }
 
         /* دکمهٔ «بازگشت» — هاور بنفش استاندارد سایت به‌جای خاکستری بوت‌استرپ
@@ -665,7 +669,8 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
             .TDaction-buttons.td-compact {
                 left: 12px !important;
                 right: 12px !important;
-                bottom: 12px !important;
+                /* چسبیده بالای فوترِ کفِ صفحه (درخواست: فوتر زیر دکمه‌ها، نوار کمی پایین‌تر) */
+                bottom: var(--td-footer-h, 36px) !important;
                 border-radius: 22px;
                 border: 1px solid var(--border-soft, #e9e9e9);
                 padding: 8px 6px !important;
@@ -745,7 +750,7 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
             .td-more-item.btn-outline-secondary { --td-act: #64748b; }
 
             body:has(.TDaction-buttons.td-compact) {
-                padding-bottom: 104px !important;
+                padding-bottom: calc(var(--td-footer-h, 36px) + var(--td-bar-h, 70px) + 30px) !important;
             }
 
             /* منوی «بیشتر»: پس‌زمینهٔ کم‌رنگ + دکمه‌های گرد با برچسب، بالای دکمهٔ «بیشتر» */
@@ -7381,6 +7386,31 @@ ${task.overdue_periods > 0 ? `
             </div>
         </div>
         <?php include 'footer.php'; ?>
+
+    <script>
+        // ارتفاع واقعیِ فوترِ زبانه (--td-footer-h) و نوار عملیات (--td-bar-h) را ست کن تا:
+        // نوار عملیات چسبیده بالای فوتر بنشیند و دکمهٔ شناورِ «کار جدید» بالای نوار قرار بگیرد
+        // (درخواست ۱۴۰۵/۰۸/۱۰). نوارِ موبایل بعد از چیدمانِ tdLayoutActionBar ارتفاعش عوض می‌شود.
+        (function () {
+            var root = document.documentElement;
+            function sync() {
+                var f = document.querySelector('.site-footer');
+                if (f) {
+                    var h = Math.round(f.getBoundingClientRect().height);
+                    if (h > 0) root.style.setProperty('--td-footer-h', h + 'px');
+                }
+                var bar = document.querySelector('.TDaction-buttons');
+                if (bar) {
+                    var bh = Math.round(bar.getBoundingClientRect().height);
+                    if (bh > 0) root.style.setProperty('--td-bar-h', bh + 'px');
+                }
+            }
+            sync();
+            window.addEventListener('load', sync);
+            window.addEventListener('resize', sync);
+            setTimeout(sync, 300); // بعد از چیدمانِ نوارِ موبایل
+        })();
+    </script>
 
     <script>
         // ═══ tdLayoutActionBar — موبایل: نوار عملیات مثل اپ، حداکثر ۴ دکمه + «بیشتر» ═══

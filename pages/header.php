@@ -244,7 +244,9 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
     /* ═══ سرچ سراسری — فلش زیر هدر + کادر کشویی ═══ */
     .gs-toggle {
         position: fixed;
-        top: 3.5rem;
+        /* دقیقاً زیرِ هدر بچسبد — --app-header-h ارتفاع واقعیِ ناوبار است (با JS)؛
+           ۳.۵rem فقط fallback. ناوبار کمی کوتاه‌تر از ۳.۵rem بود و همان فاصلهٔ کوچک را می‌ساخت. */
+        top: var(--app-header-h, 3.5rem);
         left: 50%;
         transform: translateX(-50%);
         z-index: 1020;
@@ -260,11 +262,13 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
         cursor: pointer;
         box-shadow: 0 4px 10px rgba(0, 0, 0, .08);
         color: #ffffff;
-        transition: background .15s;
+        opacity: .5; /* ۵۰٪ شفاف در کل پروژه (درخواست ۱۴۰۵/۰۸/۱۰)؛ روی هاور کامل */
+        transition: background .15s, opacity .15s;
     }
 
     .gs-toggle:hover {
         background: #9560ff;
+        opacity: 1;
     }
 
     .gs-toggle i {
@@ -278,7 +282,7 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
 
     .gs-panel {
         position: fixed;
-        top: calc(3.5rem + 14px);
+        top: calc(var(--app-header-h, 3.5rem) + 14px);
         left: 50%;
         transform: translateX(-50%) translateY(-8px);
         width: 40%;
@@ -1531,6 +1535,8 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
 </script>
 <script src="<?= asset('/assets/js/time-sync.js') ?>"></script>
 <script src="<?= asset('/assets/js/common-bundle.js') ?>"></script>
+<!-- تولتیپِ مشکیِ یکدستِ سراسری (همهٔ title‌ها + data-tip، هر دو تم) -->
+<script src="<?= asset('/assets/js/black-tooltip.js') ?>"></script>
 <script src="<?= asset('/assets/js/select-box.js') ?>"></script>
 <!-- اصلاح متن فارسیِ چسبانده‌شده (کپی از شایگان: رمزگذاری قدیمی + «ي/ك» عربی) -->
 <script src="<?= asset('/assets/js/fa-paste-fix.js') ?>"></script>
@@ -3079,6 +3085,22 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
         if (tasksItem) tasksItem.style.display = 'none'; // فقط زیرمنوی روتین‌ها برای کاربر واحد
     }
     // (باز/بستهٔ زنگوله حالا در setupHdrPanel مدیریت می‌شود — پنل ادغام‌شده)
+
+    // ارتفاع واقعیِ ناوبار ثابت را در --app-header-h بگذار تا المان‌های چسبیده به هدر
+    // (مثل فلشِ سرچ سراسری .gs-toggle و پنلش) دقیقاً زیرِ هدر بنشینند — ۱۴۰۵/۰۸/۱۰
+    (function () {
+        var root = document.documentElement;
+        function syncHeaderH() {
+            var nav = document.querySelector('nav.navbar.fixed-top');
+            if (nav) {
+                var h = Math.round(nav.getBoundingClientRect().height);
+                if (h > 0) root.style.setProperty('--app-header-h', h + 'px');
+            }
+        }
+        syncHeaderH();
+        window.addEventListener('load', syncHeaderH);
+        window.addEventListener('resize', syncHeaderH);
+    })();
 
     // ============================================
     // سرچ سراسری (فلش زیر هدر)

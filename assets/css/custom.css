@@ -3441,7 +3441,7 @@ td:nth-child(2) {
     top: calc(100% + 10px);
     left: 50%;
     transform: translateX(-50%);
-    background: #1e293b;
+    background: #111827;
     color: white;
     padding: 10px 14px;
     border-radius: 10px;
@@ -3464,13 +3464,19 @@ td:nth-child(2) {
     left: 50%;
     transform: translateX(-50%);
     border: 6px solid transparent;
-    border-bottom-color: #1e293b;
+    border-bottom-color: #111827;
 }
 
 .attendance-info-btn:hover .attendance-tooltip {
     opacity: 1;
     visibility: visible;
     top: calc(100% + 12px);
+}
+
+/* تولتیپ‌های Bootstrap هم دقیقاً همان مشکی باشند (هر دو تم) — درخواست یکدستیِ تولتیپ‌ها ۱۴۰۵/۰۸/۱۰ */
+.tooltip {
+    --bs-tooltip-bg: #111827;
+    --bs-tooltip-opacity: 1;
 }
 
 /* لودینگ */
@@ -7858,7 +7864,7 @@ body.login-page::after {
    حالا همه یکسان ۴۰px. body جلویش تا روی قوانین محلی صفحات هم برنده شود.
 ======================================== */
 body .quick-actions {
-    bottom: 40px !important;
+    bottom: 70px !important;
 }
 
 /* ========================================

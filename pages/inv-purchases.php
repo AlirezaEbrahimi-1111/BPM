@@ -323,13 +323,21 @@ if (!crmModuleAllowed($db, (int) $user_id)) {
 
             // keepPage: بارگذاری دوباره بعد از یک عملیات → همان صفحهٔ جدول بماند (AgGridFa.setRowsKeepPage)
         function applyFilter(keepPage) {
-            const q = document.getElementById('crmSearch').value.trim().toLowerCase();
+            // رقم فارسی/عربی → لاتین تا «۷۰۴» و «704» هر دو پیدا شوند
+            const q = String(document.getElementById('crmSearch').value || '')
+                .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+                .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+                .trim().toLowerCase();
+            // مبلغ: جداکنندهٔ هزارگان و فاصله نادیده گرفته می‌شود («۱٬۵۰۰٬۰۰۰» = «1500000»)
+            const qAmount = q.replace(/[,٬،\s]/g, '');
+            const isAmount = /^\d+$/.test(qAmount);
             const st = statusFilter ? statusFilter.getSelected() : [];
             let rows = allRows;
             if (st.length) rows = rows.filter(r => st.includes(r.status));
             if (q) rows = rows.filter(r =>
                 (r.supplier_ref_number || '').toLowerCase().includes(q) ||
-                (r.supplier_name || '').toLowerCase().includes(q));
+                (r.supplier_name || '').toLowerCase().includes(q) ||
+                (isAmount && String(Math.round(Number(r.total_amount) || 0)).includes(qAmount)));
             if (keepPage) AgGridFa.setRowsKeepPage(gridApi, rows);
             else gridApi.setGridOption('rowData', rows);
         }

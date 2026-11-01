@@ -317,6 +317,11 @@ if (!crmReportAllowed($db, (int) $user_id)) {
                 <!-- چندانتخابی (assets/js/multi-filter.js، ۱۴۰۵/۰۸/۰۲) — بدون انتخاب = به‌جز باطل‌شده -->
                 <div id="fStatus" style="min-width:200px"></div>
             </div>
+            <div class="fld">
+                <label>جستجو</label>
+                <!-- جستجوی سمت کاربر روی شماره/مشتری/همکار و مبلغ (مبلغ بدون جداکنندهٔ هزارگان هم پیدا می‌شود) -->
+                <input type="text" id="pmSearch" class="form-control" placeholder="شماره، مشتری، همکار یا مبلغ" autocomplete="off" style="min-width:210px">
+            </div>
             <div class="spacer"></div>
             <button class="btn btn-outline-secondary" id="btnManagePartners"><i class="bi bi-gear ms-1"></i> مدیریت همکاران و درصدها</button>
         </div>
@@ -753,12 +758,14 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             return p.toString();
         }
 
-        function renderSummary() {
+        // خلاصه بر اساس ردیف‌های نمایش‌داده‌شده (بعد از جستجو) حساب می‌شود
+        function renderSummary(rows) {
+            rows = rows || allRows;
             let inv = 0,
                 prof = 0,
                 paid = 0,
                 rem = 0;
-            allRows.forEach(r => {
+            rows.forEach(r => {
                 inv += Number(r.invoice_amount) || 0;
                 prof += Number(r.profit_amount) || 0;
                 paid += Number(r.paid_amount) || 0;
@@ -768,7 +775,25 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             document.getElementById('sProfit').textContent = money(prof);
             document.getElementById('sPaid').textContent = money(paid);
             document.getElementById('sRemain').textContent = money(rem);
-            document.getElementById('sCount').textContent = faDigits(allRows.length);
+            document.getElementById('sCount').textContent = faDigits(rows.length);
+        }
+
+        // جستجوی سمت کاربر: شماره/مشتری/همکار + مبلغ (فاکتور و سود) بدون جداکنندهٔ هزارگان
+        function pmApplySearch() {
+            const q = String(document.getElementById('pmSearch').value || '')
+                .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+                .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+                .trim().toLowerCase();
+            const qAmount = q.replace(/[,٬،\s]/g, '');
+            const isAmount = /^\d+$/.test(qAmount);
+            const rows = !q ? allRows : allRows.filter(r =>
+                String(r.number || '').toLowerCase().includes(q) ||
+                (r.customer_name || '').toLowerCase().includes(q) ||
+                (r.partner_name || '').toLowerCase().includes(q) ||
+                (isAmount && (String(Math.round(Number(r.invoice_amount) || 0)).includes(qAmount) ||
+                    String(Math.round(Number(r.profit_amount) || 0)).includes(qAmount))));
+            gridApi.setGridOption('rowData', rows);
+            renderSummary(rows);
         }
 
         async function loadReport() {
@@ -776,8 +801,7 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             try {
                 const d = await apiGet('/inv/partner-report?' + qs());
                 allRows = d.items || [];
-                gridApi.setGridOption('rowData', allRows);
-                renderSummary();
+                pmApplySearch(); // ردیف‌ها + خلاصه را با درنظرگرفتن جستجوی فعلی می‌چیند
             } catch (e) {
                 showToast(e.message || 'خطا در بارگذاری', 'error');
                 gridApi.setGridOption('rowData', []);
@@ -1016,6 +1040,12 @@ if (!crmReportAllowed($db, (int) $user_id)) {
             });
             ['fYear', 'fMonth'].forEach(id =>
                 document.getElementById(id).addEventListener('change', loadReport));
+            // جستجوی سمت کاربر (روی ردیف‌های بارگذاری‌شده) — بدون رفت‌وبرگشت به سرور
+            var pmSearchTimer = null;
+            document.getElementById('pmSearch').addEventListener('input', function () {
+                clearTimeout(pmSearchTimer);
+                pmSearchTimer = setTimeout(pmApplySearch, 200);
+            });
             partnerPicker = AssigneePicker.create({
                 container: '#fPartnerPicker',
                 users: [],
