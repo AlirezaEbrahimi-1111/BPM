@@ -145,7 +145,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             { headerName: 'تاریخ صدور', field: 'issue_date', width: 105, cellRenderer: p => jd(p.value) },
             { headerName: 'پیگیری بعدی', field: 'next_followup', width: 115, cellRenderer: p => jd(p.value) },
             { headerName: 'وضعیت', field: 'status', width: 130, cellRenderer: statusCell },
-            { headerName: 'عملیات', colId: 'actions', width: 80, sortable: false, filter: false, cellRenderer: AgGridFa.actionMenuCell(actionCell) },
+            { headerName: 'عملیات', colId: 'actions', width: 80, sortable: false, filter: false, cellRenderer: AgGridFa.actionMenuCell(actionCell, { insideGrid: true }) },
         ];
 
         function pad2(n) { return String(n).padStart(2, '0'); }
@@ -223,7 +223,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 overlayNoRowsTemplate: '<span class="text-muted">هنوز پیش‌فاکتوری صادر نشده است — با ساخت بخش پیش‌فاکتور CRM این گزارش پر می‌شود.</span>',
             });
             // کلیک راست روی ردیف = همان منوی عملیات (قاعدهٔ جدول‌های حسابداری)
-            AgGridFa.rowContextMenu(document.getElementById('pfGrid'), gridApi);
+            AgGridFa.rowContextMenu(document.getElementById('pfGrid'), gridApi, null, { insideGrid: true });
 
             let savedRange = null;
             try {

@@ -546,13 +546,22 @@
         var left = Math.min(Math.max(8, r.right - mw), w.innerWidth - mw - 8);
         var top = r.bottom + 4;
         if (top + mh > w.innerHeight - 8) top = Math.max(8, r.top - mh - 4);
+        if (anchor.within) {
+            // سمت چپ نشانگر؛ اگر از جدول بیرون می‌زد، سمت راستش. عمودی هم داخل جدول و صفحه
+            var g = anchor.within.getBoundingClientRect();
+            var minX = Math.max(8, g.left), maxX = Math.min(w.innerWidth - 8, g.right);
+            var minY = Math.max(8, g.top), maxY = Math.min(w.innerHeight - 8, g.bottom);
+            left = anchor.x - mw >= minX ? anchor.x - mw : Math.max(minX, Math.min(anchor.x, maxX - mw));
+            top = anchor.y + mh + 4 <= maxY ? anchor.y + 4 : Math.max(minY, anchor.y - mh - 4);
+        }
         menu.style.left = left + 'px';
         menu.style.top = top + 'px';
         var first = menu.querySelector('.agfa-mi');
         if (first) first.focus();
     }
 
-    function actionMenuCell(buildHtml) {
+    // opts.insideGrid: منو کنار نشانگر موس و داخل کادر جدول باز شود (حسابداری غیررسمی)
+    function actionMenuCell(buildHtml, opts) {
         return function (p) {
             var b = document.createElement('button');
             b.type = 'button';
@@ -564,7 +573,17 @@
             b.addEventListener('click', function (ev) {
                 ev.stopPropagation();
                 if (openMenu && openMenu.__anchor === b) { closeActionMenu(); return; }
-                openActionMenu(b, buildHtml(p));
+                var anchor = b;
+                if (opts && opts.insideGrid) {
+                    // کلید صفحه‌کلید (detail=0) مختصات موس ندارد → خود دکمه مبناست
+                    var br = b.getBoundingClientRect();
+                    anchor = {
+                        x: ev.detail ? ev.clientX : br.left,
+                        y: ev.detail ? ev.clientY : br.bottom,
+                        within: b.closest('.ag-root-wrapper')
+                    };
+                }
+                openActionMenu(anchor, buildHtml(p));
                 if (openMenu) openMenu.__anchor = b;
             });
             return b;
@@ -599,7 +618,7 @@
      * ستون پنهان (مثلا عملیات فقط برای مدیر) → منوی مرورگر، نه منوی ما.
      * کلیک راست روی فیلد ورودی/لینک → منوی معمول مرورگر (برای کپی/باز کردن لینک).
      * ═══════════════════════════════════════════════════════════════════ */
-    function rowContextMenu(el, api, colKey) {
+    function rowContextMenu(el, api, colKey, opts) {
         if (typeof el === 'string') el = document.querySelector(el);
         if (!el || !api || el.__agfaRowMenu) return;
         el.__agfaRowMenu = true;
@@ -627,7 +646,11 @@
             else if (typeof out === 'string') html = out;                 // دکمه‌های HTML معمول
             else if (out && out.outerHTML) html = out.outerHTML;
             e.preventDefault();
-            openActionMenu({ x: e.clientX, y: e.clientY }, html);
+            openActionMenu({
+                x: e.clientX,
+                y: e.clientY,
+                within: opts && opts.insideGrid ? (el.querySelector('.ag-root-wrapper') || el) : null
+            }, html);
         });
     }
 

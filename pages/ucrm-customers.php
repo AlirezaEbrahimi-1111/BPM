@@ -27,7 +27,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
     <script src="<?= asset('../../assets/js/search-persist.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/xlsx.full.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/iran-id-validate.js') ?>"></script>
-    <script src="<?= asset('../../assets/js/iran-provinces.js') ?>"></script>
     <script src="<?= asset('../../assets/js/money-shortcut.js') ?>"></script>
     <script src="<?= asset('../../assets/js/edit-guard.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/ucrm.css') ?>">
@@ -40,26 +39,16 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
     <div class="overview-container">
 
         <div class="filters-wrapper two-col">
-            <div class="filters-title-col">
+            <div class="filters-title-col uc-title-narrow">
                 <h1><i class="bi bi-person-lines-fill"></i> مشتریان CRM</h1>
                 <p>بانک مشتریان، کارشناس فروش مسئول و وضعیت تارگت ماه جاری</p>
             </div>
 
-            <div style="flex: 1;">
-                <div class="search-box">
-                    <i class="bi bi-search"></i>
-                    <input type="text" id="crmSearch" placeholder="جستجو در نام، شماره تماس، کد ملی، کارشناس یا آدرس" data-placeholder-mobile="جستجو...">
-                </div>
-                <div class="filters-row">
-                    <div class="filter-item uc-st">
-                        <select id="stFilter" title="وضعیت">
-                            <option value="">همهٔ وضعیت‌ها</option>
-                            <option value="mine">در انتظار تأیید من</option>
-                            <option value="pending_manager">در انتظار مدیر</option>
-                            <option value="pending_accounting">در انتظار حسابداری</option>
-                            <option value="rejected">رد شده</option>
-                            <option value="active">فعال</option>
-                        </select>
+            <div style="flex: 1; min-width: 0;">
+                <div class="filters-row uc-toolbar">
+                    <div class="search-box uc-search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="crmSearch" placeholder="جستجو در نام، شماره تماس، کد ملی، کارشناس یا آدرس" data-placeholder-mobile="جستجو...">
                     </div>
                     <div class="uc-actions">
                         <?php if ($__ucrmRoles['manager'] || $__ucrmRoles['sales']): /* حسابداری فقط تأیید می‌کند، ثبت نه */ ?>
@@ -124,20 +113,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                             <div class="col-md-6">
                                 <label class="form-label" id="lblNid">شناسهٔ ملی</label>
                                 <input type="text" class="form-control" id="f_national_id" autocomplete="off" inputmode="numeric" placeholder="اختیاری">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">شماره اقتصادی</label>
-                                <input type="text" class="form-control" id="f_economic_code" autocomplete="off" inputmode="numeric" placeholder="اختیاری — ۱۰ تا ۱۲ رقم">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">استان</label>
-                                <select class="form-select" id="f_province">
-                                    <option value="">انتخاب استان</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">شهر</label>
-                                <input type="text" class="form-control" id="f_city" placeholder="شهر را انتخاب یا تایپ کنید" autocomplete="off">
                             </div>
                             <div class="col-12">
                                 <label class="form-label">آدرس</label>
@@ -286,13 +261,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 cellRenderer: p => p.value ? esc(p.value) : '<span class="text-muted">تعیین نشده</span>'
             },
             {
-                headerName: 'وضعیت',
-                field: 'status',
-                width: 140,
-                valueFormatter: p => UCRM.STATUS_LABEL[p.value] || '',
-                cellRenderer: p => UCRM.statusBadge(p.data)
-            },
-            {
                 headerName: 'وضعیت تارگت',
                 colId: 'target',
                 width: 115,
@@ -330,7 +298,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 sortable: false,
                 filter: false,
                 // منوی «⋮» مشترک پروژه (assets/js/ag-grid-fa.js) — مثل فهرست فاکتورها
-                cellRenderer: AgGridFa.actionMenuCell(actionCell)
+                cellRenderer: AgGridFa.actionMenuCell(actionCell, { insideGrid: true })
             },
         ];
 
@@ -371,11 +339,8 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             // keepPage: بارگذاری دوباره بعد از یک عملیات → همان صفحهٔ جدول بماند (AgGridFa.setRowsKeepPage)
         function applyFilter(keepPage) {
             const q = UCRM.toEn(document.getElementById('crmSearch').value.trim()).toLowerCase();
-            const st = document.getElementById('stFilter').value;
             const qd = q.replace(/\D/g, '');
             const rows = allRows.filter(r => {
-                if (st === 'mine' && !r.can_approve) return false;
-                if (st && st !== 'mine' && r.status !== st) return false;
                 if (!q) return true;
                 return (r.name || '').toLowerCase().includes(q) ||
                     (r.rep_name || '').toLowerCase().includes(q) ||
@@ -583,7 +548,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             editRow = null;
             resetForm();
             setType('legal');
-            IranProvinces.setValue(document.getElementById('f_province'), document.getElementById('f_city'), '', '');
             const sel = document.getElementById('f_rep');
             if (ROLES.manager) {
                 fillRepSelect(sel, null);
@@ -614,8 +578,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             setType(r.type || 'legal');
             document.getElementById('f_name').value = r.name || '';
             document.getElementById('f_national_id').value = faDigits(r.national_id || '');
-            document.getElementById('f_economic_code').value = faDigits(r.economic_code || '');
-            IranProvinces.setValue(document.getElementById('f_province'), document.getElementById('f_city'), r.province, r.city);
             document.getElementById('f_address').value = r.address || '';
             document.getElementById('f_note').value = r.note || '';
             targetMode(r);
@@ -652,9 +614,10 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 type: document.getElementById('f_type').value,
                 name: document.getElementById('f_name').value.trim(),
                 national_id: UCRM.toEn(document.getElementById('f_national_id').value.trim()),
-                economic_code: UCRM.toEn(document.getElementById('f_economic_code').value.trim()),
-                province: document.getElementById('f_province').value,
-                city: document.getElementById('f_city').value.trim(),
+                // این سه فیلد در فرم نیستند؛ در ویرایش، مقدار ثبت‌شدهٔ قبلی (از اکسل یا صفحهٔ جزئیات) حفظ می‌شود
+                economic_code: editRow ? (editRow.economic_code || '') : '',
+                province: editRow ? (editRow.province || '') : '',
+                city: editRow ? (editRow.city || '') : '',
                 address: document.getElementById('f_address').value.trim(),
                 note: document.getElementById('f_note').value.trim(),
                 rep_id: +document.getElementById('f_rep').value || 0,
@@ -673,11 +636,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             if (window.IranId && body.national_id &&
                 !(editRow && body.national_id === editRow.national_id && body.type === editRow.type)) {
                 const errs = IranId.checkCustomer({ type: body.type, national_id: body.national_id });
-                if (errs.length) { formAlert(errs.join('<br>')); return false; }
-            }
-            // شماره اقتصادی: فقط وقتی عوض شده بررسی شود (دادهٔ قدیمی ذخیرهٔ بقیه را قفل نکند)
-            if (window.IranId && body.economic_code && !(editRow && body.economic_code === (editRow.economic_code || ''))) {
-                const errs = IranId.checkCustomer({ type: body.type, economic_code: body.economic_code });
                 if (errs.length) { formAlert(errs.join('<br>')); return false; }
             }
             const btn = document.getElementById('btnSave');
@@ -716,9 +674,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 ty: document.getElementById('f_type').value,
                 na: document.getElementById('f_name').value,
                 ni: document.getElementById('f_national_id').value,
-                ec: document.getElementById('f_economic_code').value,
-                pr: document.getElementById('f_province').value,
-                ci: document.getElementById('f_city').value,
                 ad: document.getElementById('f_address').value,
                 no: document.getElementById('f_note').value,
                 re: document.getElementById('f_rep').value,
@@ -736,8 +691,6 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             setType(st.ty || 'legal');
             document.getElementById('f_name').value = st.na || '';
             document.getElementById('f_national_id').value = st.ni || '';
-            document.getElementById('f_economic_code').value = st.ec || '';
-            IranProvinces.setValue(document.getElementById('f_province'), document.getElementById('f_city'), st.pr || '', st.ci || '');
             document.getElementById('f_address').value = st.ad || '';
             document.getElementById('f_note').value = st.no || '';
             if (st.re && !document.getElementById('f_rep').disabled) document.getElementById('f_rep').value = st.re;
@@ -933,15 +886,13 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             }
             gridApi = agGrid.createGrid(document.getElementById('ucrmGrid'), gridOptions);
             // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
-            AgGridFa.rowContextMenu(document.getElementById('ucrmGrid'), gridApi);
+            AgGridFa.rowContextMenu(document.getElementById('ucrmGrid'), gridApi, null, { insideGrid: true });
             custModal = new bootstrap.Modal(document.getElementById('custModal'));
             approveModal = new bootstrap.Modal(document.getElementById('approveModal'));
             rejectModal = new bootstrap.Modal(document.getElementById('rejectModal'));
 
-            IranProvinces.bind(document.getElementById('f_province'), document.getElementById('f_city'));
             UCRM.bindMoney(document.getElementById('f_target'));
-            if (window.IranId) IranId.attachLive({ type: document.getElementById('f_type'), national: document.getElementById('f_national_id'),
-                economic: document.getElementById('f_economic_code') });
+            if (window.IranId) IranId.attachLive({ type: document.getElementById('f_type'), national: document.getElementById('f_national_id') });
 
             document.querySelectorAll('#typeSeg .uc-seg-btn').forEach(b => b.addEventListener('click', () => setType(b.dataset.type)));
             document.querySelectorAll('#modeSeg .uc-seg-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
@@ -983,15 +934,12 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 if (e.target.files[0]) handleExcel(e.target.files[0]);
                 e.target.value = '';
             });
-            // جستجو و فیلتر وضعیت بعد از رفرش/برگشت می‌مانند (search-persist.js)
+            // جستجو بعد از رفرش/برگشت می‌ماند (search-persist.js)
             SearchPersist.bind(document.getElementById('crmSearch'), 'ucrm-customers');
-            SearchPersist.bindSelect(document.getElementById('stFilter'), 'ucrm-customers');
             document.getElementById('crmSearch').addEventListener('input', () => {
                 clearTimeout(searchTimer);
                 searchTimer = setTimeout(() => applyFilter(), 200);
             });
-            document.getElementById('stFilter').addEventListener('change', () => applyFilter());
-            // تأییدکننده‌ها پیش‌فرض «در انتظار تأیید من» نمی‌بینند؛ همه نشان داده می‌شود (طبق توافق)
 
             try {
                 const [me, rp] = await Promise.all([UCRM.get('/me'), UCRM.get('/reps')]);

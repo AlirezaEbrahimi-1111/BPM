@@ -29,7 +29,6 @@ $__cid = (int) ($_GET['id'] ?? 0);
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <link rel="stylesheet" href="<?= asset('../../assets/css/ucrm.css') ?>">
-    <script src="<?= asset('../../assets/js/iran-provinces.js') ?>"></script>
     <script src="<?= asset('../../assets/js/iran-id-validate.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
@@ -95,14 +94,14 @@ $__cid = (int) ($_GET['id'] ?? 0);
                                     <button type="button" class="datepicker-today-btn">امروز</button>
                                 </div>
                             </div>
-                        <input type="time" class="form-control fu-time" id="fuTime">
+                        <input type="text" class="form-control fu-time" id="fuTime" dir="ltr" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="۱۴:۳۰" title="ساعت، مثلا ۱۴:۳۰" oninput="fuTimeInput(this)" onblur="fuTimeBlur(this)">
                     </div>
                     <label class="form-label">یادداشت‌ها</label>
                     <div class="fu-ico"><i class="bi bi-chat-square-dots"></i>
                         <textarea class="form-control" id="fuNote" rows="3" placeholder="یادداشت خود را اینجا بنویسید…"></textarea></div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-primary w-100 fu-save" id="fuSave">ثبت پیگیری</button>
+                    <button type="button" class="btn btn-primary" id="fuSave">ثبت پیگیری</button>
                 </div>
             </div>
         </div>
@@ -187,11 +186,6 @@ $__cid = (int) ($_GET['id'] ?? 0);
                 `<a class="uc-head-ico" href="ucrm-targets.php" title="تنظیمات هدفگذاری"><i class="bi bi-gear"></i></a>
                  <a class="uc-head-ico" href="ucrm-targets.php" title="ویرایش تارگت"><i class="bi bi-pencil-square"></i></a>` :
                 `<span class="uc-head-ico"><i class="bi bi-graph-up-arrow"></i></span>`;
-            const events = (d.events || []).map(ev => `
-                <li class="${/_rejected$/.test(ev.action) || ev.action === 'deleted' ? 'rej' : (/_approved$/.test(ev.action) ? 'ok' : '')}">
-                    <div class="n">${esc(ev.note)}</div>
-                    <div class="t">${TimeSync.formatJalali(ev.created_at)} ساعت ${TimeSync.formatTimeOnly(ev.created_at)}</div>
-                </li>`).join('');
             return `
                 <div class="row g-3">
                     <div class="col-lg-6">
@@ -202,8 +196,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
                             ${row(legal ? 'bi-building' : 'bi-person', legal ? 'نام شرکت' : 'نام', esc(c.name))}
                             ${row('bi-journal-text', 'نام ' + (legal ? 'شرکت' : 'مشتری') + ' در نرم‌افزار حسابداری', c.accounting_name ? esc(c.accounting_name) : none)}
                             ${row('bi-telephone', 'شماره تماس', phones)}
-                            ${row('bi-geo-alt', 'آدرس', esc(UCRM.fullAddress(c)) || none)}
-                            ${row('bi-upc-scan', 'کد اقتصادی', c.economic_code ? faDigits(c.economic_code) : none)}
+                            ${row('bi-geo-alt', 'آدرس', esc(c.address || '') || none)}
                             ${row('bi-card-text', legal ? 'شناسهٔ ملی' : 'کد ملی', c.national_id ? faDigits(c.national_id) : none)}`}
                         </div>
                     </div>
@@ -214,11 +207,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
                         </div>
                     </div>
                 </div>
-                ${c.note ? `<div class="uc-card"><h3><i class="bi bi-sticky ms-1"></i> توضیحات</h3><div>${esc(c.note)}</div></div>` : ''}
-                <div class="uc-card">
-                    <h3><i class="bi bi-clock-history ms-1"></i> تاریخچه</h3>
-                    ${events ? `<ul class="uc-timeline">${events}</ul>` : '<div class="text-muted small">سابقه‌ای ثبت نشده است.</div>'}
-                </div>`;
+                ${c.note ? `<div class="uc-card"><h3><i class="bi bi-sticky ms-1"></i> توضیحات</h3><div>${esc(c.note)}</div></div>` : ''}`;
         }
 
         // بنر درخواست تغییر: در انتظار (با جدول تغییرات و «لغو درخواست») یا آخرین ردشده (با دلیل)
@@ -252,10 +241,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
                 ${field('bi-journal-text', 'نام ' + (legal ? 'شرکت' : 'مشتری') + ' در نرم‌افزار حسابداری', `<input type="text" class="form-control" id="ed_acc" maxlength="255" value="${esc(c.accounting_name || '')}">`)}
                 ${field('bi-telephone', 'شماره تماس', `<div class="input-group"><input type="text" class="form-control" id="ed_phone_in" inputmode="tel" autocomplete="off" placeholder="شماره را بنویسید و Enter بزنید">
                     <button type="button" class="btn btn-outline-secondary" onclick="addPhone()"><i class="bi bi-plus-lg"></i></button></div><div class="uc-chips" id="edChips"></div>`)}
-                ${field('bi-geo-alt', 'آدرس', `<div class="row g-2 mb-2"><div class="col-6"><select class="form-select" id="ed_province"><option value="">استان</option></select></div>
-                    <div class="col-6"><input type="text" class="form-control" id="ed_city" placeholder="شهر" autocomplete="off"></div></div>
-                    <input type="text" class="form-control" id="ed_address" value="${esc(c.address || '')}" placeholder="آدرس کامل">`)}
-                ${field('bi-upc-scan', 'کد اقتصادی', `<input type="text" class="form-control" id="ed_eco" inputmode="numeric" autocomplete="off" value="${esc(faDigits(c.economic_code || ''))}" placeholder="اختیاری — ۱۰ تا ۱۲ رقم">`)}
+                ${field('bi-geo-alt', 'آدرس', `<input type="text" class="form-control" id="ed_address" value="${esc(c.address || '')}" placeholder="آدرس کامل">`)}
                 ${field('bi-card-text', legal ? 'شناسهٔ ملی' : 'کد ملی', `<input type="text" class="form-control" id="ed_nid" inputmode="numeric" autocomplete="off" value="${esc(faDigits(c.national_id || ''))}" placeholder="اختیاری">`)}
                 <div class="uc-edit-acts">
                     <button type="button" class="btn btn-primary" id="edSend" onclick="sendChange()"><i class="bi bi-check2 ms-1"></i>درخواست تأیید حسابداری</button>
@@ -293,14 +279,11 @@ $__cid = (int) ($_GET['id'] ?? 0);
             phones = (DATA.customer.phones || []).slice();
             showTab('info');
             const c = DATA.customer;
-            const ps = document.getElementById('ed_province'), ci = document.getElementById('ed_city');
-            IranProvinces.bind(ps, ci);
-            IranProvinces.setValue(ps, ci, c.province || '', c.city || '');
             renderChips();
             document.getElementById('ed_phone_in').addEventListener('keydown', e => {
                 if (e.key === 'Enter') { e.preventDefault(); addPhone(); }
             });
-            if (window.IranId) IranId.attachLive({ national: document.getElementById('ed_nid'), economic: document.getElementById('ed_eco'),
+            if (window.IranId) IranId.attachLive({ national: document.getElementById('ed_nid'),
                 type: { value: c.type, dataset: {}, addEventListener() {} } });
             const n = document.getElementById('ed_name');
             n.focus();
@@ -319,10 +302,11 @@ $__cid = (int) ($_GET['id'] ?? 0);
                 name: document.getElementById('ed_name').value.trim(),
                 accounting_name: document.getElementById('ed_acc').value.trim(),
                 phones: phones.slice(),
-                province: document.getElementById('ed_province').value,
-                city: document.getElementById('ed_city').value.trim(),
+                // استان، شهر و کد اقتصادی در فرم نیستند؛ مقدار ثبت‌شده حفظ می‌شود تا درخواست تغییرِ «پاک شدن» ساخته نشود
+                province: c.province || '',
+                city: c.city || '',
                 address: document.getElementById('ed_address').value.trim(),
-                economic_code: UCRM.toEn(document.getElementById('ed_eco').value.trim()),
+                economic_code: c.economic_code || '',
                 national_id: UCRM.toEn(document.getElementById('ed_nid').value.trim()),
             };
             const alertBox = m => document.getElementById('edAlert').innerHTML = m ? `<div class="alert alert-danger py-2 mb-0">${m}</div>` : '';
@@ -333,7 +317,6 @@ $__cid = (int) ($_GET['id'] ?? 0);
             if (window.IranId) {
                 const chk = { type: c.type };
                 if (body.national_id !== (c.national_id || '')) chk.national_id = body.national_id;
-                if (body.economic_code !== (c.economic_code || '')) chk.economic_code = body.economic_code;
                 const errs = IranId.checkCustomer(chk);
                 if (errs.length) return alertBox(errs.join('<br>'));
             }
@@ -453,26 +436,56 @@ $__cid = (int) ($_GET['id'] ?? 0);
             const di = document.getElementById('fuDate');
             di.setAttribute('data-date', g);
             di.value = convertToJalali(g);
-            document.getElementById('fuTime').value = hm;
+            document.getElementById('fuTime').value = faDigits(hm);
             fuModal.show();
+        }
+
+        // کادر ساعت متنی است: input type="time" اعدادش را از زبان مرورگر می‌گیرد و فارسی نمی‌شود.
+        // نمایش فارسی؛ مقدار ارسالی به سرور همان HH:MM انگلیسی
+        function fuTimeDigits(raw) {
+            return UCRM.toEn(raw).replace(/\D/g, '').slice(0, 4);
+        }
+
+        function fuTimeInput(el) {
+            const d = fuTimeDigits(el.value);
+            const v = faDigits(d.length > 2 ? d.slice(0, 2) + ':' + d.slice(2) : d);
+            if (el.value !== v) el.value = v;
+        }
+
+        // «۹» → 09:00، «۹۳۰» → 09:30، «۱۴۳۰» → 14:30؛ نامعتبر → ''
+        function fuTimeValue(raw) {
+            const d = fuTimeDigits(raw);
+            if (!d) return '';
+            const h = d.length <= 2 ? d : d.slice(0, d.length - 2);
+            const m = d.length <= 2 ? '00' : d.slice(-2);
+            if (+h > 23 || +m > 59) return '';
+            return pad2(+h) + ':' + m;
+        }
+
+        function fuTimeBlur(el) {
+            const v = fuTimeValue(el.value);
+            if (v) el.value = faDigits(v);
         }
 
         async function saveFollowup() {
             const di = document.getElementById('fuDate');
             let g = di.getAttribute('data-date') || '';
             if (!g && di.value && typeof convertToGregorian === 'function') g = convertToGregorian(di.value) || '';
+            const timeRaw = document.getElementById('fuTime').value;
+            const time = fuTimeValue(timeRaw);
             const body = {
                 title: document.getElementById('fuTitle').value.trim(),
                 type: document.getElementById('fuType').value,
-                due_at: g + ' ' + document.getElementById('fuTime').value,
+                due_at: g + ' ' + time,
                 note: document.getElementById('fuNote').value.trim(),
             };
             const alertBox = m => document.getElementById('fuAlert').innerHTML = m ? `<div class="alert alert-danger py-2">${m}</div>` : '';
             const miss = [];
             if (!body.title) miss.push('عنوان پیگیری');
             if (!body.type) miss.push('نوع پیگیری');
-            if (!g || !document.getElementById('fuTime').value) miss.push('تاریخ و زمان');
+            if (!g || !timeRaw.trim()) miss.push('تاریخ و زمان');
             if (miss.length) return alertBox('این فیلدها الزامی‌اند: ' + miss.join('، '));
+            if (!time) return alertBox('ساعت معتبر نیست؛ آن را به‌شکل ۱۴:۳۰ بنویسید.');
             const btn = document.getElementById('fuSave');
             btn.disabled = true;
             try {

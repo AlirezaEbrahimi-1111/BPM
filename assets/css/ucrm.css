@@ -1,6 +1,23 @@
 /* CRM جدید (حسابداری غیررسمی) — pages/ucrm-customers.php و pages/ucrm-customer.php
    بج‌ها هم‌شکل بج استاندارد پروژه (custom.css: .status-badge)؛ فقط «وضعیت تارگت» مثل طرح، قرصی‌شکل. */
 
+/* صفحهٔ مشتریان: آیکن جستجو داخل کادر و سمت متن */
+/* ⚠️ دوکلاسه: header.php فایل custom.css را بعد از این فایل دوباره لود می‌کند و هم‌وزن‌ها را می‌برد */
+.search-box.uc-search i { left: auto; right: .6rem; z-index: 1; pointer-events: none; }
+.search-box.uc-search input { padding-right: 1.85rem; padding-left: 32px; }
+/* search-persist.js ورودی را در span.sp-wrap (inline-flex) می‌گذارد که به اندازهٔ محتوا جمع می‌شود */
+.search-box.uc-search .sp-wrap { display: flex; width: 100%; }
+/* جستجو هم‌ردیف دکمه‌ها و تمام جای خالی ردیف را می‌گیرد؛ زیرنویس عنوان در دو خط می‌شکند تا جا باز شود.
+   اگر حتی حداقل عرض کادر جا نشد، دکمه‌ها به خط بعد می‌روند */
+.uc-title-narrow { max-width: 320px; }
+.filters-row.uc-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.uc-toolbar .uc-search { flex: 1 1 0; min-width: 180px; margin-bottom: 0; }
+.uc-toolbar .uc-actions { flex-shrink: 0; }
+@media (max-width: 991px) {
+    .uc-title-narrow { max-width: none; }
+    .uc-toolbar .uc-search { flex-basis: 100%; }
+    .uc-toolbar .uc-actions { flex-shrink: 1; }
+}
 #importResult { font-size: .8rem; margin-top: .5rem; }
 #importResult:empty { display: none; }
 /* دکمه‌ها کنار فیلترها، در همان کادر بالای صفحه (هم‌شکل tasks.php) */
@@ -280,7 +297,7 @@ button.uc-head-ico:hover { background: rgba(142, 87, 254, .2); }
 .uc-info-row.edit .k { display: block; }
 .uc-info-row.edit .form-control, .uc-info-row.edit .form-select { border-radius: 10px; }
 .uc-edit-acts { display: flex; gap: 14px; padding: 14px 22px 20px; }
-.uc-edit-acts .btn { flex: 1; padding: .7rem 1rem; border-radius: 10px; font-weight: 600; }
+.uc-edit-acts .btn { flex: 1; justify-content: center; padding: .7rem 1rem; border-radius: 10px; font-weight: 600; }
 .uc-chg-banner { margin: 14px 18px 4px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(245, 158, 11, .35); }
 .uc-chg-banner .t { padding: 10px 14px; font-size: .85rem; line-height: 1.8; }
 .uc-chg-banner.wait .t { background: rgba(245, 158, 11, .12); color: #92400e; }
@@ -348,8 +365,7 @@ button.uc-head-ico:hover { background: rgba(142, 87, 254, .2); }
 .fu-ico .form-control { padding-left: 36px; }
 .fu-when { display: flex; gap: 8px; }
 .fu-when .fu-date { flex: 1; }
-.fu-when .fu-time { width: 120px; flex: 0 0 auto; text-align: center; }
-.fu-save { padding: .7rem 1rem; border-radius: 10px; font-weight: 700; }
+.fu-when .fu-time { width: 144px; flex: 0 0 auto; text-align: center; }
 :root[data-theme="dark"] .uc-fu-type { background: rgba(142, 87, 254, .2); color: #b79bff; }
 :root[data-theme="dark"] .uc-st.done { background: rgba(16, 185, 129, .18); color: #34d399; }
 :root[data-theme="dark"] .uc-st.wait { background: rgba(245, 158, 11, .18); color: #fcd34d; }

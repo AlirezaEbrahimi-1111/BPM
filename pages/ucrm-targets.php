@@ -590,7 +590,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             if (!UCRM.tok()) { location.href = '../index.php'; return; }
             gridApi = agGrid.createGrid(document.getElementById('tgGrid'), gridOptions);
             // کلیک راست روی ردیف = منوی همان موارد ستون عملیات (assets/js/ag-grid-fa.js)
-            AgGridFa.rowContextMenu(document.getElementById('tgGrid'), gridApi);
+            AgGridFa.rowContextMenu(document.getElementById('tgGrid'), gridApi, null, { insideGrid: true });
             tgModal = new bootstrap.Modal(document.getElementById('tgModal'));
             rulesModal = new bootstrap.Modal(document.getElementById('rulesModal'));
             ['tTarget', 'tFloor', 'rAmount'].forEach(id => UCRM.bindMoney(document.getElementById(id)));
