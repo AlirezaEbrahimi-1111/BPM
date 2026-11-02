@@ -115,19 +115,21 @@ if ($__ucdMode !== 'tabs') return;
     <div class="ucd-row3">
         <div class="ucd-card">
             <div class="ucd-head"><h3><i class="bi bi-bar-chart"></i>مقایسه تیم فروش</h3></div>
-            <div class="ucd-chart"><canvas id="ucdChTeam" aria-label="فروش هر کارشناس در بازهٔ انتخاب‌شده"></canvas><div class="ucd-chart-empty" id="ucdTeamEmpty" hidden>هنوز فروشی در این بازه ثبت نشده است.</div></div>
+            <div class="ucd-chart"><canvas id="ucdChTeam" aria-label="فروش هر کارشناس در بازهٔ انتخاب‌شده"></canvas></div>
         </div>
         <div class="ucd-card">
-            <div class="ucd-head"><h3><i class="bi bi-speedometer2"></i>شاخص‌های کلیدی</h3></div>
-            <div class="ucd-donut">
-                <canvas id="ucdChKpi" aria-label="درصد تحقق تارگت کل تیم"></canvas>
-                <div class="center"><b id="ucdKpiPct">۰٪</b><small>تحقق تارگت تیم</small></div>
+            <div class="ucd-head"><h3><i class="bi bi-pie-chart"></i>درصد تحقق فروش</h3></div>
+            <div class="ucd-achv">
+                <ul class="ucd-achv-list" id="ucdKpis"></ul>
+                <div class="ucd-donut">
+                    <canvas id="ucdChKpi" aria-label="سهم فروش هر کارشناس و میانگین درصد تحقق فروش"></canvas>
+                    <div class="center"><b id="ucdKpiPct">۰٪</b><small>میانگین تحقق</small></div>
+                </div>
             </div>
-            <div class="ucd-kpis" id="ucdKpis"></div>
         </div>
         <div class="ucd-card">
-            <div class="ucd-head"><h3><i class="bi bi-bar-chart-steps"></i>مقایسه هدف و فروش کارشناس‌ها</h3></div>
-            <div class="ucd-chart"><canvas id="ucdChCmp" aria-label="تارگت و فروش هر کارشناس"></canvas></div>
+            <div class="ucd-head"><h3><i class="bi bi-bar-chart-steps"></i>مقایسه فروش کارشناسان</h3></div>
+            <ul class="ucd-prog" id="ucdCmpList"></ul>
         </div>
     </div>
 </div>

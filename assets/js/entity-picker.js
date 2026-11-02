@@ -11,6 +11,7 @@
  *     addTitle:    'افزودن مورد جدید',    // اگر ست شود، دکمه‌ی + کنار فیلد می‌آید
  *     onAdd:       () => {},              // کلیک +
  *     onSelect:    (item | null) => {},   // انتخاب یا پاک‌کردن
+ *     searchOnly:  false,                 // اگر true: فهرست فقط بعد از تایپ و با موارد مشابه باز می‌شود
  *     freeText:    false,                 // اگر true: متن تایپ‌شده که با هیچ موردی
  *                                         //   نمی‌خواند هم مجاز است و در فیلد می‌ماند
  *     onRename:    async (item, newLabel) => newLabel,
@@ -201,6 +202,12 @@ const EntityPicker = (() => {
 
         function _render(q) {
             const nq = _norm(q).trim();
+            if (cfg.searchOnly && !nq) {
+                _dd.innerHTML = '';
+                _dd.classList.remove('open');
+                _open = false;
+                return;
+            }
             const list = !nq ? _items : _items.filter(it =>
                 _norm(it.label).includes(nq) || _norm(it.meta).includes(nq) || _norm(it.search).includes(nq));
             if (!list.length) {
@@ -305,7 +312,11 @@ const EntityPicker = (() => {
             if (typeof cfg.onSelect === 'function') cfg.onSelect(it);
         }
 
-        function _openDd() { _dd.classList.add('open'); _open = true; }
+        function _openDd() {
+            if (cfg.searchOnly && !_dd.innerHTML) return; // هنوز چیزی تایپ نشده
+            _dd.classList.add('open');
+            _open = true;
+        }
         function _closeDd() {
             _dd.classList.remove('open');
             _open = false;

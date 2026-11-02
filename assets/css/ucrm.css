@@ -18,6 +18,21 @@
     .uc-toolbar .uc-search { flex-basis: 100%; }
     .uc-toolbar .uc-actions { flex-shrink: 1; }
 }
+/* مودال مشتری، تب «انتخاب از حسابداری»: جستجو، تعداد و بروزرسانی در یک ردیف.
+   ⚠️ دوکلاسه: custom.css بعد از این فایل هم لود می‌شود */
+.uc-shy-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: .5rem; }
+.uc-shy-bar #shySearch { flex: 1 1 110px; width: auto; min-width: 0; }
+.uc-shy-status { font-size: .82rem; color: var(--text-muted, #6b7490); }
+.uc-shy-status:empty { display: none; }
+.uc-shy-bar .btn { flex-shrink: 0; }
+.form-check.uc-shy-switch { display: flex; align-items: center; gap: .5rem; min-height: 0; padding: 0; margin: 0 0 .5rem; }
+.form-check.uc-shy-switch .form-check-input { float: none; margin: 0; cursor: pointer; }
+.form-check.uc-shy-switch .form-check-input:checked { background-color: var(--primary, #8e57fe); border-color: var(--primary, #8e57fe); }
+.form-check.uc-shy-switch .form-check-label { cursor: pointer; }
+/* ارتفاع لیست طوری است که مودال با صفحه‌بندی هم از فرم «تعریف مشتری جدید» بلندتر نشود و داخل صفحه جا شود */
+.uc-shy-list { height: clamp(180px, calc(100vh - 390px), 440px); overflow-y: auto; }
+#custModal.uc-shy-mode .modal-footer { padding-block: .4rem; }
+#custModal.uc-shy-mode .modal-content { padding-bottom: 0; }
 #importResult { font-size: .8rem; margin-top: .5rem; }
 #importResult:empty { display: none; }
 /* دکمه‌ها کنار فیلترها، در همان کادر بالای صفحه (هم‌شکل tasks.php) */
@@ -49,6 +64,8 @@
 .uc-badge.st-pending_accounting { background: rgba(37, 99, 235, .12); color: #2563eb; }
 .uc-badge.st-rejected { background: rgba(220, 38, 38, .12); color: #dc2626; cursor: help; }
 .uc-badge.st-active { background: rgba(16, 122, 87, .14); color: #0f7a57; }
+.uc-badge.st-suspended { background: rgba(107, 116, 144, .14); color: #5b6478; }
+:root[data-theme="dark"] .uc-badge.st-suspended { background: rgba(154, 164, 181, .16); color: #b6bfce; }
 :root[data-theme="dark"] .uc-badge.legal { color: #b79bff; }
 :root[data-theme="dark"] .uc-badge.individual,
 :root[data-theme="dark"] .uc-badge.st-pending_accounting { color: #93b4ff; }
@@ -166,16 +183,31 @@
 
 /* ── صفحهٔ تارگت‌ها (pages/ucrm-targets.php) — طبق طرح ── */
 .uc-top-gap { padding-top: 1.1rem; } /* فاصله از هدر ثابت (margin بالا collapse می‌شد) */
-.uc-tg-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
-.uc-tg-title { display: flex; align-items: center; gap: 16px; }
-.uc-tg-title h1 { font-size: 1.2rem; font-weight: 700; margin: 0 0 10px; color: var(--text-strong, #2d3748); }
-.uc-tg-ico { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 14px; background: rgba(142, 87, 254, .12); color: #8e57fe; font-size: 1.9rem; flex-shrink: 0; }
-.uc-tg-filters { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.uc-tg-head { display: flex; flex-direction: column; gap: 12px; }
+.uc-tg-title { display: flex; align-items: center; gap: 8px; }
+.uc-tg-title h1 { font-size: 1.2rem; font-weight: 700; margin: 0; color: var(--text-strong, #2d3748); }
+.uc-tg-ico { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 9px; background: rgba(142, 87, 254, .12); color: #8e57fe; font-size: 1rem; flex-shrink: 0; }
+/* ردیف دوم: فیلترها روبه‌روی دکمه‌ها؛ فقط اگر واقعا جا نشد می‌شکند */
+.uc-tg-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.uc-tg-filters { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
 .uc-tg-f { display: flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--text-muted, #6b7490); }
-.uc-tg-f .form-select { width: auto; min-width: 140px; }
-.uc-tg-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.uc-tg-f .form-select { width: auto; min-width: 110px; }
+.uc-tg-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.uc-tg-actions .btn { white-space: nowrap; }
+/* کانتینر ۷۰٪ در نمایشگرهای کوچک‌تر جا کم دارد؛ با فشرده‌تر شدن، ردیف دوم یک‌خطی می‌ماند */
+@media (max-width: 1540px) {
+    .uc-tg-filters { gap: 8px; }
+    .uc-tg-f { gap: 4px; }
+    .uc-tg-f .form-select { min-width: 0; padding-inline-end: .35rem; font-size: .8rem; }
+    .uc-tg-actions { gap: 6px; }
+    .uc-tg-actions .btn { padding-inline: 10px; font-size: .8rem; }
+}
 .uc-tg-actions .btn-outline-secondary { border: 1px solid var(--border-soft, #d6d6e0) !important; background: transparent; }
+.uc-tg-actions .btn-outline-secondary:hover,
+.uc-tg-actions .btn-outline-secondary:focus-visible { background: rgba(142, 87, 254, .12); color: #1f2937; }
 :root[data-theme="dark"] .uc-tg-actions .btn-outline-secondary { color: var(--text-strong); }
+:root[data-theme="dark"] .uc-tg-actions .btn-outline-secondary:hover,
+:root[data-theme="dark"] .uc-tg-actions .btn-outline-secondary:focus-visible { background: rgba(142, 87, 254, .18); color: #fff; }
 .uc-amt { direction: rtl; font-weight: 600; }
 .uc-src-ico { color: #8e57fe; font-size: .8rem; margin-right: 4px; cursor: help; }
 :root[data-theme="dark"] .uc-src-ico { color: #b79bff; }
@@ -195,6 +227,9 @@
 .uc-rule-row > label { flex: 0 0 130px; font-weight: 600; font-size: .9rem; color: var(--text-strong, #2d3748); }
 .uc-rule-row > .form-select, .uc-rule-row > .input-group { flex: 1; max-width: 360px; }
 .uc-rule-row > .input-group { flex-wrap: nowrap; }
+/* پایین فرم قاعده، سمت چپ: از چپ به راست «ذخیره» و بعد «انصراف» */
+.uc-rule-btns { display: flex; justify-content: flex-end; gap: 8px; }
+.uc-rule-btns .btn { justify-content: center; min-width: 110px; }
 .uc-rule-row > .input-group .form-control { min-width: 0; }
 .uc-rule-list { border: 1px solid var(--border-soft, #e9e9e9); border-radius: 12px; overflow: hidden; }
 .uc-rule-list th { font-size: .8rem; font-weight: 600; }
@@ -364,8 +399,8 @@ button.uc-head-ico:hover { background: rgba(142, 87, 254, .2); }
 .fu-ico > i { position: absolute; left: 12px; top: 12px; color: var(--text-muted, #6b7490); pointer-events: none; }
 .fu-ico .form-control { padding-left: 36px; }
 .fu-when { display: flex; gap: 8px; }
-.fu-when .fu-date { flex: 1; }
-.fu-when .fu-time { width: 144px; flex: 0 0 auto; text-align: center; }
+.fu-when .fu-date { flex: 6; }
+.fu-when .fu-time { flex: 1; text-align: center; }
 :root[data-theme="dark"] .uc-fu-type { background: rgba(142, 87, 254, .2); color: #b79bff; }
 :root[data-theme="dark"] .uc-st.done { background: rgba(16, 185, 129, .18); color: #34d399; }
 :root[data-theme="dark"] .uc-st.wait { background: rgba(245, 158, 11, .18); color: #fcd34d; }
@@ -385,14 +420,26 @@ button.uc-head-ico:hover { background: rgba(142, 87, 254, .2); }
 .uc-tg-modal .tg-row { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
 .uc-tg-modal .tg-row > label { flex: 0 0 130px; font-weight: 700; font-size: .9rem; margin: 0; }
 .uc-tg-modal .tg-row > :last-child { flex: 1; }
+.uc-tg-modal .input-group .uc-basis-sel { flex: 0 0 110px; border-radius: 0 10px 10px 0; }
+.uc-tg-modal .input-group .uc-basis-sel + .form-control { border-radius: 0; }
+/* انتخابگر مشتری: آیکن جستجو سمت چپ کادر؛ ضربدر پاک کردن کنارش تا روی هم نیفتند */
+#tgPicker .ep-icon { right: auto; left: 9px; }
+#tgPicker .ep-clear { left: 28px; }
+#tgPicker .ep-input { padding-right: 12px; padding-left: 52px; }
+/* سوئیچ وضعیت از لبهٔ راست ستون فیلدها شروع می‌شود؛ بوت‌استرپ آن را برای چپ‌چین می‌چیند */
+.uc-tg-modal .form-check.tg-switch, .uc-rule-row .form-check.tg-switch { display: flex; min-height: 0; padding: 0; }
+.uc-tg-modal .tg-switch .form-check-input, .uc-rule-row .tg-switch .form-check-input { float: none; margin: 0; cursor: pointer; }
+.uc-tg-modal .tg-switch .form-check-input:checked, .uc-rule-row .tg-switch .form-check-input:checked { background-color: var(--primary, #8e57fe); border-color: var(--primary, #8e57fe); }
+/* حالت «بدون تغییر» ویرایش گروهی: خاکستری با دکمهٔ وسط، نه شبیه روشن */
+.uc-tg-modal .tg-switch .form-check-input:indeterminate { background-color: #adb5bd; border-color: #adb5bd; background-position: center; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e"); }
 .uc-tg-modal .form-control { border-radius: 10px; }
 .uc-tg-modal .input-group .form-control { border-radius: 0 10px 10px 0; }
 .uc-tg-modal .input-group-text { border-radius: 10px 0 0 10px; font-size: .85rem; background: rgba(142, 87, 254, .05); }
 .uc-tg-modal .tg-date { position: relative; }
 .uc-tg-modal .tg-date i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted, #6b7490); }
 .uc-tg-modal .tg-date .form-control { background: rgba(0, 0, 0, .02); cursor: default; }
-.uc-tg-modal .modal-footer { justify-content: flex-start; gap: 12px; border-top: 1px solid var(--border-soft, #eee); }
-.uc-tg-modal .tg-btn { min-width: 150px; padding: .6rem 1.2rem; border-radius: 10px; font-weight: 700; }
+.uc-tg-modal .modal-footer { justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border-soft, #eee); }
+.uc-tg-modal .tg-btn { justify-content: center; min-width: 150px; padding: .6rem 1.2rem; border-radius: 10px; font-weight: 700; }
 :root[data-theme="dark"] .uc-tg-modal .modal-title { color: #b79bff; }
 :root[data-theme="dark"] .uc-tg-modal .input-group-text { background: rgba(142, 87, 254, .12); }
 :root[data-theme="dark"] .uc-tg-modal .tg-date .form-control { background: rgba(255, 255, 255, .04); }
@@ -417,7 +464,7 @@ button.uc-head-ico:hover { background: rgba(142, 87, 254, .2); }
 .uc-pf-quick .btn:hover { background: rgba(142, 87, 254, .18); }
 .uc-pf-xl { border-radius: 10px; padding: .45rem 1.1rem; font-weight: 700; }
 .uc-pf-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 16px 0; }
-.uc-pf-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 22px 24px; border-radius: 14px; border: 1px solid transparent; }
+.uc-pf-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 90px; padding: 22px 24px; border-radius: 14px; border: 1px solid transparent; }
 .uc-pf-card .k { font-size: .85rem; color: var(--text-muted, #6b7490); margin-bottom: 6px; }
 .uc-pf-card .v { font-size: 1.6rem; font-weight: 800; }
 .uc-pf-card .ic { width: 52px; height: 52px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; flex: 0 0 auto; }

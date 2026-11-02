@@ -101,6 +101,7 @@ type ucrmCustomerOut struct {
 	// فروش واقعی ماه از فاکتورهای CRM پر می‌شود (فعلا null).
 	ProposedTarget *int64   `json:"proposed_target"`
 	TargetAmount   *int64   `json:"target_amount"`    // تارگت مؤثر دورهٔ جاری (ucrm_targets.go)
+	TargetBasis    string   `json:"target_basis"`     // target = سقف فروش | floor = کف فروش
 	TargetPeriod   string   `json:"target_period"`    // «مهر ۱۴۰۵» / «پاییز ۱۴۰۵» / «سال ۱۴۰۵»
 	TargetSuspend  bool     `json:"target_suspended"` // «معلق» → در رنگ وضعیت حساب نمی‌شود
 	SalesAmount    *float64 `json:"sales_amount"`

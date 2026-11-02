@@ -1,7 +1,7 @@
 package main
 
 // ═══════════════════════════════════════════════════════════════════
-//  CRM جدید — تارگت‌ها و قواعد هدف‌گذاری (pages/ucrm-targets.php).
+//  CRM جدید — تارگت‌ها و قواعد تارگت‌گذاری (pages/ucrm-targets.php).
 //
 //  دوره‌ها (شمسی): monthly '1405-07' | quarterly '1405-Q3' | yearly '1405'
 //  مقدار مؤثر هر مشتری برای یک دوره (به ترتیب اولویت):
@@ -89,22 +89,21 @@ func (s *server) ucrmCurrentPeriods() map[string]string {
 
 type effTarget struct {
 	Target    *int64 `json:"target"`
-	TargetSrc string `json:"target_src"` // own | carry | rule | ""
-	Floor     *int64 `json:"floor"`
-	FloorSrc  string `json:"floor_src"`
+	TargetSrc string `json:"target_src"`       // own | carry | rule | ""
+	Basis     string `json:"target_basis"`     // target = سقف فروش | floor = کف فروش
 	Count     *int64 `json:"target_count"`     // تارگت تعداد فروش (مورد) — بدون قاعدهٔ پیش‌فرض
 	CountSrc  string `json:"target_count_src"` // own | carry | ""
 	Active    bool   `json:"is_active"`
 }
 
-// ucrmEffective: مقدار مؤثر تارگت/کف برای همهٔ مشتری‌های سازمان در یک دوره. reps: customer_id → rep_id
+// ucrmEffective: مقدار مؤثر تارگت برای همهٔ مشتری‌های سازمان در یک دوره. reps: customer_id → rep_id
 func (s *server) ucrmEffective(reps map[int64]int64, ptype, key string) (map[int64]*effTarget, error) {
 	out := map[int64]*effTarget{}
 	for id := range reps {
 		out[id] = &effTarget{Active: true}
 	}
 	rows, err := s.db.Query(`
-		SELECT t.customer_id, t.period_key, t.target_amount, t.floor_amount, t.target_count, t.is_active
+		SELECT t.customer_id, t.period_key, t.target_amount, t.basis, t.target_count, t.is_active
 		FROM ucrm_targets t JOIN ucrm_customers c ON c.id = t.customer_id
 		WHERE c.organization_id = ? AND c.is_deleted = 0 AND t.period_type = ? AND t.period_key <= ?
 		ORDER BY t.customer_id, t.period_key DESC`, ucrmOrg, ptype, key)
@@ -115,10 +114,10 @@ func (s *server) ucrmEffective(reps map[int64]int64, ptype, key string) (map[int
 	seen := map[int64]bool{}
 	for rows.Next() {
 		var cid int64
-		var pk string
-		var tg, fl, cnt sql.NullInt64
+		var pk, basis string
+		var tg, cnt sql.NullInt64
 		var act int
-		if err := rows.Scan(&cid, &pk, &tg, &fl, &cnt, &act); err != nil {
+		if err := rows.Scan(&cid, &pk, &tg, &basis, &cnt, &act); err != nil {
 			return nil, err
 		}
 		e, ok := out[cid]
@@ -135,11 +134,7 @@ func (s *server) ucrmEffective(reps map[int64]int64, ptype, key string) (map[int
 		}
 		if e.Target == nil && tg.Valid {
 			v := tg.Int64
-			e.Target, e.TargetSrc = &v, src
-		}
-		if e.Floor == nil && fl.Valid {
-			v := fl.Int64
-			e.Floor, e.FloorSrc = &v, src
+			e.Target, e.TargetSrc, e.Basis = &v, src, basis
 		}
 		if e.Count == nil && cnt.Valid {
 			v := cnt.Int64
@@ -148,14 +143,14 @@ func (s *server) ucrmEffective(reps map[int64]int64, ptype, key string) (map[int
 	}
 	rows.Close()
 
-	// قواعد پیش‌فرض
-	type ruleKey struct {
-		basis string
-		rep   int64
+	// قواعد پیش‌فرض: برای هر کارشناس یک قاعده، کف یا سقف. اگر دادهٔ قدیمی هر دو را داشت، سقف مقدم است
+	type ruleVal struct {
+		amount int64
+		basis  string
 	}
-	rules := map[ruleKey]int64{}
+	rules := map[int64]ruleVal{}
 	rr, err := s.db.Query(`SELECT basis, amount, COALESCE(rep_id,0) FROM ucrm_target_rules
-		WHERE organization_id = ? AND period_type = ? AND is_active = 1 ORDER BY id`, ucrmOrg, ptype)
+		WHERE organization_id = ? AND period_type = ? AND is_active = 1 ORDER BY (basis = 'target') DESC, id`, ucrmOrg, ptype)
 	if err != nil {
 		return nil, err
 	}
@@ -164,28 +159,22 @@ func (s *server) ucrmEffective(reps map[int64]int64, ptype, key string) (map[int
 		var b string
 		var a, rep int64
 		if rr.Scan(&b, &a, &rep) == nil {
-			if _, dup := rules[ruleKey{b, rep}]; !dup {
-				rules[ruleKey{b, rep}] = a
+			if _, dup := rules[rep]; !dup {
+				rules[rep] = ruleVal{a, b}
 			}
 		}
-	}
-	pick := func(basis string, rep int64) (int64, bool) {
-		if v, ok := rules[ruleKey{basis, rep}]; ok && rep > 0 {
-			return v, true
-		}
-		v, ok := rules[ruleKey{basis, 0}]
-		return v, ok
 	}
 	for cid, e := range out {
-		if e.Target == nil {
-			if v, ok := pick("target", reps[cid]); ok {
-				e.Target, e.TargetSrc = &v, "rule"
-			}
+		if e.Target != nil {
+			continue
 		}
-		if e.Floor == nil {
-			if v, ok := pick("floor", reps[cid]); ok {
-				e.Floor, e.FloorSrc = &v, "rule"
-			}
+		r, ok := rules[reps[cid]]
+		if !ok || reps[cid] == 0 {
+			r, ok = rules[0]
+		}
+		if ok {
+			v := r.amount
+			e.Target, e.TargetSrc, e.Basis = &v, "rule", r.basis
 		}
 	}
 	return out, nil
@@ -215,6 +204,7 @@ func (s *server) ucrmApplyCurrentTargets(items []ucrmCustomerOut) {
 			if e := eff[c.ID]; e != nil && e.Target != nil && *e.Target > 0 {
 				v := *e.Target
 				c.TargetAmount = &v
+				c.TargetBasis = e.Basis
 				c.TargetPeriod = periodLabel(pt, cur[pt])
 				c.TargetSuspend = !e.Active
 				done[c.ID] = true
@@ -226,7 +216,7 @@ func (s *server) ucrmApplyCurrentTargets(items []ucrmCustomerOut) {
 // ucrmUpsertTarget: یک رکورد دوره را می‌نویسد؛ nil = دست نزن، ۰ = خالی کن (برگشت به ادامه/قاعده)
 func ucrmUpsertTarget(ex interface {
 	Exec(string, ...any) (sql.Result, error)
-}, cid int64, ptype, key string, target, floor, count *int64, active *bool, uid int64) error {
+}, cid int64, ptype, key string, target *int64, basis *string, count *int64, active *bool, uid int64) error {
 	if _, err := ex.Exec(`INSERT IGNORE INTO ucrm_targets (customer_id, period_type, period_key, updated_by) VALUES (?, ?, ?, ?)`,
 		cid, ptype, key, uid); err != nil {
 		return err
@@ -237,9 +227,9 @@ func ucrmUpsertTarget(ex interface {
 		set = append(set, "target_amount = ?")
 		args = append(args, nullIfZero(*target))
 	}
-	if floor != nil {
-		set = append(set, "floor_amount = ?")
-		args = append(args, nullIfZero(*floor))
+	if basis != nil {
+		set = append(set, "basis = ?")
+		args = append(args, *basis)
 	}
 	if count != nil {
 		set = append(set, "target_count = ?")
@@ -339,8 +329,8 @@ func (s *server) ucrmListTargets(w http.ResponseWriter, r *http.Request) {
 }
 
 // ──────────────── PUT /ucrm/targets — فقط مدیر (تکی، گروهی، افزودن) ────────────────
-// body: {customer_ids:[..], period_type, period, target?, floor?, is_active?}
-// target/floor: عدد = تعیین، ۰ = پاک کردن عدد اختصاصی (برگشت به دورهٔ قبل/قاعده)، نبودن = دست نزن
+// body: {customer_ids:[..], period_type, period, target?, target_basis?, rep_id?, is_active?}
+// target: عدد = تعیین، ۰ = پاک کردن عدد اختصاصی (برگشت به دورهٔ قبل/قاعده)، نبودن = دست نزن
 
 func (s *server) ucrmPutTargets(w http.ResponseWriter, r *http.Request) {
 	uid := userOf(r.Context()).ID
@@ -353,7 +343,8 @@ func (s *server) ucrmPutTargets(w http.ResponseWriter, r *http.Request) {
 		PeriodType  string  `json:"period_type"`
 		Period      string  `json:"period"`
 		Target      *int64  `json:"target"`
-		Floor       *int64  `json:"floor"`
+		Basis       *string `json:"target_basis"` // target = سقف فروش | floor = کف فروش؛ فقط همراه مبلغ
+		RepID       *int64  `json:"rep_id"`       // کارشناس فروش مشتری؛ نبودن = دست نزن
 		TargetCount *int64  `json:"target_count"` // تارگت تعداد فروش (مورد)
 		IsActive    *bool   `json:"is_active"`
 	}
@@ -368,22 +359,29 @@ func (s *server) ucrmPutTargets(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "دست‌کم یک مشتری را انتخاب کنید.")
 		return
 	}
-	if in.Target == nil && in.Floor == nil && in.TargetCount == nil && in.IsActive == nil {
+	hasTargetData := in.Target != nil || in.TargetCount != nil || in.IsActive != nil
+	if !hasTargetData && in.RepID == nil {
 		writeErr(w, http.StatusBadRequest, "چیزی برای ذخیره نیست.")
 		return
 	}
-	for _, v := range []*int64{in.Target, in.Floor} {
-		if v != nil && (*v < 0 || *v > 1_000_000_000_000_000) {
-			writeErr(w, http.StatusBadRequest, "مبلغ معتبر نیست.")
-			return
-		}
+	if in.Target != nil && (*in.Target < 0 || *in.Target > 1_000_000_000_000_000) {
+		writeErr(w, http.StatusBadRequest, "مبلغ معتبر نیست.")
+		return
 	}
 	if in.TargetCount != nil && (*in.TargetCount < 0 || *in.TargetCount > 10_000_000) {
 		writeErr(w, http.StatusBadRequest, "تارگت تعداد فروش معتبر نیست.")
 		return
 	}
-	if in.Target != nil && in.Floor != nil && *in.Target > 0 && *in.Floor > *in.Target {
-		writeErr(w, http.StatusBadRequest, "کف فروش نمی‌تواند از تارگت بیشتر باشد.")
+	if in.Basis != nil && *in.Basis != "target" && *in.Basis != "floor" {
+		writeErr(w, http.StatusBadRequest, "مبنای تارگت فروش معتبر نیست.")
+		return
+	}
+	// نوع مبنا فقط همراه مبلغ معنا دارد
+	if in.Target == nil || *in.Target == 0 {
+		in.Basis = nil
+	}
+	if in.RepID != nil && !s.isUcrmRep(*in.RepID) {
+		writeErr(w, http.StatusBadRequest, "کارشناس فروش معتبر نیست.")
 		return
 	}
 
@@ -395,8 +393,10 @@ func (s *server) ucrmPutTargets(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback()
 	actor := s.userName(uid)
 	label := periodLabel(in.PeriodType, in.Period)
-	chk, err := tx.Prepare(`SELECT name FROM ucrm_customers WHERE id = ? AND organization_id = ? AND is_deleted = 0
-		AND status IN ('active','pending_accounting')`)
+	chk, err := tx.Prepare(`SELECT c.name, COALESCE(c.rep_id,0),
+		       TRIM(CONCAT(COALESCE(u.first_name,''), ' ', COALESCE(u.last_name,'')))
+		FROM ucrm_customers c LEFT JOIN users u ON u.id = c.rep_id WHERE c.id = ? AND c.organization_id = ? AND c.is_deleted = 0
+		AND c.status IN ('active','pending_accounting')`)
 	if err != nil {
 		writeDBErr(w, "ucrmPutTargets prep", err)
 		return
@@ -409,27 +409,36 @@ func (s *server) ucrmPutTargets(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		seen[cid] = true
-		var name string
-		if chk.QueryRow(cid, ucrmOrg).Scan(&name) != nil {
+		var name, curRepName string
+		var curRep int64
+		if chk.QueryRow(cid, ucrmOrg).Scan(&name, &curRep, &curRepName) != nil {
 			continue
 		}
-		if err := ucrmUpsertTarget(tx, cid, in.PeriodType, in.Period, in.Target, in.Floor, in.TargetCount, in.IsActive, uid); err != nil {
+		if in.RepID != nil && *in.RepID != curRep {
+			if _, err := tx.Exec("UPDATE ucrm_customers SET rep_id = ? WHERE id = ?", *in.RepID, cid); err != nil {
+				writeDBErr(w, "ucrmPutTargets rep", err)
+				return
+			}
+			s.ucrmEvent(tx, cid, uid, "rep_changed", actor+" کارشناس فروش مشتری «"+name+"» را از «"+curRepName+"» به «"+s.userName(*in.RepID)+"» تغییر داد.")
+		}
+		done++
+		if !hasTargetData {
+			continue // فقط کارشناس عوض شده؛ رکورد تارگت خالی ساخته نشود
+		}
+		if err := ucrmUpsertTarget(tx, cid, in.PeriodType, in.Period, in.Target, in.Basis, in.TargetCount, in.IsActive, uid); err != nil {
 			writeDBErr(w, "ucrmPutTargets upsert", err)
 			return
 		}
 		parts := []string{}
 		if in.Target != nil {
 			if *in.Target > 0 {
-				parts = append(parts, "تارگت را "+faMoney(*in.Target)+" تومان")
+				lbl := "سقف فروش"
+				if in.Basis != nil && *in.Basis == "floor" {
+					lbl = "کف فروش"
+				}
+				parts = append(parts, lbl+" را "+faMoney(*in.Target)+" تومان")
 			} else {
 				parts = append(parts, "تارگت اختصاصی را خالی")
-			}
-		}
-		if in.Floor != nil {
-			if *in.Floor > 0 {
-				parts = append(parts, "کف فروش را "+faMoney(*in.Floor)+" تومان")
-			} else {
-				parts = append(parts, "کف فروش اختصاصی را خالی")
 			}
 		}
 		if in.TargetCount != nil {
@@ -448,7 +457,6 @@ func (s *server) ucrmPutTargets(w http.ResponseWriter, r *http.Request) {
 		}
 		note := actor + " برای مشتری «" + name + "» در " + label + " " + strings.Join(parts, "، ") + " کرد."
 		s.ucrmEvent(tx, cid, uid, "target_set", note)
-		done++
 	}
 	if err := tx.Commit(); err != nil {
 		writeDBErr(w, "ucrmPutTargets commit", err)
@@ -462,7 +470,7 @@ func (s *server) ucrmPutTargets(w http.ResponseWriter, r *http.Request) {
 		"message": faDigits(strconv.Itoa(done)) + " مشتری برای " + label + " به‌روز شد."})
 }
 
-// ──────────────── قواعد پیش‌فرض («تنظیمات هدف‌گذاری») ────────────────
+// ──────────────── قواعد پیش‌فرض («تنظیمات تارگت‌گذاری») ────────────────
 
 type ucrmRule struct {
 	ID         int64  `json:"id"`
@@ -500,7 +508,7 @@ func (s *server) ucrmListRules(w http.ResponseWriter, r *http.Request) {
 func (s *server) ucrmSaveRule(w http.ResponseWriter, r *http.Request) {
 	uid := userOf(r.Context()).ID
 	if !s.ucrmRolesOf(uid).Manager {
-		writeErr(w, http.StatusForbidden, "فقط مدیر می‌تواند تنظیمات هدف‌گذاری را تغییر دهد.")
+		writeErr(w, http.StatusForbidden, "فقط مدیر می‌تواند تنظیمات تارگت‌گذاری را تغییر دهد.")
 		return
 	}
 	id := idParam(r) // صفر = قاعدهٔ جدید (POST)
@@ -515,7 +523,7 @@ func (s *server) ucrmSaveRule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if in.Basis != "target" && in.Basis != "floor" {
-		writeErr(w, http.StatusBadRequest, "مبنای هدف‌گذاری را انتخاب کنید.")
+		writeErr(w, http.StatusBadRequest, "مبنای تارگت فروش را انتخاب کنید.")
 		return
 	}
 	if in.PeriodType != "monthly" && in.PeriodType != "quarterly" && in.PeriodType != "yearly" {
@@ -530,14 +538,14 @@ func (s *server) ucrmSaveRule(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "کارشناس انتخاب‌شده عضو تیم فروش نیست.")
 		return
 	}
-	// یک قاعدهٔ فعال برای هر (مبنا، دوره، کارشناس)
+	// یک قاعدهٔ فعال برای هر (دوره، کارشناس): یا کف فروش یا سقف فروش
 	if in.IsActive {
 		var other int64
-		_ = s.db.QueryRow(`SELECT id FROM ucrm_target_rules WHERE organization_id = ? AND basis = ? AND period_type = ?
+		_ = s.db.QueryRow(`SELECT id FROM ucrm_target_rules WHERE organization_id = ? AND period_type = ?
 			AND COALESCE(rep_id,0) = ? AND is_active = 1 AND id <> ? LIMIT 1`,
-			ucrmOrg, in.Basis, in.PeriodType, in.RepID, id).Scan(&other)
+			ucrmOrg, in.PeriodType, in.RepID, id).Scan(&other)
 		if other > 0 {
-			writeErr(w, http.StatusConflict, "برای همین مبنا، دوره و کارشناس یک قاعدهٔ فعال دیگر هست؛ همان را ویرایش کنید یا اول غیرفعالش کنید.")
+			writeErr(w, http.StatusConflict, "برای همین دوره و کارشناس یک قاعدهٔ فعال دیگر وجود دارد؛ هر دوره فقط یکی از کف یا سقف فروش را دارد.")
 			return
 		}
 	}
@@ -568,13 +576,13 @@ func (s *server) ucrmSaveRule(w http.ResponseWriter, r *http.Request) {
 		}
 		id, _ = res.LastInsertId()
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "id": id, "message": "تنظیمات هدف‌گذاری ذخیره شد."})
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "id": id, "message": "تنظیمات تارگت‌گذاری ذخیره شد."})
 }
 
 func (s *server) ucrmDeleteRule(w http.ResponseWriter, r *http.Request) {
 	uid := userOf(r.Context()).ID
 	if !s.ucrmRolesOf(uid).Manager {
-		writeErr(w, http.StatusForbidden, "فقط مدیر می‌تواند تنظیمات هدف‌گذاری را تغییر دهد.")
+		writeErr(w, http.StatusForbidden, "فقط مدیر می‌تواند تنظیمات تارگت‌گذاری را تغییر دهد.")
 		return
 	}
 	res, err := s.db.Exec("DELETE FROM ucrm_target_rules WHERE id = ? AND organization_id = ?", idParam(r), ucrmOrg)

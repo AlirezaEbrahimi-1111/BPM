@@ -193,7 +193,7 @@ $__page = [
             const tVal = cust.target_amount || cust.proposed_target || 0;
             let targetCell = tVal ? `<b>${UCRM.money(tVal)} تومان</b>` : none;
             if (canDecide && PAGE.stage === 'manager') {
-                targetCell = `<div class="input-group input-group-sm uc-ap-target"><input type="text" class="form-control" id="apTarget" placeholder="بدون تارگت">
+                targetCell = `<div class="input-group input-group-sm uc-ap-target"><input type="text" class="form-control" id="apTarget" placeholder="۰">
                     <span class="input-group-text">تومان</span></div>
                     <div class="form-text">${cust.proposed_target ? 'پیشنهاد کارشناس: ' + UCRM.money(cust.proposed_target) + ' تومان' : 'کارشناس تارگتی پیشنهاد نداده است.'}</div>`;
             }

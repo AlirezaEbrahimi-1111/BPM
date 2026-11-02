@@ -15,8 +15,8 @@
 
     /* رنگ سری‌ها — با validate_palette (dataviz) روی سطح روشن و تاریک سنجیده شده */
     var PALETTE = {
-        light: { target: '#7c5ce0', sales: '#2fa38c', rest: '#e5e7eb', grid: '#eef0f4', text: '#4b5563' },
-        dark: { target: '#9473f0', sales: '#26957c', rest: '#374151', grid: '#2a2f3a', text: '#cbd5e1' }
+        light: { target: '#7c5ce0', sales: '#2fa38c', teamTarget: '#a78bfa', teamSales: '#5b21b6', series: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6', '#e34948'], rest: '#e5e7eb', grid: '#eef0f4', text: '#4b5563' },
+        dark: { target: '#9473f0', sales: '#26957c', teamTarget: '#6f58c9', teamSales: '#b49cfb', series: ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9', '#e66767'], rest: '#374151', grid: '#2a2f3a', text: '#cbd5e1' }
     };
     var TYPE_LABEL = { call: 'تماس تلفنی', sms: 'پیامک', meeting: 'جلسهٔ حضوری', email: 'ایمیل', proforma: 'پیگیری پیش‌فاکتور', other: 'سایر' };
 
@@ -199,66 +199,74 @@
         S.charts = {};
         var bar = { borderRadius: 4, borderSkipped: 'start', maxBarThickness: 22 };
 
-        // مقایسه تیم فروش — فروش هر کارشناس (یک سری)؛ بدون فروش = پیام خالی به‌جای محور بی‌معنا
-        var noSales = !rows.some(function (r) { return r.sales > 0; });
-        document.getElementById('ucdTeamEmpty').hidden = !noSales;
+        // مقایسه تیم فروش — تارگت و فروش هر کارشناس، ستونی کنار هم. بدون عدد هم محور و
+        // نام کارشناس‌ها دیده می‌شوند (مثل شاخص‌های کلیدی)؛ suggestedMax محور را از ۰ تا ۰ نجات می‌دهد
+        var teamScales = axisOpts(c, false);
+        teamScales.y.suggestedMax = 10000000;
+        teamScales.y.ticks.callback = function (v) { return fa(Number(v) / 1000000) + 'M'; };
         S.charts.team = new Chart(document.getElementById('ucdChTeam'), {
-            type: 'bar',
-            data: { labels: labels, datasets: [Object.assign({ label: 'فروش', data: rows.map(function (r) { return r.sales; }), backgroundColor: c.sales }, bar)] },
-            options: {
-                indexAxis: 'y', maintainAspectRatio: false, scales: noSales ? { x: { display: false }, y: { display: false } } : axisOpts(c, true),
-                plugins: { legend: { display: false }, tooltip: { rtl: true, callbacks: { label: tooltipMoney } } }
-            }
-        });
-
-        // شاخص‌های کلیدی — تحقق تارگت کل تیم
-        var tgt = 0, sal = 0, withT = 0, sumPct = 0;
-        rows.forEach(function (r) {
-            tgt += r.target; sal += r.sales;
-            if (r.target > 0) { withT++; sumPct += r.sales * 100 / r.target; }
-        });
-        var teamPct = tgt > 0 ? Math.round(sal * 100 / tgt) : 0;
-        document.getElementById('ucdKpiPct').textContent = fa(teamPct) + '٪';
-        S.charts.kpi = new Chart(document.getElementById('ucdChKpi'), {
-            type: 'doughnut',
-            data: {
-                labels: ['فروش', 'باقی‌مانده تا تارگت'],
-                datasets: [{ data: [sal, Math.max(0, tgt - sal)], backgroundColor: [c.sales, c.rest], borderColor: isDark() ? '#1a1a19' : '#fff', borderWidth: 2 }]
-            },
-            options: {
-                maintainAspectRatio: false, cutout: '72%',
-                plugins: {
-                    legend: { position: 'bottom', rtl: true, labels: { boxWidth: 10, color: c.text } },
-                    tooltip: { rtl: true, callbacks: { label: function (ctx) { return ' ' + ctx.label + ': ' + UCRM.money(ctx.parsed) + ' تومان'; } } }
-                }
-            }
-        });
-        var need = (S.data.needs_followup || []).length;
-        document.getElementById('ucdKpis').innerHTML =
-            '<div>تارگت کل<b>' + UCRM.money(tgt) + '</b></div>' +
-            '<div>فروش کل<b>' + UCRM.money(sal) + '</b></div>' +
-            '<div>میانگین تحقق کارشناس‌ها<b>' + fa(withT ? Math.round(sumPct / withT) : 0) + '٪</b></div>' +
-            '<div>نیازمند پیگیری<b>' + fa(need) + ' مشتری</b></div>';
-
-        // مقایسه هدف و فروش کارشناس‌ها — دو سری کنار هم
-        S.charts.cmp = new Chart(document.getElementById('ucdChCmp'), {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
-                    Object.assign({ label: 'تارگت', data: rows.map(function (r) { return r.target; }), backgroundColor: c.target }, bar),
-                    Object.assign({ label: 'فروش', data: rows.map(function (r) { return r.sales; }), backgroundColor: c.sales }, bar)
+                    Object.assign({ label: 'تارگت', data: rows.map(function (r) { return r.target; }), backgroundColor: c.teamTarget }, bar),
+                    Object.assign({ label: 'فروش', data: rows.map(function (r) { return r.sales; }), backgroundColor: c.teamSales }, bar)
                 ]
             },
             options: {
-                maintainAspectRatio: false, scales: axisOpts(c, false),
+                maintainAspectRatio: false,
+                scales: teamScales,
                 datasets: { bar: { categoryPercentage: .7, barPercentage: .9 } },
                 plugins: {
-                    legend: { position: 'bottom', rtl: true, labels: { boxWidth: 10, color: c.text } },
+                    legend: { position: 'top', align: 'end', rtl: true, labels: { boxWidth: 10, color: c.text } },
                     tooltip: { rtl: true, callbacks: { label: tooltipMoney } }
                 }
             }
         });
+
+        // درصد تحقق فروش — حلقه: سهم فروش هر کارشناس؛ فهرست: درصد تحقق هر نفر؛ وسط: میانگین.
+        // رنگ به کارشناس می‌چسبد (ترتیب rep_id)، نه به رتبه؛ با تغییر بازه یا مرتب‌سازی عوض نمی‌شود
+        var byId = rows.map(function (r) { return r.rep_id; }).sort(function (a, b) { return a - b; });
+        var repColor = function (r) { return c.series[byId.indexOf(r.rep_id)] || c.rest; };
+        var pctList = rows.map(function (r) { return r.target > 0 ? Math.round(r.sales * 100 / r.target) : 0; });
+        var withTarget = rows.filter(function (r) { return r.target > 0; }).length;
+        var avgPct = withTarget ? Math.round(pctList.reduce(function (a, p) { return a + p; }, 0) / withTarget) : 0;
+        var hasSales = rows.some(function (r) { return r.sales > 0; });
+        document.getElementById('ucdKpiPct').textContent = fa(avgPct) + '٪';
+        S.charts.kpi = new Chart(document.getElementById('ucdChKpi'), {
+            type: 'doughnut',
+            data: {
+                labels: hasSales ? labels : ['هنوز فروشی ثبت نشده'],
+                datasets: [{
+                    data: hasSales ? rows.map(function (r) { return r.sales; }) : [1],
+                    backgroundColor: hasSales ? rows.map(repColor) : [c.rest],
+                    borderColor: isDark() ? '#1b2130' : '#fff', borderWidth: 2
+                }]
+            },
+            options: {
+                maintainAspectRatio: false, cutout: '72%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        rtl: true, enabled: hasSales,
+                        callbacks: { label: function (ctx) { return ' ' + ctx.label + ': ' + UCRM.money(ctx.parsed) + ' تومان (تحقق ' + fa(pctList[ctx.dataIndex]) + '٪)'; } }
+                    }
+                }
+            }
+        });
+        document.getElementById('ucdKpis').innerHTML = rows.length ? rows.map(function (r, i) {
+            return '<li><span class="dot" style="background:' + repColor(r) + '"></span><span class="nm" title="' + esc(r.rep_name) + '">' + esc(r.rep_name) + '</span><b>' + fa(pctList[i]) + '٪</b></li>';
+        }).join('') : '<li class="none">کارشناسی برای نمایش نیست</li>';
+
+        // مقایسه فروش کارشناسان — نوار پیشرفت؛ طول هر نوار نسبت به بیشترین فروش تیم
+        var maxSales = rows.reduce(function (m, r) { return Math.max(m, r.sales || 0); }, 0);
+        document.getElementById('ucdCmpList').innerHTML = rows.length ? rows.map(function (r, i) {
+            var pct = maxSales > 0 ? Math.round((r.sales || 0) * 100 / maxSales) : 0;
+            var tip = esc(r.rep_name) + ': فروش ' + UCRM.money(r.sales) + ' تومان';
+            return '<li title="' + tip + '"><span class="nm">' + esc(r.rep_name) + '</span>' +
+                '<span class="track"><i class="' + (i % 2 ? 'alt' : '') + '" style="width:' + pct + '%"></i></span>' +
+                '<b>' + UCRM.money(r.sales) + '</b></li>';
+        }).join('') : '<li class="none">کارشناسی برای نمایش نیست</li>';
     }
 
     function exportExcel() {

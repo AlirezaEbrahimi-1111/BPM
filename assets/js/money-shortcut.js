@@ -1,5 +1,5 @@
 /*
- * money-shortcut.js — میانبر «سه صفر» برای فیلدهای مبلغِ فاکتور رسمی.
+ * money-shortcut.js — جداکنندهٔ هزارگان هنگام تایپ و میانبر «سه صفر» برای فیلدهای مبلغ حسابداری رسمی و غیررسمی.
  * ------------------------------------------------------------------
  * وقتی مکان‌نما داخل یک فیلد مبلغ است و کاربر * را می‌زند (با یا بدون Ctrl)، مبلغ در
  * ۱۰۰۰ ضرب می‌شود (سه صفر به آخرش اضافه می‌شود) و با جداکنندهٔ هزارگان و
@@ -41,6 +41,26 @@
     function isMoneyField(el) {
         return el && typeof el.matches === 'function' && el.matches(SELECTOR);
     }
+
+    // جداکنندهٔ هزارگان هنگام تایپ؛ فقط نمایش است و هر صفحه موقع ذخیره عدد خالص می‌فرستد.
+    // مکان‌نما نسبت به رقم‌های سمت راستش حفظ می‌شود تا ویرایش وسط عدد به‌هم نریزد.
+    document.addEventListener('input', function (e) {
+        var el = e.target;
+        if (!isMoneyField(el) || e.isComposing) return;
+        var raw = toEnDigits(el.value);
+        var hasDigit = /\d/.test(raw);
+        var caret = el.selectionStart;
+        var digitsAfter = caret == null ? 0 : raw.slice(caret).replace(/\D/g, '').length;
+        var v = hasDigit ? faMoney(toInt(raw)) : '';
+        if (el.value === v) return;
+        el.value = v;
+        if (caret == null) return;
+        var pos = v.length;
+        for (var seen = 0; pos > 0 && seen < digitsAfter; pos--) {
+            if (FA.indexOf(v[pos - 1]) !== -1) seen++;
+        }
+        try { el.setSelectionRange(pos, pos); } catch (err) { /* بعضی input ها setSelectionRange ندارند */ }
+    }, true);
 
     // تشخیص *  (هم ستارهٔ ردیف اصلی = Shift+۸، هم ستارهٔ کیبورد عددی). Ctrl لازم نیست
     // (قبلا فقط Ctrl + * کار می‌کرد)؛ با Ctrl هم مثل قبل کار می‌کند. فیلد مبلغ هیچ‌وقت

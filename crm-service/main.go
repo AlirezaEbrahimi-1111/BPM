@@ -410,7 +410,7 @@ func main() {
 	// داشبورد فروش (pages/dashboard-*.php، ۱۴۰۵/۰۸/۰۳)
 	mux.HandleFunc("GET /crm/api/ucrm/dashboard", ucrm(s.ucrmDashboard))
 	mux.HandleFunc("POST /crm/api/ucrm/customers/{id}/nudge", ucrm(s.ucrmNudge))
-	// تارگت‌ها و قواعد هدف‌گذاری (ucrm_targets.go) — نوشتن فقط مدیر (داخل هندلر)
+	// تارگت‌ها و قواعد تارگت‌گذاری (ucrm_targets.go) — نوشتن فقط مدیر (داخل هندلر)
 	mux.HandleFunc("GET /crm/api/ucrm/targets", ucrm(s.ucrmListTargets))
 	mux.HandleFunc("PUT /crm/api/ucrm/targets", ucrm(s.ucrmPutTargets))
 	mux.HandleFunc("GET /crm/api/ucrm/target-rules", ucrm(s.ucrmListRules))

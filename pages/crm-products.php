@@ -220,7 +220,7 @@ $canWrite = true;
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">قیمت واحد (ریال) <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="f_unit_price" inputmode="numeric" data-money>
+                                <input type="text" class="form-control" id="f_unit_price" inputmode="numeric" placeholder="۰" data-money>
                             </div>
                             <div class="col-md-4" id="openingWrap">
                                 <label class="form-label">موجودی اولیه</label>

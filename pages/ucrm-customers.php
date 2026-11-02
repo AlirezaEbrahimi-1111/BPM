@@ -126,7 +126,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" id="lblTarget">تارگت ماهانهٔ پیشنهادی (تومان)</label>
-                                <input type="text" class="form-control" id="f_target" placeholder="مثلا ۵۰,۰۰۰,۰۰۰ — با * سه صفر اضافه می‌شود" autocomplete="off">
+                                <input type="text" class="form-control" id="f_target" placeholder="۰" autocomplete="off">
                                 <div class="form-text" id="targetHint">مدیر هنگام تأیید، تارگت نهایی را تعیین می‌کند.</div>
                             </div>
                             <div class="col-12">
@@ -139,16 +139,16 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
 
                     <!-- حالت ۲: انتخاب مشتری از نرم‌افزار حسابداری شایگان (وب‌سرویس، از داخل تونل) -->
                     <div data-mode-pane="accounting" hidden>
-                        <div class="uc-phone-row mb-2">
+                        <div class="uc-shy-bar">
                             <input type="text" class="form-control" id="shySearch" placeholder="جستجوی نام یا شمارهٔ تفصیلی" autocomplete="off">
-                            <button class="btn btn-outline-secondary" type="button" id="shyRefresh" title="بروزرسانی فهرست از حسابداری"><i class="bi bi-arrow-clockwise"></i></button>
+                            <div id="shyStatus" class="uc-shy-status"></div>
+                            <button class="btn btn-outline-secondary" type="button" id="shyRefresh" title="بروزرسانی فهرست از حسابداری" aria-label="بروزرسانی فهرست از حسابداری"><i class="bi bi-arrow-clockwise"></i></button>
                         </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="shyAll">
-                            <label class="form-check-label small" for="shyAll">جستجو در همهٔ تفصیلی‌های حسابداری (شاملِ مشتریانِ بدون گردش فروش)</label>
+                        <div class="form-check form-switch uc-shy-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="shyAll">
+                            <label class="form-check-label small" for="shyAll">نمایش مشتریان بدون گردش</label>
                         </div>
-                        <div id="shyStatus" class="form-text mb-2"></div>
-                        <div id="shyList" class="list-group" style="height:52vh;overflow-y:auto"></div>
+                        <div id="shyList" class="list-group uc-shy-list"></div>
                         <div id="shyPager" class="d-flex justify-content-between align-items-center mt-2"></div>
                     </div>
                 </div>
@@ -363,6 +363,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             document.querySelectorAll('#modeSeg .uc-seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
             document.querySelectorAll('[data-mode-pane]').forEach(el => el.hidden = el.dataset.modePane !== m);
             document.getElementById('btnSave').hidden = m !== 'manual';
+            document.getElementById('custModal').classList.toggle('uc-shy-mode', m === 'accounting');
             if (m === 'manual') setTimeout(() => document.getElementById('f_name').focus(), 30);
             if (m === 'accounting') { shyEnsureLoaded(); setTimeout(() => document.getElementById('shySearch').focus(), 30); }
         }
@@ -443,13 +444,13 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             const list = document.getElementById('shyList');
             const pg = document.getElementById('shyPager');
             const items = d.items || [], total = d.total || 0;
+            status.textContent = 'تعداد: ' + faDigits(total);
+            if (d.fetched_at) document.getElementById('shyRefresh').title = 'آخرین بروزرسانی: ' + faDigits(d.fetched_at);
             if (!items.length) {
-                status.textContent = shyState.q ? 'موردی با این جستجو پیدا نشد.' : 'مشتری‌ای در حسابداری نیست.';
-                list.innerHTML = ''; pg.innerHTML = '';
+                list.innerHTML = `<div class="text-muted small text-center p-4">${shyState.q ? 'موردی با این جستجو پیدا نشد.' : 'مشتری‌ای در حسابداری نیست.'}</div>`;
+                pg.innerHTML = '';
                 return;
             }
-            status.innerHTML = `${faDigits(total)} مشتری در حسابداری` +
-                (d.fetched_at ? ` · آخرین بروزرسانی: <span class="num-ltr">${faDigits(d.fetched_at)}</span>` : '');
             list.innerHTML = items.map(c => {
                 const act = c.linked ? '<span class="badge bg-secondary">قبلاً اضافه شده</span>' :
                     `<button type="button" class="btn btn-sm btn-primary shy-pick" data-job="${esc(c.job_no)}" data-name="${esc(c.name || '')}"><i class="bi bi-plus-lg ms-1"></i>انتخاب</button>`;
@@ -901,10 +902,19 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                 clearTimeout(shyState.timer);
                 shyState.timer = setTimeout(() => { shyState.q = e.target.value.trim(); shyState.page = 1; shyLoad(); }, 300);
             });
-            document.getElementById('shyRefresh').addEventListener('click', async () => {
+            document.getElementById('shyRefresh').addEventListener('click', async e => {
+                const btn = e.currentTarget;
+                btn.disabled = true;
                 document.getElementById('shyStatus').textContent = 'در حال بروزرسانی…';
-                try { await UCRM.get('/shygun/customers?refresh=1&per=1&scope=' + (shyState.all ? 'all' : 'customers')); } catch (e) { }
-                shyState.page = 1; shyLoad();
+                try {
+                    await UCRM.get('/shygun/customers?refresh=1&per=1&scope=' + (shyState.all ? 'all' : 'customers'));
+                } catch (err) {
+                    // لیست قبلی نمایش داده می‌شود؛ کاربر باید بداند تازه نشده
+                    showToast(err.message || 'بروزرسانی از حسابداری انجام نشد', 'error');
+                }
+                shyState.page = 1;
+                await shyLoad();
+                btn.disabled = false;
             });
             document.getElementById('shyAll').addEventListener('change', e => {
                 shyState.all = e.target.checked; shyState.page = 1; shyLoad();

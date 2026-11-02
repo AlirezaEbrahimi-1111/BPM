@@ -5,7 +5,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
 // سربرگ (نام، وضعیت، کارشناس، دکمه‌ها) + ۵ تب. فعلا تب «اطلاعات پایه» کامل است؛
 // ویرایش اطلاعات مشتری فعال درجاست و به‌صورت «درخواست تغییر» برای تأیید حسابداری می‌رود
 // (crm-service/ucrm_changes.go)؛
-// «برنامهٔ پیگیری»، «یادداشت‌های تماس»، «پیامک‌ها» و «پیش‌فاکتورها» فقط نمایشی‌اند
+// «برنامهٔ پیگیری»، «یادداشت‌های تماس» و «پیش‌فاکتورها» فقط نمایشی‌اند
 // تا مرحله‌های بعدی CRM (پیگیری، پیامک، فاکتور) ساخته شوند — دکمه‌های مربوطشان «به‌زودی».
 // هر جای حسابداری غیررسمی که روی نام مشتری کلیک شود، این صفحه باز می‌شود.
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ucrm_access.php';
@@ -121,14 +121,8 @@ $__cid = (int) ($_GET['id'] ?? 0);
             { key: 'info', label: 'اطلاعات پایه', icon: 'bi-info-circle' },
             { key: 'plan', label: 'برنامهٔ پیگیری', icon: 'bi-calendar-check' },
             { key: 'history', label: 'تاریخچهٔ پیگیری', icon: 'bi-clock-history' },
-            { key: 'sms', label: 'پیامک‌ها', icon: 'bi-chat-left-text' },
             { key: 'proformas', label: 'پیش‌فاکتورها', icon: 'bi-file-earmark-text' },
         ];
-        // تب‌های نمایشی (تا مرحلهٔ مربوط ساخته شود)
-        const SOON = {
-            sms: { icon: 'bi-chat-left-text', title: 'پیامک‌ها', text: 'پیامک‌هایی که برای این مشتری فرستاده شده، با قالب و تاریخ ارسال، این‌جا نمایش داده می‌شود.' },
-        };
-
         function row(icon, k, v, extra) {
             return `<div class="uc-info-row"><span class="ic"><i class="bi ${icon}"></i></span>
                 <div class="tx"><div class="k">${k}${extra || ''}</div><div class="v">${v}</div></div></div>`;
@@ -158,7 +152,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
                 <div class="uc-goal">
                     <div class="top">
                         <span class="ic"><i class="bi bi-bullseye"></i></span>
-                        <div class="tx"><div class="t">تارگت فروش${c.target_period ? ' <span class="per">(' + esc(c.target_period) + ')</span>' : ''}</div>
+                        <div class="tx"><div class="t">${target > 0 ? UCRM.basisLabel(c.target_basis) : 'تارگت فروش'}${c.target_period ? ' <span class="per">(' + esc(c.target_period) + ')</span>' : ''}</div>
                             <div class="a">${target > 0 ? UCRM.money(target) + ' تومان' : '<span class="text-muted">تعیین نشده</span>'}${suspended ? ' <span class="uc-target gray">معلق</span>' : ''}</div></div>
                     </div>
                     <div class="bar"><span class="time" style="width:${monthPct}%"></span></div>
@@ -183,7 +177,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
                 editBtn = `<a class="uc-head-ico" href="ucrm-customers.php?edit=${c.id}&back=detail" title="ویرایش مشتری"><i class="bi bi-pencil-square"></i></a>`;
             }
             const targetBtns = ro.manager ?
-                `<a class="uc-head-ico" href="ucrm-targets.php" title="تنظیمات هدفگذاری"><i class="bi bi-gear"></i></a>
+                `<a class="uc-head-ico" href="ucrm-targets.php" title="تنظیمات تارگت‌گذاری"><i class="bi bi-gear"></i></a>
                  <a class="uc-head-ico" href="ucrm-targets.php" title="ویرایش تارگت"><i class="bi bi-pencil-square"></i></a>` :
                 `<span class="uc-head-ico"><i class="bi bi-graph-up-arrow"></i></span>`;
             return `
@@ -587,16 +581,10 @@ $__cid = (int) ($_GET['id'] ?? 0);
             }));
         }
 
-        function soonTab(key) {
-            const s = SOON[key];
-            return `<div class="uc-card uc-soon-box"><i class="bi ${s.icon}"></i><h3>${s.title}</h3><p>${s.text}</p>
-                <span class="uc-soon-tag">در مرحلهٔ بعد فعال می‌شود</span></div>`;
-        }
-
         function showTab(key) {
             document.querySelectorAll('.uc-tabs .tb').forEach(b => b.classList.toggle('active', b.dataset.tab === key));
             document.getElementById('ucTab').innerHTML = key === 'info' ? infoTab(DATA) :
-                (key === 'plan' ? planTab() : (key === 'history' ? historyTab() : (key === 'proformas' ? proformaTab() : soonTab(key))));
+                (key === 'plan' ? planTab() : (key === 'history' ? historyTab() : proformaTab()));
             if (key === 'history') bindHistory();
             if (key === 'proformas') bindProformas();
             try { sessionStorage.setItem('ucrm-cust-tab', key); } catch (e) {}

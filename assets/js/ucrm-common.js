@@ -76,6 +76,16 @@
         return Math.round(c.sales_amount * 100 / c.target_amount);
     }
 
+    // رنگ وضعیت. کف فروش: زیر کف قرمز، برابر کف نارنجی، بالای کف سبز. سقف فروش: درصدهای تنظیمات
+    function targetBand(sales, amount, basis, set) {
+        if (basis === 'floor') return sales < amount ? 'red' : (sales === amount ? 'orange' : 'green');
+        var p = Math.round(sales * 100 / amount);
+        var red = (set && set.target_red_below) || 80, green = (set && set.target_green_from) || 100;
+        return p < red ? 'red' : (p >= green ? 'green' : 'orange');
+    }
+
+    function basisLabel(basis) { return basis === 'floor' ? 'کف فروش' : 'سقف فروش'; }
+
     function targetBadge(c, set) {
         if (c && c.target_suspended && c.target_amount > 0) {
             return '<span class="uc-target gray" title="تارگت ' + e(c.target_period || '') + ' معلق است و حساب نمی‌شود">معلق</span>';
@@ -86,9 +96,8 @@
             return '<span class="uc-target gray" title="تارگت ' + e(c.target_period || '') + '؛ فروش هنوز از فاکتورهای CRM حساب نمی‌شود">' + money(c.target_amount) + '</span>';
         }
         if (p == null) return '<span class="text-muted small">تعیین نشده</span>';
-        var red = (set && set.target_red_below) || 80, green = (set && set.target_green_from) || 100;
-        var cls = p < red ? 'red' : (p >= green ? 'green' : 'orange');
-        return '<span class="uc-target ' + cls + '" title="' + fa(p) + '٪ تارگت ماه (تارگت: ' + money(c.target_amount) + ')">' + money(c.sales_amount) + '</span>';
+        var cls = targetBand(c.sales_amount, c.target_amount, c.target_basis, set);
+        return '<span class="uc-target ' + cls + '" title="' + fa(p) + '٪ ' + basisLabel(c.target_basis) + ' (' + money(c.target_amount) + ')">' + money(c.sales_amount) + '</span>';
     }
 
     // «امروز»، «دیروز»، «۳ روز پیش»، «۳ هفته پیش»، «۴ ماه پیش»، «۲ سال پیش» — با روزِ سرور (نه ساعت دستگاه)
@@ -145,7 +154,7 @@
         bindMoney: bindMoney, moneyVal: moneyVal, setMoney: setMoney,
         tok: tok, get: get, send: send, toEn: toEn, money: money,
         TYPE_LABEL: TYPE_LABEL, STATUS_LABEL: STATUS_LABEL,
-        typeBadge: typeBadge, statusBadge: statusBadge, targetPct: targetPct, targetBadge: targetBadge,
+        typeBadge: typeBadge, statusBadge: statusBadge, targetPct: targetPct, targetBadge: targetBadge, targetBand: targetBand, basisLabel: basisLabel,
         lastFollowup: lastFollowup, phonesCell: phonesCell, fullAddress: fullAddress,
         myName: ''
     };
