@@ -423,10 +423,10 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                     { headerName: 'کد تفصیلی', field: 'job_no', width: 115, cellRenderer: p => `<span class="num-ltr">${faDigits(p.value)}</span>` },
                     {
                         headerName: 'نام مشتری', field: 'name', flex: 1, minWidth: 160,
-                        cellRenderer: p => esc(p.value || '—') + (!shyState.all || p.data.is_customer ? '' : ' <span class="badge bg-secondary">بدون گردش</span>')
+                        cellRenderer: p => esc(p.value || '—') + (!shyState.all || p.data.is_customer ? '' : ' <i class="bi bi-slash-circle text-muted" title="بدون گردش فروش" aria-label="بدون گردش فروش"></i>')
                     },
                     {
-                        headerName: 'مانده', field: 'remain', width: 135,
+                        headerName: 'مانده (ریال)', field: 'remain', width: 150,
                         cellRenderer: p => {
                             const n = Math.round(Number(p.value) || 0); // بدهکار با منفی
                             const cls = n < 0 ? 'text-danger' : (n > 0 ? 'text-success' : 'text-muted');
