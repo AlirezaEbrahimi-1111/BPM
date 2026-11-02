@@ -148,8 +148,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                             <input class="form-check-input" type="checkbox" role="switch" id="shyAll">
                             <label class="form-check-label small" for="shyAll">نمایش مشتریان بدون گردش</label>
                         </div>
-                        <div id="shyList" class="list-group uc-shy-list"></div>
-                        <div id="shyPager" class="d-flex justify-content-between align-items-center mt-2"></div>
+                        <div id="shyList" class="ag-theme-alpine inv-grid uc-shy-list"></div>
                     </div>
                 </div>
                 <div class="modal-footer border-0" id="custFooter">
@@ -222,7 +221,8 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
         let actId = null;
         // تب «انتخاب از حسابداری» (شایگان)
         let shyLink = null;                 // {job_no, guid, accounting_name} مشتریِ انتخاب‌شده (در ثبت ارسال می‌شود)
-        let shyState = { page: 1, q: '', loaded: false, timer: null, all: false };
+        let shyState = { q: '', loaded: false, timer: null, all: false, seq: 0 };
+        let shyGrid = null;
 
         // ── ستون‌ها ──
         function actionCell(p) {
@@ -409,69 +409,68 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
         }
 
         // ───────────── تب «انتخاب از حسابداری» (شایگان) ─────────────
-        function shyRemainText(remain) {
-            const n = Math.round(Number(remain) || 0);
-            const neg = n < 0;                               // بدهکار → با منفی
-            const txt = (neg ? '-' : '') + faDigits(Math.abs(n).toLocaleString('en-US'));
-            const cls = neg ? 'text-danger' : (n > 0 ? 'text-success' : 'text-muted');
-            return `مانده: <span class="num-ltr ${cls}">${txt}</span>`;
-        }
-
         function shyEnsureLoaded() {
             if (shyState.loaded) return;
             shyState.loaded = true;
-            shyState.page = 1;
+            shyGrid = agGrid.createGrid(document.getElementById('shyList'), {
+                theme: AgGridFa.theme(),
+                enableRtl: true,
+                rowData: [],
+                defaultColDef: { resizable: true, sortable: true, filter: false },
+                overlayNoRowsTemplate: '<span class="text-muted">مشتری‌ای پیدا نشد</span>',
+                overlayLoadingTemplate: '<span class="text-muted">در حال دریافت از حسابداری…</span>',
+                columnDefs: [
+                    { headerName: 'کد تفصیلی', field: 'job_no', width: 115, cellRenderer: p => `<span class="num-ltr">${faDigits(p.value)}</span>` },
+                    {
+                        headerName: 'نام مشتری', field: 'name', flex: 1, minWidth: 160,
+                        cellRenderer: p => esc(p.value || '—') + (!shyState.all || p.data.is_customer ? '' : ' <span class="badge bg-secondary">بدون گردش</span>')
+                    },
+                    {
+                        headerName: 'مانده', field: 'remain', width: 135,
+                        cellRenderer: p => {
+                            const n = Math.round(Number(p.value) || 0); // بدهکار با منفی
+                            const cls = n < 0 ? 'text-danger' : (n > 0 ? 'text-success' : 'text-muted');
+                            return `<span class="num-ltr ${cls}">${(n < 0 ? '-' : '') + faDigits(Math.abs(n).toLocaleString('en-US'))}</span>`;
+                        }
+                    },
+                    {
+                        headerName: 'انتخاب', colId: 'actions', width: 140, sortable: false, resizable: false,
+                        cellRenderer: p => p.data.linked ? '<span class="badge bg-secondary">قبلاً اضافه شده</span>' :
+                            `<button type="button" class="ag-action-btn edit" title="انتخاب" data-job="${esc(p.data.job_no)}" data-name="${esc(p.data.name || '')}" onclick="shyPick(this.dataset.job, this.dataset.name)"><i class="bi bi-plus-lg"></i></button>`
+                    },
+                ],
+            });
+            AgGridFa.rowContextMenu(document.getElementById('shyList'), shyGrid, null, { insideGrid: true });
             shyLoad();
         }
 
+        // وب‌سرویس هر بار حداکثر ۲۰۰ ردیف می‌دهد؛ جدول صفحه‌بندی ندارد، پس همه خوانده می‌شوند
         async function shyLoad() {
             const status = document.getElementById('shyStatus');
-            const list = document.getElementById('shyList');
+            const mySeq = ++shyState.seq; // پاسخ جستجوی قدیمی‌تر نادیده گرفته می‌شود
             status.textContent = 'در حال دریافت از حسابداری…';
-            list.innerHTML = '';
-            document.getElementById('shyPager').innerHTML = '';
+            shyGrid.setGridOption('rowData', []);
+            shyGrid.showLoadingOverlay();
+            let rows = [];
             try {
-                const d = await UCRM.get('/shygun/customers?q=' + encodeURIComponent(shyState.q) +
-                    '&page=' + shyState.page + '&per=50&scope=' + (shyState.all ? 'all' : 'customers'));
-                shyRender(d);
+                for (let page = 1; ; page++) {
+                    const d = await UCRM.get('/shygun/customers?q=' + encodeURIComponent(shyState.q) +
+                        '&page=' + page + '&per=200&scope=' + (shyState.all ? 'all' : 'customers'));
+                    if (mySeq !== shyState.seq) return;
+                    rows = rows.concat(d.items || []);
+                    shyGrid.setGridOption('rowData', rows);
+                    status.textContent = 'تعداد: ' + faDigits(d.total || 0);
+                    if (d.fetched_at) document.getElementById('shyRefresh').title = 'آخرین بروزرسانی: ' + faDigits(d.fetched_at);
+                    if (!(d.items || []).length || rows.length >= (d.total || 0)) break;
+                }
+                shyGrid.hideOverlay();
+                if (!rows.length) shyGrid.showNoRowsOverlay();
             } catch (e) {
+                if (mySeq !== shyState.seq) return;
+                shyGrid.hideOverlay();
                 status.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-triangle ms-1"></i>' + esc(e.message || 'اتصال به حسابداری برقرار نشد') + '</span>';
             }
         }
-
-        function shyRender(d) {
-            const status = document.getElementById('shyStatus');
-            const list = document.getElementById('shyList');
-            const pg = document.getElementById('shyPager');
-            const items = d.items || [], total = d.total || 0;
-            status.textContent = 'تعداد: ' + faDigits(total);
-            if (d.fetched_at) document.getElementById('shyRefresh').title = 'آخرین بروزرسانی: ' + faDigits(d.fetched_at);
-            if (!items.length) {
-                list.innerHTML = `<div class="text-muted small text-center p-4">${shyState.q ? 'موردی با این جستجو پیدا نشد.' : 'مشتری‌ای در حسابداری نیست.'}</div>`;
-                pg.innerHTML = '';
-                return;
-            }
-            list.innerHTML = items.map(c => {
-                const act = c.linked ? '<span class="badge bg-secondary">قبلاً اضافه شده</span>' :
-                    `<button type="button" class="btn btn-sm btn-primary shy-pick" data-job="${esc(c.job_no)}" data-name="${esc(c.name || '')}"><i class="bi bi-plus-lg ms-1"></i>انتخاب</button>`;
-                const badge = !shyState.all ? '' : (c.is_customer ?
-                    '<span class="badge bg-success">مشتری</span>' : '<span class="badge bg-secondary">بدون گردش فروش</span>');
-                return `<div class="list-group-item d-flex justify-content-between align-items-center gap-2">
-                        <div style="min-width:0">
-                            <div class="d-flex align-items-center gap-1" style="min-width:0">
-                                <span class="fw-bold text-truncate">${esc(c.name || '—')}</span>${badge}
-                            </div>
-                            <div class="small text-muted"><span class="num-ltr">${faDigits(c.job_no)}</span> · ${shyRemainText(c.remain)}</div>
-                        </div>${act}</div>`;
-            }).join('');
-            const per = d.per || 50, page = d.page || 1, pages = Math.max(1, Math.ceil(total / per));
-            pg.innerHTML = pages > 1 ?
-                `<button type="button" class="btn btn-sm btn-outline-secondary" ${page <= 1 ? 'disabled' : ''} onclick="shyGo(${page - 1})">قبلی</button>
-                 <span class="small text-muted">صفحهٔ ${faDigits(page)} از ${faDigits(pages)}</span>
-                 <button type="button" class="btn btn-sm btn-outline-secondary" ${page >= pages ? 'disabled' : ''} onclick="shyGo(${page + 1})">بعدی</button>` : '';
-        }
-
-        function shyGo(p) { shyState.page = p; shyLoad(); }
 
         async function shyPick(jobNo, name) {
             const status = document.getElementById('shyStatus');
@@ -900,7 +899,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
             // تب «انتخاب از حسابداری» (شایگان)
             document.getElementById('shySearch').addEventListener('input', e => {
                 clearTimeout(shyState.timer);
-                shyState.timer = setTimeout(() => { shyState.q = e.target.value.trim(); shyState.page = 1; shyLoad(); }, 300);
+                shyState.timer = setTimeout(() => { shyState.q = e.target.value.trim(); shyLoad(); }, 300);
             });
             document.getElementById('shyRefresh').addEventListener('click', async e => {
                 const btn = e.currentTarget;
@@ -912,16 +911,11 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                     // لیست قبلی نمایش داده می‌شود؛ کاربر باید بداند تازه نشده
                     showToast(err.message || 'بروزرسانی از حسابداری انجام نشد', 'error');
                 }
-                shyState.page = 1;
                 await shyLoad();
                 btn.disabled = false;
             });
             document.getElementById('shyAll').addEventListener('change', e => {
-                shyState.all = e.target.checked; shyState.page = 1; shyLoad();
-            });
-            document.getElementById('shyList').addEventListener('click', e => {
-                const b = e.target.closest('.shy-pick');
-                if (b) shyPick(b.dataset.job, b.dataset.name);
+                shyState.all = e.target.checked; shyLoad();
             });
             document.getElementById('btnAddPhone').addEventListener('click', addPhone);
             document.getElementById('f_phone_in').addEventListener('keydown', e => {

@@ -151,18 +151,18 @@
 .ucd-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 0 16px 14px; font-size: .74rem; }
 .ucd-kpis div { display: flex; justify-content: space-between; gap: 6px; color: var(--text-muted, #6b7280); }
 .ucd-kpis b { color: var(--text-strong, #2d3748); }
-/* مقایسه فروش کارشناسان: نام، نوار و مبلغ؛ چیدمان چپ‌به‌راست مطابق طرح */
+/* مقایسه فروش کارشناسان: از راست نام، نوار و مبلغ */
 .ucd-prog { max-height: 280px; overflow-y: auto; margin: 0; padding: 12px 16px 14px; list-style: none; }
-.ucd-prog li { display: grid; grid-template-columns: 90px 1fr auto; align-items: center; gap: 10px; padding: 9px 0; direction: ltr; font-size: .76rem; color: var(--text-strong, #2d3748); }
-.ucd-prog .nm { direction: rtl; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ucd-prog li { display: grid; grid-template-columns: 90px 1fr auto; align-items: center; gap: 10px; padding: 9px 0; font-size: .76rem; color: var(--text-strong, #2d3748); }
+.ucd-prog .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ucd-prog .track { display: block; height: 16px; border-radius: 5px; background: rgba(107, 114, 128, .13); overflow: hidden; }
-.ucd-prog .track i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #5b21b6, #a78bfa); }
-.ucd-prog .track i.alt { background: linear-gradient(90deg, #26957c, #6fb6ad); }
-.ucd-prog b { font-weight: 700; font-variant-numeric: tabular-nums; }
-.ucd-prog .none { display: block; direction: rtl; text-align: center; color: var(--text-muted, #6b7280); }
+.ucd-prog .track i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(270deg, #5b21b6, #a78bfa); }
+.ucd-prog .track i.alt { background: linear-gradient(270deg, #26957c, #6fb6ad); }
+.ucd-prog b { direction: ltr; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ucd-prog .none { display: block; text-align: center; color: var(--text-muted, #6b7280); }
 :root[data-theme="dark"] .ucd-prog .track { background: rgba(203, 213, 225, .12); }
-:root[data-theme="dark"] .ucd-prog .track i { background: linear-gradient(90deg, #7c5ce0, #b49cfb); }
-:root[data-theme="dark"] .ucd-prog .track i.alt { background: linear-gradient(90deg, #26957c, #5cc4ad); }
+:root[data-theme="dark"] .ucd-prog .track i { background: linear-gradient(270deg, #7c5ce0, #b49cfb); }
+:root[data-theme="dark"] .ucd-prog .track i.alt { background: linear-gradient(270deg, #26957c, #5cc4ad); }
 
 /* درصد تحقق فروش: فهرست کارشناس‌ها کنار حلقه؛ در عرض کم زیر هم */
 .ucd-achv { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 16px 14px; }

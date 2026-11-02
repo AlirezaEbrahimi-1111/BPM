@@ -24,13 +24,13 @@
 .uc-shy-bar #shySearch { flex: 1 1 110px; width: auto; min-width: 0; }
 .uc-shy-status { font-size: .82rem; color: var(--text-muted, #6b7490); }
 .uc-shy-status:empty { display: none; }
-.uc-shy-bar .btn { flex-shrink: 0; }
+.uc-shy-bar .btn { flex-shrink: 0; padding: .4rem .6rem; }
 .form-check.uc-shy-switch { display: flex; align-items: center; gap: .5rem; min-height: 0; padding: 0; margin: 0 0 .5rem; }
 .form-check.uc-shy-switch .form-check-input { float: none; margin: 0; cursor: pointer; }
 .form-check.uc-shy-switch .form-check-input:checked { background-color: var(--primary, #8e57fe); border-color: var(--primary, #8e57fe); }
-.form-check.uc-shy-switch .form-check-label { cursor: pointer; }
-/* ارتفاع لیست طوری است که مودال با صفحه‌بندی هم از فرم «تعریف مشتری جدید» بلندتر نشود و داخل صفحه جا شود */
-.uc-shy-list { height: clamp(180px, calc(100vh - 390px), 440px); overflow-y: auto; }
+.form-check.uc-shy-switch .form-check-label { margin: 0; cursor: pointer; }
+/* ارتفاع لیست طوری است که مودال از فرم «تعریف مشتری جدید» بلندتر نشود و داخل صفحه جا شود */
+.uc-shy-list { height: clamp(180px, calc(100vh - 360px), 480px); }
 #custModal.uc-shy-mode .modal-footer { padding-block: .4rem; }
 #custModal.uc-shy-mode .modal-content { padding-bottom: 0; }
 #importResult { font-size: .8rem; margin-top: .5rem; }

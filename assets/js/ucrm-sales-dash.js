@@ -218,7 +218,7 @@
                 scales: teamScales,
                 datasets: { bar: { categoryPercentage: .7, barPercentage: .9 } },
                 plugins: {
-                    legend: { position: 'top', align: 'end', rtl: true, labels: { boxWidth: 10, color: c.text } },
+                    legend: { position: 'top', align: 'start', rtl: true, labels: { boxWidth: 10, color: c.text } },
                     tooltip: { rtl: true, callbacks: { label: tooltipMoney } }
                 }
             }
