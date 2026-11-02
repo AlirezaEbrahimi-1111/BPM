@@ -953,7 +953,7 @@ if (!headers_sent()) {
 
     </div>
     <script src="assets/js/common.js"></script>
-    <script src="assets/js/alert.js?v=1.2"></script>
+    <script src="assets/js/alert.js?v=1.3"></script>
     <script src="assets/js/network-canvas.js?v=2.2"></script>
     <script>
         // ========== سوییچ روش ورود + ورود با کد یکبارمصرف (OTP) ==========

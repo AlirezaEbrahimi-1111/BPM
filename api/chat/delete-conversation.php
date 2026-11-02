@@ -69,6 +69,10 @@ try {
         SELECT id, ? FROM chat_messages WHERE conversation_id = ? AND is_deleted = 0
     ")->execute([$user_id, $conversationId]);
 
+    // اگر با پیام تازه دوباره در لیست ظاهر شد، نباید هنوز سنجاق‌شده باشد
+    $db->prepare("UPDATE chat_participants SET pinned_at = NULL WHERE conversation_id = ? AND user_id = ?")
+        ->execute([$conversationId, $user_id]);
+
     echo json_encode(['success' => true]);
 
 } catch (Exception $e) {

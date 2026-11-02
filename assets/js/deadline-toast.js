@@ -16,7 +16,7 @@
     var TOASTR_OPTIONS = {
         closeButton:        false,     // دکمه × خودمون رو داریم
         progressBar:        true,      // نوار شمارش معکوس
-        positionClass:      'toast-bottom-left',
+        positionClass:      'toast-top-left',
         rtl:                true,
         showMethod:         'fadeIn',
         hideMethod:         'fadeOut',
@@ -170,7 +170,7 @@
                 toastr.success(msg, '', {
                     closeButton:  true,
                     progressBar:  true,
-                    positionClass:'toast-bottom-left',
+                    positionClass:'toast-top-left',
                     rtl:          true,
                     timeOut:      3500,
                     showDuration: 300,
@@ -184,7 +184,7 @@
                 toastr.error(data.message || 'خطایی رخ داد', '', {
                     closeButton:  true,
                     progressBar:  true,
-                    positionClass:'toast-bottom-left',
+                    positionClass:'toast-top-left',
                     rtl:          true,
                     timeOut:      4000
                 });
@@ -194,7 +194,7 @@
             toastr.error('خطا در ارتباط با سرور', '', {
                 closeButton:  true,
                 progressBar:  true,
-                positionClass:'toast-bottom-left',
+                positionClass:'toast-top-left',
                 rtl:          true,
                 timeOut:      4000
             });
@@ -309,7 +309,7 @@
         toastr.info(msg, '', {
             closeButton:  false,
             progressBar:  true,
-            positionClass:'toast-bottom-left',
+            positionClass:'toast-top-left',
             rtl:          true,
             timeOut:      3000,
             showDuration: 250,

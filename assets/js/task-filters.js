@@ -148,7 +148,7 @@ window.TF = (function () {
         const badge = (cls, txt) => `<span class="badge days-badge${cls ? ' ' + cls : ''}">${txt}</span>`;
         if (!t) return badge('', '-');
         if (t.status === 'completed' || t.status === 'approved') return badge('days-normal', 'تکمیل');
-        if (t.has_pending_deadline_request == 1) return badge('days-soon', 'در انتظار تأیید تمدید موعد');
+        if (t.has_pending_deadline_request == 1) return badge('days-soon', 'در انتظار تمدید موعد');
 
         if (t.task_type === 'continuous') {
             // دوره‌های انجام‌نشدهٔ موعدگذشته = معوقه‌ها (سرور) + دورهٔ جاری اگر موعدش گذشته.
@@ -364,8 +364,7 @@ window.TF = (function () {
             return true;
         }
 
-        // تا تصمیم تأییدکننده، کار عقب‌افتاده حساب نمی‌شود
-        if (t.has_pending_deadline_request == 1) return false;
+        // درخواست تمدید موعد، کار را از عقب‌افتاده‌ها بیرون نمی‌برد؛ فقط بجش «در انتظار تمدید موعد» می‌شود
 
         // کار فرآیندی — ساعتی حساب می‌شه (هم‌راستا با calcHourDelay سمت
         // سرور)، نه روز تقویمی؛ وگرنه کاری که موعدش مثلا ۲۳:۵۰ دیشب بوده،
@@ -479,7 +478,7 @@ window.TF = (function () {
             return '<span class="status-badge status-pending_approval">درخواست تمدید موعد</span>';
         }
         if (t.has_pending_deadline_request == 1) {
-            return '<span class="status-badge status-pending_approval">در انتظار تأیید تمدید موعد</span>';
+            return '<span class="status-badge status-pending_approval">در انتظار تمدید موعد</span>';
         }
         if (isOverdue(t, user)) {
             return '<span class="status-badge status-overdue">عقب افتاده</span>';
@@ -556,7 +555,10 @@ window.TF = (function () {
         deleted:                { label: 'حذف',                          verb: 'حذف شد',                            cls: 'ab-rejected' },
         attachment_added:       { label: 'بارگذاری فایل',                verb: 'یک فایل بارگذاری کرد',              cls: 'ab-updated' },
         attachment_removed:     { label: 'حذف فایل',                     verb: 'یک فایل حذف کرد',                   cls: 'ab-rejected' },
-        in_progress:            { label: 'شروع',                         verb: 'شروع شد',                           cls: 'ab-updated' },
+        viewer_added:           { label: 'افزودن دسترسی',                verb: 'به یک نفر دسترسی مشاهده داد',       cls: 'ab-updated' },
+        viewer_updated:         { label: 'تغییر مجوز دسترسی',            verb: 'مجوزهای دسترسی یک نفر را تغییر داد', cls: 'ab-updated' },
+        viewer_removed:         { label: 'حذف دسترسی',                   verb: 'دسترسی مشاهدهٔ یک نفر را حذف کرد',  cls: 'ab-rejected' },
+        in_progress:            { label: 'شروع',                        verb: 'شروع شد',                           cls: 'ab-updated' },
         not_started:            { label: 'شروع نشده',                    verb: 'به حالت شروع‌نشده بازگشت',          cls: 'ab-pending' }
     };
 
@@ -711,7 +713,44 @@ window.TF = (function () {
     /* ═══════════════════════════════════════════════════
        ۹) خروجی عمومی
        ═══════════════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════
+       رتبه‌بندی نتایج جستجو
+       ═══════════════════════════════════════════════════ */
+
+    /** یکسان‌سازی متن برای مقایسه: رقم فارسی/عربی، نیم‌فاصله، فاصلهٔ اضافه، حروف بزرگ */
+    function normalizeSearchText(text) {
+        return String(text || '')
+            .replace(/[۰-۹]/g, d => d.charCodeAt(0) - 1776)
+            .replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632)
+            .replace(/‌/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toLowerCase();
+    }
+
+    /** ۰: عبارت کامل در عنوان، ۱: همهٔ کلمه‌ها در عنوان، ۲: بقیه (توضیحات، تاریخچه، پیوست، چک‌لیست) */
+    function searchRank(title, query) {
+        const q = normalizeSearchText(query);
+        const t = normalizeSearchText(title);
+        if (t.includes(q)) return 0;
+        return q.split(' ').every(w => t.includes(w)) ? 1 : 2;
+    }
+
+    /**
+     * مرتب‌سازی نتایج جستجو بر اساس شباهت عنوان. ترتیب قبلی در هر گروه حفظ می‌شود
+     * (sort پایدار است) و مرتب‌سازی ستونی که کاربر در جدول انتخاب کرده بعد از این اعمال می‌شود.
+     */
+    function sortBySearchRank(tasks, query) {
+        if (!normalizeSearchText(query)) return;
+        const ranks = new Map(tasks.map(t => [t, searchRank(t.title, query)]));
+        tasks.sort((a, b) => ranks.get(a) - ranks.get(b));
+    }
+
     return {
+        // جستجو
+        searchRank,
+        sortBySearchRank,
+
         // تاریخ
         today,
         dateOnly,

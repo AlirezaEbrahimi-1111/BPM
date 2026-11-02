@@ -19,12 +19,12 @@
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.92);
+    color: var(--text-strong);
     line-height: 1.5;
 }
 
 .deadline-toast-from strong {
-    color: #fff;
+    color: var(--text-strong);
     font-weight: 700;
 }
 
@@ -33,11 +33,11 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    background: rgba(255, 255, 255, 0.18);
+    background: var(--info-box-bg);
     border-radius: 6px;
     padding: 4px 10px;
     font-size: 12.5px;
-    color: #fff;
+    color: var(--text-strong);
     font-weight: 600;
     margin-top: 2px;
     width: fit-content;
@@ -72,20 +72,20 @@
 
 /* دکمه تأیید */
 .deadline-toast-btn.btn-approve {
-    background: rgba(255, 255, 255, 0.95);
-    color: #1a6e30;
+    background: #1a7a3c;
+    color: #fff;
 }
 
 .deadline-toast-btn.btn-approve:hover {
-    background: #ffffff;
+    background: #25a150;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* دکمه رد */
 .deadline-toast-btn.btn-reject {
-    background: rgba(220, 53, 69, 0.85);
+    background: rgb(220, 53, 69);
     color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: none;
 }
 
 .deadline-toast-btn.btn-reject:hover {
@@ -94,20 +94,18 @@
 
 /* دکمه بعدا یادآوری کن */
 .deadline-toast-btn.btn-later {
-    background: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: transparent;
+    color: var(--text-strong);
+    border: 1px solid var(--border-soft);
 }
 
 .deadline-toast-btn.btn-later:hover {
-    background: rgba(255, 255, 255, 0.22);
-    color: #fff;
+    background: var(--info-box-bg);
+    color: var(--text-strong);
 }
 
 /* ─── شخصی‌سازی container اصلی toastr ─── */
 #toast-container > .toast-deadline-alert {
-    /* رنگ سبز تیره (warning ولی با سبز) */
-    background: linear-gradient(135deg, #1a7a3c 0%, #25a150 100%) !important;
     width: 360px !important;
     border-radius: 10px !important;
     padding: 14px 16px !important;
@@ -118,7 +116,7 @@
 
 /* progress bar */
 #toast-container > .toast-deadline-alert .toast-progress {
-    background: rgba(255, 255, 255, 0.4) !important;
+    background: #1a7a3c !important;
     height: 3px !important;
     border-radius: 0 0 10px 10px;
 }
@@ -131,12 +129,24 @@
 #toast-container > .toast-deadline-alert .toast-message {
     margin: 0 !important;
     padding: 0 !important;
-    color: #fff !important;
+    color: var(--text-strong) !important;
 }
 
-/* ─── موقعیت: پایین راست (برای RTL مناسب‌تره) ─── */
-#toast-container.toast-bottom-left {
-    left: auto !important;
-    right: 16px !important;
-    bottom: 16px !important;
+/* ─── زمینهٔ همهٔ اعلان‌های toastr: ۸۵٪ سفید یا تیره؛ آیکن نوع اعلان می‌ماند ─── */
+#toast-container > div {
+    background-color: var(--toast-bg, rgba(255, 255, 255, .85)) !important;
+    color: var(--text-strong) !important;
+    opacity: 1 !important;
+}
+
+#toast-container .toast-close-button {
+    color: var(--text-muted) !important;
+}
+
+/* ─── موقعیت: بالا-چپ، مثل بقیهٔ اعلان‌ها ─── */
+#toast-container.toast-top-left {
+    top: 80px !important;
+    left: 20px !important;
+    right: auto !important;
+    bottom: auto !important;
 }

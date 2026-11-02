@@ -14,6 +14,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/TaskManager.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-viewer-history-helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     ob_end_clean();
@@ -169,10 +170,15 @@ try {
                 if ($viewerRows) {
                     $vph = implode(',', array_fill(0, count($viewerRows), '?'));
                     $vStmt = $db->prepare(
-                        "SELECT id FROM users WHERE id IN ($vph) AND organization_id = ? AND is_active = 1 AND is_deleted = 0"
+                        "SELECT id, first_name, last_name FROM users WHERE id IN ($vph) AND organization_id = ? AND is_active = 1 AND is_deleted = 0"
                     );
                     $vStmt->execute(array_merge(array_keys($viewerRows), [$organization_id]));
-                    $validViewerIds = array_map('intval', $vStmt->fetchAll(PDO::FETCH_COLUMN));
+                    $validViewers = $vStmt->fetchAll(PDO::FETCH_ASSOC);
+                    $validViewerIds = array_map('intval', array_column($validViewers, 'id'));
+                    $viewerNames = [];
+                    foreach ($validViewers as $vu) {
+                        $viewerNames[(int) $vu['id']] = trim($vu['first_name'] . ' ' . $vu['last_name']);
+                    }
 
                     if ($validViewerIds) {
                         $ins = $db->prepare("
@@ -188,6 +194,12 @@ try {
                         foreach ($validViewerIds as $vid) {
                             $r = $viewerRows[$vid];
                             $ins->execute([$newTaskId, $vid, $user_id, $r['att'], $r['hist'], $r['chk']]);
+                            logTaskViewerHistory($db, (int) $newTaskId, (int) $user_id, 'viewer_added',
+                                'به «' . $viewerNames[$vid] . '» دسترسی مشاهده داد (' . taskViewerScopeText([
+                                    'can_view_attachments' => $r['att'],
+                                    'can_view_history'     => $r['hist'],
+                                    'can_view_checklist'   => $r['chk'],
+                                ]) . ')');
                             $vNotif->create([
                                 'to_user_id'   => $vid,
                                 'title'        => 'دسترسی مشاهدهٔ یک کار',

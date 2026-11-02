@@ -1,0 +1,60 @@
+<?php
+/**
+ * API: سنجاق کردن/برداشتن سنجاق شخصی یک گفتگو در لیست گفتگوها (تاگل)
+ * POST /api/chat/toggle-pin.php   body: { conversation_id: 1 }
+ *
+ * دقیقا مثل بی‌صداکردن: تنظیمی شخصی، فقط برای همین کاربر، بدون نیاز به
+ * دسترسی مدیریتی حتی در گروه — چون هیچ اثری روی بقیه ندارد.
+ */
+
+header('Content-Type: application/json; charset=utf-8');
+$corsAllowedOrigins = ['https://itmalek.com', 'https://www.itmalek.com', 'https://bpm.itmalek.com'];
+$corsRequestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
+header('Access-Control-Allow-Origin: ' . (in_array($corsRequestOrigin, $corsAllowedOrigins, true) ? $corsRequestOrigin : 'https://itmalek.com'));
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
+
+require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+
+try {
+    $database = new Database();
+    $db = $database->getConnection();
+    $auth = new Auth($db);
+    $user_id = $auth->getUserFromToken();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+    requirePlanFeature($user_id, 'chat');
+    if (!$user_id) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'عدم احراز هویت']);
+        exit;
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    $conversationId = (int) ($input['conversation_id'] ?? 0);
+    if (!$conversationId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'شناسه گفتگو الزامی است']);
+        exit;
+    }
+
+    $stmt = $db->prepare("UPDATE chat_participants SET pinned_at = IF(pinned_at IS NULL, NOW(), NULL) WHERE conversation_id = ? AND user_id = ?");
+    $stmt->execute([$conversationId, $user_id]);
+    if ($stmt->rowCount() === 0) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
+        exit;
+    }
+
+    $stmt = $db->prepare("SELECT pinned_at FROM chat_participants WHERE conversation_id = ? AND user_id = ?");
+    $stmt->execute([$conversationId, $user_id]);
+
+    echo json_encode(['success' => true, 'pinned_at' => $stmt->fetchColumn() ?: null]);
+
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'خطای سرور']);
+    error_log("Chat toggle-pin error: " . $e->getMessage());
+}

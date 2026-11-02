@@ -648,7 +648,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 // (rejected = اتمام اجباری کار دوره‌ای، نه «برگشت‌خورده» — مانع نیست)
                 // + (۱۴۰۵/۰۸/۰۵) هر کار/درخواستی که منتظر تأیید همین کاربر است (بدون شرط موعد)
                 if (statFilter === 'due_block' &&
-                    !(((t.status === 'not_started' || t.status === 'in_progress') &&
+                    !(((t.status === 'not_started' || t.status === 'in_progress') && t.has_pending_deadline_request != 1 &&
                        (TF.isOverdue(t, currentUser, today) || TF.isDueToday(t, currentUser, today))) ||
                       TF.isWaitingMyAction(t, currentUser))) return false;
                 if (statFilter === 'in_progress' && t.status !== 'in_progress') return false;
@@ -734,6 +734,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 if (va > vb) return sortDirection === 'asc' ? 1 : -1;
                 return 0;
             });
+            TF.sortBySearchRank(filteredTasks, s);
             renderTable();
         }
 

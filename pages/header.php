@@ -2030,6 +2030,7 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
             '<span style="color:#9CA3AF;font-size:12px;">' + timeText + '</span>' +
             '</div>' +
             '<div style="padding:16px 18px;overflow:auto;line-height:2;color:var(--text-strong);font-size:14px;">' + (contentHtml || '<span style="color:#9CA3AF;">متنی برای این اطلاعیه ثبت نشده است.</span>') + '</div>' +
+            '<div id="annModalAttachments" style="display:none;padding:10px 18px;border-top:1px solid var(--border-soft);"></div>' +
             '<div style="padding:12px 18px;border-top:1px solid var(--border-soft);text-align:center;">' +
             '<a href="/pages/announcements.php" style="color:#8e57fe;font-weight:700;text-decoration:none;font-size:13px;">مشاهده همه اطلاعیه‌ها <i class="bi bi-chevron-left"></i></a>' +
             '</div>' +
@@ -2042,6 +2043,26 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
             if (e.target === overlay) closeAnnouncementModal();
         });
         document.addEventListener('keydown', annModalEsc);
+        annModalLoadAttachments(ann.id, overlay);
+    }
+
+    // فایل‌های پیوست، زیر متن مودال (فقط اگر چیزی پیوست شده باشد)
+    async function annModalLoadAttachments(annId, overlay) {
+        try {
+            const res = await fetch('/api/announcements/attachments.php?announcement_id=' + encodeURIComponent(annId), {
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('auth_token') }
+            });
+            const data = await res.json();
+            const box = overlay.querySelector('#annModalAttachments');
+            if (!box || !data.success || !data.attachments.length) return;
+            box.innerHTML = data.attachments.map(a =>
+                '<a href="/api/announcements/download-attachment.php?id=' + a.id + '" style="display:flex;align-items:center;gap:6px;color:#8e57fe;font-weight:600;font-size:13px;text-decoration:none;padding:3px 0;overflow-wrap:anywhere;">' +
+                '<i class="bi bi-paperclip"></i>' + escapeHtml(a.original_name) + '</a>'
+            ).join('');
+            box.style.display = 'block';
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     function annModalEsc(e) {

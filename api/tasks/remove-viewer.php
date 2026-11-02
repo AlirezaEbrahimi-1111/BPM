@@ -11,6 +11,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-viewer-history-helper.php';
 
 try {
     $user_id = requireAuth();
@@ -54,6 +55,14 @@ try {
 
     $stmt = $db->prepare("DELETE FROM task_viewers WHERE task_id = ? AND user_id = ?");
     $stmt->execute([$task_id, $viewer_id]);
+
+    // ثبت در تاریخچهٔ کار — فقط اگر واقعا ردیفی حذف شد (نه کلیک دوباره)
+    if ($stmt->rowCount() > 0) {
+        $nameStmt = $db->prepare("SELECT TRIM(CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))) FROM users WHERE id = ?");
+        $nameStmt->execute([$viewer_id]);
+        logTaskViewerHistory($db, $task_id, $user_id, 'viewer_removed',
+            'دسترسی مشاهدهٔ «' . ($nameStmt->fetchColumn() ?: 'کاربر حذف‌شده') . '» را حذف کرد');
+    }
 
     echo json_encode(['success' => true, 'message' => 'دسترسی بیننده حذف شد'], JSON_UNESCAPED_UNICODE);
 

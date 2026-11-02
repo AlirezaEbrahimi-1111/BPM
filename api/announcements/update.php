@@ -114,7 +114,10 @@ try {
             ann_out(['success' => false, 'message' => 'اجازهٔ حذف این اطلاعیه را ندارید'], 403);
         }
 
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/announcement-attachments.php';
+        $storedFiles = annAttStoredNames($db, $id);
         $db->prepare("DELETE FROM announcements WHERE id = ?")->execute([$id]);
+        array_map('annAttUnlink', $storedFiles); // ردیف‌های پیوست با ON DELETE CASCADE حذف شده‌اند
         ann_out(['success' => true, 'message' => 'اطلاعیه حذف شد']);
     }
 

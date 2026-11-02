@@ -5483,7 +5483,7 @@ ${task.overdue_periods > 0 ? `
                     return `
                 <div class="info-item">
                     <div class="info-label">مهلت:</div>
-                    <div class="info-value"><span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>در انتظار تأیید تمدید موعد</span></div>
+                    <div class="info-value"><span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>در انتظار تمدید موعد</span></div>
                 </div>`;
                 }
 

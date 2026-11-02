@@ -15,6 +15,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/task-viewer-history-helper.php';
 
 try {
     $user_id = requireAuth();
@@ -68,9 +69,14 @@ try {
 
     // 🔒 فقط کاربران همون سازمان قابل افزودن‌اند
     $ph = implode(',', array_fill(0, count($userIds), '?'));
-    $stmt = $db->prepare("SELECT id FROM users WHERE id IN ($ph) AND organization_id = ? AND is_active = 1 AND is_deleted = 0");
+    $stmt = $db->prepare("SELECT id, first_name, last_name FROM users WHERE id IN ($ph) AND organization_id = ? AND is_active = 1 AND is_deleted = 0");
     $stmt->execute(array_merge($userIds, [$task['organization_id']]));
-    $validIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+    $validUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $validIds = array_map('intval', array_column($validUsers, 'id'));
+    $viewerNames = [];
+    foreach ($validUsers as $u) {
+        $viewerNames[(int) $u['id']] = trim($u['first_name'] . ' ' . $u['last_name']);
+    }
 
     if (empty($validIds)) {
         http_response_code(400);
@@ -80,18 +86,40 @@ try {
 
     // آیا این‌ها بیننده‌های از قبل‌موجود بودن؟ (برای اینکه فقط به تازه‌اضافه‌شده‌ها اعلان بره)
     $existingPh = implode(',', array_fill(0, count($validIds), '?'));
-    $existingStmt = $db->prepare("SELECT user_id FROM task_viewers WHERE task_id = ? AND user_id IN ($existingPh)");
+    $existingStmt = $db->prepare("SELECT user_id, can_view_attachments, can_view_history, can_view_checklist FROM task_viewers WHERE task_id = ? AND user_id IN ($existingPh)");
     $existingStmt->execute(array_merge([$task_id], $validIds));
-    $alreadyViewers = array_map('intval', $existingStmt->fetchAll(PDO::FETCH_COLUMN));
+    $existingViewers = [];
+    foreach ($existingStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $existingViewers[(int) $row['user_id']] = $row;
+    }
+    $alreadyViewers = array_keys($existingViewers);
 
     $stmt = $db->prepare("
         INSERT INTO task_viewers (task_id, user_id, granted_by, can_view_attachments, can_view_history, can_view_checklist)
         VALUES (?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE can_view_attachments = VALUES(can_view_attachments), can_view_history = VALUES(can_view_history), can_view_checklist = VALUES(can_view_checklist)
     ");
+    $newPermissions = [
+        'can_view_attachments' => $canViewAttachments,
+        'can_view_history'     => $canViewHistory,
+        'can_view_checklist'   => $canViewChecklist,
+    ];
     $notif = new Notification($db);
     foreach ($validIds as $viewerId) {
         $stmt->execute([$task_id, $viewerId, $user_id, $canViewAttachments ? 1 : 0, $canViewHistory ? 1 : 0, $canViewChecklist ? 1 : 0]);
+
+        // ثبت در تاریخچهٔ کار: دسترسی تازه، یا تغییر واقعی مجوزهای بینندهٔ موجود
+        if (!isset($existingViewers[$viewerId])) {
+            logTaskViewerHistory($db, $task_id, $user_id, 'viewer_added',
+                'به «' . $viewerNames[$viewerId] . '» دسترسی مشاهده داد (' . taskViewerScopeText($newPermissions) . ')');
+        } else {
+            $changes = taskViewerPermissionChanges($existingViewers[$viewerId], $newPermissions);
+            if ($changes !== '') {
+                logTaskViewerHistory($db, $task_id, $user_id, 'viewer_updated',
+                    'مجوزهای دسترسی «' . $viewerNames[$viewerId] . '» را تغییر داد (' . $changes . ')');
+            }
+        }
+
         if ($viewerId !== $user_id && !in_array($viewerId, $alreadyViewers, true)) {
             $notif->create([
                 'to_user_id'   => $viewerId,

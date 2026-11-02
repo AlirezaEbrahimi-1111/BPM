@@ -152,7 +152,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             bottom: 18px;
             width: 52px;
             height: 52px;
-            border-radius: var(--radius-btn);
+            border-radius: 50%;
             border: none;
             background: var(--ink-900);
             color: #fff;
@@ -584,10 +584,20 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             background: var(--surface-3, rgba(255, 255, 255, .08));
         }
 
-        .chat-conv-mute-icon {
+        .chat-conv-mute-icon,
+        .chat-conv-pin-icon {
             font-size: .72rem;
             color: var(--text-muted);
             margin-inline-start: 5px;
+        }
+
+        /* لمس طولانی روی ردیف، منوی گفتگو را باز می‌کند؛ نه انتخاب متن را */
+        @media (max-width: 768px) {
+            .chat-conv-item {
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
         }
 
         .chat-empty-list {
@@ -679,6 +689,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             align-items: center;
             gap: 8px;
             flex: 1;
+            min-width: 0;
         }
 
         .chat-msg-search-bar.show {
@@ -687,17 +698,19 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         .chat-msg-search-bar input {
             flex: 1;
-            border: none;
-            border-bottom: 1.5px solid var(--border-soft, #e5e7eb);
-            padding: 6px 2px;
+            min-width: 0;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            padding: 6px 14px;
             font-size: .83rem;
             outline: none;
-            background: transparent;
+            background: var(--ink-050);
             color: var(--text-strong);
         }
 
         .chat-msg-search-bar input:focus {
-            border-bottom-color: var(--ink-900);
+            background: var(--surface);
+            border-color: var(--ink-900);
         }
 
         .chat-msg-search-count {
@@ -723,9 +736,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             flex-shrink: 0;
         }
 
+        /* تا نتیجه‌ای نیست، فلش‌های قبلی/بعدی جای کادر را نگیرند */
         .chat-msg-search-nav-btn:disabled {
-            opacity: .4;
-            cursor: not-allowed;
+            display: none;
         }
 
         /* دکمه‌ی پاک‌کردن متن جست‌وجوی داخل گفتگو — جدا از دکمه‌ی
@@ -737,6 +750,36 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         .chat-msg-search-clear-btn.visible {
             display: flex;
+        }
+
+        /* دسکتاپ: کادر جستجو همیشه در هدر، کنار سه‌نقطه است و ذره‌بین لازم نیست؛
+           در موبایل جا کم است و همان ذره‌بین نوار را باز و بسته می‌کند */
+        @media (min-width: 769px) {
+            #chatSearchToggleBtn {
+                display: none;
+            }
+
+            .chat-msg-search-bar {
+                display: flex;
+                flex: 0 1 280px;
+            }
+        }
+
+        /* موبایل: نوار جستجو یک ردیف تمام‌عرض و جدا، زیر هدر گفتگو باز می‌شود.
+           منفی‌ها همان padding هدر (14px 22px) را خنثی می‌کنند */
+        @media (max-width: 768px) {
+            .chat-main-head {
+                flex-wrap: wrap;
+            }
+
+            .chat-msg-search-bar {
+                order: 1;
+                box-sizing: border-box;
+                flex: 0 0 calc(100% + 44px);
+                margin: 2px -22px -14px;
+                padding: 8px 14px;
+                border-top: 1px solid var(--border-soft, #eee);
+            }
         }
 
         .chat-bubble-highlight {
@@ -2635,7 +2678,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                             <i class="bi bi-search"></i>
                         </button>
 
-                        <!-- فقط در گروه/کانال: به‌جای ذره‌بین، منوی سه‌نقطه (جستجو / ترک گروه) -->
+                        <!-- فقط در گروه/کانال: منوی سه‌نقطه (ترک گروه) -->
                         <button class="chat-search-toggle-btn" id="chatHeadMenuBtn" onclick="toggleChatHeadMenu(event)" title="گزینه‌های بیشتر" style="display:none;">
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
@@ -3072,19 +3115,20 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
     <!-- منوی سه‌نقطهٔ هدر گروه -->
     <div class="chat-ctx-menu" id="chatHeadMenu">
-        <div class="chat-ctx-menu-item" onclick="searchFromChatHeadMenu()">
-            <i class="bi bi-search"></i>
-            <span id="chatHeadMenuSearchLabel">جستجو</span>
-        </div>
         <div class="chat-ctx-menu-item danger" onclick="leaveGroupFromChatHeadMenu()">
             <i class="bi bi-box-arrow-right"></i>
             <span>ترک گروه</span>
         </div>
     </div>
 
-    <!-- راست‌کلیک روی یک ردیف گفتگو در لیست (فقط گفتگوهای مستقیم) -->
+    <!-- راست‌کلیک یا لمس طولانی روی یک ردیف گفتگو در لیست -->
     <div class="chat-ctx-menu" id="chatConvCtxMenu">
-        <div class="chat-ctx-menu-item danger" onclick="deleteConversationFromCtxMenu()">
+        <div class="chat-ctx-menu-item" onclick="togglePinFromCtxMenu()">
+            <i class="bi bi-pin-angle"></i>
+            <span id="chatConvCtxPinLabel">سنجاق کردن</span>
+        </div>
+        <!-- حذف فقط برای گفتگوی مستقیم؛ معادلش در گروه «ترک گروه» است -->
+        <div class="chat-ctx-menu-item danger" id="chatConvCtxDeleteItem" onclick="deleteConversationFromCtxMenu()">
             <i class="bi bi-trash"></i>
             <span>حذف گفتگو</span>
         </div>
@@ -3283,8 +3327,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     navMsgSearch(e.shiftKey ? -1 : 1);
-                } else if (e.key === 'Escape') {
-                    closeMsgSearch();
                 }
             });
         });
@@ -3441,9 +3483,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 closeChatHeadMenu();
                 return;
             }
-            // وقتی نوار جستجو باز است، همین گزینه آن را می‌بندد (در موبایل کلید Esc نداریم)
-            document.getElementById('chatHeadMenuSearchLabel').textContent =
-                document.getElementById('chatMsgSearchBar').classList.contains('show') ? 'بستن جستجو' : 'جستجو';
             menu.classList.add('show');
             var r = document.getElementById('chatHeadMenuBtn').getBoundingClientRect();
             menu.style.top = (r.bottom + 4) + 'px';
@@ -3455,11 +3494,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         document.addEventListener('click', closeChatHeadMenu);
-
-        function searchFromChatHeadMenu() {
-            closeChatHeadMenu();
-            toggleMsgSearch();
-        }
 
         function toggleGroupInfoMenu(e) {
             e.stopPropagation();
@@ -3491,6 +3525,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         function closeMsgSearch() {
+            // جستجوی در راه نباید بعد از پاک‌شدن کادر، نتیجه نشان بدهد
+            clearTimeout(msgSearchDebounce);
+            msgSearchReqSeq++;
             document.getElementById('chatMsgSearchBar').classList.remove('show');
             document.getElementById('chatMsgSearchInput').value = '';
             document.getElementById('chatMsgSearchClearBtn').classList.remove('visible');
@@ -3746,7 +3783,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         // لیست قابل‌نمایش = فیلتر نوع + جستجوی عنوان (مشترک بین رندر و میانبرهای صفحه‌کلید)
         function getVisibleConversations() {
             var term = (document.getElementById('convSearchInput').value || '').trim().toLowerCase();
-            return conversations.filter(c => convMatchesFilter(c, convFilter) && (!term || c.title.toLowerCase().includes(term)));
+            return conversations
+                .filter(c => convMatchesFilter(c, convFilter) && (!term || c.title.toLowerCase().includes(term)))
+                // سنجاق‌شده‌ها بالا، آخرین سنجاق اول؛ بقیه به همان ترتیب آخرین فعالیت
+                .sort((a, b) => (b.pinned_at || '').localeCompare(a.pinned_at || ''));
         }
 
         function setConvFilter(filter) {
@@ -3812,15 +3852,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     : (isDraft
                         ? '<div class="chat-conv-preview draft"><span class="chat-conv-draft-label">پیش‌نویس:</span> ' + preview + '</div>'
                         : '<div class="chat-conv-preview">' + preview + '</div>');
-                // راست‌کلیک برای حذف گفتگو فقط روی چت‌های مستقیم (نه گروه —
-                // برای گروه معادلش «ترک گروه» از داخل خود گفتگوست)
-                var convCtxAttr = c.type === 'direct'
-                    ? ' oncontextmenu="return openConvCtxMenu(event, ' + c.conversation_id + ')"'
-                    : '';
-                return '<div class="chat-conv-item' + active + '" onclick="openConversation(' + c.conversation_id + ')"' + convCtxAttr + '>' +
+                var pinIcon = c.pinned_at ? '<i class="bi bi-pin-angle-fill chat-conv-pin-icon" title="سنجاق‌شده"></i>' : '';
+                return '<div class="chat-conv-item' + active + '" data-conv-id="' + c.conversation_id + '" onclick="openConversation(' + c.conversation_id + ')" oncontextmenu="return openConvCtxMenu(event, ' + c.conversation_id + ')">' +
                     avatarHtml(c.title, c.other_user_is_online, null, c.avatar_url) +
                     '<div class="chat-conv-info">' +
-                    '<div class="chat-conv-name-row"><span class="chat-conv-name">' + esc(c.title) + muteIcon + '</span><span class="chat-conv-time">' + time + '</span></div>' +
+                    '<div class="chat-conv-name-row"><span class="chat-conv-name">' + esc(c.title) + muteIcon + pinIcon + '</span><span class="chat-conv-time">' + time + '</span></div>' +
                     previewHtml +
                     '</div>' + badge +
                     '</div>';
@@ -3931,10 +3967,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             // پروفایل/اطلاعات گروه انجام می‌شه — آیکن‌های جداگانهٔ هدر دیگه لازم نیستن
             document.getElementById('chatMediaGalleryBtn').style.display = 'none';
             document.getElementById('chatMuteToggleBtn').style.display = 'none';
-            // گروه/کانال: سه‌نقطه به‌جای ذره‌بین (جستجو داخل همان منوست)
-            var isGroupConv = activeConversationType !== 'direct';
-            document.getElementById('chatSearchToggleBtn').style.display = isGroupConv ? 'none' : '';
-            document.getElementById('chatHeadMenuBtn').style.display = isGroupConv ? '' : 'none';
+            // سه‌نقطه (ترک گروه) فقط در گروه/کانال
+            document.getElementById('chatHeadMenuBtn').style.display = activeConversationType !== 'direct' ? '' : 'none';
             closeChatHeadMenu();
             var headAvatar = document.getElementById('chatHeadAvatar');
             headAvatar.classList.toggle('online', !!(conv && conv.other_user_is_online));
@@ -4738,12 +4772,15 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         document.addEventListener('click', closeChatCtxMenu);
         document.addEventListener('scroll', closeChatCtxMenu, true);
 
-        // ─────────────── منوی راست‌کلیک ردیف گفتگو در لیست (حذف گفتگو) ───────────────
+        // ─────────────── منوی راست‌کلیک ردیف گفتگو در لیست (سنجاق / حذف گفتگو) ───────────────
         var convCtxTargetId = null;
 
         function openConvCtxMenu(e, conversationId) {
             e.preventDefault();
             convCtxTargetId = conversationId;
+            var conv = conversations.find(c => c.conversation_id === conversationId);
+            document.getElementById('chatConvCtxPinLabel').textContent = conv && conv.pinned_at ? 'برداشتن سنجاق' : 'سنجاق کردن';
+            document.getElementById('chatConvCtxDeleteItem').style.display = conv && conv.type === 'direct' ? '' : 'none';
             var menu = document.getElementById('chatConvCtxMenu');
             menu.classList.add('show');
             var menuW = menu.offsetWidth,
@@ -4762,6 +4799,55 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
         document.addEventListener('click', closeConvCtxMenu);
         document.addEventListener('scroll', closeConvCtxMenu, true);
+
+        // لمس طولانی روی ردیف گفتگو = راست‌کلیک (آیفون رویداد contextmenu ندارد)
+        var convLongPressTimer = null;
+        var convLongPressFired = false;
+
+        document.getElementById('convList').addEventListener('touchstart', function (e) {
+            var row = e.target.closest('.chat-conv-item');
+            convLongPressFired = false;
+            if (!row) return;
+            var touch = e.touches[0];
+            convLongPressTimer = setTimeout(function () {
+                convLongPressFired = true;
+                openConvCtxMenu({ preventDefault: function () {}, clientX: touch.clientX, clientY: touch.clientY }, Number(row.dataset.convId));
+            }, 500);
+        }, { passive: true });
+
+        ['touchmove', 'touchcancel'].forEach(function (type) {
+            document.getElementById('convList').addEventListener(type, function () {
+                clearTimeout(convLongPressTimer);
+            }, { passive: true });
+        });
+
+        document.getElementById('convList').addEventListener('touchend', function (e) {
+            clearTimeout(convLongPressTimer);
+            // بعد از لمس طولانی، کلیکِ پایانی نباید گفتگو را باز یا منو را ببندد
+            if (convLongPressFired) e.preventDefault();
+        });
+
+        function togglePinFromCtxMenu() {
+            var conversationId = convCtxTargetId;
+            closeConvCtxMenu();
+            if (!conversationId) return;
+            fetch('../api/chat/toggle-pin.php', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ conversation_id: conversationId })
+                })
+                .then(r => r.json())
+                .then(function (data) {
+                    if (data.success) {
+                        var conv = conversations.find(c => c.conversation_id === conversationId);
+                        if (conv) conv.pinned_at = data.pinned_at;
+                        renderConversationList();
+                    } else {
+                        showToast(data.message || 'خطا در سنجاق کردن گفتگو', 'error');
+                    }
+                })
+                .catch(function () { showToast('خطا در ارتباط با سرور', 'error'); });
+        }
 
         function deleteConversationFromCtxMenu() {
             var conversationId = convCtxTargetId;
@@ -5354,7 +5440,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
 
             if (e.key === 'Escape') {
                 var msgSearchBar = document.getElementById('chatMsgSearchBar');
-                if (msgSearchBar && msgSearchBar.classList.contains('show')) {
+                // Esc اول فقط جستجو را به حالت اول برمی‌گرداند؛ Esc بعدی از گفتگو خارج می‌شود
+                if (msgSearchBar && (msgSearchBar.classList.contains('show') || document.getElementById('chatMsgSearchInput').value)) {
                     closeMsgSearch();
                     return;
                 }

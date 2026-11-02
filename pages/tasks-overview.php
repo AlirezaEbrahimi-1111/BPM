@@ -691,6 +691,8 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                 if (va > vb) return sortDirection === 'asc' ? 1 : -1;
                 return 0;
             });
+            // ?sort= در آدرس یعنی ترتیب انتخاب‌شده؛ رتبهٔ جستجو فقط روی ترتیب پیش‌فرض می‌نشیند
+            if (sortColumn === 'created_at') TF.sortBySearchRank(filteredTasks, s);
 
             renderTable();
         }

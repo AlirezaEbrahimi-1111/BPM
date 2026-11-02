@@ -2100,35 +2100,6 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         }
 
         /* پیام کوتاه */
-        #pmToast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(80px);
-            background: #111827;
-            color: #fff;
-            padding: 11px 22px;
-            border-radius: 10px;
-            font-size: .774rem;
-            z-index: 3000;
-            opacity: 0;
-            transition: .25s;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
-        }
-
-        #pmToast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        #pmToast.ok {
-            background: #1b7b39;
-        }
-
-        #pmToast.err {
-            background: #b91c1c;
-        }
-
         /* تقویمی که به body منتقل شده */
         body>.persian-datepicker.pm-floating {
             position: fixed !important;
@@ -2352,23 +2323,6 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             color: #6b7280;
         }
 
-        /* پیام کوتاه (toast) */
-        #pmToast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(80px);
-            background: #111827;
-            color: #fff;
-            padding: 11px 22px;
-            border-radius: 10px;
-            font-size: .774rem;
-            z-index: 3000;
-            opacity: 0;
-            transition: opacity .25s, transform .25s;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
-        }
-
         body>.ap-dropdown.pm-floating-drop {
             position: fixed !important;
             z-index: 3200 !important;
@@ -2378,19 +2332,6 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         /* راهنمای خالی AssigneePicker، فضای بیهوده می‌گیرد */
         #planModal .ap-hint:empty {
             display: none !important;
-        }
-
-        #pmToast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        #pmToast.ok {
-            background: #1b7b39;
-        }
-
-        #pmToast.err {
-            background: #b91c1c;
         }
 
         /* انتخابگر تاریخ داخل مودال باید بالای بقیه باشد */
@@ -3189,7 +3130,6 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         </div>
     </div>
     <!-- پیام کوتاه -->
-    <div id="pmToast"></div>
     <script src="<?= asset('/assets/js/task-filters.js') ?>"></script>
     <script>
         /* متغیر authToken از header.php می‌آید */
@@ -4164,6 +4104,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
            🔒 دو مدل تأخیر: روتین/فرآیندی (is_workflow_task=1) ساعتی،
            بقیه روز کاری — هر دو عدد از سرور (enrichTaskDates) */
         function daysLate(t) {
+            if (t.has_pending_deadline_request == 1) return 'در انتظار تمدید موعد';
             if (t.is_workflow_task == 1) {
                 return formatHourDelay(t.hours_delayed || 0);
             }
@@ -5203,17 +5144,9 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
            ۱۱) پیام کوتاه (toast)
            ═══════════════════════════════════════════════════ */
 
-        let pmToastTimer = null;
 
         function pmToast(message, type = 'ok') {
-            const el = document.getElementById('pmToast');
-            el.textContent = message;
-            el.className = type + ' show';
-
-            clearTimeout(pmToastTimer);
-            pmToastTimer = setTimeout(() => {
-                el.className = type;
-            }, 2600);
+            showToast(message, type === 'err' ? 'error' : 'success');
         }
         /* ═══════════════════════════════════════════════
            مودال هفتگی

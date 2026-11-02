@@ -73,10 +73,8 @@
     --info-box-bg: #e9e9e9;
     --warning-box-bg: #fff3cd;
     --warning-box-text: #856404;
-    --toast-success-bg: rgba(27, 123, 57, 0.1);
-    --toast-error-bg: #fef2f2;
-    --toast-warning-bg: #fffbeb;
-    --toast-info-bg: #fff5f5ff;
+    /* زمینهٔ همهٔ اعلان‌ها: ۸۵٪ سفید؛ رنگ نوع اعلان فقط در آیکن و حاشیه است */
+    --toast-bg: rgba(255, 255, 255, .85);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -98,10 +96,7 @@
     --info-box-bg: #232a3a;
     --warning-box-bg: rgba(255, 193, 7, 0.15);
     --warning-box-text: #ffb74d;
-    --toast-success-bg: rgba(16, 185, 129, 0.14);
-    --toast-error-bg: rgba(239, 68, 68, 0.14);
-    --toast-warning-bg: rgba(245, 158, 11, 0.14);
-    --toast-info-bg: rgba(59, 130, 246, 0.14);
+    --toast-bg: rgba(27, 33, 48, .85);
 }
 
 /* ========================================
@@ -4025,7 +4020,7 @@ td:nth-child(2) {
     left: 24px;
     min-width: 300px;
     max-width: 400px;
-    background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
+    background: var(--toast-bg);
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(142, 87, 254, 0.2);
     border: 2px solid rgba(142, 87, 254, 0.1);
@@ -4058,7 +4053,7 @@ td:nth-child(2) {
     gap: 10px;
     font-size: 13.5px;
     border-bottom: 2px solid rgba(142, 87, 254, 0.1);
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fc 100%);
+    background: transparent;
 }
 
 .toast-body {
@@ -4069,12 +4064,10 @@ td:nth-child(2) {
 }
 
 :root[data-theme="dark"] .toast-notification {
-    background: linear-gradient(135deg, var(--surface) 0%, #1f2536 100%);
     border-color: var(--border-soft);
 }
 
 :root[data-theme="dark"] .toast-header {
-    background: linear-gradient(135deg, var(--surface) 0%, #1f2536 100%);
     border-bottom-color: var(--border-soft);
     color: var(--text-strong);
 }
@@ -7711,8 +7704,8 @@ body.login-page::after {
     z-index: 99999;
     min-width: 280px;
     max-width: 400px;
-    background: #1e2233;
-    color: #fff;
+    background: var(--toast-bg);
+    color: var(--text-strong);
     border-radius: 12px;
     padding: .8rem 1rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, .22);
@@ -7739,21 +7732,6 @@ body.login-page::after {
     flex-shrink: 0;
 }
 
-.custom-toast.toast-success {
-    background: #1b7b39;
-}
-
-.custom-toast.toast-error {
-    background: #dc2626;
-}
-
-.custom-toast.toast-warning {
-    background: #d97706;
-}
-
-.custom-toast.toast-info {
-    background: #8e57fe;
-}
 /* کانتینر تمام‌عرض — استثنا از عرض استاندارد ۷۰٪ .overview-container (برای صفحاتِ
    پرستونِ فاکتور فروش/خرید رسمی، درخواست ۱۴۰۵/۰۷/۲۷). دو کلاسه تا هم بر قاعدهٔ
    اصلی و هم بر نسخهٔ موبایل (۹۰٪) غلبه کند. */

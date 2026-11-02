@@ -276,47 +276,6 @@ function toPersianNumber($num)
             margin-bottom: 0; /* حذف ۱rem پیش‌فرض <p> بوت‌استرپ */
         }
 
-        /* ===== Messages ===== */
-        .toast-message {
-            padding: 14px 20px;
-            border-radius: 10px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .toast-message.success {
-            background: rgba(27, 123, 57, 0.1);
-            color: #1b7b39;
-            border: 1px solid rgba(27, 123, 57, 0.3);
-        }
-
-        .toast-message.error {
-            background: #FEF2F2;
-            color: #991B1B;
-            border: 1px solid #FECACA;
-        }
-
-        .toast-message i {
-            font-size: 18px;
-        }
-
         /* ===== Settings Groups ===== */
         .settings-grid {
             display: flex;
@@ -777,18 +736,6 @@ function toPersianNumber($num)
             background: var(--border-soft);
             color: var(--text-strong);
         }
-
-        :root[data-theme="dark"] .toast-message.success {
-            background: rgba(34, 197, 94, .12);
-            color: #86efac;
-            border-color: rgba(34, 197, 94, .3);
-        }
-
-        :root[data-theme="dark"] .toast-message.error {
-            background: rgba(239, 68, 68, .12);
-            color: #fca5a5;
-            border-color: rgba(239, 68, 68, .3);
-        }
     </style>
 </head>
 
@@ -808,18 +755,10 @@ function toPersianNumber($num)
         </div>
 
         <!-- Messages -->
-        <?php if ($success_message): ?>
-            <div class="toast-message success">
-                <i class="bi bi-check-circle-fill"></i>
-                <?php echo $success_message; ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($error_message): ?>
-            <div class="toast-message error">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                <?php echo $error_message; ?>
-            </div>
+        <?php if ($success_message || $error_message): ?>
+            <script>
+                showToast(<?= json_encode($success_message ?: $error_message, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>, <?= $success_message ? "'success'" : "'error'" ?>);
+            </script>
         <?php endif; ?>
 
         <!-- Settings Form -->

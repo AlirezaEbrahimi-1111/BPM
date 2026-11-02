@@ -55,6 +55,16 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
     .ann-detail-text { color: #4a5160; line-height: 2; white-space: pre-wrap; font-size: .92rem; }
     .ann-detail-meta { margin-top: .6rem; color: #9097a6; font-size: .8rem; display: flex; gap: 1rem; flex-wrap: wrap; }
 
+    /* فایل‌های پیوست */
+    .ann-att-list { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .6rem; }
+    .ann-att-list:empty { display: none; }
+    .ann-att { display: inline-flex; align-items: center; gap: .35rem; max-width: 100%; border: 1px solid #e9e9e9; background: #fff; color: #4a5160; border-radius: 9px; padding: .3rem .6rem; font-size: .8rem; font-weight: 600; line-height: 1.5; text-decoration: none; }
+    a.ann-att:hover { background: rgba(142, 87, 254, 0.12); color: var(--primary, #8e57fe); border-color: var(--primary, #8e57fe); }
+    .ann-att-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ann-att-size { color: #9097a6; font-weight: 400; flex-shrink: 0; }
+    .ann-att-remove { border: none; background: transparent; color: #9097a6; padding: 0; line-height: 1; cursor: pointer; flex-shrink: 0; }
+    .ann-att-remove:hover { color: #dc2626; }
+
     /* مودال */
     #annModal .modal-content { border: none; border-radius: 18px; overflow: visible; box-shadow: 0 20px 60px rgba(24,28,46,.18); }
     #annModal .modal-header { border-bottom: 1px solid #e9e9e9; padding: 1.1rem 1.4rem; }
@@ -109,6 +119,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
     :root[data-theme="dark"] .ann-readstat { color: var(--text-muted); }
     :root[data-theme="dark"] .ann-detail-meta { color: var(--text-muted); }
     :root[data-theme="dark"] .ann-scope-badge { background: rgba(99,102,241,.18); color: #a5b4fc; }
+    :root[data-theme="dark"] .ann-att { background: var(--surface); border-color: var(--border-soft); color: var(--text-strong); }
+    :root[data-theme="dark"] .ann-att-size,
+    :root[data-theme="dark"] .ann-att-remove { color: var(--text-muted); }
     </style>
 
     <div class="overview-container">
@@ -180,6 +193,11 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                             </div>
                         </div>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="annFiles">فایل پیوست <small class="text-muted">(اختیاری؛ حداکثر ۱۰ فایل، هر فایل تا ۲۰ مگابایت و ویدیو تا ۵۰ مگابایت)</small></label>
+                        <input type="file" class="form-control" id="annFiles" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.mp3,.m4a,.ogg,.mp4,.mov" onchange="onAnnFilesPicked(this)">
+                        <div class="ann-att-list" id="annAttEditor"></div>
+                    </div>
                     <div class="mb-2">
                         <label class="form-label">دامنهٔ ارسال *</label>
                         <div class="ann-scope-options" id="annScopeOptions"></div>
@@ -212,6 +230,9 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         let BASE_ROWS = [];                 // ردیف‌های اصلی
         const ROW_MAP = {};                 // id → آبجکت اطلاعیه (برای ویرایش)
         const EXPANDED = new Set();         // idهای بازشده
+        const ATT_CACHE = {};               // id اطلاعیه → فایل‌های پیوست (بعد از اولین بارگذاری)
+        let PENDING_FILES = [];             // فایل‌های انتخاب‌شده در مودال که هنوز بارگذاری نشده‌اند
+        let EDIT_ATTACHMENTS = [];          // پیوست‌های فعلی اطلاعیهٔ در حال ویرایش
 
         function faNum(x) { const fa = '۰۱۲۳۴۵۶۷۸۹'; return String(x ?? '').replace(/[0-9]/g, d => fa[d]); }
         function toast(msg, type) { const t = showToast(msg, type || 'info'); if (t && t.close) setTimeout(() => t.close(), 2500); }
@@ -260,6 +281,19 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             const open = EXPANDED.has(p.data.id);
             return `<i class="bi bi-chevron-${open ? 'up' : 'down'} ann-chev"></i>`;
         }
+        function faFileSize(bytes) {
+            return bytes >= 1048576 ? faNum((bytes / 1048576).toFixed(1)) + ' مگابایت' : faNum(Math.max(1, Math.round(bytes / 1024))) + ' کیلوبایت';
+        }
+        async function fetchAttachments(id) {
+            const data = await api('../api/announcements/attachments.php?announcement_id=' + id);
+            ATT_CACHE[id] = data.success ? data.attachments : [];
+            return ATT_CACHE[id];
+        }
+        function attachmentLinksHtml(list) {
+            return list.map(f => `<a class="ann-att" href="../api/announcements/download-attachment.php?id=${f.id}" title="دانلود ${esc(f.original_name)}">
+                <i class="bi bi-paperclip"></i><span class="ann-att-name">${esc(f.original_name)}</span><span class="ann-att-size">${faFileSize(f.file_size)}</span></a>`).join('');
+        }
+
         // ردیف جزئیات تمام‌عرض
         function FullDetail(params) {
             const a = params.data;
@@ -267,11 +301,19 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             div.className = 'ann-detail';
             div.innerHTML = `
                 <div class="ann-detail-text">${esc(a.content)}</div>
+                <div class="ann-att-list">${attachmentLinksHtml(ATT_CACHE[a._parent] || [])}</div>
                 <div class="ann-detail-meta">
                     <span><i class="bi bi-person"></i> ${esc(a.author_name || '—')}</span>
                     <span><i class="bi bi-clock"></i> ${faTime(a.created_at)}</span>
                     ${a.expire_at ? '<span><i class="bi bi-hourglass-split"></i> انقضا: ' + faTime(a.expire_at) + '</span>' : ''}
                 </div>`;
+            if (!ATT_CACHE[a._parent]) {
+                fetchAttachments(a._parent).then(list => {
+                    if (!list.length) return;
+                    div.querySelector('.ann-att-list').innerHTML = attachmentLinksHtml(list);
+                    if (gridApi) gridApi.resetRowHeights(); // ارتفاع ردیف، جای فهرست پیوست را هم حساب کند
+                }).catch(e => console.error(e));
+            }
             return div;
         }
 
@@ -321,7 +363,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     if (p.data && p.data._fullWidth) {
                         const txt = p.data.content || '';
                         const lines = txt.split('\n').length + Math.ceil(txt.length / 70);
-                        return Math.min(360, Math.max(96, 56 + lines * 22));
+                        const attCount = (ATT_CACHE[p.data._parent] || []).length;
+                        return Math.min(360, Math.max(96, 56 + lines * 22)) + (attCount ? 12 + Math.ceil(attCount / 2) * 38 : 0);
                     }
                     return 52;
                 },
@@ -405,6 +448,58 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
         function resetDatepicker(id) { const el = document.getElementById(id); if (el) { el.value = ''; el.removeAttribute('data-date'); } }
 
+        // ───── فایل‌های پیوست در مودال ─────
+        function renderAttachmentEditor() {
+            const saved = EDIT_ATTACHMENTS.map(f => `<span class="ann-att"><i class="bi bi-paperclip"></i><span class="ann-att-name">${esc(f.original_name)}</span>
+                <button type="button" class="ann-att-remove" title="حذف فایل" onclick="deleteSavedAttachment(${f.id})"><i class="bi bi-x-lg"></i></button></span>`);
+            const pending = PENDING_FILES.map((f, i) => `<span class="ann-att"><i class="bi bi-file-earmark-arrow-up"></i><span class="ann-att-name">${esc(f.name)}</span><span class="ann-att-size">${faFileSize(f.size)}</span>
+                <button type="button" class="ann-att-remove" title="برداشتن فایل" onclick="removePendingFile(${i})"><i class="bi bi-x-lg"></i></button></span>`);
+            document.getElementById('annAttEditor').innerHTML = saved.concat(pending).join('');
+        }
+        function resetAttachmentEditor(saved) {
+            PENDING_FILES = [];
+            EDIT_ATTACHMENTS = saved;
+            document.getElementById('annFiles').value = '';
+            renderAttachmentEditor();
+        }
+        function onAnnFilesPicked(input) {
+            PENDING_FILES = PENDING_FILES.concat(Array.from(input.files));
+            input.value = ''; // تا انتخاب دوبارهٔ همان فایل بعد از برداشتن هم کار کند
+            renderAttachmentEditor();
+        }
+        function removePendingFile(index) {
+            PENDING_FILES.splice(index, 1);
+            renderAttachmentEditor();
+        }
+        function deleteSavedAttachment(attId) {
+            uiConfirm('این فایل از اطلاعیه حذف شود؟', async function () {
+                try {
+                    const data = await api('../api/announcements/delete-attachment.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: attId }) });
+                    if (!data.success) { toast(data.message || 'خطا در حذف فایل', 'error'); return; }
+                    EDIT_ATTACHMENTS = EDIT_ATTACHMENTS.filter(f => f.id !== attId);
+                    delete ATT_CACHE[document.getElementById('annId').value];
+                    renderAttachmentEditor();
+                    refreshGrid();
+                } catch (e) { toast('خطا: ' + e.message, 'error'); }
+            }, { danger: true, yesText: 'بله، حذف', noText: 'انصراف' });
+        }
+        // خروجی: نام فایل‌هایی که بارگذاری نشدند، همراه با دلیل
+        async function uploadPendingFiles(announcementId) {
+            const failures = [];
+            for (const file of PENDING_FILES) {
+                const form = new FormData();
+                form.append('announcement_id', announcementId);
+                form.append('file', file);
+                try {
+                    const data = await api('../api/announcements/upload-attachment.php', { method: 'POST', body: form });
+                    if (!data.success) failures.push(file.name + ': ' + (data.message || 'خطا در بارگذاری'));
+                } catch (e) {
+                    failures.push(file.name + ': ' + e.message);
+                }
+            }
+            return failures;
+        }
+
         function openCreate() {
             document.getElementById('annModalTitle').textContent = 'اطلاعیهٔ جدید';
             document.getElementById('annId').value = '';
@@ -414,6 +509,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             resetDatepicker('annPublishAt'); resetDatepicker('annExpireAt');
             buildScopeOptions();
             EDIT_ORIG = {};
+            resetAttachmentEditor([]);
             if (annPicker) annPicker.reset();
             new bootstrap.Modal(document.getElementById('annModal')).show();
             if (typeof window.reinitPersianDatepickers === 'function') setTimeout(window.reinitPersianDatepickers, 100);
@@ -434,6 +530,11 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             if (a.organization_id === null || typeof a.organization_id === 'undefined') cur = 'all_orgs';
             else if (a.target_user_id || a.target_section) cur = 'specific';
             onScopeChange(cur);
+            resetAttachmentEditor([]);
+            fetchAttachments(a.id).then(list => {
+                // کاربر در این فاصله مودال را برای اطلاعیهٔ دیگری باز نکرده باشد
+                if (document.getElementById('annId').value === String(a.id)) { EDIT_ATTACHMENTS = list; renderAttachmentEditor(); }
+            }).catch(e => console.error(e));
             if (annPicker) annPicker.reset();
             new bootstrap.Modal(document.getElementById('annModal')).show();
             if (typeof window.reinitPersianDatepickers === 'function') setTimeout(window.reinitPersianDatepickers, 100);
@@ -473,7 +574,19 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 let data;
                 if (id) { body.id = parseInt(id); opt.body = JSON.stringify(body); data = await api('../api/announcements/update.php', opt); }
                 else { opt.body = JSON.stringify(body); data = await api('../api/announcements/create.php', opt); }
-                if (data.success) { toast(id ? 'اطلاعیه ویرایش شد' : 'اطلاعیه ایجاد شد', 'success'); bootstrap.Modal.getInstance(document.getElementById('annModal')).hide(); loadList(); }
+                if (data.success) {
+                    const savedId = id || data.id;
+                    const failures = await uploadPendingFiles(savedId);
+                    delete ATT_CACHE[savedId];
+                    if (failures.length) {
+                        // اطلاعیه ذخیره شده؛ فقط پیوست‌ها مانده‌اند و کاربر باید بداند کدام‌ها
+                        showToast('اطلاعیه ذخیره شد، ولی این فایل‌ها بارگذاری نشدند:<br>' + failures.map(esc).join('<br>'), 'warning', { duration: 10000 });
+                    } else {
+                        toast(id ? 'اطلاعیه ویرایش شد' : 'اطلاعیه ایجاد شد', 'success');
+                    }
+                    bootstrap.Modal.getInstance(document.getElementById('annModal')).hide();
+                    loadList();
+                }
                 else { toast(data.message || 'خطا در ذخیره', 'error'); }
             } catch (e) { toast('خطا: ' + e.message, 'error'); }
             finally { btn.disabled = false; }

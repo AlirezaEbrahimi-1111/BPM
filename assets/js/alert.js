@@ -83,43 +83,36 @@ var _activeToast = null;
 function showToast(message, type = 'success', options = {}) {
 
     const { duration = 3000, buttons = [], mobileSheet = false, _restoredTotal = 0 } = options;
-    // mobileSheet: در موبایل از پایین صفحه بالا می‌آید، زمینهٔ کاملا مات، روی همهٔ اجزا
-    const asSheet = mobileSheet && window.matchMedia && window.matchMedia('(max-width: 576px)').matches;
-    const hiddenTransform = asSheet ? 'translateY(calc(100% + 32px))' : null;
 
     // ─── تنظیمات هر نوع ───────────────────────────────────────
     const config = {
         success: {
             icon: 'check-circle-fill',
             color: '#1b7b39',
-            bgColor: 'var(--toast-success-bg)',
             borderColor: '#1b7b39',
             label: 'موفق',
         },
         error: {
             icon: 'x-circle-fill',
             color: '#ef4444',
-            bgColor: 'var(--toast-error-bg)',
             borderColor: '#ef4444',
             label: 'خطا',
         },
         warning: {
             icon: 'exclamation-triangle-fill',
             color: '#f59e0b',
-            bgColor: 'var(--toast-warning-bg)',
             borderColor: '#f59e0b',
             label: 'اخطار',
         },
         info: {
             icon: 'info-circle-fill',
             color: '#3b82f6',
-            bgColor: 'var(--toast-info-bg)',
             borderColor: '#3b82f6',
             label: 'اطلاعات',
         },
     };
 
-    const { icon, color, bgColor, borderColor } = config[type] ?? config.info;
+    const { icon, color, borderColor } = config[type] ?? config.info;
 
     // ─── حذف toast قبلی (اگر وجود دارد) ──────────────────────
     document.querySelector('.custom-toast')?.remove();
@@ -138,7 +131,7 @@ function showToast(message, type = 'success', options = {}) {
         right: 'auto',           // ◄ غیرفعال کردن right از CSS
         minWidth: '300px',
         maxWidth: '420px',
-        background: bgColor,
+        background: 'var(--toast-bg, rgba(255, 255, 255, .85))',
         borderRadius: '14px',
         padding: '16px 20px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.13)',
@@ -151,20 +144,8 @@ function showToast(message, type = 'success', options = {}) {
         direction: 'rtl',
         fontFamily: 'Vazir, sans-serif',
     });
-    if (asSheet) {
-        Object.assign(toast.style, {
-            top: 'auto',
-            left: '12px',
-            right: '12px',
-            bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
-            minWidth: '0',
-            maxWidth: 'none',
-            background: 'var(--surface, #fff)',
-            backdropFilter: 'none',
-            zIndex: '2147483000',
-            transform: hiddenTransform,
-        });
-    }
+    // mobileSheet: اعلان صفحهٔ ورود باید روی همهٔ اجزا بماند؛ جایش مثل بقیه بالا-چپ است
+    if (mobileSheet) toast.style.zIndex = '2147483000';
 
     // ─── ساخت محتوا ───────────────────────────────────────────
     const header = document.createElement('div');
@@ -273,7 +254,7 @@ function showToast(message, type = 'success', options = {}) {
     // اعلان ادامه‌یافته دوباره وارد نمی‌شود؛ همان‌جا و با نوار پیشرفتِ باقی‌مانده نمایش داده می‌شود
     if (_restoredTotal) {
         toast.style.transition = 'none';
-        toast.style.transform = asSheet ? 'translateY(0)' : 'translateX(0)';
+        toast.style.transform = 'translateX(0)';
         toast.style.opacity = '1';
         progressBar.style.transition = 'none';
         progressBar.style.transform = `scaleX(${Math.min(1, duration / _restoredTotal)})`;
@@ -285,7 +266,7 @@ function showToast(message, type = 'success', options = {}) {
     // ─── انیمیشن ورود ─────────────────────────────────────────
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-            toast.style.transform = asSheet ? 'translateY(0)' : 'translateX(0)';
+            toast.style.transform = 'translateX(0)';
             toast.style.opacity = '1';
             // شروع نوار
             progressBar.style.transform = 'scaleX(0)';
@@ -298,7 +279,7 @@ function showToast(message, type = 'success', options = {}) {
     function closeToast() {
         clearTimeout(timer);
         if (_activeToast === carry) _activeToast = null; // بسته‌شده به صفحهٔ بعد نرود
-        toast.style.transform = asSheet ? hiddenTransform : 'translateX(-420px)';
+        toast.style.transform = 'translateX(-420px)';
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 400);
         if (_toastEnterHandler) {

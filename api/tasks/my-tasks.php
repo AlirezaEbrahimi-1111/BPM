@@ -210,7 +210,11 @@ AND t.status != 'rejected'
     dr.current_approver_id = ?
     OR ocr.current_approver_id = ?
     OR (
-      dr.current_approver_id IS NULL 
+      -- درخواست تمدید در انتظار نفر دیگر، کار را از فهرست مسئول پنهان می‌کند؛ مگر کار از موعد گذشته باشد که
+      -- باید با بج «در انتظار تمدید موعد» در تأخیردارها بماند. مبنا هم‌راستا با TF.isOverdue: روتین ساعتی، بقیه روز تقویمی
+      (dr.current_approver_id IS NULL OR IF(t.is_workflow_task = 1,
+          GREATEST(COALESCE(t.original_deadline, '1000-01-01'), COALESCE(t.deadline, '1000-01-01'), CONCAT(COALESCE(t.due_date, '1000-01-01'), ' 23:59:59')) < NOW(),
+          DATE(GREATEST(COALESCE(t.original_deadline, '1000-01-01'), COALESCE(t.deadline, '1000-01-01'), COALESCE(t.due_date, '1000-01-01'))) < CURDATE()))
     AND (
       (
         t.assignee_id = ?

@@ -86,30 +86,26 @@
         if (existing) existing.remove();
 
         // تعیین متن و رنگ
-        var message, icon, bgColor, borderColor, iconColor;
+        var message, icon, borderColor, iconColor;
 
         if (status === 'expired' || status === 'no_subscription') {
             message     = 'اشتراک سازمان شما منقضی شده است. لطفا برای تمدید اشتراک با پشتیبانی تماس بگیرید.';
             icon        = 'bi-exclamation-octagon-fill';
-            bgColor     = '#fef2f2';
             borderColor = '#ef4444';
             iconColor   = '#ef4444';
         } else if (daysRemaining <= 0) {
             message     = 'اشتراک سازمان شما امروز منقضی می‌شود! لطفا برای تمدید با پشتیبانی تماس بگیرید.';
             icon        = 'bi-exclamation-octagon-fill';
-            bgColor     = '#fef2f2';
             borderColor = '#ef4444';
             iconColor   = '#ef4444';
         } else if (daysRemaining === 1) {
             message     = 'اشتراک سازمان شما فردا منقضی می‌شود. لطفا برای خرید یا تمدید اشتراک با پشتیبانی ارتباط بگیرید.';
             icon        = 'bi-exclamation-triangle-fill';
-            bgColor     = '#fffbeb';
             borderColor = '#f59e0b';
             iconColor   = '#f59e0b';
         } else {
             message     = 'اشتراک سازمان شما ' + toFa(daysRemaining) + ' روز دیگر منقضی می‌شود. لطفا برای خرید یا تمدید اشتراک با پشتیبانی ارتباط بگیرید.';
             icon        = 'bi-exclamation-triangle-fill';
-            bgColor     = '#fffbeb';
             borderColor = '#f59e0b';
             iconColor   = '#f59e0b';
         }
@@ -124,7 +120,7 @@
             'right:auto;' +
             'min-width:320px;' +
             'max-width:440px;' +
-            'background:' + bgColor + ';' +
+            'background:var(--toast-bg, rgba(255, 255, 255, .85));' +
             'border-radius:14px;' +
             'padding:16px 20px;' +
             'box-shadow:0 8px 32px rgba(0,0,0,0.15);' +
@@ -143,7 +139,7 @@
         header.style.cssText = 'display:flex;align-items:flex-start;gap:10px;';
         header.innerHTML =
             '<i class="bi ' + icon + '" style="color:' + iconColor + ';font-size:1.4rem;flex-shrink:0;margin-top:2px;"></i>' +
-            '<span style="font-weight:600;color:#1e293b;font-size:0.88rem;line-height:1.7;">' + message + '</span>';
+            '<span style="font-weight:600;color:var(--text-strong);font-size:0.88rem;line-height:1.7;">' + message + '</span>';
         toast.appendChild(header);
 
         // ردیف دکمه‌ها

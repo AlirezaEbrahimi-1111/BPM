@@ -611,6 +611,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                 if (va > vb) return sortDirection === 'asc' ? 1 : -1;
                 return 0;
             });
+            TF.sortBySearchRank(filteredTasks, s);
             renderTable();
         }
 
