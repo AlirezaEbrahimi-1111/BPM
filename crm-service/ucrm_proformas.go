@@ -26,6 +26,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -104,27 +105,39 @@ var shygunItemCache struct {
 	lastErr   string
 }
 
+var shygunMaxPageRe = regexp.MustCompile(`(?i)maximum page size is (\d+)`)
+
 // shygunPaged همهٔ صفحه‌های یک متدِ فهرستیِ شایگان را می‌خواند. چون سقفِ
-// اندازهٔ صفحه در متدهای مختلف فرق دارد (۲۰ تا ۱۰۰)، RowStart به اندازهٔ
-// ردیف‌های واقعاً برگشته جلو می‌رود و تا صفحهٔ خالی ادامه می‌دهد.
+// اندازهٔ صفحه در متدهای مختلف فرق دارد (۱۰ تا ۱۰۰)، اندازه از پیامِ خطای
+// شایگان یاد گرفته می‌شود و RowStart به اندازهٔ ردیف‌های واقعاً برگشته جلو
+// می‌رود تا صفحهٔ خالی.
 func shygunPaged[T any](s *server, path string, domain map[string]any) ([]T, error) {
 	out := []T{}
 	start := 0
+	size := shygunPageSize
 	var prev []byte
 	for i := 0; i < shygunMaxPageLoops; i++ {
 		req := shygunGetReq{Config: shygunConnConfig{ConnectionName: s.cfg.ShygunConn}, Domain: domain}
-		data, err := s.shygunPost(fmt.Sprintf("%s?RowStart=%d&RowCount=%d", path, start, shygunPageSize), req, shygunPageReqTimeout)
+		data, err := s.shygunPost(fmt.Sprintf("%s?RowStart=%d&RowCount=%d", path, start, size), req, shygunPageReqTimeout)
 		if err != nil {
+			return nil, err
+		}
+		rows, err := shygunResult[T](data)
+		if err != nil {
+			// سقفِ صفحه در هر متد فرق دارد (InvoiceAbsList = ۱۰) و فقط در پیامِ خطا
+			// گفته می‌شود: «...maximum page size is 10 records» → با همان عدد دوباره
+			if m := shygunMaxPageRe.FindStringSubmatch(err.Error()); m != nil {
+				if n, _ := strconv.Atoi(m[1]); n > 0 && n < size {
+					size = n
+					continue
+				}
+			}
 			return nil, err
 		}
 		if prev != nil && bytes.Equal(data, prev) {
 			break // RowStart نادیده گرفته شد — همان صفحه دوباره آمد
 		}
 		prev = data
-		rows, err := shygunResult[T](data)
-		if err != nil {
-			return nil, err
-		}
 		if len(rows) == 0 {
 			break
 		}
