@@ -285,6 +285,7 @@ func main() {
 	defer db.Close()
 
 	s := &server{cfg: cfg, db: db}
+	s.startShygunWarmers() // پیش‌بارگذاری پیش‌فاکتورها و کالاهای شایگان (ucrm_proformas.go)
 
 	// شناسه‌ی انبار «فاکتور رسمی» را یک‌بار می‌خوانیم (seed مهاجرت).
 	if err := db.QueryRow("SELECT id FROM inv_warehouses WHERE kind = 'official' LIMIT 1").
@@ -388,6 +389,11 @@ func main() {
 	// فهرست مشتریان از نرم‌افزار حسابداری شایگان (تب «انتخاب از حسابداری») — shygun.go
 	mux.HandleFunc("GET /crm/api/ucrm/shygun/customers", ucrm(s.ucrmShygunCustomers))
 	mux.HandleFunc("GET /crm/api/ucrm/shygun/customers/{jobno}", ucrm(s.ucrmShygunCustomerDetail))
+	// پیش‌فاکتورهای فروش شایگان + کالاها (پیش‌بارگذاری پس‌زمینه) — ucrm_proformas.go
+	mux.HandleFunc("GET /crm/api/ucrm/shygun/items", ucrm(s.ucrmShygunItems))
+	mux.HandleFunc("GET /crm/api/ucrm/proformas", ucrm(s.ucrmListProformas))
+	mux.HandleFunc("POST /crm/api/ucrm/proformas/{guid}/status", ucrm(s.ucrmProformaStatus))
+	mux.HandleFunc("PUT /crm/api/ucrm/proformas/{guid}/followup", ucrm(s.ucrmProformaFollowup))
 	mux.HandleFunc("POST /crm/api/ucrm/customers/import", ucrm(s.ucrmImport))
 	mux.HandleFunc("GET /crm/api/ucrm/customers/{id}", ucrm(s.ucrmGetCustomer))
 	mux.HandleFunc("POST /crm/api/ucrm/customers", ucrm(s.ucrmCreateCustomer))

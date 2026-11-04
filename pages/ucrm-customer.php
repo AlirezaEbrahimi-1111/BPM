@@ -612,7 +612,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
                         <div class="dropdown">
                             <button type="button" class="btn btn-outline-primary uc-more-btn" data-bs-toggle="dropdown" aria-expanded="false" title="بیشتر"><i class="bi bi-three-dots"></i></button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><button class="dropdown-item uc-soon" data-soon="صدور پیش‌فاکتور"><i class="bi bi-file-earmark-text ms-2"></i>پیش‌فاکتور <span class="uc-soon-tag sm">به‌زودی</span></button></li>
+                                <li><a class="dropdown-item" href="ucrm-proformas.php?customer=${c.id}"><i class="bi bi-file-earmark-text ms-2"></i>پیش‌فاکتور</a></li>
                                 <li><button class="dropdown-item uc-soon" data-soon="ثبت سفارش خرید"><i class="bi bi-cart ms-2"></i>سفارش خرید <span class="uc-soon-tag sm">به‌زودی</span></button></li>
                                 <li><button class="dropdown-item uc-soon" data-soon="ثبت سفارش فروش"><i class="bi bi-cart-check ms-2"></i>سفارش فروش <span class="uc-soon-tag sm">به‌زودی</span></button></li>
                             </ul>
@@ -640,7 +640,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
             document.getElementById('ucFab').addEventListener('click', () => openFollowup());
             // اولین فیلد قابل‌ویرایش فوکوس بگیرد (قاعدهٔ مودال‌های سایت)
             document.getElementById('fuModal').addEventListener('shown.bs.modal', () => document.getElementById('fuTitle').focus());
-            // دکمه‌های «به‌زودی» (پیامک، پیش‌فاکتور، سفارش‌ها): فقط پیام
+            // دکمه‌های «به‌زودی» (پیامک، سفارش‌ها): فقط پیام
             document.addEventListener('click', e => {
                 const b = e.target.closest('.uc-soon');
                 if (!b) return;

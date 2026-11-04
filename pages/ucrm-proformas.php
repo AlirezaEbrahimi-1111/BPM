@@ -2,11 +2,12 @@
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 
 // CRM جدید — «گزارشات | پیش‌فاکتورهای باز و پیگیری‌ها» (بخش ۱۰ طرح CRM، طرح ۱۴۰۵/۰۸/۰۳).
-// فعلا فقط ظاهر صفحه: فیلتر کارشناس + بازهٔ تاریخ (پیش‌فرض ماه جاری) + خروجی اکسل، چهار کارت
-// (پیش‌فاکتورهای باز، مجموع مبلغ، معوق بیش از ۷ روز، نرخ تبدیل) و جدول خالی — پیش‌فاکتور CRM
-// هنوز ساخته نشده؛ با ساختنش همین صفحه پر می‌شود. مبلغ به تومان (مثل بقیهٔ CRM).
-// تعریف کارت‌ها (توافق ۱۴۰۵/۰۸/۰۳): معوق = پیش‌فاکتور باز با «تاریخ پیگیری بعدی» بیش از ۷ روز گذشته؛
-// نرخ تبدیل = درصد پیش‌فاکتورهای همین بازه که به فاکتور/فروش تبدیل شده‌اند.
+// داده (۱۴۰۵/۰۸/۱۳): پیش‌فاکتورهای فروشِ شایگان (نوع ۱۳، پیش‌بارگذاری در crm-service/ucrm_proformas.go)
+// + وضعیت/تاریخ پیگیریِ CRM (ucrm_proforma_states). مبلغ شایگان ریال است؛ این‌جا تومان (÷۱۰).
+// فیلتر کارشناس + بازهٔ تاریخ (پیش‌فرض ماه جاری) + خروجی اکسل؛ ?customer=شناسه (از منوی «⋯» صفحهٔ
+// مشتری) = همهٔ پیش‌فاکتورهای همان مشتری، بدون بازهٔ تاریخ.
+// کارت‌ها (توافق ۱۴۰۵/۰۸/۰۳): معوق = پیش‌فاکتور باز با «تاریخ پیگیری بعدی» بیش از ۷ روز گذشته؛
+// نرخ تبدیل = درصد پیش‌فاکتورهای «تأیید شده» در همین فهرست.
 // مدیر و حسابداری همه را می‌بینند (با فیلتر کارشناس)؛ کارشناس فقط مال خودش.
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ucrm_access.php';
 if (!ucrmAllowed($db, (int) $user_id)) {
@@ -92,6 +93,9 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             </div>
         </div>
 
+        <!-- از منوی «⋯» صفحهٔ مشتری (?customer=شناسه) → فقط پیش‌فاکتورهای همان مشتری -->
+        <div class="uc-chips mb-2" id="pfCustChip"></div>
+
         <div class="uc-pf-cards">
             <div class="uc-pf-card c-open"><div><div class="k">پیش‌فاکتورهای باز</div><div class="v" id="cOpen">۰</div></div><span class="ic"><i class="bi bi-file-earmark-text"></i></span></div>
             <div class="uc-pf-card c-sum"><div><div class="k">مجموع مبلغ</div><div class="v" id="cSum">۰ تومان</div></div><span class="ic"><i class="bi bi-cash-stack"></i></span></div>
@@ -105,12 +109,41 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
         </div>
     </div>
 
+    <!-- تغییر تاریخ پیگیری -->
+    <div class="modal fade" id="pfFuModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-calendar-event ms-2"></i>تغییر تاریخ پیگیری</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="small text-muted mb-2" id="pfFuFor"></div>
+                    <label class="form-label small mb-1">تاریخ پیگیری بعدی</label>
+                    <div class="persian-datepicker-wrapper">
+                        <input type="text" class="persian-datepicker-input form-control" id="pfFuDate" readonly>
+                        <div class="persian-datepicker">
+                            <div class="datepicker-header"><button type="button" class="datepicker-nav" data-action="prev">►</button><span class="datepicker-current"></span><button type="button" class="datepicker-nav" data-action="next">◄</button></div>
+                            <div class="datepicker-weekdays"><div class="datepicker-weekday">ش</div><div class="datepicker-weekday">ی</div><div class="datepicker-weekday">د</div><div class="datepicker-weekday">س</div><div class="datepicker-weekday">چ</div><div class="datepicker-weekday">پ</div><div class="datepicker-weekday">ج</div></div>
+                            <div class="datepicker-days"></div><button type="button" class="datepicker-today-btn">امروز</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="button" class="btn btn-primary" id="pfFuSave"><i class="bi bi-check-lg ms-1"></i>ثبت</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php include 'footer.php'; ?>
 
     <script src="<?= asset('../../assets/js/ucrm-common.js') ?>"></script>
     <script>
         const SEES_ALL = <?= $__seesAll ? 'true' : 'false' ?>;
-        // وضعیت‌ها طبق طرح — معنای دقیق هر کدام با ساخت پیش‌فاکتور CRM مشخص می‌شود
+        // وضعیت‌ها طبق طرح (۱۴۰۵/۰۸/۱۳): شروع نشده = باز؛ «تکمیل» → تأیید شده؛ «لغو» → متوقف شده؛
+        // عقب افتاده = شروع‌نشده با تاریخ پیگیری گذشته (سرور حساب می‌کند)
         const PF_STATUS = {
             approved: ['ok', 'bi-check-lg', 'تأیید شده'],
             stopped: ['stop', 'bi-dash-circle-fill', 'متوقف شده'],
@@ -118,21 +151,66 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             overdue: ['late', 'bi-exclamation-circle-fill', 'عقب افتاده'],
         };
         let gridApi = null, rows = [], range = { from: '', to: '' };
+        // ?customer=شناسه → فقط پیش‌فاکتورهای همین مشتری (از منوی صفحهٔ مشتری)
+        let CUST = parseInt(new URLSearchParams(location.search).get('customer'), 10) || 0;
+        let fuModal = null, fuGuid = '';
 
         function statusCell(p) {
             const s = PF_STATUS[p.value];
             return s ? `<span class="uc-st ${s[0]}"><i class="bi ${s[1]}"></i>${s[2]}</span>` : '';
         }
 
-        // منوی «⋮» هر ردیف (طرح): تکمیل / لغو / تغییر تاریخ پیگیری — با ساخت پیش‌فاکتور فعال می‌شود
-        function actionCell() {
-            return `<button class="ag-action-btn" style="color:#0f7a57" title="تکمیل" onclick="pfSoon()"><i class="bi bi-check-circle-fill"></i></button>
-                <button class="ag-action-btn del" title="لغو" onclick="pfSoon()"><i class="bi bi-x-circle-fill"></i></button>
-                <button class="ag-action-btn" style="color:#8e57fe" title="تغییر تاریخ پیگیری" onclick="pfSoon()"><i class="bi bi-calendar-event"></i></button>`;
+        // منوی «⋮» هر ردیف (طرح): تکمیل / لغو / تغییر تاریخ پیگیری — فقط برای کسی که اجازه دارد
+        // (مدیر/حسابداری همه؛ کارشناس فقط مشتری خودش). تأییدشده/متوقف‌شده → «بازگشایی».
+        function actionCell(p) {
+            const r = p.data;
+            if (!r || !r.can_act) return '';
+            const g = r.guid;
+            const fu = `<button class="ag-action-btn" style="color:#8e57fe" title="تغییر تاریخ پیگیری" onclick="pfFollowup('${g}')"><i class="bi bi-calendar-event"></i></button>`;
+            if (r.status === 'approved' || r.status === 'stopped') {
+                return `<button class="ag-action-btn" style="color:#b45309" title="بازگشایی (شروع نشده)" onclick="pfStatus('${g}','not_started')"><i class="bi bi-arrow-counterclockwise"></i></button>` + fu;
+            }
+            return `<button class="ag-action-btn" style="color:#0f7a57" title="تکمیل" onclick="pfStatus('${g}','approved')"><i class="bi bi-check-circle-fill"></i></button>
+                <button class="ag-action-btn del" title="لغو" onclick="pfStatus('${g}','stopped')"><i class="bi bi-x-circle-fill"></i></button>` + fu;
         }
 
-        function pfSoon() {
-            showToast('عملیات پیش‌فاکتور با ساخت بخش پیش‌فاکتور CRM فعال می‌شود.', 'info');
+        async function pfStatus(guid, status) {
+            try {
+                const res = await UCRM.send('POST', '/proformas/' + guid + '/status', { status });
+                showToast(res.message || 'ثبت شد.', 'success');
+                load();
+            } catch (e) {
+                showToast(e.message || 'خطا در ثبت وضعیت', 'error');
+            }
+        }
+
+        function pfFollowup(guid) {
+            const r = rows.find(x => x.guid === guid);
+            if (!r) return;
+            fuGuid = guid;
+            document.getElementById('pfFuFor').textContent = faDigits(r.number) + ' — ' + r.customer_name;
+            const el = document.getElementById('pfFuDate');
+            const g = r.next_followup || TimeSync.serverToday();
+            el.setAttribute('data-date', g);
+            el.value = convertToJalali(g);
+            fuModal.show();
+        }
+
+        async function saveFollowup() {
+            const date = document.getElementById('pfFuDate').getAttribute('data-date') || '';
+            if (!date) return showToast('تاریخ پیگیری را انتخاب کنید.', 'warning');
+            const btn = document.getElementById('pfFuSave');
+            btn.disabled = true;
+            try {
+                const res = await UCRM.send('PUT', '/proformas/' + fuGuid + '/followup', { date });
+                fuModal.hide();
+                showToast(res.message || 'ثبت شد.', 'success');
+                load();
+            } catch (e) {
+                showToast(e.message || 'خطا در ثبت تاریخ پیگیری', 'error');
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         const jd = v => v ? TimeSync.formatJalali(v) : '—';
@@ -181,15 +259,59 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             });
         }
 
-        // فعلا داده‌ای نیست (پیش‌فاکتور CRM ساخته نشده) — کارت‌ها صفر و جدول خالی
-        function load() {
-            rows = [];
-            gridApi.setGridOption('rowData', rows);
-            gridApi.showNoRowsOverlay();
-            document.getElementById('cOpen').textContent = faDigits(0);
-            document.getElementById('cSum').textContent = UCRM.money(0) + ' تومان';
-            document.getElementById('cLate').textContent = faDigits(0);
-            document.getElementById('cRate').textContent = faDigits(0) + '٪';
+        // پیش‌فاکتورها از crm-service (کشِ پس‌زمینهٔ شایگان — منتظر شایگان نمی‌ماند)
+        let loadSeq = 0;
+        async function load() {
+            const seq = ++loadSeq;
+            const qs = new URLSearchParams();
+            if (CUST) {
+                qs.set('customer', CUST);
+            } else {
+                qs.set('from', range.from);
+                qs.set('to', range.to);
+            }
+            const rep = SEES_ALL ? document.getElementById('fRep').value : '';
+            if (rep) qs.set('rep', rep);
+            gridApi.showLoadingOverlay();
+            try {
+                const res = await UCRM.get('/proformas?' + qs.toString());
+                if (seq !== loadSeq) return;
+                rows = res.items || [];
+                gridApi.setGridOption('rowData', rows);
+                if (!rows.length) gridApi.showNoRowsOverlay(); else gridApi.hideOverlay();
+                const c = res.cards || {};
+                document.getElementById('cOpen').textContent = faDigits(c.open || 0);
+                document.getElementById('cSum').textContent = UCRM.money(c.sum || 0) + ' تومان';
+                document.getElementById('cLate').textContent = faDigits(c.late || 0);
+                document.getElementById('cRate').textContent = faDigits(c.rate || 0) + '٪';
+                if (res.loading) showToast('فهرست پیش‌فاکتورها هنوز از حسابداری خوانده نشده؛ چند لحظهٔ دیگر صفحه را تازه کنید.', 'info');
+            } catch (e) {
+                if (seq !== loadSeq) return;
+                rows = [];
+                gridApi.setGridOption('rowData', rows);
+                gridApi.showNoRowsOverlay();
+                showToast(e.message || 'خطا در دریافت پیش‌فاکتورها', 'error');
+            }
+        }
+
+        // نوار «مشتری: X ✕» — برداشتن = برگشت به همهٔ پیش‌فاکتورها
+        async function renderCustChip() {
+            const box = document.getElementById('pfCustChip');
+            if (!CUST) {
+                box.innerHTML = '';
+                return;
+            }
+            let name = '#' + faDigits(CUST);
+            try {
+                name = ((await UCRM.get('/customers/' + CUST)).customer || {}).name || name;
+            } catch (e) {}
+            box.innerHTML = `<span class="uc-chip"><i class="bi bi-funnel"></i>فقط پیش‌فاکتورهای مشتری: <b>${esc(name)}</b><button type="button" title="نمایش همه" id="pfCustClear">×</button></span>`;
+            document.getElementById('pfCustClear').addEventListener('click', () => {
+                CUST = 0;
+                history.replaceState(null, '', 'ucrm-proformas.php');
+                renderCustChip();
+                load();
+            });
         }
 
         function exportExcel() {
@@ -207,7 +329,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             wb.Workbook = { Views: [{ RTL: true }] };
             XLSX.utils.book_append_sheet(wb, ws, 'پیش‌فاکتورهای باز');
             XLSX.writeFile(wb, 'pishfactor-baz-' + range.from + '_' + range.to + '.xlsx');
-            if (!data.length) showToast('فعلا پیش‌فاکتوری نیست؛ فایل فقط سرستون‌ها را دارد.', 'info');
+            if (!data.length) showToast('پیش‌فاکتوری در این فهرست نیست؛ فایل فقط سرستون‌ها را دارد.', 'info');
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -220,7 +342,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 pagination: true, paginationPageSize: 20, paginationPageSizeSelector: [20, 50, 100],
                 onPaginationChanged: () => AgGridFa.persianizePaging(),
                 defaultColDef: { resizable: true, sortable: true },
-                overlayNoRowsTemplate: '<span class="text-muted">هنوز پیش‌فاکتوری صادر نشده است — با ساخت بخش پیش‌فاکتور CRM این گزارش پر می‌شود.</span>',
+                overlayNoRowsTemplate: '<span class="text-muted">پیش‌فاکتوری در این بازه پیدا نشد.</span>',
             });
             // کلیک راست روی ردیف = همان منوی عملیات (قاعدهٔ جدول‌های حسابداری)
             AgGridFa.rowContextMenu(document.getElementById('pfGrid'), gridApi, null, { insideGrid: true });
@@ -243,6 +365,9 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 load();
             });
             document.getElementById('btnExcel').addEventListener('click', exportExcel);
+            fuModal = new bootstrap.Modal(document.getElementById('pfFuModal'));
+            document.getElementById('pfFuSave').addEventListener('click', saveFollowup);
+            renderCustChip();
             if (SEES_ALL) {
                 try {
                     const rp = await UCRM.get('/reps');
