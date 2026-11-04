@@ -475,7 +475,7 @@ button.uc-head-ico:hover { background: rgba(142, 87, 254, .2); }
 .uc-pf-list { padding: 20px 22px !important; }
 .uc-pf-list h2 { font-size: 1rem; font-weight: 800; margin-bottom: 14px; }
 .uc-st i { font-size: .75rem; }
-.uc-pf-list .uc-st { padding: 7px 10px; } /* هم‌اندازهٔ بج استاندارد پروژه (.badge در custom.css) */
+.uc-pf-list .uc-st { padding: 7px 10px; line-height: 1.2; } /* هم‌اندازهٔ بج استاندارد پروژه (.badge در custom.css)؛ line-height: inline-flex داخل سلول AG Grid ارتفاع خطِ سلول (~۴۰px) را می‌گرفت و بج بلند می‌شد */
 .uc-st.ok { background: rgba(16, 185, 129, .14); color: #047857; }
 .uc-st.stop { background: rgba(220, 38, 38, .1); color: #dc2626; }
 @media (max-width: 992px) { .uc-pf-cards { grid-template-columns: repeat(2, 1fr); } }

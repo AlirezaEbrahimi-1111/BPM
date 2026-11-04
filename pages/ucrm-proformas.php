@@ -259,15 +259,6 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             });
         }
 
-        // مبلغ کارت به‌صورت کوتاه: «۱۲۰٫۵ میلیارد تومان» / «۳۴۰ میلیون تومان» (عدد دقیق در title)
-        function shortToman(n) {
-            const a = Math.abs(n);
-            const fmt = (v, unit) => faDigits(String(+v.toFixed(1)).replace('.', '٫')) + ' ' + unit + ' تومان';
-            if (a >= 1e9) return fmt(n / 1e9, 'میلیارد');
-            if (a >= 1e6) return fmt(n / 1e6, 'میلیون');
-            return UCRM.money(n) + ' تومان';
-        }
-
         // پیش‌فاکتورها از crm-service (کشِ پس‌زمینهٔ شایگان — منتظر شایگان نمی‌ماند)
         let loadSeq = 0;
         async function load() {
@@ -290,9 +281,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 if (!rows.length) gridApi.showNoRowsOverlay(); else gridApi.hideOverlay();
                 const c = res.cards || {};
                 document.getElementById('cOpen').textContent = faDigits(c.open || 0);
-                const sumEl = document.getElementById('cSum');
-                sumEl.textContent = shortToman(c.sum || 0);
-                sumEl.title = UCRM.money(c.sum || 0) + ' تومان'; // عدد دقیق
+                document.getElementById('cSum').textContent = UCRM.money(c.sum || 0) + ' تومان';
                 document.getElementById('cLate').textContent = faDigits(c.late || 0);
                 document.getElementById('cRate').textContent = faDigits(c.rate || 0) + '٪';
                 if (res.loading) showToast('فهرست پیش‌فاکتورها هنوز از حسابداری خوانده نشده؛ چند لحظهٔ دیگر صفحه را تازه کنید.', 'info');
@@ -303,6 +292,15 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 gridApi.showNoRowsOverlay();
                 showToast(e.message || 'خطا در دریافت پیش‌فاکتورها', 'error');
             }
+        }
+
+        // ارتفاع جدول: از ارتفاع CSS (grid-fill) شروع می‌کند و اگر صفحه با آن اسکرول بخورد،
+        // دقیقا به اندازهٔ همان سرریز کوتاه می‌شود — جدول تا پایین، بدون اسکرول صفحه
+        function fitGrid() {
+            const el = document.getElementById('pfGrid');
+            el.style.height = '';
+            const over = document.documentElement.scrollHeight - window.innerHeight;
+            if (over > 0) el.style.height = Math.max(300, Math.floor(el.getBoundingClientRect().height - over)) + 'px';
         }
 
         // نوار «مشتری: X ✕» — برداشتن = برگشت به همهٔ پیش‌فاکتورها
@@ -320,7 +318,7 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             document.getElementById('pfCustClear').addEventListener('click', () => {
                 CUST = 0;
                 history.replaceState(null, '', 'ucrm-proformas.php');
-                renderCustChip();
+                renderCustChip().then(fitGrid);
                 load();
             });
         }
@@ -378,7 +376,11 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             document.getElementById('btnExcel').addEventListener('click', exportExcel);
             fuModal = new bootstrap.Modal(document.getElementById('pfFuModal'));
             document.getElementById('pfFuSave').addEventListener('click', saveFollowup);
-            renderCustChip();
+            renderCustChip().then(fitGrid);
+            fitGrid();
+            let fitT = 0;
+            window.addEventListener('resize', () => { clearTimeout(fitT); fitT = setTimeout(fitGrid, 120); });
+            window.addEventListener('load', fitGrid); // بعد از فونت‌ها/فوتر
             if (SEES_ALL) {
                 try {
                     const rp = await UCRM.get('/reps');
