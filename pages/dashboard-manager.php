@@ -3565,12 +3565,20 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
             if (currentTab === 'recent') {
                 return store.activityLog.map(t => ({ ...t, _src: 'recent' }));
             }
-            const list = (store[currentTab] || []).map(t => ({
+            let list = (store[currentTab] || []).map(t => ({
                 ...t,
                 _src: currentTab
             }));
+            // کاری که برایش تمدید موعد خواسته‌ام و منتظر تأیید شخص دیگری است: از «کارهای من»
+            // به «کارهای واگذار شده» (۱۴۰۵/۰۸/۱۳) — با تأیید/رد، پرچم پاک و کار خودکار برمی‌گردد
+            if (currentTab === 'delegated') {
+                const ids = new Set(list.map(t => Number(t.id)));
+                list = list.concat((store.mine || [])
+                    .filter(t => TF.isWaitingOthersDeadline(t, currentUser) && !ids.has(Number(t.id)))
+                    .map(t => ({ ...t, _src: 'delegated' })));
+            }
             // در «کارهای من» موارد تکمیل‌شده/تأییدشده دیگر نمایش داده نشوند
-            if (currentTab === 'mine') return list.filter(t => !TF.isDone(t));
+            if (currentTab === 'mine') return list.filter(t => !TF.isDone(t) && !TF.isWaitingOthersDeadline(t, currentUser));
             // «کارهای واگذار شده»: فقط کارهای باز — تکمیل/تأییدشده و اتمام اجباری (rejected) /
             // متوقف‌شده (stopped) نمایش داده نشوند (۱۴۰۵/۰۸/۰۶). تب «منتخب» دست نمی‌خورد.
             if (currentTab === 'delegated') return list.filter(t => !TF.isDone(t) && t.status !== 'rejected' && t.status !== 'stopped');

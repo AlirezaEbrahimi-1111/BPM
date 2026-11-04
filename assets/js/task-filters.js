@@ -267,6 +267,16 @@ window.TF = (function () {
         return user.id == t.current_approver_id;
     }
 
+    /**
+     * آیا این کاربر برای کارِ خودش تمدید موعد خواسته و درخواست منتظر تأییدِ شخص
+     * دیگری است؟ (داشبورد: چنین کاری از «کارهای من» به «کارهای واگذار شده» می‌رود
+     * تا تأیید/رد شود — بعد از تصمیم، پرچم پاک می‌شود و خودکار برمی‌گردد.)
+     */
+    function isWaitingOthersDeadline(t, user) {
+        if (!user || t.has_pending_deadline_request != 1) return false;
+        return Number(t.assignee_id) === Number(user.id) && Number(t.current_approver_id) !== Number(user.id);
+    }
+
     /** آیا درخواست رفع دوره‌های معوقه منتظر تأیید همین کاربر است؟ */
     function isWaitingMyOverdueClear(t, user) {
         if (!user || t.has_pending_overdue_request != 1) return false;
@@ -769,6 +779,7 @@ window.TF = (function () {
         needsRenewalDecision,
         isWaitingMyApproval,
         isWaitingMyDeadline,
+        isWaitingOthersDeadline,
         isWaitingMyOverdueClear,
         isWaitingMyAction,
 
