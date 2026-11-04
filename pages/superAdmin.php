@@ -422,7 +422,7 @@ function cExpiry(p) {
   if (d.is_free) {
     if (d.trial_days > 0) {
       const cls = d.trial_days > 7 ? '' : (d.trial_days > 3 ? 'warn' : 'crit');
-      return `<div class="exp-txt">تست وب: ${faNum(d.trial_days)} روز مانده</div>
+      return `<div class="exp-txt">${faNum(d.trial_days)} روز مانده</div>
               <div class="bar"><i class="${cls}" style="width:${Math.min(100, (d.trial_days / 14) * 100)}%"></i></div>`;
     }
     if (d.expired_on) return `<span class="exp-gone" title="تاریخ انقضا: ${esc(d.expired_on)}">منقضی شده</span>`;
