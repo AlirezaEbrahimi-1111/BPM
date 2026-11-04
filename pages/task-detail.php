@@ -1215,7 +1215,7 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                        <button type="button" class="btn btn-success" onclick="submitCompleteDisc()">
+                        <button type="button" class="btn btn-success" id="completeDiscSubmitBtn" onclick="submitCompleteDisc()">
                             <i class="bi bi-check me-2"></i>تکمیل
                         </button>
                     </div>
@@ -5202,6 +5202,14 @@ ${task.overdue_periods > 0 ? `
                     newStatus = 'approved';
                 }
 
+                // 🔒 تا رسیدنِ جواب، دکمه غیرفعال — چند بار زدن روی مرحله‌ی روتین
+                // مرحله‌ی بعد را چند بار می‌ساخت (تسک یتیم)
+                const submitBtn = document.getElementById('completeDiscSubmitBtn');
+                if (submitBtn.disabled) return;
+                const submitBtnHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>در حال ثبت…';
+
                 try {
                     const response = await fetch('../api/tasks/update-status.php', {
                         method: 'POST',
@@ -5223,8 +5231,8 @@ ${task.overdue_periods > 0 ? `
 
                 } catch (error) {
                     showToast('خطا در تکمیل کار', 'error');
-
-
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = submitBtnHtml;
                 }
             }
             async function doApproveAndDelegate(toUserId, delegateNotes) {

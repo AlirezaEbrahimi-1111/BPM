@@ -179,6 +179,25 @@ class WorkflowManager
         }
     }
 
+    /**
+     * قفلِ ردیفِ نمونه‌ی روتینِ این تسک تا پایانِ ترنزکشن (FOR UPDATE).
+     * باید «اولین» دستورِ ترنزکشن باشه: درخواستِ تکراری (چند بار زدنِ
+     * «تکمیل») همین‌جا منتظرِ درخواستِ اول می‌مونه و بعد وضعیتِ به‌روز رو
+     * می‌بینه — وگرنه هر کدوم مرحله‌ی بعد رو از نو می‌سازه و تسکِ یتیم
+     * می‌مونه (نمونه‌ی ۴۶۳ و ۵۳۰، ۱۴۰۵/۰۸).
+     */
+    private function lockInstanceForTask($task_id)
+    {
+        $stmt = $this->db->prepare("
+            SELECT wi.id FROM workflow_instances wi
+            JOIN tasks t ON t.workflow_instance_id = wi.id
+            WHERE t.id = ?
+            FOR UPDATE
+        ");
+        $stmt->execute([$task_id]);
+        $stmt->fetchColumn();
+    }
+
     /** template_id نمونه‌ی اجرا */
     private function getTemplateIdForInstance($instance_id)
     {
@@ -877,6 +896,7 @@ class WorkflowManager
     {
         try {
             $this->db->beginTransaction();
+            $this->lockInstanceForTask($task_id);
 
             // دریافت اطلاعات کار
             $stmt = $this->db->prepare("SELECT * FROM tasks WHERE id = ? AND is_workflow_task = 1");
@@ -1247,6 +1267,7 @@ class WorkflowManager
 
         try {
             $this->db->beginTransaction();
+            $this->lockInstanceForTask($task_id);
 
             $stmt = $this->db->prepare("
                 SELECT wis.*, ws.is_decision, ws.on_approve_step_order, ws.on_reject_mode,
