@@ -259,6 +259,15 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
             });
         }
 
+        // مبلغ کارت به‌صورت کوتاه: «۱۲۰٫۵ میلیارد تومان» / «۳۴۰ میلیون تومان» (عدد دقیق در title)
+        function shortToman(n) {
+            const a = Math.abs(n);
+            const fmt = (v, unit) => faDigits(String(+v.toFixed(1)).replace('.', '٫')) + ' ' + unit + ' تومان';
+            if (a >= 1e9) return fmt(n / 1e9, 'میلیارد');
+            if (a >= 1e6) return fmt(n / 1e6, 'میلیون');
+            return UCRM.money(n) + ' تومان';
+        }
+
         // پیش‌فاکتورها از crm-service (کشِ پس‌زمینهٔ شایگان — منتظر شایگان نمی‌ماند)
         let loadSeq = 0;
         async function load() {
@@ -281,7 +290,9 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 if (!rows.length) gridApi.showNoRowsOverlay(); else gridApi.hideOverlay();
                 const c = res.cards || {};
                 document.getElementById('cOpen').textContent = faDigits(c.open || 0);
-                document.getElementById('cSum').textContent = UCRM.money(c.sum || 0) + ' تومان';
+                const sumEl = document.getElementById('cSum');
+                sumEl.textContent = shortToman(c.sum || 0);
+                sumEl.title = UCRM.money(c.sum || 0) + ' تومان'; // عدد دقیق
                 document.getElementById('cLate').textContent = faDigits(c.late || 0);
                 document.getElementById('cRate').textContent = faDigits(c.rate || 0) + '٪';
                 if (res.loading) showToast('فهرست پیش‌فاکتورها هنوز از حسابداری خوانده نشده؛ چند لحظهٔ دیگر صفحه را تازه کنید.', 'info');
