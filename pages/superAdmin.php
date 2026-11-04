@@ -79,6 +79,10 @@ $gridData = [];
 foreach ($orgs as $org) {
     $ps = $planState($org);
     $days_left = $ps['expires'] ? max(0, (int)ceil((strtotime($ps['expires']) - time()) / 86400)) : 0;
+    // ستون «انقضا» برای سازمانِ رایگان (۱۴۰۵/۰۸/۱۳): تست وب فعال → روزهای مانده؛
+    // پلن پولیِ منقضی‌شده → «منقضی شده» + تاریخ در تولتیپ؛ وگرنه «بدون انقضا»
+    $paidExpiredOn = ($ps['effective'] === 'free' && $org['plan_expires_at'])
+        ? substr($org['plan_expires_at'], 0, 10) : null;
     $gridData[] = [
         'id'          => (int)$org['id'],
         'name'        => $org['name'],
@@ -92,6 +96,8 @@ foreach ($orgs as $org) {
         'created'     => JalaliHelper::formatJalaliDate(substr((string)$org['created_at'], 0, 10)),
         'end'         => $ps['expires'] ? JalaliHelper::formatJalaliDate($ps['expires']) : '',
         'days_left'   => $days_left,
+        'trial_days'  => $ps['trial_active'] ? max(0, (int)ceil((strtotime($ps['trial_ends']) - time()) / 86400)) : 0,
+        'expired_on'  => $paidExpiredOn ? JalaliHelper::formatJalaliDate($paidExpiredOn) : '',
         'is_expired'  => ($ps['effective'] === 'free' && !$ps['trial_active']) ? 1 : 0,
         'is_free'     => $ps['effective'] === 'free' ? 1 : 0,
         'is_active'   => (int)$org['is_active'],
@@ -189,6 +195,12 @@ foreach ($ustmt->fetchAll(PDO::FETCH_ASSOC) as $u) {
     .bar > i { display: block; height: 100%; border-radius: 4px; background: #1b7b39; }
     .bar > i.warn { background: #F79009; }
     .bar > i.crit { background: #F04438; }
+    .exp-txt { font-size: 13px; color: #2D3748; }
+    .exp-gone { font-size: 13px; font-weight: 600; color: #D92D20; cursor: help; }
+    .exp-none { font-size: 13px; color: #718096; }
+    :root[data-theme="dark"] .exp-txt { color: var(--text-strong); }
+    :root[data-theme="dark"] .exp-gone { color: #fca5a5; }
+    :root[data-theme="dark"] .exp-none { color: var(--text-muted); }
 
     .act { width: 34px; height: 34px; border-radius: 9px; border: 1px solid #e9e9e9; background: #fff; display: inline-flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; cursor: pointer; transition: all .15s; margin-left: 4px; }
     .act:hover { border-color: #8e57fe; color: #8e57fe; background: rgba(142, 87, 254, 0.08); }
@@ -407,7 +419,15 @@ function cPlan(p) {
 }
 function cExpiry(p) {
   const d = p.data;
-  if (d.is_free) return '—';
+  if (d.is_free) {
+    if (d.trial_days > 0) {
+      const cls = d.trial_days > 7 ? '' : (d.trial_days > 3 ? 'warn' : 'crit');
+      return `<div class="exp-txt">تست وب: ${faNum(d.trial_days)} روز مانده</div>
+              <div class="bar"><i class="${cls}" style="width:${Math.min(100, (d.trial_days / 14) * 100)}%"></i></div>`;
+    }
+    if (d.expired_on) return `<span class="exp-gone" title="تاریخ انقضا: ${esc(d.expired_on)}">منقضی شده</span>`;
+    return '<span class="exp-none">بدون انقضا</span>';
+  }
   if (d.end) {
     const cls = d.days_left > 7 ? '' : (d.days_left > 3 ? 'warn' : 'crit');
     return `<div style="font-size:13px;color:#2D3748">${faNum(d.days_left)} روز مانده</div>
@@ -465,7 +485,7 @@ const gridApi = agGrid.createGrid(document.getElementById('orgGrid'), {
     { headerName: 'ایجاد توسط', width: 185, cellRenderer: cCreator, valueGetter: p => p.data.creator_name, getQuickFilterText: p => p.data.__detail ? '' : ((p.data.creator_name || '') + ' ' + (p.data.creator_phone || '')) },
     { headerName: 'کاربران', width: 140, cellRenderer: cUsers, valueGetter: p => p.data.user_count, getQuickFilterText: () => '' },
     { headerName: 'پلن', width: 110, cellRenderer: cPlan, valueGetter: p => p.data.plan_label, getQuickFilterText: () => '' },
-    { headerName: 'انقضا', width: 150, cellRenderer: cExpiry, valueGetter: p => (p.data.is_expired ? -1 : p.data.days_left), getQuickFilterText: () => '' },
+    { headerName: 'انقضا', width: 150, cellRenderer: cExpiry, valueGetter: p => (p.data.is_expired ? -1 : (p.data.is_free ? p.data.trial_days : p.data.days_left)), getQuickFilterText: () => '' },
     { headerName: 'وضعیت', width: 120, cellRenderer: cStatus, valueGetter: p => p.data.is_active, getQuickFilterText: () => '' },
     { headerName: 'آخرین ورود کاربر', width: 185, cellRenderer: cLastLogin, valueGetter: p => p.data.last_login, getQuickFilterText: () => '' },
     { headerName: 'عملیات', width: 160, cellRenderer: cActions, sortable: false, getQuickFilterText: () => '' },
