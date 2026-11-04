@@ -79,10 +79,13 @@ $gridData = [];
 foreach ($orgs as $org) {
     $ps = $planState($org);
     $days_left = $ps['expires'] ? max(0, (int)ceil((strtotime($ps['expires']) - time()) / 86400)) : 0;
-    // ستون «انقضا» برای سازمانِ رایگان (۱۴۰۵/۰۸/۱۳): تست وب فعال → روزهای مانده؛
-    // پلن پولیِ منقضی‌شده → «منقضی شده» + تاریخ در تولتیپ؛ وگرنه «بدون انقضا»
-    $paidExpiredOn = ($ps['effective'] === 'free' && $org['plan_expires_at'])
-        ? substr($org['plan_expires_at'], 0, 10) : null;
+    // ستون «انقضا» برای سازمانِ رایگان (۱۴۰۵/۰۸/۱۳): دوره‌ی رایگان (= تست وب) فعال → روزهای مانده؛
+    // تمام‌شده → «منقضی شده» + تاریخ در تولتیپ (دیرترینِ پایانِ تست/پلن پولی)؛ بی‌تاریخ → «بدون انقضا»
+    $paidExpiredOn = null;
+    if ($ps['effective'] === 'free' && !$ps['trial_active']) {
+        $ends = array_filter([$org['plan_expires_at'] ? substr($org['plan_expires_at'], 0, 10) : null, $ps['trial_ends']]);
+        $paidExpiredOn = $ends ? max($ends) : null;
+    }
     $gridData[] = [
         'id'          => (int)$org['id'],
         'name'        => $org['name'],
@@ -336,6 +339,20 @@ foreach ($ustmt->fetchAll(PDO::FETCH_ASSOC) as $u) {
 
 </div>
 
+<!-- تمدید دوره‌ی رایگان -->
+<div class="ov" id="extOv">
+  <div class="md">
+    <h3>تمدید دوره‌ی رایگان</h3>
+    <p class="sb" id="extOrgName"></p>
+    <label for="extDays">چند روز تمدید شود؟</label>
+    <input type="text" id="extDays" inputmode="numeric" autocomplete="off">
+    <div class="md-actions">
+      <button type="button" class="btn btn-primary" id="extSave" onclick="saveExtendFree()">تمدید</button>
+      <button type="button" class="btn btn-light" onclick="closeExtendFree()">انصراف</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const ORGS = <?= json_encode($gridData, JSON_UNESCAPED_UNICODE) ?>;
 const USERS_BY_ORG = <?= json_encode($usersByOrg, JSON_UNESCAPED_UNICODE) ?>;
@@ -460,7 +477,9 @@ function cCreator(p) {
 }
 function cActions(p) {
   const d = p.data;
-  return `
+  const extFree = d.is_free
+    ? `<button class="act" title="تمدید دوره‌ی رایگان" onclick="openExtendFree(${d.id})"><i class="bi bi-calendar-plus"></i></button>` : '';
+  return `${extFree}
     <button class="act" title="پلن و تمدید" onclick="goPlan(${d.id})"><i class="bi bi-arrow-clockwise"></i></button>
     <button class="act danger" title="${d.is_active ? 'غیرفعال‌سازی' : 'فعال‌سازی'}" onclick="toggleOrg(${d.id})">
       <i class="bi bi-${d.is_active ? 'slash-circle' : 'check-circle'}"></i>
@@ -492,8 +511,20 @@ const gridApi = agGrid.createGrid(document.getElementById('orgGrid'), {
   ],
   rowData: buildRows(),
   overlayNoRowsTemplate: '<div style="padding:2rem;color:#718096;font-weight:600;">سازمانی یافت نشد</div>',
-  // با تغییر مرتب‌سازی، زیرردیف‌ها جمع می‌شوند تا از سازمان خود جدا نیفتند
-  onSortChanged: () => { if (expanded.size) { expanded.clear(); gridApi.setGridOption('rowData', buildRows()); } }
+  // زیرردیفِ کاربران همیشه درست زیرِ سازمانِ خودش — با هر مرتب‌سازی (ازجمله
+  // مرتب‌سازیِ ذخیره‌شده که از اول صفحه فعال است و ردیف detail را به ته جدول می‌برد)
+  postSortRows: p => {
+    const nodes = p.nodes;
+    const details = new Map();
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      if (nodes[i].data && nodes[i].data.__detail) details.set(nodes[i].data.orgId, nodes.splice(i, 1)[0]);
+    }
+    if (!details.size) return;
+    for (let i = 0; i < nodes.length; i++) {
+      const d = details.get(nodes[i].data && nodes[i].data.id);
+      if (d) nodes.splice(++i, 0, d);
+    }
+  }
 });
 
 document.getElementById('orgSearch').addEventListener('input', function () {
@@ -506,6 +537,39 @@ document.getElementById('orgSearch').addEventListener('input', function () {
 function goPlan(id) {
   window.location.href = 'plan-purchase.php?org_id=' + encodeURIComponent(id);
 }
+
+/* تمدید دوره‌ی رایگان (۱۴ روزه) — N روز از پایانِ فعلی، یا از امروز اگر گذشته */
+let extOrgId = 0;
+function openExtendFree(id) {
+  extOrgId = id;
+  document.getElementById('extOrgName').textContent = byId[id].name;
+  const inp = document.getElementById('extDays');
+  inp.value = '14';
+  document.getElementById('extOv').classList.add('show');
+  setTimeout(() => { inp.focus(); inp.select(); }, 50);
+}
+function closeExtendFree() { document.getElementById('extOv').classList.remove('show'); }
+async function saveExtendFree() {
+  const days = parseInt(String(document.getElementById('extDays').value).replace(/[۰-۹]/g, c => '۰۱۲۳۴۵۶۷۸۹'.indexOf(c)), 10);
+  if (!(days >= 1 && days <= 365)) return showToast('تعداد روز باید بین ۱ تا ۳۶۵ باشد', 'warning');
+  const btn = document.getElementById('extSave');
+  btn.disabled = true;
+  let data;
+  try {
+    const res = await fetch('/api/organization/extend-free.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ org_id: extOrgId, days })
+    });
+    data = await res.json().catch(() => ({ success: false, message: 'پاسخ نامعتبر از سرور (' + res.status + ')' }));
+  } catch (e) {
+    data = { success: false, message: 'ارتباط با سرور برقرار نشد' };
+  }
+  btn.disabled = false;
+  showToast(data.message || 'خطا', data.success ? 'success' : 'error');
+  if (data.success) { closeExtendFree(); setTimeout(() => location.reload(), 1500); }
+}
+document.getElementById('extDays').addEventListener('keydown', e => { if (e.key === 'Enter') saveExtendFree(); });
+document.getElementById('extOv').addEventListener('click', e => { if (e.target.id === 'extOv') closeExtendFree(); });
 
 /* فعال/غیرفعال */
 function toggleOrg(id) {

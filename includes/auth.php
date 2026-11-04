@@ -378,6 +378,11 @@ class Auth
         $token = $this->extractToken();
         if ($token) {
             $user_id = $this->validateToken($token);
+            if ($user_id) {
+                // 🔒 دوره‌ی رایگانِ ۱۴ روزه تمام‌شده → 403 PLAN_EXPIRED (فقط API؛ includes/plan-access.php)
+                require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+                planEnforceActive($this->db, (int) $user_id);
+            }
             return $user_id ? $user_id : false;
         }
         return false;

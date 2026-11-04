@@ -1,6 +1,9 @@
 package core
 
-import "testing"
+import (
+	"database/sql"
+	"testing"
+)
 
 func TestPlanAllowsState(t *testing.T) {
 	free := PlanState{Plan: "free"}
@@ -31,6 +34,30 @@ func TestPlanAllowsState(t *testing.T) {
 	for _, c := range cases {
 		if got := PlanAllowsState(c.st, c.client, c.feature); got != c.want {
 			t.Errorf("%s: got %v want %v", c.name, got, c.want)
+		}
+	}
+}
+
+func TestComputePlanStateLocked(t *testing.T) {
+	ns := func(v string) sql.NullString { return sql.NullString{String: v, Valid: v != ""} }
+	today := "2026-11-04"
+	cases := []struct {
+		name                string
+		plan, exp, trial    string
+		wantLocked, wantWeb bool
+	}{
+		{"free, trial running", "free", "", "2026-11-10", false, true},
+		{"free, trial ends today (expiry day = no access)", "free", "", "2026-11-04", true, false},
+		{"free, no trial date", "free", "", "", true, false},
+		{"gold active", "gold", "2026-12-01", "", false, true},
+		{"gold expired, no trial", "gold", "2026-11-01", "", true, false},
+		{"silver active", "silver", "2026-12-01", "", false, false},
+		{"gold expired but trial extended", "gold", "2026-11-01", "2026-11-20", false, true},
+	}
+	for _, c := range cases {
+		st := computePlanState(c.plan, 1, ns(c.exp), ns(c.trial), today)
+		if st.Locked != c.wantLocked || st.WebAccess != c.wantWeb {
+			t.Errorf("%s: locked=%v web=%v, want locked=%v web=%v", c.name, st.Locked, st.WebAccess, c.wantLocked, c.wantWeb)
 		}
 	}
 }

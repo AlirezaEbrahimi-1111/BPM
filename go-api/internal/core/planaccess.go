@@ -14,6 +14,7 @@ type PlanState struct {
 	Plan      string // free | silver | gold (سطح مؤثر، با انقضا)
 	PlanUsers int64
 	WebAccess bool
+	Locked    bool // رایگانِ بدون تستِ فعال = دوره‌ی ۱۴ روزه تمام شده (۱۴۰۵/۰۸/۱۳)
 }
 
 var planRank = map[string]int{"free": 0, "silver": 1, "gold": 2}
@@ -78,19 +79,38 @@ func LoadPlanState(db *sql.DB, orgID int64, todayYMD string) (PlanState, error) 
 		return PlanState{}, err
 	}
 
-	paidActive := (plan.String == "silver" || plan.String == "gold") &&
+	return computePlanState(plan.String, users.Int64, expires, trialEnds, todayYMD), nil
+}
+
+// computePlanState — محاسبه‌ی خالص (بدون DB)، برای LoadPlanState و تست.
+func computePlanState(plan string, users int64, expires, trialEnds sql.NullString, todayYMD string) PlanState {
+	paidActive := (plan == "silver" || plan == "gold") &&
 		(!expires.Valid || todayYMD < expires.String)
 	effective := "free"
 	if paidActive {
-		effective = plan.String
+		effective = plan
 	}
 	trialActive := trialEnds.Valid && todayYMD < trialEnds.String
 
 	return PlanState{
 		Plan:      effective,
-		PlanUsers: users.Int64,
+		PlanUsers: users,
 		WebAccess: trialActive || effective == "gold",
-	}, nil
+		Locked:    effective == "free" && !trialActive,
+	}
+}
+
+const planExpiredMsg = "دوره‌ی اشتراک سازمان شما به پایان رسیده است. برای ادامه، پلن سازمان را تمدید کنید."
+
+// planLockedFor — همتایِ planEnforceActive() در PHP: مدیر کل معاف؛ خطای DB = قفل نکن.
+func planLockedFor(db *sql.DB, uid, orgID int64) bool {
+	for _, id := range SuperAdminIDs {
+		if id == uid {
+			return false
+		}
+	}
+	st, err := LoadPlanState(db, orgID, TehranNow().Format("2006-01-02"))
+	return err == nil && st.Locked
 }
 
 // RequirePlan — میان‌افزارِ امکان؛ باید داخل s.auth قرار گیرد (کاربر در context است).

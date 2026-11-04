@@ -74,11 +74,20 @@ func AuthMiddleware(db *sql.DB, secret string) func(http.HandlerFunc) http.Handl
 
 			var isActive int
 			var tokenVersion int64
+			var orgID sql.NullInt64
 			err = db.QueryRow(
-				"SELECT is_active, token_version FROM users WHERE id = ?", uid,
-			).Scan(&isActive, &tokenVersion)
+				"SELECT is_active, token_version, organization_id FROM users WHERE id = ?", uid,
+			).Scan(&isActive, &tokenVersion, &orgID)
 			if err != nil || isActive != 1 || tokenVersion != tv {
 				WriteErr(w, http.StatusUnauthorized, "نشست منقضی شده — دوباره وارد شوید")
+				return
+			}
+
+			// 🔒 دوره‌ی رایگانِ ۱۴ روزه تمام‌شده → 403 PLAN_EXPIRED (همتای planEnforceActive در PHP)
+			if planLockedFor(db, uid, orgID.Int64) {
+				WriteJSON(w, http.StatusForbidden, map[string]any{
+					"success": false, "code": "PLAN_EXPIRED", "message": planExpiredMsg,
+				})
 				return
 			}
 

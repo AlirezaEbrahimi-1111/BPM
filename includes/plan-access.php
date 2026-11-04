@@ -9,6 +9,12 @@
  *
  *  قاعده‌ی زمانی: دسترسی وقتی معتبره که امروز < plan_expires_at باشد
  *  (روزِ انقضا خودش بی‌دسترسی است). NULL = دائمی.
+ *
+ *  پلن رایگان ۱۴ روزه است (۱۴۰۵/۰۸/۱۳): دوره‌ی رایگان = همان تست وب
+ *  (web_trial_ends_at). سازمانِ بدون پلن پولیِ فعال و بدون تست فعال «قفل»
+ *  است: وب → plan-required.php، API (اپ) → 403 با کد PLAN_EXPIRED
+ *  (planEnforceActive، صدا زده از requireAuth). تمدید: خرید پلن یا تمدید
+ *  دستی مدیر کل (api/organization/extend-free.php).
  * ═══════════════════════════════════════════════════════════════════
  */
 
@@ -53,6 +59,7 @@ function planState(PDO $db, int $orgId): array
         return [
             'plan' => 'free', 'plan_users' => 1, 'plan_expires_at' => null,
             'web_trial_ends_at' => null, 'web_access' => false, 'effective_plan' => 'free',
+            'locked' => false,
         ];
     }
 
@@ -71,7 +78,47 @@ function planState(PDO $db, int $orgId): array
         'web_trial_ends_at' => $trialEnds,
         'web_access' => $trialActive || ($effective === 'gold'),
         'effective_plan' => $effective,
+        // رایگانِ بدون تستِ فعال = دوره‌ی ۱۴ روزه تمام شده و تمدید نشده
+        'locked' => $effective === 'free' && !$trialActive,
     ];
+}
+
+// API‌هایی که سازمانِ قفل‌شده هم باید بتواند صدا بزند: ورود/خروج/پروفایل، پرداخت و خرید پلن،
+// اطلاعات سازمان (تا اپ بتواند صفحه‌ی تمدید را نشان دهد)
+const PLAN_LOCK_ALLOWED_PREFIXES = [
+    '/api/auth/',
+    '/api/payment/',
+    '/api/organization/info.php',
+    '/api/organization/my-org-data.php',
+    '/api/organization/check-subscription.php',
+];
+
+/**
+ * اگر دوره‌ی رایگانِ سازمانِ کاربر تمام شده (و پلن پولی ندارد)، 403 با کد PLAN_EXPIRED.
+ * مدیر کل و مسیرهای PLAN_LOCK_ALLOWED_PREFIXES معاف‌اند. ⚠️ هم‌راستا با go-api (core/auth.go).
+ */
+function planEnforceActive(PDO $db, int $userId): void
+{
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
+    if ($userId <= 0 || in_array($userId, getSuperAdminIds(), true)) return;
+    $script = $_SERVER['SCRIPT_NAME'] ?? '';
+    // فقط API؛ صفحه‌های وب را گاردِ header.php به plan-required.php می‌برد
+    if (strpos($script, '/api/') === false) return;
+    foreach (PLAN_LOCK_ALLOWED_PREFIXES as $p) {
+        if (strpos($script, $p) === 0) return;
+    }
+    $stmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $orgId = (int) $stmt->fetchColumn();
+    if (!$orgId || !planState($db, $orgId)['locked']) return;
+    http_response_code(403);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'success' => false,
+        'code' => 'PLAN_EXPIRED',
+        'message' => 'دوره‌ی اشتراک سازمان شما به پایان رسیده است. برای ادامه، پلن سازمان را تمدید کنید.',
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
 }
 
 /** تصمیمِ خالص (بدون DB): آیا این کلاینت به این امکان دسترسی دارد؟ */
