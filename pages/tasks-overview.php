@@ -670,7 +670,8 @@ if ((!hasPermission($__me, 'view_all_org_tasks') && !hasPermission($__me, 'view_
                     if (closed) return false;
 
                     if (t.task_type === 'continuous') {
-                        if (!((t.overdue_periods || 0) > 0)) return false;
+                        // همان قانون بج تأخیر (معوقه‌ها + دورهٔ جاریِ موعدگذشته) — کار ۲۲۰۴
+                        if (!(TF.continuousLateCount(t) > 0)) return false;
                     } else {
                         const due = [t.due_date, t.deadline, t.original_deadline].filter(Boolean).sort().pop();
                         if (!due || due >= today) return false;

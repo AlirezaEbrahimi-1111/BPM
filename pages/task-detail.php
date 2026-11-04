@@ -3558,10 +3558,10 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
     <div class="info-label">دوره بعدی:</div>
     <div class="info-value">${nextDueDate ? '<span class="badge bg-info text-dark" style="color: white !important;">' + formatPersianDate(nextDueDate) + '</span>' : '<span class="text-muted">-</span>'}</div>
 </div>
-${task.overdue_periods > 0 ? `
+${TF.continuousLateCount(task) > 0 ? `
 <div class="info-item">
     <div class="info-label">دوره‌های معوقه:</div>
-    <div class="info-value"><span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i>${enTofaNumber(task.overdue_periods)} دوره معوقه</span></div>
+    <div class="info-value"><span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i>${enTofaNumber(TF.continuousLateCount(task))} دوره معوقه</span></div>
 </div>` : ''}`;
                 }
 

@@ -504,7 +504,8 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             }).length;
             const overdueCount = allTasks.filter(t => {
                 if (t.task_type === 'periodic') return t.due_date && t.due_date < today && (t.status === 'not_started' || t.status === 'in_progress');
-                if (t.task_type === 'continuous') return (t.overdue_periods || 0) > 0;
+                // دوره‌ای: همان قانون بج تأخیر (معوقه‌ها + دورهٔ جاریِ موعدگذشته) — کار ۲۲۰۴
+                if (t.task_type === 'continuous') return TF.continuousLateCount(t) > 0;
                 return false;
             }).length;
             const progressCount = allTasks.filter(t => t.status === 'in_progress').length;
@@ -590,7 +591,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     if (t.task_type === 'periodic') {
                         if (!(t.due_date && t.due_date < today && (t.status === 'not_started' || t.status === 'in_progress'))) return false;
                     } else if (t.task_type === 'continuous') {
-                        if (!((t.overdue_periods || 0) > 0)) return false;
+                        if (!(TF.continuousLateCount(t) > 0)) return false;
                     } else return false;
                 }
                 if (statFilter === 'in_progress' && t.status !== 'in_progress') return false;
