@@ -89,7 +89,8 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                         <button type="button" class="btn btn-primary btn-sm w-100 mt-3" id="rangeApply">اعمال بازه</button>
                     </div>
                 </div>
-                <button type="button" class="btn btn-primary uc-pf-xl" id="btnExcel"><i class="bi bi-download ms-1"></i>خروجی اکسل</button>
+                <button type="button" class="btn btn-outline-primary uc-pf-xl" id="btnExcel"><i class="bi bi-download ms-1"></i>خروجی اکسل</button>
+                <button type="button" class="btn btn-primary uc-pf-xl" id="btnNewPf"><i class="bi bi-plus-lg ms-1"></i>پیش‌فاکتور جدید</button>
             </div>
         </div>
 
@@ -215,7 +216,11 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
 
         const jd = v => v ? TimeSync.formatJalali(v) : '—';
         const colDefs = [
-            { headerName: 'شمارهٔ پیش‌فاکتور', field: 'number', width: 140, cellRenderer: p => faDigits(p.value || '') },
+            // صادرشده در CRM (هنوز در حسابداری نیست) → لینک به فرم ویرایش/نمایش
+            { headerName: 'شمارهٔ پیش‌فاکتور', field: 'number', width: 150,
+              cellRenderer: p => p.data.source === 'crm'
+                  ? `<a class="uc-name-link" href="ucrm-proforma-edit.php?id=${p.data.doc_id}" title="صادرشده در CRM — هنوز به حسابداری نرفته">${faDigits(p.value || '')}</a>`
+                  : faDigits(p.value || '') },
             { headerName: 'نام مشتری', field: 'customer_name', flex: 1.4, minWidth: 130,
               cellRenderer: p => p.data.customer_id ? `<a class="uc-name-link" href="ucrm-customer.php?id=${p.data.customer_id}">${esc(p.value)}</a>` : esc(p.value) },
             { headerName: 'کارشناس فروش', field: 'rep_name', flex: 1, minWidth: 110, hide: !SEES_ALL },
@@ -374,6 +379,9 @@ $__seesAll = $__ucrmRoles['manager'] || $__ucrmRoles['accounting'];
                 load();
             });
             document.getElementById('btnExcel').addEventListener('click', exportExcel);
+            // پیش‌فاکتور جدید — اگر صفحه برای یک مشتری فیلتر شده، همان مشتری از پیش انتخاب می‌شود
+            document.getElementById('btnNewPf').addEventListener('click', () =>
+                location.href = 'ucrm-proforma-edit.php' + (CUST ? '?customer=' + CUST : ''));
             fuModal = new bootstrap.Modal(document.getElementById('pfFuModal'));
             document.getElementById('pfFuSave').addEventListener('click', saveFollowup);
             renderCustChip().then(fitGrid);

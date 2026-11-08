@@ -493,3 +493,24 @@ button.uc-head-ico:hover { background: rgba(142, 87, 254, .2); }
 .uc-pf-quick .btn { color: var(--text-strong, #2d3748); }
 :root[data-theme="dark"] .uc-pf-quick .btn { background: rgba(142, 87, 254, .16); color: var(--text-strong); }
 :root[data-theme="dark"] .uc-pf-quick .btn:hover { background: rgba(142, 87, 254, .26); }
+
+/* ── فرم صدور پیش‌فاکتور CRM (pages/ucrm-proforma-edit.php) — هم‌شکل فرم فاکتور رسمی ── */
+table.uc-pf-items { width: 100%; border-collapse: collapse; font-size: .85rem; }
+table.uc-pf-items th, table.uc-pf-items td { border: 1px solid var(--border-soft, #e5e7eb); padding: 4px 6px; vertical-align: middle; }
+table.uc-pf-items th { background: rgba(142, 87, 254, .08); font-weight: 600; white-space: nowrap; }
+table.uc-pf-items input { width: 100%; border: 0; background: transparent; padding: 4px; color: inherit; }
+table.uc-pf-items input:focus { outline: 2px solid rgba(142, 87, 254, .35); border-radius: 4px; }
+table.uc-pf-items td:nth-child(2) input { min-width: 260px; }
+table.uc-pf-items .c-unit { width: 70px; text-align: center; }
+table.uc-pf-items .c-qty { width: 80px; text-align: center; }
+table.uc-pf-items .c-money { width: 130px; text-align: center; white-space: nowrap; }
+table.uc-pf-items .c-qty input, table.uc-pf-items .c-money input { text-align: center; }
+table.uc-pf-items .c-del { width: 40px; text-align: center; }
+table.uc-pf-items tr.uc-row-bad td { background: rgba(220, 38, 38, .08); }
+.uc-pf-totals { margin-top: 1rem; margin-inline-start: auto; width: 320px; max-width: 100%; font-size: .9rem; }
+.uc-pf-totals .tl { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed var(--border-soft, #e5e7eb); }
+.uc-pf-totals .tl.grand { font-weight: 700; font-size: 1.05rem; border-bottom: 0; }
+.uc-pf-actions { display: flex; gap: 8px; align-items: center; margin-bottom: 1rem; }
+.uc-pf-actions .spacer { flex: 1; }
+:root[data-theme="dark"] table.uc-pf-items th { background: rgba(142, 87, 254, .16); }
+:root[data-theme="dark"] table.uc-pf-items tr.uc-row-bad td { background: rgba(220, 38, 38, .16); }

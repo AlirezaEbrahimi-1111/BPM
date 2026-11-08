@@ -374,6 +374,8 @@ func (s *server) ucrmListProformas(w http.ResponseWriter, r *http.Request) {
 		NextFollowup string `json:"next_followup"`
 		Status       string `json:"status"`
 		CanAct       bool   `json:"can_act"`
+		Source       string `json:"source"`           // shygun | crm
+		DocID        int64  `json:"doc_id,omitempty"` // پیش‌فاکتورِ CRM (ucrm_proformas.id)
 	}
 	items := []rowOut{}
 	var cOpen, cLate, cApproved int
@@ -413,7 +415,7 @@ func (s *server) ucrmListProformas(w http.ResponseWriter, r *http.Request) {
 		items = append(items, rowOut{
 			GUID: p.GUID, Number: pfNumber(p), CustomerID: cid, CustomerName: name, RepName: strings.TrimSpace(rep),
 			Amount: amount, IssueDate: p.Date, NextFollowup: st.Followup, Status: status,
-			CanAct: ro.seesAll() || (linked && c.RepID == uid),
+			CanAct: ro.seesAll() || (linked && c.RepID == uid), Source: "shygun",
 		})
 		switch status {
 		case pfStNotStarted, pfStOverdue:
@@ -426,6 +428,40 @@ func (s *server) ucrmListProformas(w http.ResponseWriter, r *http.Request) {
 			cApproved++
 		}
 	}
+	// پیش‌فاکتورهای صادرشده در CRM که هنوز به شایگان نرفته‌اند (ucrm_proforma_docs.go)
+	crmRows, err := s.pfCrmRows()
+	if err != nil {
+		writeDBErr(w, "ucrmListProformas crm", err)
+		return
+	}
+	for _, x := range crmRows {
+		if (from != "" && x.IssueDate < from) || (to != "" && x.IssueDate > to) {
+			continue
+		}
+		if (custF > 0 && x.CustomerID != custF) || (!ro.seesAll() && x.RepID != uid) || (repF > 0 && x.RepID != repF) {
+			continue
+		}
+		status := x.Status
+		if status == pfStNotStarted && x.Late {
+			status = pfStOverdue
+		}
+		items = append(items, rowOut{
+			GUID: pfCrmPrefix + strconv.FormatInt(x.ID, 10), Number: x.Number, CustomerID: x.CustomerID,
+			CustomerName: x.CustomerName, RepName: x.RepName, Amount: x.Amount, IssueDate: x.IssueDate,
+			NextFollowup: x.NextFollowup, Status: status, CanAct: true, Source: "crm", DocID: x.ID,
+		})
+		switch status {
+		case pfStNotStarted, pfStOverdue:
+			cOpen++
+			cSum += x.Amount
+			if status == pfStOverdue && x.LateDays > pfLateDays {
+				cLate++
+			}
+		case pfStApproved:
+			cApproved++
+		}
+	}
+
 	sort.SliceStable(items, func(i, j int) bool {
 		if items[i].IssueDate != items[j].IssueDate {
 			return items[i].IssueDate > items[j].IssueDate
@@ -484,7 +520,13 @@ func (s *server) pfAuthorize(w http.ResponseWriter, r *http.Request) (string, bo
 
 // POST /ucrm/proformas/{guid}/status  {"status":"approved"|"stopped"|"not_started"}
 func (s *server) ucrmProformaStatus(w http.ResponseWriter, r *http.Request) {
-	g, ok := s.pfAuthorize(w, r)
+	crmID, isCrm := int64(0), strings.HasPrefix(r.PathValue("guid"), pfCrmPrefix)
+	g, ok := "", false
+	if isCrm {
+		crmID, ok = s.pfCrmAuthorize(w, r)
+	} else {
+		g, ok = s.pfAuthorize(w, r)
+	}
 	if !ok {
 		return
 	}
@@ -505,6 +547,15 @@ func (s *server) ucrmProformaStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	uid := userOf(r.Context()).ID
+	if isCrm {
+		if _, err := s.db.Exec(`UPDATE ucrm_proformas SET status = ?, status_by = ?, status_at = NOW(), updated_by = ? WHERE id = ?`,
+			in.Status, uid, uid, crmID); err != nil {
+			writeDBErr(w, "ucrmProformaStatus crm", err)
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "message": msg})
+		return
+	}
 	if _, err := s.db.Exec(`
 		INSERT INTO ucrm_proforma_states (invoice_guid, organization_id, status, status_by, status_at, updated_by)
 		VALUES (?, ?, ?, ?, NOW(), ?)
@@ -518,7 +569,13 @@ func (s *server) ucrmProformaStatus(w http.ResponseWriter, r *http.Request) {
 
 // PUT /ucrm/proformas/{guid}/followup  {"date":"2026-11-10"} (خالی = حذف تاریخ)
 func (s *server) ucrmProformaFollowup(w http.ResponseWriter, r *http.Request) {
-	g, ok := s.pfAuthorize(w, r)
+	crmID, isCrm := int64(0), strings.HasPrefix(r.PathValue("guid"), pfCrmPrefix)
+	g, ok := "", false
+	if isCrm {
+		crmID, ok = s.pfCrmAuthorize(w, r)
+	} else {
+		g, ok = s.pfAuthorize(w, r)
+	}
 	if !ok {
 		return
 	}
@@ -538,6 +595,14 @@ func (s *server) ucrmProformaFollowup(w http.ResponseWriter, r *http.Request) {
 		date = in.Date
 	}
 	uid := userOf(r.Context()).ID
+	if isCrm {
+		if _, err := s.db.Exec(`UPDATE ucrm_proformas SET next_followup = ?, updated_by = ? WHERE id = ?`, date, uid, crmID); err != nil {
+			writeDBErr(w, "ucrmProformaFollowup crm", err)
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "message": "تاریخ پیگیری ثبت شد."})
+		return
+	}
 	if _, err := s.db.Exec(`
 		INSERT INTO ucrm_proforma_states (invoice_guid, organization_id, next_followup, updated_by)
 		VALUES (?, ?, ?, ?)

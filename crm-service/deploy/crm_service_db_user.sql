@@ -53,6 +53,9 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_change
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_followups`        TO 'crm_service'@'localhost';
 -- وضعیت پیگیری پیش‌فاکتورهای شایگان (مهاجرت 20261104_110000)
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_proforma_states`  TO 'crm_service'@'localhost';
+-- صدور پیش‌فاکتور در CRM (مهاجرت 20261108_100000)
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_proformas`        TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_proforma_items`   TO 'crm_service'@'localhost';
 
 -- خواندن فقط جدول‌هایی که برای احراز هویت و شناخت کارشناس/سازمان/بخش فعالیت لازم است
 GRANT SELECT ON `computeryekta_todo_system`.`users`                  TO 'crm_service'@'localhost';
