@@ -399,6 +399,10 @@ func main() {
 	mux.HandleFunc("GET /crm/api/ucrm/proforma-docs/{id}", ucrm(s.ucrmGetProformaDoc))
 	mux.HandleFunc("PUT /crm/api/ucrm/proforma-docs/{id}", ucrm(s.ucrmUpdateProformaDoc))
 	mux.HandleFunc("DELETE /crm/api/ucrm/proforma-docs/{id}", ucrm(s.ucrmDeleteProformaDoc))
+	mux.HandleFunc("POST /crm/api/ucrm/proforma-docs/{id}/to-sales-order", ucrm(s.ucrmProformaToSalesOrder))
+	// سفارش‌های فروش/خرید (شایگان + CRM) و تأمین‌کننده‌ها — ucrm_orders.go
+	mux.HandleFunc("GET /crm/api/ucrm/orders", ucrm(s.ucrmListOrders))
+	mux.HandleFunc("GET /crm/api/ucrm/shygun/parties", ucrm(s.ucrmShygunParties))
 	mux.HandleFunc("POST /crm/api/ucrm/customers/import", ucrm(s.ucrmImport))
 	mux.HandleFunc("GET /crm/api/ucrm/customers/{id}", ucrm(s.ucrmGetCustomer))
 	mux.HandleFunc("POST /crm/api/ucrm/customers", ucrm(s.ucrmCreateCustomer))

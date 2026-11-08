@@ -77,6 +77,7 @@ type shygunCustomer struct {
 	JobNo  string  `json:"job_no"`
 	Name   string  `json:"name"`
 	Remain float64 `json:"remain"`
+	GUID   string  `json:"-"` // فقط از Job/Get (کشِ «همهٔ تفصیلی‌ها»)؛ برای طرفِ سفارش خرید
 }
 
 // ──────────────── کلاینت HTTP ────────────────
@@ -228,7 +229,7 @@ func (s *server) shygunFetchAllJobs() ([]shygunCustomer, error) {
 				continue
 			}
 			seen[jn] = true
-			out = append(out, shygunCustomer{JobNo: jn, Name: name, Remain: j.RemainAccount})
+			out = append(out, shygunCustomer{JobNo: jn, Name: name, Remain: j.RemainAccount, GUID: strings.ToLower(strings.TrimSpace(j.GuId))})
 		}
 		if len(rows) < per {
 			break
@@ -253,6 +254,18 @@ func (s *server) shygunAllJobs(force bool) ([]shygunCustomer, time.Time, error) 
 	shygunJobsCache.rows = rows
 	shygunJobsCache.fetchedAt = time.Now()
 	return rows, shygunJobsCache.fetchedAt, nil
+}
+
+// shygunAllJobsAny: کشِ «همهٔ تفصیلی‌ها» حتی اگر کهنه باشد (پس‌زمینه هر ۳۰ دقیقه تازه‌اش
+// می‌کند — startShygunWarmers)؛ فقط اگر هنوز هیچ‌وقت پر نشده، همین حالا می‌خواند.
+func (s *server) shygunAllJobsAny() ([]shygunCustomer, time.Time, error) {
+	shygunJobsCache.mu.Lock()
+	rows, at := shygunJobsCache.rows, shygunJobsCache.fetchedAt
+	shygunJobsCache.mu.Unlock()
+	if rows != nil {
+		return rows, at, nil
+	}
+	return s.shygunAllJobs(true)
 }
 
 // ──────────────── جستجوی کلمه‌به‌کلمه + رتبه‌بندی ────────────────

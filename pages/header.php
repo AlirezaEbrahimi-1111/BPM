@@ -1273,6 +1273,18 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
                                     <i class="bi bi-graph-up-arrow ms-2"></i>گزارش پیش‌فاکتورهای باز
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" href="/pages/ucrm-orders.php?type=sales">
+                                    <i class="bi bi-cart-check ms-2"></i>سفارش‌های فروش
+                                </a>
+                            </li>
+                            <?php if (ucrmRoles($db, $__crmUid)['manager']): /* سفارش خرید فعلا فقط مدیر/سوپروایزر (بعدا واحد خرید) */ ?>
+                                <li>
+                                    <a class="dropdown-item" href="/pages/ucrm-orders.php?type=purchase">
+                                        <i class="bi bi-cart ms-2"></i>سفارش‌های خرید
+                                    </a>
+                                </li>
+                            <?php endif; ?>
                         </ul>
                     </li>
                 <?php endif; ?>

@@ -612,9 +612,8 @@ $__cid = (int) ($_GET['id'] ?? 0);
                         <div class="dropdown">
                             <button type="button" class="btn btn-outline-primary uc-more-btn" data-bs-toggle="dropdown" aria-expanded="false" title="بیشتر"><i class="bi bi-three-dots"></i></button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="ucrm-proformas.php?customer=${c.id}"><i class="bi bi-file-earmark-text ms-2"></i>پیش‌فاکتور</a></li>
-                                <li><button class="dropdown-item uc-soon" data-soon="ثبت سفارش خرید"><i class="bi bi-cart ms-2"></i>سفارش خرید <span class="uc-soon-tag sm">به‌زودی</span></button></li>
-                                <li><button class="dropdown-item uc-soon" data-soon="ثبت سفارش فروش"><i class="bi bi-cart-check ms-2"></i>سفارش فروش <span class="uc-soon-tag sm">به‌زودی</span></button></li>
+                                <li><a class="dropdown-item" href="ucrm-proforma-edit.php?customer=${c.id}"><i class="bi bi-file-earmark-plus ms-2"></i>پیش‌فاکتور جدید</a></li>
+                                <li><a class="dropdown-item" href="ucrm-proforma-edit.php?type=sales_order&amp;customer=${c.id}"><i class="bi bi-cart-check ms-2"></i>سفارش فروش جدید</a></li>
                             </ul>
                         </div>
                         <button type="button" class="btn btn-primary" id="btnNewFu" onclick="openFollowup()"><i class="bi bi-plus-lg ms-1"></i>پیگیری جدید</button>
@@ -640,7 +639,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
             document.getElementById('ucFab').addEventListener('click', () => openFollowup());
             // اولین فیلد قابل‌ویرایش فوکوس بگیرد (قاعدهٔ مودال‌های سایت)
             document.getElementById('fuModal').addEventListener('shown.bs.modal', () => document.getElementById('fuTitle').focus());
-            // دکمه‌های «به‌زودی» (پیامک، سفارش‌ها): فقط پیام
+            // دکمه‌های «به‌زودی» (پیامک): فقط پیام
             document.addEventListener('click', e => {
                 const b = e.target.closest('.uc-soon');
                 if (!b) return;

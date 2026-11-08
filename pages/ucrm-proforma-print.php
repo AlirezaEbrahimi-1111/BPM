@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 
-// CRM جدید — نسخهٔ چاپی سادهٔ پیش‌فاکتور فروش (مرحلهٔ ۱، ۱۴۰۵/۰۸/۱۷؛ طرح نهایی بعدا از کاربر).
+// CRM جدید — نسخهٔ چاپی سادهٔ پیش‌فاکتور فروش / سفارش فروش / سفارش خرید (۱۴۰۵/۰۸/۱۷؛ طرح نهایی بعدا از کاربر).
 // داده از crm-service (GET /ucrm/proforma-docs/{id})؛ بدون هدر سایت تا فقط خود سند چاپ شود.
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ucrm_access.php';
 if (!ucrmAllowed($db, (int) $user_id)) {
@@ -66,7 +66,10 @@ $orgName = (string) $db->query("SELECT name FROM organizations WHERE id = 1")->f
             const box = document.getElementById('sheet');
             try {
                 const d = await UCRM.get('/proforma-docs/' + id);
-                document.title = 'پیش‌فاکتور ' + d.number;
+                const T = { proforma: ['پیش‌فاکتور فروش', 'خریدار'], sales_order: ['سفارش فروش', 'خریدار'], purchase_order: ['سفارش خرید', 'فروشنده (تأمین‌کننده)'] }[d.doc_type] || ['پیش‌فاکتور فروش', 'خریدار'];
+                const party = d.doc_type === 'purchase_order' ? d.party_name : d.customer_name;
+                const date2 = d.doc_type === 'proforma' ? '' : (d.expected_date ? 'تحویل مورد انتظار: <b>' + faDigits(convertToJalali(d.expected_date)) + '</b>' : '');
+                document.title = T[0] + ' ' + d.number;
                 const rows = (d.items || []).map((it, i) => `<tr>
                     <td>${faDigits(i + 1)}</td><td>${faDigits(esc(it.item_code))}</td><td class="name">${esc(it.item_name)}</td>
                     <td>${esc(it.unit)}</td><td>${faDigits(it.qty)}</td><td>${UCRM.money(it.unit_price)}</td>
@@ -74,10 +77,10 @@ $orgName = (string) $db->query("SELECT name FROM organizations WHERE id = 1")->f
                 box.innerHTML = `
                     <div class="head">
                         <img src="/assets/images/invoice-logo-print.png" alt="">
-                        <div><h1>پیش‌فاکتور فروش</h1><div class="org">${esc(ORG)}</div></div>
-                        <div class="meta">شماره: <b>${faDigits(esc(d.number))}</b><br>تاریخ: <b>${faDigits(convertToJalali(d.issue_date))}</b></div>
+                        <div><h1>${T[0]}</h1><div class="org">${esc(ORG)}</div></div>
+                        <div class="meta">شماره: <b>${faDigits(esc(d.number))}</b><br>تاریخ: <b>${faDigits(convertToJalali(d.issue_date))}</b>${date2 ? '<br>' + date2 : ''}</div>
                     </div>
-                    <div class="party">خریدار: <b>${esc(d.customer_name)}</b>${d.rep_name ? ' — کارشناس فروش: ' + esc(d.rep_name) : ''}</div>
+                    <div class="party">${T[1]}: <b>${esc(party)}</b>${d.rep_name ? ' — کارشناس فروش: ' + esc(d.rep_name) : ''}</div>
                     <table>
                         <thead><tr><th>#</th><th>کد کالا</th><th>شرح کالا</th><th>واحد</th><th>تعداد</th><th>فی (تومان)</th><th>تخفیف (تومان)</th><th>مبلغ (تومان)</th></tr></thead>
                         <tbody>${rows}</tbody>
@@ -88,7 +91,7 @@ $orgName = (string) $db->query("SELECT name FROM organizations WHERE id = 1")->f
                         <div class="grand"><span>مبلغ قابل پرداخت (تومان)</span><span>${UCRM.money(d.total)}</span></div>
                     </div>
                     ${d.note ? `<div class="note"><b>توضیحات:</b> ${esc(d.note)}</div>` : ''}
-                    <div class="sign"><span>مهر و امضای فروشنده</span><span>مهر و امضای خریدار</span></div>`;
+                    <div class="sign"><span>مهر و امضای ${d.doc_type === 'purchase_order' ? 'خریدار' : 'فروشنده'}</span><span>مهر و امضای ${d.doc_type === 'purchase_order' ? 'فروشنده' : 'خریدار'}</span></div>`;
             } catch (e) {
                 box.innerHTML = `<div class="alert alert-danger m-0">${esc(e.message || 'پیش‌فاکتور یافت نشد')}</div>`;
             }

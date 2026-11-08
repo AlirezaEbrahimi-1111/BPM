@@ -233,6 +233,9 @@ func (s *server) startShygunWarmers() {
 	}
 	go loop(shygunProformaEvery, s.refreshShygunProformas)
 	go loop(shygunItemsEvery, s.refreshShygunItems)
+	// همهٔ تفصیلی‌ها (تأمین‌کنندهٔ سفارش خرید) و سفارش‌های فروش/خرید — ucrm_orders.go
+	go loop(shygunItemsEvery, func() { _, _, _ = s.shygunAllJobs(true) })
+	go loop(shygunProformaEvery, s.refreshShygunOrders)
 }
 
 // ──────────────── GET /ucrm/shygun/items[?refresh=1] ────────────────
@@ -429,7 +432,7 @@ func (s *server) ucrmListProformas(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	// پیش‌فاکتورهای صادرشده در CRM که هنوز به شایگان نرفته‌اند (ucrm_proforma_docs.go)
-	crmRows, err := s.pfCrmRows()
+	crmRows, err := s.pfCrmRows(docProforma)
 	if err != nil {
 		writeDBErr(w, "ucrmListProformas crm", err)
 		return

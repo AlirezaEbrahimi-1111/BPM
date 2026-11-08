@@ -1,8 +1,10 @@
 <?php
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 
-// CRM جدید — صدور/ویرایش پیش‌فاکتور فروش (مرحلهٔ ۱، ۱۴۰۵/۰۸/۱۷؛ بدون طرح — هم‌شکل فرم فاکتور رسمی).
-// ?id=شناسه = ویرایش/نمایش؛ ?customer=شناسه = پیش‌فاکتور تازه برای همان مشتری.
+// CRM جدید — صدور/ویرایش پیش‌فاکتور فروش، سفارش فروش و سفارش خرید (۱۴۰۵/۰۸/۱۷؛ بدون طرح — هم‌شکل
+// فرم فاکتور رسمی). ?type=proforma|sales_order|purchase_order (پیش‌فرض پیش‌فاکتور)؛ ?id=شناسه = ویرایش/نمایش
+// (نوع از خود سند)؛ ?customer=شناسه = سند تازه برای همان مشتری. سفارش خرید: طرف = تفصیلیِ شایگان
+// (تأمین‌کننده)، فعلا فقط مدیر/سوپروایزر. پیش‌فاکتورِ ذخیره‌شده → «تبدیل به سفارش فروش».
 // کالا فقط از کالاهای شایگان (فهرست پیش‌بارگذاری‌شده در crm-service — بدون انتظار)؛ قیمت دستی، تومان.
 // API: crm-service/ucrm_proforma_docs.go. پس از ارسال به حسابداری (مرحلهٔ ۲) فقط‌خواندنی.
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ucrm_access.php';
@@ -10,6 +12,7 @@ if (!ucrmAllowed($db, (int) $user_id)) {
     header('Location: ../pages/dashboard.php');
     exit;
 }
+$__isManager = ucrmRoles($db, (int) $user_id)['manager'];
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -46,7 +49,7 @@ if (!ucrmAllowed($db, (int) $user_id)) {
         <div class="uc-card">
             <div class="row g-3">
                 <div class="col-md-5">
-                    <label class="form-label small">مشتری <span class="text-danger">*</span></label>
+                    <label class="form-label small"><span id="partyLbl">مشتری</span> <span class="text-danger">*</span></label>
                     <div id="custPicker"></div>
                 </div>
                 <div class="col-md-3 col-6">
@@ -61,7 +64,7 @@ if (!ucrmAllowed($db, (int) $user_id)) {
                     </div>
                 </div>
                 <div class="col-md-3 col-6">
-                    <label class="form-label small">تاریخ پیگیری بعدی</label>
+                    <label class="form-label small" id="date2Lbl">تاریخ پیگیری بعدی</label>
                     <div class="persian-datepicker-wrapper">
                         <input type="text" class="persian-datepicker-input form-control" id="fFollow" readonly placeholder="اختیاری">
                         <div class="persian-datepicker">
@@ -114,6 +117,7 @@ if (!ucrmAllowed($db, (int) $user_id)) {
         <div class="uc-pf-actions">
             <button type="button" class="btn btn-primary" id="btnSave"><i class="bi bi-check-lg ms-1"></i>ذخیره</button>
             <button type="button" class="btn btn-outline-primary" id="btnPrint" hidden><i class="bi bi-printer ms-1"></i>چاپ</button>
+            <button type="button" class="btn btn-outline-success" id="btnToOrder" hidden><i class="bi bi-arrow-left-right ms-1"></i>تبدیل به سفارش فروش</button>
             <div class="spacer"></div>
             <button type="button" class="btn btn-outline-danger" id="btnDelete" hidden><i class="bi bi-trash ms-1"></i>حذف پیش‌فاکتور</button>
         </div>
@@ -125,11 +129,30 @@ if (!ucrmAllowed($db, (int) $user_id)) {
     <script>
         const qs = new URLSearchParams(location.search);
         let DOC_ID = parseInt(qs.get('id'), 10) || 0;
+        const IS_MANAGER = <?= $__isManager ? 'true' : 'false' ?>;
+        const DOC = {
+            proforma: { title: 'پیش‌فاکتور فروش', party: 'مشتری', date2: 'تاریخ پیگیری بعدی', date2Key: 'next_followup', back: 'ucrm-proformas.php', icon: 'bi-file-earmark-plus' },
+            sales_order: { title: 'سفارش فروش', party: 'مشتری', date2: 'تاریخ تحویل مورد انتظار', date2Key: 'expected_date', back: 'ucrm-orders.php?type=sales', icon: 'bi-cart-check' },
+            purchase_order: { title: 'سفارش خرید', party: 'تأمین‌کننده', date2: 'تاریخ تحویل مورد انتظار', date2Key: 'expected_date', back: 'ucrm-orders.php?type=purchase', icon: 'bi-cart' },
+        };
+        let TYPE = DOC[qs.get('type')] ? qs.get('type') : 'proforma';
+        let SALES_ORDER_ID = 0;
         let ITEMS = [], BY_CODE = new Map(), custPicker = null, CAN_EDIT = true;
 
         const fa = s => faDigits(String(s));
         const num = el => parseFloat(UCRM.toEn(el.value).replace(/[^\d.]/g, '')) || 0;
         const itemLabel = it => it.code + ' — ' + it.name;
+
+        // برچسب‌ها و مسیر بازگشت بر اساس نوع سند
+        function applyType() {
+            const d = DOC[TYPE];
+            document.getElementById('pfTitle').textContent = d.title + ' جدید';
+            document.getElementById('partyLbl').textContent = d.party;
+            document.getElementById('date2Lbl').textContent = d.date2;
+            document.querySelector('.uc-pf-head .uc-tg-ico i').className = 'bi ' + d.icon;
+            document.getElementById('btnBack').href = d.back;
+            document.title = d.title + ' - سامانه مدیریت فرآیندها';
+        }
 
         function alertBox(msg, kind = 'danger') {
             document.getElementById('pfAlert').innerHTML = msg ? `<div class="alert alert-${kind} py-2">${esc(msg)}</div>` : '';
@@ -223,9 +246,11 @@ if (!ucrmAllowed($db, (int) $user_id)) {
                 if (!rows[i].dataset.code) throw new Error('ردیف ' + fa(i + 1) + ': کالا را از فهرست کالاهای حسابداری انتخاب کنید.');
             }
             return {
-                customer_id: c ? c.id : 0,
+                doc_type: TYPE,
+                customer_id: TYPE !== 'purchase_order' && c ? c.id : 0,
+                party_job_no: TYPE === 'purchase_order' && c ? String(c.id) : '',
                 issue_date: getDate('fIssue'),
-                next_followup: getDate('fFollow'),
+                [DOC[TYPE].date2Key]: getDate('fFollow'),
                 note: document.getElementById('fNote').value,
                 items: rows.map(tr => {
                     const it = BY_CODE.get(tr.dataset.code) || {};
@@ -253,9 +278,10 @@ if (!ucrmAllowed($db, (int) $user_id)) {
                 if (!DOC_ID) {
                     DOC_ID = res.id;
                     history.replaceState(null, '', 'ucrm-proforma-edit.php?id=' + DOC_ID);
-                    document.getElementById('pfTitle').textContent = 'پیش‌فاکتور ' + fa(res.number);
+                    document.getElementById('pfTitle').textContent = DOC[TYPE].title + ' ' + fa(res.number);
                     document.getElementById('btnPrint').hidden = false;
                     document.getElementById('btnDelete').hidden = false;
+                    document.getElementById('btnToOrder').hidden = TYPE !== 'proforma';
                 }
             } catch (e) {
                 alertBox(e.message || 'خطا در ذخیره');
@@ -265,15 +291,29 @@ if (!ucrmAllowed($db, (int) $user_id)) {
         }
 
         function del() {
-            uiConfirm('این پیش‌فاکتور حذف شود؟', async () => {
+            uiConfirm('این ' + DOC[TYPE].title + ' حذف شود؟', async () => {
                 try {
                     const res = await UCRM.send('DELETE', '/proforma-docs/' + DOC_ID);
                     showToast(res.message || 'حذف شد.', 'success');
-                    setTimeout(() => location.href = 'ucrm-proformas.php', 800);
+                    setTimeout(() => location.href = DOC[TYPE].back, 800);
                 } catch (e) {
                     showToast(e.message || 'خطا در حذف', 'error');
                 }
             }, { danger: true, yesText: 'بله، حذف کن', noText: 'انصراف' });
+        }
+
+        // پیش‌فاکتور → سفارش فروشِ تازه (همان مشتری و کالاها)؛ اگر قبلا ساخته شده، باز کردن همان
+        async function toSalesOrder() {
+            if (SALES_ORDER_ID) { location.href = 'ucrm-proforma-edit.php?id=' + SALES_ORDER_ID; return; }
+            uiConfirm('از این پیش‌فاکتور سفارش فروش ساخته شود؟ پیش‌فاکتور «تأیید شده» می‌شود.', async () => {
+                try {
+                    const res = await UCRM.send('POST', '/proforma-docs/' + DOC_ID + '/to-sales-order');
+                    showToast(res.message || 'سفارش فروش ساخته شد.', 'success');
+                    setTimeout(() => location.href = 'ucrm-proforma-edit.php?id=' + res.id, 800);
+                } catch (e) {
+                    showToast(e.message || 'خطا در ساخت سفارش فروش', 'error');
+                }
+            }, { yesText: 'بله، بساز', noText: 'انصراف' });
         }
 
         function lockForm() {
@@ -298,17 +338,33 @@ if (!ucrmAllowed($db, (int) $user_id)) {
                     : fa(ITEMS.length) + ' کالا از حسابداری' + (r.fetched_at ? ' — به‌روز شده ' + fa(r.fetched_at) : '');
             }).catch(e => alertBox(e.message || 'خطا در دریافت کالاها'));
 
-            // مشتری‌ها: فقط فعال‌ها (کارشناس فقط مشتری‌های خودش را می‌گیرد — سرور)
+            // سند موجود: نوعش از خود سند
+            let doc = null;
+            if (DOC_ID) {
+                try { doc = await UCRM.get('/proforma-docs/' + DOC_ID); TYPE = doc.doc_type || 'proforma'; }
+                catch (e) { alertBox(e.message || 'سند یافت نشد'); }
+            }
+            if (TYPE === 'purchase_order' && !IS_MANAGER) {
+                alertBox('ثبت سفارش خرید فعلا فقط برای مدیران است.', 'warning');
+                ['btnSave', 'btnAddRow'].forEach(id => document.getElementById(id).hidden = true);
+                return;
+            }
+            applyType();
+
+            // طرف سند: مشتری‌های فعال (کارشناس فقط مال خودش — سرور)، یا تأمین‌کننده = تفصیلی‌های شایگان
             let custs = [];
             try {
-                custs = ((await UCRM.get('/customers')).items || []).filter(c => c.status === 'active');
+                custs = TYPE === 'purchase_order'
+                    ? ((await UCRM.get('/shygun/parties')).items || []).map(p => ({ id: p.job_no, name: p.name, meta: 'تفصیلی ' + faDigits(p.job_no) }))
+                    : ((await UCRM.get('/customers')).items || []).filter(c => c.status === 'active')
+                        .map(c => ({ id: c.id, name: c.name, meta: c.rep_name ? 'کارشناس: ' + c.rep_name : '' }));
             } catch (e) {
-                alertBox(e.message || 'خطا در دریافت مشتری‌ها');
+                alertBox(e.message || 'خطا در دریافت فهرست ' + DOC[TYPE].party);
             }
             custPicker = EntityPicker.create({
                 container: '#custPicker',
-                items: custs.map(c => ({ id: c.id, label: c.name, meta: c.rep_name ? 'کارشناس: ' + c.rep_name : '' })),
-                placeholder: 'نام مشتری…',
+                items: custs.map(c => ({ id: c.id, label: c.name, meta: c.meta })),
+                placeholder: TYPE === 'purchase_order' ? 'نام یا شمارهٔ تأمین‌کننده…' : 'نام مشتری…',
                 onSelect: () => { const f = document.querySelector('#itemsBody .it-name'); if (f) f.focus(); },
             });
 
@@ -316,33 +372,47 @@ if (!ucrmAllowed($db, (int) $user_id)) {
             document.getElementById('btnSave').addEventListener('click', save);
             document.getElementById('btnDelete').addEventListener('click', del);
             document.getElementById('btnPrint').addEventListener('click', () => window.open('ucrm-proforma-print.php?id=' + DOC_ID, '_blank'));
+            document.getElementById('btnToOrder').addEventListener('click', toSalesOrder);
 
             await itemsP;
             if (DOC_ID) {
-                try {
-                    const d = await UCRM.get('/proforma-docs/' + DOC_ID);
-                    document.getElementById('pfTitle').textContent = 'پیش‌فاکتور ' + fa(d.number);
-                    document.title = 'پیش‌فاکتور ' + d.number + ' - سامانه مدیریت فرآیندها';
-                    if (!custs.some(c => c.id === d.customer_id)) custPicker.updateItems(custs.map(c => ({ id: c.id, label: c.name })).concat([{ id: d.customer_id, label: d.customer_name }]));
-                    custPicker.setValue(d.customer_id);
-                    setDate('fIssue', d.issue_date);
-                    setDate('fFollow', d.next_followup);
-                    document.getElementById('fNote').value = d.note || '';
-                    (d.items || []).forEach(addRow);
-                    document.getElementById('btnPrint').hidden = false;
-                    document.getElementById('btnDelete').hidden = !d.can_edit;
-                    if (!d.can_edit) lockForm();
-                } catch (e) {
-                    alertBox(e.message || 'پیش‌فاکتور یافت نشد');
+                if (!doc) {
                     ['btnSave', 'btnAddRow'].forEach(id => document.getElementById(id).hidden = true);
+                    return;
                 }
+                const d = doc;
+                document.getElementById('pfTitle').textContent = DOC[TYPE].title + ' ' + fa(d.number);
+                document.title = DOC[TYPE].title + ' ' + d.number + ' - سامانه مدیریت فرآیندها';
+                const pid = TYPE === 'purchase_order' ? d.party_job_no : d.customer_id;
+                const pname = TYPE === 'purchase_order' ? d.party_name : d.customer_name;
+                if (!custs.some(c => String(c.id) === String(pid))) {
+                    custPicker.updateItems(custs.map(c => ({ id: c.id, label: c.name, meta: c.meta })).concat([{ id: pid, label: pname }]));
+                }
+                custPicker.setValue(pid);
+                setDate('fIssue', d.issue_date);
+                setDate('fFollow', d[DOC[TYPE].date2Key]);
+                document.getElementById('fNote').value = d.note || '';
+                (d.items || []).forEach(addRow);
+                document.getElementById('btnPrint').hidden = false;
+                document.getElementById('btnDelete').hidden = !d.can_edit;
+                if (TYPE === 'proforma') {
+                    SALES_ORDER_ID = d.sales_order_id || 0;
+                    const b = document.getElementById('btnToOrder');
+                    b.hidden = false;
+                    if (SALES_ORDER_ID) b.innerHTML = '<i class="bi bi-cart-check ms-1"></i>مشاهدهٔ سفارش فروش';
+                }
+                if (d.source_doc_id) {
+                    document.getElementById('itemsHint').insertAdjacentHTML('afterend',
+                        ' <a class="small" href="ucrm-proforma-edit.php?id=' + d.source_doc_id + '">(ساخته‌شده از پیش‌فاکتور)</a>');
+                }
+                if (!d.can_edit) lockForm();
                 return;
             }
             setDate('fIssue', TimeSync.serverToday());
-            const cust = parseInt(qs.get('customer'), 10) || 0;
+            const cust = TYPE === 'purchase_order' ? 0 : (parseInt(qs.get('customer'), 10) || 0);
             if (cust) {
                 custPicker.setValue(cust);
-                document.getElementById('btnBack').href = 'ucrm-proformas.php?customer=' + cust;
+                document.getElementById('btnBack').href = DOC[TYPE].back + (DOC[TYPE].back.includes('?') ? '&' : '?') + 'customer=' + cust;
             }
             addRow();
             if (cust && custPicker.getValue()) document.querySelector('#itemsBody .it-name').focus();
