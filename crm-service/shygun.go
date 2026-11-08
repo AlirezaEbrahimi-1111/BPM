@@ -82,28 +82,57 @@ type shygunCustomer struct {
 
 // ──────────────── کلاینت HTTP ────────────────
 
+// فاصلهٔ حداقل بین دو درخواست به شایگان + تلاش دوباره روی ۴۲۹ (سقف درخواستِ وب‌سرویس؛
+// ۱۴۰۵/۰۸/۱۷ — خواندن‌های پس‌زمینهٔ هم‌زمان رد می‌شدند). همهٔ درخواست‌ها از این قفل می‌گذرند.
+const (
+	shygunMinGap     = 250 * time.Millisecond
+	shygunMaxRetries = 3
+)
+
+var shygunThrottle struct {
+	mu   sync.Mutex
+	last time.Time
+}
+
+func shygunWaitTurn() {
+	shygunThrottle.mu.Lock()
+	defer shygunThrottle.mu.Unlock()
+	if d := shygunMinGap - time.Since(shygunThrottle.last); d > 0 {
+		time.Sleep(d)
+	}
+	shygunThrottle.last = time.Now()
+}
+
 // shygunPost یک درخواست POST/JSON به شایگان می‌زند و بدنهٔ خام را برمی‌گرداند.
+// روی ۴۲۹ با فاصله‌ی ۳، ۶، ۱۲ ثانیه دوباره امتحان می‌کند.
 func (s *server) shygunPost(path string, body any, timeout time.Duration) ([]byte, error) {
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	url := strings.TrimRight(s.cfg.ShygunURL, "/") + path
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(buf))
-	if err != nil {
-		return nil, err
+	for attempt := 0; ; attempt++ {
+		shygunWaitTurn()
+		req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(buf))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Content-Type", "application/json")
+		resp, err := (&http.Client{Timeout: timeout}).Do(req)
+		if err != nil {
+			return nil, err
+		}
+		data, _ := io.ReadAll(io.LimitReader(resp.Body, 16<<20))
+		resp.Body.Close()
+		if resp.StatusCode == http.StatusTooManyRequests && attempt < shygunMaxRetries {
+			time.Sleep(time.Duration(3<<attempt) * time.Second)
+			continue
+		}
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("کد وضعیت %d از حسابداری", resp.StatusCode)
+		}
+		return data, nil
 	}
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := (&http.Client{Timeout: timeout}).Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	data, _ := io.ReadAll(io.LimitReader(resp.Body, 16<<20))
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("کد وضعیت %d از حسابداری", resp.StatusCode)
-	}
-	return data, nil
 }
 
 // shygunResult پاسخ را باز می‌کند؛ اگر شایگان ErrorMessage داده باشد، خطا می‌دهد.

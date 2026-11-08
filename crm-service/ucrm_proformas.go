@@ -224,18 +224,25 @@ func (s *server) refreshShygunItems() {
 
 // startShygunWarmers: پیش‌بارگذاریِ پس‌زمینه از لحظهٔ بالا آمدنِ سرویس.
 func (s *server) startShygunWarmers() {
-	loop := func(every time.Duration, fn func()) {
-		fn()
-		t := time.NewTicker(every)
-		for range t.C {
-			fn()
+	// یکی‌یکی، نه هم‌زمان: شایگان سقف درخواست دارد (۴۲۹، ۱۴۰۵/۰۸/۱۷). هر دور (۱۰ دقیقه):
+	// پیش‌فاکتورها و سفارش‌ها؛ هر سه دور یک‌بار (۳۰ دقیقه) کالاها و همهٔ تفصیلی‌ها.
+	// ترتیب = اولویت: پیش‌فاکتور و کالا اول (صفحه‌های پرکاربرد)، بعد سفارش و تفصیلی.
+	go func() {
+		for round := 0; ; round++ {
+			heavy := round%3 == 0
+			s.refreshShygunProformas()
+			if heavy {
+				s.refreshShygunItems()
+			}
+			s.refreshShygunOrders()
+			if heavy {
+				if _, _, err := s.shygunAllJobs(true); err != nil {
+					log.Printf("shygun all jobs refresh: %v", err)
+				}
+			}
+			time.Sleep(shygunProformaEvery)
 		}
-	}
-	go loop(shygunProformaEvery, s.refreshShygunProformas)
-	go loop(shygunItemsEvery, s.refreshShygunItems)
-	// همهٔ تفصیلی‌ها (تأمین‌کنندهٔ سفارش خرید) و سفارش‌های فروش/خرید — ucrm_orders.go
-	go loop(shygunItemsEvery, func() { _, _, _ = s.shygunAllJobs(true) })
-	go loop(shygunProformaEvery, s.refreshShygunOrders)
+	}()
 }
 
 // ──────────────── GET /ucrm/shygun/items[?refresh=1] ────────────────
