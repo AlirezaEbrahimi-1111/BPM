@@ -2295,6 +2295,9 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         .ra-actions {
             display: flex;
             gap: 8px;
+            /* دکمهٔ اصلی (ثبت/ارجاع/رد) سمت چپ، انصراف کنارش (قاعدهٔ ۱۴۰۵/۰۸/۱۷: ذخیره/ثبت سمت راست نباشد) */
+            flex-direction: row-reverse;
+            justify-content: flex-start;
         }
 
         /* لیست کاربران قابل جستجو */

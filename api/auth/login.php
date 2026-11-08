@@ -245,6 +245,7 @@ try {
         $token_expiry = $remember_me ? (30 * 24 * 60 * 60) : (3 * 60 * 60);
         $auth = new Auth();
         $token = $auth->generateJWTToken($user['id'], $token_expiry, $user['organization_id']);
+        $auth->recordLogin((int) $user['id']); // آخرین ورود (مرجع مشترک — includes/auth.php)
         logSecurityEvent($user['id'], 'login_success', null, ['method' => 'otp']);
         sendLoginAlertSms($db, $user['id']);
 

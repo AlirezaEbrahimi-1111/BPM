@@ -136,6 +136,7 @@ try {
     // تولید JWT Token
     $auth = new Auth();
     $token = $auth->generateJWTToken($user_id);
+    $auth->recordLogin((int) $user_id); // ورود خودکار بعد از ثبت‌نام = آخرین ورود
     
     echo json_encode([
         'success' => true,

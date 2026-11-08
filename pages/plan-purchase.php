@@ -112,7 +112,9 @@ $allowedUsers = ['free' => [1], 'gold' => [5, 10, 20, 40]];
                         </div>
                     </div>
 
-                    <button type="button" class="btn btn-primary" id="savePlanBtn"><i class="bi bi-check2"></i> ثبت پلن</button>
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-primary" id="savePlanBtn"><i class="bi bi-check2"></i> ثبت پلن</button>
+                    </div>
                 </form>
             </div>
         </div>

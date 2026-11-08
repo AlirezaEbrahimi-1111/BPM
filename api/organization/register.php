@@ -72,6 +72,7 @@ try {
     // تولید JWT برای ادمین جدید
     $auth = new Auth($db);
     $token = $auth->generateJWTToken($result['user_id'],null, $result['organization_id']);
+    $auth->recordLogin((int) $result['user_id']); // ورود خودکار بعد از ثبت سازمان = آخرین ورود
     
     http_response_code(201);
     echo json_encode([

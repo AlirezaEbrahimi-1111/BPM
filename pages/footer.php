@@ -137,8 +137,8 @@ require_once '../includes/version.php';
         <span class="heart" style="color:red;">♥</span>
         <span>در شرکت</span>
         <span class="company">آوای شرق ملک</span>
-        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۸/۱۷ - ۱۵:۳۳">
-            نسخه: ۹.۸۳
+        <span class="footer-version" title="آخرین به‌روزرسانی: ۱۴۰۵/۰۸/۱۷ - ۱۶:۰۳">
+            نسخه: ۹.۸۴
         </span>
     </div>
 </div>

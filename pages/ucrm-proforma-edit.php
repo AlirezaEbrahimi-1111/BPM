@@ -115,11 +115,12 @@ $__isManager = ucrmRoles($db, (int) $user_id)['manager'];
         </div>
 
         <div class="uc-pf-actions">
-            <button type="button" class="btn btn-primary" id="btnSave"><i class="bi bi-check-lg ms-1"></i>ذخیره</button>
+            <!-- راست‌به‌چپ: حذف سمت راست، ذخیره سمت چپ (قاعدهٔ ۱۴۰۵/۰۸/۱۷) -->
+            <button type="button" class="btn btn-outline-danger" id="btnDelete" hidden><i class="bi bi-trash ms-1"></i>حذف</button>
+            <div class="spacer"></div>
             <button type="button" class="btn btn-outline-primary" id="btnPrint" hidden><i class="bi bi-printer ms-1"></i>چاپ</button>
             <button type="button" class="btn btn-outline-success" id="btnToOrder" hidden><i class="bi bi-arrow-left-right ms-1"></i>تبدیل به سفارش فروش</button>
-            <div class="spacer"></div>
-            <button type="button" class="btn btn-outline-danger" id="btnDelete" hidden><i class="bi bi-trash ms-1"></i>حذف پیش‌فاکتور</button>
+            <button type="button" class="btn btn-primary" id="btnSave"><i class="bi bi-check-lg ms-1"></i>ذخیره</button>
         </div>
     </div>
 

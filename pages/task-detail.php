@@ -279,6 +279,9 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
             align-items: center;
             gap: 8px;
             width: 100%;
+            /* «ثبت و انجام شد» سمت چپ (قاعدهٔ ۱۴۰۵/۰۸/۱۷: ذخیره/ثبت سمت راست نباشد) */
+            flex-direction: row-reverse;
+            justify-content: flex-start;
         }
 
         /* یک ردیف: دو لینک سمت راست، «ثبت و انجام شد» سمت چپ */

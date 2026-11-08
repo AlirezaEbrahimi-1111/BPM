@@ -97,9 +97,7 @@ class Auth
                 }
             }
 
-            // بروزرسانی زمان آخرین ورود
-            $updateStmt = $this->db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
-            $updateStmt->execute([$user['id']]);
+            $this->recordLogin((int) $user['id']);
 
             // تولید JWT Token
             $token_expiry = $remember_me ? (30 * 24 * 60 * 60) : (5 * 60 * 60);
@@ -372,6 +370,21 @@ class Auth
     /**
      * دریافت کاربر از توکن
      */
+    /**
+     * ثبت «آخرین ورود» — مرجع مشترک همهٔ راه‌های ورود (رمز، کد پیامکی، ورودِ خودکارِ بعد از
+     * ثبت‌نام؛ وب و موبایل). ستون users.last_login در superAdmin.php («آخرین ورود کاربر»)
+     * نمایش داده می‌شود. قبلا فقط ورود با رمز ثبت می‌شد (۱۴۰۵/۰۸/۱۷).
+     */
+    public function recordLogin(int $userId): void
+    {
+        if ($userId <= 0) return;
+        try {
+            $this->db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$userId]);
+        } catch (Throwable $e) {
+            error_log("recordLogin failed | user_id={$userId} | " . $e->getMessage());
+        }
+    }
+
     public function getUserFromToken()
     {
 
