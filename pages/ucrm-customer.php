@@ -33,6 +33,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
     <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
     <script src="<?= asset('../../assets/js/persian-date-utils.js') ?>"></script>
     <script src="<?= asset('../../assets/js/persian-datepicker.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
 </head>
 
 <body>
@@ -586,7 +587,8 @@ $__cid = (int) ($_GET['id'] ?? 0);
         // (شایگان + صادرشده در CRM — GET /ucrm/proformas، crm-service/ucrm_proformas.go) با فیلترِ ثابتِ
         // همین مشتری و همهٔ تاریخ‌ها. «امروز» = صادرشده امروز؛ «عقب‌افتاده» = وضعیت عقب افتاده (باز و
         // پیگیریِ گذشته). عملیات = همان فهرست اصلی (تکمیل / لغو / بازگشایی / تغییر تاریخ پیگیری).
-        let PF_FILTER = 'all', PF_ROWS = null, PF_Q = '', pfFuModal = null, pfFuGuid = '';
+        // جدول = AG Grid با همان ستون‌ها و تنظیماتِ صفحهٔ ucrm-proformas.php (۱۴۰۵/۰۸/۱۸).
+        let PF_FILTER = 'all', PF_ROWS = null, PF_Q = '', pfFuModal = null, pfFuGuid = '', pfGridApi = null;
         const PF_STATUS = {
             approved: ['ok', 'bi-check-lg', 'تأیید شده'],
             stopped: ['stop', 'bi-dash-circle-fill', 'متوقف شده'],
@@ -617,49 +619,49 @@ $__cid = (int) ($_GET['id'] ?? 0);
             });
         }
 
-        function pfOps(r) {
-            if (!r.can_act) return '<span class="text-muted small">—</span>';
+        function pfActionCell(p) {
+            const r = p.data;
+            if (!r || !r.can_act) return '';
             const g = esc(r.guid);
-            const items = (r.status === 'approved' || r.status === 'stopped')
-                ? `<li><button class="dropdown-item" onclick="pfSetStatus('${g}', 'not_started')"><i class="bi bi-arrow-counterclockwise ms-2"></i>بازگشایی</button></li>`
-                : `<li><button class="dropdown-item" onclick="pfSetStatus('${g}', 'approved')"><i class="bi bi-check2-circle ms-2 text-success"></i>تکمیل</button></li>
-                   <li><button class="dropdown-item" onclick="pfSetStatus('${g}', 'stopped')"><i class="bi bi-x-circle ms-2 text-danger"></i>لغو</button></li>`;
-            return `<div class="uc-fu-ops">
-                    <div class="dropdown">
-                        <button type="button" class="ic" data-bs-toggle="dropdown" title="بیشتر"><i class="bi bi-three-dots-vertical"></i></button>
-                        <ul class="dropdown-menu dropdown-menu-end">${items}
-                            <li><button class="dropdown-item" onclick="pfFollowup('${g}')"><i class="bi bi-calendar-event ms-2"></i>تغییر تاریخ پیگیری</button></li>
-                        </ul>
-                    </div>
-                </div>`;
+            const fu = `<button class="ag-action-btn" style="color:#8e57fe" title="تغییر تاریخ پیگیری" onclick="pfFollowup('${g}')"><i class="bi bi-calendar-event"></i></button>`;
+            if (r.status === 'approved' || r.status === 'stopped') {
+                return `<button class="ag-action-btn" style="color:#b45309" title="بازگشایی (شروع نشده)" onclick="pfSetStatus('${g}','not_started')"><i class="bi bi-arrow-counterclockwise"></i></button>` + fu;
+            }
+            return `<button class="ag-action-btn" style="color:#0f7a57" title="تکمیل" onclick="pfSetStatus('${g}','approved')"><i class="bi bi-check-circle-fill"></i></button>
+                <button class="ag-action-btn del" title="لغو" onclick="pfSetStatus('${g}','stopped')"><i class="bi bi-x-circle-fill"></i></button>` + fu;
+        }
+
+        function pfColDefs() {
+            const ro = (DATA && DATA.roles) || {};
+            const seesAll = !!(ro.manager || ro.accounting);
+            const jd = v => v ? TimeSync.formatJalali(v) : '—';
+            return [
+                { headerName: 'شمارهٔ پیش‌فاکتور', field: 'number', width: 150,
+                  cellRenderer: p => p.data.source === 'crm'
+                      ? `<a class="uc-name-link" href="ucrm-proforma-edit.php?id=${p.data.doc_id}" title="صادرشده در CRM — هنوز به حسابداری نرفته">${faDigits(p.value || '')}</a>`
+                      : faDigits(p.value || '') },
+                { headerName: 'نام مشتری', field: 'customer_name', flex: 1.4, minWidth: 130, cellRenderer: p => esc(p.value) },
+                { headerName: 'کارشناس فروش', field: 'rep_name', flex: 1, minWidth: 110, hide: !seesAll },
+                { headerName: 'مبلغ (تومان)', field: 'amount', width: 130, cellRenderer: p => UCRM.money(p.value) },
+                { headerName: 'تاریخ صدور', field: 'issue_date', width: 105, cellRenderer: p => jd(p.value) },
+                { headerName: 'پیگیری بعدی', field: 'next_followup', width: 115, cellRenderer: p => jd(p.value) },
+                { headerName: 'وضعیت', field: 'status', width: 130, cellRenderer: p => {
+                    const st = PF_STATUS[p.value];
+                    return st ? `<span class="uc-st ${st[0]}"><i class="bi ${st[1]}"></i>${st[2]}</span>` : '';
+                } },
+                { headerName: 'عملیات', colId: 'actions', width: 80, sortable: false, filter: false, cellRenderer: AgGridFa.actionMenuCell(pfActionCell, { insideGrid: true }) },
+            ];
         }
 
         function renderPfRows() {
-            const body = document.getElementById('pfBody');
-            if (!body) return;
-            if (PF_ROWS === null) {
-                body.innerHTML = '<tr><td colspan="5" class="empty"><span class="spinner-border spinner-border-sm ms-2"></span>در حال بارگذاری…</td></tr>';
-                return;
-            }
+            if (!pfGridApi) return;
+            if (PF_ROWS === null) { pfGridApi.showLoadingOverlay(); return; }
             const rows = pfVisibleRows();
-            if (!rows.length) {
-                const msg = PF_ROWS.length ? 'پیش‌فاکتوری با این فیلتر پیدا نشد.' : 'هنوز پیش‌فاکتوری برای این مشتری صادر نشده است.';
-                body.innerHTML = `<tr><td colspan="5" class="empty"><i class="bi bi-file-earmark-text"></i>${msg}</td></tr>`;
-                return;
-            }
-            body.innerHTML = rows.map(r => {
-                const s = PF_STATUS[r.status];
-                const num = r.source === 'crm'
-                    ? `<a class="uc-name-link" href="ucrm-proforma-edit.php?id=${r.doc_id}" title="صادرشده در CRM">${faDigits(esc(r.number))}</a>`
-                    : faDigits(esc(r.number));
-                return `<tr>
-                    <td>${num}</td>
-                    <td>${r.issue_date ? TimeSync.formatJalali(r.issue_date) : '—'}</td>
-                    <td>${UCRM.money(r.amount)}</td>
-                    <td>${s ? `<span class="uc-st ${s[0]}"><i class="bi ${s[1]}"></i>${s[2]}</span>` : ''}</td>
-                    <td>${pfOps(r)}</td>
-                </tr>`;
-            }).join('');
+            pfGridApi.setGridOption('overlayNoRowsTemplate', PF_ROWS.length
+                ? '<span class="text-muted">پیش‌فاکتوری با این فیلتر پیدا نشد.</span>'
+                : '<span class="text-muted">هنوز پیش‌فاکتوری برای این مشتری صادر نشده است.</span>');
+            pfGridApi.setGridOption('rowData', rows);
+            if (!rows.length) pfGridApi.showNoRowsOverlay(); else pfGridApi.hideOverlay();
         }
 
         function proformaTab() {
@@ -670,10 +672,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
                         <input type="text" class="form-control" id="pfQ" placeholder="جستجو در پیش‌فاکتورها…" autocomplete="off" value="${esc(PF_Q)}"></div>
                     <div class="uc-hist-seg uc-pf-seg">${f('all', 'همه')}${f('today', 'امروز')}${f('overdue', 'عقب‌افتاده')}</div>
                 </div>
-                <table class="uc-plan-table">
-                    <thead><tr><th>شمارهٔ پیش‌فاکتور</th><th>تاریخ صدور</th><th>مبلغ (تومان)</th><th>وضعیت</th><th class="ops">عملیات</th></tr></thead>
-                    <tbody id="pfBody"></tbody>
-                </table>
+                <div id="pfGrid" class="ag-theme-alpine inv-grid" style="width:100%;height:520px;"></div>
             </div>`;
         }
 
@@ -684,6 +683,17 @@ $__cid = (int) ($_GET['id'] ?? 0);
                 renderPfRows();
             }));
             document.getElementById('pfQ').addEventListener('input', e => { PF_Q = e.target.value; renderPfRows(); });
+            // تب هر بار از نو ساخته می‌شود → جدولِ قبلی آزاد و جدولِ تازه با تنظیماتِ استانداردِ پروژه
+            if (pfGridApi) { try { pfGridApi.destroy(); } catch (e) {} }
+            const el = document.getElementById('pfGrid');
+            pfGridApi = agGrid.createGrid(el, {
+                theme: AgGridFa.theme(), columnDefs: pfColDefs(), rowData: [], enableRtl: true,
+                pagination: true, paginationPageSize: 20, paginationPageSizeSelector: [20, 50, 100],
+                onPaginationChanged: () => AgGridFa.persianizePaging(),
+                defaultColDef: { resizable: true, sortable: true },
+            });
+            // کلیک راست روی ردیف = همان منوی عملیات (قاعدهٔ جدول‌های حسابداری)
+            AgGridFa.rowContextMenu(el, pfGridApi, null, { insideGrid: true });
             renderPfRows();
             if (PF_ROWS === null) loadProformas();
         }
