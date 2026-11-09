@@ -107,6 +107,34 @@ $__cid = (int) ($_GET['id'] ?? 0);
         </div>
     </div>
 
+    <!-- تغییر تاریخ پیگیریِ پیش‌فاکتور (تب «پیش‌فاکتورها») -->
+    <div class="modal fade" id="pfFuModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-calendar-event ms-2"></i>تغییر تاریخ پیگیری</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="small text-muted mb-2" id="pfFuFor"></div>
+                    <label class="form-label small mb-1">تاریخ پیگیری بعدی</label>
+                    <div class="persian-datepicker-wrapper">
+                        <input type="text" class="persian-datepicker-input form-control" id="pfFuDate" readonly>
+                        <div class="persian-datepicker">
+                            <div class="datepicker-header"><button type="button" class="datepicker-nav" data-action="prev">►</button><span class="datepicker-current"></span><button type="button" class="datepicker-nav" data-action="next">◄</button></div>
+                            <div class="datepicker-weekdays"><div class="datepicker-weekday">ش</div><div class="datepicker-weekday">ی</div><div class="datepicker-weekday">د</div><div class="datepicker-weekday">س</div><div class="datepicker-weekday">چ</div><div class="datepicker-weekday">پ</div><div class="datepicker-weekday">ج</div></div>
+                            <div class="datepicker-days"></div><button type="button" class="datepicker-today-btn">امروز</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="button" class="btn btn-primary" id="pfFuSave"><i class="bi bi-check-lg ms-1"></i>ثبت</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php include 'footer.php'; ?>
 
     <script src="<?= asset('../../assets/js/ucrm-common.js') ?>"></script>
@@ -554,22 +582,97 @@ $__cid = (int) ($_GET['id'] ?? 0);
             }));
         }
 
-        // تب «پیش‌فاکتورها» (طرح ۱۴۰۵/۰۸/۰۲): جستجو + همه / امروز / عقب‌افتاده + جدول. فعلا نمایشی —
-        // پیش‌فاکتور CRM هنوز ساخته نشده؛ کاربرد «عقب‌افتاده» بعدا مشخص می‌شود. مبلغ به تومان (مثل بقیهٔ CRM).
-        let PF_FILTER = 'all';
+        // تب «پیش‌فاکتورها» (طرح ۱۴۰۵/۰۸/۰۲؛ دادهٔ واقعی ۱۴۰۵/۰۸/۱۸): همان پیش‌فاکتورهای کل CRM
+        // (شایگان + صادرشده در CRM — GET /ucrm/proformas، crm-service/ucrm_proformas.go) با فیلترِ ثابتِ
+        // همین مشتری و همهٔ تاریخ‌ها. «امروز» = صادرشده امروز؛ «عقب‌افتاده» = وضعیت عقب افتاده (باز و
+        // پیگیریِ گذشته). عملیات = همان فهرست اصلی (تکمیل / لغو / بازگشایی / تغییر تاریخ پیگیری).
+        let PF_FILTER = 'all', PF_ROWS = null, PF_Q = '', pfFuModal = null, pfFuGuid = '';
+        const PF_STATUS = {
+            approved: ['ok', 'bi-check-lg', 'تأیید شده'],
+            stopped: ['stop', 'bi-dash-circle-fill', 'متوقف شده'],
+            not_started: ['wait', 'bi-hourglass-split', 'شروع نشده'],
+            overdue: ['late', 'bi-exclamation-circle-fill', 'عقب افتاده'],
+        };
+
+        async function loadProformas() {
+            try {
+                PF_ROWS = (await UCRM.get('/proformas?customer=' + CID)).items || [];
+            } catch (e) {
+                PF_ROWS = [];
+                showToast(e.message || 'خطا در دریافت پیش‌فاکتورها', 'error');
+            }
+            if (document.querySelector('.uc-tabs .tb.active')?.dataset.tab === 'proformas') renderPfRows();
+        }
+
+        function pfVisibleRows() {
+            const today = TimeSync.serverToday();
+            const q = UCRM.toEn(PF_Q).trim().toLowerCase();
+            return (PF_ROWS || []).filter(r => {
+                if (PF_FILTER === 'today' && r.issue_date !== today) return false;
+                if (PF_FILTER === 'overdue' && r.status !== 'overdue') return false;
+                if (!q) return true;
+                const hay = [r.number, String(r.amount), (PF_STATUS[r.status] || [])[2] || '', convertToJalali(r.issue_date || '')]
+                    .join(' ').toLowerCase();
+                return UCRM.toEn(hay).includes(q);
+            });
+        }
+
+        function pfOps(r) {
+            if (!r.can_act) return '<span class="text-muted small">—</span>';
+            const g = esc(r.guid);
+            const items = (r.status === 'approved' || r.status === 'stopped')
+                ? `<li><button class="dropdown-item" onclick="pfSetStatus('${g}', 'not_started')"><i class="bi bi-arrow-counterclockwise ms-2"></i>بازگشایی</button></li>`
+                : `<li><button class="dropdown-item" onclick="pfSetStatus('${g}', 'approved')"><i class="bi bi-check2-circle ms-2 text-success"></i>تکمیل</button></li>
+                   <li><button class="dropdown-item" onclick="pfSetStatus('${g}', 'stopped')"><i class="bi bi-x-circle ms-2 text-danger"></i>لغو</button></li>`;
+            return `<div class="uc-fu-ops">
+                    <div class="dropdown">
+                        <button type="button" class="ic" data-bs-toggle="dropdown" title="بیشتر"><i class="bi bi-three-dots-vertical"></i></button>
+                        <ul class="dropdown-menu dropdown-menu-end">${items}
+                            <li><button class="dropdown-item" onclick="pfFollowup('${g}')"><i class="bi bi-calendar-event ms-2"></i>تغییر تاریخ پیگیری</button></li>
+                        </ul>
+                    </div>
+                </div>`;
+        }
+
+        function renderPfRows() {
+            const body = document.getElementById('pfBody');
+            if (!body) return;
+            if (PF_ROWS === null) {
+                body.innerHTML = '<tr><td colspan="5" class="empty"><span class="spinner-border spinner-border-sm ms-2"></span>در حال بارگذاری…</td></tr>';
+                return;
+            }
+            const rows = pfVisibleRows();
+            if (!rows.length) {
+                const msg = PF_ROWS.length ? 'پیش‌فاکتوری با این فیلتر پیدا نشد.' : 'هنوز پیش‌فاکتوری برای این مشتری صادر نشده است.';
+                body.innerHTML = `<tr><td colspan="5" class="empty"><i class="bi bi-file-earmark-text"></i>${msg}</td></tr>`;
+                return;
+            }
+            body.innerHTML = rows.map(r => {
+                const s = PF_STATUS[r.status];
+                const num = r.source === 'crm'
+                    ? `<a class="uc-name-link" href="ucrm-proforma-edit.php?id=${r.doc_id}" title="صادرشده در CRM">${faDigits(esc(r.number))}</a>`
+                    : faDigits(esc(r.number));
+                return `<tr>
+                    <td>${num}</td>
+                    <td>${r.issue_date ? TimeSync.formatJalali(r.issue_date) : '—'}</td>
+                    <td>${UCRM.money(r.amount)}</td>
+                    <td>${s ? `<span class="uc-st ${s[0]}"><i class="bi ${s[1]}"></i>${s[2]}</span>` : ''}</td>
+                    <td>${pfOps(r)}</td>
+                </tr>`;
+            }).join('');
+        }
 
         function proformaTab() {
             const f = (k, l) => `<button type="button" class="${PF_FILTER === k ? 'active' : ''}" data-pf="${k}">${l}</button>`;
             return `<div class="uc-card uc-hist-card">
                 <div class="uc-hist-bar">
                     <div class="uc-hist-search"><i class="bi bi-search"></i>
-                        <input type="text" class="form-control" id="pfQ" placeholder="جستجو در پیش‌فاکتورها…" autocomplete="off"></div>
+                        <input type="text" class="form-control" id="pfQ" placeholder="جستجو در پیش‌فاکتورها…" autocomplete="off" value="${esc(PF_Q)}"></div>
                     <div class="uc-hist-seg uc-pf-seg">${f('all', 'همه')}${f('today', 'امروز')}${f('overdue', 'عقب‌افتاده')}</div>
                 </div>
                 <table class="uc-plan-table">
                     <thead><tr><th>شمارهٔ پیش‌فاکتور</th><th>تاریخ صدور</th><th>مبلغ (تومان)</th><th>وضعیت</th><th class="ops">عملیات</th></tr></thead>
-                    <tbody><tr><td colspan="5" class="empty"><i class="bi bi-file-earmark-text"></i>
-                        هنوز پیش‌فاکتوری برای این مشتری صادر نشده است.<span class="uc-soon-tag sm">صدور پیش‌فاکتور به‌زودی</span></td></tr></tbody>
+                    <tbody id="pfBody"></tbody>
                 </table>
             </div>`;
         }
@@ -577,8 +680,51 @@ $__cid = (int) ($_GET['id'] ?? 0);
         function bindProformas() {
             document.querySelectorAll('.uc-pf-seg button').forEach(b => b.addEventListener('click', () => {
                 PF_FILTER = b.dataset.pf;
-                showTab('proformas');
+                document.querySelectorAll('.uc-pf-seg button').forEach(x => x.classList.toggle('active', x === b));
+                renderPfRows();
             }));
+            document.getElementById('pfQ').addEventListener('input', e => { PF_Q = e.target.value; renderPfRows(); });
+            renderPfRows();
+            if (PF_ROWS === null) loadProformas();
+        }
+
+        async function pfSetStatus(guid, status) {
+            try {
+                const res = await UCRM.send('POST', '/proformas/' + guid + '/status', { status });
+                showToast(res.message || 'ثبت شد.', 'success');
+                loadProformas();
+            } catch (e) {
+                showToast(e.message || 'خطا در ثبت وضعیت', 'error');
+            }
+        }
+
+        function pfFollowup(guid) {
+            const r = (PF_ROWS || []).find(x => x.guid === guid);
+            if (!r) return;
+            pfFuGuid = guid;
+            document.getElementById('pfFuFor').textContent = faDigits(r.number);
+            const el = document.getElementById('pfFuDate');
+            const g = r.next_followup || TimeSync.serverToday();
+            el.setAttribute('data-date', g);
+            el.value = convertToJalali(g);
+            pfFuModal.show();
+        }
+
+        async function pfSaveFollowup() {
+            const date = document.getElementById('pfFuDate').getAttribute('data-date') || '';
+            if (!date) return showToast('تاریخ پیگیری را انتخاب کنید.', 'warning');
+            const btn = document.getElementById('pfFuSave');
+            btn.disabled = true;
+            try {
+                const res = await UCRM.send('PUT', '/proformas/' + pfFuGuid + '/followup', { date });
+                pfFuModal.hide();
+                showToast(res.message || 'ثبت شد.', 'success');
+                loadProformas();
+            } catch (e) {
+                showToast(e.message || 'خطا در ثبت تاریخ پیگیری', 'error');
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         function showTab(key) {
@@ -635,6 +781,8 @@ $__cid = (int) ($_GET['id'] ?? 0);
                 return;
             }
             fuModal = new bootstrap.Modal(document.getElementById('fuModal'));
+            pfFuModal = new bootstrap.Modal(document.getElementById('pfFuModal'));
+            document.getElementById('pfFuSave').addEventListener('click', pfSaveFollowup);
             document.getElementById('fuSave').addEventListener('click', saveFollowup);
             document.getElementById('ucFab').addEventListener('click', () => openFollowup());
             // اولین فیلد قابل‌ویرایش فوکوس بگیرد (قاعدهٔ مودال‌های سایت)
