@@ -108,13 +108,14 @@ $prefsStmt = $dbPrefs->prepare("
     SELECT pref_key, pref_value FROM user_dashboard_prefs
     WHERE user_id = ?
 ");
-// همهٔ تنظیمات داشبورد (منتخب، پین تب و پین فیلتر) دائمی و مشترک با اپ هستند (۱۴۰۵/۰۸/۰۹)
+// پین تب و فیلتر دائمی و مشترک با اپ (۱۴۰۵/۰۸/۰۹)؛ منتخب روزانه (۱۴۰۵/۰۸/۱۸)
 $prefsStmt->execute([$user_id]);
-$dashboardPrefs = ['starred_tasks' => [], 'default_tab' => '', 'default_filter' => ''];
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/starred-tasks.php';
+// منتخب روزانه است (۱۴۰۵/۰۸/۱۸): هر ستاره از روز بعد برداشته می‌شود
+$dashboardPrefs = ['starred_tasks' => starredGetToday($dbPrefs, (int) $user_id), 'default_tab' => '', 'default_filter' => ''];
 foreach ($prefsStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-    if ($row['pref_key'] === 'starred_tasks') {
-        $decoded = json_decode($row['pref_value'], true);
-        $dashboardPrefs['starred_tasks'] = is_array($decoded) ? $decoded : [];
+    if ($row['pref_key'] === 'starred_tasks' || $row['pref_key'] === 'starred_dates') {
+        continue; // بالا — فقط ستاره‌های امروز
     } elseif (in_array($row['pref_key'], ['default_tab', 'default_filter', 'delegated_scope'], true)) {
         $dashboardPrefs[$row['pref_key']] = (string) $row['pref_value'];
     }

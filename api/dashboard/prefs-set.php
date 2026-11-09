@@ -4,8 +4,9 @@
  * ═══════════════════════════════════════════════════════════════════
  *  API: dashboard/prefs-set.php
  *  ذخیره‌ی تنظیمات داشبورد — سمت سرور، با تاریخ سرور (نه کلاینت).
- *  تب پیش‌فرض و فیلتر پیش‌فرض از ۱۴۰۵/۰۸/۰۹ دائمی‌اند؛ «منتخب» (starred_tasks) از
- *  ۱۴۰۵/۰۸/۰۳ دائمی و مشترک بین وب و اپ است.
+ *  تب پیش‌فرض و فیلتر پیش‌فرض از ۱۴۰۵/۰۸/۰۹ دائمی‌اند؛ «منتخب» (starred_tasks) مشترک
+ *  بین وب و اپ و از ۱۴۰۵/۰۸/۱۸ روزانه است — هر ستاره از روز بعد برداشته می‌شود
+ *  (includes/starred-tasks.php).
  * ═══════════════════════════════════════════════════════════════════
  */
 
@@ -19,6 +20,7 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization');
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/starred-tasks.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -85,23 +87,9 @@ try {
             }
         }
 
+        // ستاره‌های روزهای قبل همین‌جا پاک می‌شوند (منتخب روزانه — includes/starred-tasks.php)
         $db->beginTransaction();
-        $cur = $db->prepare("SELECT pref_value FROM user_dashboard_prefs WHERE user_id = ? AND pref_key = 'starred_tasks' FOR UPDATE");
-        $cur->execute([$user_id]);
-        $list = json_decode((string) $cur->fetchColumn(), true);
-        $list = is_array($list) ? array_values(array_filter($list, 'is_string')) : [];
-        if ($op === 'remove') {
-            $list = array_values(array_diff($list, $items));
-        } else {
-            $list = array_values(array_unique(array_merge($list, $items)));
-        }
-        $list = array_slice($list, -1000);
-        $save = $db->prepare("
-            INSERT INTO user_dashboard_prefs (user_id, pref_key, pref_value, pref_date)
-            VALUES (?, 'starred_tasks', ?, CURDATE())
-            ON DUPLICATE KEY UPDATE pref_value = VALUES(pref_value), pref_date = VALUES(pref_date)
-        ");
-        $save->execute([$user_id, json_encode($list, JSON_UNESCAPED_UNICODE)]);
+        $list = starredApply($db, (int) $user_id, $op, $items);
         $db->commit();
 
         echo json_encode(['success' => true, 'starred_tasks' => $list], JSON_UNESCAPED_UNICODE);
