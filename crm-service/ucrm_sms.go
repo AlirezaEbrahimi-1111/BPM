@@ -50,6 +50,17 @@ const (
 
 var smsPlaceholderRe = regexp.MustCompile(`\{(\d+)\}`)
 
+// smsSiteDomain: ملی‌پیامک برای تأییدِ الگوی خدماتی آدرسِ سایت را در متن می‌خواهد (۱۴۰۵/۰۸/۱۹)
+const smsSiteDomain = "itmalek.com"
+
+// smsWithDomain: اگر متن آدرسِ سایت را ندارد، در خطِ آخر اضافه می‌شود
+func smsWithDomain(preview string) string {
+	if strings.Contains(strings.ToLower(preview), smsSiteDomain) {
+		return preview
+	}
+	return strings.TrimRight(preview, " \n") + "\n" + smsSiteDomain
+}
+
 // smsRender: {0} {1}… در متنِ پیش‌نمایش با مقدارها
 func smsRender(preview string, args []string) string {
 	return smsPlaceholderRe.ReplaceAllStringFunc(preview, func(m string) string {
@@ -211,6 +222,9 @@ func (s *server) ucrmSaveSmsTemplate(w http.ResponseWriter, r *http.Request) {
 		}
 		status := curSt
 		msg := "قالب ذخیره شد."
+		if crmMadeTpl(s, id) {
+			in.Preview = smsWithDomain(in.Preview) // همان متنی که در ملی‌پیامک است
+		}
 		if in.Preview != curPreview {
 			if !curSt.Valid || curSt.Int64 != smsStNeedsEdit {
 				writeErr(w, http.StatusBadRequest, "متن الگو فقط وقتی قابل تغییر است که ملی‌پیامک «نیاز به اصلاح» گفته باشد؛ برای متن تازه، قالب جدید بسازید.")
@@ -248,6 +262,7 @@ func (s *server) ucrmSaveSmsTemplate(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, http.StatusBadRequest, "ملی‌پیامک الگوی بدون متغیر را نمی‌پذیرد؛ دست‌کم یک {0} در متن بگذارید.")
 			return
 		}
+		in.Preview = smsWithDomain(in.Preview)
 		out, e := s.smsPatternCall(r, map[string]any{"action": "add", "title": in.Title, "body": in.Preview})
 		if e != "" {
 			writeErr(w, http.StatusBadGateway, e)
@@ -267,6 +282,12 @@ func (s *server) ucrmSaveSmsTemplate(w http.ResponseWriter, r *http.Request) {
 	}
 	nid, _ := res.LastInsertId()
 	writeJSON(w, http.StatusOK, map[string]any{"success": true, "id": nid, "message": msg})
+}
+
+func crmMadeTpl(s *server, id int64) bool {
+	var n int
+	_ = s.db.QueryRow(`SELECT COUNT(*) FROM ucrm_sms_templates WHERE id = ? AND crm_created = 1`, id).Scan(&n)
+	return n == 1
 }
 
 // POST /ucrm/sms-templates/refresh — وضعیت و توضیحِ کارشناس از ملی‌پیامک (GetBodies)

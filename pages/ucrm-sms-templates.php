@@ -43,6 +43,7 @@ if (!ucrmAllowed($db, (int) $user_id) || !ucrmRoles($db, (int) $user_id)['manage
                 قالب تازه مستقیم برای <b>تأیید به ملی‌پیامک</b> فرستاده می‌شود؛ پس از تأیید کارشناسان ملی‌پیامک، برای ارسال به مشتری در دسترس است.
                 جای هر متغیر در متن را با <span class="num-ltr">{0}</span>، <span class="num-ltr">{1}</span> و… (رقم انگلیسی) مشخص کنید و برای هر کدام یک برچسب بنویسید
                 (برچسبی که کلمهٔ «نام» دارد، هنگام ارسال با نام مشتری پر می‌شود).
+                آدرس <span class="num-ltr">itmalek.com</span>، اگر در متن نباشد، خودکار به خط آخرِ قالب اضافه می‌شود (الزامِ تأیید ملی‌پیامک).
             </p>
             <div id="tplGrid" class="ag-theme-alpine inv-grid grid-fill" style="width:100%;"></div>
         </div>

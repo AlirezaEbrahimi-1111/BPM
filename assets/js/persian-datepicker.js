@@ -103,11 +103,13 @@ class PersianDatePicker {
         // یک بک‌دراپ مشترک (برای کل صفحه، نه هر instance جداگانه) رو نشون می‌دیم
         PersianDatePicker._showBackdrop(() => this.hide());
         this.calendar.classList.add('show');
+        PersianDatePicker._open = this; // برای Esc (پایین فایل)
     }
 
     hide() {
         this.calendar.classList.remove('show');
         PersianDatePicker._hideBackdrop();
+        if (PersianDatePicker._open === this) PersianDatePicker._open = null;
     }
 
     handleOutsideClick(e) {
@@ -422,6 +424,17 @@ class PersianDatePicker {
         if (bd) bd.classList.remove('show');
     }
 }
+
+// Esc وقتی تقویم باز است: فقط تقویم بسته شود (۱۴۰۵/۰۸/۱۹). مرحلهٔ capture روی document
+// قبل از بوت‌استرپ اجرا می‌شود؛ بدون این، Esc مودالِ دربرگیرنده را می‌بست و تقویم
+// (که به body منتقل شده) و بک‌دراپش باز می‌ماندند.
+document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' || !PersianDatePicker._open) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    PersianDatePicker._open.hide();
+}, true);
 
 // تابع راه‌اندازی خودکار
 function initPersianDatepickers() {

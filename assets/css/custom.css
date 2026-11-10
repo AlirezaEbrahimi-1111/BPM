@@ -391,6 +391,26 @@ body .mobile-menu-btn .hamburger-line {
     background: transparent;
 }
 
+/* مثل .btn-primary بالا: بوت‌استرپ روی کلیک/فوکوس/غیرفعال آبیِ پیش‌فرض خودش را
+   نشان می‌داد (مثلا «به‌روزرسانی وضعیت» در قالب‌های پیامک) — باید بنفشِ سازمان بماند */
+.btn-outline-primary:active,
+.btn-outline-primary.active,
+.btn-outline-primary:active:focus,
+.btn-outline-primary:focus-visible {
+    background: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+    color: white !important;
+    box-shadow: 0 0 0 .2rem rgba(142, 87, 254, .25) !important;
+}
+
+.btn-outline-primary:disabled,
+.btn-outline-primary.disabled {
+    border-color: var(--primary) !important;
+    color: var(--primary) !important;
+    background: transparent !important;
+    opacity: .55;
+}
+
 .btn-sm {
     padding: 0.4rem 0.75rem;
     font-size: 0.8rem;

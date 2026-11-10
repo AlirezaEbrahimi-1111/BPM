@@ -19,3 +19,15 @@ func TestSmsRenderAndClean(t *testing.T) {
 		t.Errorf("no vars: %q", msg)
 	}
 }
+
+func TestSmsWithDomain(t *testing.T) {
+	if got := smsWithDomain("سلام {0}"); got != "سلام {0}\nitmalek.com" {
+		t.Errorf("append: %q", got)
+	}
+	if got := smsWithDomain("سلام {0} https://ITMALEK.com/x"); got != "سلام {0} https://ITMALEK.com/x" {
+		t.Errorf("keep existing: %q", got)
+	}
+	if got := smsWithDomain("سلام {0}\n"); got != "سلام {0}\nitmalek.com" {
+		t.Errorf("trailing newline: %q", got)
+	}
+}

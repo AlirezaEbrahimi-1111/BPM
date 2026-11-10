@@ -525,3 +525,23 @@ table.uc-pf-items tr.uc-row-bad td { background: rgba(220, 38, 38, .08); }
 /* پیش‌نمایش پیامک (پنجرهٔ «ارسال پیامک به مشتری») */
 .uc-sms-preview { border: 1px dashed var(--border-soft, #d1d5db); border-radius: 10px; padding: 10px 12px; background: rgba(142, 87, 254, .04); white-space: pre-wrap; font-size: .9rem; min-height: 44px; }
 :root[data-theme="dark"] .uc-sms-preview { background: rgba(142, 87, 254, .08); }
+
+/* خط زمانیِ تاریخچهٔ تماس و پیامک (طرح ۱۴۰۵/۰۸/۱۹، مثل تاریخچهٔ تسک):
+   ستونِ راست = نقطه روی خطِ عمودی + تاریخ/ساعت + برچسب؛ ستونِ چپ = کادرِ رویدادها */
+.uc-tl-row { display: grid; grid-template-columns: 150px 1fr; }
+.uc-tl-meta { position: relative; border-right: 2px solid rgba(142, 87, 254, .3); padding: 16px 18px 12px 14px; text-align: right; }
+.uc-tl-meta::before { content: ''; position: absolute; right: -7px; top: 20px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface, #fff); border: 2px solid #8e57fe; }
+.uc-tl-meta .d { font-size: .82rem; font-weight: 600; color: var(--text-strong, #2d3748); }
+.uc-tl-meta .t { font-size: .75rem; color: var(--text-muted, #6b7490); margin-bottom: 6px; }
+.uc-tl-card { margin-right: 18px; padding: 16px 20px; background: var(--surface, #fff); border: 1px solid var(--border-soft, #e9e9e9); border-top: 0; }
+.uc-tl-row:first-child .uc-tl-card { border-top: 1px solid var(--border-soft, #e9e9e9); border-radius: 12px 12px 0 0; }
+.uc-tl-row:last-child .uc-tl-card { border-radius: 0 0 12px 12px; }
+.uc-tl-row:only-child .uc-tl-card { border-radius: 12px; }
+.uc-tl-card .h { font-weight: 700; font-size: .9rem; color: var(--text-strong, #2d3748); margin-bottom: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.uc-tl-card .h i { color: var(--text-muted, #6b7490); }
+.uc-tl-card .h .sub { font-weight: 500; font-size: .8rem; color: var(--text-muted, #6b7490); }
+.uc-tl-card .b { font-size: .85rem; line-height: 2; color: var(--text-strong, #4a5568); }
+.uc-tl-card .m { font-size: .8rem; color: var(--text-muted, #6b7490); margin-top: 6px; }
+@media (max-width: 576px) { .uc-tl-row { grid-template-columns: 105px 1fr; } .uc-tl-card { margin-right: 12px; padding: 12px 14px; } }
+:root[data-theme="dark"] .uc-tl-meta { border-right-color: rgba(142, 87, 254, .45); }
+:root[data-theme="dark"] .uc-tl-card .b { color: var(--text-strong); }

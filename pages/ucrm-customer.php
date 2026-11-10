@@ -653,22 +653,31 @@ $__cid = (int) ($_GET['id'] ?? 0);
             if (document.querySelector('.uc-tabs .tb.active')?.dataset.tab === 'history') renderHistoryList();
         }
 
+        // یک ردیفِ خط زمانی (طرح ۱۴۰۵/۰۸/۱۹ — مثل تاریخچهٔ تسک): ستونِ راست = نقطه روی خط + تاریخ،
+        // ساعت و برچسب؛ ستونِ چپ = کادرِ رویداد با عنوانِ پررنگ و متن
+        function tlRow(at, badgeCls, badge, title, bodyHtml) {
+            return `<div class="uc-tl-row">
+                <div class="uc-tl-meta">
+                    <div class="d">${TimeSync.formatJalali(at)}</div>
+                    <div class="t">${TimeSync.formatTimeOnly(at)}</div>
+                    <span class="ml-action-badge ${badgeCls}">${badge}</span>
+                </div>
+                <div class="uc-tl-card">
+                    <div class="h"><i class="bi bi-person"></i>${title}</div>
+                    ${bodyHtml}
+                </div>
+            </div>`;
+        }
+
         function callHtml(x) {
             const files = (x.files || []).map(f =>
                 `<button type="button" class="uc-call-file" onclick="downloadCallFile(${f.id}, this)" data-name="${esc(f.name)}"><i class="bi bi-paperclip"></i>${esc(f.name)}</button>`).join('');
-            return `<div class="ml-item">
-                <div class="ml-left">
-                    <div class="ml-time">${TimeSync.formatJalali(x.created_at)}<br>${TimeSync.formatTimeOnly(x.created_at)}</div>
-                    <span class="ml-action-badge ${CALL_BADGE[x.result] || ''}">${esc(x.result_label)}</span>
-                </div>
-                <div class="ml-right">
-                    <div class="ml-user"><i class="bi bi-person"></i> ${esc(x.created_by || '')}</div>
-                    ${x.followup_title ? `<div class="ml-reason-mini">پیگیری انجام‌شده: ${esc(x.followup_title)}</div>` : ''}
-                    ${x.note ? `<div class="ml-notes">${esc(x.note).replace(/\n/g, '<br>')}</div>` : ''}
-                    ${x.next_due_at ? `<div class="ml-reason-mini"><i class="bi bi-calendar-event"></i> پیگیری بعدی: ${TimeSync.formatJalali(x.next_due_at)} ساعت ${TimeSync.formatTimeOnly(x.next_due_at)}${x.next_title ? ' — ' + esc(x.next_title) : ''}</div>` : ''}
-                    ${files ? `<div class="uc-call-files">${files}</div>` : ''}
-                </div>
-            </div>`;
+            const title = `${esc(x.created_by || '')} تماس گرفت — ${esc(x.result_label)}` +
+                (x.followup_title ? `<span class="sub">(پیگیری: ${esc(x.followup_title)})</span>` : '');
+            const body = (x.note ? `<div class="b">${esc(x.note).replace(/\n/g, '<br>')}</div>` : '') +
+                (x.next_due_at ? `<div class="m"><i class="bi bi-calendar-event"></i> پیگیری بعدی: ${TimeSync.formatJalali(x.next_due_at)} ساعت ${TimeSync.formatTimeOnly(x.next_due_at)}${x.next_title ? ' — ' + esc(x.next_title) : ''}</div>` : '') +
+                (files ? `<div class="uc-call-files">${files}</div>` : '');
+            return tlRow(x.created_at, CALL_BADGE[x.result] || '', esc(x.result_label), title, body);
         }
 
         function renderHistoryList() {
@@ -717,18 +726,10 @@ $__cid = (int) ($_GET['id'] ?? 0);
 
         function smsHtml(x) {
             const b = SMS_BADGE[x.status] || ['', x.status];
-            return `<div class="ml-item">
-                <div class="ml-left">
-                    <div class="ml-time">${TimeSync.formatJalali(x.created_at)}<br>${TimeSync.formatTimeOnly(x.created_at)}</div>
-                    <span class="ml-action-badge ${b[0]}">${b[1]}</span>
-                </div>
-                <div class="ml-right">
-                    <div class="ml-user"><i class="bi bi-person"></i> ${esc(x.sent_by_name || '')}</div>
-                    <div class="ml-reason-mini">${esc(x.template || 'قالب حذف‌شده')} — به <span class="num-ltr">${faDigits(esc(x.phone))}</span></div>
-                    ${x.text ? `<div class="ml-notes">${esc(x.text)}</div>` : ''}
-                    ${x.status === 'failed' && x.error ? `<div class="ml-reason-mini text-danger">علت: ${esc(x.error)}</div>` : ''}
-                </div>
-            </div>`;
+            const title = `${esc(x.sent_by_name || '')} پیامک «${esc(x.template || 'قالب حذف‌شده')}» را به <span class="num-ltr">${faDigits(esc(x.phone))}</span> فرستاد`;
+            const body = (x.text ? `<div class="b">${esc(x.text).replace(/\n/g, '<br>')}</div>` : '') +
+                (x.status === 'failed' && x.error ? `<div class="m text-danger">علت ناموفق بودن: ${esc(x.error)}</div>` : '');
+            return tlRow(x.created_at, b[0], b[1], title, body);
         }
 
         function smsRender(preview, vals) {
@@ -787,24 +788,18 @@ $__cid = (int) ($_GET['id'] ?? 0);
         }
 
         function historyTab() {
-            const canAdd = HIST_SUB === 'calls' && FU && FU.can_manage;
-            const canSms = HIST_SUB === 'sms' && FU && FU.can_manage;
             return `<div class="uc-card uc-hist-card">
                 <div class="uc-hist-bar">
                     <div class="uc-hist-search"><i class="bi bi-search"></i>
                         <input type="text" class="form-control" id="histQ" placeholder="${HIST_SUB === 'sms' ? 'جستجو در پیامک‌ها…' : 'جستجو در گزارش تماس‌ها…'}" autocomplete="off" value="${esc(HIST_SUB === 'calls' ? CALL_Q : SMS_Q)}"></div>
-                    ${canAdd ? '<button type="button" class="btn btn-primary btn-sm" onclick="openCallModal(0)"><i class="bi bi-telephone-plus ms-1"></i>ثبت گزارش تماس</button>' : ''}
-                    ${canSms ? '<button type="button" class="btn btn-primary btn-sm" onclick="openSmsModal()"><i class="bi bi-send ms-1"></i>ارسال پیامک</button>' : ''}
                     <div class="spacer"></div>
                     <div class="uc-hist-seg">
                         <button type="button" class="${HIST_SUB === 'calls' ? 'active' : ''}" data-sub="calls"><i class="bi bi-person ms-1"></i>تماس‌ها</button>
                         <button type="button" class="${HIST_SUB === 'sms' ? 'active' : ''}" data-sub="sms"><i class="bi bi-chat-left-text ms-1"></i>پیامک‌ها</button>
                     </div>
                 </div>
-                <div class="uc-hist-list">
-                    <div class="minimal-list" id="histList"></div>
-                    <div class="uc-hist-empty" id="histEmpty"><i class="bi bi-clock-history"></i><span class="msg">${HIST_EMPTY[HIST_SUB]}</span></div>
-                </div>
+                <div class="uc-tl" id="histList"></div>
+                <div class="uc-hist-empty" id="histEmpty"><i class="bi bi-clock-history"></i><span class="msg">${HIST_EMPTY[HIST_SUB]}</span></div>
             </div>`;
         }
 
