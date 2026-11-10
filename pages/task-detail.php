@@ -4549,8 +4549,10 @@ ${TF.continuousLateCount(task) > 0 ? `
                         rejectBtn.style.display = 'inline-block';
                     }
 
-                    // دکمه "تأیید و ارجاع" → فقط برای assignee‌ای که creator نیست
-                    if (isAssignee && !isCreator) {
+                    // دکمه "تأیید و ارجاع" → برای مسئولِ فعلیِ تأیید، حتی اگر خودش تعریف‌کننده
+                    // باشد (درخواست ۱۴۰۵/۰۸/۱۹، تسک ۴۹۸۸: تعریف‌کننده تأیید می‌کند و کار را به نفرِ
+                    // بعد می‌دهد). سرور (approve-and-delegate.php) هم فقط «مسئولِ تأیید» را چک می‌کند.
+                    if (isAssignee) {
                         const approveAndDelegateBtn = document.getElementById('approveAndDelegateBtn');
                         if (approveAndDelegateBtn) {
                             approveAndDelegateBtn.style.display = 'inline-block';
