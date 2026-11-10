@@ -53,21 +53,29 @@ if (!ucrmAllowed($db, (int) $user_id) || !ucrmRoles($db, (int) $user_id)['manage
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="tplModalTitle">قالب جدید</h5>
+                    <div>
+                        <h5 class="modal-title" id="tplModalTitle">قالب جدید</h5>
+                        <div class="small text-muted" id="tplCode" hidden></div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <label class="form-label" for="fTitle">عنوان قالب <span class="text-danger">*</span></label>
                     <input type="text" class="form-control mb-3" id="fTitle" maxlength="50" placeholder="مثلا: یادآوری پیش‌فاکتور">
-                    <label class="form-label" for="fPreview">متن الگو <span class="text-danger">*</span></label>
+                    <div class="uc-var-bar">
+                        <label class="form-label mb-0" for="fPreview">متن الگو <span class="text-danger">*</span></label>
+                        <!-- درجِ متغیر در جای مکان‌نما (۱۴۰۵/۰۸/۱۹) -->
+                        <span class="uc-var-btns" id="fVarBtns">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-var="{0}" title="درج متغیر {0}">{0}</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-var="{1}" title="درج متغیر {1}">{1}</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-var="{2}" title="درج متغیر {2}">{2}</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-var="{3}" title="درج متغیر {3}">{3}</button>
+                        </span>
+                    </div>
                     <textarea class="form-control mb-1" id="fPreview" rows="3" placeholder="مثلا: {0} عزیز، پیش‌فاکتور {1} برای شما صادر شد."></textarea>
                     <div class="small text-warning mb-2" id="fLockNote" hidden></div>
                     <div class="small text-muted mb-3" id="fVarHint"></div>
                     <div id="fVars"></div>
-                    <div id="fBodyWrap">
-                        <label class="form-label small mt-2 mb-1" for="fBody">کد الگو <span class="text-muted">(اختیاری — فقط اگر این الگو را قبلا خودتان در پنل ملی‌پیامک ساخته‌اید)</span></label>
-                        <input type="text" class="form-control" id="fBody" inputmode="numeric" dir="ltr" placeholder="خالی = ارسال برای تأیید به ملی‌پیامک">
-                    </div>
                     <div class="form-check form-switch mt-2">
                         <input class="form-check-input" type="checkbox" role="switch" id="fActive" checked>
                         <label class="form-check-label" for="fActive">فعال (در فهرست ارسال دیده شود)</label>
@@ -162,12 +170,15 @@ if (!ucrmAllowed($db, (int) $user_id) || !ucrmRoles($db, (int) $user_id)['manage
             const t = ROWS.find(x => x.id === editId);
             document.getElementById('tplModalTitle').textContent = t ? 'ویرایش قالب' : 'قالب جدید';
             document.getElementById('fTitle').value = t ? t.title : '';
-            document.getElementById('fBody').value = '';
-            document.getElementById('fBodyWrap').hidden = !!t; // کد فقط هنگام افزودنِ الگوی موجود در پنل
+            // کد الگو فقط در ویرایش، برای اطلاع (قالبِ تازه کدش را از ملی‌پیامک می‌گیرد)
+            const code = document.getElementById('tplCode');
+            code.hidden = !t;
+            code.innerHTML = t ? 'کد الگو در ملی‌پیامک: <span class="num-ltr">' + faDigits(t.body_id) + '</span>' : '';
             document.getElementById('fPreview').value = t ? t.preview : '';
             // متنِ الگو فقط وقتی ملی‌پیامک «نیاز به اصلاح» گفته قابل تغییر است
             const locked = !!t && t.approval_status !== 4;
             document.getElementById('fPreview').readOnly = locked;
+            document.querySelectorAll('#fVarBtns button').forEach(b => b.disabled = locked);
             const ln = document.getElementById('fLockNote');
             ln.hidden = !t;
             ln.textContent = !t ? '' : (locked
@@ -181,7 +192,6 @@ if (!ucrmAllowed($db, (int) $user_id) || !ucrmRoles($db, (int) $user_id)['manage
         async function saveTpl() {
             const body = {
                 title: document.getElementById('fTitle').value.trim(),
-                body_id: parseInt(UCRM.toEn(document.getElementById('fBody').value).replace(/\D/g, ''), 10) || 0,
                 preview: document.getElementById('fPreview').value.trim(),
                 var_labels: [...document.querySelectorAll('#fVars input')].map(el => el.value.trim()),
                 is_active: document.getElementById('fActive').checked,
@@ -237,6 +247,19 @@ if (!ucrmAllowed($db, (int) $user_id) || !ucrmRoles($db, (int) $user_id)['manage
             document.getElementById('btnRefresh').addEventListener('click', () => refreshStatus(true));
             document.getElementById('tplSave').addEventListener('click', saveTpl);
             document.getElementById('fPreview').addEventListener('input', () => syncVarFields());
+            // دکمه‌های {0}…{3}: درج در جای مکان‌نما (یا جای متنِ انتخاب‌شده)
+            document.querySelectorAll('#fVarBtns button').forEach(b => {
+                b.addEventListener('mousedown', e => e.preventDefault()); // فوکوس از متن نرود
+                b.addEventListener('click', () => {
+                    const ta = document.getElementById('fPreview');
+                    if (ta.readOnly) return;
+                    const v = b.dataset.var, st = ta.selectionStart ?? ta.value.length, en = ta.selectionEnd ?? st;
+                    ta.value = ta.value.slice(0, st) + v + ta.value.slice(en);
+                    ta.focus();
+                    ta.setSelectionRange(st + v.length, st + v.length);
+                    ta.dispatchEvent(new Event('input')); // فیلدهای برچسب همگام شوند
+                });
+            });
             fitGrid();
             window.addEventListener('resize', fitGrid);
             window.addEventListener('load', fitGrid);

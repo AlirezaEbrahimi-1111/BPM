@@ -545,3 +545,7 @@ table.uc-pf-items tr.uc-row-bad td { background: rgba(220, 38, 38, .08); }
 @media (max-width: 576px) { .uc-tl-row { grid-template-columns: 105px 1fr; } .uc-tl-card { margin-right: 12px; padding: 12px 14px; } }
 :root[data-theme="dark"] .uc-tl-meta { border-right-color: rgba(142, 87, 254, .45); }
 :root[data-theme="dark"] .uc-tl-card .b { color: var(--text-strong); }
+/* پنجرهٔ قالب پیامک: دکمه‌های درجِ متغیر کنار «متن الگو» */
+.uc-var-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: .5rem; flex-wrap: wrap; }
+.uc-var-btns { display: inline-flex; gap: 4px; direction: ltr; }
+.uc-var-btns .btn { padding: 1px 8px !important; font-size: .75rem; font-family: monospace; border-width: 1px; }
