@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<!--
+  ⚠️ لندینگِ آزمایشی (۱۴۰۵/۰۸/۱۹) — هنوز جایگزینِ landing.html نشده؛ آدرس:
+     https://bpm.itmalek.com/landing-test.html — اصلاحاتش را کاربر بعداً می‌دهد
+     (فعلاً معلوم: نقطهٔ شروعِ متنِ بالا و پایین یکی نیست؛ عکسِ bpm-shot.webp فقط ۵۰۰px است و تار).
+  صفحه‌ی اولِ دامنه‌ی اصلی itmalek.com (نه bpm.itmalek.com).
+  مسیردهی: .htaccess برای میزبان itmalek.com مسیر «/» را به همین فایل می‌دهد و
+  هر مسیر دیگر را به bpm.itmalek.com می‌فرستد.
+
+  طرح (۱۴۰۵/۰۸/۱۹، تلاشِ دوم): تصویرِ دوبخشیِ landing-bg-2.webp (۱۹۲۱×۹۲۰) — بالا کارتِ
+  فروشگاه، پایین کارتِ BPM با کادرِ سفیدی که عکسِ bpm-shot.webp داخلش می‌نشیند (cover).
+  .stage دقیقاً هم‌نسبتِ تصویر است و محتوا با درصد (موقعیت) و cqw (اندازه —
+  ۱cqw = ۱٪ عرضِ .stage) چیده شده، تا با هر اندازه‌ی پنجره روی همان کارت‌ها بماند.
+  نسخه‌ی دو ستونیِ قبلی (فروشگاه | BPM) در git هست (d3f9759).
+-->
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>کامپیوتر یکتا</title>
+<link href="/assets/fonts/Vazirmatn-font-face.css" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: #04092a;   /* هم‌رنگِ لبه‌های تصویر — اگر جایی از تصویر بیرون ماند */
+}
+
+body {
+  font-family: 'Vazirmatn', system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+}
+
+/* تصویر ۲:۱ تمام‌صفحه (مثل background-size: cover): .stage همیشه دست‌کم
+   هم‌عرض و هم‌ارتفاعِ پنجره است و اضافه‌اش از دو طرف (یا بالا/پایین) بیرون
+   می‌زند. چون محتوا داخلِ همین .stage با درصد چیده شده، همراهِ تصویر می‌ماند. */
+.stage {
+  position: relative;
+  flex-shrink: 0;
+  /* بدون کشیدگی/برش: قاب هم‌نسبتِ عکس (۱۹۲۱:۹۲۰) است و طوری اندازه می‌گیرد که کلِ
+     تصویر داخلِ پنجره جا شود (contain)؛ اضافهٔ پنجره نوارِ هم‌رنگِ پس‌زمینه می‌ماند. */
+  width: min(100vw, calc(100dvh * 1921 / 920));
+  aspect-ratio: 1921 / 920;
+  container-type: inline-size;
+}
+
+/* پس‌زمینه روی یک لایه‌ی جدا (::before) تا بشود قرینه‌اش کرد */
+.stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/assets/landing/landing-bg-2.webp') center / 100% 100% no-repeat;
+}
+
+
+/* حالتِ contain بالا خودش روی همهٔ نسبت‌ها بدونِ برش کار می‌کند؛ نیازی به
+   بازنویسیِ عرض برای صفحه‌های کم‌عرض نیست. */
+
+/* --u واحدِ اندازه‌ی هر بلوک است (بر حسبِ cqw = ٪ عرضِ .stage)؛
+   همه‌ی اندازه‌های داخلِ بلوک ضریبی از آن‌اند */
+.block {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;   /* در RTL یعنی راست‌چین */
+  text-align: right;
+}
+
+/* جاها بر اساسِ landing-bg-2.webp (درصد از عرض/ارتفاعِ تصویر):
+   کارتِ بالا (تیره) ۲.۴٪ تا ۵۰٪ ارتفاع — فضای خالیِ سمتِ چپش (تا حدودِ ۵۵٪ عرض) = متنِ فروشگاه؛
+   کارتِ پایین (روشن) ۵۱٪ تا ۹۷.۵٪ ارتفاع — سمتِ چپش = متنِ BPM، کادرِ سفید ۵۹.۳٪ تا ۹۷.۱٪ عرض
+   و ۵۸.۷٪ تا ۹۳.۷٪ ارتفاع = عکسِ سامانه. */
+.block--store { --u: 0.4cqw; left: 5%; top: 8%; width: 45%; color: #ffffff; }
+.block--bpm   { --u: 0.36cqw; left: 5%; top: 55.5%; width: 48%; color: #1e1b3a; }
+
+.store-logo {
+  width: calc(var(--u) * 10);
+  height: calc(var(--u) * 6.8);
+  margin-bottom: calc(var(--u) * 2.4);
+}
+
+.store-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: right center;
+  display: block;
+}
+
+.eyebrow {
+  font-size: calc(var(--u) * 1.5);
+  font-weight: 700;
+  margin-bottom: calc(var(--u) * 1);
+}
+
+.block--store .eyebrow { color: #b4a2ff; }
+.block--bpm .eyebrow   { color: #10a87a; }
+
+.title {
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.block--store .title { font-size: calc(var(--u) * 4.6); }
+.block--bpm .title   { font-size: calc(var(--u) * 2.7); }
+
+.subtitle {
+  margin-top: calc(var(--u) * 1.4);
+  font-weight: 500;
+  line-height: 1.8;
+}
+
+.block--store .subtitle { font-size: calc(var(--u) * 1.7); color: #c9d2ec; }
+.block--bpm .subtitle   { font-size: calc(var(--u) * 1.7); color: #5b6075; }
+
+/* دکمه‌ها */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 1.4);
+  padding: 0 calc(var(--u) * 3);
+  height: calc(var(--u) * 5);
+  border-radius: calc(var(--u) * 1.2);
+  font-size: calc(var(--u) * 1.6);
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  transition: transform .2s, box-shadow .2s, filter .2s;
+}
+
+.cta svg { width: calc(var(--u) * 1.9); height: calc(var(--u) * 1.9); transition: transform .2s; }
+
+.cta:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.cta:hover svg { transform: translateX(-3px); }
+.cta:focus-visible { outline: 3px solid rgba(255,255,255,.7); outline-offset: 3px; }
+
+.cta--store {
+  margin-top: calc(var(--u) * 3.2);
+  background: linear-gradient(90deg, #4f46e5, #8b3dff);
+  box-shadow: 0 0 calc(var(--u) * 2.2) rgba(139, 61, 255, .5);
+}
+
+.cta--bpm {
+  margin-top: calc(var(--u) * 3.2);
+  background: linear-gradient(90deg, #22c79a, #0fa47a);
+  box-shadow: 0 calc(var(--u) * 0.8) calc(var(--u) * 2) rgba(16, 185, 129, .32);
+}
+
+.cta--bpm:focus-visible { outline-color: rgba(16, 185, 129, .6); }
+
+/* امکانات: آیکون بالا، برچسب پایین (بدون کادر) */
+.features {
+  display: flex;
+  gap: calc(var(--u) * 2.4);
+  margin-top: calc(var(--u) * 2.6);
+}
+
+.block--bpm .features { margin-top: calc(var(--u) * 3.2); }
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 1.1);
+  font-size: calc(var(--u) * 1.4);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.feature svg {
+  width: calc(var(--u) * 3.7);
+  height: calc(var(--u) * 3.7);
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.block--store .feature { color: #e6e9f5; }
+.block--store .feature svg { stroke: url(#gradStore); }
+.block--bpm .feature { color: #2b2f45; }
+.block--bpm .feature svg { stroke: #19b58a; width: calc(var(--u) * 3.2); height: calc(var(--u) * 3.2); }
+
+/* لوگوی BPM بالای عنوانِ BPM (این تصویر دایرهٔ وسط را ندارد) */
+.bpm-logo {
+  width: calc(var(--u) * 6);
+  height: calc(var(--u) * 6);
+  object-fit: contain;
+  display: block;
+  margin-bottom: calc(var(--u) * 1.6);
+}
+
+/* عکسِ سامانه دقیقاً روی کادرِ سفیدِ کارتِ پایین (۱۱۳۹..۱۸۶۴ × ۵۴۰..۸۶۱ از ۱۹۲۱×۹۲۰)،
+   کلِ کادر را پر می‌کند (cover) و گوشه‌هایش هم‌گردِ کادر است */
+.dashboard {
+  position: absolute;
+  left: 59.29%;
+  top: 58.7%;
+  width: 37.79%;
+  height: 35%;
+  border-radius: 0.75cqw;
+  overflow: hidden;
+  box-shadow: 0 0.6cqw 1.6cqw rgba(60, 50, 140, .18);
+}
+.dashboard img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+</style>
+</head>
+<body>
+
+<!-- گرادیانِ آیکون‌های کارتِ فروشگاه (بنفش → آبی) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gradStore" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a78bfa"/>
+      <stop offset="1" stop-color="#60a5fa"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<main class="stage" id="main-content">
+
+  <!-- ===== کارتِ بالا: فروشگاه ===== -->
+  <section class="block block--store" aria-label="فروشگاه کامپیوتر یکتا">
+    <div class="store-logo"><img src="/assets/landing/logo.png" alt="لوگوی کامپیوتر یکتا" onerror="this.remove()"></div>
+    <span class="eyebrow">فروشگاه</span>
+    <h1 class="title">کامپیوتر یکتا</h1>
+    <p class="subtitle">سیستم های گیمینگ و قطعات سخت افزاری</p>
+    <a class="cta cta--store" href="https://computeryekta.com">
+      ورود به فروشگاه
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </a>
+    <div class="features">
+      <div class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="13.5" width="4" height="6" rx="1.6"/><rect x="17.5" y="13.5" width="4" height="6" rx="1.6"/><path d="M19.5 19.5c0 1.5-2 2.5-5 2.5"/></svg>
+        پشتیبانی تخصصی
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 6h11v10H2z"/><path d="M13 9h4.5l3.5 3.5V16h-8"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/><line x1="0.8" y1="9" x2="4" y2="9"/><line x1="0.8" y1="12" x2="3" y2="12"/></svg>
+        ارسال سریع
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6c0 5.2-3.4 8.6-8 10-4.6-1.4-8-4.8-8-10v-6z"/><polyline points="8.5 12 11 14.5 15.5 10"/></svg>
+        گارانتی معتبر
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== کارتِ پایین: BPM ===== -->
+  <section class="block block--bpm" aria-label="سامانه مدیریت فرآیند کسب و کار">
+    <img class="bpm-logo" src="/assets/landing/bpm-logo.webp" alt="لوگوی BPM">
+    <span class="eyebrow">سامانه</span>
+    <h2 class="title">سامانه مدیریت فرآیند کسب‌و‌کار (BPM)</h2>
+    <p class="subtitle">مدیریت هوشمند فرآیند ها</p>
+    <a class="cta cta--bpm" href="https://bpm.itmalek.com">
+      ورود به سامانه
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </a>
+    <div class="features">
+      <div class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="21" x2="21" y2="21"/><rect x="5" y="12" width="3.2" height="7" rx=".6"/><rect x="10.4" y="8" width="3.2" height="11" rx=".6"/><rect x="15.8" y="4" width="3.2" height="15" rx=".6"/></svg>
+        گزارش گیری پیشرفته
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 0 1-13.7 5.6"/><path d="M4 12a8 8 0 0 1 13.7-5.6"/><polyline points="18 2.5 18 6.5 14 6.5"/><polyline points="6 21.5 6 17.5 10 17.5"/><circle cx="12" cy="12" r="2.6"/></svg>
+        اتوماسیون فرآیندها
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        نظارت لحظه ای
+      </div>
+    </div>
+  </section>
+
+  <!-- عکسِ سامانه داخلِ کادرِ سفیدِ کارتِ پایین -->
+  <div class="dashboard"><img src="/assets/landing/bpm-shot.webp" alt="نمایی از سامانه BPM" onerror="this.remove()"></div>
+
+</main>
+
+</body>
+</html>
