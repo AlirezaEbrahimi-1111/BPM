@@ -514,3 +514,14 @@ table.uc-pf-items tr.uc-row-bad td { background: rgba(220, 38, 38, .08); }
 .uc-pf-actions .spacer { flex: 1; }
 :root[data-theme="dark"] table.uc-pf-items th { background: rgba(142, 87, 254, .16); }
 :root[data-theme="dark"] table.uc-pf-items tr.uc-row-bad td { background: rgba(220, 38, 38, .16); }
+
+/* گزارش تماس (تب «تاریخچهٔ پیگیری ← تماس‌ها»، ۱۴۰۵/۰۸/۱۹) — ردیف‌ها با minimal-list تاریخچهٔ تسک */
+.uc-call-results { display: flex; flex-wrap: wrap; gap: 6px; }
+.uc-call-files { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.uc-call-file { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border-soft, #e5e7eb); background: rgba(142, 87, 254, .06); color: var(--text-strong, #2d3748); border-radius: 8px; padding: 3px 10px; font-size: .78rem; cursor: pointer; }
+.uc-call-file:hover { background: rgba(142, 87, 254, .12); }
+:root[data-theme="dark"] .uc-call-file { background: rgba(142, 87, 254, .14); }
+:root[data-theme="dark"] .uc-call-file:hover { background: rgba(142, 87, 254, .18); }
+/* پیش‌نمایش پیامک (پنجرهٔ «ارسال پیامک به مشتری») */
+.uc-sms-preview { border: 1px dashed var(--border-soft, #d1d5db); border-radius: 10px; padding: 10px 12px; background: rgba(142, 87, 254, .04); white-space: pre-wrap; font-size: .9rem; min-height: 44px; }
+:root[data-theme="dark"] .uc-sms-preview { background: rgba(142, 87, 254, .08); }

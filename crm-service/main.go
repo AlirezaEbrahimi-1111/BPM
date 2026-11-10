@@ -47,6 +47,10 @@ type Config struct {
 	ShygunURL             string `json:"shygun_url"`              // آدرس وب‌سرویس شایگان؛ پیش‌فرض http://10.8.0.2:2030 (سرِ تونل)
 	ShygunConn            string `json:"shygun_conn"`             // ConnectionName؛ پیش‌فرض SampleConnection → پایگاه CY140206
 	ShygunCustomerAccount string `json:"shygun_customer_account"` // کد معینِ «حساب‌های دریافتنی تجاری» (مشتریان)؛ پیش‌فرض 11203
+
+	// پیوستِ گزارش تماس‌های CRM (ucrm_calls.go)؛ دسترسیِ مستقیمِ وب بسته است و فقط از
+	// /crm/api/ucrm/call-files/{id} با بررسیِ دسترسی دانلود می‌شود.
+	UploadDir string `json:"upload_dir"` // پیش‌فرض /opt/bmp-crm/uploads/ucrm-calls (تنها مسیرِ قابل‌نوشتن زیر ProtectSystem=strict؛ بیرون از وب)
 }
 
 // loadConfig ابتدا config.json (یا مسیر CRM_CONFIG) را می‌خواند،
@@ -54,7 +58,8 @@ type Config struct {
 // برای اجرا زیر systemd روی سرور مناسب است.
 func loadConfig() Config {
 	c := Config{Port: "8090", DBHost: "127.0.0.1", DBPort: "3306", BaseURL: "https://bpm.itmalek.com",
-		ShygunURL: "http://10.8.0.2:2030", ShygunConn: "SampleConnection", ShygunCustomerAccount: "11203"}
+		ShygunURL: "http://10.8.0.2:2030", ShygunConn: "SampleConnection", ShygunCustomerAccount: "11203",
+		UploadDir: "/opt/bmp-crm/uploads/ucrm-calls"}
 
 	path := os.Getenv("CRM_CONFIG")
 	if path == "" {
@@ -82,6 +87,7 @@ func loadConfig() Config {
 	set("CRM_SHYGUN_URL", &c.ShygunURL)
 	set("CRM_SHYGUN_CONN", &c.ShygunConn)
 	set("CRM_SHYGUN_CUSTOMER_ACCOUNT", &c.ShygunCustomerAccount)
+	set("CRM_UPLOAD_DIR", &c.UploadDir)
 
 	if c.JWTSecret == "" || c.DBName == "" || c.DBUser == "" {
 		log.Fatal("config: jwt_secret و db_name و db_user الزامی‌اند (در config.json یا متغیرهای محیطی)")
@@ -422,6 +428,17 @@ func main() {
 	mux.HandleFunc("DELETE /crm/api/ucrm/followups/{id}", ucrm(s.ucrmDeleteFollowup))
 	mux.HandleFunc("POST /crm/api/ucrm/followups/{id}/status", ucrm(s.ucrmFollowupStatus))
 	mux.HandleFunc("GET /crm/api/ucrm/followups/open", ucrm(s.ucrmOpenFollowups))
+	// گزارش تماس‌ها + پیوست‌ها (ucrm_calls.go)
+	mux.HandleFunc("GET /crm/api/ucrm/customers/{id}/calls", ucrm(s.ucrmListCalls))
+	mux.HandleFunc("POST /crm/api/ucrm/customers/{id}/calls", ucrm(s.ucrmCreateCall))
+	mux.HandleFunc("GET /crm/api/ucrm/call-files/{id}", ucrm(s.ucrmCallFile))
+	// پیامک به مشتری: قالب‌ها، ارسال، تاریخچه (ucrm_sms.go)
+	mux.HandleFunc("GET /crm/api/ucrm/sms-templates", ucrm(s.ucrmListSmsTemplates))
+	mux.HandleFunc("POST /crm/api/ucrm/sms-templates", ucrm(s.ucrmSaveSmsTemplate))
+	mux.HandleFunc("PUT /crm/api/ucrm/sms-templates/{id}", ucrm(s.ucrmSaveSmsTemplate))
+	mux.HandleFunc("DELETE /crm/api/ucrm/sms-templates/{id}", ucrm(s.ucrmDeleteSmsTemplate))
+	mux.HandleFunc("GET /crm/api/ucrm/customers/{id}/sms", ucrm(s.ucrmListSms))
+	mux.HandleFunc("POST /crm/api/ucrm/customers/{id}/sms", ucrm(s.ucrmSendSms))
 	// داشبورد فروش (pages/dashboard-*.php، ۱۴۰۵/۰۸/۰۳)
 	mux.HandleFunc("GET /crm/api/ucrm/dashboard", ucrm(s.ucrmDashboard))
 	mux.HandleFunc("POST /crm/api/ucrm/customers/{id}/nudge", ucrm(s.ucrmNudge))

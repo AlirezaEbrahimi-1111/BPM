@@ -108,6 +108,82 @@ $__cid = (int) ($_GET['id'] ?? 0);
         </div>
     </div>
 
+    <!-- ارسال پیامک به مشتری (قالب = الگوی تأییدشدهٔ ملی‌پیامک) -->
+    <div class="modal fade" id="smsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-chat-left-text ms-2"></i>ارسال پیامک به مشتری</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label" for="smsPhone">شمارهٔ موبایل <span class="text-danger">*</span></label>
+                    <select class="form-select mb-3" id="smsPhone"></select>
+                    <label class="form-label" for="smsTpl">قالب پیامک <span class="text-danger">*</span></label>
+                    <select class="form-select mb-3" id="smsTpl"></select>
+                    <div id="smsVars"></div>
+                    <label class="form-label small text-muted mb-1">پیش‌نمایش</label>
+                    <div class="uc-sms-preview" id="smsPreview">—</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="button" class="btn btn-primary" id="smsSend"><i class="bi bi-send ms-1"></i>ارسال پیامک</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ثبت گزارش تماس (تب «تاریخچهٔ پیگیری ← تماس‌ها»، و «انجام شد»ِ پیگیریِ تماس) -->
+    <div class="modal fade" id="callModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-telephone ms-2"></i>ثبت گزارش تماس</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="small text-muted mb-2" id="callFor"></div>
+                    <label class="form-label">نتیجهٔ تماس <span class="text-danger">*</span></label>
+                    <div class="uc-call-results mb-3" id="callResults">
+                        <input type="radio" class="btn-check" name="callResult" id="cr_answered" value="answered" checked><label class="btn btn-sm btn-outline-success" for="cr_answered">پاسخ داد</label>
+                        <input type="radio" class="btn-check" name="callResult" id="cr_no_answer" value="no_answer"><label class="btn btn-sm btn-outline-warning" for="cr_no_answer">پاسخ نداد</label>
+                        <input type="radio" class="btn-check" name="callResult" id="cr_busy" value="busy"><label class="btn btn-sm btn-outline-warning" for="cr_busy">مشغول بود</label>
+                        <input type="radio" class="btn-check" name="callResult" id="cr_wrong_number" value="wrong_number"><label class="btn btn-sm btn-outline-danger" for="cr_wrong_number">شماره اشتباه</label>
+                    </div>
+                    <label class="form-label" for="callNote">گزارش تماس <span class="text-danger" id="callNoteReq">*</span></label>
+                    <textarea class="form-control mb-3" id="callNote" rows="3" placeholder="خلاصهٔ صحبت با مشتری…"></textarea>
+                    <label class="form-label" for="callFiles">پیوست <span class="text-muted small">(اختیاری — حداکثر ۵ فایل، هر کدام ۱۰ مگابایت)</span></label>
+                    <input type="file" class="form-control mb-3" id="callFiles" multiple
+                        accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.mp3,.m4a,.ogg,.wav,.amr">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" role="switch" id="callNextOn">
+                        <label class="form-check-label" for="callNextOn">ثبت پیگیری بعدی</label>
+                    </div>
+                    <div id="callNextBox" hidden>
+                        <div class="row g-2">
+                            <div class="col-7">
+                                <div class="persian-datepicker-wrapper">
+                                    <input type="text" class="persian-datepicker-input form-control" id="callNextDate" placeholder="تاریخ" readonly>
+                                    <div class="persian-datepicker">
+                                <div class="datepicker-header"><button type="button" class="datepicker-nav" data-action="prev">►</button><span class="datepicker-current"></span><button type="button" class="datepicker-nav" data-action="next">◄</button></div>
+                                <div class="datepicker-weekdays"><div class="datepicker-weekday">ش</div><div class="datepicker-weekday">ی</div><div class="datepicker-weekday">د</div><div class="datepicker-weekday">س</div><div class="datepicker-weekday">چ</div><div class="datepicker-weekday">پ</div><div class="datepicker-weekday">ج</div></div>
+                                <div class="datepicker-days"></div><button type="button" class="datepicker-today-btn">امروز</button>
+                            </div>
+                                </div>
+                            </div>
+                            <div class="col-5"><input type="time" class="form-control" id="callNextTime" value="10:00" aria-label="ساعت"></div>
+                        </div>
+                        <input type="text" class="form-control mt-2" id="callNextTitle" placeholder="عنوان پیگیری بعدی (اختیاری)">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="button" class="btn btn-primary" id="callSave"><i class="bi bi-check-lg ms-1"></i>ثبت گزارش</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- تغییر تاریخ پیگیریِ پیش‌فاکتور (تب «پیش‌فاکتورها») -->
     <div class="modal fade" id="pfFuModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -431,6 +507,9 @@ $__cid = (int) ($_GET['id'] ?? 0);
                 btn.title = FU.can_manage ? 'ثبت پیگیری جدید' : 'فقط کارشناس همین مشتری یا مدیر می‌تواند پیگیری ثبت کند';
             }
             if (fab) fab.hidden = !FU.can_manage;
+            // «ارسال پیامک» هم مثل پیگیری: کارشناسِ همین مشتری یا مدیر
+            const sms = document.getElementById('btnSms');
+            if (sms) sms.hidden = !FU.can_manage;
         }
 
         function pad2(n) { return String(n).padStart(2, '0'); }
@@ -527,6 +606,9 @@ $__cid = (int) ($_GET['id'] ?? 0);
         }
 
         async function fuSetStatus(id, status) {
+            // پیگیریِ نوعِ «تماس» با گزارش «انجام شد» می‌شود (همان گزارش در تاریخچهٔ تماس‌ها می‌نشیند)
+            const fu = FU.items.find(x => x.id === id);
+            if (status === 'done' && fu && fu.type === 'call') { openCallModal(id); return; }
             try {
                 const r = await UCRM.send('POST', '/followups/' + id + '/status', { status });
                 showToast(r.message || 'ذخیره شد', 'success');
@@ -557,11 +639,162 @@ $__cid = (int) ($_GET['id'] ?? 0);
             sms: 'هنوز پیامکی برای این مشتری فرستاده نشده است.',
         };
 
+        // ── تماس‌ها (۱۴۰۵/۰۸/۱۹): گزارش‌های تماس مثل تاریخچهٔ تسک (crm-service/ucrm_calls.go) ──
+        let CALLS = null, CALL_Q = '', callModal = null, callFollowupId = 0;
+        const CALL_BADGE = { answered: 'ab-approved', no_answer: 'ab-pending', busy: 'ab-deadline', wrong_number: 'ab-rejected' };
+
+        async function loadCalls() {
+            try {
+                CALLS = (await UCRM.get('/customers/' + CID + '/calls')).items || [];
+            } catch (e) {
+                CALLS = [];
+                showToast(e.message || 'خطا در دریافت تماس‌ها', 'error');
+            }
+            if (document.querySelector('.uc-tabs .tb.active')?.dataset.tab === 'history') renderHistoryList();
+        }
+
+        function callHtml(x) {
+            const files = (x.files || []).map(f =>
+                `<button type="button" class="uc-call-file" onclick="downloadCallFile(${f.id}, this)" data-name="${esc(f.name)}"><i class="bi bi-paperclip"></i>${esc(f.name)}</button>`).join('');
+            return `<div class="ml-item">
+                <div class="ml-left">
+                    <div class="ml-time">${TimeSync.formatJalali(x.created_at)}<br>${TimeSync.formatTimeOnly(x.created_at)}</div>
+                    <span class="ml-action-badge ${CALL_BADGE[x.result] || ''}">${esc(x.result_label)}</span>
+                </div>
+                <div class="ml-right">
+                    <div class="ml-user"><i class="bi bi-person"></i> ${esc(x.created_by || '')}</div>
+                    ${x.followup_title ? `<div class="ml-reason-mini">پیگیری انجام‌شده: ${esc(x.followup_title)}</div>` : ''}
+                    ${x.note ? `<div class="ml-notes">${esc(x.note).replace(/\n/g, '<br>')}</div>` : ''}
+                    ${x.next_due_at ? `<div class="ml-reason-mini"><i class="bi bi-calendar-event"></i> پیگیری بعدی: ${TimeSync.formatJalali(x.next_due_at)} ساعت ${TimeSync.formatTimeOnly(x.next_due_at)}${x.next_title ? ' — ' + esc(x.next_title) : ''}</div>` : ''}
+                    ${files ? `<div class="uc-call-files">${files}</div>` : ''}
+                </div>
+            </div>`;
+        }
+
+        function renderHistoryList() {
+            const list = document.getElementById('histList');
+            const empty = document.getElementById('histEmpty');
+            if (!list) return;
+            if (HIST_SUB === 'sms') {
+                if (SMS === null) {
+                    list.innerHTML = '<div class="uc-hist-empty"><span class="spinner-border spinner-border-sm ms-2"></span>در حال بارگذاری…</div>';
+                    empty.hidden = true;
+                    return;
+                }
+                const q = UCRM.toEn(SMS_Q).trim().toLowerCase();
+                const rows = SMS.filter(x => !q || UCRM.toEn([x.template, x.text, x.phone, x.sent_by_name].join(' ')).toLowerCase().includes(q));
+                list.innerHTML = rows.map(smsHtml).join('');
+                empty.hidden = rows.length > 0;
+                if (!rows.length) empty.querySelector('.msg').textContent = SMS.length ? 'پیامکی با این جستجو پیدا نشد.' : HIST_EMPTY.sms;
+                return;
+            }
+            if (CALLS === null) {
+                list.innerHTML = '<div class="uc-hist-empty"><span class="spinner-border spinner-border-sm ms-2"></span>در حال بارگذاری…</div>';
+                empty.hidden = true;
+                return;
+            }
+            const q = UCRM.toEn(CALL_Q).trim().toLowerCase();
+            const rows = CALLS.filter(x => !q || UCRM.toEn([x.result_label, x.note, x.created_by, x.followup_title,
+                (x.files || []).map(f => f.name).join(' ')].join(' ')).toLowerCase().includes(q));
+            list.innerHTML = rows.map(callHtml).join('');
+            empty.hidden = rows.length > 0;
+            if (!rows.length) empty.querySelector('.msg').textContent = CALLS.length ? 'تماسی با این جستجو پیدا نشد.' : HIST_EMPTY.calls;
+        }
+
+        // ── پیامک‌ها (۱۴۰۵/۰۸/۱۹): تاریخچه + ارسال با قالب (crm-service/ucrm_sms.go) ──
+        let SMS = null, SMS_TPL = null, smsModal = null, SMS_Q = '';
+        const SMS_BADGE = { sent: ['ab-approved', 'فرستاده شد'], failed: ['ab-rejected', 'ناموفق'], queued: ['ab-pending', 'در صف'], sending: ['ab-pending', 'در حال ارسال'] };
+
+        async function loadSms() {
+            try {
+                SMS = (await UCRM.get('/customers/' + CID + '/sms')).items || [];
+            } catch (e) {
+                SMS = [];
+                showToast(e.message || 'خطا در دریافت پیامک‌ها', 'error');
+            }
+            if (document.querySelector('.uc-tabs .tb.active')?.dataset.tab === 'history') renderHistoryList();
+        }
+
+        function smsHtml(x) {
+            const b = SMS_BADGE[x.status] || ['', x.status];
+            return `<div class="ml-item">
+                <div class="ml-left">
+                    <div class="ml-time">${TimeSync.formatJalali(x.created_at)}<br>${TimeSync.formatTimeOnly(x.created_at)}</div>
+                    <span class="ml-action-badge ${b[0]}">${b[1]}</span>
+                </div>
+                <div class="ml-right">
+                    <div class="ml-user"><i class="bi bi-person"></i> ${esc(x.sent_by_name || '')}</div>
+                    <div class="ml-reason-mini">${esc(x.template || 'قالب حذف‌شده')} — به <span class="num-ltr">${faDigits(esc(x.phone))}</span></div>
+                    ${x.text ? `<div class="ml-notes">${esc(x.text)}</div>` : ''}
+                    ${x.status === 'failed' && x.error ? `<div class="ml-reason-mini text-danger">علت: ${esc(x.error)}</div>` : ''}
+                </div>
+            </div>`;
+        }
+
+        function smsRender(preview, vals) {
+            return String(preview || '').replace(/\{(\d+)\}/g, (m, i) => (vals[+i] || '').trim() || m);
+        }
+
+        async function openSmsModal() {
+            const c = DATA.customer;
+            const phoneSel = document.getElementById('smsPhone');
+            phoneSel.innerHTML = (c.phones || []).map(p => `<option value="${esc(p)}">${faDigits(esc(p))}</option>`).join('');
+            if (!(c.phones || []).length) return showToast('برای این مشتری شمارهٔ موبایلی ثبت نشده است.', 'warning');
+            if (SMS_TPL === null) {
+                try { SMS_TPL = (await UCRM.get('/sms-templates')).items || []; } catch (e) { SMS_TPL = []; }
+            }
+            if (!SMS_TPL.length) return showToast('هنوز قالب پیامکی تعریف نشده است؛ مدیر از «CRM ← قالب‌های پیامک» اضافه می‌کند.', 'warning');
+            document.getElementById('smsTpl').innerHTML = SMS_TPL.map(t => `<option value="${t.id}">${esc(t.title)}</option>`).join('');
+            renderSmsVars();
+            smsModal.show();
+        }
+
+        // برای هر متغیرِ قالب یک فیلد؛ اگر برچسب «نام» دارد، نام مشتری از پیش پر می‌شود
+        function renderSmsVars() {
+            const t = SMS_TPL.find(x => x.id === +document.getElementById('smsTpl').value);
+            const box = document.getElementById('smsVars');
+            box.innerHTML = (t ? t.var_labels : []).map((l, i) =>
+                `<label class="form-label small mb-1" for="smsV${i}">${esc(l)} <span class="text-danger">*</span></label>
+                 <input type="text" class="form-control mb-2 sms-var" id="smsV${i}" value="${/نام/.test(l) ? esc(DATA.customer.name) : ''}">`).join('');
+            box.querySelectorAll('.sms-var').forEach(el => el.addEventListener('input', renderSmsPreview));
+            renderSmsPreview();
+        }
+
+        function renderSmsPreview() {
+            const t = SMS_TPL.find(x => x.id === +document.getElementById('smsTpl').value);
+            const vals = [...document.querySelectorAll('#smsVars .sms-var')].map(el => el.value);
+            document.getElementById('smsPreview').textContent = t ? smsRender(t.preview, vals) : '—';
+        }
+
+        async function sendSms() {
+            const t = SMS_TPL.find(x => x.id === +document.getElementById('smsTpl').value);
+            const vals = [...document.querySelectorAll('#smsVars .sms-var')].map(el => el.value.trim());
+            const miss = (t ? t.var_labels : []).find((l, i) => !vals[i]);
+            if (miss) return showToast('مقدار «' + miss + '» را وارد کنید.', 'warning');
+            const btn = document.getElementById('smsSend');
+            btn.disabled = true;
+            try {
+                const res = await UCRM.send('POST', '/customers/' + CID + '/sms',
+                    { template_id: t.id, phone: document.getElementById('smsPhone').value, args: vals });
+                smsModal.hide();
+                showToast(res.message || 'پیامک فرستاده شد.', 'success');
+            } catch (e) {
+                showToast(e.message || 'خطا در ارسال پیامک', 'error');
+            } finally {
+                btn.disabled = false;
+                await loadSms(); // ناموفق هم در تاریخچه ثبت می‌شود
+            }
+        }
+
         function historyTab() {
+            const canAdd = HIST_SUB === 'calls' && FU && FU.can_manage;
+            const canSms = HIST_SUB === 'sms' && FU && FU.can_manage;
             return `<div class="uc-card uc-hist-card">
                 <div class="uc-hist-bar">
                     <div class="uc-hist-search"><i class="bi bi-search"></i>
-                        <input type="text" class="form-control" id="histQ" placeholder="${HIST_SUB === 'sms' ? 'جستجو در پیامک‌ها…' : 'جستجو در رخدادهای تماس…'}" autocomplete="off"></div>
+                        <input type="text" class="form-control" id="histQ" placeholder="${HIST_SUB === 'sms' ? 'جستجو در پیامک‌ها…' : 'جستجو در گزارش تماس‌ها…'}" autocomplete="off" value="${esc(HIST_SUB === 'calls' ? CALL_Q : SMS_Q)}"></div>
+                    ${canAdd ? '<button type="button" class="btn btn-primary btn-sm" onclick="openCallModal(0)"><i class="bi bi-telephone-plus ms-1"></i>ثبت گزارش تماس</button>' : ''}
+                    ${canSms ? '<button type="button" class="btn btn-primary btn-sm" onclick="openSmsModal()"><i class="bi bi-send ms-1"></i>ارسال پیامک</button>' : ''}
                     <div class="spacer"></div>
                     <div class="uc-hist-seg">
                         <button type="button" class="${HIST_SUB === 'calls' ? 'active' : ''}" data-sub="calls"><i class="bi bi-person ms-1"></i>تماس‌ها</button>
@@ -570,8 +803,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
                 </div>
                 <div class="uc-hist-list">
                     <div class="minimal-list" id="histList"></div>
-                    <div class="uc-hist-empty"><i class="bi bi-clock-history"></i>${HIST_EMPTY[HIST_SUB]}
-                        <span class="uc-soon-tag sm">${HIST_SUB === 'sms' ? 'ارسال پیامک' : 'ثبت تماس'} به‌زودی</span></div>
+                    <div class="uc-hist-empty" id="histEmpty"><i class="bi bi-clock-history"></i><span class="msg">${HIST_EMPTY[HIST_SUB]}</span></div>
                 </div>
             </div>`;
         }
@@ -581,6 +813,94 @@ $__cid = (int) ($_GET['id'] ?? 0);
                 HIST_SUB = b.dataset.sub;
                 showTab('history');
             }));
+            document.getElementById('histQ').addEventListener('input', e => {
+                if (HIST_SUB === 'calls') CALL_Q = e.target.value; else SMS_Q = e.target.value;
+                renderHistoryList();
+            });
+            renderHistoryList();
+            if (HIST_SUB === 'calls' && CALLS === null) loadCalls();
+            if (HIST_SUB === 'sms' && SMS === null) loadSms();
+        }
+
+        function openCallModal(followupId) {
+            callFollowupId = followupId || 0;
+            const fu = callFollowupId ? FU.items.find(x => x.id === callFollowupId) : null;
+            document.getElementById('callFor').textContent = fu ? 'انجامِ پیگیری: ' + fu.title : '';
+            document.getElementById('cr_answered').checked = true;
+            document.getElementById('callNote').value = '';
+            document.getElementById('callFiles').value = '';
+            document.getElementById('callNextOn').checked = false;
+            document.getElementById('callNextBox').hidden = true;
+            document.getElementById('callNextTitle').value = '';
+            const d = document.getElementById('callNextDate');
+            d.removeAttribute('data-date');
+            d.value = '';
+            syncCallNoteReq();
+            callModal.show();
+        }
+
+        function syncCallNoteReq() {
+            const r = document.querySelector('input[name="callResult"]:checked');
+            document.getElementById('callNoteReq').hidden = !(r && r.value === 'answered');
+        }
+
+        async function saveCall() {
+            const result = (document.querySelector('input[name="callResult"]:checked') || {}).value || '';
+            const note = document.getElementById('callNote').value.trim();
+            if (result === 'answered' && !note) return showToast('برای تماسی که پاسخ داده شده، متن گزارش را بنویسید.', 'warning');
+            const fd = new FormData();
+            fd.append('result', result);
+            fd.append('note', note);
+            if (callFollowupId) fd.append('followup_id', callFollowupId);
+            const files = document.getElementById('callFiles').files;
+            if (files.length > 5) return showToast('حداکثر ۵ فایل می‌شود پیوست کرد.', 'warning');
+            for (const f of files) {
+                if (f.size > 10 * 1024 * 1024) return showToast('فایل «' + f.name + '» بیش از ۱۰ مگابایت است.', 'warning');
+                fd.append('files', f);
+            }
+            if (document.getElementById('callNextOn').checked) {
+                const date = document.getElementById('callNextDate').getAttribute('data-date') || '';
+                if (!date) return showToast('تاریخ پیگیری بعدی را انتخاب کنید.', 'warning');
+                fd.append('next_due_at', date + ' ' + (document.getElementById('callNextTime').value || '10:00'));
+                fd.append('next_title', document.getElementById('callNextTitle').value.trim());
+            }
+            const btn = document.getElementById('callSave');
+            btn.disabled = true;
+            try {
+                const res = await fetch('/crm/api/ucrm/customers/' + CID + '/calls', {
+                    method: 'POST', headers: { 'Authorization': 'Bearer ' + UCRM.tok() }, body: fd,
+                });
+                const d = await res.json().catch(() => ({}));
+                if (!res.ok || d.success === false) throw new Error(d.message || ('خطای ' + res.status));
+                callModal.hide();
+                showToast(d.message || 'گزارش تماس ثبت شد.', 'success');
+                await Promise.all([loadCalls(), loadFollowups()]);
+            } catch (e) {
+                showToast(e.message || 'خطا در ثبت گزارش', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // دانلود پیوست: با توکن (لینکِ ساده توکن نمی‌فرستد)
+        async function downloadCallFile(id, el) {
+            try {
+                const res = await fetch('/crm/api/ucrm/call-files/' + id, { headers: { 'Authorization': 'Bearer ' + UCRM.tok() } });
+                if (!res.ok) {
+                    const d = await res.json().catch(() => ({}));
+                    throw new Error(d.message || 'دانلود ناموفق بود');
+                }
+                const url = URL.createObjectURL(await res.blob());
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = el.dataset.name || 'file';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 2000);
+            } catch (e) {
+                showToast(e.message || 'دانلود ناموفق بود', 'error');
+            }
         }
 
         // تب «پیش‌فاکتورها» (طرح ۱۴۰۵/۰۸/۰۲؛ دادهٔ واقعی ۱۴۰۵/۰۸/۱۸): همان پیش‌فاکتورهای کل CRM
@@ -752,8 +1072,6 @@ $__cid = (int) ($_GET['id'] ?? 0);
             document.getElementById('crumbName').textContent = c.name;
             document.title = c.name + ' - مشتریان CRM';
             const legal = c.type !== 'individual';
-            const soonBtn = (cls, icon, label, what) =>
-                `<button type="button" class="btn ${cls} uc-soon" data-soon="${what}" title="${label} — به‌زودی"><i class="bi ${icon} ms-1"></i>${label}</button>`;
             document.getElementById('ucBody').innerHTML = `
                 <div class="uc-card uc-cust-head">
                     <div class="av"><i class="bi ${legal ? 'bi-building' : 'bi-person'}"></i></div>
@@ -764,7 +1082,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
                     </div>
                     <div class="spacer"></div>
                     <div class="acts">
-                        ${soonBtn('btn-light uc-btn-soft', 'bi-chat-left-text', 'ارسال پیامک', 'ارسال پیامک به مشتری')}
+                        <button type="button" class="btn btn-light uc-btn-soft" id="btnSms" onclick="openSmsModal()" hidden><i class="bi bi-chat-left-text ms-1"></i>ارسال پیامک</button>
                         <div class="dropdown">
                             <button type="button" class="btn btn-outline-primary uc-more-btn" data-bs-toggle="dropdown" aria-expanded="false" title="بیشتر"><i class="bi bi-three-dots"></i></button>
                             <ul class="dropdown-menu dropdown-menu-end">
@@ -792,6 +1110,16 @@ $__cid = (int) ($_GET['id'] ?? 0);
             }
             fuModal = new bootstrap.Modal(document.getElementById('fuModal'));
             pfFuModal = new bootstrap.Modal(document.getElementById('pfFuModal'));
+            callModal = new bootstrap.Modal(document.getElementById('callModal'));
+            smsModal = new bootstrap.Modal(document.getElementById('smsModal'));
+            document.getElementById('smsTpl').addEventListener('change', renderSmsVars);
+            document.getElementById('smsSend').addEventListener('click', sendSms);
+            document.getElementById('smsModal').addEventListener('shown.bs.modal', () => document.getElementById('smsPhone').focus());
+            document.getElementById('callSave').addEventListener('click', saveCall);
+            document.querySelectorAll('input[name="callResult"]').forEach(r => r.addEventListener('change', syncCallNoteReq));
+            document.getElementById('callNextOn').addEventListener('change', e => { document.getElementById('callNextBox').hidden = !e.target.checked; });
+            // اولین فیلدِ قابل‌ویرایش فوکوس بگیرد (قاعدهٔ مودال‌های سایت)
+            document.getElementById('callModal').addEventListener('shown.bs.modal', () => document.getElementById('callNote').focus());
             document.getElementById('pfFuSave').addEventListener('click', pfSaveFollowup);
             document.getElementById('fuSave').addEventListener('click', saveFollowup);
             document.getElementById('ucFab').addEventListener('click', () => openFollowup());

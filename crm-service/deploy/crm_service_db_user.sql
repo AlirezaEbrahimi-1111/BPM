@@ -56,6 +56,12 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_profor
 -- صدور پیش‌فاکتور در CRM (مهاجرت 20261108_100000)
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_proformas`        TO 'crm_service'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_proforma_items`   TO 'crm_service'@'localhost';
+-- گزارش تماس‌های مشتری + پیوست‌ها (مهاجرت 20261110_100000)
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_call_logs`        TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_call_files`       TO 'crm_service'@'localhost';
+-- پیامک به مشتری: قالب‌ها + تاریخچه (مهاجرت 20261110_110000)
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_sms_templates`    TO 'crm_service'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON `computeryekta_todo_system`.`ucrm_sms_log`          TO 'crm_service'@'localhost';
 
 -- خواندن فقط جدول‌هایی که برای احراز هویت و شناخت کارشناس/سازمان/بخش فعالیت لازم است
 GRANT SELECT ON `computeryekta_todo_system`.`users`                  TO 'crm_service'@'localhost';

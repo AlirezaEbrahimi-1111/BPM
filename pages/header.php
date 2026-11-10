@@ -1284,6 +1284,11 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
                                         <i class="bi bi-cart ms-2"></i>سفارش‌های خرید
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item" href="/pages/ucrm-sms-templates.php">
+                                        <i class="bi bi-chat-left-text ms-2"></i>قالب‌های پیامک
+                                    </a>
+                                </li>
                             <?php endif; ?>
                         </ul>
                     </li>
