@@ -62,3 +62,7 @@ RewriteEngine On
 # فقط اگر مسیر دقیقاً /pages باشه
 RewriteCond %{REQUEST_URI} ^/pages/?$ 
 RewriteRule ^.*$ /access-denied.php [R=302,L]
+
+# صفحهٔ نسخه‌های اپ موبایل (۱۴۰۵/۰۸/۱۹): خودِ پوشهٔ app-releases (APKها + latest.json، بیرون از گیت)
+# فهرست نمی‌شود؛ آدرسِ پوشه صفحهٔ app-releases.php را نشان می‌دهد. فایل‌های داخلش مثل قبل مستقیم سرو می‌شوند.
+RewriteRule ^app-releases/?$ /app-releases.php [L]

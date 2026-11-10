@@ -24,6 +24,7 @@
 //	GET|POST /go/api/attendance/devices     → پورت جزئی api/attendance/devices.php (بدون approve/reject)
 //	GET|POST /go/api/attendance/denied-log  → پورت api/attendance/denied-log.php
 //	GET    /go/api/tickets/detail          → پورت api/tickets/detail.php
+//	POST   /go/api/app/report-version      → نسخهٔ اپِ نصب‌شدهٔ کاربر (app_installs)
 //	GET    /go/api/tasks/my-tasks          → پورت api/tasks/my-tasks.php
 //	GET    /go/api/system/monitor          → جدید، معادلِ PHP نداره؛ خلاصه‌ی CPU/RAM/دیسک/شبکه، فقط id=1
 //	GET    /go/api/system/monitor/history  → جدید؛ همون‌ها ولی تاریخی (۱ساعت/۲۴ساعت/۷روز)، فقط id=1
@@ -59,6 +60,7 @@ import (
 	"time"
 
 	"bmp/go-api/internal/announcements"
+	"bmp/go-api/internal/appinfo"
 	"bmp/go-api/internal/attendance"
 	"bmp/go-api/internal/core"
 	"bmp/go-api/internal/notifications"
@@ -182,6 +184,9 @@ func main() {
 	mux.HandleFunc("GET /go/api/tickets/list", s.auth(tickets.List(s.db)))
 	mux.HandleFunc("POST /go/api/tickets/mark-all-read", s.auth(tickets.MarkAllRead(s.db)))
 	mux.HandleFunc("GET /go/api/tickets/detail", s.auth(tickets.Detail(s.db)))
+
+	// ── نسخهٔ اپِ موبایلِ هر کاربر (صفحهٔ app-releases.php) ──
+	mux.HandleFunc("POST /go/api/app/report-version", s.auth(appinfo.ReportVersion(s.db)))
 
 	// ── ماژول کارها — فقط api/tasks/my-tasks.php (طبق تصمیم صریح: بقیهٔ
 	// ۳ endpoint لیست کارها هرکدوم قاعدهٔ دسترسی مستقل و ناهماهنگ
