@@ -2,8 +2,9 @@
 require_once __DIR__ . '/../includes/page-bootstrap.php';
 
 // CRM جدید — قالب‌های پیامک به مشتری (بخش ۹ طرح CRM، ۱۴۰۵/۰۸/۱۹). فقط مدیر.
-// هر قالب = الگوی تأییدشدهٔ ملی‌پیامک: کد الگو (bodyId) که اول در پنل ملی‌پیامک ساخته و تأیید
-// می‌شود + متنِ همان الگو با {0} {1}… (برای پیش‌نمایش در CRM) + برچسبِ هر متغیر.
+// هر قالب = الگوی ملی‌پیامک + متنِ همان الگو با {0} {1}… + برچسبِ هر متغیر. قالبِ تازه بدونِ کد
+// مستقیم در ملی‌پیامک ساخته و برای تأیید فرستاده می‌شود (۱۴۰۵/۰۸/۱۹)؛ با کد = الگویی که قبلا در پنل
+// ساخته شده. ستون «وضعیت تأیید» + توضیحِ کارشناس از ملی‌پیامک؛ فقط «تأییدشده» قابل ارسال است.
 // API: crm-service/ucrm_sms.go. ارسال از صفحهٔ مشتری (دکمهٔ «ارسال پیامک»).
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ucrm_access.php';
 if (!ucrmAllowed($db, (int) $user_id) || !ucrmRoles($db, (int) $user_id)['manager']) {
@@ -34,12 +35,13 @@ if (!ucrmAllowed($db, (int) $user_id) || !ucrmRoles($db, (int) $user_id)['manage
         <div class="uc-card uc-pf-head">
             <h1><span class="uc-tg-ico"><i class="bi bi-chat-left-text"></i></span>قالب‌های پیامک به مشتری</h1>
             <div class="spacer"></div>
+            <button type="button" class="btn btn-outline-primary" id="btnRefresh"><i class="bi bi-arrow-repeat ms-1"></i>به‌روزرسانی وضعیت</button>
             <button type="button" class="btn btn-primary" id="btnAdd"><i class="bi bi-plus-lg ms-1"></i>قالب جدید</button>
         </div>
         <div class="uc-card">
             <p class="small text-muted mb-3">
-                هر قالب باید اول در پنل ملی‌پیامک به‌صورت «الگو» ساخته و تأیید شود. کد الگو و متن همان الگو را این‌جا وارد کنید؛
-                جای هر متغیر در متن را با <span class="num-ltr">{0}</span>، <span class="num-ltr">{1}</span> و… مشخص کنید و برای هر کدام یک برچسب بنویسید
+                قالب تازه مستقیم برای <b>تأیید به ملی‌پیامک</b> فرستاده می‌شود؛ پس از تأیید کارشناسان ملی‌پیامک، برای ارسال به مشتری در دسترس است.
+                جای هر متغیر در متن را با <span class="num-ltr">{0}</span>، <span class="num-ltr">{1}</span> و… (رقم انگلیسی) مشخص کنید و برای هر کدام یک برچسب بنویسید
                 (برچسبی که کلمهٔ «نام» دارد، هنگام ارسال با نام مشتری پر می‌شود).
             </p>
             <div id="tplGrid" class="ag-theme-alpine inv-grid grid-fill" style="width:100%;"></div>
@@ -55,13 +57,16 @@ if (!ucrmAllowed($db, (int) $user_id) || !ucrmRoles($db, (int) $user_id)['manage
                 </div>
                 <div class="modal-body">
                     <label class="form-label" for="fTitle">عنوان قالب <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control mb-3" id="fTitle" maxlength="150" placeholder="مثلا: یادآوری پیش‌فاکتور">
-                    <label class="form-label" for="fBody">کد الگو در ملی‌پیامک <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control mb-3" id="fBody" inputmode="numeric" dir="ltr">
+                    <input type="text" class="form-control mb-3" id="fTitle" maxlength="50" placeholder="مثلا: یادآوری پیش‌فاکتور">
                     <label class="form-label" for="fPreview">متن الگو <span class="text-danger">*</span></label>
                     <textarea class="form-control mb-1" id="fPreview" rows="3" placeholder="مثلا: {0} عزیز، پیش‌فاکتور {1} برای شما صادر شد."></textarea>
+                    <div class="small text-warning mb-2" id="fLockNote" hidden></div>
                     <div class="small text-muted mb-3" id="fVarHint"></div>
                     <div id="fVars"></div>
+                    <div id="fBodyWrap">
+                        <label class="form-label small mt-2 mb-1" for="fBody">کد الگو <span class="text-muted">(اختیاری — فقط اگر این الگو را قبلا خودتان در پنل ملی‌پیامک ساخته‌اید)</span></label>
+                        <input type="text" class="form-control" id="fBody" inputmode="numeric" dir="ltr" placeholder="خالی = ارسال برای تأیید به ملی‌پیامک">
+                    </div>
                     <div class="form-check form-switch mt-2">
                         <input class="form-check-input" type="checkbox" role="switch" id="fActive" checked>
                         <label class="form-check-label" for="fActive">فعال (در فهرست ارسال دیده شود)</label>
@@ -80,6 +85,16 @@ if (!ucrmAllowed($db, (int) $user_id) || !ucrmRoles($db, (int) $user_id)['manage
     <script src="<?= asset('../../assets/js/ucrm-common.js') ?>"></script>
     <script>
         let gridApi = null, ROWS = [], tplModal = null, editId = 0;
+        // BodyStatus ملی‌پیامک
+        const APPROVAL = {
+            0: ['wait', 'bi-hourglass-split', 'در انتظار تأیید'],
+            1: ['ok', 'bi-check-lg', 'تأیید شده'],
+            2: ['stop', 'bi-x-circle-fill', 'رد شده'],
+            3: ['wait', 'bi-hourglass-split', 'اصلاح‌شده، در انتظار'],
+            4: ['late', 'bi-pencil', 'نیاز به اصلاح'],
+            5: ['stop', 'bi-trash', 'حذف‌شده در پنل'],
+            6: ['stop', 'bi-x-circle-fill', 'رد شده'],
+        };
 
         function actionCell(p) {
             const r = p.data;
@@ -92,10 +107,31 @@ if (!ucrmAllowed($db, (int) $user_id) || !ucrmRoles($db, (int) $user_id)['manage
             { headerName: 'کد الگو', field: 'body_id', width: 110, cellRenderer: p => faDigits(p.value) },
             { headerName: 'متن الگو', field: 'preview', flex: 2, minWidth: 220, cellRenderer: p => esc(p.value) },
             { headerName: 'متغیرها', field: 'var_labels', flex: 1, minWidth: 140, cellRenderer: p => esc((p.value || []).join('، ')) || '—' },
-            { headerName: 'وضعیت', field: 'is_active', width: 100,
-              cellRenderer: p => p.value ? '<span class="uc-st ok"><i class="bi bi-check-lg"></i>فعال</span>' : '<span class="uc-st stop">غیرفعال</span>' },
+            { headerName: 'وضعیت تأیید', field: 'approval_status', width: 170,
+              cellRenderer: p => {
+                  const a = APPROVAL[p.value];
+                  const badge = a ? `<span class="uc-st ${a[0]}"><i class="bi ${a[1]}"></i>${a[2]}</span>` : '<span class="text-muted small">نامشخص</span>';
+                  return p.data.review_note ? `<span title="توضیح ملی‌پیامک: ${esc(p.data.review_note)}" style="cursor:help">${badge} <i class="bi bi-info-circle"></i></span>` : badge;
+              } },
+            { headerName: 'فعال', field: 'is_active', width: 80,
+              cellRenderer: p => p.value ? '<i class="bi bi-toggle-on text-success fs-5"></i>' : '<i class="bi bi-toggle-off text-muted fs-5"></i>' },
             { headerName: 'عملیات', colId: 'actions', width: 80, sortable: false, filter: false, cellRenderer: AgGridFa.actionMenuCell(actionCell, { insideGrid: true }) },
         ];
+
+        // وضعیت تأیید از ملی‌پیامک؛ اگر ملی‌پیامک در دسترس نبود، فهرستِ ذخیره‌شده نمایش داده می‌شود
+        async function refreshStatus(showMsg) {
+            const btn = document.getElementById('btnRefresh');
+            btn.disabled = true;
+            try {
+                const res = await UCRM.send('POST', '/sms-templates/refresh');
+                if (showMsg) showToast(res.message || 'به‌روز شد.', 'success');
+            } catch (e) {
+                showToast(e.message || 'خواندن وضعیت از ملی‌پیامک ناموفق بود', showMsg ? 'error' : 'warning');
+            } finally {
+                btn.disabled = false;
+            }
+            await load();
+        }
 
         async function load() {
             gridApi.showLoadingOverlay();
@@ -125,8 +161,17 @@ if (!ucrmAllowed($db, (int) $user_id) || !ucrmRoles($db, (int) $user_id)['manage
             const t = ROWS.find(x => x.id === editId);
             document.getElementById('tplModalTitle').textContent = t ? 'ویرایش قالب' : 'قالب جدید';
             document.getElementById('fTitle').value = t ? t.title : '';
-            document.getElementById('fBody').value = t ? faDigits(t.body_id) : '';
+            document.getElementById('fBody').value = '';
+            document.getElementById('fBodyWrap').hidden = !!t; // کد فقط هنگام افزودنِ الگوی موجود در پنل
             document.getElementById('fPreview').value = t ? t.preview : '';
+            // متنِ الگو فقط وقتی ملی‌پیامک «نیاز به اصلاح» گفته قابل تغییر است
+            const locked = !!t && t.approval_status !== 4;
+            document.getElementById('fPreview').readOnly = locked;
+            const ln = document.getElementById('fLockNote');
+            ln.hidden = !t;
+            ln.textContent = !t ? '' : (locked
+                ? 'متن الگو قابل تغییر نیست (فقط وقتی ملی‌پیامک «نیاز به اصلاح» بگوید). برای متن تازه، قالب جدید بسازید.'
+                : 'ملی‌پیامک گفته این الگو نیاز به اصلاح دارد' + (t.review_note ? ': «' + t.review_note + '»' : '') + ' — با ذخیره، اصلاحیه برای تأیید فرستاده می‌شود.');
             document.getElementById('fActive').checked = t ? t.is_active : true;
             syncVarFields(t ? t.var_labels : []);
             tplModal.show();
@@ -188,12 +233,13 @@ if (!ucrmAllowed($db, (int) $user_id) || !ucrmRoles($db, (int) $user_id)['manage
             tplModal = new bootstrap.Modal(document.getElementById('tplModal'));
             document.getElementById('tplModal').addEventListener('shown.bs.modal', () => document.getElementById('fTitle').focus());
             document.getElementById('btnAdd').addEventListener('click', () => openTpl(0));
+            document.getElementById('btnRefresh').addEventListener('click', () => refreshStatus(true));
             document.getElementById('tplSave').addEventListener('click', saveTpl);
             document.getElementById('fPreview').addEventListener('input', () => syncVarFields());
             fitGrid();
             window.addEventListener('resize', fitGrid);
             window.addEventListener('load', fitGrid);
-            load();
+            refreshStatus(false);
         });
     </script>
 </body>

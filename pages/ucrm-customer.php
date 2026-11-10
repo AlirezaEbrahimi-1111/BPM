@@ -743,7 +743,7 @@ $__cid = (int) ($_GET['id'] ?? 0);
             if (SMS_TPL === null) {
                 try { SMS_TPL = (await UCRM.get('/sms-templates')).items || []; } catch (e) { SMS_TPL = []; }
             }
-            if (!SMS_TPL.length) return showToast('هنوز قالب پیامکی تعریف نشده است؛ مدیر از «CRM ← قالب‌های پیامک» اضافه می‌کند.', 'warning');
+            if (!SMS_TPL.length) return showToast('هنوز قالب پیامکِ تأییدشده‌ای نیست؛ مدیر از «CRM ← قالب‌های پیامک» قالب می‌سازد و پس از تأیید ملی‌پیامک قابل ارسال است.', 'warning');
             document.getElementById('smsTpl').innerHTML = SMS_TPL.map(t => `<option value="${t.id}">${esc(t.title)}</option>`).join('');
             renderSmsVars();
             smsModal.show();

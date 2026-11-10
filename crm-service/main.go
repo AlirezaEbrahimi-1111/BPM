@@ -436,6 +436,7 @@ func main() {
 	mux.HandleFunc("GET /crm/api/ucrm/sms-templates", ucrm(s.ucrmListSmsTemplates))
 	mux.HandleFunc("POST /crm/api/ucrm/sms-templates", ucrm(s.ucrmSaveSmsTemplate))
 	mux.HandleFunc("PUT /crm/api/ucrm/sms-templates/{id}", ucrm(s.ucrmSaveSmsTemplate))
+	mux.HandleFunc("POST /crm/api/ucrm/sms-templates/refresh", ucrm(s.ucrmRefreshSmsTemplates))
 	mux.HandleFunc("DELETE /crm/api/ucrm/sms-templates/{id}", ucrm(s.ucrmDeleteSmsTemplate))
 	mux.HandleFunc("GET /crm/api/ucrm/customers/{id}/sms", ucrm(s.ucrmListSms))
 	mux.HandleFunc("POST /crm/api/ucrm/customers/{id}/sms", ucrm(s.ucrmSendSms))
