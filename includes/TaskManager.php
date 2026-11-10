@@ -1776,7 +1776,7 @@ class TaskManager
             FROM tasks 
             WHERE (assignee_id = ? OR creator_id = ?)
               AND is_deleted = 0 
-              AND status NOT IN ('completed', 'approved', 'stopped')
+              AND status NOT IN ('completed', 'approved', 'stopped', 'cancelled')
         ");
             $stmt->execute([$user_id, $user_id]);
             $stats['total'] = (int) $stmt->fetch()['count'];
@@ -1802,7 +1802,7 @@ class TaskManager
             FROM tasks 
             WHERE (assignee_id = ? OR creator_id = ?)
               AND is_deleted = 0
-              AND status NOT IN ('completed', 'approved', 'stopped')
+              AND status NOT IN ('completed', 'approved', 'stopped', 'cancelled')
               AND task_type = 'periodic'
               AND due_date < CURDATE()
         ");
@@ -1817,7 +1817,7 @@ class TaskManager
                 WHERE (assignee_id = ? OR creator_id = ?)
                   AND is_deleted = 0
                   AND task_type = 'continuous'
-                  AND status NOT IN ('completed', 'approved', 'stopped')
+                  AND status NOT IN ('completed', 'approved', 'stopped', 'cancelled')
             ");
             $stmt->execute([$user_id, $user_id]);
 
@@ -1837,7 +1837,7 @@ class TaskManager
             WHERE (assignee_id = ? OR creator_id = ?)
               AND is_deleted = 0 
               AND due_date = CURDATE()
-              AND status NOT IN ('completed', 'approved', 'stopped')
+              AND status NOT IN ('completed', 'approved', 'stopped', 'cancelled')
         ");
             $stmt->execute([$user_id, $user_id]);
             $stats['today'] = (int) $stmt->fetch()['count'];

@@ -90,7 +90,7 @@ $stats['total_units'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
     $stmt = $db->prepare("
         SELECT COUNT(*) as total FROM tasks 
         WHERE organization_id = ? AND is_deleted = 0
-        AND status NOT IN ('completed', 'approved', 'stopped')
+        AND status NOT IN ('completed', 'approved', 'stopped', 'cancelled')
     ");
     $stmt->execute([$orgId]);
     $stats['active_tasks'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];

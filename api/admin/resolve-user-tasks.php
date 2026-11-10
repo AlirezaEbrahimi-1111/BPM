@@ -136,7 +136,7 @@ try {
     $remainStmt = $db->prepare("
         SELECT COUNT(*) FROM tasks
         WHERE assignee_id = ? AND is_deleted = 0
-          AND status NOT IN ('completed', 'approved', 'rejected', 'stopped')
+          AND status NOT IN ('completed', 'approved', 'rejected', 'stopped', 'cancelled')
     ");
     $remainStmt->execute([$target_user_id]);
     if ((int) $remainStmt->fetchColumn() > 0) {

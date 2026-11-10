@@ -58,7 +58,18 @@ try {
         // این کار بخشی از workflow است و در حال تکمیل شدن است
         $result = $workflowManager->completeStep($input['task_id'], $user_id, $input['notes'] ?? '');
 
+        // 🔧 ۱۴۰۵/۰۸/۱۹: مرحله‌ای که در workflow_instance_steps ثبت است (همهٔ روتین‌های امروزی)
+        // فقط از completeStep تکمیل می‌شود؛ خطایش (مثلاً «قبلاً تکمیل شده» در کلیکِ تکراری) همان‌طور
+        // به کاربر برمی‌گردد. قبلاً به updateTaskStatus می‌رفت که وضعیت را دستی عوض می‌کرد و ۲۶ ثانیه
+        // پشتِ قفل گیر می‌کرد (تسک ۴۲۹۳). مسیرِ جایگزین فقط برای کارهای روتینِ قدیمیِ بدون ردیفِ مرحله.
+        $hasStepRow = false;
         if (!$result['success']) {
+            $chk = $db->prepare("SELECT 1 FROM workflow_instance_steps WHERE task_id = ? LIMIT 1");
+            $chk->execute([$input['task_id']]);
+            $hasStepRow = (bool) $chk->fetchColumn();
+        }
+
+        if (!$result['success'] && !$hasStepRow) {
             // اگر completeStep خطا داد، از روش عادی استفاده می‌کنیم
             error_log("update-status.php completeStep failed, falling back | user_id={$user_id} | task_id={$input['task_id']} | status={$input['status']} | message=" . ($result['message'] ?? ''));
             $result = $taskManager->updateTaskStatus(

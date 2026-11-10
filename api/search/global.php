@@ -218,7 +218,7 @@ try {
               END AS match_tier
             FROM tasks t
             WHERE t.is_deleted = 0
-              AND t.status NOT IN ('completed', 'approved', 'stopped', 'rejected')
+              AND t.status NOT IN ('completed', 'approved', 'stopped', 'cancelled', 'rejected')
               AND $accessSql
               AND ($tier4Sql OR t.id = ? OR t.workflow_instance_id = ?)
             ORDER BY $taskOrderSql

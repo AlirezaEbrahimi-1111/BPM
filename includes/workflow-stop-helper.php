@@ -94,7 +94,7 @@ function wsr_openTaskAssignees(PDO $db, int $instance_id): array
     $s = $db->prepare("
         SELECT id, assignee_id FROM tasks
         WHERE workflow_instance_id = ? AND assignee_id IS NOT NULL
-          AND status NOT IN ('completed','approved','rejected','stopped')
+          AND status NOT IN ('completed','approved','rejected','stopped', 'cancelled')
           AND (is_deleted = 0 OR is_deleted IS NULL)
     ");
     $s->execute([$instance_id]);

@@ -43,7 +43,7 @@ try {
         FROM tasks
         WHERE assignee_id = ?
           AND is_deleted = 0
-          AND status NOT IN ('completed', 'approved', 'rejected', 'stopped')
+          AND status NOT IN ('completed', 'approved', 'rejected', 'stopped', 'cancelled')
         ORDER BY created_at DESC
     ");
     $stmt->execute([$target_user_id]);

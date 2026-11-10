@@ -44,7 +44,7 @@ function getDelayedPeriodicTasks(PDO $db, int $org_id, string $today): array
           -- روتینِ تأخیردار یک بار این‌جا (مقطعی، به روز) و یک بار در
           -- getDelayedWorkflowTasks (روتین، به ساعت) شمرده می‌شد — تعداد و تأخیر دوبرابر
           AND COALESCE(is_workflow_task, 0) = 0
-          AND status NOT IN ('completed', 'approved', 'stopped', 'rejected')
+          AND status NOT IN ('completed', 'approved', 'stopped', 'cancelled', 'rejected')
         HAVING effective_due > '1000-01-01' AND effective_due < ?
     ");
     $stmt->execute([$org_id, $today]);
@@ -63,7 +63,7 @@ function getOpenContinuousTasks(PDO $db, int $org_id): array
         WHERE organization_id = ?
           AND is_deleted = 0
           AND task_type = 'continuous'
-          AND status NOT IN ('completed', 'approved', 'stopped', 'rejected')
+          AND status NOT IN ('completed', 'approved', 'stopped', 'cancelled', 'rejected')
     ");
     $stmt->execute([$org_id]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -88,7 +88,7 @@ function getDelayedWorkflowTasks(PDO $db, int $org_id, string $now): array
           AND t.is_workflow_task = 1
           AND wis.status IN ('active', 'pending', 'delayed')
           AND (t.due_date IS NOT NULL OR t.deadline IS NOT NULL OR t.original_deadline IS NOT NULL)
-          AND t.status NOT IN ('completed', 'approved', 'stopped', 'rejected')
+          AND t.status NOT IN ('completed', 'approved', 'stopped', 'cancelled', 'rejected')
         HAVING effective_deadline > '1000-01-01 00:00:00' AND effective_deadline < ?
     ");
     $stmt->execute([$org_id, $now]);

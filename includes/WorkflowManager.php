@@ -4,9 +4,53 @@ class WorkflowManager
 {
     private $db;
 
+    /** نوتیف‌هایی که وسطِ ترنزکشن ساخته شده‌اند و بعد از commit فرستاده می‌شوند */
+    private $deferredNotifs = [];
+
     public function __construct($database)
     {
         $this->db = $database;
+    }
+
+    // 🔧 ۱۴۰۵/۰۸/۱۹: ارسالِ نوتیف (ثبت + پیامک + پوش) گاهی ~۱۰ ثانیه طول می‌کشید و چون
+    // وسطِ ترنزکشن بود، قفلِ روتین و دکمهٔ «تکمیل» همین مدت معطل می‌ماند (کاربر چند بار
+    // می‌زد — تسک‌های ۴۴۷۲..۴۴۷۶). حالا وسطِ ترنزکشن فقط صف می‌شود و بعد از commit فرستاده می‌شود؛
+    // با rollback دور ریخته می‌شود (نوتیفِ کاری که ثبت نشده نمی‌رود).
+    private function commitTx()
+    {
+        $this->db->commit();
+        $queue = $this->deferredNotifs;
+        $this->deferredNotifs = [];
+        foreach ($queue as $data) {
+            $this->sendNotificationNow($data);
+        }
+    }
+
+    private function rollbackTx()
+    {
+        $this->deferredNotifs = [];
+        if ($this->db->inTransaction()) {
+            $this->db->rollBack();
+        }
+    }
+
+    private function queueNotification(array $data)
+    {
+        if ($this->db->inTransaction()) {
+            $this->deferredNotifs[] = $data;
+        } else {
+            $this->sendNotificationNow($data);
+        }
+    }
+
+    private function sendNotificationNow(array $data)
+    {
+        try {
+            require_once __DIR__ . '/Notification.php';
+            (new Notification($this->db))->create($data);
+        } catch (Exception $e) {
+            error_log("WorkflowManager notification error: " . $e->getMessage());
+        }
     }
 
     public function createTemplate($data, $creator_id)
@@ -23,7 +67,7 @@ class WorkflowManager
             if ($engineVersion === 2) {
                 $err = $this->validateStepTransitions($data['transitions'] ?? []);
                 if ($err) {
-                    $this->db->rollBack();
+                    $this->rollbackTx();
                     return ['success' => false, 'message' => $err];
                 }
             }
@@ -51,10 +95,10 @@ class WorkflowManager
                 $this->saveStepTransitions($template_id, $data['transitions'] ?? []);
             }
 
-            $this->db->commit();
+            $this->commitTx();
             return ['success' => true, 'template_id' => $template_id, 'message' => 'الگوی کار روتین با موفقیت ایجاد شد'];
         } catch (Exception $e) {
-            $this->db->rollBack();
+            $this->rollbackTx();
             error_log("CreateTemplate error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطا: ' . $e->getMessage()];  // موقت
         }
@@ -165,7 +209,7 @@ class WorkflowManager
                 throw new Exception('هیچ مرحله‌ی شروع (بدونِ پیش‌نیاز) توی این قالب پیدا نشد');
             }
 
-            $this->db->commit();
+            $this->commitTx();
             return [
                 'success' => true,
                 'instance_id' => $instance_id,
@@ -173,7 +217,7 @@ class WorkflowManager
                 'message' => 'کار روتین با موفقیت ایجاد شد'
             ];
         } catch (Exception $e) {
-            $this->db->rollBack();
+            $this->rollbackTx();
             error_log("startWorkflowGraph error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطا: ' . $e->getMessage()];
         }
@@ -647,10 +691,10 @@ class WorkflowManager
                 $this->db->prepare("DELETE FROM workflow_steps WHERE id IN ($ph)")->execute($toDelete);
             }
 
-            $this->db->commit();
+            $this->commitTx();
             return ['success' => true, 'message' => 'الگو با موفقیت بروزرسانی شد'];
         } catch (Exception $e) {
-            $this->db->rollBack();
+            $this->rollbackTx();
             error_log("UpdateTemplate error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطا در بروزرسانی الگو'];
         }
@@ -709,7 +753,7 @@ class WorkflowManager
             // کاملِ کار رو به startWorkflowGraph (که ترنزکشنِ خودش رو
             // می‌گیره) می‌سپریم؛ منطقِ قدیمیِ زیر دیگه اجرا نمی‌شه.
             if ((int) $tmplRow['engine_version'] === 2) {
-                $this->db->commit();
+                $this->commitTx();
                 return $this->startWorkflowGraph($template_id, $title, $creator_id, $organization_id);
             }
 
@@ -873,7 +917,7 @@ class WorkflowManager
                 }
             }
 
-            $this->db->commit();
+            $this->commitTx();
 
             return [
                 'success' => true,
@@ -882,7 +926,7 @@ class WorkflowManager
                 'message' => 'کار روتین با موفقیت ایجاد شد'
             ];
         } catch (Exception $e) {
-            $this->db->rollBack();
+            $this->rollbackTx();
             error_log("StartWorkflow error: " . $e->getMessage());
             return [
                 'success' => false,
@@ -910,7 +954,8 @@ class WorkflowManager
             $instance_id = $task['workflow_instance_id'];
 
             // دریافت اطلاعات مرحله فعلی
-            $stmt = $this->db->prepare("SELECT * FROM workflow_instance_steps WHERE task_id = ?");
+            // FOR UPDATE: آخرین وضعیتِ ثبت‌شده خوانده شود، نه عکسِ ترنزکشن (کلیکِ تکراری)
+            $stmt = $this->db->prepare("SELECT * FROM workflow_instance_steps WHERE task_id = ? FOR UPDATE");
             $stmt->execute([$task_id]);
             $current_step = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -935,12 +980,14 @@ class WorkflowManager
                 ");
                 $decCheck->execute([$this->getTemplateIdForInstance($instance_id), $current_step['step_order']]);
                 if ((int) $decCheck->fetchColumn() > 0) {
-                    $this->db->commit();
+                    $this->commitTx();
                     return $this->resolveStepDecision($task_id, $user_id, 'approve', $notes);
                 }
 
                 if (!in_array($current_step['status'], ['active', 'pending'])) {
-                    throw new Exception('این مرحله قابل تکمیل نیست (وضعیت: ' . $current_step['status'] . ')');
+                    throw new Exception($current_step['status'] === 'completed'
+                        ? 'این مرحله قبلاً تکمیل شده است.'
+                        : 'این مرحله قابل تکمیل نیست (وضعیت: ' . $current_step['status'] . ')');
                 }
                 $clCheck = $this->db->prepare("SELECT COUNT(*) FROM task_checklist_items WHERE task_id = ? AND is_done = 0");
                 $clCheck->execute([$task_id]);
@@ -957,7 +1004,7 @@ class WorkflowManager
                     ->execute([$task_id, $user_id, ($notes !== '' ? $notes : 'مرحله تکمیل شد')]);
 
                 $message = $this->advanceGraphStep($current_step, $user_id, $notes, 'always');
-                $this->db->commit();
+                $this->commitTx();
                 return ['success' => true, 'message' => $message];
             }
 
@@ -967,13 +1014,15 @@ class WorkflowManager
             $decStmt = $this->db->prepare("SELECT is_decision FROM workflow_steps WHERE id = ?");
             $decStmt->execute([$current_step['step_id']]);
             if ((int) ($decStmt->fetchColumn() ?: 0) === 1) {
-                $this->db->commit(); // ترنزکشن خالی را ببند تا resolveStepDecision ترنزکشن خودش را بگیرد
+                $this->commitTx(); // ترنزکشن خالی را ببند تا resolveStepDecision ترنزکشن خودش را بگیرد
                 return $this->resolveStepDecision($task_id, $user_id, 'approve', $notes);
             }
 
             // ✅ اجازه تکمیل حتی اگر status 'pending' باشد
             if (!in_array($current_step['status'], ['active', 'pending'])) {
-                throw new Exception('این مرحله قابل تکمیل نیست (وضعیت: ' . $current_step['status'] . ')');
+                throw new Exception($current_step['status'] === 'completed'
+                        ? 'این مرحله قبلاً تکمیل شده است.'
+                        : 'این مرحله قابل تکمیل نیست (وضعیت: ' . $current_step['status'] . ')');
             }
 
             // 🔒 قفل چک‌لیست: تا تیک‌نخوردن همهٔ آیتم‌ها، این مرحله تکمیل نمی‌شود
@@ -1057,10 +1106,10 @@ class WorkflowManager
                 }
             }
 
-            $this->db->commit();
+            $this->commitTx();
             return ['success' => true, 'message' => $message];
         } catch (Exception $e) {
-            $this->db->rollBack();
+            $this->rollbackTx();
             error_log("CompleteStep error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطا در تکمیل مرحله: ' . $e->getMessage()];
         }
@@ -1103,10 +1152,15 @@ class WorkflowManager
             JOIN workflow_steps ws ON ws.id = wis.step_id
             JOIN workflow_instances wi ON wi.id = wis.instance_id
             WHERE wis.id = ?
+            FOR UPDATE
         ");
         $stmt->execute([$instance_step_id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$row) return null;
+        // مرحله همین الان فعال شده و تسک دارد (درخواستِ تکراری) → تسکِ دوم ساخته نشود
+        if ($row['status'] === 'active' && !empty($row['task_id'])) {
+            return $row['task_id'];
+        }
 
         $hours = $row['time_limit_hours'] ?: 24;
         $deadline = date('Y-m-d H:i:s', strtotime("+{$hours} hours"));
@@ -1277,6 +1331,7 @@ class WorkflowManager
                 JOIN workflow_steps ws ON ws.id = wis.step_id
                 JOIN workflow_instances wi ON wi.id = wis.instance_id
                 WHERE wis.task_id = ?
+                FOR UPDATE
             ");
             $stmt->execute([$task_id]);
             $cur = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -1344,7 +1399,7 @@ class WorkflowManager
             // (نه ستون‌هایِ قدیمیِ on_approve_step_order/on_reject_*)
             if ($isGraph) {
                 $message = $this->advanceGraphStep($cur, $user_id, $notes, $decision);
-                $this->db->commit();
+                $this->commitTx();
                 return ['success' => true, 'message' => $message];
             }
 
@@ -1424,10 +1479,10 @@ class WorkflowManager
                 $message = ($decision === 'approve' ? 'تأیید شد؛ ' : 'رد شد؛ ') . "به مرحلهٔ {$targetOrder} منتقل شد";
             }
 
-            $this->db->commit();
+            $this->commitTx();
             return ['success' => true, 'message' => $message];
         } catch (Exception $e) {
-            if ($this->db->inTransaction()) $this->db->rollBack();
+            $this->rollbackTx();
             error_log("resolveStepDecision error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطا در ثبت تصمیم: ' . $e->getMessage()];
         }
@@ -1592,10 +1647,10 @@ class WorkflowManager
             $stmt = $this->db->prepare("UPDATE workflow_instance_steps SET status = 'cancelled' WHERE instance_id = ? AND status IN ('pending', 'active')");
             $stmt->execute([$instance_id]);
 
-            $this->db->commit();
+            $this->commitTx();
             return ['success' => true, 'message' => 'کار روتین لغو شد'];
         } catch (Exception $e) {
-            $this->db->rollBack();
+            $this->rollbackTx();
             error_log("CancelWorkflow error: " . $e->getMessage());
             return ['success' => false, 'message' => 'خطا در لغو کار روتین'];
         }
@@ -1609,9 +1664,6 @@ class WorkflowManager
     private function notifySectionMembers($section, $type, $title, $message, $link, $related_id)
     {
         try {
-            require_once __DIR__ . '/Notification.php';
-            $notification = new Notification($this->db);
-
             $stmt = $this->db->prepare("SELECT organization_id FROM workflow_instances WHERE id = ?");
             $stmt->execute([$related_id]);
             $organization_id = $stmt->fetchColumn();
@@ -1620,7 +1672,7 @@ class WorkflowManager
             $userIds = us_getSectionUserIds($this->db, $section, $organization_id);
 
             foreach ($userIds as $uid) {
-                $notification->create([
+                $this->queueNotification([
                     'to_user_id' => $uid,
                     'title' => $title,
                     'message' => $message,
@@ -1660,10 +1712,7 @@ class WorkflowManager
     private function createNotification($user_id, $type, $title, $message, $link = null, $related_id = null)
     {
         try {
-            require_once __DIR__ . '/Notification.php';
-            $notification = new Notification($this->db);
-
-            $notification->create([
+            $this->queueNotification([
                 'to_user_id' => $user_id,
                 'title' => $title,
                 'message' => $message,

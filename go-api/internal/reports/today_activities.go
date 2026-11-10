@@ -73,7 +73,7 @@ func TodayActivities(db *sql.DB) http.HandlerFunc {
         FROM tasks t
         LEFT JOIN users c ON t.creator_id = c.id AND c.is_active = 1 AND c.is_deleted = 0
         WHERE t.assignee_id = ? AND t.is_deleted = 0
-          AND t.status NOT IN ('completed','approved','stopped','rejected')
+          AND t.status NOT IN ('completed','approved','stopped', 'cancelled','rejected')
           AND (t.due_date IS NOT NULL OR t.deadline IS NOT NULL OR t.original_deadline IS NOT NULL)
         HAVING effective_due > '1000-01-01' AND effective_due < CURDATE()
         ORDER BY effective_due ASC
