@@ -151,6 +151,13 @@ try {
                 ]);
                 $stepInfo = $stmt->fetch(PDO::FETCH_ASSOC);
                 $task['current_step_section'] = $stepInfo ? $stepInfo['activity_section'] : null;
+                // برچسبِ فارسیِ واحد (اپ برای «مسئول انجام»ِ مرحلهٔ واحدی نشان می‌دهد — ۱۴۰۵/۰۸/۱۹)
+                $task['current_step_section_label'] = null;
+                if (!empty($task['current_step_section'])) {
+                    $ls = $db->prepare("SELECT section_label FROM organization_activity_sections WHERE section_key = ? AND organization_id = ? LIMIT 1");
+                    $ls->execute([$task['current_step_section'], (int) ($task['organization_id'] ?? 0)]);
+                    $task['current_step_section_label'] = $ls->fetchColumn() ?: $task['current_step_section'];
+                }
                 $task['current_step_status']  = $stepInfo ? $stepInfo['step_status'] : null;
                 $task['current_step_description'] = ($stepInfo && isset($stepInfo['step_description'])) ? $stepInfo['step_description'] : null;
                 // 🔒 منبع حقیقت موعد کارهای روتین، workflow_instance_steps.deadline
