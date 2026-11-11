@@ -2325,6 +2325,19 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             background: rgba(255, 255, 255, .28);
         }
 
+        /* مداد کنار نام گروه: بدون پس‌زمینه، کم‌رنگ؛ با هاور واضح */
+        #groupInfoRenameBtn {
+            background: transparent;
+            opacity: .45;
+            transition: opacity .15s;
+        }
+
+        #groupInfoRenameBtn:hover,
+        #groupInfoRenameBtn:focus-visible {
+            background: transparent;
+            opacity: 1;
+        }
+
         .chat-gi-rename-edit {
             display: flex;
             align-items: center;
