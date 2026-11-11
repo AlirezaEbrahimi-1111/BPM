@@ -104,6 +104,21 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
         }
         :root[data-theme="dark"] .pc-card .avatar-ring { border-color: var(--surface); }
 
+        /* بج حذف عکس — گوشهٔ پایین-چپ عکس */
+        .avatar-wrap { position: relative; flex-shrink: 0; }
+        .avatar-del-badge {
+            position: absolute; left: -2px; bottom: -2px;
+            width: 26px; height: 26px; border-radius: 50%;
+            border: 2px solid #fff;
+            background: #ef4444; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .72rem; padding: 0; cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .2);
+            transition: transform .15s ease, background .15s ease;
+        }
+        .avatar-del-badge:hover { background: #dc2626; transform: scale(1.08); }
+        :root[data-theme="dark"] .avatar-del-badge { border-color: var(--surface); }
+
         .pc-top {
             display: flex;
             align-items: center;
@@ -258,7 +273,14 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                  دسکتاپ (ستون باریک ۲۰٪) = همان اجزا زیر هم -->
             <div class="s-card pc-card">
                 <div class="pc-top">
-                    <div class="avatar-ring" id="avatarInitials" onclick="document.getElementById('avatarFileInput').click()" style="cursor:pointer; position:relative;" title="تغییر عکس پروفایل">؟</div>
+                    <div class="avatar-wrap">
+                        <div class="avatar-ring" id="avatarInitials" onclick="document.getElementById('avatarFileInput').click()" style="cursor:pointer; position:relative;" title="تغییر عکس پروفایل">؟</div>
+                        <!-- حذف عکس — بج پایین-چپ عکس؛ فقط وقتی عکس دارد -->
+                        <button type="button" class="avatar-del-badge" id="avatarDeleteBtn" onclick="deleteAvatar()"
+                                title="حذف عکس پروفایل" aria-label="حذف عکس پروفایل" style="display:none;">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
                     <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(this.files[0])">
                     <div class="pc-main">
                         <div class="pc-name" id="headerFullName">در حال بارگذاری...</div>
@@ -427,6 +449,25 @@ async function uploadAvatar(file) {
     } catch { showToast('خطا در ارتباط با سرور', 'error'); }
 }
 
+function deleteAvatar() {
+    uiConfirm('عکس پروفایل شما حذف می‌شود و به‌جای آن حرف اول نامتان نمایش داده می‌شود. ادامه می‌دهید؟', async function () {
+        try {
+            const r = await fetch('../api/profile/delete-avatar.php', { method: 'POST', headers: ah() });
+            const d = await r.json();
+            if (d.success) {
+                currentUser.avatar_path = null;
+                fillForm();
+                var info = JSON.parse(localStorage.getItem('user_info') || '{}');
+                info.avatar_path = null;
+                localStorage.setItem('user_info', JSON.stringify(info));
+                showToast('عکس پروفایل حذف شد', 'success');
+            } else {
+                showToast(d.message || 'خطا در حذف عکس', 'error');
+            }
+        } catch { showToast('خطا در ارتباط با سرور', 'error'); }
+    }, { danger: true, yesText: 'بله، حذف شود', noText: 'انصراف' });
+}
+
 async function loadProfile() {
     try {
         const r = await fetch('../api/auth/profile.php', { headers: ah() });
@@ -444,6 +485,7 @@ function fillForm() {
 
     var avatarEl = document.getElementById('avatarInitials');
     avatarEl.innerHTML = u.avatar_path ? '<img src="../' + esc(u.avatar_path) + '" alt="">' : (initials || '؟');
+    document.getElementById('avatarDeleteBtn').style.display = u.avatar_path ? 'flex' : 'none';
     document.getElementById('headerFullName').textContent = fullName;
     document.getElementById('headerPhone').textContent    = u.phone ? (typeof toFa === 'function' ? toFa(u.phone) : u.phone) : '—';
     document.getElementById('headerRole').textContent     = ROLE_NAMES[u.role] || u.role || '—';
