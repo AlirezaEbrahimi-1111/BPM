@@ -35,17 +35,29 @@ func WriteErr(w http.ResponseWriter, status int, msg string) {
 // پیش‌فرض توی X-Forwarded-For می‌ذاره. چون Go فقط روی 127.0.0.1 گوش
 // می‌ده (بند main.go)، این هدر همیشه از همون اپاچی محلی و قابل‌اعتماده،
 // نه از یک کلاینت بیرونی جعل‌کننده.
+//
+// 🔒 X-Forwarded-For را خود کاربر هم می‌تواند بفرستد؛ Apache (mod_proxy) IP واقعی را
+// به «آخر» این هدر اضافه می‌کند، نه اول. پس فقط وقتی درخواست از خود Apache روی
+// همین سرور (loopback) آمده به هدر اعتماد می‌کنیم و «آخرین» مقدار را برمی‌داریم.
+// قبلا اولین مقدار برداشته می‌شد و یک کارمند می‌توانست با فرستادن
+// X-Forwarded-For: <IP شرکت> لایهٔ IP ثبت ورود/خروج را دور بزند.
 func ClientIP(r *http.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		if i := strings.IndexByte(xff, ','); i != -1 {
-			return strings.TrimSpace(xff[:i])
-		}
-		return strings.TrimSpace(xff)
-	}
+	remote := r.RemoteAddr
 	if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
-		return host
+		remote = host
 	}
-	return r.RemoteAddr
+	if ip := net.ParseIP(remote); ip == nil || !ip.IsLoopback() {
+		return remote
+	}
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		if i := strings.LastIndexByte(xff, ','); i != -1 {
+			xff = xff[i+1:]
+		}
+		if last := strings.TrimSpace(xff); last != "" {
+			return last
+		}
+	}
+	return remote
 }
 
 // LogRequests یک میدل‌ور لاگ ساده (متد، مسیر، زمان).
