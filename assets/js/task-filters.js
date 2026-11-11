@@ -738,26 +738,21 @@ window.TF = (function () {
             .toLowerCase();
     }
 
-    /** ۰: عبارت کامل در عنوان، ۱: همهٔ کلمه‌ها در عنوان، ۲: بقیه (توضیحات، تاریخچه، پیوست، چک‌لیست) */
+    /**
+     * سطح شباهت عنوان (۰ بهترین) — منطق مشترک در assets/js/search-sort.js:
+     * کلمهٔ کامل > بخشی از کلمه > همهٔ کلمه‌ها > بقیه (توضیحات، تاریخچه، پیوست، چک‌لیست)
+     */
     function searchRank(title, query) {
-        const q = normalizeSearchText(query);
-        const t = normalizeSearchText(title);
-        if (t.includes(q)) return 0;
-        return q.split(' ').every(w => t.includes(w)) ? 1 : 2;
+        return SearchSort.rank(title, query);
     }
 
     /**
-     * مرتب‌سازی نتایج جستجو بر اساس شباهت عنوان؛ داخل هر سطح شباهت، بر اساس عنوان از الف تا ی
-     * (ترتیب الفبای فارسی). عنوان‌های کاملا یکسان ترتیب قبلی‌شان را نگه می‌دارند (sort پایدار است).
+     * مرتب‌سازی نتایج جستجو بر اساس شباهت عنوان؛ داخل هر سطح شباهت، عنوان از الف تا ی.
      * مرتب‌سازی ستونی که کاربر در جدول انتخاب کرده بعد از این اعمال می‌شود.
+     * نیازمند assets/js/search-sort.js پیش از این فایل.
      */
     function sortBySearchRank(tasks, query) {
-        if (!normalizeSearchText(query)) return;
-        const ranks = new Map(tasks.map(t => [t, searchRank(t.title, query)]));
-        const collator = new Intl.Collator('fa', { sensitivity: 'base', numeric: true });
-        tasks.sort((a, b) =>
-            (ranks.get(a) - ranks.get(b)) ||
-            collator.compare(normalizeSearchText(a.title), normalizeSearchText(b.title)));
+        SearchSort.sort(tasks, query, t => t.title);
     }
 
     return {

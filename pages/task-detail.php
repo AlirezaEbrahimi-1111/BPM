@@ -1756,6 +1756,7 @@ if (!empty($_GET['id']) && ucrmTaskLink($db, (int) $_GET['id'])) {
         <script src="<?= asset('../../assets/js/table-utils.js') ?>"></script>
         <script src="<?= asset('/assets/js/undo-toast.js') ?>"></script>
         <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
+        <script src="<?= asset('/assets/js/search-sort.js') ?>"></script>
         <script src="<?= asset('/assets/js/task-filters.js') ?>"></script>
         <script src="<?= asset('/assets/js/task-attachments.js') ?>"></script>
         <script>

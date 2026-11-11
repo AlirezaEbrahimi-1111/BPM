@@ -195,18 +195,24 @@ try {
         $taskOrderSql = 'match_tier ASC, t.created_at DESC';
         if ($rankMode) {
             $titleSql = 'REPLACE(t.title, ?, \' \')';
+            // «کلمهٔ کامل» (هم‌منطق با assets/js/search-sort.js و اپ): عبارت با فاصله دو طرفش،
+            // و پسوند جمع (ها/های/هایی...) بلافاصله بعدش نیامده — «شرکت» در «حوالهٔ شرکت برای»
+            // بالاتر از «شرکت ها» / «شرکت‌ها»
+            $paddedSql = "CONCAT(' ', $titleSql, ' ')";
             $taskOrderSql = "CASE
                     WHEN t.id = ? THEN 0
                     WHEN $titleSql = ? THEN 1
-                    WHEN $titleSql LIKE ? THEN 2
+                    WHEN $paddedSql LIKE ? AND $paddedSql NOT LIKE ? THEN 2
                     WHEN $titleSql LIKE ? THEN 3
-                    ELSE 4
+                    WHEN $titleSql LIKE ? THEN 4
+                    ELSE 5
                 END ASC, match_tier ASC, "
                 // sort=title (وب): هم‌رتبه‌ها از الف تا ی (collation فارسی جدول)؛ اپ بدون آن: کوتاه‌ترین عنوان اول
                 . (($_GET['sort'] ?? '') === 'title' ? 't.title ASC' : 'CHAR_LENGTH(t.title) ASC')
                 . ", t.created_at DESC";
             array_push($params, $idMatch,
                 $zwnj, $rankQuery,
+                $zwnj, '% ' . $rankQuery . ' %', $zwnj, '% ' . $rankQuery . ' ها%',
                 $zwnj, $rankQuery . '%',
                 $zwnj, '%' . $rankQuery . '%');
         }

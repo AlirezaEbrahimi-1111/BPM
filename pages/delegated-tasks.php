@@ -132,6 +132,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
     <script src="<?= asset('../assets/js/cdn/jquery.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/table-utils.js') ?>"></script>
     <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
+    <script src="<?= asset('/assets/js/search-sort.js') ?>"></script>
     <script src="<?= asset('../../assets/js/task-filters.js') ?>"></script>
 
     <script>

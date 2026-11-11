@@ -129,8 +129,15 @@ func List(db *sql.DB) http.HandlerFunc {
 		orderSQL := "t.created_at DESC"
 		var orderParams []any
 		if search != "" {
-			orderSQL = "CASE WHEN t.subject LIKE ? THEN 0 ELSE 1 END, t.subject ASC, t.created_at DESC"
-			orderParams = append(orderParams, "%"+search+"%")
+			// کلمهٔ کامل (بدون پسوند جمع بعدش) > بخشی از کلمه > بقیه — هم‌منطق با search-sort.js
+			const zw = "‌"
+			sq := strings.Join(strings.Fields(strings.ReplaceAll(search, zw, " ")), " ")
+			subj := "CONCAT(' ', REPLACE(t.subject, ?, ' '), ' ')"
+			orderSQL = "CASE WHEN " + subj + " LIKE ? AND " + subj + " NOT LIKE ? THEN 0 " +
+				"WHEN " + subj + " LIKE ? THEN 1 ELSE 2 END, t.subject ASC, t.created_at DESC"
+			orderParams = append(orderParams,
+				zw, "% "+sq+" %", zw, "% "+sq+" ها%",
+				zw, "%"+sq+"%")
 		}
 
 		supportIDs := core.SuperAdminIDs // [1, 19, 129]

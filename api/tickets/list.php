@@ -105,8 +105,15 @@ try {
     // (SELECT → WHERE) دست نخورد.
     $orderSQL = 't.created_at DESC';
     if ($search !== '') {
-        $likeQ = $db->quote('%' . $search . '%');
-        $orderSQL = "CASE WHEN t.subject LIKE {$likeQ} THEN 0 ELSE 1 END, t.subject ASC, t.created_at DESC";
+        // کلمهٔ کامل (بدون پسوند جمع بعدش) > بخشی از کلمه > بقیه — هم‌منطق با search-sort.js
+        $zw     = "\xE2\x80\x8C";
+        $subj   = "CONCAT(' ', REPLACE(t.subject, " . $db->quote($zw) . ", ' '), ' ')";
+        $sq     = trim(preg_replace('/\s+/u', ' ', str_replace($zw, ' ', $search)));
+        $likeQ  = $db->quote('%' . $sq . '%');
+        $wordQ  = $db->quote('% ' . $sq . ' %');
+        $pluralQ = $db->quote('% ' . $sq . ' ها%');
+        $orderSQL = "CASE WHEN {$subj} LIKE {$wordQ} AND {$subj} NOT LIKE {$pluralQ} THEN 0
+                          WHEN {$subj} LIKE {$likeQ} THEN 1 ELSE 2 END, t.subject ASC, t.created_at DESC";
     }
 
     // «پشتیبان» = دو کاربر سیستمی (getSuperAdminIds). مبنای منطق «توپ در

@@ -1,10 +1,15 @@
 // /assets/js/search-sort.js — مرتب‌سازی مشترک نتایج جستجو (فهرست‌هایی که هر ردیف «نام» دارد)
 //
 //   SearchSort.sort(rows, query, getName)   — درجا مرتب می‌کند و همان آرایه را برمی‌گرداند
+//   SearchSort.rank(name, query)            — سطح شباهت یک نام (۰ بهترین)
 //
-// ترتیب: ۱) کل عبارت جستجو در نام  ۲) همهٔ کلمه‌ها در نام  ۳) بقیه (مثلا فقط در تلفن/کد پیدا شده)
-// و داخل هر سطح: نام از الف تا ی (الفبای فارسی؛ «تست ۲» پیش از «تست ۱۰»). نام‌های کاملا یکسان
-// ترتیب قبلی را نگه می‌دارند (sort پایدار است). هم‌منطق با sortBySearchRank در task-filters.js.
+// سطح‌ها:
+//   ۰) کل عبارت به‌صورت «کلمهٔ کامل» در نام  — «شرکت» در «واریز حواله شرکت برای رضا»
+//   ۱) کل عبارت، ولی چسبیده به پسوند/کلمهٔ دیگر — «شرکت» در «شرکت‌ها» یا «شرکت ها»
+//   ۲) همهٔ کلمه‌های جستجو در نام (به هر ترتیب)
+//   ۳) بقیه (مثلا فقط در تلفن/کد/توضیحات پیدا شده)
+// داخل هر سطح: نام از الف تا ی (الفبای فارسی؛ «تست ۲» پیش از «تست ۱۰»). نام‌های کاملا یکسان
+// ترتیب قبلی را نگه می‌دارند (sort پایدار است). هم‌منطق با اپ (lib/core/utils/task_search.dart).
 //
 // ⚠️ فقط روی آرایهٔ فیلترشده صدا بزنید، نه روی آرایهٔ اصلی صفحه.
 // 🔒 طبق قاعدهٔ فایل‌های JS مشترک: هیچ let/const سطح‌بالا — همه داخل IIFE.
@@ -12,6 +17,9 @@
     var collator = (typeof Intl !== 'undefined' && Intl.Collator)
         ? new Intl.Collator('fa', { sensitivity: 'base', numeric: true })
         : null;
+
+    // پسوندهای جمع که با فاصله یا نیم‌فاصله به کلمه می‌چسبند: «شرکت ها» ≠ کلمهٔ کامل «شرکت»
+    var PLURAL_SUFFIXES = ['ها', 'های', 'هایی', 'هایم', 'هایت', 'هایش', 'هایمان', 'هایتان', 'هایشان'];
 
     /** یکسان‌سازی: رقم فارسی/عربی → لاتین، ی/ک عربی → فارسی، نیم‌فاصله → فاصله، حروف کوچک */
     function normalize(text) {
@@ -25,11 +33,26 @@
             .toLowerCase();
     }
 
-    function rank(name, q) {
-        var n = normalize(name);
+    /** عبارت (نرمال‌شده) جایی در متن (نرمال‌شده) به‌صورت کلمهٔ کامل و بدون پسوند جمع بعدش آمده؟ */
+    function hasWholeWord(text, phrase) {
+        var t = ' ' + text + ' ', p = ' ' + phrase + ' ', from = 0, i;
+        while ((i = t.indexOf(p, from)) !== -1) {
+            var rest = t.slice(i + p.length);
+            var next = rest.split(' ')[0];
+            if (PLURAL_SUFFIXES.indexOf(next) === -1) return true;
+            from = i + 1;
+        }
+        return false;
+    }
+
+    function rankNormalized(n, q) {
         if (!q) return 0;
-        if (n.indexOf(q) !== -1) return 0;
-        return q.split(' ').every(function (w) { return n.indexOf(w) !== -1; }) ? 1 : 2;
+        if (n.indexOf(q) !== -1) return hasWholeWord(n, q) ? 0 : 1;
+        return q.split(' ').every(function (w) { return n.indexOf(w) !== -1; }) ? 2 : 3;
+    }
+
+    function rank(name, query) {
+        return rankNormalized(normalize(name), normalize(query));
     }
 
     function compareNames(a, b) {
@@ -43,7 +66,7 @@
         var meta = new Map();
         rows.forEach(function (r) {
             var n = normalize(getName(r));
-            meta.set(r, { rank: rank(n, q), name: n });
+            meta.set(r, { rank: rankNormalized(n, q), name: n });
         });
         rows.sort(function (a, b) {
             var ma = meta.get(a), mb = meta.get(b);
@@ -52,5 +75,5 @@
         return rows;
     }
 
-    window.SearchSort = { sort: sort, normalize: normalize };
+    window.SearchSort = { sort: sort, rank: rank, normalize: normalize };
 })();

@@ -3134,6 +3134,7 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         </div>
     </div>
     <!-- پیام کوتاه -->
+    <script src="<?= asset('/assets/js/search-sort.js') ?>"></script>
     <script src="<?= asset('/assets/js/task-filters.js') ?>"></script>
     <script>
         /* متغیر authToken از header.php می‌آید */

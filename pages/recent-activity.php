@@ -142,6 +142,7 @@ $raScope = ($raCanSeeOrg && ($_GET['scope'] ?? 'org') !== 'personal') ? 'org' : 
     <?php include 'footer.php'; ?>
 
     <script src="<?= asset('/assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
+    <script src="<?= asset('/assets/js/search-sort.js') ?>"></script>
     <script src="<?= asset('/assets/js/task-filters.js') ?>"></script>
     <script>
         'use strict';
