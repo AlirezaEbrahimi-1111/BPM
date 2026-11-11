@@ -129,7 +129,18 @@ try {
                     CASE WHEN wis.completed_at > COALESCE(wis.deadline, DATE_ADD(wis.started_at, INTERVAL ws.time_limit_hours HOUR))
                     THEN 1 ELSE 0 END
                 ELSE 0
-            END as is_delayed
+            END as is_delayed,
+
+            -- 🔗 دقیقهٔ تأخیر — همان فرمولِ go-api/internal/reports/bottleneck.go (delay_minutes)؛
+            -- اگر یکی عوض شد، دیگری هم: پایانِ مرحله (یا الان اگر فعال است) − موعدِ مؤثر، حداقل صفر
+            CASE
+                WHEN wis.started_at IS NOT NULL AND (wis.completed_at IS NOT NULL OR wis.status = 'active') THEN
+                    GREATEST(0, TIMESTAMPDIFF(MINUTE,
+                        COALESCE(wis.deadline, DATE_ADD(wis.started_at, INTERVAL ws.time_limit_hours HOUR)),
+                        COALESCE(wis.completed_at, NOW())
+                    ))
+                ELSE 0
+            END as delay_minutes
 
             FROM workflow_instance_steps wis
             LEFT JOIN workflow_steps ws ON wis.step_id = ws.id

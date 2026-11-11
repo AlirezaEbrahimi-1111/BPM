@@ -13,6 +13,7 @@ type bottleneckInstance struct {
 	InstanceTitle any   `json:"instance_title"`
 	StartedAt     any   `json:"started_at"`
 	DelayHours    int64 `json:"delay_hours"`
+	DelayMinutes  int64 `json:"delay_minutes"`
 }
 
 type bottleneckGroup struct {
@@ -23,10 +24,12 @@ type bottleneckGroup struct {
 	Count           int                  `json:"count"`
 	AvgDelayHours   float64              `json:"avg_delay_hours"`
 	MaxDelayHours   int64                `json:"max_delay_hours"`
+	AvgDelayMinutes float64              `json:"avg_delay_minutes"`
 	Severity        float64              `json:"severity"`
 	Instances       []bottleneckInstance `json:"instances"`
 
-	totalDelay int64 // داخلی — در JSON نمی‌آید (دقیقا مثل PHP که total_delay را در خروجی نمی‌گذارد)
+	totalDelayMin int64 // داخلی — جمعِ دقیقه‌ها برای avg_delay_minutes
+	totalDelay    int64 // داخلی — در JSON نمی‌آید (دقیقا مثل PHP که total_delay را در خروجی نمی‌گذارد)
 }
 
 // Bottleneck — پورت دقیق api/reports/bottleneck-report.php
@@ -55,7 +58,13 @@ func Bottleneck(db *sql.DB) http.HandlerFunc {
                 HOUR,
                 COALESCE(wis.deadline, DATE_ADD(wis.started_at, INTERVAL ws.time_limit_hours HOUR)),
                 NOW()
-            ) AS delay_hours
+            ) AS delay_hours,
+            -- 🔗 دقیقهٔ تأخیر — همان فرمولِ api/workflows/detail.php (delay_minutes)؛ اگر یکی عوض شد، دیگری هم
+            GREATEST(0, TIMESTAMPDIFF(
+                MINUTE,
+                COALESCE(wis.deadline, DATE_ADD(wis.started_at, INTERVAL ws.time_limit_hours HOUR)),
+                NOW()
+            )) AS delay_minutes
         FROM workflow_instance_steps wis
         JOIN workflow_steps ws        ON ws.id = wis.step_id
         JOIN workflow_instances wi    ON wi.id = wis.instance_id
@@ -141,6 +150,8 @@ func Bottleneck(db *sql.DB) http.HandlerFunc {
 
 			g.Count++
 			g.totalDelay += delay
+			delayMin := core.ToInt64(row["delay_minutes"])
+			g.totalDelayMin += delayMin
 			if delay > g.MaxDelayHours {
 				g.MaxDelayHours = delay
 			}
@@ -149,6 +160,7 @@ func Bottleneck(db *sql.DB) http.HandlerFunc {
 				InstanceTitle: row["instance_title"],
 				StartedAt:     row["started_at"],
 				DelayHours:    delay,
+				DelayMinutes:  delayMin,
 			})
 		}
 
@@ -157,6 +169,7 @@ func Bottleneck(db *sql.DB) http.HandlerFunc {
 			g := groups[key]
 			if g.Count > 0 {
 				g.AvgDelayHours = round1(float64(g.totalDelay) / float64(g.Count))
+				g.AvgDelayMinutes = round1(float64(g.totalDelayMin) / float64(g.Count))
 			}
 			g.Severity = round1(float64(g.Count) * g.AvgDelayHours)
 			result = append(result, g)

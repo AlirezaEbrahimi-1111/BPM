@@ -20,6 +20,7 @@ if (!hasPermission($__me, 'view_reports')) {
     <script src="<?= asset('../assets/js/config.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/sections-helper.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/delay-format.js') ?>"></script>
 
     <style>
         :root {
@@ -590,16 +591,6 @@ if (!hasPermission($__me, 'view_reports')) {
             return String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹' [d]);
         }
 
-        /* ساعت → متن خوانا */
-        function humanDelay(hours) {
-            if (hours < 24) return `${toFa(hours)} ساعت`;
-            const days = Math.floor(hours / 24);
-            const rem = hours % 24;
-            return rem > 0 ?
-                `${toFa(days)} روز و ${toFa(rem)} ساعت` :
-                `${toFa(days)} روز`;
-        }
-
         /* میلادی → شمسی */
         function toJalali(gy, gm, gd) {
             const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
@@ -695,7 +686,7 @@ if (!hasPermission($__me, 'view_reports')) {
                         <i class="bi bi-arrow-repeat" style="color:#9ca3af;"></i>
                         <span class="bn-instance-title" title="${esc(ins.instance_title || '')}">${esc(ins.instance_title) || '—'}</span>
                         <span class="bn-instance-started">شروع: ${fmtStarted(ins.started_at)}</span>
-                        <span class="bn-instance-delay">${humanDelay(ins.delay_hours)} تأخیر</span>
+                        <span class="bn-instance-delay">${formatDelayMinutes(ins.delay_minutes != null ? ins.delay_minutes : ins.delay_hours * 60)} تأخیر</span>
                     </div>
                 `).join('');
 
@@ -718,7 +709,7 @@ if (!hasPermission($__me, 'view_reports')) {
                                 <div class="bn-metric-label">روتین درگیر</div>
                             </div>
                             <div class="bn-metric">
-                                <div class="bn-metric-num avg">${humanDelay(Math.round(b.avg_delay_hours))}</div>
+                                <div class="bn-metric-num avg">${formatDelayMinutes(b.avg_delay_minutes != null ? b.avg_delay_minutes : b.avg_delay_hours * 60)}</div>
                                 <div class="bn-metric-label">میانگین تأخیر</div>
                             </div>
                         </div>

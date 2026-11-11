@@ -19,6 +19,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
     <script src="<?= asset('../../assets/js/cdn/drawflow.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/sections-helper.js') ?>"></script>
     <script src="<?= asset('../../assets/js/task-filters.js') ?>"></script>
+    <script src="<?= asset('../../assets/js/delay-format.js') ?>"></script>
 
     <style>
         /* ── Layout ── */
@@ -2226,7 +2227,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         ${step.duration_minutes ? ((activeOverdue || completedLate)
                             // مرحلهٔ دارای تأخیر: فقط «تأخیر» = زمان واقعی − زمان مجاز (فراتر از موعد) —
                             // هم‌راستا با عددِ «تأخیر»ِ تحلیل گلوگاه (NOW − موعد). (درخواست ۱۴۰۵/۰۸/۱۰)
-                            ? `<div><span class="lbl">تأخیر: </span><strong class="${activeOverdue ? 'text-danger' : 'text-warning'}">${formatDuration(Math.floor(Math.max(0, (parseInt(step.duration_minutes) || 0) - (parseInt(step.expected_duration_minutes) || 0)) / 60) * 60)}</strong></div>`
+                            ? `<div><span class="lbl">تأخیر: </span><strong class="${activeOverdue ? 'text-danger' : 'text-warning'}">${formatDelayMinutes(step.delay_minutes)}</strong></div>`
                             : `<div><span class="lbl">زمان واقعی: </span><strong class="text-success">${formatDuration(step.duration_minutes)}</strong></div>`) : ''}
                     </div>
                     ${step.completion_notes ? `<div class="mt-2" style="font-size:.85rem;background:var(--info-box-bg);border-radius:8px;padding:8px 10px;color:var(--text-strong);"><span class="lbl">توضیحات انجام‌دهنده: </span>${escHtml(step.completion_notes).replace(/\n/g, '<br>')}</div>` : ''}
