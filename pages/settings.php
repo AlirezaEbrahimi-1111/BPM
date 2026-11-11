@@ -112,7 +112,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
             border: 2px solid #fff;
             background: #ef4444; color: #fff;
             display: flex; align-items: center; justify-content: center;
-            font-size: .72rem; padding: 0; cursor: pointer;
+            font-size: .72rem; padding: 2px 0 0; cursor: pointer;
             box-shadow: 0 1px 4px rgba(0, 0, 0, .2);
             transition: transform .15s ease, background .15s ease;
         }
@@ -278,7 +278,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                         <!-- حذف عکس — بج پایین-چپ عکس؛ فقط وقتی عکس دارد -->
                         <button type="button" class="avatar-del-badge" id="avatarDeleteBtn" onclick="deleteAvatar()"
                                 title="حذف عکس پروفایل" aria-label="حذف عکس پروفایل" style="display:none;">
-                            <i class="bi bi-trash3"></i>
+                            <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
                     <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(this.files[0])">
