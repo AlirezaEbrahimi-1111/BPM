@@ -2299,6 +2299,58 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             overflow-wrap: anywhere;
         }
 
+        /* تغییر نام گروه (اختیار «تغییر اطلاعات گروه») */
+        .chat-gi-hero-name-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .chat-gi-rename-btn {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .16);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: .85rem;
+        }
+
+        .chat-gi-rename-btn:hover {
+            background: rgba(255, 255, 255, .28);
+        }
+
+        .chat-gi-rename-edit {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .chat-gi-rename-edit input {
+            flex: 1;
+            min-width: 0;
+            height: 32px;
+            border: 1px solid rgba(255, 255, 255, .45);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .14);
+            color: #fff;
+            padding: 0 10px;
+            font: inherit;
+            font-size: .95rem;
+            outline: none;
+        }
+
+        .chat-gi-rename-edit input:focus {
+            border-color: #fff;
+            background: rgba(255, 255, 255, .22);
+        }
+
         .chat-gi-hero-meta {
             display: flex;
             flex-wrap: wrap;
@@ -2845,7 +2897,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     <div class="chat-gi-hero-main">
                         <div class="chat-group-avatar-wrap" id="groupInfoAvatarWrap" onclick="triggerGroupAvatarUpload()"></div>
                         <div class="chat-gi-hero-text">
-                            <div class="chat-gi-hero-name" id="groupInfoTitle">اطلاعات گروه</div>
+                            <div class="chat-gi-hero-name-row" id="groupInfoTitleRow">
+                                <div class="chat-gi-hero-name" id="groupInfoTitle">اطلاعات گروه</div>
+                                <button type="button" class="chat-gi-rename-btn" id="groupInfoRenameBtn" title="تغییر نام گروه" style="display:none;" onclick="startGroupRename()"><i class="bi bi-pencil"></i></button>
+                            </div>
+                            <div class="chat-gi-rename-edit" id="groupInfoRenameEdit" style="display:none;">
+                                <input type="text" id="groupInfoRenameInput" maxlength="100" autocomplete="off"
+                                    onkeydown="if(event.key==='Enter'){event.preventDefault();saveGroupRename();}else if(event.key==='Escape'){cancelGroupRename();}">
+                                <button type="button" class="chat-gi-rename-btn" title="ذخیره" onclick="saveGroupRename()"><i class="bi bi-check-lg"></i></button>
+                                <button type="button" class="chat-gi-rename-btn" title="انصراف" onclick="cancelGroupRename()"><i class="bi bi-x-lg"></i></button>
+                            </div>
                             <div class="chat-gi-hero-meta">
                                 <span><i class="bi bi-people-fill"></i> <span id="groupInfoMemberCount"></span></span>
                                 <span id="groupInfoOnlineWrap" style="display:none;"><span class="chat-gi-dot online"></span> <span id="groupInfoOnlineCount"></span></span>
@@ -4508,7 +4569,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     var sysRow = document.createElement('div');
                     sysRow.className = 'chat-system-message';
                     sysRow.setAttribute('data-message-id', m.id);
-                    sysRow.innerHTML = '<span><i class="bi bi-person-plus"></i> ' + esc(m.message || '') + '</span>';
+                    var sysIcon = /نام گروه/.test(m.message || '') ? 'bi-pencil' : 'bi-person-plus';
+                    sysRow.innerHTML = '<span><i class="bi ' + sysIcon + '"></i> ' + esc(m.message || '') + '</span>';
 
                     if (prepend) {
                         if (!prevGroupInBatch || sysDateKey !== prevGroupInBatch.key) {
@@ -6053,7 +6115,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
             pin: 'سنجاق‌کردن پیام',
             add_member: 'افزودن عضو',
             remove_member: 'حذف عضو',
-            avatar: 'تغییر عکس گروه'
+            avatar: 'تغییر اطلاعات گروه (نام و عکس)'
         };
 
         function openGroupInfoDrawer() {
@@ -6229,6 +6291,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     groupInfoIsOwner = !!data.is_owner;
                     groupInfoCanManage = !!data.can_manage;
                     groupInfoMyPermissions = data.my_permissions || [];
+                    document.getElementById('groupInfoRenameBtn').style.display =
+                        groupInfoMyPermissions.indexOf('avatar') !== -1 ? '' : 'none';
                     groupInfoAllPermissions = data.all_permissions || [];
                     groupInfoMembersCache = data.members || [];
                     document.getElementById('groupInfoAddBtn').style.display =
@@ -6289,9 +6353,58 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         function closeGroupInfoDrawer() {
+            cancelGroupRename();
             document.getElementById('groupInfoDrawerOverlay').classList.remove('show');
             document.getElementById('groupInfoDrawer').classList.remove('show');
             document.body.classList.remove('chat-drawer-open');
+        }
+
+        // ── تغییر نام گروه — همان اختیارِ «تغییر اطلاعات گروه» (کلید avatar)؛ سرور هم دوباره بررسی می‌کند ──
+        function startGroupRename() {
+            if (groupInfoMyPermissions.indexOf('avatar') === -1) return;
+            var input = document.getElementById('groupInfoRenameInput');
+            input.value = document.getElementById('groupInfoTitle').textContent || '';
+            document.getElementById('groupInfoTitleRow').style.display = 'none';
+            document.getElementById('groupInfoRenameEdit').style.display = '';
+            input.focus();
+            input.select();
+        }
+
+        function cancelGroupRename() {
+            document.getElementById('groupInfoRenameEdit').style.display = 'none';
+            document.getElementById('groupInfoTitleRow').style.display = '';
+        }
+
+        function saveGroupRename() {
+            if (!activeConversationId) return;
+            var convId = activeConversationId;
+            var title = document.getElementById('groupInfoRenameInput').value.replace(/\s+/g, ' ').trim();
+            if (!title) { showToast('نام گروه نمی‌تواند خالی باشد', 'error'); return; }
+            fetch('../api/chat/rename-group.php', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ conversation_id: convId, title: title })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) {
+                        showToast(data.message || 'خطا در تغییر نام گروه', 'error');
+                        return;
+                    }
+                    cancelGroupRename();
+                    if (data.unchanged) return;
+                    showToast('نام گروه تغییر کرد', 'success');
+                    if (convId === activeConversationId) {
+                        activeConversationTitle = data.title;
+                        document.getElementById('groupInfoTitle').textContent = data.title;
+                        document.getElementById('chatHeadName').textContent = data.title;
+                    }
+                    loadConversations();
+                })
+                .catch(function () { showToast('خطا در ارتباط با سرور', 'error'); });
         }
 
         function triggerGroupAvatarUpload() {
