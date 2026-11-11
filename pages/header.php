@@ -973,12 +973,21 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
                             var cached = JSON.parse(localStorage.getItem('user_info') || '{}');
                             var nameChanged = cached.first_name !== data.user.first_name || cached.last_name !== data.user.last_name;
                             var orgChanged = data.user.organization_name && cached.organization_name !== data.user.organization_name;
-                            if (!nameChanged && !orgChanged) return;
+                            // نقش هم از سرور تازه می‌شود — منوی «مدیریت» (toggleManagerMenu) از
+                            // user_info.role می‌خواند؛ اگر نقش عوض شده یا user_info کهنه/ناقص
+                            // بود (مثلا ورود خودکار بعد از ثبت سازمان)، منو بدون خروج/ورود درست شود
+                            var roleChanged = !!data.user.role && cached.role !== data.user.role;
+                            if (!nameChanged && !orgChanged && !roleChanged) return;
 
                             cached.first_name = data.user.first_name;
                             cached.last_name = data.user.last_name;
                             if (data.user.organization_name) cached.organization_name = data.user.organization_name;
+                            if (data.user.role) cached.role = data.user.role;
                             localStorage.setItem('user_info', JSON.stringify(cached));
+
+                            if (roleChanged && typeof toggleManagerMenu === 'function') {
+                                try { toggleManagerMenu(); } catch (e) {}
+                            }
 
                             if (nameChanged) {
                                 var full = ((data.user.first_name || '') + ' ' + (data.user.last_name || '')).trim();

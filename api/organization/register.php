@@ -73,12 +73,28 @@ try {
     $auth = new Auth($db);
     $token = $auth->generateJWTToken($result['user_id'],null, $result['organization_id']);
     $auth->recordLogin((int) $result['user_id']); // ورود خودکار بعد از ثبت سازمان = آخرین ورود
-    
+
+    // اطلاعات کاربر مثل جواب لاگین (api/auth/login.php) — صفحهٔ ثبت‌نام آن را در
+    // localStorage.user_info می‌گذارد؛ بدون این، منوی «مدیریت» (که نقش را از
+    // user_info می‌خواند) برای سازندهٔ سازمان نمایش داده نمی‌شد
+    $userStmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+    $userStmt->execute([(int) $result['user_id']]);
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    unset($user['password']);
+    if ($user) {
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/user-sections.php';
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+        $user['activity_sections'] = us_getUserSections($db, (int) $user['id']);
+        $user['organization_name'] = trim((string) ($data['org_name'] ?? ''));
+        $user = array_merge($user, planPayload($db, (int) $result['organization_id']));
+    }
+
     http_response_code(201);
     echo json_encode([
         'success'         => true,
         'message'         => 'سازمان با موفقیت ثبت شد',
         'token'           => $token,
+        'user'            => $user ?: null,
         'organization_id' => $result['organization_id'],
         'trial_days'      => 14
     ], JSON_UNESCAPED_UNICODE);

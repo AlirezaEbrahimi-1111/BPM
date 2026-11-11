@@ -141,6 +141,13 @@ if (!headers_sent()) {
                     // header.php می‌خوانند)؛ قبلا 'authToken' ذخیره می‌شد و داشبورد کاربر را
                     // لاگین‌نشده می‌دید و به صفحه ورود برمی‌گرداند.
                     localStorage.setItem('auth_token', data.token);
+                    // اطلاعات کاربر جدید (نقش سوپروایزر) — وگرنه منوی «مدیریت» مخفی می‌ماند
+                    // یا user_info کاربر قبلی همین مرورگر باقی می‌ماند
+                    if (data.user) {
+                        localStorage.setItem('user_info', JSON.stringify(data.user));
+                    } else {
+                        localStorage.removeItem('user_info');
+                    }
 
                     alert.className = 'alert alert-success';
                     alert.textContent =
