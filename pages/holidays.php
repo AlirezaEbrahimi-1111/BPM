@@ -181,6 +181,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
     </div>
 
     <script src="<?= asset('../../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
+    <script src="<?= asset('/assets/js/undo-toast.js') ?>"></script>
     <script>
         // ============================================
         // متغیرهای سراسری - استفاده از authToken تعریف شده در header
@@ -378,12 +379,16 @@ if (!hasPermission($__me, 'view_org_settings')) {
                             ${h.org_working_day ? '<span class="badge bg-success" style="font-size:.65rem;">روز کاری برای سازمان شما</span>' : ''}
                         </span>
                     </div>
-                    ${h.can_override ? `
-                    <button class="holiday-override-btn" onclick="toggleOrgWorkingDay('${h.date}', ${h.org_working_day ? 'false' : 'true'})"
-                            title="${h.org_working_day ? 'برگرداندن به تعطیل برای سازمان ما' : 'برای سازمان ما روز کاری باشد'}">
-                        <i class="bi ${h.org_working_day ? 'bi-arrow-counterclockwise' : 'bi-briefcase'}"></i>
-                        <span>${h.org_working_day ? 'برگرداندن به تعطیل' : 'روز کاری برای ما'}</span>
-                    </button>` : ''}
+                    ${h.can_override ? (h.org_working_day ? `
+                    <button class="holiday-override-btn" onclick="toggleOrgWorkingDay('${h.date}', false)"
+                            title="برگرداندن به تعطیل برای سازمان ما">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        <span>برگرداندن به تعطیل</span>
+                    </button>` : `
+                    <button class="holiday-override-btn icon-only" onclick="toggleOrgWorkingDay('${h.date}', true)"
+                            title="برداشتن این تعطیلی برای سازمان ما" aria-label="برداشتن این تعطیلی برای سازمان ما">
+                        <i class="bi bi-x-lg"></i>
+                    </button>`) : ''}
                     ${h.can_delete ? `
                     <button class="holiday-delete-btn" onclick="deleteHoliday(${h.id}, ${h.type === 'weekly'})" title="حذف">
                         <i class="bi bi-trash"></i>
@@ -534,10 +539,72 @@ if (!hasPermission($__me, 'view_org_settings')) {
         // ============================================
         // تعطیلی رسمی ↔ روز کاری (فقط برای سازمان خودمان)
         // ============================================
+        // برداشتن تعطیلی (×): درخواست ۵ ثانیه دیرتر فرستاده می‌شود و تا آن موقع با «بازگرداندن»
+        // لغو می‌شود — عمدا «اول ثبت، بعد برگرداندن» نیست، چون override.php به همهٔ کارکنان
+        // اعلان/پیامک می‌فرستد و بازگرداندن یعنی اعلان دوم.
+        var HOLIDAY_UNDO_MS = 5000;
+        var pendingWorkingDays = {}; // dateStr → timer id
+
+        function sendOrgOverride(dateStr, action, keepalive) {
+            return fetch('/api/holidays/override.php', {
+                method: 'POST',
+                keepalive: !!keepalive,
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                body: JSON.stringify({ holiday_date: dateStr, action: action })
+            });
+        }
+
+        function setLocalWorkingDay(dateStr, isWorking) {
+            if (holidays[dateStr]) holidays[dateStr].org_working_day = isWorking;
+            renderCalendar();
+            renderHolidaysList();
+        }
+
+        function removeHolidayWithUndo(dateStr) {
+            if (pendingWorkingDays[dateStr]) return;
+            const title = holidays[dateStr] ? holidays[dateStr].title : '';
+            setLocalWorkingDay(dateStr, true);
+
+            pendingWorkingDays[dateStr] = setTimeout(async function () {
+                delete pendingWorkingDays[dateStr];
+                try {
+                    const response = await sendOrgOverride(dateStr, 'working');
+                    const data = await response.json();
+                    if (!data.success) showToast(data.message || 'خطا', 'error');
+                } catch (error) {
+                    showToast('خطا در ارتباط با سرور', 'error');
+                }
+                loadHolidays();
+            }, HOLIDAY_UNDO_MS);
+
+            showUndoToast({
+                title: 'تعطیلی برداشته شد',
+                message: `«${title}» برای سازمان شما روز کاری شد. بعد از ۵ ثانیه ثبت می‌شود و به همهٔ کارکنان اعلان می‌رود.`,
+                duration: HOLIDAY_UNDO_MS,
+                onUndo: function () {
+                    clearTimeout(pendingWorkingDays[dateStr]);
+                    delete pendingWorkingDays[dateStr];
+                    setLocalWorkingDay(dateStr, false);
+                    showToast('تعطیلی بازگردانده شد', 'success');
+                }
+            });
+        }
+
+        // اگر کاربر پیش از پایان ۵ ثانیه صفحه را ببندد، تغییر از دست نرود
+        window.addEventListener('pagehide', function () {
+            Object.keys(pendingWorkingDays).forEach(function (dateStr) {
+                clearTimeout(pendingWorkingDays[dateStr]);
+                delete pendingWorkingDays[dateStr];
+                try { sendOrgOverride(dateStr, 'working', true); } catch (e) {}
+            });
+        });
+
         function toggleOrgWorkingDay(dateStr, makeWorking) {
-            const msg = makeWorking
-                ? 'این تعطیلی رسمی فقط برای سازمان شما روز کاری می‌شود (برای سازمان‌های دیگر تعطیل می‌ماند). غیبت، تأخیر کارها و حقوق این روز مثل یک روز کاری عادی حساب می‌شود و برای همهٔ کارکنان اعلان فرستاده می‌شود. ادامه می‌دهید؟'
-                : 'این روز برای سازمان شما دوباره تعطیل رسمی می‌شود و برای همهٔ کارکنان اعلان فرستاده می‌شود. ادامه می‌دهید؟';
+            if (makeWorking) {
+                removeHolidayWithUndo(dateStr);
+                return;
+            }
+            const msg = 'این روز برای سازمان شما دوباره تعطیل رسمی می‌شود و برای همهٔ کارکنان اعلان فرستاده می‌شود. ادامه می‌دهید؟';
             uiConfirm(msg, async function () {
                 showLoading(true);
                 try {
@@ -558,7 +625,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
                 } finally {
                     showLoading(false);
                 }
-            }, { yesText: makeWorking ? 'بله، روز کاری شود' : 'بله، تعطیل شود', noText: 'انصراف' });
+            }, { yesText: 'بله، تعطیل شود', noText: 'انصراف' });
         }
 
         // ============================================

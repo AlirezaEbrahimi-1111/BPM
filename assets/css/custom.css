@@ -7111,6 +7111,15 @@ body.login-page::after {
     background: rgba(142, 87, 254, .12);
 }
 
+/* × «برداشتن تعطیلی برای سازمان ما» — فقط آیکن */
+.holiday-override-btn.icon-only {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    justify-content: center;
+    font-size: .8rem;
+}
+
 :root[data-theme="dark"] .holiday-override-btn {
     color: #d8cdf0;
     border-color: rgba(216, 205, 240, .35);
