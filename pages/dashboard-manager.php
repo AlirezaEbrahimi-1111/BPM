@@ -27,6 +27,7 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <link rel="stylesheet" href="<?= asset('../assets/css/persian-datepicker.css') ?>">
     <script src="<?= asset('../assets/js/assignee-picker.js') ?>"></script>
+    <script src="<?= asset('/assets/js/approve-dialog.js') ?>"></script>
     <script src="<?= asset('../../assets/js/sections-helper.js') ?>"></script>
     <script src="<?= asset('../assets/js/persian-datepicker.js') ?>"></script>
 
@@ -3795,9 +3796,10 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
 
         function rowActionInModal(task, action) {
 
-            // ── تأیید: بدون فرم، مستقیم ──────────────────
+            // ── تأیید: مودال مشترک (assets/js/approve-dialog.js) — مثل صفحهٔ جزئیات کار
+            //    با «تأیید و نگهداری» و «تأیید و ارجاع»
             if (action === 'approve') {
-                rowSubmit(task.id, 'approve', null);
+                dashOpenApproveDialog(task);
                 return;
             }
 
@@ -4928,8 +4930,34 @@ if (!in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
            ۷) باز کردن فرم عملیات
            ═══════════════════════════════════════════════════ */
 
+        /** مودال مشترک تأیید (assets/js/approve-dialog.js) — جدول و پنل برنامه کاری هر دو از همین */
+        function dashOpenApproveDialog(task) {
+            ApproveDialog.open(task, {
+                toast: pmToast,
+                loadUsers: async () => {
+                    if (pmUsers.length === 0) await pmLoadUsers();
+                    return pmUsers;
+                },
+                sections: (typeof sectionList !== 'undefined') ? sectionList : [],
+                sectionMap: (typeof sectionMap !== 'undefined') ? sectionMap : {},
+                onDone: () => {
+                    if (rowModal) rowModal.hide();
+                    pmRemoveRow(task.id);
+                    pmRefresh();
+                }
+            });
+        }
+
         function pmOpenForm(taskId, action) {
             pmCloseMenus();
+
+            if (action === 'approve') {
+                const t = dashFindTask(taskId);
+                if (t) {
+                    dashOpenApproveDialog(t);
+                    return;
+                }
+            }
 
             const box = document.getElementById('pmForm-' + taskId);
 
