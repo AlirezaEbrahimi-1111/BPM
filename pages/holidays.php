@@ -138,8 +138,9 @@ if (!hasPermission($__me, 'view_org_settings')) {
                         <div class="mb-3">
                             <label class="form-label">دامنه</label>
                             <select class="form-select" id="holidayScope">
+                                <!-- پیش‌فرض سراسری: id=1 تعطیلات رسمی را برای همهٔ مشتری‌ها ثبت می‌کند -->
+                                <option value="global" selected>سراسری (همهٔ سازمان‌ها)</option>
                                 <option value="org">فقط سازمان من</option>
-                                <option value="global">سراسری (همهٔ سازمان‌ها)</option>
                             </select>
                         </div>
                         <?php else: ?>
