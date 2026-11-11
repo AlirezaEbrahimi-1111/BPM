@@ -103,7 +103,9 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 				return
 			}
 			oHash := sha256Hex(fp)
-			const requestedMsg = "شما بیرون از شبکهٔ سازمان هستید. درخواست «ثبت ورود/خروج از بیرون شبکه» برای این دستگاه ثبت شد؛ پس از تأیید سرپرست می‌توانید با همین دستگاه از هر جا ورود و خروج بزنید."
+			// کاربر داخل شرکت با فیلترشکن/پروکسی روشن هم «بیرون شبکه» دیده می‌شود؛ هم‌متن با PHP
+			const vpnHint = "اینترنت شما از شبکهٔ سازمان شناخته نشد. اگر در محل کار هستید و فیلترشکن یا پروکسی روشن است، آن را خاموش کنید و دوباره امتحان کنید."
+			const requestedMsg = vpnHint + " اگر بیرون از محل کار هستید: درخواست «ثبت ورود/خروج از بیرون شبکه» برای این دستگاه ثبت شد؛ پس از تأیید سرپرست می‌توانید با همین دستگاه از هر جا ورود و خروج بزنید."
 
 			var oID int64
 			var oStatus, oOutside sql.NullString
@@ -144,10 +146,10 @@ func Register(db *sql.DB, cfg core.Config) http.HandlerFunc {
 				_, _ = db.Exec("UPDATE attendance_devices SET last_used_at = NOW() WHERE id = ?", oID)
 				// اجازهٔ ثبت ورود/خروج از بیرون شبکه — ادامه به پایین تابع
 			case oOutside.String == "rejected":
-				deny("OUTSIDE_REJECTED", "سرپرست اجازهٔ ثبت ورود/خروج از بیرون شبکه را برای این دستگاه نداده است. از داخل شبکهٔ سازمان ثبت کنید.", http.StatusForbidden)
+				deny("OUTSIDE_REJECTED", vpnHint+" سرپرست اجازهٔ ثبت ورود/خروج از بیرون شبکه را برای این دستگاه نداده است. از داخل شبکهٔ سازمان ثبت کنید.", http.StatusForbidden)
 				return
 			case oOutside.String == "pending" || oOutside.String == "approved":
-				deny("OUTSIDE_PENDING", "درخواست ثبت ورود/خروج از بیرون شبکه برای این دستگاه هنوز در انتظار تأیید سرپرست است.", http.StatusForbidden)
+				deny("OUTSIDE_PENDING", vpnHint+" درخواست ثبت ورود/خروج از بیرون شبکه برای این دستگاه هنوز در انتظار تأیید سرپرست است.", http.StatusForbidden)
 				return
 			default:
 				// outside_status = none → اولین تلاش این دستگاه از بیرون: درخواست ثبت می‌شود
