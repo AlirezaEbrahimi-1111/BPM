@@ -353,6 +353,7 @@ foreach ($ustmt->fetchAll(PDO::FETCH_ASSOC) as $u) {
   </div>
 </div>
 
+<script src="<?= asset('/assets/js/search-sort.js') ?>"></script>
 <script>
 const ORGS = <?= json_encode($gridData, JSON_UNESCAPED_UNICODE) ?>;
 const USERS_BY_ORG = <?= json_encode($usersByOrg, JSON_UNESCAPED_UNICODE) ?>;
@@ -529,7 +530,11 @@ const gridApi = agGrid.createGrid(document.getElementById('orgGrid'), {
 
 document.getElementById('orgSearch').addEventListener('input', function () {
   // هنگام جستجو زیرردیف‌های باز جمع می‌شوند تا ردیف detail بی‌صاحب نماند
-  if (expanded.size) { expanded.clear(); gridApi.setGridOption('rowData', buildRows()); }
+  expanded.clear();
+  // شبیه‌تر اول، بعد از الف تا ی (assets/js/search-sort.js)؛ بدون جستجو → ترتیب اصلی
+  const rows = buildRows();
+  if (this.value.trim()) SearchSort.sort(rows, this.value, o => o.name);
+  gridApi.setGridOption('rowData', rows);
   gridApi.setGridOption('quickFilterText', this.value);
 });
 

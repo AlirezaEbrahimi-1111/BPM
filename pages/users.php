@@ -17,6 +17,7 @@ if (!hasPermission($__me, 'manage_users')) {
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <script src="<?= asset('../assets/js/config.js') ?>"></script>
+    <script src="<?= asset('/assets/js/search-sort.js') ?>"></script>
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/sections-helper.js') ?>"></script>
@@ -1566,6 +1567,8 @@ if (!hasPermission($__me, 'manage_users')) {
                 if (st !== '' && String(x.is_active) !== st) return false;
                 return true;
             });
+            // شبیه‌تر اول، بعد از الف تا ی (assets/js/search-sort.js)
+            if (s) SearchSort.sort(filteredUsers, s, x => `${x.first_name || ''} ${x.last_name || ''}`);
 
             document.getElementById('usersCount').textContent = toFa(filteredUsers.length) + ' کاربر';
             if (gridApi) gridApi.setGridOption('rowData', filteredUsers);

@@ -19,6 +19,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
     <script src="<?= asset('../../assets/js/cdn/drawflow.min.js') ?>"></script>
     <script src="<?= asset('../../assets/js/sections-helper.js') ?>"></script>
     <script src="<?= asset('../../assets/js/task-filters.js') ?>"></script>
+    <script src="<?= asset('/assets/js/search-sort.js') ?>"></script>
     <script src="<?= asset('../../assets/js/delay-format.js') ?>"></script>
 
     <style>
@@ -1754,6 +1755,7 @@ require_once __DIR__ . '/../includes/page-bootstrap.php';
                     const idMatch = String(w.id || '').includes(q);
                     return titleMatch || idMatch;
                 });
+                SearchSort.sort(list, searchQuery, w => w.title); // شبیه‌تر اول، بعد الف تا ی
             }
             renderWorkflows(list);
         }

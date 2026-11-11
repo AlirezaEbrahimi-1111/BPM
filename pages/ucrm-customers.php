@@ -21,6 +21,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <script src="<?= asset('../assets/js/config.js') ?>"></script>
+    <script src="<?= asset('/assets/js/search-sort.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../../assets/css/custom.css') ?>">
     <script src="<?= asset('../../assets/js/ag-grid-community.min.js') ?>"></script>
@@ -347,6 +348,7 @@ $__ucrmRoles = ucrmRoles($db, (int) $user_id);
                     (qd && ((r.national_id || '').includes(qd) || (r.phones || []).some(p => p.includes(qd)))) ||
                     UCRM.fullAddress(r).toLowerCase().includes(q);
             });
+            if (q) SearchSort.sort(rows, q, r => r.name); // شبیه‌تر اول، بعد الف تا ی
             if (keepPage) AgGridFa.setRowsKeepPage(gridApi, rows);
             else gridApi.setGridOption('rowData', rows);
         }

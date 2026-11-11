@@ -747,13 +747,17 @@ window.TF = (function () {
     }
 
     /**
-     * مرتب‌سازی نتایج جستجو بر اساس شباهت عنوان. ترتیب قبلی در هر گروه حفظ می‌شود
-     * (sort پایدار است) و مرتب‌سازی ستونی که کاربر در جدول انتخاب کرده بعد از این اعمال می‌شود.
+     * مرتب‌سازی نتایج جستجو بر اساس شباهت عنوان؛ داخل هر سطح شباهت، بر اساس عنوان از الف تا ی
+     * (ترتیب الفبای فارسی). عنوان‌های کاملا یکسان ترتیب قبلی‌شان را نگه می‌دارند (sort پایدار است).
+     * مرتب‌سازی ستونی که کاربر در جدول انتخاب کرده بعد از این اعمال می‌شود.
      */
     function sortBySearchRank(tasks, query) {
         if (!normalizeSearchText(query)) return;
         const ranks = new Map(tasks.map(t => [t, searchRank(t.title, query)]));
-        tasks.sort((a, b) => ranks.get(a) - ranks.get(b));
+        const collator = new Intl.Collator('fa', { sensitivity: 'base', numeric: true });
+        tasks.sort((a, b) =>
+            (ranks.get(a) - ranks.get(b)) ||
+            collator.compare(normalizeSearchText(a.title), normalizeSearchText(b.title)));
     }
 
     return {

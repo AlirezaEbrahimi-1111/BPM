@@ -201,7 +201,10 @@ try {
                     WHEN $titleSql LIKE ? THEN 2
                     WHEN $titleSql LIKE ? THEN 3
                     ELSE 4
-                END ASC, match_tier ASC, CHAR_LENGTH(t.title) ASC, t.created_at DESC";
+                END ASC, match_tier ASC, "
+                // sort=title (وب): هم‌رتبه‌ها از الف تا ی (collation فارسی جدول)؛ اپ بدون آن: کوتاه‌ترین عنوان اول
+                . (($_GET['sort'] ?? '') === 'title' ? 't.title ASC' : 'CHAR_LENGTH(t.title) ASC')
+                . ", t.created_at DESC";
             array_push($params, $idMatch,
                 $zwnj, $rankQuery,
                 $zwnj, $rankQuery . '%',

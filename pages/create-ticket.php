@@ -20,6 +20,7 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
     <script src="<?= asset('../assets/js/jalali.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script src="<?= asset('../assets/js/config.js') ?>"></script>
+    <script src="<?= asset('/assets/js/search-sort.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/jquery.min.js') ?>"></script>
     <link rel="stylesheet" href="<?= asset('../assets/css/custom.css') ?>">
 
@@ -649,6 +650,8 @@ $canSetCriticalPriority = ($currentUserRole !== 'employee');
                 });
                 var data = await res.json();
                 var tasks = (data.success && data.tasks) ? data.tasks : [];
+                // سرور جدیدترین ۱۵ کار مرتبط را می‌دهد؛ نمایش: شبیه‌تر اول، بعد الف تا ی
+                SearchSort.sort(tasks, q, function (t) { return t.title; });
 
                 if (tasks.length === 0) {
                     results.innerHTML = '<div class="task-search-empty">تسکی یافت نشد</div>';

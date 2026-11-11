@@ -198,6 +198,7 @@ if (!hasPermission($__me, 'view_org_settings')) {
 </div>
 
 <script src="<?= asset('/assets/js/common.js') ?>"></script>
+<script src="<?= asset('/assets/js/search-sort.js') ?>"></script>
 <script src="<?= asset('/assets/js/alert.js') ?>"></script>
 <script>
   // قیمت هر ماه (فقط برای نمایش؛ قیمت واقعی را سرور تعیین می‌کند)
@@ -291,9 +292,16 @@ if (!hasPermission($__me, 'view_org_settings')) {
   // ── جستجو ──
   document.getElementById('searchInput').addEventListener('input', function () {
     const q = this.value.toLowerCase();
-    document.querySelectorAll('#personnelTable tbody tr').forEach(row => {
+    const tbody = document.getElementById('personnelBody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.forEach((row, i) => {
+      if (row.dataset.origIdx === undefined) row.dataset.origIdx = i; // ترتیب اصلی برای وقتی جستجو پاک شد
       row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
     });
+    // شبیه‌تر اول، بعد از الف تا ی (assets/js/search-sort.js)؛ بدون جستجو → ترتیب اصلی
+    if (q.trim()) SearchSort.sort(rows, q, r => r.cells[0] ? r.cells[0].textContent : '');
+    else rows.sort((a, b) => a.dataset.origIdx - b.dataset.origIdx);
+    rows.forEach(r => tbody.appendChild(r));
   });
 
   // ── مودال ──

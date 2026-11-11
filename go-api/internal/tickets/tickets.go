@@ -123,6 +123,16 @@ func List(db *sql.DB) http.HandlerFunc {
 			params = append(params, like, like)
 		}
 
+		// ترتیب: بدون جستجو جدیدترین اول. با جستجو (هم‌منطق با assets/js/search-sort.js و
+		// api/tickets/list.php): اول عنوانی که کل عبارت را دارد، بعد بقیه (مثلا فقط شماره
+		// تیکت مچ شده)، و داخل هر گروه عنوان از الف تا ی.
+		orderSQL := "t.created_at DESC"
+		var orderParams []any
+		if search != "" {
+			orderSQL = "CASE WHEN t.subject LIKE ? THEN 0 ELSE 1 END, t.subject ASC, t.created_at DESC"
+			orderParams = append(orderParams, "%"+search+"%")
+		}
+
 		supportIDs := core.SuperAdminIDs // [1, 19, 129]
 		supportStrs := make([]string, len(supportIDs))
 		for i, id := range supportIDs {
@@ -234,7 +244,7 @@ func List(db *sql.DB) http.HandlerFunc {
 			LEFT JOIN ticket_categories tc ON t.category_id = tc.id
 			LEFT JOIN users u ON t.created_by = u.id
 			` + whereSQL + `
-			ORDER BY t.created_at DESC
+			ORDER BY ` + orderSQL + `
 			LIMIT ? OFFSET ?`
 
 		var listParams []any
@@ -242,6 +252,7 @@ func List(db *sql.DB) http.HandlerFunc {
 			listParams = append(listParams, u.ID, u.ID, u.ID)
 		}
 		listParams = append(listParams, params...)
+		listParams = append(listParams, orderParams...)
 		listParams = append(listParams, limit, offset)
 
 		listRows, err := db.Query(listSQL, listParams...)

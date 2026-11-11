@@ -99,6 +99,16 @@ try {
         $params[] = "%{$search}%";
     }
 
+    // ترتیب: بدون جستجو جدیدترین اول. با جستجو (هم‌منطق با assets/js/search-sort.js):
+    // اول عنوانی که کل عبارت را دارد، بعد بقیه (مثلا فقط شماره تیکت مچ شده)، و داخل هر گروه
+    // عنوان از الف تا ی. عبارت جستجو با quote() امن در SQL می‌نشیند تا ترتیب placeholderها
+    // (SELECT → WHERE) دست نخورد.
+    $orderSQL = 't.created_at DESC';
+    if ($search !== '') {
+        $likeQ = $db->quote('%' . $search . '%');
+        $orderSQL = "CASE WHEN t.subject LIKE {$likeQ} THEN 0 ELSE 1 END, t.subject ASC, t.created_at DESC";
+    }
+
     // «پشتیبان» = دو کاربر سیستمی (getSuperAdminIds). مبنای منطق «توپ در
     // زمین کیست».
     $supportIds  = getSuperAdminIds();                              // [1, 19, 129]
@@ -209,7 +219,7 @@ try {
         LEFT JOIN ticket_categories tc ON t.category_id = tc.id
         LEFT JOIN users u ON t.created_by = u.id
         {$whereSQL}
-        ORDER BY t.created_at DESC
+        ORDER BY {$orderSQL}
         LIMIT {$limit} OFFSET {$offset}
     ";
     // placeholderهای SELECT (قبل از WHERE): unseen_count دو تا، awaiting_you یکی.

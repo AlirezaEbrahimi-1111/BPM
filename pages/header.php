@@ -3255,7 +3255,8 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
         var box = document.getElementById('gsResults');
         if (!box) return;
         var typesParam = gsGetActiveTypes().join(',');
-        fetch('../api/search/global.php?q=' + encodeURIComponent(q) + '&types=' + encodeURIComponent(typesParam) + '&offset=' + offset, {
+        // rank=1: کارهایی که «کل عبارت» در عنوانشان هست اول (مثل اپ)؛ sort=title: هم‌رتبه‌ها الفبایی
+        fetch('../api/search/global.php?q=' + encodeURIComponent(q) + '&types=' + encodeURIComponent(typesParam) + '&offset=' + offset + '&rank=1&sort=title', {
                 headers: { 'Authorization': 'Bearer ' + authToken }
             })
             .then(function(r) { return r.json(); })

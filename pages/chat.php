@@ -14,6 +14,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
     <link href="<?= asset('../assets/css/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= asset('../assets/js/cdn/bootstrap-icons.css') ?>">
     <script src="<?= asset('../assets/js/config.js') ?>"></script>
+    <script src="<?= asset('/assets/js/search-sort.js') ?>"></script>
     <script src="<?= asset('../assets/js/jalali.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/bootstrap.bundle.min.js') ?>"></script>
     <script src="<?= asset('../assets/js/cdn/jquery.min.js') ?>"></script>
@@ -3876,10 +3877,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         // لیست قابل‌نمایش = فیلتر نوع + جستجوی عنوان (مشترک بین رندر و میانبرهای صفحه‌کلید)
         function getVisibleConversations() {
             var term = (document.getElementById('convSearchInput').value || '').trim().toLowerCase();
-            return conversations
+            var list = conversations
                 .filter(c => convMatchesFilter(c, convFilter) && (!term || c.title.toLowerCase().includes(term)))
                 // سنجاق‌شده‌ها بالا، آخرین سنجاق اول؛ بقیه به همان ترتیب آخرین فعالیت
                 .sort((a, b) => (b.pinned_at || '').localeCompare(a.pinned_at || ''));
+            // هنگام جستجو: شبیه‌تر اول، بعد از الف تا ی (assets/js/search-sort.js)
+            return term ? SearchSort.sort(list, term, c => c.title) : list;
         }
 
         function setConvFilter(filter) {
