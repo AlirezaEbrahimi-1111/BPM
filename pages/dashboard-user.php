@@ -4142,7 +4142,8 @@ if (in_array($__me['role'] ?? 'employee', ['manager', 'supervisor'], true)) {
         function renderDelayed() {
             const box = document.getElementById('delayedList');
             const source = store.orgDelegated !== null ? store.orgDelegated : store.delegated;
-            const list = source.filter(t => TF.isOverdue(t, currentUser));
+            // کارهای بسته‌شده (اتمام دوره توسط تعریف‌کننده / متوقف) تأخیردار نیستند — مثل داشبورد مدیر و اپ
+            const list = source.filter(t => t.status !== 'rejected' && t.status !== 'stopped' && TF.isOverdue(t, currentUser));
 
             if (!list.length) {
                 box.innerHTML = `<div class="dash-empty">
