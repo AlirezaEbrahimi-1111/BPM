@@ -1217,6 +1217,25 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
         }
 
         /* حباب‌ها: رنگ تخت، بدون گرادیان؛ گوشه‌ی نزدیک به فرستنده (دم) تیزتر */
+        /* عکسِ فرستنده کنار پیامِ دیگران — فقط در گروه؛ مثل تلگرام فقط کنارِ
+           آخرین پیامِ هر دستهٔ پشت‌سرهم، بقیه جای خالیِ هم‌اندازه دارند */
+        .chat-msg-avatar {
+            flex: 0 0 32px;
+            align-self: flex-end;
+            cursor: pointer;
+        }
+
+        .chat-msg-avatar .chat-avatar {
+            width: 32px;
+            height: 32px;
+            font-size: .68rem;
+        }
+
+        .chat-msg-avatar.run-hidden {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
         .chat-bubble-row.own .chat-bubble {
             background: var(--bubble-own-bg);
             color: #fff;
@@ -4581,6 +4600,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     ? '<i class="bi bi-pin-angle-fill chat-bubble-pin-icon" title="پیام سنجاق‌شده"></i>'
                     : '';
 
+                // عکسِ فرستنده (فقط گروه، فقط پیامِ دیگران) — بعد از حباب در DOM تا در RTL سمتِ چپِ آن بیفتد
+                var senderAvatarHtml = (!m.is_own && activeConversationType !== 'direct')
+                    ? '<div class="chat-msg-avatar" title="' + esc(m.user_name) + '" onclick="openMemberDirectChatFromMsg(' + Number(m.user_id) + ', this)">' +
+                      avatarHtml(m.user_name, false, null, m.user_avatar_url ? String(m.user_avatar_url).replace(/[<>"'\s]/g, encodeURIComponent) : null) + '</div>'
+                    : '';
+
                 row.innerHTML =
                     '<div class="chat-bubble">' +
                     senderLabel +
@@ -4592,7 +4617,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                     linkRefsHtml +
                     '<div class="chat-bubble-time">' + pinIconHtml + esc(m.time_jalali) + editedTag + ticksHtml + '</div>' +
                     reactionsHtml(m.id, m.reactions) +
-                    '</div>';
+                    '</div>' +
+                    senderAvatarHtml;
 
                 // راست‌کلیک برای همه‌ی پیام‌ها فعال است (پاسخ برای هر پیامی ممکن است)؛
                 // ویرایش/حذف فقط داخل منو برای پیام‌های خودم نمایش داده می‌شود
@@ -4600,6 +4626,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 row.setAttribute('data-can-edit', (m.is_own && m.message) ? '1' : '0');
                 row.setAttribute('data-can-delete', m.is_own ? '1' : '0');
                 row.setAttribute('data-sender-name', m.user_name);
+                row.setAttribute('data-sender-id', m.user_id);
+                if (m.user_avatar_url) row.setAttribute('data-sender-avatar', m.user_avatar_url);
                 var dateKey = chatDateKey(m);
                 row.setAttribute('data-date-key', dateKey);
                 row.addEventListener('contextmenu', function (e) {
@@ -4648,7 +4676,32 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 }
                 prependLinkRefs.forEach(function (x) { loadLinkRefPreviews(x[0], x[1]); });
             }
+            refreshMsgAvatarRuns();
             if (scrollBottom) el.scrollTop = el.scrollHeight;
+        }
+
+        // مثل تلگرام: از چند پیامِ پشت‌سرهمِ یک نفر، عکس فقط کنارِ آخرینِ آن‌ها.
+        // هر بار کلِ ردیف‌ها به ترتیب بررسی می‌شوند (پیامِ سیستمی دسته را می‌شکند)
+        function refreshMsgAvatarRuns() {
+            var nodes = document.querySelectorAll('#chatMessages .chat-bubble-row, #chatMessages .chat-system-message');
+            for (var i = 0; i < nodes.length; i++) {
+                var av = nodes[i].querySelector(':scope > .chat-msg-avatar');
+                if (!av) continue;
+                var next = nodes[i + 1];
+                var sameNext = next && next.classList.contains('chat-bubble-row') &&
+                    next.getAttribute('data-sender-id') === nodes[i].getAttribute('data-sender-id');
+                av.classList.toggle('run-hidden', !!sameNext);
+            }
+        }
+
+        // کلیک روی عکسِ فرستنده → گفتگوی مستقیم با همان شخص
+        function openMemberDirectChatFromMsg(userId, avEl) {
+            var row = avEl.closest('.chat-bubble-row');
+            if (!row || Number(userId) === Number(myUserId)) return;
+            startChatWith(userId, {
+                title: row.getAttribute('data-sender-name') || '',
+                avatar_url: row.getAttribute('data-sender-avatar') || null
+            });
         }
 
         // ── خواندن تدریجی: وقتی یک ردیف پیام واقعا روی صفحه دیده می‌شود (نه صرفا
@@ -5170,7 +5223,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/Notification.php';
                 .then(data => {
                     if (data.success) {
                         var row = document.querySelector('.chat-bubble-row[data-message-id="' + pendingDeleteMessageId + '"]');
-                        if (row) row.remove();
+                        if (row) { row.remove(); refreshMsgAvatarRuns(); }
                         deleteMessageModalInstance.hide();
                         loadConversations();
                     } else {

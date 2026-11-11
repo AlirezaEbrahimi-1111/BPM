@@ -56,7 +56,7 @@ try {
     $sql = "
         SELECT m.id, m.user_id, m.type, m.message, m.created_at, m.edited_at, m.reply_to_message_id,
                m.forwarded_from_user_id,
-               u.first_name, u.last_name,
+               u.first_name, u.last_name, u.avatar_path AS sender_avatar_path,
                rm.message AS reply_message, rm.is_deleted AS reply_is_deleted,
                ru.first_name AS reply_first_name, ru.last_name AS reply_last_name,
                fu.first_name AS forward_first_name, fu.last_name AS forward_last_name
@@ -129,6 +129,7 @@ try {
             'user_id'    => (int) $r['user_id'],
             'type'       => $r['type'],
             'user_name'  => trim($r['first_name'] . ' ' . $r['last_name']),
+            'user_avatar_url' => $r['sender_avatar_path'] ?: null,
             'message'    => $r['message'],
             'created_at' => $r['created_at'],
             'time_jalali' => JalaliHelper::Persian(substr($r['created_at'], 11, 5)),
