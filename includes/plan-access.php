@@ -192,6 +192,34 @@ function planWebAccessForUser(PDO $db, int $userId): bool
     return planState($db, $orgId)['web_access'];
 }
 
+/**
+ * پایانِ دسترسیِ فعلیِ سازمان — منبع واحد برای هشدار وب، یادآوری پیامکی و اپ.
+ *   kind = 'paid'  → پلن پولیِ فعال با تاریخ انقضا (plan_expires_at)
+ *   kind = 'trial' → بدون پلن پولیِ فعال: دورهٔ رایگان ۱۴ روزه (web_trial_ends_at)
+ *   kind = null    → پایانی ندارد (پلن دائمی) یا تاریخی ثبت نشده
+ * days_remaining = روزِ پایان − امروز (تهران). روزِ پایان خودش بی‌دسترسی است، پس
+ * ۰ یعنی «از امروز قفل» و منفی یعنی چند روز است که قفل شده.
+ * @return array{kind:?string, end_date:?string, days_remaining:?int, locked:bool}
+ */
+function planEndInfo(PDO $db, int $orgId): array
+{
+    $st = planState($db, $orgId);
+    $paid = in_array($st['effective_plan'], ['silver', 'gold'], true);
+    if ($paid) {
+        $end = $st['plan_expires_at'];
+        $kind = $end ? 'paid' : null;
+    } else {
+        $end = $st['web_trial_ends_at'];
+        $kind = $end ? 'trial' : null;
+    }
+    $days = null;
+    if ($end) {
+        $tz = new DateTimeZone('Asia/Tehran');
+        $days = (int) (new DateTime(planTehranToday(), $tz))->diff(new DateTime($end, $tz))->format('%r%a');
+    }
+    return ['kind' => $kind, 'end_date' => $end, 'days_remaining' => $days, 'locked' => (bool) $st['locked']];
+}
+
 /** فیلدهای پلن برای پاسخ لاگین و پروفایل */
 function planPayload(PDO $db, int $orgId): array
 {

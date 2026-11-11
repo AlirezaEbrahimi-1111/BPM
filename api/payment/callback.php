@@ -20,6 +20,7 @@ const RETURN_PAGES = [
     'admin' => '/admin/superAdmin.php',
     'org'   => '/pages/org-panel.php',
     'app'   => '/pages/payment-result.php',
+    'web'   => '/pages/plan-buy.php',   // خرید سرپرست سازمان از وب (pages/plan-buy.php)
 ];
 
 $payment_id = (int)($_GET['pid'] ?? 0);

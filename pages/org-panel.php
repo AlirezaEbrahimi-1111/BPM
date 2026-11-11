@@ -306,9 +306,9 @@ if (!hasPermission($__me, 'view_org_settings')) {
 
   // ── مودال ──
   function openExtend() {
-    document.getElementById('monthsInput').value = 1;
-    updatePriceHint();
-    document.getElementById('extendModal').classList.add('show');
+    // خرید/تمدید با انتخاب پلن، تعداد کاربر و مدت (مثل اپ) — مودال قدیمی فقط «ماه» می‌فرستاد
+    location.href = 'plan-buy.php';
+    return;
   }
   function closeModal() { document.getElementById('extendModal').classList.remove('show'); }
   document.getElementById('extendModal').addEventListener('click', function (e) { if (e.target === this) closeModal(); });

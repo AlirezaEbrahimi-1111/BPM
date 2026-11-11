@@ -1,10 +1,21 @@
 <?php
 /**
- * API: بررسی وضعیت اشتراک سازمان
+ * API: وضعیت پایانِ دسترسیِ سازمان (برای هشدار «اشتراک رو به پایان»)
  * GET /api/organization/check-subscription.php
- * 
- * برای همه کاربران قابل دسترسی است (بدون محدودیت role)
- * فقط اطلاعات days_remaining و وضعیت اشتراک را برمی‌گرداند
+ *
+ * 🔒 منبع: سیستم پلن (includes/plan-access.php::planEndInfo) — همان چیزی که قفل وب/اپ
+ * را تعیین می‌کند. قبلا جدول قدیمی subscriptions خوانده می‌شد که با تمدید دستیِ دورهٔ
+ * رایگان یا پلن دائمی هماهنگ نبود. محاسبهٔ روز با تاریخ تهران.
+ *
+ * خروجی (شکل قدیمی حفظ شده + فیلدهای تازه):
+ *   has_subscription  false یعنی پایانی ندارد (پلن دائمی) → هشداری لازم نیست
+ *   days_remaining    روز مانده (۰ = از امروز قفل)
+ *   status            active | expired
+ *   kind              trial | paid
+ *   end_date          Y-m-d
+ *   can_manage        کاربر سرپرست سازمان است (هشدار و دکمهٔ خرید فقط برای او)
+ *
+ * ⚠️ داخل باندل هدر هم include می‌شود — exit وسط فایل نگذارید.
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -22,86 +33,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once $_SERVER['DOCUMENT_ROOT'] . '/config/database.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-access.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/permissions.php';
 
 try {
-    // احراز هویت — برای همه نقش‌ها
     $user_id = requireAuth();
 
     $database = new Database();
     $db = $database->getConnection();
 
-    // دریافت organization_id کاربر
-    $stmt = $db->prepare("SELECT organization_id FROM users WHERE id = ?");
-    $stmt->execute([$user_id]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $me = loadUserForPermissions($db, (int) $user_id);
+    $orgId = (int) ($me['organization_id'] ?? 0);
 
-    // 🔒 دو حالت «سازمان یافت نشد» و «اشتراکی ثبت نشده» قبلا با exit
-    // زودهنگام تموم می‌شدن؛ چون این فایل هم مستقل صدا زده می‌شه هم داخل
-    // باندل هدر include می‌شه (که با exit وسط فایل کنار نمیاد)، هردو به
-    // if/else تبدیل شدن — خروجی هر دو حالت دقیقا مثل قبل می‌مونه.
-    if (!$user || !$user['organization_id']) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'سازمان کاربر یافت نشد'
-        ]);
+    if ($orgId <= 0) {
+        echo json_encode(['success' => false, 'message' => 'سازمان کاربر یافت نشد'], JSON_UNESCAPED_UNICODE);
     } else {
-        $orgId = $user['organization_id'];
+        $end = planEndInfo($db, $orgId);
+        $canManage = isOrgWideRole($me) && !in_array((int) $user_id, getSuperAdminIds(), true);
 
-        // آخرین اشتراک فعال
-        $stmt = $db->prepare("
-            SELECT end_date, is_active
-            FROM subscriptions
-            WHERE organization_id = ?
-            ORDER BY end_date DESC
-            LIMIT 1
-        ");
-        $stmt->execute([$orgId]);
-        $subscription = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$subscription) {
+        if ($end['kind'] === null) {
             echo json_encode([
                 'success' => true,
                 'has_subscription' => false,
-                'days_remaining' => 0,
-                'status' => 'no_subscription'
-            ]);
+                'days_remaining' => null,
+                'status' => 'active',
+                'can_manage' => $canManage,
+            ], JSON_UNESCAPED_UNICODE);
         } else {
-            // محاسبه روزهای باقیمانده
-            // ریست ساعت به 00:00:00 تا محاسبه روز دقیق باشه
-            // مثال: امروز 24 می ساعت 10:32 و انقضا 26 می → باید 2 روز باشه نه 1
-            $endDate = new DateTime($subscription['end_date']);
-            $endDate->setTime(0, 0, 0);
-
-            $today = new DateTime();
-            $today->setTime(0, 0, 0);
-
-            $diff = $today->diff($endDate);
-            $daysRemaining = $endDate >= $today ? (int)$diff->days : -(int)$diff->days;
-
-            // تعیین وضعیت
-            if ($subscription['is_active'] && $daysRemaining > 0) {
-                $status = 'active';
-            } elseif ($daysRemaining <= 0) {
-                $status = 'expired';
-            } else {
-                $status = 'inactive';
-            }
-
             echo json_encode([
                 'success' => true,
                 'has_subscription' => true,
-                'days_remaining' => $daysRemaining,
-                'end_date' => $subscription['end_date'],
-                'status' => $status
-            ]);
+                'days_remaining' => $end['days_remaining'],
+                'end_date' => $end['end_date'],
+                'kind' => $end['kind'],
+                'status' => $end['days_remaining'] > 0 ? 'active' : 'expired',
+                'can_manage' => $canManage,
+            ], JSON_UNESCAPED_UNICODE);
         }
     }
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => 'خطای سرور'
-    ]);
+    echo json_encode(['success' => false, 'message' => 'خطای سرور'], JSON_UNESCAPED_UNICODE);
     error_log("Check subscription error: " . $e->getMessage());
 }

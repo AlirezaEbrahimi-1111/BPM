@@ -639,7 +639,8 @@ function showInlineError(containerId, message, opts = {}) {
     /* ثابت‌ها */
     var STORAGE_KEY      = 'subscription_toast_dismissed_at';
     var DISMISS_DURATION = 24 * 60 * 60 * 1000;   // 24 ساعت
-    var WARNING_DAYS     = 3;
+    var WARNING_DAYS     = 7;                      // هم‌راستا با یادآوری پیامکی (cron/plan_reminders.php)
+    var BUY_URL          = '/pages/plan-buy.php';
     var TOAST_DURATION   = 60000;                  // 60 ثانیه نمایش
     var API_URL          = '/api/organization/check-subscription.php';
 
@@ -672,20 +673,12 @@ function showInlineError(containerId, message, opts = {}) {
         .then(function (r) { return r.json(); })
         .then(function (data) {
 
-            if (!data.success) return;
+            // فقط سرپرست سازمان (کسی که می‌تواند پلن بخرد) هشدار می‌بیند؛ پلن دائمی هشدار ندارد.
+            // سازمانِ قفل‌شده اصلا به این صفحه‌ها نمی‌رسد (header.php → plan-required.php).
+            if (!data.success || !data.can_manage || !data.has_subscription) return;
 
-            if (!data.has_subscription) {
-                showSubscriptionToast(-1, 'no_subscription');
-                return;
-            }
-
-            if (data.status === 'expired') {
-                showSubscriptionToast(data.days_remaining, 'expired');
-                return;
-            }
-
-            if (data.days_remaining <= WARNING_DAYS) {
-                showSubscriptionToast(data.days_remaining, 'expiring_soon');
+            if (data.days_remaining > 0 && data.days_remaining <= WARNING_DAYS) {
+                showSubscriptionToast(data.days_remaining, data.kind);
                 return;
             }
 
@@ -700,36 +693,20 @@ function showInlineError(containerId, message, opts = {}) {
     /* ──────────────────────────────────────────── */
     /*  نمایش toast (کاملا مستقل)                   */
     /* ──────────────────────────────────────────── */
-    function showSubscriptionToast(daysRemaining, status) {
+    function showSubscriptionToast(daysRemaining, kind) {
 
         // حذف toast قبلی
         var existing = document.getElementById('subscription-expiry-toast');
         if (existing) existing.remove();
 
-        // تعیین متن و رنگ
-        var message, icon, borderColor, iconColor;
-
-        if (status === 'expired' || status === 'no_subscription') {
-            message     = 'اشتراک سازمان شما منقضی شده است. لطفا برای تمدید اشتراک با پشتیبانی تماس بگیرید.';
-            icon        = 'bi-exclamation-octagon-fill';
-            borderColor = '#ef4444';
-            iconColor   = '#ef4444';
-        } else if (daysRemaining <= 0) {
-            message     = 'اشتراک سازمان شما امروز منقضی می‌شود! لطفا برای تمدید با پشتیبانی تماس بگیرید.';
-            icon        = 'bi-exclamation-octagon-fill';
-            borderColor = '#ef4444';
-            iconColor   = '#ef4444';
-        } else if (daysRemaining === 1) {
-            message     = 'اشتراک سازمان شما فردا منقضی می‌شود. لطفا برای خرید یا تمدید اشتراک با پشتیبانی ارتباط بگیرید.';
-            icon        = 'bi-exclamation-triangle-fill';
-            borderColor = '#f59e0b';
-            iconColor   = '#f59e0b';
-        } else {
-            message     = 'اشتراک سازمان شما ' + toFa(daysRemaining) + ' روز دیگر منقضی می‌شود. لطفا برای خرید یا تمدید اشتراک با پشتیبانی ارتباط بگیرید.';
-            icon        = 'bi-exclamation-triangle-fill';
-            borderColor = '#f59e0b';
-            iconColor   = '#f59e0b';
-        }
+        // تعیین متن و رنگ — kind: trial (دورهٔ رایگان ۱۴ روزه) | paid (پلن خریداری‌شده)
+        var what = kind === 'trial' ? 'دورهٔ رایگان سازمان شما' : 'اشتراک سازمان شما';
+        var when = daysRemaining === 1 ? 'فردا' : toFa(daysRemaining) + ' روز دیگر';
+        var message = what + ' ' + when + ' تمام می‌شود. برای اینکه کار سازمان متوقف نشود، پلن سازمان را '
+            + (kind === 'trial' ? 'خریداری' : 'تمدید') + ' کنید.';
+        var icon        = 'bi-exclamation-triangle-fill';
+        var borderColor = daysRemaining <= 1 ? '#ef4444' : '#f59e0b';
+        var iconColor   = borderColor;
 
         // ساخت المان toast
         var toast = document.createElement('div');
@@ -767,9 +744,18 @@ function showInlineError(containerId, message, opts = {}) {
         var btnRow = document.createElement('div');
         btnRow.style.cssText = 'display:flex;gap:8px;margin-top:14px;justify-content:flex-end;';
 
-        // دکمه "متوجه شدم"
+        // دکمه «خرید پلن» → صفحهٔ خرید وب
+        var buyBtn = document.createElement('a');
+        buyBtn.href = BUY_URL;
+        buyBtn.textContent = kind === 'trial' ? 'خرید پلن' : 'تمدید پلن';
+        buyBtn.style.cssText =
+            'padding:7px 20px;border-radius:8px;background:#8e57fe;color:#fff;text-decoration:none;' +
+            'font-size:0.85rem;font-weight:600;font-family:Vazir,sans-serif;';
+        btnRow.appendChild(buyBtn);
+
+        // دکمه «بعداً» — تا ۲۴ ساعت دوباره نمایش داده نمی‌شود
         var dismissBtn = document.createElement('button');
-        dismissBtn.textContent = 'متوجه شدم';
+        dismissBtn.textContent = 'بعداً';
         dismissBtn.style.cssText =
             'padding:7px 20px;' +
             'border-radius:8px;' +

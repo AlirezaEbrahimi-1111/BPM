@@ -453,9 +453,9 @@ async function saveOrgInfo(event) {
 
 /* ── مودال تمدید (درگاه پرداخت) ── */
 function openExtend() {
-  document.getElementById('coMonths').value = 1;
-  updatePriceHint();
-  document.getElementById('coExtendModal').classList.add('show');
+  // خرید/تمدید با انتخاب پلن و تعداد کاربر و مدت (مثل اپ) — مودال قدیمی فقط «ماه» می‌فرستاد
+  // و org-pay.php آن را با «پلن نامعتبر» رد می‌کرد
+  location.href = 'plan-buy.php';
 }
 function closeExtend() { document.getElementById('coExtendModal').classList.remove('show'); }
 document.getElementById('coExtendModal').addEventListener('click', e => { if (e.target.id === 'coExtendModal') closeExtend(); });

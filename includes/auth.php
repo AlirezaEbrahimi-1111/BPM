@@ -74,28 +74,12 @@ class Auth
                 ];
             }
 
-            // ✅ بررسی انقضای اشتراک سازمان
-            if ($user['organization_id']) {
-                $subStmt = $this->db->prepare("
-                    SELECT end_date 
-                    FROM subscriptions 
-                    WHERE organization_id = ? 
-                    AND is_active = 1
-                    ORDER BY end_date DESC 
-                    LIMIT 1
-                ");
-                $subStmt->execute([$user['organization_id']]);
-                $subscription = $subStmt->fetch(PDO::FETCH_ASSOC);
-            
-                if (!$subscription || strtotime($subscription['end_date']) < time()) {
-                    error_log("Login blocked - subscription expired | user_id={$user['id']} | organization_id={$user['organization_id']} | expired_date=" . ($subscription['end_date'] ?? 'none'));
-                    return [
-                        'success' => false,
-                        'message' => 'اشتراک سازمان شما منقضی شده است',
-                        'expired_date' => $subscription['end_date'] ?? null
-                    ];
-                }
-            }
+            // 🔒 انقضای پلن/دورهٔ رایگان اینجا ورود را نمی‌بندد (مثل ورود با کد پیامکی):
+            // کاربرِ سازمانِ قفل‌شده باید بتواند وارد شود تا پلن بخرد. قفل واقعی در
+            // includes/plan-access.php است (وب → plan-required.php، API → PLAN_EXPIRED).
+            // قبلا جدول قدیمی subscriptions این‌جا چک می‌شد و با تمدید دستیِ دورهٔ رایگان
+            // (extend-free.php، فقط web_trial_ends_at) ناهماهنگ بود — سازمانِ تمدیدشده با رمز
+            // وارد نمی‌شد.
 
             $this->recordLogin((int) $user['id']);
 

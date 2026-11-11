@@ -77,7 +77,9 @@ $payment_id = (int)$db->lastInsertId();
 /* ── آدرسِ بازگشت — to=app یعنی بعدِ پرداخت به صفحه‌ی نتیجه‌یِ سبکِ
    مخصوصِ اپ (بدونِ نیاز به سشنِ وب) برگرد؛ همان‌جا که WebViewِ اپ آن
    را رصد می‌کند ── */
-$callback = 'https://bpm.itmalek.com/api/payment/callback.php?pid=' . $payment_id . '&to=app';
+// return=web → صفحهٔ خرید وب (pages/plan-buy.php) با ?payment=… ؛ پیش‌فرض اپ
+$returnTo = (($data['return'] ?? '') === 'web') ? 'web' : 'app';
+$callback = 'https://bpm.itmalek.com/api/payment/callback.php?pid=' . $payment_id . '&to=' . $returnTo;
 
 /* ── درخواست به زرین‌پال ── */
 $planLabel = $plan === 'gold' ? 'طلایی' : 'نقره‌ای';

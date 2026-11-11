@@ -16,6 +16,7 @@ $periods = ['1' => 'یک ماهه', '3' => 'سه ماهه', '6' => 'شش ماه�
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>پلن‌ها و دسترسی به نسخه‌ی وب</title>
+    <link rel="stylesheet" href="/assets/js/cdn/bootstrap-icons.css">
     <style>
         :root { --bg: #f5f6fa; --card: #ffffff; --text: #1f2430; --muted: #5b6272; --accent: #8e57fe; --line: #e3e6ee; --hover: rgba(142,87,254,.12); }
         @media (prefers-color-scheme: dark) {
@@ -37,6 +38,9 @@ $periods = ['1' => 'یک ماهه', '3' => 'سه ماهه', '6' => 'شش ماه�
         .tag { display: inline-block; font-size: .72rem; padding: 2px 8px; border-radius: 999px; background: var(--hover); color: var(--accent); }
         .soon { color: var(--muted); font-size: .82rem; }
         .back { display: inline-block; margin-top: 6px; color: var(--accent); text-decoration: none; font-weight: 600; }
+        .buy { display: inline-flex; align-items: center; gap: 6px; margin: 6px 0 4px 14px; padding: 9px 18px; border-radius: 10px;
+               background: var(--accent); color: #fff; text-decoration: none; font-weight: 700; }
+        .buy:hover { opacity: .9; }
     </style>
 </head>
 <body>
@@ -45,7 +49,9 @@ $periods = ['1' => 'یک ماهه', '3' => 'سه ماهه', '6' => 'شش ماه�
         <h1>دسترسی به نسخه‌ی وب فعال نیست</h1>
         <p>پلن فعلی سازمان شما اجازه‌ی استفاده از نسخه‌ی وب را نمی‌دهد، یا مدت آن تمام شده است.
             استفاده از اپ موبایل طبق پلن سازمان ادامه دارد.</p>
-        <p>برای خرید یا تمدید، با پشتیبانی تماس بگیرید: <a href="tel:09105255090">۰۹۱۰۵۲۵۵۰۹۰</a>. خرید آنلاین به‌زودی فعال می‌شود.</p>
+        <p>سرپرست سازمان می‌تواند همین حالا پلن را آنلاین بخرد یا تمدید کند؛ همه‌ی کارها و اطلاعات بدون تغییر برمی‌گردد.
+            برای راهنمایی با پشتیبانی تماس بگیرید: <a href="tel:09105255090">۰۹۱۰۵۲۵۵۰۹۰</a>.</p>
+        <a class="buy" href="plan-buy.php"><i class="bi bi-cart-check"></i> خرید یا تمدید پلن</a>
         <a class="back" href="../index.php">بازگشت به صفحه‌ی ورود</a>
     </div>
 
