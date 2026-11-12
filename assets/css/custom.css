@@ -4106,8 +4106,8 @@ td:nth-child(2) {
 }
 
 .navbar .nav-link {
-    padding-left: .8rem !important;
-    padding-right: .8rem !important;
+    padding-left: .5rem !important;
+    padding-right: .5rem !important;
     gap: 7px;
 }
 
