@@ -167,7 +167,13 @@ try {
         ];
     }, $rows);
 
-    echo json_encode(['success' => true, 'conversations' => $conversations], JSON_UNESCAPED_UNICODE);
+    // server_date: «امروز» به ساعت سرور (تهران) — اپ برای نمایش «فقط ساعت» در پیام‌های
+    // امروز از این استفاده می‌کند، نه ساعت دستگاه
+    echo json_encode([
+        'success' => true,
+        'conversations' => $conversations,
+        'server_date' => (new DateTime('now', new DateTimeZone('Asia/Tehran')))->format('Y-m-d'),
+    ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
     http_response_code(500);

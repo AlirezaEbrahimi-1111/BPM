@@ -194,6 +194,47 @@ try {
         'message_id' => $messageId,
     ]);
 
+    // ─── Push اپ برای بقیهٔ اعضا (فقط Push، بدون پیامک و بدون ردیف اعلان) ───
+    // پاسخ اول به فرستنده برمی‌گردد (fastcgi_finish_request) تا ارسال Push کندش نکند.
+    // گیرنده: اعضای فعال گفتگو به‌جز فرستنده، به‌جز کسی که گفتگو را بی‌صدا کرده، و به‌جز
+    // کسی که همین الان در چت آنلاین است (chat_presence در ۷۰ ثانیهٔ اخیر — وب هر ۶۰ ثانیه ping
+    // می‌کند) چون پیام را همان‌جا می‌بیند. لمس اعلان → malekbpm://chat/<id> در اپ.
+    try {
+        if (function_exists('fastcgi_finish_request')) fastcgi_finish_request();
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/metrix-push.php';
+        $info = $db->prepare("
+            SELECT c.type, c.title, TRIM(CONCAT(u.first_name, ' ', u.last_name)) AS sender_name
+            FROM chat_conversations c JOIN users u ON u.id = ?
+            WHERE c.id = ?
+        ");
+        $info->execute([$user_id, $conversationId]);
+        $ci = $info->fetch(PDO::FETCH_ASSOC);
+        if ($ci) {
+            $rcp = $db->prepare("
+                SELECT cp.user_id
+                FROM chat_participants cp
+                JOIN users u ON u.id = cp.user_id AND u.is_active = 1 AND COALESCE(u.is_deleted, 0) = 0
+                LEFT JOIN chat_presence pr ON pr.user_id = cp.user_id
+                WHERE cp.conversation_id = ? AND cp.user_id != ? AND COALESCE(cp.is_muted, 0) = 0
+                  AND (pr.last_seen_at IS NULL OR pr.last_seen_at < NOW() - INTERVAL 70 SECOND)
+            ");
+            $rcp->execute([$conversationId, $user_id]);
+            $recipients = $rcp->fetchAll(PDO::FETCH_COLUMN);
+            if ($recipients) {
+                $sender = $ci['sender_name'] ?: 'یکی از همکاران';
+                $body = $message !== '' ? mb_substr($message, 0, 120) : '📎 فایل';
+                $isGroup = $ci['type'] !== 'direct';
+                $title = $isGroup ? ($ci['title'] ?: 'گروه') : $sender;
+                if ($isGroup) $body = $sender . ': ' . $body;
+                foreach ($recipients as $rid) {
+                    metrix_send_push((int) $rid, $title, $body, ['chat_conversation_id' => (string) $conversationId]);
+                }
+            }
+        }
+    } catch (Throwable $e) {
+        error_log('Chat push error: ' . $e->getMessage());
+    }
+
 } catch (Exception $e) {
     if ($db->inTransaction()) $db->rollBack();
     http_response_code(500);

@@ -31,6 +31,9 @@ function metrix_send_push($userId, string $title, string $message, array $custom
     // در AndroidManifest ثبت کرده و در MainActivity به فلاتر می‌دهد)
     if (!empty($customContent['task_id']) && ctype_digit((string) $customContent['task_id'])) {
         $msg['url'] = 'malekbpm://task/' . $customContent['task_id'];
+    } elseif (!empty($customContent['chat_conversation_id']) && ctype_digit((string) $customContent['chat_conversation_id'])) {
+        // پیام چت → لمس اعلان همان گفتگو را در اپ باز کند (DeepLinkService، host=chat)
+        $msg['url'] = 'malekbpm://chat/' . $customContent['chat_conversation_id'];
     }
     $payload = [
         'recipients' => [(string) $userId],

@@ -208,6 +208,9 @@ try {
         'success'  => true,
         'messages' => $messages,
         'has_more' => count($rows) === $limit,
+        // برای جداکننده‌های «امروز/دیروز» در اپ — به ساعت سرور (تهران)، نه دستگاه
+        'today_jalali'     => JalaliHelper::formatJalaliDate((new DateTime('now', new DateTimeZone('Asia/Tehran')))->format('Y-m-d')),
+        'yesterday_jalali' => JalaliHelper::formatJalaliDate((new DateTime('yesterday', new DateTimeZone('Asia/Tehran')))->format('Y-m-d')),
     ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
