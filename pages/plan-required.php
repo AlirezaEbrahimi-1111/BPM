@@ -2,7 +2,8 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/plan-prices.php';
 
-function planFa(string $s): string { return strtr($s, '0123456789', '۰۱۲۳۴۵۶۷۸۹'); }
+// ⚠️ strtr با دو رشته بایت‌به‌بایت جایگزین می‌کند و رقم فارسی (۲ بایت) را خراب می‌کند — آرایه لازم است
+function planFa(string $s): string { return strtr($s, ['0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹']); }
 function planPrice($v): string {
     if ($v === null) return '—';
     if ($v === 0) return 'به‌زودی';

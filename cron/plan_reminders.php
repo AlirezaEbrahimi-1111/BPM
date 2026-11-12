@@ -37,7 +37,8 @@ function plan_reminder_log(string $msg): void
 
 function plan_reminder_text(string $kind, int $days): array
 {
-    $fa = fn($n) => strtr((string) $n, '0123456789', '۰۱۲۳۴۵۶۷۸۹');
+    // آرایه، نه دو رشته — strtr رشته‌ای بایت‌به‌بایت است و رقم فارسی (۲ بایت) را خراب می‌کند
+    $fa = fn($n) => strtr((string) $n, ['0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹']);
     $what = $kind === 'trial' ? 'دورهٔ رایگان ۱۴ روزهٔ سازمان شما' : 'اشتراک سازمان شما';
     $verb = $kind === 'trial' ? 'خریداری' : 'تمدید';
     if ($days === 0) {
