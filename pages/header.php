@@ -702,17 +702,6 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
         vertical-align: middle;
     }
 
-    /* دسکتاپ: آیکن‌های چت / زنگوله / پروفایل و خط‌های | بینشان نزدیک‌تر */
-    @media (min-width: 1321px) {
-        .navbar-nav.me-0 .settings-btn {
-            padding: 8px 9px;
-            margin-left: 0;
-        }
-        .navbar-nav.me-0 .navbar-divider {
-            margin: 0 4px;
-        }
-    }
-
     /* ردیف تیکت در پین تیکت‌ها — بدون خط جداکننده (مثل اطلاعیه‌ها) */
     .hdr-ticket-item {
         display: block;
