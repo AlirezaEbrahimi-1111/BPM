@@ -2,13 +2,13 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/error_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/version.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/crm_access.php';
-// آیا این کاربر منوی «فروش / فاکتور» را ببیند؟ (ماژول در حال ساخت، دسترسی محدود)
+// آیا این کاربر منوی «فاکتور رسمی» را ببیند؟ (ماژول در حال ساخت، دسترسی محدود)
 $__crmUid  = (int) ($_SESSION['user_id'] ?? $user_id ?? 0);
 $__crmMenu = isset($db) && ($db instanceof PDO) && crmModuleAllowed($db, $__crmUid);
 // «گزارش همکاران» را مدیران و سوپروایزرها هم می‌بینند (حتی بدون منوی فاکتور).
 $__crmReportMenu = isset($db) && ($db instanceof PDO)
     && function_exists('crmReportAllowed') && crmReportAllowed($db, $__crmUid);
-// منوی «CRM» جدید (حسابداری غیررسمی) — سرپرست‌ها، تیم فروش و تیم حسابداری سازمان ۱
+// منوی «فروش / فاکتور» (CRM) (حسابداری غیررسمی) — سرپرست‌ها، تیم فروش و تیم حسابداری سازمان ۱
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ucrm_access.php';
 $__ucrmMenu = isset($db) && ($db instanceof PDO) && ucrmAllowed($db, $__crmUid);
 // 🔒 دسترسی وب بر اساس پلن: بدون web_access به صفحه‌ی توضیح پلن می‌رویم
@@ -1203,7 +1203,7 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
                     <li class="nav-item dropdown" id="navSalesInvoice">
                         <a class="nav-link dropdown-toggle" href="#" id="salesInvoiceDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-receipt me-2"></i>فروش / فاکتور
+                            <i class="bi bi-receipt me-2"></i>فاکتور رسمی
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end admin-submenu" aria-labelledby="salesInvoiceDropdown">
                             <li>
@@ -1264,17 +1264,25 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
                     <li class="nav-item dropdown" id="navUcrm">
                         <a class="nav-link dropdown-toggle" href="#" id="ucrmDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-lines-fill me-2"></i>CRM
+                            <i class="bi bi-person-lines-fill me-2"></i>فروش / فاکتور
                         </a>
+                        <?php $__ucrmIsManager = ucrmRoles($db, $__crmUid)['manager']; /* سفارش خرید و قالب پیامک فعلا فقط مدیر/سوپروایزر (بعدا واحد خرید) */ ?>
                         <ul class="dropdown-menu dropdown-menu-end admin-submenu" aria-labelledby="ucrmDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/pages/ucrm-orders.php?type=sales">
+                                    <i class="bi bi-cart-check ms-2"></i>سفارش‌های فروش
+                                </a>
+                            </li>
+                            <?php if ($__ucrmIsManager): ?>
+                                <li>
+                                    <a class="dropdown-item" href="/pages/ucrm-orders.php?type=purchase">
+                                        <i class="bi bi-cart ms-2"></i>سفارش‌های خرید
+                                    </a>
+                                </li>
+                            <?php endif; ?>
                             <li>
                                 <a class="dropdown-item" href="/pages/ucrm-customers.php">
                                     <i class="bi bi-people ms-2"></i>مشتریان
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="/pages/ucrm-targets.php">
-                                    <i class="bi bi-bullseye ms-2"></i>تارگت‌های فروش
                                 </a>
                             </li>
                             <li>
@@ -1283,16 +1291,11 @@ if (!empty($_SESSION['user_id']) && isset($db) && ($db instanceof PDO)
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="/pages/ucrm-orders.php?type=sales">
-                                    <i class="bi bi-cart-check ms-2"></i>سفارش‌های فروش
+                                <a class="dropdown-item" href="/pages/ucrm-targets.php">
+                                    <i class="bi bi-bullseye ms-2"></i>تارگت‌های فروش
                                 </a>
                             </li>
-                            <?php if (ucrmRoles($db, $__crmUid)['manager']): /* سفارش خرید فعلا فقط مدیر/سوپروایزر (بعدا واحد خرید) */ ?>
-                                <li>
-                                    <a class="dropdown-item" href="/pages/ucrm-orders.php?type=purchase">
-                                        <i class="bi bi-cart ms-2"></i>سفارش‌های خرید
-                                    </a>
-                                </li>
+                            <?php if ($__ucrmIsManager): ?>
                                 <li>
                                     <a class="dropdown-item" href="/pages/ucrm-sms-templates.php">
                                         <i class="bi bi-chat-left-text ms-2"></i>قالب‌های پیامک
