@@ -57,7 +57,8 @@ try {
         $params[] = '%' . $q . '%';
     }
 
-    $sql .= " ORDER BY u.first_name, u.last_name LIMIT 30";
+    // بدون عبارت جستجو = فهرست کامل مخاطبان (اپ: «گفتگوی جدید» مثل تلگرام همه را نشان می‌دهد)
+    $sql .= " ORDER BY u.first_name, u.last_name LIMIT " . ($q === '' ? 1000 : 30);
 
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
